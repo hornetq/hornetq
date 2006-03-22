@@ -393,6 +393,28 @@ public class ServerManagement
       insureStarted();
       server.deployQueue(name, jndiName);
    }
+   
+   public static void deployTopic(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      deployTopic(name, null, fullSize, pageSize, downCacheSize);
+   }
+
+   public static void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      insureStarted();
+      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
+   }
+
+   public static void deployQueue(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      deployQueue(name, null, fullSize, pageSize, downCacheSize);
+   }
+
+   public static void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      insureStarted();
+      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
+   }
 
    public static void undeployQueue(String name) throws Exception
    {

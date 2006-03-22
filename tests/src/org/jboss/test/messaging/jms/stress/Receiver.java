@@ -45,6 +45,8 @@ public class Receiver extends Runner implements MessageListener
 {
    private static final Logger log = Logger.getLogger(Receiver.class);
    
+   private static final long RECEIVE_TIMEOUT = 30000;
+      
    protected MessageConsumer cons;
    
    protected int count;
@@ -87,14 +89,16 @@ public class Receiver extends Runner implements MessageListener
    }
    
    private Object lock = new Object();
-   
+      
    protected Message getMessage() throws Exception
    {
+      Message m;
+      
       if (isListener)
       {
          long start = System.currentTimeMillis();
-         Message m = null;
-         while (System.currentTimeMillis() - start < 1000)
+         m = null;
+         while (System.currentTimeMillis() - start < RECEIVE_TIMEOUT)
          {
             if (theMessage != null)
             {
@@ -104,13 +108,13 @@ public class Receiver extends Runner implements MessageListener
             }
             Thread.yield();
          }
-         return m;
-         
       }
       else
-      {
-         return cons.receive(1000);
+      {         
+         m = cons.receive(RECEIVE_TIMEOUT);        
       }
+      
+      return m;      
    }
    
    protected void processingDone()
@@ -138,6 +142,8 @@ public class Receiver extends Runner implements MessageListener
       
       try
       {             
+         //log.info("Waiting for messages");
+         
          while (count < numMessages)
          {
             Message m = getMessage();
@@ -149,9 +155,10 @@ public class Receiver extends Runner implements MessageListener
                processingDone();
                return;
             }
+             
             String prodName = m.getStringProperty("PROD_NAME");
             Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-                      
+                     
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)
             {
@@ -179,8 +186,6 @@ public class Receiver extends Runner implements MessageListener
             
             processingDone();
          }
-         
-         log.info("Received:" + numMessages);
       }
       catch (Exception e)
       {

@@ -41,35 +41,41 @@ public interface PersistenceManager extends ServerPlugin
     * Currently unused but will be used for XA recovery
     */
    List retrievePreparedTransactions() throws Exception;
-   
+    
    /**
     * TODO Do we really need this method?
     */
    void removeAllChannelData(long channelID) throws Exception;
    
+   
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
    void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
+      
+
+   void addReferences(long channelID, List references, boolean loaded) throws Exception;
    
-   void addReferences(long channelID, List references) throws Exception;
+   void removeReferences(long channelID, List refs) throws Exception;
    
    
+   void updateReferencesNotLoaded(long channelID, List references) throws Exception;
    
+   void updateReliableReferencesLoadedInRange(long channelID, long orderStart, long orderEnd) throws Exception;
+            
+
    long getMaxOrdering(long channelID) throws Exception;
    
-   int getNumberOfReferences(long channelID) throws Exception;
+   int getNumberOfUnloadedReferences(long channelID) throws Exception;
    
    List getReferenceInfos(long channelID, int number) throws Exception;
    
    List getMessages(List messageIds) throws Exception;
    
-   void removeNonPersistentMessageReferences(long channelID, long orderStart, long orderEnd) throws Exception;
-   
-   void removeMessages(List messageIds) throws Exception;
-   
    long reserveIDBlock(String counterName, int size) throws Exception;
-    
-
+   
+   
+   
+ 
    /*
     * FIXME
     * Only used in testing - remove this
@@ -111,7 +117,7 @@ public interface PersistenceManager extends ServerPlugin
       public int getDeliveryCount()
       {
          return deliveryCount;
-      }
-      
+      }      
    }
+   
 }

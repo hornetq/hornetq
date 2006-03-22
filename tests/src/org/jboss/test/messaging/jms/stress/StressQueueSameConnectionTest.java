@@ -31,17 +31,17 @@ import javax.jms.XASession;
 
 /**
  * 
- * Stress tests for JMS topics using the same connection for all sessions in a test  
+ * Stress tests for JMS queues using the same connection for all sessions in a test  
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * StressTopicSameConnection.java,v 1.1 2006/01/17 12:15:33 timfox Exp
+ * StressQueueSameConnection.java,v 1.1 2006/01/17 12:15:33 timfox Exp
  */
-public class StressTopicSameConnection extends StressTestBase
+public class StressQueueSameConnectionTest extends StressTestBase
 {
 
-   public StressTopicSameConnection(String name)
+   public StressQueueSameConnectionTest(String name)
    {
       super(name);
    }
@@ -154,8 +154,8 @@ public class StressTopicSameConnection extends StressTestBase
     */
    
    //
-   // Simple Topic tests
-   // We test one sender and one receiver on one topic concurrently
+   // Simple Queue tests
+   // We test one sender and one receiver on one queue concurrently
    // with each permutation of the sender and receiver types
    //
    
@@ -167,8 +167,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -187,8 +187,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -207,8 +207,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -227,8 +227,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -247,8 +247,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -268,8 +268,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -287,8 +287,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -307,8 +307,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -327,8 +327,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -347,8 +347,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -367,8 +367,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -387,8 +387,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -407,8 +407,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -427,8 +427,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -447,8 +447,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -468,8 +468,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -488,8 +488,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -508,8 +508,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -528,8 +528,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -548,8 +548,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -568,8 +568,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -588,8 +588,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -608,8 +608,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -628,8 +628,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -648,8 +648,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -669,8 +669,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -689,8 +689,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -709,8 +709,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -729,9 +729,11 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      log.info("blah");
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
                                         new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
@@ -749,8 +751,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
@@ -770,8 +772,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -790,8 +792,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -810,8 +812,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -830,8 +832,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -850,8 +852,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -871,8 +873,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -891,8 +893,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -911,8 +913,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -931,14 +933,21 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
                                         new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
 
+      
+      long start = System.currentTimeMillis();
+      
       runRunners(runners);
+      
+      long end = System.currentTimeMillis();
+      
+      log.info("That took: " + (end - start) + " ms");
 
       conn.close();      
    }
@@ -951,8 +960,8 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
@@ -971,8 +980,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -991,8 +1000,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1011,8 +1020,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1031,8 +1040,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1051,8 +1060,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1072,8 +1081,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1092,8 +1101,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1112,8 +1121,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1132,8 +1141,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1152,8 +1161,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
@@ -1173,8 +1182,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1193,8 +1202,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1213,8 +1222,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1233,8 +1242,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1253,8 +1262,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1273,8 +1282,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       XASession sessReceive = ((XAConnection)conn).createXASession();
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1294,8 +1303,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1314,8 +1323,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1334,8 +1343,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1354,8 +1363,8 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sessSend = ((XAConnection)conn).createXASession();
       Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(topic1);
-      MessageProducer prod = sessSend.createProducer(topic1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
@@ -1372,7 +1381,7 @@ public class StressTopicSameConnection extends StressTestBase
    
    /*
     * Multiple sender tests on a Queue
-    * We take one of each permutation of sender and couple it with one of each receiver
+    * We take one of each permutation of sender and couple it with a single receiver of each receiver permutation
     * 
     * LX
     * LT
@@ -1388,12 +1397,12 @@ public class StressTopicSameConnection extends StressTestBase
 
    
    
-   public void test_Multiple() throws Exception
+   public void test_Multiple_LX() throws Exception
    {
       Connection conn = cf.createConnection();
       conn.start();
-            
-      //Sending sessions
+      
+      
       XASession sessXP = ((XAConnection)conn).createXASession(); 
       XASession sessXNP = ((XAConnection)conn).createXASession();
       Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -1401,66 +1410,31 @@ public class StressTopicSameConnection extends StressTestBase
       Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageProducer prodXP = sessXP.createProducer(topic1);
+      MessageProducer prodXP = sessXP.createProducer(queue1);
       prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodXNP = sessXNP.createProducer(topic1);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
       prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
-      MessageProducer prodTP = sessTP.createProducer(topic1);
+      MessageProducer prodTP = sessTP.createProducer(queue1);
       prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodTNP = sessTNP.createProducer(topic1);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
       prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prodNTP = sessNTP.createProducer(topic1);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
       prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodNTNP = sessNTNP.createProducer(topic1);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
       prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
-      //Receiving sessions
       
-      XASession sessLX = ((XAConnection)conn).createXASession();
-      Session sessLT = conn.createSession(true, Session.SESSION_TRANSACTED);
-      Session sessLCA = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      Session sessLA = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sessLD = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-      
-      XASession sessNLX = ((XAConnection)conn).createXASession();
-      Session sessNLT = conn.createSession(true, Session.SESSION_TRANSACTED);
-      Session sessNLCA = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      Session sessNLA = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sessNLD = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-      
-      
-      MessageConsumer consLX = sessLX.createConsumer(topic1);
-      MessageConsumer consLT = sessLT.createConsumer(topic1);
-      MessageConsumer consLCA = sessLCA.createConsumer(topic1);
-      MessageConsumer consLA = sessLA.createConsumer(topic1);
-      MessageConsumer consLD = sessLD.createConsumer(topic1);
-      
-      MessageConsumer consNLX = sessNLX.createConsumer(topic1);
-      MessageConsumer consNLT = sessNLT.createConsumer(topic1);
-      MessageConsumer consNLCA = sessNLCA.createConsumer(topic1);
-      MessageConsumer consNLA = sessNLA.createConsumer(topic1);
-      MessageConsumer consNLD = sessNLD.createConsumer(topic1);
+      XASession sessReceive = ((XAConnection)conn).createXASession();      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
       
       Runner[] runners = new Runner[] {             
-            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 25), 
-            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
-            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 25),
-            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
             new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
-            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),          
-                        
-            new Transactional2PCReceiver(sessLX, consLX, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
-            new TransactionalReceiver(sessLT, consLT, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
-            new RecoveringReceiver(sessLCA, consLCA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
-            new Receiver(sessLA, consLA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true),
-            new Receiver(sessLD, consLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true),
-            
-            new Transactional2PCReceiver(sessNLX, consNLX, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
-            new TransactionalReceiver(sessNLT, consNLT, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
-            new RecoveringReceiver(sessNLCA, consNLCA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
-            new Receiver(sessNLA, consNLA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false),
-            new Receiver(sessNLD, consNLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false)
-                                   
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),            
+            new Transactional2PCReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, true)
       };
       
       runRunners(runners);
@@ -1468,19 +1442,422 @@ public class StressTopicSameConnection extends StressTestBase
       conn.close();      
    }
    
-   
-   
-   /*
-    * The next test hammers a single topic with multiple transactional senders and receivers with different transactions sizes
-    * Half of them send persistent messages, the other half non persistent messages
-    */
-   public void test_Multiple_Tx() throws Exception
+   public void test_Multiple_LT() throws Exception
    {
       Connection conn = cf.createConnection();
       conn.start();
       
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      //Sending sessions
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),              
+            new TransactionalReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, true)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   public void test_Multiple_LCA() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),             
+            new RecoveringReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, true)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   public void test_Multiple_LA() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),             
+            new Receiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   public void test_Multiple_LD() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),             
+            new Receiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   public void test_Multiple_NLX() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      XASession sessReceive = ((XAConnection)conn).createXASession();      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),            
+            new Transactional2PCReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, false)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   public void test_Multiple_NLT() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),            
+            new TransactionalReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, false)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   public void test_Multiple_NLCA() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),             
+            new RecoveringReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, false)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   public void test_Multiple_NLA() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),             
+            new Receiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }   
+   
+   public void test_Multiple_NLD() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(queue1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(queue1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(queue1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(queue1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(queue1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      
+      
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),            
+            new Receiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false)
+      };
+      
+      runRunners(runners);
+      
+      conn.close();      
+   }   
+   
+   
+   
+   
+   /*
+    * The next test hammers a single queue with multiple transactional senders with different transactions sizes
+    * Half of them send persistent messages, the other half non persistent messages
+    */
+   public void test_Multiple_Tx_Senders() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
       
       Session sess1 = conn.createSession(true, Session.SESSION_TRANSACTED);
       Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -1501,97 +1878,209 @@ public class StressTopicSameConnection extends StressTestBase
       XASession sess16 = ((XAConnection)conn).createXASession();
 
       
-      MessageProducer prod1 = sess1.createProducer(topic1);
+      MessageProducer prod1 = sess1.createProducer(queue1);
       prod1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod2 = sess2.createProducer(topic1);
+      MessageProducer prod2 = sess2.createProducer(queue1);
       prod2.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod3 = sess3.createProducer(topic1);
+      MessageProducer prod3 = sess3.createProducer(queue1);
       prod3.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod4 = sess4.createProducer(topic1);
+      MessageProducer prod4 = sess4.createProducer(queue1);
       prod4.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod5 = sess5.createProducer(topic1);
+      MessageProducer prod5 = sess5.createProducer(queue1);
       prod5.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod6 = sess6.createProducer(topic1);
+      MessageProducer prod6 = sess6.createProducer(queue1);
       prod6.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod7 = sess7.createProducer(topic1);
+      MessageProducer prod7 = sess7.createProducer(queue1);
       prod7.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod8 = sess8.createProducer(topic1);
+      MessageProducer prod8 = sess8.createProducer(queue1);
       prod8.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      MessageProducer prod9 = sess9.createProducer(topic1);
+      MessageProducer prod9 = sess9.createProducer(queue1);
       prod9.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod10 = sess10.createProducer(topic1);
+      MessageProducer prod10 = sess10.createProducer(queue1);
       prod10.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod11 = sess11.createProducer(topic1);
+      MessageProducer prod11 = sess11.createProducer(queue1);
       prod11.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod12 = sess12.createProducer(topic1);
+      MessageProducer prod12 = sess12.createProducer(queue1);
       prod12.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod13 = sess13.createProducer(topic1);
+      MessageProducer prod13 = sess13.createProducer(queue1);
       prod13.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod14 = sess14.createProducer(topic1);
+      MessageProducer prod14 = sess14.createProducer(queue1);
       prod14.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod15 = sess15.createProducer(topic1);
+      MessageProducer prod15 = sess15.createProducer(queue1);
       prod15.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod16 = sess16.createProducer(topic1);
+      MessageProducer prod16 = sess16.createProducer(queue1);
       prod16.setDeliveryMode(DeliveryMode.PERSISTENT);
+
       
-      //Receiving sessions
-      
-      Session sess17 = conn.createSession(true, Session.SESSION_TRANSACTED);
-      Session sess18 = conn.createSession(true, Session.SESSION_TRANSACTED);
-      Session sess19 = conn.createSession(true, Session.SESSION_TRANSACTED);
-      Session sess20 = conn.createSession(true, Session.SESSION_TRANSACTED);
-      
-      XASession sess21= ((XAConnection)conn).createXASession();
-      XASession sess22 = ((XAConnection)conn).createXASession();
-      XASession sess23 = ((XAConnection)conn).createXASession();
-      XASession sess24 = ((XAConnection)conn).createXASession();
-      
-      MessageConsumer cons1 = sess17.createConsumer(topic1);
-      MessageConsumer cons2 = sess18.createConsumer(topic1);
-      MessageConsumer cons3 = sess19.createConsumer(topic1);
-      MessageConsumer cons4 = sess20.createConsumer(topic1);
-      MessageConsumer cons5 = sess21.createConsumer(topic1);
-      MessageConsumer cons6 = sess22.createConsumer(topic1);
-      MessageConsumer cons7 = sess23.createConsumer(topic1);
-      MessageConsumer cons8 = sess24.createConsumer(topic1);
-      
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
 
       Runner[] runners = 
          new Runner[] {
             new TransactionalSender("prod1", sess1, prod1, NUM_NON_PERSISTENT_MESSAGES, 1, 1),
             new TransactionalSender("prod2", sess2, prod2, NUM_PERSISTENT_MESSAGES, 1, 1),
-            new TransactionalSender("prod3", sess3, prod3, NUM_NON_PERSISTENT_MESSAGES, 10, 5),
-            new TransactionalSender("prod4", sess4, prod4, NUM_PERSISTENT_MESSAGES, 10, 5),
-            new TransactionalSender("prod5", sess5, prod5, NUM_NON_PERSISTENT_MESSAGES, 50, 25),
-            new TransactionalSender("prod6", sess6, prod6, NUM_PERSISTENT_MESSAGES, 50, 25),
-            new TransactionalSender("prod7", sess7, prod7, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
-            new TransactionalSender("prod8", sess8, prod8, NUM_PERSISTENT_MESSAGES, 100, 25),            
+            new TransactionalSender("prod3", sess3, prod3, NUM_NON_PERSISTENT_MESSAGES, 10, 7),
+            new TransactionalSender("prod4", sess4, prod4, NUM_PERSISTENT_MESSAGES, 10, 7),
+            new TransactionalSender("prod5", sess5, prod5, NUM_NON_PERSISTENT_MESSAGES, 50, 21),
+            new TransactionalSender("prod6", sess6, prod6, NUM_PERSISTENT_MESSAGES, 50, 21),
+            new TransactionalSender("prod7", sess7, prod7, NUM_NON_PERSISTENT_MESSAGES, 100, 67),
+            new TransactionalSender("prod8", sess8, prod8, NUM_PERSISTENT_MESSAGES, 100, 67),            
             new Transactional2PCSender("prod9", sess9, prod9, NUM_NON_PERSISTENT_MESSAGES, 1, 1),
             new Transactional2PCSender("prod10", sess10, prod10, NUM_PERSISTENT_MESSAGES, 1, 1),
-            new Transactional2PCSender("prod11", sess11, prod11, NUM_NON_PERSISTENT_MESSAGES, 10, 5),
-            new Transactional2PCSender("prod12", sess12, prod12, NUM_PERSISTENT_MESSAGES, 10, 5),
-            new Transactional2PCSender("prod13", sess13, prod13, NUM_NON_PERSISTENT_MESSAGES, 50, 25),
-            new Transactional2PCSender("prod14", sess14, prod14, NUM_PERSISTENT_MESSAGES, 50, 25),
-            new Transactional2PCSender("prod15", sess15, prod15, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
-            new Transactional2PCSender("prod16", sess16, prod16, NUM_PERSISTENT_MESSAGES, 100, 25),            
-            
-            new TransactionalReceiver(sess17, cons1,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 1, 1, false),
-            new TransactionalReceiver(sess18, cons2,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 10, 5, false),
-            new TransactionalReceiver(sess19, cons3,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 50, 25, false),
-            new TransactionalReceiver(sess20, cons4,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
-
-            new Transactional2PCReceiver(sess21, cons5,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 1, 1, false),
-            new Transactional2PCReceiver(sess22, cons6,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 10, 5, false),
-            new Transactional2PCReceiver(sess23, cons7,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 50, 25, false),
-            new Transactional2PCReceiver(sess24, cons8,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false)
+            new Transactional2PCSender("prod11", sess11, prod11, NUM_NON_PERSISTENT_MESSAGES, 10, 7),
+            new Transactional2PCSender("prod12", sess12, prod12, NUM_PERSISTENT_MESSAGES, 10, 7),
+            new Transactional2PCSender("prod13", sess13, prod13, NUM_NON_PERSISTENT_MESSAGES, 50, 21),
+            new Transactional2PCSender("prod14", sess14, prod14, NUM_PERSISTENT_MESSAGES, 50, 21),
+            new Transactional2PCSender("prod15", sess15, prod15, NUM_NON_PERSISTENT_MESSAGES, 100, 67),
+            new Transactional2PCSender("prod16", sess16, prod16, NUM_PERSISTENT_MESSAGES, 100, 67),            
+            new Receiver(sessReceive, cons, 8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, false)
                        };
 
       runRunners(runners);
 
       conn.close();      
    }   
+   
+   
+   /*
+    * Now we try sending with multiple senders concurrently to multiple different queues
+    */
+   public void test_Multiple_MultipleQueues() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      XASession sessXP1 = ((XAConnection)conn).createXASession();
+      XASession sessXNP1 = ((XAConnection)conn).createXASession();
+      Session sessTP1 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP1 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP1 = sessXP1.createProducer(queue1);
+      prodXP1.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP1 = sessXNP1.createProducer(queue1);
+      prodXNP1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodTP1 = sessTP1.createProducer(queue1);
+      prodTP1.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP1 = sessTNP1.createProducer(queue1);
+      prodTNP1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP1 = sessNTP1.createProducer(queue1);
+      prodNTP1.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP1 = sessNTNP1.createProducer(queue1);
+      prodNTNP1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      XASession sessXP2 = ((XAConnection)conn).createXASession();
+      XASession sessXNP2 = ((XAConnection)conn).createXASession();
+      Session sessTP2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP2 = sessXP2.createProducer(queue2);
+      prodXP2.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP2 = sessXNP2.createProducer(queue2);
+      prodXNP2.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodTP2 = sessTP2.createProducer(queue2);
+      prodTP2.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP2 = sessTNP2.createProducer(queue2);
+      prodTNP2.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP2 = sessNTP2.createProducer(queue2);
+      prodNTP2.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP2 = sessNTNP2.createProducer(queue2);
+      prodNTNP2.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      XASession sessXP3 = ((XAConnection)conn).createXASession();
+      XASession sessXNP3 = ((XAConnection)conn).createXASession();
+      Session sessTP3 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP3 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP3 = sessXP3.createProducer(queue3);
+      prodXP3.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP3 = sessXNP3.createProducer(queue3);
+      prodXNP3.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodTP3 = sessTP3.createProducer(queue3);
+      prodTP3.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP3 = sessTNP3.createProducer(queue3);
+      prodTNP3.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP3 = sessNTP3.createProducer(queue3);
+      prodNTP3.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP3 = sessNTNP3.createProducer(queue3);
+      prodNTNP3.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      XASession sessXP4 = ((XAConnection)conn).createXASession();
+      XASession sessXNP4 = ((XAConnection)conn).createXASession();
+      Session sessTP4 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP4 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP4 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP4 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP4 = sessXP4.createProducer(queue4);
+      prodXP4.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP4 = sessXNP4.createProducer(queue4);
+      prodXNP4.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodTP4 = sessTP4.createProducer(queue4);
+      prodTP4.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP4 = sessTNP4.createProducer(queue4);
+      prodTNP4.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP4 = sessNTP4.createProducer(queue4);
+      prodNTP4.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP4 = sessNTNP4.createProducer(queue4);
+      prodNTNP4.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+ 
+      Session sessReceive1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+      MessageConsumer cons1 = sessReceive1.createConsumer(queue1);
+      Session sessReceive2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+      MessageConsumer cons2 = sessReceive2.createConsumer(queue2);
+      Session sessReceive3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+      MessageConsumer cons3 = sessReceive3.createConsumer(queue3);
+      Session sessReceive4 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
+      MessageConsumer cons4 = sessReceive4.createConsumer(queue4);
+      
+      Runner[] runners = new Runner[] 
+                                    {             
+            new Transactional2PCSender("prod1_1", sessXP1, prodXP1, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new Transactional2PCSender("prod1_2", sessXNP1, prodXNP1, NUM_NON_PERSISTENT_MESSAGES, 100, 33),            
+            new TransactionalSender("prod1_3", sessTP1, prodTP1, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod1_4", sessTNP1, prodTNP1, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod1_5", sessNTP1, prodNTP1, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod1_6", sessNTNP1, prodNTNP1, NUM_NON_PERSISTENT_MESSAGES),                      
+            
+            new Transactional2PCSender("prod2_1", sessXP2, prodXP2, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new Transactional2PCSender("prod2_2", sessXNP2, prodXNP2, NUM_NON_PERSISTENT_MESSAGES, 100, 33), 
+            new TransactionalSender("prod2_3", sessTP2, prodTP2, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod2_4", sessTNP2, prodTNP2, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod2_5", sessNTP2, prodNTP2, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod2_6", sessNTNP2, prodNTNP2, NUM_NON_PERSISTENT_MESSAGES),                
+            
+            new Transactional2PCSender("prod3_1", sessXP3, prodXP3, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new Transactional2PCSender("prod3_2", sessXNP3, prodXNP3, NUM_NON_PERSISTENT_MESSAGES, 100, 33), 
+            new TransactionalSender("prod3_3", sessTP3, prodTP3, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod3_4", sessTNP3, prodTNP3, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod3_5", sessNTP3, prodNTP3, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod3_6", sessNTNP3, prodNTNP3, NUM_NON_PERSISTENT_MESSAGES),
+            
+            new Transactional2PCSender("prod4_1", sessXP4, prodXP4, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new Transactional2PCSender("prod4_2", sessXNP4, prodXNP4, NUM_NON_PERSISTENT_MESSAGES, 100, 33), 
+            new TransactionalSender("prod4_3", sessTP4, prodTP4, NUM_PERSISTENT_MESSAGES, 100, 33),
+            new TransactionalSender("prod4_4", sessTNP4, prodTNP4, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+            new Sender("prod4_5", sessNTP4, prodNTP4, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod4_6", sessNTNP4, prodNTNP4, NUM_NON_PERSISTENT_MESSAGES),
+            
+            new Receiver(sessReceive1, cons1, 2 * NUM_PERSISTENT_MESSAGES + 2 * NUM_NON_PERSISTENT_MESSAGES, false),
+            new Receiver(sessReceive2, cons2, 2 * NUM_PERSISTENT_MESSAGES + 2 * NUM_NON_PERSISTENT_MESSAGES, false),
+            new Receiver(sessReceive3, cons3, 2 * NUM_PERSISTENT_MESSAGES + 2 * NUM_NON_PERSISTENT_MESSAGES, false),
+            new Receiver(sessReceive4, cons4, 2 * NUM_PERSISTENT_MESSAGES + 2 * NUM_NON_PERSISTENT_MESSAGES, false),
+                                    };
 
+      runRunners(runners);
+
+      conn.close();      
+   }   
 }
    
    

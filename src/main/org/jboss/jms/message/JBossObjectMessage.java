@@ -81,7 +81,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          long timestamp,
          byte priority,
          Map coreHeaders,
-         byte[] payloadAsByteArray,
+         byte[] payloadAsByteArray,         
+         int persistentChannelCount,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -90,6 +91,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
          HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
+            persistentChannelCount,
             jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
    }

@@ -79,7 +79,7 @@ public class ServerPeer extends ServiceMBeanSupport
    public static final String REMOTING_JMS_SUBSYSTEM = "JMS";
    
    //TODO - Make this configurable
-   private static final long CONNECTION_LEASE_PERIOD = 10000;
+   private static final long CONNECTION_LEASE_PERIOD = 20000;
       
    // Static --------------------------------------------------------
    
@@ -179,6 +179,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
       channelMapper = (ChannelMapper)mbeanServer.
          getAttribute(channelMapperObjectName, "Instance");
+      
+      channelMapper.setPersistenceManager(persistenceManagerDelegate);
 
       // start the rest of the internal components
       
@@ -380,7 +382,12 @@ public class ServerPeer extends ServiceMBeanSupport
 
    public String createQueue(String name, String jndiName) throws Exception
    {
-      return createDestination(true, name, jndiName);
+      return createDestinationDefault(true, name, jndiName);
+   }
+   
+   public String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      return createDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
    }
 
    public boolean destroyQueue(String name) throws Exception
@@ -390,8 +397,13 @@ public class ServerPeer extends ServiceMBeanSupport
 
    public String createTopic(String name, String jndiName) throws Exception
    {
-      return createDestination(false, name, jndiName);
+      return createDestinationDefault(false, name, jndiName);
    }
+   
+   public String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      return createDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
+   }   
 
    public boolean destroyTopic(String name) throws Exception
    {
@@ -580,9 +592,9 @@ public class ServerPeer extends ServiceMBeanSupport
       
       // install the connection listener that listens for failed connections
       
-//      mbeanServer.invoke(connectorName, "setLeasePeriod",
-//            new Object[] {new Long(CONNECTION_LEASE_PERIOD)},
-//            new String[] {"long"});
+      mbeanServer.invoke(connectorName, "setLeasePeriod",
+            new Object[] {new Long(CONNECTION_LEASE_PERIOD)},
+            new String[] {"long"});
 
       mbeanServer.invoke(connectorName, "addConnectionListener",
             new Object[] {connectionManager},
@@ -634,20 +646,22 @@ public class ServerPeer extends ServiceMBeanSupport
       }
    }
 
-   private String createDestination(boolean isQueue, String name, String jndiName) throws Exception
+   private String createDestinationDefault(boolean isQueue, String name, String jndiName) throws Exception
    {
       //
       // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
       // TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
       //        <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
       //
+      
+      //FIXME - Yes this is super-ugly - there must be an easier way of doing it
+      //also in LocalTestServer is doing the same thing in a slightly different way
+      //this should be combined
 
       String destType = isQueue ? "Queue" : "Topic";
       String className = "org.jboss.jms.server.destination." + destType;
       String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
       ObjectName on = new ObjectName(ons);
-
-      MBeanServer mbeanServer = getServer();
 
       String destinationMBeanConfig =
          "<mbean code=\"" + className + "\" " +
@@ -657,6 +671,14 @@ public class ServerPeer extends ServiceMBeanSupport
          "        <arg type=\"boolean\" value=\"true\"/>" +
          "    </constructor>" +
          "</mbean>";
+
+      return createDestinationInternal(destinationMBeanConfig, on, jndiName, -1, -1, -1);   
+   }
+   
+   private String createDestinationInternal(String destinationMBeanConfig, ObjectName on, String jndiName,
+         int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      MBeanServer mbeanServer = getServer();
 
       Element element = Util.stringToElement(destinationMBeanConfig);
 
@@ -674,6 +696,9 @@ public class ServerPeer extends ServiceMBeanSupport
       // inject dependencies
       mbeanServer.setAttribute(on, new Attribute("ServerPeer", getServiceName()));
       mbeanServer.setAttribute(on, new Attribute("JNDIName", jndiName));
+      mbeanServer.setAttribute(on, new Attribute("FullSize", new Integer(fullSize)));
+      mbeanServer.setAttribute(on, new Attribute("PageSize", new Integer(pageSize)));
+      mbeanServer.setAttribute(on, new Attribute("DownCacheSize", new Integer(downCacheSize)));
       mbeanServer.invoke(on, "create", new Object[0], new String[0]);
       mbeanServer.invoke(on, "start", new Object[0], new String[0]);
 
@@ -682,6 +707,35 @@ public class ServerPeer extends ServiceMBeanSupport
       //
       // end of TODO
       //
+   }
+   
+   private String createDestination(boolean isQueue, String name, String jndiName,
+         int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      //
+      // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
+      // TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
+      //        <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
+      //
+
+      String destType = isQueue ? "Queue" : "Topic";
+      String className = "org.jboss.jms.server.destination." + destType;
+      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
+      ObjectName on = new ObjectName(ons);
+
+      String destinationMBeanConfig =
+         "<mbean code=\"" + className + "\" " +
+         "       name=\"" + ons + "\" " +
+         "       xmbean-dd=\"xmdesc/" + destType + "-xmbean.xml\">\n" +
+         "    <constructor>" +
+         "        <arg type=\"boolean\" value=\"true\"/>" +
+         "    </constructor>" +
+         "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
+         "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
+         "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
+         "</mbean>";
+
+      return createDestinationInternal(destinationMBeanConfig, on, jndiName, fullSize, pageSize, downCacheSize);
    }
 
    private boolean destroyDestination(boolean isQueue, String name) throws Exception

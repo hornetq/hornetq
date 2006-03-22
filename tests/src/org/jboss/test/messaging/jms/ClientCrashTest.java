@@ -117,7 +117,7 @@ public class ClientCrashTest extends MessagingTestCase
       remoteServer.exit();
         
       //Wait for connection resources to be cleared up
-      Thread.sleep(30000);
+      Thread.sleep(60000);
            
       //See if we still have a connection with this id
       assertNull(cm.getConnection(remotingSessionId));            

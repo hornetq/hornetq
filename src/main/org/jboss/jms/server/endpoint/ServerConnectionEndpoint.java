@@ -54,7 +54,8 @@ import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.Client;
@@ -600,10 +601,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
    
 
-   protected void sendMessage(JBossMessage m, Transaction tx) throws JMSException
+   protected void sendMessage(JBossMessage jbm, Transaction tx) throws JMSException
    {
       // The JMSDestination header must already have been set for each message
-      JBossDestination jbDest = (JBossDestination)m.getJMSDestination();
+      JBossDestination jbDest = (JBossDestination)jbm.getJMSDestination();
 
       if (jbDest == null)
       {
@@ -620,11 +621,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // This allows the no-local consumers to filter out the messages that come from the same
       //  connection
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
-      m.setConnectionID(connectionID);
+      jbm.setConnectionID(connectionID);
       
-      Routable r = (Routable)m;
+      Message m = (Message)jbm;
     
-      if (trace) { log.trace("sending " + m + (tx == null ? " non-transactionally" : " transactionally on " + tx + " to the core destination " + jbDest.getName())); }
+      if (trace) { log.trace("sending " + jbm + (tx == null ? " non-transactionally" : " transactionally on " + tx + " to the core destination " + jbDest.getName())); }
       
       //If we are sending to a topic, then we *always* do the send in the context of a transaction,
       //in order to ensure that the message is delivered to all durable subscriptions (if any)
@@ -635,7 +636,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       //since all the inserts can be done in the same JDBC tx too.
       
       boolean internalTx = false;
-      if (r.isReliable() && tx == null && !coreDestination.isQueue())
+      if (m.isReliable() && tx == null && !coreDestination.isQueue())
       {
          try
          {
@@ -650,7 +651,24 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       try
       {         
-         Delivery d = coreDestination.handle(null, r, tx);
+         //We must reference the message *before* we send it the destination to be handled
+         //This is so we can guarantee that the message doesn't disappear from the store
+         //before the handling is complete.
+         //Each channel then takes copies of the reference if they decide to maintain it
+         //internally
+         
+         MessageReference ref = this.serverPeer.getMessageStoreDelegate().reference(m);
+         
+         Delivery d;
+         
+         try
+         {         
+            d = coreDestination.handle(null, ref, tx);         
+         }
+         finally
+         {
+            ref.releaseMemoryReference();
+         }
          
          if (internalTx)
          {
@@ -777,7 +795,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       //delivered in the tx
       
       //Need to cancel in reverse order in order to retain delivery order
-      
+        
       List acks = txState.getAcks();
       for (int i = acks.size() - 1; i >= 0; i--)
       {   

@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -185,6 +184,8 @@ public class ReferencingTest extends MessagingTestCase
       
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
+      ref.releaseMemoryReference();
+      
       m2.acknowledge();
       
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
@@ -220,6 +221,8 @@ public class ReferencingTest extends MessagingTestCase
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      
+      ref.releaseMemoryReference();
       
       m2.acknowledge();
       
@@ -257,6 +260,8 @@ public class ReferencingTest extends MessagingTestCase
       
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
+      ref.releaseMemoryReference();
+      
       sess.recover();
       
       TextMessage m3 = (TextMessage)cons.receive();
@@ -267,6 +272,8 @@ public class ReferencingTest extends MessagingTestCase
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      
+      ref.releaseMemoryReference();
             
       m2.acknowledge();
       
@@ -300,7 +307,12 @@ public class ReferencingTest extends MessagingTestCase
       assertEquals(m.getText(), m2.getText());
       
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
+      
+      assertEquals(2, ref.getInMemoryChannelCount());
+      
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      
+      ref.releaseMemoryReference();
       
       sess.commit();
       
@@ -335,6 +347,8 @@ public class ReferencingTest extends MessagingTestCase
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
+      ref.releaseMemoryReference();
+      
       sess.rollback();
       
       TextMessage m3 = (TextMessage)cons.receive();
@@ -344,6 +358,8 @@ public class ReferencingTest extends MessagingTestCase
       
       ref = store.reference(((MessageProxy)m3).getMessage().getMessageID());
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      
+      ref.releaseMemoryReference();
       
       sess.commit();
       
@@ -400,84 +416,7 @@ public class ReferencingTest extends MessagingTestCase
       assertNull(ref);
    }
    
-   public void testInStorage() throws Exception
-   {
-      MessageStore store = ServerManagement.getMessageStore();
       
-      Connection conn = cf.createConnection();
-      
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sess.createProducer(queue);
-      
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      MessageConsumer cons = sess.createConsumer(queue);
-      
-      conn.start();
-      
-      TextMessage m = sess.createTextMessage("wibble");
-      
-      prod.send(m);
-      
-      MessageReference ref = store.reference(((MessageProxy)m).getMessage().getMessageID());
-      assertNotNull(ref);
-      
-      assertTrue(((MessageProxy)m).getMessage().isInStorage());
-
-      assertEquals(1, ref.getChannelCount());
-      
-      
-      TextMessage m2 = (TextMessage)cons.receive();
-      
-      assertNotNull(m2);
-      assertEquals(m.getText(), m2.getText());
-      
-      assertFalse(((MessageProxy)m).getMessage().isInStorage());
-
-      assertEquals(0, ref.getChannelCount());
-      
-   }
-   
-   public void testInStorage2() throws Exception
-   {
-      MessageStore store = ServerManagement.getMessageStore();
-      
-      Connection conn = cf.createConnection();
-      
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sess.createProducer(queue);
-      
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      MessageConsumer cons = sess.createConsumer(queue);
-      
-      conn.start();
-      
-      TextMessage m = sess.createTextMessage("wibble");
-      
-      prod.send(m);
-      
-      MessageReference ref = store.reference(((MessageProxy)m).getMessage().getMessageID());
-      assertNotNull(ref);
-      
-      assertFalse(((MessageProxy)m).getMessage().isInStorage());
-
-      assertEquals(1, ref.getChannelCount());
-      
-      
-      TextMessage m2 = (TextMessage)cons.receive();
-      
-      assertNotNull(m2);
-      assertEquals(m.getText(), m2.getText());
-      
-      assertFalse(((MessageProxy)m).getMessage().isInStorage());
-
-      assertEquals(0, ref.getChannelCount());
-      
-   }
-   
 }
 
 

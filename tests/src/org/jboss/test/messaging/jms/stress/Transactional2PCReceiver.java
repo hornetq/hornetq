@@ -70,8 +70,7 @@ public class Transactional2PCReceiver extends Receiver
    
 
    public void run()
-   {      
-      
+   {            
       //Small pause so as not to miss any messages in a topic
       try
       {
@@ -84,17 +83,15 @@ public class Transactional2PCReceiver extends Receiver
       try
       {      
          int iterations = numMessages / commitSize;
-
+         
+         XidImpl xid = null;
+         
+         xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+            xaResource.start(xid, XAResource.TMNOFLAGS);
+         
          for (int outerCount = 0; outerCount < iterations; outerCount++)
          {
-            
-            XidImpl xid = null;
-            if (commitSize > 0)
-            {
-               xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
-               xaResource.start(xid, XAResource.TMNOFLAGS);
-            }
-                        
+                                                
             for (int innerCount = 0; innerCount < commitSize; innerCount++)
             {
                Message m = getMessage();
@@ -129,8 +126,8 @@ public class Transactional2PCReceiver extends Receiver
                   if (count.lastCommitted != msgCount.intValue() - 1)
                   {
                      log.error("Message out of sequence for " + prodName + ", expected " + (count.lastCommitted + 1) + ", actual " + msgCount);
-                     //failed = true;
-                     //return;
+                     failed = true;
+                     return;
                   }
                }
                count.lastCommitted = msgCount.intValue();
@@ -142,26 +139,21 @@ public class Transactional2PCReceiver extends Receiver
                   xaResource.end(xid, XAResource.TMSUCCESS);
                   xaResource.prepare(xid);
                   xaResource.commit(xid, false);
-                  
-                  if (rollbackSize > 0 && outerCount != iterations - 1)
-                  {
-                     //Starting new tx
-                     xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
-                     xaResource.start(xid, XAResource.TMNOFLAGS);
-
-                  }
+                                    
+                  //Starting new tx
+                  xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+                  xaResource.start(xid, XAResource.TMNOFLAGS);
+                 
                }
                
-               processingDone();
-            
+               processingDone();            
             }            
                         
             if (outerCount == iterations - 1)
             {
                break;
             }
-                        
-               
+                                       
             for (int innerCount = 0; innerCount < rollbackSize; innerCount++)
             {
                Message m = getMessage();
@@ -208,10 +200,17 @@ public class Transactional2PCReceiver extends Receiver
                   xaResource.end(xid, XAResource.TMSUCCESS);
                   xaResource.prepare(xid);
                   xaResource.rollback(xid);
+                  
+                  xid = new XidImpl("bq1".getBytes(), 1, new GUID().toString().getBytes());
+                  xaResource.start(xid, XAResource.TMNOFLAGS);
                }
                processingDone();
             }            
          }
+         
+         xaResource.end(xid, XAResource.TMSUCCESS);
+         xaResource.prepare(xid);
+         xaResource.commit(xid, false);
        
       }
       catch (Exception e)

@@ -83,8 +83,6 @@ public class JMSRemotingConnection
 
       thisAddress = InetAddress.getLocalHost().getHostAddress();
 
-      //bindPort = PortUtil.findFreePort("localhost");
-
       serverLocator = new InvokerLocator(serverLocatorURI);
 
       isMultiplex = serverLocator.getProtocol().equals("multiplex");

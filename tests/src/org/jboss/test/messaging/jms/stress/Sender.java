@@ -67,7 +67,6 @@ public class Sender extends Runner
             prod.send(m);
             count++;
          }
-         log.info("Sent" + numMessages);
       }
       catch (Exception e)
       {

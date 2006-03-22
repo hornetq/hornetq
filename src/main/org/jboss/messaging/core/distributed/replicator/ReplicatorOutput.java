@@ -339,7 +339,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
             MessageReference ref;
             if (r.isReference())
             {
-               ref = ((MessageReference)r).copy();
+               ref = ms.reference(r.getMessageID());
             }
             else
             {

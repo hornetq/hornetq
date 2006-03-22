@@ -83,10 +83,27 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    
    protected JDBCPersistenceManager createPM() throws Exception
    {
-      cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
-      cm.start();
-                 
-      return new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
+      log.info("Creating pm");
+      try
+      {
+         cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
+                  
+         JDBCPersistenceManager pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
+         
+         pm.start();
+         
+         cm.setPersistenceManager(pm);
+         
+         cm.start();
+         
+                    
+         return pm;
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         return null;
+      }
    }
   
    protected void checkEquivalent(Message m1, Message m2) throws Exception
@@ -140,6 +157,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
             i,
             coreHeaders,
             null,
+            0,
             i % 2 == 0 ? new GUID().toString() : null,
             genCorrelationID(i),
             i % 3 == 2 ? randByteArray(50) : null,

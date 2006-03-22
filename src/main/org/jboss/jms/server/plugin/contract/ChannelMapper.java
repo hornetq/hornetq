@@ -70,6 +70,9 @@ public interface ChannelMapper extends ServerPlugin
 
    boolean removeDurableSubscription(String clientID, String subscriptionName) throws JMSException;
 
-   public Set getSubscriptions(String clientID);
+   Set getSubscriptions(String clientID);
+   
+   //TODO Handle this dependency properly
+   void setPersistenceManager(PersistenceManager pm) throws Exception;
 
 }

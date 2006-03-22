@@ -155,8 +155,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       assertCorrectReference(ref, ms.getStoreID(), m);
   
-      ref.incrementChannelCount();
-      ref.decrementChannelCount();
+      ref.releaseMemoryReference();
 
       // the message store should be cleaned of everything that pertains to that message
 
@@ -215,8 +214,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {         
          assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
-         refs[i].incrementChannelCount();
-         refs[i].decrementChannelCount();
+         refs[i].releaseMemoryReference();
       }
 
       // there are no strong references to the message reference anymore, so the message store
@@ -298,8 +296,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
       
-      ref.incrementChannelCount();
-      ref.decrementChannelCount();
+      ref.releaseMemoryReference();
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
@@ -343,8 +340,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {         
          assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
-         refs[i].incrementChannelCount();
-         refs[i].decrementChannelCount();
+         refs[i].releaseMemoryReference();
       }
 
       // there are no strong references to the message reference anymore, so the message store
@@ -377,21 +373,19 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
       
-      ref.incrementChannelCount();
-      
       //Create another reference from that reference
-      MessageReference ref2 = ref.copy();
+      MessageReference ref2 = ms.reference(m.getMessageID());
       
-      ref2.incrementChannelCount();
-      
-      ref.decrementChannelCount();
+      ref.releaseMemoryReference();
       
       MessageReference ref3 = ms.reference(m.getMessageID());
       assertNotNull(ref3);
       
       assertCorrectReference(ref3, ms.getStoreID(), m);
       
-      ref2.decrementChannelCount();
+      ref2.releaseMemoryReference();
+      
+      ref3.releaseMemoryReference();
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
@@ -425,37 +419,17 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       assertNotNull(ref2);      
       assertCorrectReference(ref2, ms.getStoreID(), m);
         
-      //Acquire multiple times - this is what would happen with multiple deliveries
-      //for the same reference
-
-      ref.incrementChannelCount();
-      ref.incrementChannelCount();
-      ref.incrementChannelCount();
-      ref.incrementChannelCount();
-
-      
-      ref.decrementChannelCount();
-      
       MessageReference ref3 = ms.reference(ref.getMessageID());
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
       
-      ref.decrementChannelCount();
+      ref.releaseMemoryReference();
+      ref2.releaseMemoryReference();
+      ref3.releaseMemoryReference();
       
-      ref3 = ms.reference(ref.getMessageID());
-      assertNotNull(ref3);      
-      assertCorrectReference(ref3, ms.getStoreID(), m);
-      
-      ref.decrementChannelCount();
-      
-      ref3 = ms.reference(ref.getMessageID());
-      assertNotNull(ref3);      
-      assertCorrectReference(ref3, ms.getStoreID(), m);
-      
-      ref.decrementChannelCount();
-      
-      ref3 = ms.reference(ref.getMessageID());
-      assertNull(ref3);    
+      MessageReference ref4 = ms.reference(ref.getMessageID());
+ 
+      assertNull(ref4);    
       
    }
 
@@ -489,8 +463,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       // recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
-      ref.incrementChannelCount();
-      ref.decrementChannelCount();
+      ref.releaseMemoryReference();
 
       ref = ms.reference(m.getMessageID());
       assertNull(ref);
@@ -549,8 +522,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {         
          assertCorrectReference(refs[i], ms.getStoreID(), m[i]);
-         refs[i].incrementChannelCount();
-         refs[i].decrementChannelCount();
+         refs[i].releaseMemoryReference();
       }
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -586,8 +558,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
 
-      ref.incrementChannelCount();
-      ref.decrementChannelCount();
+      ref.releaseMemoryReference();
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
@@ -648,8 +619,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {         
-         refs[i].incrementChannelCount();
-         refs[i].decrementChannelCount();
+         refs[i].releaseMemoryReference();
       }
 
       // there are no strong references to the message reference anymore, so the message store
@@ -676,22 +646,18 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, ms.getStoreID(), m);
       
-      ref.incrementChannelCount();
-      
       //Create another reference from that reference
-      MessageReference ref2 = ref.copy();
-      
-      ref2.incrementChannelCount();
-      
-      ref.decrementChannelCount();
+      MessageReference ref2 = ms.reference(m);
+          
+      ref.releaseMemoryReference();
       
       MessageReference ref3 = ms.reference(m.getMessageID());
       assertNotNull(ref3);
-      ref3.decrementChannelCount();
+      ref3.releaseMemoryReference();
       
       assertCorrectReference(ref3, ms.getStoreID(), m);
       
-      ref2.decrementChannelCount();
+      ref2.releaseMemoryReference();
 
       // there's no strong reference to the unique message reference anymore, so the message store
       // should be cleaned of everything that pertains to that message
@@ -713,49 +679,23 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
       // non-recoverable store, non-reliable message, one message
       MessageReference ref = ms.reference(m);
-      ref.incrementChannelCount();
       assertCorrectReference(ref, ms.getStoreID(), m);
       
       MessageReference ref2 = ms.reference(ref.getMessageID());
-      ref2.incrementChannelCount();
       assertNotNull(ref2);      
       assertCorrectReference(ref2, ms.getStoreID(), m);
       
-      ref2.decrementChannelCount();
-      
-      //Acquire multiple times - this is what would happen with multiple deliveries
-      //for the same reference
-      ref.incrementChannelCount();
-      ref.incrementChannelCount();
-      ref.incrementChannelCount();
-      
-      ref.decrementChannelCount();
-      
       MessageReference ref3 = ms.reference(ref.getMessageID());
-      ref3.incrementChannelCount();
       assertNotNull(ref3);      
       assertCorrectReference(ref3, ms.getStoreID(), m);
-      ref3.decrementChannelCount();
       
-      ref.decrementChannelCount();
+      ref.releaseMemoryReference();
+      ref2.releaseMemoryReference();
+      ref3.releaseMemoryReference();
       
-      ref3 = ms.reference(ref.getMessageID());
-      ref3.incrementChannelCount();
-      assertNotNull(ref3);      
-      assertCorrectReference(ref3, ms.getStoreID(), m);
-      ref3.decrementChannelCount();
-      
-      ref.decrementChannelCount();
-      
-      ref3 = ms.reference(ref.getMessageID());
-      ref3.incrementChannelCount();
-      assertNotNull(ref3);      
-      assertCorrectReference(ref3, ms.getStoreID(), m);
-      ref.decrementChannelCount();
-      
-      ref.decrementChannelCount();
-      ref3 = ms.reference(ref.getMessageID());
-      assertNull(ref3);                
+      MessageReference ref4 = ms.reference(ref.getMessageID());
+            
+      assertNull(ref4);                
    }
 
    // Package protected ---------------------------------------------

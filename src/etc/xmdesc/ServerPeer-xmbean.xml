@@ -187,6 +187,33 @@
       </parameter>
       <return-type>java.lang.String</return-type>
    </operation>
+   
+   <operation>
+      <description>Creates a queue with the specified name/JNDI name and paging parameters
+         The corresponding destination service will be instantiated, created and started</description>
+      <name>createQueue</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <name>jndiName</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <name>fullSize</name>
+         <type>int</type>
+      </parameter>
+      <parameter>
+         <name>pageSize</name>
+         <type>int</type>
+      </parameter>
+      <parameter>
+         <name>downCacheSize</name>
+         <type>int</type>
+      </parameter>            
+      <return-type>java.lang.String</return-type>
+   </operation>   
 
    <operation>
       <description>Stops and destroys the corresponding destination service. If the destination was created dynamically (via createQueue()), then the service is also unregistered from the MBean server.</description>
@@ -209,8 +236,35 @@
          <name>jndiName</name>
          <type>java.lang.String</type>
       </parameter>
+      <parameter>
+         <name>fullSize</name>
+         <type>int</type>
+      </parameter>
+      <parameter>
+         <name>pageSize</name>
+         <type>int</type>
+      </parameter>
+      <parameter>
+         <name>downCacheSize</name>
+         <type>int</type>
+      </parameter>         
       <return-type>java.lang.String</return-type>
    </operation>
+   
+   <operation>
+      <description>Creates a topic with the specified name/JNDI name and paging parameters
+         The corresponding destination service will be instantiated, created and started</description>
+      <name>createTopic</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <name>jndiName</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>   
 
    <operation>
       <description>Stops and destroys the corresponding destination service. If can only destroy destinations that have been created programatically.</description>

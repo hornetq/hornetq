@@ -177,13 +177,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          
          delivery = new SimpleDelivery(observer, (MessageReference)reference);                  
          deliveries.put(new Long(reference.getMessageID()), delivery);
-                  
+               
          //We don't send the message as-is, instead we create a MessageProxy instance
          //This allows local fields such as deliveryCount to be handled by the proxy
          //but global data to be fielded by the same underlying Message instance.
          //This allows us to avoid expensive copying of messages
          MessageProxy md = JBossMessage.createThinDelegate(message, reference.getDeliveryCount());
-         
+              
          if (!grabbing)
          {
             //We want to asynchronously deliver the message to the consumer
@@ -203,6 +203,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          else
          {
             //The message is being "grabbed" and returned for receiveNoWait semantics
+            
             toGrab = md;
          }
          
@@ -303,7 +304,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       synchronized (channel)
       { 
          try
-         {                      
+         {                 
             grabbing = true;
             
             //This will always deliver a message (if there is one) on the same thread
@@ -465,7 +466,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    void cancelAllDeliveries() throws JMSException
    {
       if (trace) { log.trace(this + " cancels deliveries"); }
-            
+           
       //Need to cancel starting at the end of the list and working to the front
       //in order that the messages end up back in the correct order in the channel
       

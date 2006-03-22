@@ -60,6 +60,8 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    private long ordering;
    
+   private boolean released;
+   
    // Constructors --------------------------------------------------
 
    /**
@@ -124,28 +126,24 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    public Message getMessage()
    {
       return holder.getMessage();
-   }
-         
-   public void incrementChannelCount()
+   }         
+   
+   public void releaseMemoryReference()
    {
-      holder.incrementChannelCount();
+      if (released)
+      {
+         throw new IllegalStateException("Reference is already released");
+      }
+      holder.decrementInMemoryChannelCount();
+      
+      released = true;
    }
    
-   public void decrementChannelCount()
+   public int getInMemoryChannelCount()
    {
-      holder.decrementChannelCount();
+      return holder.getInMemoryChannelCount();
    }
-   
-   public int getChannelCount()
-   {
-      return holder.getChannelCount();
-   }
-   
-   public MessageReference copy()
-   {
-      return new SimpleMessageReference(this);
-   }
-   
+  
    public int getDeliveryCount()
    {
       return deliveryCount;
@@ -173,6 +171,15 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    public void setOrdering(long ordering)
    {
       this.ordering = ordering;
+   }
+   
+   public MessageReference copy()
+   {
+      SimpleMessageReference ref = new SimpleMessageReference(this);
+      
+      ref.holder.incrementInMemoryChannelCount();
+      
+      return ref;
    }
    
    // Public --------------------------------------------------------

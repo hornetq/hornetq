@@ -36,9 +36,13 @@ import org.jboss.messaging.core.Message;
 class MessageHolder
 {
    /*
-    * The number of channels that hold a reference to the message
+    * The number of channels *currently in memory* that hold a reference to the message
+    * We need this so we know when to evict the message from the store (when it reaches zero)
+    * Note that we also maintain a persistent channel count on the message itself.
+    * This is the total number of channels whether loaded in memory or not that hold a reference to the
+    * message and is needed to know when it is safe to remove the message from the db
     */
-   private int channelCount;
+   private int inMemoryChannelCount;
    
    private Message msg;
    
@@ -50,25 +54,25 @@ class MessageHolder
       this.ms = ms;
    }    
    
-   public synchronized void incrementChannelCount()
+   public synchronized void incrementInMemoryChannelCount()
    {
-      channelCount++;
+      inMemoryChannelCount++;
    }
    
-   public synchronized void decrementChannelCount()
+   public synchronized void decrementInMemoryChannelCount()
    {
-      channelCount--;      
+      inMemoryChannelCount--;      
       
-      if (channelCount == 0)
+      if (inMemoryChannelCount == 0)
       {
          // can remove the message from the message store
          ms.forgetMessage(msg.getMessageID());
       }
    }
    
-   public synchronized int getChannelCount()
+   public synchronized int getInMemoryChannelCount()
    {
-      return channelCount;
+      return inMemoryChannelCount;
    }
  
    public Message getMessage()

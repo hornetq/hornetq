@@ -463,6 +463,16 @@ public class LocalTestServer implements Server
    {
       deployDestination(true, name, jndiName);
    }
+   
+   public void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
+   }
+
+   public void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
+   }
 
    public void deployDestination(boolean isQueue, String name, String jndiName) throws Exception
    {
@@ -472,6 +482,26 @@ public class LocalTestServer implements Server
          "       xmbean-dd=\"xmdesc/" + (isQueue ? "Queue" : "Topic" ) + "-xmbean.xml\">" +
          (jndiName != null ? "    <attribute name=\"JNDIName\">" + jndiName + "</attribute>" : "") +
          "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "</mbean>";
+
+      MBeanConfigurationElement mbean =
+         new MBeanConfigurationElement(XMLUtil.stringToElement(config));
+      ObjectName deston = sc.registerAndConfigureService(mbean);
+      sc.invoke(deston, "create", new Object[0], new String[0]);
+      sc.invoke(deston, "start", new Object[0], new String[0]);
+   }
+   
+   public void deployDestination(boolean isQueue, String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "Queue" : "Topic") + "\"" +
+         "       name=\"jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + name + "\"" +
+         "       xmbean-dd=\"xmdesc/" + (isQueue ? "Queue" : "Topic" ) + "-xmbean.xml\">" +
+         (jndiName != null ? "    <attribute name=\"JNDIName\">" + jndiName + "</attribute>" : "") +
+         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
+         "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
+         "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
          "</mbean>";
 
       MBeanConfigurationElement mbean =

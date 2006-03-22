@@ -135,6 +135,8 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
       {      
          holder = addMessage(m);
       }
+      holder.incrementInMemoryChannelCount();
+      
 
       MessageReference ref = new SimpleMessageReference(holder, this);
       if (trace) { log.trace(this + " generated " + ref + " for " + m); }
@@ -152,14 +154,13 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
        
       MessageReference ref = new SimpleMessageReference(holder, this);
       if (trace) { log.trace(this + " generates " + ref + " for " + messageID); }
+      
+      holder.incrementInMemoryChannelCount();
+      
       return ref;      
    }
    
-   public boolean containsMessage(long messageId)
-   {
-      return messages.get(new Long(messageId)) != null;
-   }
-   
+
    public boolean forgetMessage(long messageID)
    {
       return messages.remove(new Long(messageID)) != null;

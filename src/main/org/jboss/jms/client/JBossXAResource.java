@@ -106,7 +106,7 @@ public class JBossXAResource implements XAResource
       {
          log.trace("Commit xid=" + xid + ", onePhase=" + onePhase + " " + this);
       }
-
+      
       rm.commit(xid, onePhase, connection);
    }
 
@@ -199,14 +199,11 @@ public class JBossXAResource implements XAResource
          {
             case TMNOFLAGS :
                if (convertTx)
-               {
-                  // it was an anonymous TX, TM is now taking control over it.
-                  // convert it over to a normal XID.
-                  
-                  //Is it legal to "convert" a tx?
-                  //Surely only work done between start and end is considered part of the tx?
-                  //Is it legal to consider work done before "start" as part of the tx?
-                                    
+               {    
+                  //If I commit/rollback the tx, then there is a short period of time between the AS (or whoever)
+                  //calling commit on the tx and calling start to enrolling the session in a new tx.
+                  //If the session has any listeners then in that period, messages can be received asychronously
+                  //but we want them to be received in the context of a tx, so we convert.
                   setCurrentTransactionId(rm.convertTx((LocalTxXid)sessionState.getCurrentTxId(), xid));
                }
                else

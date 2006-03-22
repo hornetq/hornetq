@@ -43,8 +43,10 @@ public interface Message extends Routable
    
    byte[] getPayloadAsByteArray();
    
-   boolean isInStorage();
+   void incPersistentChannelCount();
    
-   void setInStorage(boolean inStorage);
-
+   void decPersistentChannelCount();
+   
+   int getPersistentChannelCount();
+   
 }

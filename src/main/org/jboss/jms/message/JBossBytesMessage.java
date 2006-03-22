@@ -106,7 +106,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          long timestamp,
          byte priority,
          Map coreHeaders,
-         byte[] payloadAsByteArray,
+         byte[] payloadAsByteArray,         
+         int persistentChannelCount,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -115,6 +116,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
+            persistentChannelCount,
             jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
       

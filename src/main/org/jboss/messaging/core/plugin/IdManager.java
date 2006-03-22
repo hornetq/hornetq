@@ -77,7 +77,7 @@ public class IdManager
       nextBlock += size;
       
       IdBlock block = new IdBlock(low, nextBlock - 1);
-         
+                   
       return block;
    }
    

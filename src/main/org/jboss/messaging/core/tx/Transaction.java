@@ -56,7 +56,9 @@ public class Transaction
    
    protected Xid xid;
    
-   protected List callbacks;;
+   protected List callbacks;
+   
+   protected List keyedCallbacks;
    
    protected Map keyedCallbackMap;
    
@@ -107,6 +109,7 @@ public class Transaction
       this.id = id;
       state = STATE_ACTIVE;
       callbacks = new ArrayList();
+      keyedCallbacks = new ArrayList();
       keyedCallbackMap = new HashMap();
    }
    
@@ -135,7 +138,7 @@ public class Transaction
    
    public void addKeyedCallback(TxCallback callback, Object key)
    {
-      callbacks.add(callback);
+      keyedCallbacks.add(callback);
       
       keyedCallbackMap.put(key, callback);
    } 
@@ -156,7 +159,10 @@ public class Transaction
        
       boolean onePhase = state != STATE_PREPARED;
       
-      Iterator iter = callbacks.iterator();
+      List cb = new ArrayList(callbacks);
+      cb.addAll(keyedCallbacks);
+      
+      Iterator iter = cb.iterator();
       
       while (iter.hasNext())
       {
@@ -169,7 +175,7 @@ public class Transaction
       
       if (trace) { log.trace("committed " + this); }
       
-      iter = callbacks.iterator();
+      iter = cb.iterator();
       
       if (trace) { log.trace("executing after commit hooks " + this); }
       
@@ -182,6 +188,8 @@ public class Transaction
       
       callbacks = null;
       
+      keyedCallbacks = null;
+      
       keyedCallbackMap = null;      
       
       if (trace) { log.trace("commit process complete " + this); }
@@ -190,7 +198,11 @@ public class Transaction
    public void prepare() throws Exception
    {
       if (trace) { log.trace("executing before prepare hooks " + this); }
-      Iterator iter = callbacks.iterator();
+      
+      List cb = new ArrayList(callbacks);
+      cb.addAll(keyedCallbacks);
+      
+      Iterator iter = cb.iterator();
       
       while (iter.hasNext())
       {
@@ -203,7 +215,7 @@ public class Transaction
       
       if (trace) { log.trace("prepared " + this); }
       
-      iter = callbacks.iterator();
+      iter = cb.iterator();
       
       if (trace) { log.trace("executing after prepare hooks " + this); }
       
@@ -223,7 +235,10 @@ public class Transaction
       
       boolean onePhase = state != STATE_PREPARED;
       
-      Iterator iter = callbacks.iterator();
+      List cb = new ArrayList(callbacks);
+      cb.addAll(keyedCallbacks);
+      
+      Iterator iter = cb.iterator();
       
       while (iter.hasNext())
       {
@@ -236,7 +251,7 @@ public class Transaction
       
       if (trace) { log.trace("rolled back " + this); }
       
-      iter = callbacks.iterator();
+      iter = cb.iterator();
       
       if (trace) { log.trace("executing after prepare hooks " + this); }
       
@@ -248,6 +263,8 @@ public class Transaction
       }            
       
       callbacks = null;
+      
+      keyedCallbacks = null;
       
       keyedCallbackMap = null;
       

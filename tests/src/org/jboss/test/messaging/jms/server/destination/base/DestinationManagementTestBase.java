@@ -81,9 +81,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       super.tearDown();
    }
 
-   // TODO - why are these commented out?
-
-
    public void testDeployDestinationAdministratively() throws Exception
    {
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
@@ -104,13 +101,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       String jndiName = (isQueue() ? "/queue" : "/topic") + "/Kirkwood";
       String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
       assertEquals(jndiName, s);
-
-
-//      Set destinations = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
-//                                                      new Object[0], new String[0]);
-      
+  
       Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-
 
       assertEquals(1, destinations.size());
 
@@ -127,6 +119,69 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       assertEquals(serverPeerObjectName,
                    ServerManagement.getAttribute(destObjectName, "ServerPeer"));
+
+      // try to change it
+      ServerManagement.setAttribute(destObjectName, "ServerPeer",
+                                    "theresnosuchdomain:service=TheresNoSuchService");
+
+      assertEquals(serverPeerObjectName,
+                   ServerManagement.getAttribute(destObjectName, "ServerPeer"));
+
+      undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
+   }
+   
+   public void testDeployDestinationAdministrativelyWithParams() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+      
+      int fullSize = 77777;
+      
+      int pageSize = 1234;
+      
+      int downCacheSize = 789;
+
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
+         "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
+         "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
+         "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
+         "</mbean>";
+
+      config = adjustConfiguration(config);
+
+      ObjectName destObjectName = deploy(config);
+
+      assertEquals("Kirkwood", ServerManagement.getAttribute(destObjectName, "Name"));
+
+      String jndiName = (isQueue() ? "/queue" : "/topic") + "/Kirkwood";
+      String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
+      assertEquals(jndiName, s);
+  
+      Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
+
+      assertEquals(1, destinations.size());
+
+      if (isQueue())
+      {
+         Queue q = (Queue)destinations.iterator().next();
+         assertEquals("Kirkwood", q.getQueueName());
+         
+      }
+      else
+      {
+         Topic t = (Topic)destinations.iterator().next();
+         assertEquals("Kirkwood", t.getTopicName());
+      }
+
+      assertEquals(serverPeerObjectName,
+                   ServerManagement.getAttribute(destObjectName, "ServerPeer"));
+      
+      assertEquals(new Integer(fullSize), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      assertEquals(new Integer(pageSize), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      assertEquals(new Integer(downCacheSize), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
 
       // try to change it
       ServerManagement.setAttribute(destObjectName, "ServerPeer",
@@ -290,10 +345,86 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       Set set = ServerManagement.query(destObjectName);
       assertTrue(set.isEmpty());
+ 
+      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
 
-//      set = (Set)ServerManagement.invoke(serverPeerObjectName, "getDestinations",
-//                                         new Object[0], new String[0]);
+
+      assertTrue(set.isEmpty());
+
+      ic.close();
+
+   }
+   
+   public void testDeployDestinationProgramaticallyWithParams() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+      String destinationType = isQueue() ? "Queue" : "Topic";
+      String createMethod = "create" + destinationType;
+      String destroyMethod = "destroy" + destinationType;
+      String destinationName = "BlahBlah";
+      String expectedJNDIName = (isQueue() ? "/queue/" : "/topic/") + destinationName;
+      ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=" +
+                                                 destinationType +",name=" + destinationName);
+
+      int fullSize = 6565454;
       
+      int pageSize = 6565;
+      
+      int downCacheSize = 123;
+      
+      // deploy it
+
+      String jndiName = (String)ServerManagement.
+         invoke(serverPeerObjectName, createMethod,
+                new Object[] { destinationName, null, new Integer(fullSize), new Integer(pageSize), new Integer(downCacheSize)},
+                new String[] { "java.lang.String", "java.lang.String", "int", "int", "int"});
+
+      assertEquals(expectedJNDIName, jndiName);
+
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      if (isQueue())
+      {
+         Queue q = (Queue)ic.lookup(jndiName);
+         assertEquals(destinationName, q.getQueueName());
+      }
+      else
+      {
+         Topic t = (Topic)ic.lookup(jndiName);
+         assertEquals(destinationName, t.getTopicName());
+      }
+
+      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
+      assertEquals(expectedJNDIName,
+                   (String)ServerManagement.getAttribute(destObjectName, "JNDIName"));
+      
+      assertEquals(new Integer(fullSize), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      assertEquals(new Integer(pageSize), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      assertEquals(new Integer(downCacheSize), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+
+
+      // undeploy it
+
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+                                                   new Object[] { destinationName },
+                                                   new String[] { "java.lang.String" });
+
+      assertTrue(b.booleanValue());
+
+      try
+      {
+         ic.lookup(expectedJNDIName);
+         fail("should throw exception");
+      }
+      catch(NamingException e)
+      {
+         // OK
+      }
+
+      Set set = ServerManagement.query(destObjectName);
+      assertTrue(set.isEmpty());
+ 
       set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
 
 
@@ -350,8 +481,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       
       // Test the default values
       // FIXME hardcoded default values
-      assertEquals(new Integer(50000), ServerManagement.getAttribute(destObjectName, "FullSize"));
-      assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      assertEquals(new Integer(75000), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      assertEquals(new Integer(2000), ServerManagement.getAttribute(destObjectName, "PageSize"));
       assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
 
       ChannelMapper cm = ServerManagement.getChannelMapper();
@@ -360,26 +491,26 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       CoreDestination cd = cm.getCoreDestination(jbd);
       
       // FIXME hardcoded default values
-      assertEquals(50000, cd.getFullSize());
-      assertEquals(1000, cd.getPageSize());
+      assertEquals(75000, cd.getFullSize());
+      assertEquals(2000, cd.getPageSize());
       assertEquals(1000, cd.getDownCacheSize());
       
       // Try to change the values when destination lives, no effect
       // FIXME hardcoded default values
       ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
-      assertEquals(new Integer(50000), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      assertEquals(new Integer(75000), ServerManagement.getAttribute(destObjectName, "FullSize"));
       ServerManagement.setAttribute(destObjectName, "PageSize", "222");
-      assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      assertEquals(new Integer(2000), ServerManagement.getAttribute(destObjectName, "PageSize"));
       ServerManagement.setAttribute(destObjectName, "DownCacheSize", "33");
       assertEquals(new Integer(1000), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
       
       // Stop the destination and change the value then test them from MBean
       ServerManagement.invoke(destObjectName, "stop", null, null);
       // FIXME hardcoded default values
-      ServerManagement.setAttribute(destObjectName, "FullSize", "51111");
-      assertEquals(new Integer(51111), ServerManagement.getAttribute(destObjectName, "FullSize"));
-      ServerManagement.setAttribute(destObjectName, "PageSize", "1001");
-      assertEquals(new Integer(1001), ServerManagement.getAttribute(destObjectName, "PageSize"));
+      ServerManagement.setAttribute(destObjectName, "FullSize", "75111");
+      assertEquals(new Integer(75111), ServerManagement.getAttribute(destObjectName, "FullSize"));
+      ServerManagement.setAttribute(destObjectName, "PageSize", "2001");
+      assertEquals(new Integer(2001), ServerManagement.getAttribute(destObjectName, "PageSize"));
       ServerManagement.setAttribute(destObjectName, "DownCacheSize", "999");
       assertEquals(new Integer(999), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
  
@@ -388,8 +519,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       
       // XXX Must get core destination again! The old one is out-of-date
       cd = cm.getCoreDestination(jbd);
-      assertEquals(51111, cd.getFullSize());
-      assertEquals(1001, cd.getPageSize());
+      assertEquals(75111, cd.getFullSize());
+      assertEquals(2001, cd.getPageSize());
       assertEquals(999, cd.getDownCacheSize());
 
       undeployDestination("PageableAttributes");

@@ -116,9 +116,9 @@ public class ChannelState implements State
       {
          throw new IllegalArgumentException("pageSize must be greater than zero");
       }
-      if (downCacheSize < 0)
+      if (downCacheSize <= 0)
       {
-         throw new IllegalArgumentException("downCacheSize cannot be less than zero");
+         throw new IllegalArgumentException("downCacheSize must be greater than zero");
       }
                 
       this.channel = channel;
@@ -179,58 +179,36 @@ public class ChannelState implements State
             tx.addCallback(callback);
             if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
          }                  
-      }  
-      
-      if (recoverable && ref.isReliable())
+      }                
+        
+      if (ref.isReliable() && recoverable)
       {         
          //Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
+         
          pm.addReference(channel.getChannelID(), ref, tx);         
-      }                
+      }
+             
    }
-    
+          
    public boolean addReference(MessageReference ref) throws Throwable
    {
       boolean first;
-      
-      ref.incrementChannelCount();
-      
+             
       synchronized (refLock)
       {         
          ref.setOrdering(getNextReferenceOrdering());
-         
-         if (paging)
-         {         
-            // We are in paging mode so the ref must go into persistent storage
+               
+         if (ref.isReliable() && recoverable)
+         {
+            //Reliable message in a recoverable state - also add to db
+            if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
             
-            if (!ref.isReliable() && downCacheSize > 0)
-            {
-               addToDownCache(ref);
-            }
-            else
-            {
-               // Reliable (or no downcache) so need to persist now
-               pm.addReference(channel.getChannelID(), ref, null); 
-            }
-            
-            refsInStorage++;
-                     
-            first = false;        
-            
-            //We now decrement the channel count - since we don't want the message to stay in the store
-            ref.decrementChannelCount();
+            pm.addReference(channel.getChannelID(), ref, null);            
          }
-         else
-         {                  
-            first = addReferenceInMemory(ref);             
-            
-            if (recoverable && ref.isReliable())
-            {            
-               //Reliable message in a recoverable state - also add to db
-               if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
-               pm.addReference(channel.getChannelID(), ref, null);            
-            }      
-         }            
+         
+         first = addReferenceInMemory(ref);
+                               
       }
       return first; 
    }
@@ -240,7 +218,7 @@ public class ChannelState implements State
       synchronized (deliveryLock)
       {
          deliveries.add(d);
-   
+         
          if (trace) { log.trace(this + " added " + d + " to memory"); }
       }
    }
@@ -251,8 +229,8 @@ public class ChannelState implements State
     */
    public void cancelDelivery(Delivery del) throws Throwable
    {
-      if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
-      
+      if (trace) { log.trace(this + " cancelling " + del + " in memory"); } 
+        
       synchronized (deliveryLock)
       {         
          boolean removed = deliveries.remove(del);
@@ -267,6 +245,7 @@ public class ChannelState implements State
             //since it was never removed in the first place
             
             if (trace) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
+            
          }
          else
          {         
@@ -282,19 +261,9 @@ public class ChannelState implements State
                                  
                   MessageReference ref = (MessageReference)messageRefs.removeLast();
                   
-                  ref.decrementChannelCount();
+                  addToDownCache(ref);                                                                           
                   
-                  if (!ref.isReliable())
-                  {
-                     if (downCacheSize > 0)
-                     {
-                        addToDownCache(ref);
-                     }
-                     else
-                     {                     
-                        pm.addReference(channel.getChannelID(), ref, null); 
-                     }   
-                  }              
+                  refsInStorage++;
                }
             }
          }
@@ -303,7 +272,8 @@ public class ChannelState implements State
   
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
-      //Transactional so add a post commit callback to remove after tx commit
+      //Transactional so remove after tx commit
+
       RemoveDeliveryCallback callback = new RemoveDeliveryCallback(d);
       
       tx.addCallback(callback);
@@ -313,14 +283,15 @@ public class ChannelState implements State
       if (recoverable && d.getReference().isReliable())
       {         
          pm.removeReference(channel.getChannelID(), d.getReference(), tx);           
-      }           
+      }             
    }
    
    public void acknowledge(Delivery d) throws Throwable
-   {
-      d.getReference().decrementChannelCount();
-      
-      acknowledgeInMemory(d);   
+   {            
+      synchronized (deliveryLock)
+      {      
+         acknowledgeInMemory(d);
+      }
       
       if (recoverable && d.getReference().isReliable())
       {
@@ -329,7 +300,9 @@ public class ChannelState implements State
          //So the call to remove from the db is wasted.
          //We should add a flag to check this         
          pm.removeReference(channel.getChannelID(), d.getReference(), null);         
-      }           
+      } 
+      
+      d.getReference().releaseMemoryReference();      
    }
          
    public MessageReference removeFirstInMemory() throws Throwable
@@ -339,7 +312,7 @@ public class ChannelState implements State
          MessageReference result = (MessageReference)messageRefs.removeFirst();
          
          checkLoad();      
-         
+              
          return (MessageReference)result;      
       }
    }
@@ -348,7 +321,9 @@ public class ChannelState implements State
    {      
       synchronized (refLock)
       {
-         return (MessageReference)messageRefs.peekFirst();
+         MessageReference ref = (MessageReference)messageRefs.peekFirst();
+         
+         return ref;
       }
    }
     
@@ -433,13 +408,14 @@ public class ChannelState implements State
 
    public void load() throws Exception
    {
+      if (trace) { log.trace(this + " loading channel state"); }
       synchronized (refLock)
-      {
-         refsInStorage = pm.getNumberOfReferences(channel.getChannelID());
+      {         
+         refsInStorage = pm.getNumberOfUnloadedReferences(channel.getChannelID());                  
          
          if (refsInStorage > 0)
          {
-            load(refsInStorage, true);
+            load(Math.min(refsInStorage, fullSize));
          }
       }
    }
@@ -475,6 +451,38 @@ public class ChannelState implements State
       }           
    }
    
+   public int memoryRefCount()
+   {
+      synchronized (refLock)
+      {
+         return messageRefs.size();
+      }      
+   }
+   
+   public int memoryDeliveryCount()
+   {
+      synchronized (deliveryLock)
+      {
+         return deliveries.size();
+      }
+   }
+   
+   public int downCacheCount()
+   {
+      synchronized (refLock)
+      {
+         return downCache.size();
+      }
+   }
+   
+   public boolean isPaging()
+   {
+      synchronized (refLock)
+      {
+         return paging;
+      }
+   }
+   
    // Public --------------------------------------------------------
 
    public String toString()
@@ -485,10 +493,52 @@ public class ChannelState implements State
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+            
+   protected boolean addReferenceInMemory(MessageReference ref) throws Throwable
+   {
+      if (ref.isReliable() && !acceptReliableMessages)
+      {
+         throw new IllegalStateException("Reliable reference " + ref +
+                                         " cannot be added to non-recoverable state");
+      }
+      
+      boolean first;
+      
+      if (paging)
+      {             
+         addToDownCache(ref);        
+         
+         refsInStorage++;
+                  
+         first = false;                 
+      }
+      else
+      {                  
+         first = messageRefs.addLast(ref, ref.getPriority());
+
+         if (trace) { log.trace(this + " added " + ref + " non-transactionally in memory"); }
+
+         if (messageRefs.size() == fullSize)
+         {            
+            // We are full in memory - go into paging mode
+
+            if (trace) { log.trace(this + " going into paging mode"); }
+            
+            paging = true;
+         }                         
+      }   
+      
+      return first;
+   }
    
    protected void addToDownCache(MessageReference ref) throws Exception
    {
-      // Non reliable refs can be cached in a down cache and then flushed to storage in blocks
+      //If the down cache exists then refs are not spilled over immediately, but store in the cache
+      //and spilled over in one go when the next load is requested, or when it is full
+      
+      //Both non reliable and reliable references can go in the down cache, however only non-reliable
+      //references actually get added to storage, reliable references instead get their LOADED column
+      //updated to "N".
 
       downCache.add(ref);
 
@@ -503,36 +553,55 @@ public class ChannelState implements State
    
    protected void flushDownCache() throws Exception
    {
-      if (trace) { log.trace(this + " flushes downcache"); }
-
-      pm.addReferences(channel.getChannelID(), downCache);
+      if (trace) { log.trace(this + " flushing " + downCache.size() + " refs from downcache"); }
+                  
+      //Non persistent refs or persistent refs in a non recoverable state won't already be in the db
+      //so they need to be inserted
+      //Persistent refs in a recoverable state will already be there so need to be updated
       
-      downCache.clear();
-
-      if (trace) { log.trace(this + " cleared downcache"); }
-   }
-   
-   protected boolean addReferenceInMemory(MessageReference ref) throws Throwable
-   {
-      if (ref.isReliable() && !acceptReliableMessages)
+      List toUpdate = new ArrayList();
+      
+      List toAdd = new ArrayList();
+      
+      Iterator iter = downCache.iterator();
+      
+      while (iter.hasNext())
       {
-         throw new IllegalStateException("Reliable reference " + ref +
-                                         " cannot be added to non-recoverable state");
+         MessageReference ref = (MessageReference)iter.next();
+         
+         if (ref.isReliable() && recoverable)
+         {
+            toUpdate.add(ref);
+         }
+         else
+         {
+            toAdd.add(ref);
+         }
       }
-
-      boolean first = messageRefs.addLast(ref, ref.getPriority());
-
-      if (trace) { log.trace(this + " added " + ref + " non-transactionally in memory"); }
-
-      if (messageRefs.size() == fullSize)
-      {            
-         // We are full in memory - go into paging mode
-
-         if (trace) { log.trace(this + " going into paging mode"); }
-         paging = true;
+      
+      if (!toAdd.isEmpty())
+      {
+         pm.addReferences(channel.getChannelID(), toAdd, false);
       }
-            
-      return first;    
+      if (!toUpdate.isEmpty())
+      {
+         pm.updateReferencesNotLoaded(channel.getChannelID(), toUpdate);
+      }
+      
+      //Release in memory refs for the refs we just spilled
+      //Note! This must be done after the db inserts - to ensure message is still in memory
+      iter = downCache.iterator();
+      
+      while (iter.hasNext())
+      {
+         MessageReference ref = (MessageReference)iter.next();
+         
+         ref.releaseMemoryReference();
+      }
+           
+      downCache.clear();
+                  
+      if (trace) { log.trace(this + " cleared downcache"); }
    }
    
    protected void acknowledgeInMemory(Delivery d) throws Throwable
@@ -541,13 +610,10 @@ public class ChannelState implements State
       {
          throw new IllegalArgumentException("Can't acknowledge a null delivery");
       }
+             
+      boolean removed = deliveries.remove(d);
       
-      synchronized (deliveryLock)
-      {      
-         boolean removed = deliveries.remove(d);
-         
-         if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); } 
-      }
+      if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); }       
    }
          
    protected void removeCompletely(MessageReference r)
@@ -570,21 +636,27 @@ public class ChannelState implements State
       if (refsInStorage > 0)
       {         
          int numberLoadable = Math.min(refsInStorage, pageSize);
-               
-         if (messageRefs.size() == fullSize - numberLoadable)
+             
+         if (messageRefs.size() <= fullSize - numberLoadable)
          {
-            load(numberLoadable, false);                            
+            load(numberLoadable);  
          }         
+      }
+      else
+      {         
+         paging = false;         
       }
    }
    
-   protected void load(int number, boolean initial) throws Exception
-   {
+   protected void load(int number) throws Exception
+   {      
+      if (trace) { log.trace(this + " Loading " + number + " refs from storage"); }
+      
       //Must flush the down cache first
       flushDownCache();
       
       List refInfos = pm.getReferenceInfos(channel.getChannelID(), number);
-      
+       
       if (refInfos.isEmpty())
       {
          throw new IllegalStateException("Trying to page refs in from persitent storage - but can't find any!");
@@ -595,132 +667,134 @@ public class ChannelState implements State
          throw new IllegalStateException("Only loaded " + refInfos.size() + " references, wanted " + number);
       }
       
-      //Calculate which messages we need to load - we don't want to load messages if they are already
-      //in the store
-      
-      List msgIds = new ArrayList();
-      
-      Iterator iter = refInfos.iterator();            
-      
       MessageStore ms = channel.getMessageStore();
+            
+      Map refMap = new HashMap(refInfos.size());
       
+      List msgIdsToLoad = new ArrayList(refInfos.size());
+      
+      Iterator iter = refInfos.iterator();
+      
+      //Put the refs that we already have messages for in a map
       while (iter.hasNext())
-      {         
+      {
          PersistenceManager.ReferenceInfo info = (PersistenceManager.ReferenceInfo)iter.next();
          
          long msgId = info.getMessageId();
           
-         if (!ms.containsMessage(msgId))
+         MessageReference ref = ms.reference(msgId);
+         
+         if (ref != null)
+         {                                       
+            refMap.put(new Long(msgId), ref);
+         }
+         else
          {
-            msgIds.add(new Long(msgId));
+            //Add id to list of msg ids to load
+            msgIdsToLoad.add(new Long(msgId));
          }
       }
-         
-      //Create the messages
+      
+      //Load the messages (if any)
       List messages = null;
-      
-      if (!msgIds.isEmpty())
+      if (!msgIdsToLoad.isEmpty())
       {               
-         messages = pm.getMessages(msgIds);         
-      }
-      
-      Map msgMap = null;
-      
-      if (messages != null)
-      {      
-         iter = messages.iterator();
+         messages = pm.getMessages(msgIdsToLoad);         
          
-         msgMap = new HashMap();
+         if (messages.size() != msgIdsToLoad.size())
+         {
+            //Sanity check
+            throw new IllegalStateException("Did not load correct number of messages, wanted:" + msgIdsToLoad.size() + " but got:" + messages.size());
+         }
+         
+         //Create references for these messages and add them to the reference map
+         iter = messages.iterator();
          
          while (iter.hasNext())
          {
             Message m = (Message)iter.next();
             
-            msgMap.put(new Long(m.getMessageID()), m);        
+            //Message might actually be know to the store since we did the first check
+            //since might have been added by different channel
+            //in intervening period, but this is ok - the store knows to only return a reference
+            //to the pre-existing message
+            MessageReference ref = ms.reference(m);                        
+                                    
+            refMap.put(new Long(m.getMessageID()), ref);
          }
       }
       
-      //Create the references
-      iter = refInfos.iterator();
-      
+      //Now we have all the messages loaded and refs created we need to put the refs in the right order
+      //in the channel
+  
+      boolean loadedReliable = false;
+
       long firstOrdering = -1;
       long lastOrdering = -1;
       
+      List toRemove = new ArrayList();
+      
+      iter = refInfos.iterator();
       while (iter.hasNext())
-      {    
+      {
          PersistenceManager.ReferenceInfo info = (PersistenceManager.ReferenceInfo)iter.next();
          
          if (firstOrdering == -1)
          {
             firstOrdering = info.getOrdering();
          }
+         lastOrdering = info.getOrdering();
          
          long msgId = info.getMessageId();
          
-         Message m = null;
+         MessageReference ref = (MessageReference)refMap.get(new Long(msgId));
          
-         if (messages != null)
+         ref.setDeliveryCount(info.getDeliveryCount());
+         
+         ref.setOrdering(info.getOrdering());   
+         
+         boolean first = messageRefs.addLast(ref, ref.getPriority());   
+         
+         if (recoverable && ref.isReliable())
          {
-            m = (Message)msgMap.get(new Long(msgId));
-         }
-         
-         MessageReference ref;
-         
-         if (m == null)
-         {
-            //Store already has the message
-            
-            ref = ms.reference(msgId);
+            loadedReliable = true;
          }
          else
          {
-            ref = ms.reference(m);
-            
-            m.setInStorage(true);
+            //We put the non reliable refs (or reliable in a non-recoverable store)
+            //in a list to be removed
+            toRemove.add(ref);
          }
-             
-         ref.setDeliveryCount(info.getDeliveryCount());
          
-         lastOrdering = info.getOrdering();
-         
-         ref.setOrdering(lastOrdering);                  
-         
-         messageRefs.addLast(ref, ref.getPriority());              
-         
-         ref.incrementChannelCount();
-      }     
-      
-      if (!initial)
-      {
-         //Now we remove the non persistent references from storage
-         pm.removeNonPersistentMessageReferences(channel.getChannelID(), firstOrdering, lastOrdering);
-         
-         //And we also remove any messages corresponding to the non-persistent messages we just removed         
-         if (messages != null)
+         if (first)
          {
-            List msgsToRemove = new ArrayList();
-            
-            iter = messages.iterator();
-            
-            while (iter.hasNext())
-            {
-               Message m = (Message)iter.next();
-               
-               if (!m.isReliable())
-               {
-                  msgsToRemove.add(new Long(m.getMessageID()));
-               }
-            }
-            
-            pm.removeMessages(msgsToRemove);
+            channel.deliver(null);
          }
+      }
+             
+      if (!toRemove.isEmpty())
+      {
+         //Now we remove the references we loaded (only the non persistent or persistent in a non-recoverable
+         //store)
+         pm.removeReferences(channel.getChannelID(), toRemove);                  
+      }
+      
+      if (loadedReliable)
+      {
+         //If we loaded any reliable refs then we must mark them as loaded in the store
+         //otherwise they may get loaded again, the next time we do a load
+         //We can't delete them since they're reliable and haven't been acked yet
+         pm.updateReliableReferencesLoadedInRange(channel.getChannelID(), firstOrdering, lastOrdering);         
       }
       
       refsInStorage -= number;
-      
-      if (refsInStorage == 0)
+       
+      if (refsInStorage != 0 || messageRefs.size() == fullSize)
       {
-         if (trace) { log.trace(this + " exiting paging mode"); }
+         paging = true;
+      }
+      else
+      {
          paging = false;
       }         
    }  
@@ -734,6 +808,7 @@ public class ChannelState implements State
          
    // Inner classes -------------------------------------------------  
    
+
    private class AddReferenceCallback implements TxCallback
    {
       private MessageReference ref;
@@ -768,9 +843,7 @@ public class ChannelState implements State
          //We add the reference to the state
          
          if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-         
-         ref.incrementChannelCount();         
-         
+             
          boolean first = false;
          try
          {         
@@ -794,7 +867,7 @@ public class ChannelState implements State
       
       public void afterRollback(boolean onePhase)
       {
-         //NOOP
+         ref.releaseMemoryReference();
       }           
    }
    
@@ -813,8 +886,7 @@ public class ChannelState implements State
       }
       
       public void beforeCommit(boolean onePhase)
-      {         
-         //NOOP
+      {                                       
       }
       
       public void beforeRollback(boolean onePhase)
@@ -830,12 +902,15 @@ public class ChannelState implements State
       public void afterCommit(boolean onePhase)
       {
          if (trace) { log.trace(this + " removing " + del + " after commit"); }
-         
-         del.getReference().decrementChannelCount();
+                     
+         del.getReference().releaseMemoryReference();
          
          try
-         {
-            acknowledgeInMemory(del);
+         {            
+            synchronized (deliveryLock)
+            {
+               acknowledgeInMemory(del);
+            }
          }
          catch (Throwable t)
          {
@@ -848,5 +923,5 @@ public class ChannelState implements State
       {
          //NOOP
       }           
-   }   
+   }  
 }

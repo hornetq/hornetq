@@ -152,6 +152,8 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       {
          log.error("Failed to handle message", t);
          
+         ref.releaseMemoryReference();
+         
          return null;
       }
 
@@ -326,17 +328,19 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       // Convert to reference
       try
       {
-         if (r.isReference())
+         if (!r.isReference())
          {
-            // Make a copy - each channel has it's own copy of the reference - this is becaause
-            // the headers for a particular message may vary depending on what channel it is in -
-            // e.g. deliveryCount
-            ref = ((MessageReference)r).copy();
+            //We should only handle references in core.
+            //TODO enforce this in the signature of handle method            
+            //See http://jira.jboss.com/jira/browse/JBMESSAGING-255            
+            log.warn("Should only handle references");
+            //Remove this when this is enforced
+            ref = ms.reference((Message)r);
          }
          else
-         {
-            // Reference it for the first time
-            ref = ms.reference((Message)r);
+         {                     
+            //Each channel has it's own copy of the reference
+            ref = ((MessageReference)r).copy();
          }
       
          return ref;

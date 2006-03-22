@@ -200,11 +200,11 @@ public class MessageCallbackHandler
    public synchronized void handleMessage(MessageProxy md) throws HandleCallbackException
    {
       if (trace) { log.trace("receiving message " + md + " from the remoting layer"); }
-
+      
       if (closed)
       {
          log.warn("Consumer is closed - ignoring message");
-
+         
          // Note - we do not cancel the message if the handler is closed. If the handler is closed
          // then the corresponding server consumer endpoint is either already closed or about to
          // close, in which case its deliveries will be cancelled anyway.
@@ -237,13 +237,9 @@ public class MessageCallbackHandler
             //message using take() or poll() hence we can guarantee there is no chance any
             //messages can arrive and are left in the channel without being handled -  this is
             //why we use a SynchronousChannel :)
-            
-            //We do this in a while loop to deal with a possible race condition where
-            //waiting had been set but the main consumer thread hadn't quite blocked on the call
-            //to take or poll from the channel
-            
-            boolean handled = buffer.offer(processMessage(md), 500);
-                                             
+                        
+            boolean handled = buffer.offer(processMessage(md), 10000);
+                                                    
             if (!handled)
             {
                //There is no-one waiting for our message so we cancel it
@@ -624,8 +620,6 @@ public class MessageCallbackHandler
       {
          try
          {
-            if (trace) { log.trace("activating consumer endpoint"); }
-            //consumerDelegate.activate();
             MessageProxy m = (MessageProxy)consumerDelegate.getMessageNow(true);
             
             if (m != null)

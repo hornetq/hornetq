@@ -38,10 +38,10 @@ import javax.jms.XASession;
  *
  * StressQueueNotSameConnection.java,v 1.1 2006/01/17 12:15:33 timfox Exp
  */
-public class StressQueueNotSameConnection extends StressTestBase
+public class StressQueueNotSameConnectionTest extends StressTestBase
 {
    
-   public StressQueueNotSameConnection(String name)
+   public StressQueueNotSameConnectionTest(String name)
    {
       super(name);
    }
@@ -160,28 +160,6 @@ public class StressQueueNotSameConnection extends StressTestBase
    // with each permutation of the sender and receiver types
    //
    
-   public void test_Simple_TP_LX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(true, Session.SESSION_TRANSACTED);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 20, 3, true) };
-      
-      runRunners(runners);
-      
-      conn1.close();
-      conn2.close();
-   }
-   
    public void test_Simple_TP_LT() throws Exception
    {
       Connection conn1 = cf.createConnection();
@@ -267,26 +245,6 @@ public class StressQueueNotSameConnection extends StressTestBase
    }
    
    
-   public void test_Simple_TP_NLX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(true, Session.SESSION_TRANSACTED);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
    public void test_Simple_TP_NLT() throws Exception
    {
       Connection conn1 = cf.createConnection();
@@ -365,27 +323,6 @@ public class StressQueueNotSameConnection extends StressTestBase
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
             new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
-   public void test_Simple_TNP_LX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(true, Session.SESSION_TRANSACTED);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
       
       runRunners(runners);
       
@@ -477,27 +414,6 @@ public class StressQueueNotSameConnection extends StressTestBase
    }
    
    
-   public void test_Simple_TNP_NLX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(true, Session.SESSION_TRANSACTED);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
    public void test_Simple_TNP_NLT() throws Exception
    {
       Connection conn1 = cf.createConnection();
@@ -576,27 +492,6 @@ public class StressQueueNotSameConnection extends StressTestBase
       
       Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
             new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
-   public void test_Simple_NTP_LX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
       
       runRunners(runners);
       
@@ -688,27 +583,6 @@ public class StressQueueNotSameConnection extends StressTestBase
    }
    
    
-   public void test_Simple_NTP_NLX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
    public void test_Simple_NTP_NLT() throws Exception
    {
       Connection conn1 = cf.createConnection();
@@ -793,27 +667,6 @@ public class StressQueueNotSameConnection extends StressTestBase
       conn1.close(); conn2.close();      
    }
    
-   
-   public void test_Simple_NTNP_LX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 0, true) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
    
    public void test_Simple_NTNP_LT() throws Exception
    {
@@ -900,27 +753,6 @@ public class StressQueueNotSameConnection extends StressTestBase
    }
    
    
-   public void test_Simple_NTNP_NLX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      Session sessSend = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
    public void test_Simple_NTNP_NLT() throws Exception
    {
       Connection conn1 = cf.createConnection();
@@ -999,27 +831,6 @@ public class StressQueueNotSameConnection extends StressTestBase
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
             new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
-   public void test_Simple_XP_LX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      XASession sessSend = ((XAConnection)conn1).createXASession();
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
       
       runRunners(runners);
       
@@ -1111,27 +922,6 @@ public class StressQueueNotSameConnection extends StressTestBase
    }
    
    
-   public void test_Simple_XP_NLX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      XASession sessSend = ((XAConnection)conn1).createXASession();
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
    public void test_Simple_XP_NLT() throws Exception
    {
       Connection conn1 = cf.createConnection();
@@ -1217,27 +1007,6 @@ public class StressQueueNotSameConnection extends StressTestBase
    }
    
    
-   public void test_Simple_XNP_LX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      XASession sessSend = ((XAConnection)conn1).createXASession();
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
    public void test_Simple_XNP_LT() throws Exception
    {
       Connection conn1 = cf.createConnection();
@@ -1321,28 +1090,6 @@ public class StressQueueNotSameConnection extends StressTestBase
       
       conn1.close(); conn2.close();      
    }
-   
-   public void test_Simple_XNP_NLX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      conn2.start();
-      
-      XASession sessSend = ((XAConnection)conn1).createXASession();
-      XASession sessReceive = ((XAConnection)conn2).createXASession();
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
-      
-      runRunners(runners);
-      
-      conn1.close(); conn2.close();      
-   }
-   
    
    public void test_Simple_XNP_NLT() throws Exception
    {
@@ -1449,57 +1196,6 @@ public class StressQueueNotSameConnection extends StressTestBase
     */
    
    
-   
-   public void test_Multiple_LX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      Connection conn3 = cf.createConnection();
-      Connection conn4 = cf.createConnection();
-      Connection conn5 = cf.createConnection();
-      Connection conn6 = cf.createConnection();
-      Connection conn7 = cf.createConnection();
-      
-      conn7.start();
-      
-      XASession sessXP = ((XAConnection)conn1).createXASession(); 
-      XASession sessXNP = ((XAConnection)conn2).createXASession();
-      Session sessTP = conn3.createSession(true, Session.SESSION_TRANSACTED);
-      Session sessTNP = conn4.createSession(true, Session.SESSION_TRANSACTED);
-      Session sessNTP = conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sessNTNP = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prodXP = sessXP.createProducer(queue1);
-      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodXNP = sessXNP.createProducer(queue1);
-      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
-      MessageProducer prodTP = sessTP.createProducer(queue1);
-      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodTNP = sessTNP.createProducer(queue1);
-      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prodNTP = sessNTP.createProducer(queue1);
-      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
-      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      
-      XASession sessReceive = ((XAConnection)conn7).createXASession();      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      
-      Runner[] runners = new Runner[] {             
-            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
-            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
-            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
-            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),            
-            new Transactional2PCReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, true)
-      };
-      
-      runRunners(runners);
-      
-      conn1.close();conn2.close();conn3.close();conn4.close();conn5.close();conn6.close();conn7.close();      
-   }
    
    public void test_Multiple_LT() throws Exception
    {
@@ -1703,58 +1399,6 @@ public class StressQueueNotSameConnection extends StressTestBase
             new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
             new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),             
             new Receiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true)
-      };
-      
-      runRunners(runners);
-      
-      conn1.close();conn2.close();conn3.close();conn4.close();conn5.close();conn6.close();conn7.close();      
-   }
-   
-   public void test_Multiple_NLX() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      Connection conn3 = cf.createConnection();
-      Connection conn4 = cf.createConnection();
-      Connection conn5 = cf.createConnection();
-      Connection conn6 = cf.createConnection();
-      Connection conn7 = cf.createConnection();
-      
-      conn7.start();
-      
-      XASession sessXP = ((XAConnection)conn1).createXASession(); 
-      XASession sessXNP = ((XAConnection)conn2).createXASession();
-      Session sessTP = conn3.createSession(true, Session.SESSION_TRANSACTED);
-      Session sessTNP = conn4.createSession(true, Session.SESSION_TRANSACTED);
-      Session sessNTP = conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sessNTNP = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prodXP = sessXP.createProducer(queue1);
-      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodXNP = sessXNP.createProducer(queue1);
-      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
-      MessageProducer prodTP = sessTP.createProducer(queue1);
-      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodTNP = sessTNP.createProducer(queue1);
-      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prodNTP = sessNTP.createProducer(queue1);
-      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prodNTNP = sessNTNP.createProducer(queue1);
-      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      
-      
-      XASession sessReceive = ((XAConnection)conn7).createXASession();      
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
-      
-      Runner[] runners = new Runner[] {             
-            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 33), 
-            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 33),
-            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
-            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
-            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),            
-            new Transactional2PCReceiver(sessReceive, cons, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 33, false)
       };
       
       runRunners(runners);

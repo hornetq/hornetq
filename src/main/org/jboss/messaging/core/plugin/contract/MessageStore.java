@@ -6,11 +6,10 @@
  */
 package org.jboss.messaging.core.plugin.contract;
 
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Message;
-
 import java.io.Serializable;
-import java.util.List;
+
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 
 /**
  * An interface to a referencing/dereferencing message store.
@@ -57,24 +56,11 @@ public interface MessageStore extends ServerPlugin
    MessageReference reference(long messageID);
 
    /**
-    * Does the message store already contain the Message
-    * @param messageID - the id of the message
-    * @return true if the store already contains the message
-    * @throws Exception
-    */
-   boolean containsMessage(long messageID);
-   
-   /**
     * Remove a message from the store
     * 
     * @param messageID
     * @return
     */
    public boolean forgetMessage(long messageID);
-   
-   //only used in testing
-   public int size();
-   
-   public List messageIds();
    
 }

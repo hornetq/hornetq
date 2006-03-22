@@ -71,6 +71,7 @@ public class ObjectMessagePersistenceManagerTest extends MessagePersistenceManag
                i,
                coreHeaders,
                null,
+               0,
                i % 2 == 0 ? new GUID().toString() : null,
                genCorrelationID(i),
                i % 3 == 2 ? randByteArray(50) : null,

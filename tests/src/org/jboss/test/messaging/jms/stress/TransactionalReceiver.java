@@ -87,15 +87,13 @@ public class TransactionalReceiver extends Receiver
                if (m == null)
                {
                   log.error("Message is null");
+                  log.info("failed");
                   failed = true;
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-               
-               log.trace(this + "Received message(commit): " + prodName + ":" + msgCount);
-               
-               
+                
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
@@ -127,15 +125,12 @@ public class TransactionalReceiver extends Receiver
                
                if (innerCount == commitSize -1)
                {
-                  log.trace("Committing");
                   sess.commit();
                }
                
-               processingDone();
-            
+               processingDone();            
             }            
-            
-            
+                        
             if (outerCount == iterations - 1)
             {
                break;
@@ -148,13 +143,12 @@ public class TransactionalReceiver extends Receiver
                if (m == null)
                {
                   log.error("Message is null");
+                  failed = true;
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");               
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-               
-               log.trace("Received message(rollback): " + prodName + ":" + msgCount);
-               
+                 
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
@@ -185,7 +179,6 @@ public class TransactionalReceiver extends Receiver
                
                if (innerCount == rollbackSize -1)
                {
-                  log.trace("Rolling back");
                   sess.rollback();
                }
                processingDone();

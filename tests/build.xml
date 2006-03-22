@@ -188,6 +188,8 @@
 
    <property name="junit.timeout2" value="300000"/>
 
+   <property name="stress.timeout" value="4800000"/>
+
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
    <property name="junit.jvm.options" value=""/>
@@ -252,10 +254,22 @@
       <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
       <antcall target="remote-tests"/>
+      <!-- <antcall target="stress-tests"/> -->
+   </target>
+
+   <target name="tests-no-stress" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <antcall target="crash-tests"/>
+      <antcall target="invm-tests"/>
+      <antcall target="remote-tests"/>
+   </target>
+
+   <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <antcall target="invm-stress-tests"/>
+      <antcall target="remote-stress-tests"/>
    </target>
 
 
-   <target name="invm-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+  <target name="invm-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
       description="Runs all available tests an in-VM configuration">
 
       <antcall target="print-testclasspath"/>
@@ -294,6 +308,44 @@
                <exclude name="**/jms/CallbackFailureTest.class"/>
                <!-- TODO Exclude all distributed tests until after 1.0 release -->
                <exclude name="**/messaging/core/distributed/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+  <target name="invm-stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+      description="Runs all stress tests in an in-VM configuration">
+
+      <antcall target="print-testclasspath"/>
+
+      <junit printsummary="${junit.printsummary}"
+         fork="${junit.fork}"
+         includeantruntime="${junit.includeantruntime}"
+         haltonerror="${junit.haltonerror}"
+         haltonfailure="${junit.haltonfailure}"
+         showoutput="${junit.showoutput}"
+         timeout="${stress.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+         </classpath>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+            todir="${junit.batchtest.todir}"
+            haltonfailure="${junit.batchtest.haltonfailure}"
+            haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/jms/stress/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -351,14 +403,75 @@
             haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/messaging/jms/**/*Test.class"/>
-               <exclude name="**/jms/stress/**"/>
+               <include name="org/jboss/test/messaging/jms/**/*Test.class"/>
+               <exclude name="org/jboss/test/messaging/jms/stress/**"/>
                <exclude name="org/jboss/test/messaging/jms/server/**"/>
                <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
                <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
-               <exclude name="**/jms/ClientCrashTest.class"/>
-               <exclude name="**/jms/CallbackFailureTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/ClientCrashTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/CallbackFailureTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
+   </target>
+
+   <target name="remote-stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+      description="Runs remotely all stress tests for which it makes sense to run remotely">
+
+      <antcall target="stop-rmi-server"/>
+      <antcall target="start-rmi-server"/>
+      <mkdir dir="${build.tests.reports}"/>
+      <antcall target="print-testclasspath"/>
+
+      <junit printsummary="${junit.printsummary}"
+         fork="${junit.fork}"
+         includeantruntime="yes"
+         haltonerror="${junit.haltonerror}"
+         haltonfailure="${junit.haltonfailure}"
+         showoutput="${junit.showoutput}"
+         timeout="${stress.timeout}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath>
+            <pathelement location="${module.root}/etc"/>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+            <pathelement location="${module.root}/output/classes"/>
+
+            <!-- Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+            <!--
+            <path refid="jboss.test.classpath"/>
+            -->
+         </classpath>
+
+         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
+
+         <sysproperty key="messaging-test-configuration" value="Remote"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+
+         <batchtest fork="${junit.batchtest.fork}"
+            todir="${junit.batchtest.todir}"
+            haltonfailure="${junit.batchtest.haltonfailure}"
+            haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="org/jboss/test/messaging/jms/stress/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

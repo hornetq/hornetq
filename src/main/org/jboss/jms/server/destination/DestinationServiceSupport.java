@@ -27,8 +27,8 @@ import javax.management.ObjectName;
 public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
-   private static final int FULL_SIZE = 50000;
-   private static final int PAGE_SIZE = 1000;
+   private static final int FULL_SIZE = 75000;
+   private static final int PAGE_SIZE = 2000;
    private static final int DOWN_CACHE_SIZE = 1000;
 
    // Static --------------------------------------------------------
@@ -97,7 +97,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
                                   serverPeer.getPersistenceManagerDelegate(), fullSize,
                                   pageSize, downCacheSize);
 
-         log.info(this + " started");
+         log.info(this + " started, fullSize=" + fullSize + ", pageSize=" + pageSize + ", downCacheSize=" + downCacheSize);
       }
       catch (Exception e)
       {

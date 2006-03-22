@@ -133,6 +133,16 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       server.deployTopic(name, jndiName);
    }
+   
+   public void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
+   }
+
+   public void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   {
+      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
+   }
 
    public void deployConnectionFactory(String objectName, String[] jndiBindings) throws Exception
    {

@@ -91,6 +91,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          byte priority,
          Map coreHeaders,
          byte[] payloadAsByteArray,
+         int persistentChannelCount,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -99,6 +100,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
          HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
+            persistentChannelCount,
             jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
    }

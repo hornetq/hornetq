@@ -128,6 +128,8 @@ public interface Server extends Remote
 
    void deployTopic(String name, String jndiName) throws Exception;
    void deployQueue(String name, String jndiName) throws Exception;
+   void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception;
+   void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception;
    void undeployDestination(boolean isQueue, String name) throws Exception;
 
    void deployConnectionFactory(String objectName, String[] jndiBindings) throws Exception;
