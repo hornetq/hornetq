@@ -672,10 +672,11 @@ public class ServerPeer extends ServiceMBeanSupport
          "    </constructor>" +
          "</mbean>";
 
-      return createDestinationInternal(destinationMBeanConfig, on, jndiName, -1, -1, -1);   
+      return createDestinationInternal(destinationMBeanConfig, on, jndiName, false, -1, -1, -1);   
    }
    
    private String createDestinationInternal(String destinationMBeanConfig, ObjectName on, String jndiName,
+         boolean params,
          int fullSize, int pageSize, int downCacheSize) throws Exception
    {
       MBeanServer mbeanServer = getServer();
@@ -696,9 +697,12 @@ public class ServerPeer extends ServiceMBeanSupport
       // inject dependencies
       mbeanServer.setAttribute(on, new Attribute("ServerPeer", getServiceName()));
       mbeanServer.setAttribute(on, new Attribute("JNDIName", jndiName));
-      mbeanServer.setAttribute(on, new Attribute("FullSize", new Integer(fullSize)));
-      mbeanServer.setAttribute(on, new Attribute("PageSize", new Integer(pageSize)));
-      mbeanServer.setAttribute(on, new Attribute("DownCacheSize", new Integer(downCacheSize)));
+      if (params)
+      {
+         mbeanServer.setAttribute(on, new Attribute("FullSize", new Integer(fullSize)));
+         mbeanServer.setAttribute(on, new Attribute("PageSize", new Integer(pageSize)));
+         mbeanServer.setAttribute(on, new Attribute("DownCacheSize", new Integer(downCacheSize)));
+      }
       mbeanServer.invoke(on, "create", new Object[0], new String[0]);
       mbeanServer.invoke(on, "start", new Object[0], new String[0]);
 
@@ -735,7 +739,7 @@ public class ServerPeer extends ServiceMBeanSupport
          "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
          "</mbean>";
 
-      return createDestinationInternal(destinationMBeanConfig, on, jndiName, fullSize, pageSize, downCacheSize);
+      return createDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize, pageSize, downCacheSize);
    }
 
    private boolean destroyDestination(boolean isQueue, String name) throws Exception
