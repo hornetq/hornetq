@@ -21,8 +21,6 @@
 */
 package org.jboss.test.messaging.jms.message.foreign;
 
-import java.util.HashMap;
-
 import javax.jms.Message;
 
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
@@ -30,9 +28,9 @@ import org.jboss.test.messaging.jms.message.base.MessageTestBase;
 
 
 /**
- * 
+ *
  * Tests the delivery/receipt of a foreign message
- * 
+ *
  *
  * @author <a href="mailto:a.walker@base2group.com>Aaron Walker</a>
  * @version <tt>$Revision$</tt>
@@ -45,7 +43,7 @@ public class ForeignMessageTest extends MessageTestBase
     {
         super(name);
     }
-    
+
     public void setUp() throws Exception
     {
        super.setUp();
@@ -57,12 +55,12 @@ public class ForeignMessageTest extends MessageTestBase
        super.tearDown();
        message = null;
     }
- 
+
     protected Message createForeignMessage() throws Exception
     {
         SimpleJMSMessage m = new SimpleJMSMessage();
         log.debug("creating JMS Message type " + m.getClass().getName());
-        
+
         return m;
     }
 }

@@ -142,7 +142,7 @@ public class ProducerAspect
 
       if (destination == null)
       {
-         //Use destination from producer
+         // use destination from producer
          destination = theState.getDestination();
          
          if (destination == null)
@@ -154,29 +154,33 @@ public class ProducerAspect
       }
       else
       {
-         //If a default destination was already specified then this must be same destination as that
-         //specified in the arguments
-         //Destination defaultDestination = state.destination;
-         
+         // if a default destination was already specified then this must be same destination as
+         // that specified in the arguments
+
          if (theState.getDestination() != null && !theState.getDestination().equals(destination))
          {
-            throw new UnsupportedOperationException("Where a default destination is specified for the sender " +
-                                                    "and a destination is specified in the arguments to the " +
-                                                    "send, these destinations must be equal");               
+            throw new UnsupportedOperationException("Where a default destination is specified " +
+                                                    "for the sender and a destination is " +
+                                                    "specified in the arguments to the send, " +
+                                                    "these destinations must be equal");
          }
       }
 
       m.setJMSDestination(destination);
-      
+
       JBossMessage toSend;
+      boolean foreign = false;
+
       if (!(m instanceof MessageProxy))
       {
-         //It's a foreign message
+         // it's a foreign message
+
+         foreign = true;
          
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
          // a message whose implementation is not one of its own.
 
-         // Create a matching JBossMessage Type from JMS Type
+         // create a matching JBossMessage Type from JMS Type
          if(m instanceof BytesMessage)
          {
             toSend = new JBossBytesMessage((BytesMessage)m,0);
@@ -201,18 +205,19 @@ public class ProducerAspect
          {
             toSend = new JBossMessage(m, 0);
          }
+
          toSend.doAfterSend();
       }
       else
       {
-         //Get the actual message
+         // get the actual message
          MessageProxy del = (MessageProxy)m;
          toSend = del.getMessage();
          toSend.doAfterSend();
          del.setSent();
       }
       
-      //Set the id
+      // set the message ID
       
       ConnectionState cState = getConnectionState(invocation);
       
@@ -220,10 +225,16 @@ public class ProducerAspect
       
       toSend.setJMSMessageID(null);
       toSend.setMessageId(id);
+
+      // now that we know the messageID, set it also on the foreign message, if is the case
+      if (foreign)
+      {
+         m.setJMSMessageID(toSend.getJMSMessageID());
+      }
       
       SessionState sState = getSessionState(invocation);
               
-      // We now invoke the send(Message) method on the connection
+      // we now invoke the send(Message) method on the connection
       ((SessionDelegate)sState.getDelegate()).send(toSend);
       
       return null;

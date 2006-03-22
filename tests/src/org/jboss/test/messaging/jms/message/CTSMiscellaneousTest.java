@@ -32,6 +32,7 @@ import javax.jms.Session;
 import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.BytesMessage;
+import javax.jms.Message;
 import javax.naming.InitialContext;
 
 /**
@@ -42,7 +43,7 @@ import javax.naming.InitialContext;
  *
  * $Id$
  */
-public class TCKForeignMessageTest extends MessagingTestCase
+public class CTSMiscellaneousTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -54,7 +55,7 @@ public class TCKForeignMessageTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public TCKForeignMessageTest(String name)
+   public CTSMiscellaneousTest(String name)
    {
       super(name);
    }
@@ -79,6 +80,26 @@ public class TCKForeignMessageTest extends MessagingTestCase
       c.start();
 
       BytesMessage bm = (BytesMessage)cons.receive();
+      assertNotNull(bm);
+
+      c.close();
+   }
+
+   public void testJMSMessageIDChanged() throws Exception
+   {
+      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Connection c =  cf.createConnection();
+      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Queue queue = (Queue)ic.lookup("/queue/Queue");
+      MessageProducer p = s.createProducer(queue);
+
+      Message m = new SimpleJMSMessage();
+      m.setJMSMessageID("something");
+
+      p.send(m);
+
+      assertFalse("something".equals(m.getJMSMessageID()));
 
       c.close();
    }
