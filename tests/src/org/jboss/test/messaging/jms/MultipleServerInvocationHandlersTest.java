@@ -80,7 +80,7 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
       assertTrue(subsystems.contains(ServerPeer.REMOTING_JMS_SUBSYSTEM));
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
+      Queue queue = (Queue)ic.lookup("/queue/MultipleServerInvocationHandlerTestQueue");
 
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -137,7 +137,7 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
       // has more than one ServerInvocationHandler instance
       ServerManagement.startServerPeer();
 
-      ServerManagement.deployQueue("Queue");
+      ServerManagement.deployQueue("MultipleServerInvocationHandlerTestQueue");
 
       log.debug("setup done");
    }
@@ -146,7 +146,7 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
    {
       // remove the test invocation handler
       ServerManagement.removeServerInvocationHandler("DEFAULT_INVOCATION_HANDLER");
-      ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployQueue("MultipleServerInvocationHandlerTestQueue");
       ic.close();
       super.tearDown();
    }

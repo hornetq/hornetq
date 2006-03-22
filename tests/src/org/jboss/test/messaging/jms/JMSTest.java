@@ -69,8 +69,7 @@ public class JMSTest extends MessagingTestCase
 
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       
-      ServerManagement.deployTopic("Topic");
-      ServerManagement.deployQueue("Queue");
+      ServerManagement.deployQueue("JMSTestQueue");
 
 
       log.debug("setup done");
@@ -78,8 +77,7 @@ public class JMSTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployQueue("JMSTestQueue");
 
       ic.close();
 
@@ -90,7 +88,7 @@ public class JMSTest extends MessagingTestCase
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
 
       Connection conn = cf.createConnection();
 
@@ -124,7 +122,7 @@ public class JMSTest extends MessagingTestCase
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
 
       Connection conn = cf.createConnection();
 
@@ -158,7 +156,7 @@ public class JMSTest extends MessagingTestCase
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
 
       Connection conn = cf.createConnection();
 
