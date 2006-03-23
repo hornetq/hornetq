@@ -31,7 +31,7 @@ import org.jboss.jms.message.MessageProxy;
 /**
  * Represents the set of methods from the ConsumerDelegate that are handled on the server.
  * The rest of the methods are handled in the advice stack.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -40,12 +40,15 @@ import org.jboss.jms.message.MessageProxy;
 public interface ConsumerEndpoint extends Closeable
 {
    void cancelMessage(long messageID) throws JMSException;
-   
+
    void cancelMessages(List messageIDs) throws JMSException;
-   
+
    MessageProxy getMessageNow(boolean wait) throws JMSException;
-   
+
    void activate() throws JMSException;
-   
-   long deactivate() throws JMSException;   
+
+   /**
+    * @return the last message ID delivered to the client consumer
+    */
+   long deactivate() throws JMSException;
 }
