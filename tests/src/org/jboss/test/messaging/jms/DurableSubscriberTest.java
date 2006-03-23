@@ -37,6 +37,7 @@ import javax.jms.TextMessage;
 import javax.jms.Message;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
+import javax.jms.InvalidSelectorException;
 import java.util.Set;
 
 
@@ -53,7 +54,7 @@ public class DurableSubscriberTest extends MessagingTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected InitialContext ic;
@@ -443,6 +444,25 @@ public class DurableSubscriberTest extends MessagingTestCase
       assertNull(ds.receive(1000));
 
       conn.close();
+   }
+
+   public void testInvalidSelectorException() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      Topic topic = (Topic)ic.lookup("/topic/Topic");
+      Connection c = cf.createConnection();
+      c.setClientID("sofiavergara");
+      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try
+      {
+         s.createDurableSubscriber(topic, "mysubscribption", "=TEST 'test'", true);
+         fail("this should fail");
+      }
+      catch(InvalidSelectorException e)
+      {
+         // OK
+      }
    }
 
    // Package protected ---------------------------------------------

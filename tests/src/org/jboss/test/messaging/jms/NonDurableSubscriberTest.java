@@ -110,6 +110,7 @@ public class NonDurableSubscriberTest extends MessagingTestCase
    {
       TopicConnectionFactory cf = (TopicConnectionFactory)ic.lookup("ConnectionFactory");
       TopicConnection conn = cf.createTopicConnection();
+      conn.setClientID("sofiavergara");
 
       TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 

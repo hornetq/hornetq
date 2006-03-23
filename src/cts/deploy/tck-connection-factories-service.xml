@@ -6,6 +6,12 @@
           name="jboss.messaging.destination:service=ConnectionFactory,deployment=CTS"
           xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+
+      <constructor>
+         <!-- default ClientID -->
+         <arg type="java.lang.String" value="tck.client" />
+      </constructor>
+
       <attribute name="JNDIBindings">
          <bindings>
             <binding>/jms/QueueConnectionFactory</binding>

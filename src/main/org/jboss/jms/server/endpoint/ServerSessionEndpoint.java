@@ -473,13 +473,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       String clientID = connectionEndpoint.getClientID();
 
-      // this method has to throw an InvalidDestinationException "if an invalid subscription name is
-      // specified". Arguably, not having a valid clientID falls into the same category. TCK tests
-      // this behavior anyway.
-
       if (clientID == null)
       {
-         throw new InvalidDestinationException("null clientID");
+         throw new JMSException("null clientID on connection");
       }
 
       CoreDurableSubscription subscription =

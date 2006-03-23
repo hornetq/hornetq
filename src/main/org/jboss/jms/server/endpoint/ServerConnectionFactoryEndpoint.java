@@ -67,7 +67,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
     *        JNDI.
     */
    public ServerConnectionFactoryEndpoint(int id, ServerPeer serverPeer,
-                                          String defaultClientID, JNDIBindings jndiBindings)
+                                          String defaultClientID,
+                                          JNDIBindings jndiBindings)
    {
       this.serverPeer = serverPeer;
       this.clientID = defaultClientID;

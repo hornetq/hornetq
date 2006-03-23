@@ -126,7 +126,7 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       qc.start();
 
       TextMessage m = qs.createTextMessage();
-      m.setText("something");
+      m.setText("one");
       m.setBooleanProperty("targetMessage", false);
 
       QueueSender qsender = qs.createSender(queue);
@@ -135,15 +135,16 @@ public class CTSMiscellaneousTest extends MessagingTestCase
 
       qsender.send(m);
 
+      m.setText("two");
       m.setBooleanProperty("targetMessage", true);
 
       log.info("sending second message");
 
       qsender.send(m);
 
-      TextMessage rm = (TextMessage)qreceiver.receive(5000);
+      TextMessage rm = (TextMessage)qreceiver.receive(1000);
 
-      assertEquals("something", rm.getText());
+      assertEquals("two", rm.getText());
 
       qc.close();
    }
