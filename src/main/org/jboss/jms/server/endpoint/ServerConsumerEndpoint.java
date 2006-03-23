@@ -66,134 +66,149 @@ import org.jboss.messaging.core.tx.TxCallback;
 public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoint
 {
    // Constants -----------------------------------------------------
-   
+
    private static final long serialVersionUID = 535443606137461274L;
-   
+
    private static final Logger log = Logger.getLogger(ServerConsumerEndpoint.class);
-   
+
    // Static --------------------------------------------------------
-   
+
    private static final int MAX_DELIVERY_ATTEMPTS = 10;
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private boolean trace = log.isTraceEnabled();
-   
+
    private int id;
-   
+
    private Channel channel;
-   
+
    private ServerSessionEndpoint sessionEndpoint;
-   
+
    private boolean noLocal;
-   
+
    private Selector messageSelector;
-   
+
    private ThreadPool threadPoolDelegate;
-   
+
    private volatile boolean started;
-   
+
    private boolean disconnected = false;
-   
+
    // deliveries must be maintained in order they were received
    private Map deliveries;
-   
+
    private boolean closed;
-   
+
    private boolean active;
-   
+
    private boolean grabbing;
-   
+
    private MessageProxy toGrab;
-   
+
    private DeliveryCallback deliveryCallback;
-   
-   //We record the id of the last message delivered to the client consumer
+
+   private boolean selectorRejected;
+
+   // We record the id of the last message delivered to the client consumer
    private long lastMessageIDDelivered = -1;
-         
+
    // Constructors --------------------------------------------------
-   
+
    protected ServerConsumerEndpoint(int id, Channel channel,
                                     ServerSessionEndpoint sessionEndpoint,
                                     String selector, boolean noLocal)
                                     throws InvalidSelectorException
    {
       if (trace) { log.trace("creating consumer endpoint " + id); }
-      
+
       this.id = id;
       this.channel = channel;
       this.sessionEndpoint = sessionEndpoint;
       this.threadPoolDelegate =
          sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPoolDelegate();
       this.noLocal = noLocal;
-      
+
       if (selector != null)
       {
          if (trace) log.trace("creating selector:" + selector);
          this.messageSelector = new Selector(selector);
          if (trace) log.trace("created selector");
       }
-      
+
       this.deliveries = new LinkedHashMap();
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
       this.channel.add(this);
 
       log.debug(this + " created");
    }
-   
-   // Receiver implementation --------------------------------------- 
-   
-   //There is no need to synchronize this method. The channel synchronizes delivery to its consumers
+
+   // Receiver implementation ---------------------------------------
+
+   // There is no need to synchronize this method. The channel synchronizes delivery to its
+   // consumers
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
       if (trace) { log.trace(this + " receives reference " + reference.getMessageID() + " for delivery"); }
 
+      MessageReference ref = (MessageReference)reference;
+
       if (!isReady())
       {
-         if (trace) { log.trace(this + " rejects reference with ID " + reference.getMessageID()); }
+         if (trace) { log.trace(this + " rejects reference with ID " + ref.getMessageID()); }
          return null;
       }
-      
+
       try
       {
          Delivery delivery = null;
-         
-         JBossMessage message = (JBossMessage)reference.getMessage();
-         
-         boolean accept = this.accept(message);
-         if (!accept)
-         {
-            if (trace) { log.trace(this + " DOES NOT accept the message"); }
-            return null;
-         }
-         
-         //TODO - We need to put the message in a DLQ
-         //For now we just ack it otherwise the message will keep being retried
-         //and we'll never get anywhere
-         if (reference.getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
+
+         JBossMessage message = (JBossMessage)ref.getMessage();
+
+         // TODO - We need to put the message in a DLQ
+         // For now we just ack it otherwise the message will keep being retried and we'll never get
+         // anywhere
+         if (ref.getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
          {
             log.warn("Message has exceed maximum delivery attempts and will be removed " + message);
-            delivery = new SimpleDelivery(observer, (MessageReference)reference, true);
+            delivery = new SimpleDelivery(observer, ref, true);
             return delivery;
-         }                         
-         
-         delivery = new SimpleDelivery(observer, (MessageReference)reference);                  
-         deliveries.put(new Long(reference.getMessageID()), delivery);
-               
-         //We don't send the message as-is, instead we create a MessageProxy instance
-         //This allows local fields such as deliveryCount to be handled by the proxy
-         //but global data to be fielded by the same underlying Message instance.
-         //This allows us to avoid expensive copying of messages
-         MessageProxy md = JBossMessage.createThinDelegate(message, reference.getDeliveryCount());
-              
+         }
+
+         selectorRejected = !this.accept(message);
+
+         delivery = new SimpleDelivery(observer, ref, false, !selectorRejected);
+         deliveries.put(new Long(ref.getMessageID()), delivery);
+
+         if (selectorRejected)
+         {
+            // we "arrest" the message so we can get the next one
+            // TODO this DOES NOT scale. With a poor usage pattern, we may end with a lot of
+            // arrested messages sitting here for nothing. Review this:
+            // http://jira.jboss.org/jira/browse/JBMESSAGING-275
+            if (trace) { log.trace(this + " DOES NOT accept the message because the selector rejected it"); }
+
+            // ... however, keep asking for messages, the fact that this one wasn't accepted doesn't
+            // mean that the next one it won't.
+
+            return delivery;
+         }
+
+         // We don't send the message as-is, instead we create a MessageProxy instance. This allows
+         // local fields such as deliveryCount to be handled by the proxy but global data to be
+         // fielded by the same underlying Message instance. This allows us to avoid expensive
+         // copying of messages
+
+         MessageProxy md = JBossMessage.createThinDelegate(message, ref.getDeliveryCount());
+
          if (!grabbing)
          {
-            //We want to asynchronously deliver the message to the consumer
-            //deliver the message on a different thread than the core thread that brought it here
-            
+            // We want to asynchronously deliver the message to the consumer. Deliver the message on
+            // a different thread than the core thread that brought it here.
+
             try
             {
-               if (trace) { log.trace("queueing message " + message + " for delivery to client"); }               
+               if (trace) { log.trace("queueing message " + message + " for delivery to client"); }
                threadPoolDelegate.execute(
                   new DeliveryRunnable(md, id, sessionEndpoint.getConnectionEndpoint(), trace));
             }
@@ -204,34 +219,39 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }
          else
          {
-            //The message is being "grabbed" and returned for receiveNoWait semantics
-            
+            // The message is being "grabbed" and returned for receiveNoWait semantics
             toGrab = md;
          }
-         
+
          lastMessageIDDelivered = md.getMessage().getMessageID();
-         
-         return delivery;     
+
+         return delivery;
       }
       finally
       {
-         active = false;
-         grabbing = false;
+         // reset the "active" state, but only if the current message hasn't been rejected by
+         // selector, because otherwise we want to get more messages
+         // TODO this is a kludge that will be cleared by http://jira.jboss.org/jira/browse/JBMESSAGING-275
+         if (!selectorRejected)
+         {
+            active = false;
+            grabbing = false;
+         }
       }
    }
-   
+
    // Filter implementation -----------------------------------------
-   
+
    public boolean accept(Routable r)
    {
       boolean accept = true;
       if (messageSelector != null)
       {
          accept = messageSelector.accept(r);
-         
+
          if (trace) { log.trace("message selector " + (accept ? "accepts " :  "DOES NOT accept ") + "the message"); }
       }
-      
+
       if (accept)
       {
          if (noLocal)
@@ -247,41 +267,41 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       return accept;
    }
-   
-   
+
+
    // Closeable implementation --------------------------------------
-   
+
    public void closing() throws JMSException
    {
       if (trace) { log.trace(this + " closing"); }
    }
-   
+
    public void close() throws JMSException
    {
       if (closed)
       {
          throw new IllegalStateException("Consumer is already closed");
       }
-      
+
       if (trace) { log.trace(this + " close"); }
-      
+
       closed = true;
-      
+
       // On close we only disconnect the consumer from the Channel we don't actually remove it
       // This is because it may still contain deliveries that may well be acknowledged after
       // the consumer has closed. This is perfectly valid.
       disconnect();
-      
+
       JMSDispatcher.instance.unregisterTarget(new Integer(id));
    }
-   
+
    // ConsumerEndpoint implementation -------------------------------
-   
+
    public void cancelMessage(long messageID) throws JMSException
-   {             
+   {
       SingleReceiverDelivery del = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
       if (del != null)
-      {         
+      {
          try
          {
             del.cancel();
@@ -295,59 +315,59 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       else
       {
          throw new IllegalStateException("Cannot find delivery to cancel:" + messageID);
-      }      
-   }
-   
-   public void cancelMessages(List messageIDs) throws JMSException
-   {            
-      //Cancel in reverse order to preserve order in queue
-      
-      for (int i = messageIDs.size() - 1; i >= 0; i--)
-      {         
-         Long id = (Long)messageIDs.get(i);
-         
-         cancelMessage(id.longValue());         
       }
    }
-   
+
+   public void cancelMessages(List messageIDs) throws JMSException
+   {
+      //Cancel in reverse order to preserve order in queue
+
+      for (int i = messageIDs.size() - 1; i >= 0; i--)
+      {
+         Long id = (Long)messageIDs.get(i);
+
+         cancelMessage(id.longValue());
+      }
+   }
+
    /**
     * We attempt to get the message directly fron the channel first. If we find one, we return that.
     * Otherwise, if wait = true, we register as being interested in receiving a message
     * asynchronously, then return and wait for it on the client side.
     */
    public MessageProxy getMessageNow(boolean wait) throws JMSException
-   {  
+   {
       synchronized (channel)
-      { 
+      {
          try
-         {                 
+         {
             grabbing = true;
-            
-            //This will always deliver a message (if there is one) on the same thread
+
+            // This will always deliver a message (if there is one) on the same thread
             promptDelivery();
-            
+
             if (wait && toGrab == null)
             {
                active = true;
             }
-            
-            return toGrab;            
+
+            return toGrab;
          }
          finally
          {
             toGrab = null;
             grabbing = false;
-         } 
+         }
       }
    }
-   
+
    public long deactivate() throws JMSException
    {
       synchronized (channel)
       {
          active = false;
          if (trace) { log.trace(this + " deactivated"); }
-         
+
          return lastMessageIDDelivered;
       }
    }
@@ -415,14 +435,25 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    }  
    
    void acknowledgeAll() throws JMSException
-   {  
+   {
+      // acknowledge all "pending" deliveries, except the ones correspoding to messages rejected
+      // by selector, which are cancelled
       try
       {     
          for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
          {
             SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
-            d.acknowledge(null);        
+
+            if (d.isSelectorAccepted())
+            {
+               d.acknowledge(null);
+            }
+            else
+            {
+               d.cancel();
+            }
          }
+
          deliveries.clear();
       }
       catch(Throwable t)
@@ -440,12 +471,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       if (tx == null)
       {
-         //No transaction so we remove the delivery now
+         // No transaction so we remove the delivery now
          d = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
       }
       else
       {
-         //The actual removal of the deliveries from the delivery list is deferred until tx commit 
+         // The actual removal of the deliveries from the delivery list is deferred until tx commit
          d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
          if (deliveryCallback == null)
          {
@@ -485,8 +516,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {
       if (trace) { log.trace(this + " cancels deliveries"); }
            
-      //Need to cancel starting at the end of the list and working to the front
-      //in order that the messages end up back in the correct order in the channel
+      // Need to cancel starting at the end of the list and working to the front in order that the
+      // messages end up back in the correct order in the channel.
       
       List toCancel = new ArrayList();
       
@@ -534,17 +565,48 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {
       if (active || grabbing)
       {
-         if (trace) { log.trace(this + " prompts delivery"); }
-         channel.deliver(this);
+         // prompt delivery in a loop, since this consumer may "arrest" a message not accepted
+         // by the selector, while it still wants to get the next one
+         // TODO this is a kludge that will be cleared by http://jira.jboss.org/jira/browse/JBMESSAGING-275
+         while(true)
+         {
+            if (trace) { log.trace(this + " prompts delivery"); }
+
+            selectorRejected = false;
+
+            channel.deliver(this);
+
+            if (!selectorRejected)
+            {
+               break;
+            }
+         }
       }      
    }
    
    /**
-    * Disconnect this consumer from the Channel that feeds it. This method does not clear up any
-    * deliveries.
+    * Disconnect this consumer from the Channel that feeds it. This method does not clear up
+    * deliveries, except the "arrested" ones
     */
    protected void disconnect()
    {
+      // clean up "arrested" deliveries, no acknowledgment will ever come for them
+      for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
+      {
+         SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
+         if (!d.isSelectorAccepted())
+         {
+            try
+            {
+               d.cancel();
+            }
+            catch(Throwable t)
+            {
+               log.error("Failed to cancel delivery " + d, t);
+            }
+         }
+      }
+
       boolean removed = channel.remove(this);
       
       if (removed)
@@ -635,8 +697,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       public void afterRollback(boolean onePhase) throws TransactionException
       {
-         //Cancel the deliveries         
-         //Need to be cancelled in reverse order to maintain ordering
+         // Cancel the deliveries
+         // Need to be cancelled in reverse order to maintain ordering
          for (int i = delList.size() - 1; i >= 0; i--)
          {               
             Long messageID = (Long)delList.get(i);

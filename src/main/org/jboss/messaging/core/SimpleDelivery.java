@@ -50,6 +50,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
 
    protected boolean done;
    protected boolean cancelled;
+   protected boolean selectorAccepted;
    protected DeliveryObserver observer;
    protected MessageReference reference;
    
@@ -84,6 +85,16 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       this.observer = observer;
    }
 
+   public SimpleDelivery(DeliveryObserver observer, MessageReference reference, boolean done,
+                         boolean selectorAccepted)
+   {
+      this.done = done;
+      this.reference = reference;
+      this.observer = observer;
+      this.selectorAccepted = selectorAccepted;
+   }
+
+
    // Delivery implementation ---------------------------------
 
    public MessageReference getReference()
@@ -99,6 +110,11 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
    public synchronized boolean isCancelled()
    {
       return cancelled;
+   }
+
+   public synchronized boolean isSelectorAccepted()
+   {
+      return selectorAccepted;
    }
 
    public void setObserver(DeliveryObserver observer)
