@@ -45,7 +45,7 @@ public class Receiver extends Runner implements MessageListener
 {
    private static final Logger log = Logger.getLogger(Receiver.class);
    
-   private static final long RECEIVE_TIMEOUT = 30000;
+   private static final long RECEIVE_TIMEOUT = 120000;
       
    protected MessageConsumer cons;
    
@@ -142,7 +142,8 @@ public class Receiver extends Runner implements MessageListener
       
       try
       {             
-         //log.info("Waiting for messages");
+         String prodName = null;
+         Integer msgCount = null;
          
          while (count < numMessages)
          {
@@ -156,9 +157,9 @@ public class Receiver extends Runner implements MessageListener
                return;
             }
              
-            String prodName = m.getStringProperty("PROD_NAME");
-            Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-                     
+            prodName = m.getStringProperty("PROD_NAME");
+            msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+                   
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)
             {
@@ -185,7 +186,9 @@ public class Receiver extends Runner implements MessageListener
             count++;
             
             processingDone();
-         }
+         }         
+         
+         
       }
       catch (Exception e)
       {

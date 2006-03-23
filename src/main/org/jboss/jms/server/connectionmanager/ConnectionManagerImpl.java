@@ -28,10 +28,10 @@ import javax.jms.JMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
-import org.jboss.messaging.util.Util;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -91,6 +91,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
 
    public void handleConnectionException(Throwable t, Client client)
    {  
+
       String sessionId = client.getSessionId();
       if (sessionId != null)
       {         
@@ -120,6 +121,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
             }            
          }
       }
+      
+      
    }
 
    // Public --------------------------------------------------------

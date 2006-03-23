@@ -122,18 +122,26 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
       return acceptReliableMessages;
    }
 
-   public synchronized MessageReference reference(Message m)
+   //TODO If we can assume that the message is not known to the store before
+   //(true when sending messages)
+   //Then we can avoid synchronizing on this and use a ConcurrentHashmap
+   //Which will give us much better concurrency for many threads
+   public MessageReference reference(Message m)
    {
       if (m.isReliable() && !acceptReliableMessages)
       {
          throw new IllegalStateException(this + " does not accept reliable messages (" + m + ")");
       }
       
-      MessageHolder holder = (MessageHolder)messages.get(new Long(m.getMessageID()));
-      
-      if (holder == null)
-      {      
-         holder = addMessage(m);
+      MessageHolder holder;
+      synchronized (this)
+      {         
+         holder = (MessageHolder)messages.get(new Long(m.getMessageID()));
+         
+         if (holder == null)
+         {      
+            holder = addMessage(m);
+         }
       }
       holder.incrementInMemoryChannelCount();
       
@@ -145,7 +153,12 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
 
    public MessageReference reference(long messageID)
    {
-      MessageHolder holder = (MessageHolder)messages.get(new Long(messageID));
+      MessageHolder holder;
+      
+      synchronized (this)
+      {
+         holder = (MessageHolder)messages.get(new Long(messageID));         
+      }
       
       if (holder == null)
       {

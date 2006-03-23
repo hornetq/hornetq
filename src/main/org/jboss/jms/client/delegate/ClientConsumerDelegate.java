@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.client.delegate;
 
+import java.util.List;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -83,6 +85,15 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
+   
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void cancelMessages(List ids) throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }   
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -106,7 +117,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void deactivate() throws JMSException
+   public long deactivate() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

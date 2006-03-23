@@ -107,8 +107,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    private MessageProxy toGrab;
    
    private DeliveryCallback deliveryCallback;
-      
    
+   //We record the id of the last message delivered to the client consumer
+   private long lastMessageIDDelivered = -1;
+         
    // Constructors --------------------------------------------------
    
    protected ServerConsumerEndpoint(int id, Channel channel,
@@ -207,6 +209,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             toGrab = md;
          }
          
+         lastMessageIDDelivered = md.getMessage().getMessageID();
+         
          return delivery;     
       }
       finally
@@ -274,7 +278,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    // ConsumerEndpoint implementation -------------------------------
    
    public void cancelMessage(long messageID) throws JMSException
-   {            
+   {             
       SingleReceiverDelivery del = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
       if (del != null)
       {         
@@ -290,8 +294,20 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       else
       {
-         throw new IllegalStateException("Failed to cancel delivery " + del);
+         throw new IllegalStateException("Cannot find delivery to cancel:" + messageID);
       }      
+   }
+   
+   public void cancelMessages(List messageIDs) throws JMSException
+   {            
+      //Cancel in reverse order to preserve order in queue
+      
+      for (int i = messageIDs.size() - 1; i >= 0; i--)
+      {         
+         Long id = (Long)messageIDs.get(i);
+         
+         cancelMessage(id.longValue());         
+      }
    }
    
    /**
@@ -325,12 +341,14 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
    }
    
-   public void deactivate() throws JMSException
+   public long deactivate() throws JMSException
    {
       synchronized (channel)
       {
          active = false;
          if (trace) { log.trace(this + " deactivated"); }
+         
+         return lastMessageIDDelivered;
       }
    }
    

@@ -61,9 +61,9 @@ public class TransactionRequest implements Externalizable
 
    public final static byte TWO_PHASE_ROLLBACK_REQUEST = 4;
    
-   private static final byte XID = 0;
+   private static final byte PRESENT = 1;
    
-   private static final byte NO_XID = -1;
+   private static final byte NULL = 0;
    
    // Attributes ----------------------------------------------------
    
@@ -114,7 +114,7 @@ public class TransactionRequest implements Externalizable
             
       if (xid == null)
       {
-         out.writeByte(NO_XID);
+         out.writeByte(NULL);
       }
       else
       {
@@ -123,7 +123,7 @@ public class TransactionRequest implements Externalizable
          int formatId = xid.getFormatId();
          byte[] globalTxId = xid.getGlobalTransactionId();
                   
-         out.write(XID);
+         out.write(PRESENT);
          out.writeInt(branchQual.length);
          out.write(branchQual);
          out.writeInt(formatId);
@@ -131,7 +131,15 @@ public class TransactionRequest implements Externalizable
          out.write(globalTxId);
       }
       
-      state.writeExternal(out);
+      if (state != null)
+      {
+         out.write(PRESENT);      
+         state.writeExternal(out);
+      }
+      else
+      {
+         out.write(NULL);
+      }
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -140,11 +148,11 @@ public class TransactionRequest implements Externalizable
      
      byte isXid = in.readByte();
      
-     if (isXid == NO_XID)
+     if (isXid == NULL)
      {
         xid = null;
      }
-     else if (isXid == XID)
+     else if (isXid == PRESENT)
      {
         int l = in.readInt();
         byte[] branchQual = new byte[l];
@@ -160,9 +168,18 @@ public class TransactionRequest implements Externalizable
         throw new IllegalStateException("Invalid value:" + isXid);
      }
      
-     state = new TxState();
+     byte isState = in.readByte();
      
-     state.readExternal(in);
+     if (isState == NULL)
+     {
+        state = null;
+     }
+     else
+     {
+        state = new TxState();
+     
+        state.readExternal(in);
+     }
    }
    
    // Package protected ---------------------------------------------

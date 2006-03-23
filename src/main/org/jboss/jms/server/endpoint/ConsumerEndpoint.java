@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.List;
+
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
@@ -39,9 +41,11 @@ public interface ConsumerEndpoint extends Closeable
 {
    void cancelMessage(long messageID) throws JMSException;
    
+   void cancelMessages(List messageIDs) throws JMSException;
+   
    MessageProxy getMessageNow(boolean wait) throws JMSException;
    
    void activate() throws JMSException;
    
-   void deactivate() throws JMSException;   
+   long deactivate() throws JMSException;   
 }

@@ -27,7 +27,6 @@ import org.jboss.jms.client.JBossXAResource;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
 
-import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -52,7 +51,7 @@ public class SessionState extends HierarchicalStateSupport
    private Object currentTxId;
    
    //Executor used for executing onMessage methods
-   private Executor executor;
+   private QueuedExecutor executor;
    
    public SessionState(ConnectionState parent, SessionDelegate delegate,
                        boolean transacted, int ackMode, boolean xa)
@@ -95,7 +94,7 @@ public class SessionState extends HierarchicalStateSupport
       return xaResource;
    }
    
-   public Executor getExecutor()
+   public QueuedExecutor getExecutor()
    {
       return executor;
    }

@@ -26,6 +26,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.aop.Dispatcher;
@@ -77,6 +80,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
    protected UnMarshaller serializableUnMarshaller;
    
+   //The request codes  - start from zero
+   
    protected static final byte SERIALIZED = 0;
    
    protected static final byte SEND = 1;
@@ -89,17 +94,28 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
    protected static final byte ACKNOWLEDGE = 5;
    
-   protected static final byte CALLBACK = 6;
+   protected static final byte SEND_TRANSACTION = 6;
    
-   protected static final byte NULL_RESPONSE = 7;
+   protected static final byte GET_ID_BLOCK = 7;
    
-   protected static final byte MESSAGE_RESPONSE = 8;
+   protected static final byte CANCEL_MESSAGE = 8;
    
-   protected static final byte SEND_TRANSACTION = 9;
+   protected static final byte CANCEL_MESSAGES = 9;
    
-   protected static final byte GET_ID_BLOCK = 10;
    
-   protected static final byte ID_BLOCK_RESPONSE = 11;
+   //The response codes - start from 100
+   
+   protected static final byte CALLBACK = 100;
+   
+   protected static final byte NULL_RESPONSE = 101;
+   
+   protected static final byte MESSAGE_RESPONSE = 102;
+         
+   protected static final byte ID_BLOCK_RESPONSE = 103;
+      
+   protected static final byte DEACTIVATE_RESPONSE = 104;
+   
+   
          
    protected boolean trace;
    
@@ -309,6 +325,42 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                if (trace) { log.trace("wrote getIdBlock()"); }
             }
+            else if ("cancelMessage".equals(methodName))
+            {
+               oos.writeByte(CANCEL_MESSAGE);
+               
+               writeHeader(mi, oos);
+               
+               long id = ((Long)mi.getArguments()[0]).longValue();
+               
+               oos.writeLong(id);
+               
+               oos.flush();
+               
+               if (trace) { log.trace("wrote cancelMessage()"); }              
+            }
+            else if ("cancelMessages".equals(methodName))
+            {
+               oos.writeByte(CANCEL_MESSAGES);
+               
+               writeHeader(mi, oos);
+               
+               List ids = (List)mi.getArguments()[0];
+               
+               oos.writeInt(ids.size());
+               
+               Iterator iter = ids.iterator();
+               
+               while (iter.hasNext())
+               {
+                  Long l = (Long)iter.next();
+                  oos.writeLong(l.longValue());
+               }
+                              
+               oos.flush();
+               
+               if (trace) { log.trace("wrote cancelMessage()"); }              
+            }
             else
             { 
                oos.write(SERIALIZED);
@@ -413,6 +465,19 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             oos.flush();
             
             if (trace) { log.trace("wrote message response"); }
+         }
+         else if (res instanceof Long)
+         {
+            //Return value from deactivate
+            oos.write(DEACTIVATE_RESPONSE);
+            
+            Long l = (Long)res;
+            
+            oos.writeLong(l.longValue());
+            
+            oos.flush();
+               
+            if (trace) { log.trace("wrote deactivate response"); }
          }
          else
          {      
@@ -574,6 +639,51 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             return request;
          }         
+         case CANCEL_MESSAGE:
+         {
+            MethodInvocation mi = readHeader(ois);
+            
+            long id = ois.readLong();
+            
+            Object[] args = new Object[] {new Long(id)};
+            
+            mi.setArguments(args);
+                
+            InvocationRequest request =
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
+            
+            if (trace) { log.trace("read cancelMessage()"); }
+            
+            return request;
+         }
+         case CANCEL_MESSAGES:
+         {
+            MethodInvocation mi = readHeader(ois);
+            
+            int size = ois.readInt();
+            
+            List ids = new ArrayList(size);
+            
+            for (int i = 0; i < size; i++)
+            {
+               long id = ois.readLong();
+               
+               ids.add(new Long(id));
+            }
+                        
+            Object[] args = new Object[] {ids};
+            
+            mi.setArguments(args);
+                
+            InvocationRequest request =
+               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                     new MessagingMarshallable(version, mi), null, null, null);
+            
+            if (trace) { log.trace("read cancelMessages()"); }
+            
+            return request;
+         }
          case MESSAGE_RESPONSE:
          {
             byte type = ois.readByte();
@@ -601,6 +711,16 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, block), false, null);
             
             if (trace) { log.trace("read message response"); }
+            
+            return resp;
+         }
+         case DEACTIVATE_RESPONSE:
+         {
+            long id = ois.readLong();
+                                  
+            InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, new Long(id)), false, null);
+            
+            if (trace) { log.trace("read deactivate response"); }
             
             return resp;
          }
@@ -635,7 +755,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             if (trace) { log.trace("read callback()"); }
 
             return request;
-         }
+         }         
          default:
          {
             throw new IllegalStateException("Invalid format type " + formatType);

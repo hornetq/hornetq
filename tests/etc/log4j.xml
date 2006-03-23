@@ -58,7 +58,7 @@
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
-         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
+         <param name="ConversionPattern" value="%t %d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
       </layout>
    </appender>
 
@@ -82,18 +82,13 @@
    </category>
 
    <category name="org.jboss.test">
-   <!--
-      <priority value="INFO"/>
-   -->
+      <!-- <priority value="INFO"/> -->
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-
    </category>
 
    <category name="org.jboss.jms">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!--
-      <priority value="INFO"/>
-      -->
+      <!-- <priority value="INFO"/> -->
    </category>
 
    <category name="org.jboss.jms.server.remoting.JMSWireFormat">
@@ -108,15 +103,13 @@
       <priority value="DEBUG"/>
    </category>
 
-  <category name="org.jboss.jms.perf">
+   <category name="org.jboss.jms.perf">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
       <!-- <priority value="INFO"/> -->
    </category>
 
    <category name="org.jboss.messaging">
-      <!--
-      <priority value="INFO"/>
-      -->
+      <!-- <priority value="INFO"/> -->
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
@@ -127,10 +120,8 @@
    -->
 
    <category name="org.jboss.remoting">
-   <!--
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      -->
-      <priority value="INFO"/>
+      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
+      <priority value="WARN"/>
    </category>
 
    <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">

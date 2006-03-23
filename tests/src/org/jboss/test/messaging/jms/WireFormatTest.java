@@ -27,7 +27,9 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -87,6 +89,10 @@ public class WireFormatTest extends TestCase
    protected Method getMessageNowMethod;
    
    protected Method sendTransactionMethod;
+   
+   protected Method cancelMessageMethod;
+   
+   protected Method cancelMessagesMethod;
 
    // Constructors --------------------------------------------------
 
@@ -121,6 +127,9 @@ public class WireFormatTest extends TestCase
       
       sendTransactionMethod = connectionDelegate.getMethod("sendTransaction", new Class[] { TransactionRequest.class });
       
+      cancelMessageMethod = consumerDelegate.getMethod("cancelMessage", new Class[] { Long.TYPE });
+      
+      cancelMessagesMethod = consumerDelegate.getMethod("cancelMessages", new Class[] { List.class });
    }
 
    public void tearDown() throws Exception
@@ -187,6 +196,21 @@ public class WireFormatTest extends TestCase
    public void testSerializableResponse() throws Exception
    {
       wf.testSerializableResponse();
+   }
+   
+   public void testDeactivateResponse() throws Exception
+   {
+      wf.testDeactivateResponse();
+   }
+   
+   public void testCancelMessage() throws Exception
+   {
+      wf.testCancelMessage();
+   }
+   
+   public void testCancelMessages() throws Exception
+   {
+      wf.testCancelMessages();
    }
    
   
@@ -591,6 +615,190 @@ public class WireFormatTest extends TestCase
                   
       }  
       
+      public void testCancelMessage() throws Exception
+      {                            
+         long methodHash = 62365354;
+         
+         int objectId = 54321;
+         
+         Long lid = new Long(87654321);
+         
+         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelMessageMethod, cancelMessageMethod, null);
+         
+         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
+         
+         mi.setArguments(new Object[] {lid});
+         
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
+         
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         
+         JBossObjectOutputStream oos = new JBossObjectOutputStream(bos);
+                  
+         wf.write(ir, oos);
+        
+         oos.flush();
+               
+         byte[] bytes = bos.toByteArray();
+              
+         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                  
+         JBossObjectInputStream ois = new JBossObjectInputStream(bis); 
+               
+         //Check the bytes
+             
+         //First byte should be version
+         assertEquals(77, ois.readByte());
+         
+         //Next byte should be CANCEL_MESSAGE
+         assertEquals(JMSWireFormat.CANCEL_MESSAGE, ois.readByte());
+         
+         //Next int should be objectId
+         assertEquals(objectId, ois.readInt());
+         
+         //Next long should be methodHash
+         assertEquals(methodHash, ois.readLong());
+                  
+         //Next should come the ID
+         
+         long id = ois.readLong();
+         
+         assertEquals(lid, new Long(id));
+         
+         //should be eos
+                
+         try
+         {
+            ois.readByte();
+            fail("End of stream expected");
+         }
+         catch (EOFException e)
+         {
+            //Ok
+         }
+         
+         
+         bis.reset();
+         ois = new JBossObjectInputStream(bis);
+         
+         InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
+         
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
+         
+         assertEquals(methodHash, mi2.getMethodHash());
+         
+         assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());
+         
+         Long lid2 = (Long)mi2.getArguments()[0];
+        
+         assertEquals(lid, lid2);                  
+      }  
+      
+      public void testCancelMessages() throws Exception
+      {                            
+         long methodHash = 62365354;
+         
+         int objectId = 54321;
+         
+         List ids = new ArrayList();
+         ids.add(new Long(123));
+         ids.add(new Long(456));
+         
+         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelMessagesMethod, cancelMessagesMethod, null);
+         
+         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
+         
+         mi.setArguments(new Object[] {ids});
+         
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
+         
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         
+         JBossObjectOutputStream oos = new JBossObjectOutputStream(bos);
+                  
+         wf.write(ir, oos);
+        
+         oos.flush();
+               
+         byte[] bytes = bos.toByteArray();
+              
+         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                  
+         JBossObjectInputStream ois = new JBossObjectInputStream(bis); 
+               
+         //Check the bytes
+             
+         //First byte should be version
+         assertEquals(77, ois.readByte());
+         
+         //Next byte should be CANCEL_MESSAGES
+         assertEquals(JMSWireFormat.CANCEL_MESSAGES, ois.readByte());
+         
+         //Next int should be objectId
+         assertEquals(objectId, ois.readInt());
+         
+         //Next long should be methodHash
+         assertEquals(methodHash, ois.readLong());
+                  
+         //Next should the size of the list
+         
+         int size = ois.readInt();
+         
+         assertEquals(2, size);
+         
+         //then the longs
+         long l1 = ois.readLong();
+         
+         long l2 = ois.readLong();
+         
+         assertEquals(123, l1);
+         
+         assertEquals(456, l2);
+          
+         //should be eos
+                
+         try
+         {
+            ois.readByte();
+            fail("End of stream expected");
+         }
+         catch (EOFException e)
+         {
+            //Ok
+         }
+         
+         
+         bis.reset();
+         ois = new JBossObjectInputStream(bis);
+         
+         InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
+         
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
+         
+         assertEquals(methodHash, mi2.getMethodHash());
+         
+         assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());
+         
+         List list = (List)mi2.getArguments()[0];
+        
+         assertEquals(2, list.size());
+         
+         assertEquals(new Long(123), list.get(0));
+         assertEquals(new Long(456), list.get(1));
+      }  
+      
       public void testNullResponse() throws Exception
       {
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, null);
@@ -639,6 +847,60 @@ public class WireFormatTest extends TestCase
          assertEquals(77, mm.getVersion());
          
          assertNull(mm.getLoad());
+            
+      }
+      
+      public void testDeactivateResponse() throws Exception
+      {
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, new Long(123456));
+         
+         InvocationResponse resp = new InvocationResponse(null, mm, false, null);
+         
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                  
+         JBossObjectOutputStream oos = new JBossObjectOutputStream(bos);
+         
+         wf.write(resp, oos);
+         
+         oos.flush();
+         
+         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+         
+         DataInputStream dis = new DataInputStream(bis);
+         
+         //First byte should be version
+         assertEquals(77, dis.readByte());
+         
+         byte b = dis.readByte();
+         
+         assertEquals(JMSWireFormat.DEACTIVATE_RESPONSE, b);
+         
+         long l = dis.readLong();
+         
+         assertEquals(123456, l);
+         
+         //Should be eos
+         try
+         {
+            dis.readByte();
+            fail("End of stream expected");
+         }
+         catch (EOFException e)
+         {
+            //Ok
+         }
+         
+         dis.reset();
+         
+         JBossObjectInputStream ois = new JBossObjectInputStream(bis);
+         
+         InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
+         
+         mm = (MessagingMarshallable)ir2.getResult();
+         
+         assertEquals(77, mm.getVersion());
+         
+         assertEquals(new Long(123456), mm.getLoad());
             
       }
          

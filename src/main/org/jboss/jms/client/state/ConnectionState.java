@@ -30,7 +30,6 @@ import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 
-import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SyncSet;
@@ -95,7 +94,7 @@ public class ConnectionState extends HierarchicalStateSupport
       return idGenerator;
    }
    
-   public Executor getPooledExecutor()
+   public PooledExecutor getPooledExecutor()
    {
       return pooledExecutor;
    }
@@ -104,11 +103,6 @@ public class ConnectionState extends HierarchicalStateSupport
    {
       return remotingConnection;
    }
-   
-//   public ClientConnectionFactoryDelegate getConnectionFactoryDelegate()
-//   {
-//      return cf;
-//   }
    
    public Version getVersionToUse()
    {

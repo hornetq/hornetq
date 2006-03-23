@@ -104,7 +104,7 @@ public class Transactional2PCReceiver extends Receiver
                }
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-               
+                     
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
@@ -211,7 +211,7 @@ public class Transactional2PCReceiver extends Receiver
          xaResource.end(xid, XAResource.TMSUCCESS);
          xaResource.prepare(xid);
          xaResource.commit(xid, false);
-       
+           
       }
       catch (Exception e)
       {

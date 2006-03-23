@@ -874,17 +874,29 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(sess.createTextMessage("1"));
           prod.send(sess.createTextMessage("2"));
           prod.send(sess.createTextMessage("3"));
+          
+          log.info("sent messages");
 
           MessageConsumer cons1 = sess.createConsumer(queue);
 
           Message r1 = cons1.receive();
+          
+          log.info("received message:" + r1);
 
           cons1.close();
+          
+          log.info("closed consumer");
 
           MessageConsumer cons2 = sess.createConsumer(queue);
 
+          log.info("trying to receive");
           Message r2 = cons2.receive();
+          
+          log.info("Received r2:" + r2);
+          
           Message r3 = cons2.receive();
+          
+          log.info("Received r3:" + r3);
 
           r1.acknowledge();
           r2.acknowledge();

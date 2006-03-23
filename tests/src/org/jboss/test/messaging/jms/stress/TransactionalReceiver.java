@@ -87,13 +87,12 @@ public class TransactionalReceiver extends Receiver
                if (m == null)
                {
                   log.error("Message is null");
-                  log.info("failed");
                   failed = true;
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-                
+                        
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {

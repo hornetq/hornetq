@@ -33,7 +33,7 @@ done
 
 mkdir -p $reldir/../output/logs
 
-JAVA_OPTS="$JAVA_OPTS -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote"
+JAVA_OPTS="$JAVA_OPTS -Xmx768M -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote"
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar

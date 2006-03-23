@@ -92,6 +92,7 @@ public class RecoveringReceiver extends Receiver
                }
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+               
                Count count = (Count)counts.get(prodName);
                if (count == null)
                {
