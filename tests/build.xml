@@ -286,6 +286,7 @@
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jboss.jms.lib" value="${jboss.jms.lib}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -412,6 +413,7 @@
                <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/ClientCrashTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/CallbackFailureTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -587,6 +589,7 @@
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
+               <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
             </fileset>
          </batchtest>
       </junit>
