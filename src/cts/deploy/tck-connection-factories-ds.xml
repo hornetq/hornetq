@@ -1,0 +1,47 @@
+
+<connection-factories>
+
+   <tx-connection-factory>
+
+      <jndi-name>QueueConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>
+         org.jboss.resource.adapter.jms.JmsConnectionFactory
+      </connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Queue</config-property>
+      <application-managed-security/>
+
+   </tx-connection-factory>
+
+   <tx-connection-factory>
+
+      <jndi-name>TopicConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+      <connection-definition>
+         org.jboss.resource.adapter.jms.JmsConnectionFactory
+      </connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <application-managed-security/>
+
+   </tx-connection-factory>
+
+   <tx-connection-factory>
+      <jndi-name>DurableSubConnectionFactory</jndi-name>
+      <rar-name>jms-ra.rar</rar-name>
+
+      <connection-definition>
+         org.jboss.resource.adapter.jms.JmsConnectionFactory
+      </connection-definition>
+      <xa-transaction/>
+      <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
+      <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <config-property name="ClientID" type="java.lang.String">tck.client</config-property>
+      <application-managed-security/>
+
+   </tx-connection-factory>
+
+</connection-factories>

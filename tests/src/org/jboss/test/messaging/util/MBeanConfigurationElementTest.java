@@ -24,7 +24,6 @@ package org.jboss.test.messaging.util;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.jms.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

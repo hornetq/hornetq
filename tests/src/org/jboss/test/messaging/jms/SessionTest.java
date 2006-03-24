@@ -36,6 +36,7 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -70,38 +71,6 @@ public class SessionTest extends MessagingTestCase
       super(name);
    }
    
-   // TestCase overrides -------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();                  
-      
-      ServerManagement.start("all");
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.deployTopic("TestTopic");
-      topic = (Topic)initialContext.lookup("/topic/TestTopic");
-      
-      ServerManagement.undeployQueue("TestQueue");
-      ServerManagement.deployQueue("TestQueue");
-      queue = (Queue)initialContext.lookup("/queue/TestQueue");
-      
-      drainDestination(cf, queue);
-      
-      log.debug("Done setup()");
-            
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("TestTopic"); 
-      ServerManagement.undeployQueue("TestQueue");
-      super.tearDown();
-   }
-   
-   
    // Public --------------------------------------------------------
 
    public void testCreateProducer() throws Exception
@@ -122,6 +91,23 @@ public class SessionTest extends MessagingTestCase
          e.printStackTrace();
       }
    }
+
+   public void testCreateProducerOnNullQueue() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Message m = sess.createTextMessage("something");
+
+      MessageProducer p = sess.createProducer(null);
+
+      p.send(queue, m);
+
+      MessageConsumer c = sess.createConsumer(queue);
+      conn.start();
+      TextMessage rm = (TextMessage)c.receiveNoWait();
+
+      assertEquals("something", rm.getText());
+   }
    
    public void testCreateConsumer() throws Exception
    {
@@ -131,9 +117,7 @@ public class SessionTest extends MessagingTestCase
       sess.createConsumer(topic);
       conn.close();
    }
-   
-   
-   
+
    public void testGetSession1() throws Exception
    {
       Connection conn = cf.createConnection();      
@@ -407,7 +391,36 @@ public class SessionTest extends MessagingTestCase
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-   
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      ServerManagement.start("all");
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
+      ServerManagement.undeployTopic("TestTopic");
+      ServerManagement.deployTopic("TestTopic");
+      topic = (Topic)initialContext.lookup("/topic/TestTopic");
+
+      ServerManagement.undeployQueue("TestQueue");
+      ServerManagement.deployQueue("TestQueue");
+      queue = (Queue)initialContext.lookup("/queue/TestQueue");
+
+      drainDestination(cf, queue);
+
+      log.debug("Done setup()");
+
+   }
+
+   protected void tearDown() throws Exception
+   {
+      ServerManagement.undeployTopic("TestTopic");
+      ServerManagement.undeployQueue("TestQueue");
+      super.tearDown();
+   }
+
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------

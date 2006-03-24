@@ -520,19 +520,32 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
       
       Object value = properties.get(name);
+
       if (value == null)
+      {
          throw new NumberFormatException("Message property '" + name + "' not set.");
+      }
 
       if (value instanceof Byte)
+      {
          return ((Byte) value).intValue();
+      }
       else if (value instanceof Short)
+      {
          return ((Short) value).intValue();
+      }
       else if (value instanceof Integer)
+      {
          return ((Integer) value).intValue();
+      }
       else if (value instanceof String)
+      {
          return Integer.parseInt((String) value);
+      }
       else
+      {
          throw new MessageFormatException("Invalid conversion");
+      }
    }
 
    public long getLongProperty(String name) throws JMSException

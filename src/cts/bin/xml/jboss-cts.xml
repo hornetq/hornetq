@@ -74,7 +74,7 @@
 
       <!-- add the extra connection factories -->
       <copy todir="${jboss.home}/server/cts-messaging/deploy"
-         file="${ENV.JBOSS_MESSAGING_HOME}/src/cts/deploy/tck-connection-factories-service.xml"/>
+         file="${ENV.JBOSS_MESSAGING_HOME}/src/cts/deploy/tck-connection-factories-*.xml"/>
 
       <!-- deploy messaging -->
       <copy todir="${jboss.home}/server/cts-messaging/deploy"

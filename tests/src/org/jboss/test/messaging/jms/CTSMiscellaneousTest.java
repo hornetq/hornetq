@@ -19,9 +19,11 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms.message;
+package org.jboss.test.messaging.jms;
 
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
+import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnectionFactory;
 
