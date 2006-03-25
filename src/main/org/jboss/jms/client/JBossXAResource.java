@@ -39,6 +39,7 @@ import org.jboss.logging.Logger;
  * It basically just delegates to the resource manager.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * Parts based on JBoss MQ XAResource implementation by:
  * 
@@ -64,7 +65,7 @@ public class JBossXAResource implements XAResource
    private SessionState sessionState;
    
    private ConnectionDelegate connection;
-   
+
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -72,9 +73,7 @@ public class JBossXAResource implements XAResource
    public JBossXAResource(ResourceManager rm, SessionState sessionState)
    { 
       this.rm = rm;
-      
-      this.sessionState = sessionState;   
-      
+      this.sessionState = sessionState;
       this.connection = (ConnectionDelegate)(sessionState.getParent()).getDelegate();
    }
    
@@ -102,20 +101,13 @@ public class JBossXAResource implements XAResource
    
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
-      if (trace)
-      {
-         log.trace("Commit xid=" + xid + ", onePhase=" + onePhase + " " + this);
-      }
-      
+      if (trace) { log.trace(this + " commit " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
       rm.commit(xid, onePhase, connection);
    }
 
    public void end(Xid xid, int flags) throws XAException
    {
-      if (trace)
-      {
-         log.trace("End xid=" + xid + ", flags=" + flags + " " +this);
-      }
+      if (trace) { log.trace(this + " end " + xid + ", flags: " + flags); }
 
       synchronized (this)
       {
@@ -139,48 +131,32 @@ public class JBossXAResource implements XAResource
    
    public void forget(Xid xid) throws XAException
    {
-      if (trace)
-      {
-         log.trace("Forget xid=" + xid + " " + this);
-      }
+      if (trace) { log.trace(this + " forget " + xid + " (currently an NOOP)"); }
    }
 
    public int prepare(Xid xid) throws XAException
    {
-      if (trace)
-      {
-         log.trace("Prepare xid=" + xid + " " + this);
-      }
-
+      if (trace) { log.trace(this + " prepare " + xid); }
       return rm.prepare(xid, connection);
    }
 
    public Xid[] recover(int flags) throws XAException
    {
-      if (trace)
-      {
-         log.trace("Recover flags=" + flags + " " + this);
-      }
+      if (trace) { log.trace(this + " recover, flags: " + flags); }
 
       return rm.recover(flags, connection);
    }
 
    public void rollback(Xid xid) throws XAException
    {
-      if (trace)
-      {
-         log.trace("Rollback xid=" + xid + " " + this);
-      }
+      if (trace) { log.trace(this + " rollback " + xid); }
 
       rm.rollback(xid, connection);
    }
 
    public void start(Xid xid, int flags) throws XAException
    {
-      if (trace)
-      {
-         log.trace("Start xid=" + xid + ", flags=" + flags + " " + this);
-      }
+      if (trace) { log.trace(this + " start " + xid + ", flags: " + flags); }
 
       boolean convertTx = false;
       
@@ -237,32 +213,30 @@ public class JBossXAResource implements XAResource
    private void setCurrentTransactionId(final Xid xid)
    {
       if (xid == null)
-         throw new org.jboss.util.NullArgumentException("xid");
-
-      if (trace)
       {
-         log.trace("Setting current tx xid=" + xid + " previous: " + sessionState.getCurrentTxId() + " " + this);
+         throw new org.jboss.util.NullArgumentException("xid");
       }
+
+      if (trace) { log.trace(this + " setting current xid to " + xid + ",  previous " + sessionState.getCurrentTxId()); }
+
       sessionState.setCurrentTxId(xid);
    }
    
    private void unsetCurrentTransactionId(final Xid xid)
    {
       if (xid == null)
-         throw new org.jboss.util.NullArgumentException("xid");
-
-      if (trace)
       {
-         log.trace("Unsetting current tx  xid=" + xid + " previous: " + sessionState.getCurrentTxId() + " " + this);
+         throw new org.jboss.util.NullArgumentException("xid");
       }
-      
-      // Don't unset the xid if it has previously been suspended
-      // The session could have been recycled
+
+      if (trace) { log.trace(this + " unsetting current xid " + xid + ",  previous " + sessionState.getCurrentTxId()); }
+
+      // Don't unset the xid if it has previously been suspended.  The session could have been
+      // recycled
       if (xid.equals(sessionState.getCurrentTxId()))
       {
          sessionState.setCurrentTxId(rm.createLocalTx());
       }
-
    }
    
    // Inner classes -------------------------------------------------

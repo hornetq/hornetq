@@ -80,7 +80,7 @@ public class AsfAspect
 
    public Object handleSetMessageListener(Invocation invocation) throws Throwable
    {
-      if (trace) { log.trace("setMessageListener"); }
+      if (trace) { log.trace("setMessageListener()"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -98,14 +98,14 @@ public class AsfAspect
    
    public Object handleGetMessageListener(Invocation invocation) throws Throwable
    {
-      if (trace) { log.trace("getMessageListener"); }
+      if (trace) { log.trace("getMessageListener()"); }
       
       return sessionListener;
    }
    
    public Object handleCreateConnectionConsumer(Invocation invocation) throws Throwable
    {
-      if (trace) { log.trace("createConnectionConsumer"); }
+      if (trace) { log.trace("createConnectionConsumer()"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -115,19 +115,18 @@ public class AsfAspect
       ServerSessionPool sessionPool = (ServerSessionPool)mi.getArguments()[3];
       int maxMessages = ((Integer)mi.getArguments()[4]).intValue();
       
-      ConnectionConsumer cc =
-         new JBossConnectionConsumer((ConnectionDelegate)mi.getTargetObject(), dest, subscriptionName,
-                                     messageSelector, sessionPool, maxMessages);        
-      return cc;       
+      return new JBossConnectionConsumer((ConnectionDelegate)mi.getTargetObject(), dest,
+                                         subscriptionName, messageSelector, sessionPool,
+                                         maxMessages);
    }
    
    public Object handleAddAsfMessage(Invocation invocation) throws Throwable
    {
-      if (trace) { log.trace("addAsfMessage"); }
+      if (trace) { log.trace("addAsfMessage()"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      //Load the session with a message to be processed during a subsequent call to run()
+      // Load the session with a message to be processed during a subsequent call to run()
 
       MessageProxy m = (MessageProxy)mi.getArguments()[0];
       int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
@@ -150,7 +149,7 @@ public class AsfAspect
 
    public Object handleRun(Invocation invocation) throws Throwable
    {
-      if (trace) { log.trace("run"); }
+      if (trace) { log.trace("run()"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
             
@@ -161,6 +160,8 @@ public class AsfAspect
       while (msgs.size() > 0)
       {
          AsfMessageHolder holder = (AsfMessageHolder)msgs.removeFirst();
+
+         if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
          
          MessageCallbackHandler.callOnMessage(holder.consumerDelegate, del, sessionListener, holder.consumerID, false, holder.msg, ackMode);                          
       }

@@ -183,19 +183,19 @@ class JBossSession implements
 
    public MessageListener getMessageListener() throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("getMessageListener called"); }
+      if (log.isTraceEnabled()) { log.trace("getMessageListener() called"); }
       return delegate.getMessageListener();
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("setMessageListener called with:" + listener); }
+      if (log.isTraceEnabled()) { log.trace("setMessageListener(" + listener + ") called"); }
       delegate.setMessageListener(listener);
    }
 
    public void run()
    {
-      if (log.isTraceEnabled()) { log.trace("run called"); }
+      if (log.isTraceEnabled()) { log.trace("run() called"); }
       delegate.run();
    }
 

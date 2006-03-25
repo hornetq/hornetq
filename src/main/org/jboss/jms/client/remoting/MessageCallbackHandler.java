@@ -443,7 +443,7 @@ public class MessageCallbackHandler
             {                             
                if (timeout == 0)
                {
-                  if (trace) log.trace("receive with no timeout");
+                  if (trace) { log.trace("receive with no timeout"); }
                   
                   m = getMessage(0);                     
                   
@@ -451,8 +451,6 @@ public class MessageCallbackHandler
                   {
                      return null;
                   }
-                  
-                  if (trace) { log.trace("got " + m); }
                }
                else if (timeout == -1)
                {
@@ -482,7 +480,7 @@ public class MessageCallbackHandler
                   }
                }
                               
-               if (trace) { log.trace("got " + m); }
+               if (trace) { log.trace("received " + m + " after being blocked on the buffer"); }
                                   
                if (!m.getMessage().isExpired())
                {

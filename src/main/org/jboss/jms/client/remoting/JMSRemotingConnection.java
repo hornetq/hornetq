@@ -202,7 +202,7 @@ public class JMSRemotingConnection
 
    protected void setUpConnection() throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("Connecting with server URI:" + serverLocator); }
+      if (log.isTraceEnabled()) { log.trace("connecting to " + serverLocator); }
 
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
@@ -213,27 +213,27 @@ public class JMSRemotingConnection
 
       client = new Client(serverLocator, getConfig());
 
-      //We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller every time
-      //which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
-      //This can make a massive difference on performance
-      //We also do this in ServerConnectionEndpoint.setCallbackClient.
+      // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
+      // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
+      // This can make a massive difference on performance. We also do this in
+      // ServerConnectionEndpoint.setCallbackClient.
+
       client.setMarshaller(new JMSWireFormat());
       client.setUnMarshaller(new JMSWireFormat());
       client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
 
-      if (log.isTraceEnabled()) { log.trace("Created client"); }
+      if (log.isTraceEnabled()) { log.trace("created client"); }
 
       bindPort = PortUtil.findFreePort("localhost");
 
-      //Create callback server
+      // Create callback server
 
       String callbackServerURI;
 
       if (isMultiplex)
       {
-         callbackServerURI = "multiplex://" + thisAddress +
-                              ":" + bindPort + params + "&serverMultiplexId=" +
-                              id;
+         callbackServerURI = "multiplex://" + thisAddress + ":" + bindPort + params +
+                             "&serverMultiplexId=" + id;
       }
       else
       {
@@ -243,8 +243,7 @@ public class JMSRemotingConnection
 
       InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);
 
-      if (log.isTraceEnabled()) { log.trace("Starting callback server with uri:"
-            + callbackServerLocator.getLocatorURI()); }
+      if (log.isTraceEnabled()) { log.trace("starting callback server " + callbackServerLocator.getLocatorURI()); }
 
       callbackServer = new Connector();
 
@@ -256,7 +255,7 @@ public class JMSRemotingConnection
 
       callbackServer.start();
 
-      if (log.isTraceEnabled()) { log.trace("Created callback server"); }
+      if (log.isTraceEnabled()) { log.trace("callback server started"); }
 
       client.connect();
 

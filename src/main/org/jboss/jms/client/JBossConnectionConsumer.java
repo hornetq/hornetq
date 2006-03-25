@@ -48,6 +48,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  * This class implements javax.jms.ConnectionConsumer
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * Partially based on JBossMQ version by:
  * 
@@ -152,9 +153,6 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       if (trace) { log.trace("New " + this); }
    }
    
-   // Public --------------------------------------------------------
-
-
    // ConnectionConsumer implementation -----------------------------
 
    public ServerSessionPool getServerSessionPool() throws JMSException
@@ -212,12 +210,15 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
             
             if (queue.isEmpty())
             {
-               //Remove up to maxMessages messages from the consumer         
+               // Remove up to maxMessages messages from the consumer
                for (int i = 0; i < maxMessages; i++)
                {               
-                  //receiveNoWait
-                  if (trace) { log.trace("Attempting to get message with receiveNoWait"); }
+                  // receiveNoWait
+
+                  if (trace) { log.trace(this + " attempting to get message with receiveNoWait"); }
+
                   Message m = null;                  
+
                   if (!closed)
                   {
                      m = cons.receive(-1);
@@ -225,17 +226,21 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   
                   if (m == null)
                   {
-                     if (trace) { log.trace("Didn't get message"); }
+                     if (trace) { log.trace("receiveNoWait did not retrieve any message"); }
                      break;
                   }
-                  if (trace) { log.trace("Got message, adding to queue"); }
+
+                  if (trace) { log.trace("receiveNoWait got message " + m + " adding to queue"); }
                   queue.addLast(m);
                }
+
                if (queue.isEmpty())
                {
-                  //We didn't get any messages doing receiveNoWait, so let's wait
-                  //This returns if a message is received or by the consumer closing
-                  if (trace) { log.trace("Getting message with blocking receive"); }
+                  // We didn't get any messages doing receiveNoWait, so let's wait. This returns if
+                  // a message is received or by the consumer closing.
+
+                  if (trace) { log.trace(this + " attempting to get message with blocking receive (no timeout)"); }
+
                   Message m = null;
                   
                   if (!closed)
@@ -245,13 +250,13 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   
                   if (m != null)
                   {
-                     if (trace) { log.trace("Got message, adding to queue"); }
+                     if (trace) { log.trace("receive (no timeout) got message " + m + " adding to queue"); }
                      queue.addLast(m);
                   }
                   else
                   {
-                     //The consumer must have closed
-                     if (trace) { log.trace("Blocking receive returned null, consumer must have closed"); }
+                     // The consumer must have closed
+                     if (trace) { log.trace("blocking receive returned null, consumer must have closed"); }
                      break;
                   }
                }
@@ -259,26 +264,32 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
             
             if (!queue.isEmpty())
             {
-               if (trace) { log.trace("I have " + queue.size() + " messages to send to session"); }
+               if (trace) { log.trace("there are " + queue.size() + " messages to send to session"); }
+
                ServerSession serverSession = serverSessionPool.getServerSession();
-               JBossSession session = (JBossSession)serverSession.getSession();               
-               MessageListener listener = session.getMessageListener();               
+               JBossSession session = (JBossSession)serverSession.getSession();
+
+               MessageListener listener = session.getMessageListener();
+
                if (listener == null)
                {
-                  //Sanity check
-                  if (trace)
-                     log.trace("Session did not have a set MessageListener " + session + " " + this);
-               }
-               for (int i = 0; i < queue.size(); i++)
-               {
-                  MessageProxy md = (MessageProxy)queue.get(i);                  
-                  session.addAsfMessage(md, consumerID, cons);
-                  if (trace) { log.trace("Added message to session"); }
+                  // Sanity check
+                  if (trace) { log.trace(this + ": session " + session + " did not have a set MessageListener"); }
                }
 
-               if (trace) { log.trace(" Starting the ServerSession=" + serverSession + " " + this); }
+               for (int i = 0; i < queue.size(); i++)
+               {
+                  MessageProxy m = (MessageProxy)queue.get(i);
+                  session.addAsfMessage(m, consumerID, cons);
+                  if (trace) { log.trace("added " + m + " to session"); }
+               }
+
+               if (trace) { log.trace(this + " starting serverSession " + serverSession); }
+
                serverSession.start();
-               if (trace) { log.trace("ServerSession processed messages"); }
+
+               if (trace) { log.trace(this + "'s serverSession processed messages"); }
+
                queue.clear();
             }
             
@@ -293,7 +304,14 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       {
          log.error("Caught Throwable in processing run()", t);         
       }      
-   }   
+   }
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "JBossConnectionConsumer[" + consumerID + ", " + id + "]";
+   }
 
    // Object overrides ----------------------------------------------
 
