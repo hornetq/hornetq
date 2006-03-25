@@ -36,7 +36,7 @@ import javax.naming.NamingException;
 
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
-import org.jboss.jms.server.connectionmanager.ConnectionManagerImpl;
+import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
@@ -78,9 +78,6 @@ public class ServerPeer extends ServiceMBeanSupport
    // Remoting connector
    public static final String REMOTING_JMS_SUBSYSTEM = "JMS";
    
-   //TODO - Make this configurable
-   private static final long CONNECTION_LEASE_PERIOD = 20000;
-      
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -97,6 +94,8 @@ public class ServerPeer extends ServiceMBeanSupport
    protected boolean started;
 
    protected int objectIDSequence = Integer.MIN_VALUE + 1;
+
+   protected long remotingConnectionLeasePeriod;
 
    // wired components
 
@@ -138,7 +137,7 @@ public class ServerPeer extends ServiceMBeanSupport
       
       destinationJNDIMapper = new DestinationJNDIMapper(this);      
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
-      connectionManager = new ConnectionManagerImpl();
+      connectionManager = new SimpleConnectionManager();
 
       version = Version.instance();
 
@@ -381,6 +380,16 @@ public class ServerPeer extends ServiceMBeanSupport
       return messageIdManager;
    }
 
+   public long getRemotingConnectionLeasePeriod()
+   {
+      return remotingConnectionLeasePeriod;
+   }
+
+   public void setRemotingConnectionLeasePeriod(long remotingConnectionLeasePeriod)
+   {
+      this.remotingConnectionLeasePeriod = remotingConnectionLeasePeriod;
+   }
+
    // JMX Operations ------------------------------------------------
 
    public String createQueue(String name, String jndiName) throws Exception
@@ -595,8 +604,9 @@ public class ServerPeer extends ServiceMBeanSupport
       
       // install the connection listener that listens for failed connections
       
-      mbeanServer.setAttribute(connectorName,
-                               new Attribute("LeasePeriod", new Long(CONNECTION_LEASE_PERIOD)));
+      mbeanServer.
+         setAttribute(connectorName, new Attribute("LeasePeriod",
+                                                   new Long(remotingConnectionLeasePeriod)));
 
       mbeanServer.invoke(connectorName, "addConnectionListener",
             new Object[] {connectionManager},
