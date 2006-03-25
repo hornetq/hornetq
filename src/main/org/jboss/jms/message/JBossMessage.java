@@ -642,7 +642,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
    }
 
-   public Object getObjectProperty(String name) throws JMSException
+   public Object getObjectProperty(String name) throws JMSException                                                              
    {
       return properties.get(name);
    }
@@ -651,7 +651,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       HashSet set = new HashSet();
       set.addAll(properties.keySet());
-      set.add("JMSXDeliveryCount");
+      //set.add("JMSXDeliveryCount");
       return Collections.enumeration(set);
    }
 
