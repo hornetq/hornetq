@@ -555,6 +555,23 @@
       <copy file="${javassist.javassist.lib}/javassist.jar" todir="${build.classes}"/>
       <copy file="${trove.trove.lib}/trove.jar" todir="${build.classes}"/>
 
+      <!-- we need org/jboss/util/collection.SoftValueHashMap 
+       which was moved http://jira.jboss.org/jira/browse/JBMESSAGING-281
+      -->
+      <mkdir dir="${build.classes}/tmp"/>
+      <unjar src="${jboss.common.lib}/jboss-common.jar"
+         dest="${build.classes}/tmp">
+         <patternset>
+            <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.classes}/jboss-common-SoftValueHashMap.jar">
+         <fileset dir="${build.classes}/tmp">
+            <include name="**"/>
+         </fileset>
+      </jar>
+      <delete dir="${build.classes}/tmp"/>
+                      
       <mkdir dir="${build.classes}/tmp"/>
       <!-- I need InvocationMarshaller both on server and client side, and versions prior to
            JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
@@ -575,6 +592,7 @@
       <delete>
          <fileset dir="${build.classes}/tmp" includes="**"/>
       </delete>
+      
       <!-- I also need org.jboss.util.stream.* -->
       <unjar src="${jboss.common.lib}/jboss-common.jar"
          dest="${build.classes}/tmp">
