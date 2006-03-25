@@ -36,19 +36,17 @@ import org.jboss.remoting.ConnectionListener;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
- * 
- * A ConnectionManagerImpl.
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
  *
- * ConnectionManagerImpl.java,v 1.1 2006/02/21 07:44:00 timfox Exp
+ * SimpleConnectionManager.java,v 1.1 2006/02/21 07:44:00 timfox Exp
  */
-public class ConnectionManagerImpl implements ConnectionManager, ConnectionListener
+public class SimpleConnectionManager implements ConnectionManager, ConnectionListener
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ConnectionManagerImpl.class);
+   private static final Logger log = Logger.getLogger(SimpleConnectionManager.class);
 
    // Static --------------------------------------------------------
 
@@ -58,7 +56,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
 
    // Constructors --------------------------------------------------
 
-   public ConnectionManagerImpl()
+   public SimpleConnectionManager()
    {
       connections = new ConcurrentReaderHashMap();
    }
@@ -68,6 +66,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
    public void registerConnection(String remotingClientSessionID, ServerConnectionEndpoint endpoint)
    {    
       connections.put(remotingClientSessionID, endpoint);
+
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
    }
@@ -89,43 +88,50 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionListe
 
    // ConnectionListener --------------------------------------------
 
+   /**
+    * Be aware that ConnectionNotifier uses to call this method with null Throwables.
+    * @param t - expect it to be null!
+    */
    public void handleConnectionException(Throwable t, Client client)
    {  
+      String remotingSessionID = client.getSessionId();
 
-      String sessionId = client.getSessionId();
-      if (sessionId != null)
-      {         
-         if (t instanceof ClientDisconnectedException)
-         {
-            // This is OK
-            if (log.isTraceEnabled()) { log.trace("client " + client + " has disconnected"); }            
-         }
-         else
-         {            
-            ServerConnectionEndpoint endpoint =
-               (ServerConnectionEndpoint)connections.remove(sessionId);
-
-            if (endpoint != null)
-            {               
-               log.trace("Clearing up server resources for this connection");
-               
-               try
-               {
-                  endpoint.close();
-                  log.trace("Cleared up state for connection");
-               }
-               catch (JMSException e)
-               {
-                  log.error("Failed to close connection", e);
-               }
-            }            
-         }
+      if (t instanceof ClientDisconnectedException)
+      {
+         // This is OK
+         if (log.isTraceEnabled()) { log.trace(this + " notified that client " + client + " has disconnected"); }
+         return;
       }
-      
-      
+
+      log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure " +
+               "(" + (t == null ? "null Throwable" : t.getClass().toString()) + ")", t);
+
+      ServerConnectionEndpoint ce = (ServerConnectionEndpoint)connections.remove(remotingSessionID);
+
+      if (ce == null)
+      {
+         log.error(this + " cannot identify connection endpoint corresponding " +
+                   "to remoting session " + remotingSessionID);
+         return;
+      }
+
+      try
+      {
+         ce.close();
+         log.debug("cleared up state for connection " + ce);
+      }
+      catch (JMSException e)
+      {
+         log.error("Failed to close connection", e);
+      }
    }
 
    // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "ConnectionManager[" + Integer.toHexString(hashCode()) + "]";
+   }
 
    // Package protected ---------------------------------------------
 
