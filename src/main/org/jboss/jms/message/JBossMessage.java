@@ -651,7 +651,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       HashSet set = new HashSet();
       set.addAll(properties.keySet());
-      //set.add("JMSXDeliveryCount");
+      // http://jira.jboss.org/jira/browse/JBMESSAGING-278
+      set.add("JMSXDeliveryCount");
       return Collections.enumeration(set);
    }
 
