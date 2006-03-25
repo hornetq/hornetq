@@ -252,7 +252,7 @@ public class ResourceManager
    
    public void endTx(Xid xid, boolean success) throws XAException
    {
-      if (trace) { log.trace("Ending xid=" + xid + ", success=" + success); }
+      if (trace) { log.trace("ending " + xid + ", success=" + success); }
       
       TxState state = getTx(xid);
       if (state == null)
@@ -265,7 +265,7 @@ public class ResourceManager
    
    public Xid joinTx(Xid xid) throws XAException
    {
-      if (trace) { log.trace("Joining tx xid=" + xid); }
+      if (trace) { log.trace("joining  " + xid); }
       
       TxState state = getTx(xid);
       if (state == null)
@@ -278,7 +278,7 @@ public class ResourceManager
    
    public int prepare(Xid xid, ConnectionDelegate connection) throws XAException
    {
-      if (trace) { log.trace("Preparing xid=" + xid); }
+      if (trace) { log.trace("preparing " + xid); }
       
       TxState state = getTx(xid);
       if (state == null)
@@ -295,7 +295,7 @@ public class ResourceManager
    
    public Xid resumeTx(Xid xid) throws XAException
    {
-      if (trace) { log.trace("Resuming tx xid=" + xid); }
+      if (trace) { log.trace("resuming " + xid); }
       
       TxState state = getTx(xid);
       if (state == null)

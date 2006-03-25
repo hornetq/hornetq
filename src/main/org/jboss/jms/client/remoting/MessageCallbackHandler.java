@@ -484,7 +484,7 @@ public class MessageCallbackHandler
                                   
                if (!m.getMessage().isExpired())
                {
-                  if (trace) { log.trace("message " + m + " is not expired, returning it to the caller"); }
+                  if (trace) { log.trace("message " + m + " is not expired, pushing it to the caller"); }
                   
                   preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
                   

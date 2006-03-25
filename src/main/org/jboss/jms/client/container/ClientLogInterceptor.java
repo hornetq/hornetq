@@ -120,7 +120,7 @@ public class ClientLogInterceptor implements Interceptor
             }
             else
             {
-               log.trace(target + "." + methodName + "() ok");
+               log.trace(target + "." + methodName + "() OK");
             }
          }
       }

@@ -96,10 +96,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    private String clientID;
 
-   // We keep a map of consumers to prevent us to recurse through the attached session in order to
-   // find the ServerConsumerDelegate so we can ack the message
-   private Map consumers;
-   
+   // Map<sessionID - ServerSessionEndpoint>
    private Map sessions;
    
    private Set temporaryDestinations;
@@ -143,7 +140,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.connectionID = serverPeer.getNextObjectID();
       this.clientID = clientID;
 
-      consumers = new ConcurrentReaderHashMap();
       sessions = new ConcurrentReaderHashMap();
       temporaryDestinations = Collections.synchronizedSet(new HashSet()); //TODO Can probably improve concurrency for this
 
@@ -310,7 +306,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
       catch (InterruptedException e)
       {
-         //Ignore
+         // Ignore
       }
       try
       {
@@ -321,24 +317,31 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             log.warn("Connection is already closed");
             return;
          }
-          
-         //We clone to avoid concurrent modification exceptions
-         Iterator iter = new HashSet(sessions.values()).iterator();
-         while (iter.hasNext())
+
+         // We clone to avoid concurrent modification exceptions
+         for(Iterator i = new HashSet(sessions.values()).iterator(); i.hasNext(); )
          {
-            ServerSessionEndpoint sess = (ServerSessionEndpoint)iter.next();
+            ServerSessionEndpoint sess = (ServerSessionEndpoint)i.next();
+
+            // clear all consumers associated with this session from the serverPeer's cache
+            for(Iterator j = sess.getConsumerEndpointIDs().iterator(); j.hasNext(); )
+            {
+               Integer consumerID = (Integer)j.next();
+               serverPeer.removeConsumerEndpoint(consumerID);
+            }
+
+            // ... and also close the session
             sess.close();
          }
          
-         iter = temporaryDestinations.iterator();
-         while (iter.hasNext())
+         for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
          {
-            JBossDestination dest = (JBossDestination)iter.next();
+            JBossDestination dest = (JBossDestination)i.next();
             channelMapper.undeployCoreDestination(dest.isQueue(), dest.getName());
          }
          
          temporaryDestinations.clear();
-         consumers.clear();
+
          cm.unregisterConnection(remotingClientSessionId);
 
          JMSDispatcher.instance.unregisterTarget(new Integer(connectionID));
@@ -383,26 +386,30 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                if (trace) { log.trace("one phase commit request received"); }
                
                tx = tr.createTransaction();
+
                processCommit(request.getState(), tx);
                tx.commit();         
             }
             else if (request.getRequestType() == TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST)
             {
-               if (trace) { log.trace("One phase rollback request received"); }
+               if (trace) { log.trace("one phase rollback request received"); }
                
                //We just need to cancel deliveries
                cancelDeliveriesForTransaction(request.getState());
             }
             else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
             {                        
-               if (trace) { log.trace("Two phase commit prepare request received"); }        
+               if (trace) { log.trace("two phase commit prepare request received"); }
+
                tx = tr.createTransaction(request.getXid());
+
                processCommit(request.getState(), tx);     
                tx.prepare();
             }
             else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
             {   
-               if (trace) { log.trace("Two phase commit commit request received"); }
+               if (trace) { log.trace("two phase commit commit request received"); }
+
                tx = tr.getPreparedTx(request.getXid());
    
                if (trace) { log.trace("committing " + tx); }
@@ -410,7 +417,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             }
             else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
             {
-               if (trace) { log.trace("Two phase commit rollback request received"); }
+               if (trace) { log.trace("two phase commit rollback request received"); }
+
                tx = tr.getPreparedTx(request.getXid());
                   
                if (trace) { log.trace("rolling back " + tx); }
@@ -422,7 +430,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             handleFailure(t, tx);
          }
          
-         if (trace) { log.trace("Request processed ok"); }
+         if (trace) { log.trace("request processed ok"); }
       }
       finally
       {
@@ -560,19 +568,19 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return (ServerSessionEndpoint)sessions.remove(new Integer(sessionID));
    }
    
-   protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint c)
+   protected ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint c)
    {
-      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), c);
+      return serverPeer.putConsumerEndpoint(consumerID, c);
    }
    
-   protected ServerConsumerEndpoint getConsumerDelegate(int consumerID)
+   protected ServerConsumerEndpoint getConsumerEndpoint(int consumerID)
    {
-      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
+      return serverPeer.getConsumerEndpoint(consumerID);
    }
    
-   protected ServerConsumerEndpoint removeConsumerDelegate(int consumerID)
+   protected ServerConsumerEndpoint removeConsumerEndpoint(Integer consumerID)
    {
-      return (ServerConsumerEndpoint)consumers.remove(new Integer(consumerID));
+      return serverPeer.removeConsumerEndpoint(consumerID);
    }
    
    protected void addTemporaryDestination(Destination dest)
@@ -619,7 +627,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
       
       // This allows the no-local consumers to filter out the messages that come from the same
-      //  connection
+      // connection
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
       jbm.setConnectionID(connectionID);
       
@@ -627,13 +635,12 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     
       if (trace) { log.trace("sending " + jbm + (tx == null ? " non-transactionally" : " transactionally on " + tx + " to the core destination " + jbDest.getName())); }
       
-      //If we are sending to a topic, then we *always* do the send in the context of a transaction,
-      //in order to ensure that the message is delivered to all durable subscriptions (if any)
-      //attached to the topic. Otherwise if the server crashed in mid send, we may end up with the
-      //message in some, but not all of the durable subscriptions, which would be in
-      //contravention of the spec.
-      //When there are many durable subs for the topic, this actually should give us a performance gain
-      //since all the inserts can be done in the same JDBC tx too.
+      // If we are sending to a topic, then we *always* do the send in the context of a transaction,
+      // in order to ensure that the message is delivered to all durable subscriptions (if any)
+      // attached to the topic. Otherwise if the server crashed in mid send, we may end up with the
+      // message in some, but not all of the durable subscriptions, which would be in contravention
+      // of the spec. When there are many durable subs for the topic, this actually should give us
+      // a performance gain since all the inserts can be done in the same JDBC tx too.
       
       boolean internalTx = false;
       if (m.isReliable() && tx == null && !coreDestination.isQueue())
@@ -702,27 +709,28 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    protected void acknowledge(long messageID, int consumerID, Transaction tx) throws JMSException
    {
-      if (trace) { log.trace("acknowledging " + messageID + " from consumer " + consumerID + " transactionally on " + tx); }
+      if (trace) { log.trace(this + " processing acknowledge for message " + messageID + " from consumer " + consumerID + " transactionally on " + tx); }
 
-      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
+      ServerConsumerEndpoint consumer = getConsumerEndpoint(consumerID);
       if (consumer == null)
       {
-         throw new IllegalStateException("Cannot find consumer:" + consumerID);
+         throw new IllegalStateException("Cannot find consumer " + consumerID);
       }
       consumer.acknowledge(messageID, tx);
    }
    
    protected void cancel(long messageID, int consumerID) throws JMSException
    {
-      ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
+      if (trace) { log.trace(this + " processing cancel for message " + messageID + " from consumer " + consumerID); }
+
+      ServerConsumerEndpoint consumer = getConsumerEndpoint(consumerID);
       if (consumer == null)
       {
-         throw new IllegalStateException("Cannot find consumer:" + consumerID);
+         throw new IllegalStateException("Cannot find consumer " + consumerID);
       }
       consumer.cancelMessage(messageID);
    }
-   
-   
+
    // Private -------------------------------------------------------
    
    private void setStarted(boolean s)

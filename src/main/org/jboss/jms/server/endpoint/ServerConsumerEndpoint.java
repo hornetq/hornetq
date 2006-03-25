@@ -138,6 +138,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
       this.deliveries = new LinkedHashMap();
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
+
+      // adding the consumer to the channel
       this.channel.add(this);
 
       log.debug(this + " created");
@@ -424,14 +426,15 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          close();
       }
       
-      this.sessionEndpoint.getConnectionEndpoint().removeConsumerDelegate(id);
+      sessionEndpoint.getConnectionEndpoint().
+         getServerPeer().removeConsumerEndpoint(new Integer(id));
       
       if (this.channel instanceof CoreSubscription)
       {
          ((CoreSubscription)channel).closeConsumer();
       }
       
-      this.sessionEndpoint.removeConsumerDelegate(id);
+      sessionEndpoint.removeConsumerEndpoint(id);
    }  
    
    void acknowledgeAll() throws JMSException

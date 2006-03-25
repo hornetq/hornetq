@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
@@ -77,18 +78,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private boolean closed;
 
-   private Map consumers;
-   
-   private Map browsers;
-
    private ServerConnectionEndpoint connectionEndpoint;
 
-   private ChannelMapper cm;
-   
-   private PersistenceManager pm;
-   
-   private MessageStore ms;
+   private Map consumers;
+   private Map browsers;
 
+   private ChannelMapper cm;
+   private PersistenceManager pm;
+   private MessageStore ms;
 
    // Constructors --------------------------------------------------
 
@@ -251,9 +248,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          subscription.subscribe();
       }
             
-      putConsumerDelegate(consumerID, ep);
-      
-      connectionEndpoint.putConsumerDelegate(consumerID, ep);
+      putConsumerEndpoint(consumerID, ep); // caching consumer locally
+      connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
       
       log.debug("created and registered " + ep);
 
@@ -522,21 +518,31 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
 
    // Package protected ---------------------------------------------
+
+   /**
+    * @return a Set<Integer>
+    */
+   Set getConsumerEndpointIDs()
+   {
+      return consumers.keySet();
+   }
    
    // Protected -----------------------------------------------------
    
-   protected ServerConsumerEndpoint putConsumerDelegate(int consumerID, ServerConsumerEndpoint d)
+   protected ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint d)
    {
+      if (trace) { log.trace(this + " caching consumer " + consumerID); }
       return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), d);
    }
 
-   protected ServerConsumerEndpoint getConsumerDelegate(int consumerID)
+   protected ServerConsumerEndpoint getConsumerEndpoint(int consumerID)
    {
       return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
    }
    
-   protected ServerConsumerEndpoint removeConsumerDelegate(int consumerID)
+   protected ServerConsumerEndpoint removeConsumerEndpoint(int consumerID)
    {
+      if (trace) { log.trace(this + " removing consumer " + consumerID + " from cache"); }
       return (ServerConsumerEndpoint)consumers.remove(new Integer(consumerID));
    }
    

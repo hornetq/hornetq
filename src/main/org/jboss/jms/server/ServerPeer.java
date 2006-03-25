@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Set;
+import java.util.Map;
 
 import javax.jms.XAConnectionFactory;
 import javax.management.Attribute;
@@ -42,6 +43,7 @@ import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
+import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdManager;
@@ -56,6 +58,7 @@ import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * A JMS server peer.
@@ -77,11 +80,11 @@ public class ServerPeer extends ServiceMBeanSupport
    // The "subsystem" label this ServerPeer uses to register its ServerInvocationHandler with the
    // Remoting connector
    public static final String REMOTING_JMS_SUBSYSTEM = "JMS";
-   
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    protected String serverPeerID;
    protected ObjectName connectorName;
    protected InvokerLocator locator;
@@ -119,6 +122,14 @@ public class ServerPeer extends ServiceMBeanSupport
 
    protected JMSServerInvocationHandler handler;
 
+   // We keep a map of consumers to prevent us to recurse through the attached session in order to
+   // find the ServerConsumerDelegate so we can acknowledge the message. Originally, this map was
+   // maintained per-connection, but with the http://jira.jboss.org/jira/browse/JBMESSAGING-211 bug
+   // we shared it among connections, so a transaction submitted on the "wrong" connection can
+   // still succeed. For more details, see the JIRA issue.
+
+   private Map consumers;
+
    // Constructors --------------------------------------------------
 
    public ServerPeer(String serverPeerID,
@@ -131,18 +142,19 @@ public class ServerPeer extends ServiceMBeanSupport
 
       // the default value to use, unless the JMX attribute is modified
       connectorName = new ObjectName("jboss.remoting:service=Connector,transport=socket");
-      
+
       securityStore = new SecurityMetadataStore();
       txRepository = new TransactionRepository();
-      
-      destinationJNDIMapper = new DestinationJNDIMapper(this);      
+
+      destinationJNDIMapper = new DestinationJNDIMapper(this);
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
       connectionManager = new SimpleConnectionManager();
+
+      consumers = new ConcurrentReaderHashMap();
 
       version = Version.instance();
 
       started = false;
-      
    }
 
    // ServiceMBeanSupport overrides ---------------------------------
@@ -185,20 +197,20 @@ public class ServerPeer extends ServiceMBeanSupport
       channelMapper.setPersistenceManager(persistenceManagerDelegate);
 
       // start the rest of the internal components
-      
+
       destinationJNDIMapper.start();
       securityStore.start();
       connFactoryJNDIMapper.start();
       txRepository.start(persistenceManagerDelegate);
       txRepository.loadPreparedTransactions();
-        
+
       //TODO Make block size configurable
       messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
 
       initializeRemoting(mbeanServer);
 
       createRecoverable();
-            
+
       started = true;
 
       log.info("JMS " + this + " started");
@@ -374,7 +386,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return securityStore.getDefaultSecurityConfig();
    }
-   
+
    public IdManager getMessageIdManager()
    {
       return messageIdManager;
@@ -396,7 +408,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return createDestinationDefault(true, name, jndiName);
    }
-   
+
    public String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
       return createDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
@@ -411,11 +423,11 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return createDestinationDefault(false, name, jndiName);
    }
-   
+
    public String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
       return createDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
-   }   
+   }
 
    public boolean destroyTopic(String name) throws Exception
    {
@@ -458,7 +470,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return version;
    }
-   
+
    // access to hard-wired server extensions
 
    public SecurityManager getSecurityManager()
@@ -475,7 +487,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return connFactoryJNDIMapper;
    }
-   
+
    public ConnectionManager getConnectionManager()
    {
       return connectionManager;
@@ -497,10 +509,27 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return messageStoreDelegate;
    }
-   
+
    public synchronized int getNextObjectID()
    {
       return objectIDSequence++;
+   }
+
+   public ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint c)
+   {
+      log.debug(this + " caching consumer " + consumerID);
+      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), c);
+   }
+
+   public ServerConsumerEndpoint getConsumerEndpoint(int consumerID)
+   {
+      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
+   }
+
+   public ServerConsumerEndpoint removeConsumerEndpoint(Integer consumerID)
+   {
+      log.debug(this + " removing consumer " + consumerID + " from the cache");
+      return (ServerConsumerEndpoint)consumers.remove(consumerID);
    }
 
    public String toString()
@@ -513,7 +542,7 @@ public class ServerPeer extends ServiceMBeanSupport
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    /**
     * Place a Recoverable instance in the JNDI tree. This can be used by a transaction manager in
     * order to obtain an XAResource so it can perform XA recovery.
@@ -546,11 +575,11 @@ public class ServerPeer extends ServiceMBeanSupport
 
       recCtx.rebind(this.serverPeerID, recoverable);
    }
-   
+
    private void removeRecoverable() throws Exception
    {
       InitialContext ic = new InitialContext();
-      
+
       Context recCtx = null;
       try
       {
@@ -560,7 +589,7 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (NamingException e)
       {
          //Ignore
-      }   
+      }
    }
 
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
@@ -569,21 +598,21 @@ public class ServerPeer extends ServiceMBeanSupport
       //This is vital for performance reasons.
       SerializationStreamFactory.setManagerClassName(
          "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
-      
+
       JMSWireFormat wf = new JMSWireFormat();
-      
+
       MarshalFactory.addMarshaller("jms", wf, wf);
-            
+
       String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
-      
+
       locator = new InvokerLocator(s);
-      
+
       //FIXME Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
       //a socket timeout on the invoker locator URI then it always makes a remote call
       //even when in the same JVM
 
       log.debug("LocatorURI: " + getLocatorURI());
-      
+
       // first remove the invocation handler specified in the config
 
       // TODO: Why removing this? Isn't ServerPeer.stopService() supposed to remove it?
@@ -594,23 +623,23 @@ public class ServerPeer extends ServiceMBeanSupport
                          new String[] { "java.lang.String" });
 
       // add the JMS subsystem invocation handler
-      
+
       handler = new JMSServerInvocationHandler();
 
       mbeanServer.invoke(connectorName, "addInvocationHandler",
                          new Object[] { REMOTING_JMS_SUBSYSTEM, handler},
                          new String[] { "java.lang.String",
                                         "org.jboss.remoting.ServerInvocationHandler"});
-      
+
       // install the connection listener that listens for failed connections
-      
+
       mbeanServer.
          setAttribute(connectorName, new Attribute("LeasePeriod",
                                                    new Long(remotingConnectionLeasePeriod)));
 
       mbeanServer.invoke(connectorName, "addConnectionListener",
-            new Object[] {connectionManager},
-            new String[] {"org.jboss.remoting.ConnectionListener"});        
+                         new Object[] {connectionManager},
+                         new String[] {"org.jboss.remoting.ConnectionListener"});
    }
 
    private void loadServerAOPConfig() throws Exception
@@ -618,13 +647,13 @@ public class ServerPeer extends ServiceMBeanSupport
       URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
       AspectXmlLoader.deployXML(url);
    }
-   
+
    private void unloadServerAOPConfig() throws Exception
    {
       URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
       AspectXmlLoader.undeployXML(url);
    }
-   
+
    private void loadClientAOPConfig() throws Exception
    {
       // Note the file is called aop-messaging-client.xml NOT messaging-client-aop.xml. This is
@@ -666,7 +695,7 @@ public class ServerPeer extends ServiceMBeanSupport
       // TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
       //        <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
       //
-      
+
       //FIXME - Yes this is super-ugly - there must be an easier way of doing it
       //also in LocalTestServer is doing the same thing in a slightly different way
       //this should be combined
@@ -685,9 +714,9 @@ public class ServerPeer extends ServiceMBeanSupport
          "    </constructor>" +
          "</mbean>";
 
-      return createDestinationInternal(destinationMBeanConfig, on, jndiName, false, -1, -1, -1);   
+      return createDestinationInternal(destinationMBeanConfig, on, jndiName, false, -1, -1, -1);
    }
-   
+
    private String createDestinationInternal(String destinationMBeanConfig, ObjectName on,
                                             String jndiName, boolean params, int fullSize,
                                             int pageSize, int downCacheSize) throws Exception
@@ -725,7 +754,7 @@ public class ServerPeer extends ServiceMBeanSupport
       // end of TODO
       //
    }
-   
+
    private String createDestination(boolean isQueue, String name, String jndiName, int fullSize,
                                     int pageSize, int downCacheSize) throws Exception
    {
@@ -778,5 +807,5 @@ public class ServerPeer extends ServiceMBeanSupport
    }
 
    // Inner classes -------------------------------------------------
-     
+
 }
