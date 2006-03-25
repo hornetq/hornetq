@@ -178,6 +178,11 @@ public class ServiceContainer
          int i = Integer.parseInt(valueAsString);
          return new Integer(i);
       }
+      else if ("long".equals(type) || "java.lang.Long".equals(type))
+      {
+         long l = Long.parseLong(valueAsString);
+         return new Long(l);
+      }
       else if ("boolean".equals(type) || "java.lang.Boolean".equals(type))
       {
          boolean b = Boolean.valueOf(valueAsString).booleanValue();
