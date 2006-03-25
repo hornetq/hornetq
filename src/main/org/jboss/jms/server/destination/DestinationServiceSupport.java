@@ -11,6 +11,7 @@ import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
+import org.jboss.jms.util.XMLUtil;
 import org.w3c.dom.Element;
 
 import javax.management.ObjectName;
@@ -96,6 +97,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(),
                                   serverPeer.getPersistenceManagerDelegate(), fullSize,
                                   pageSize, downCacheSize);
+
+         log.debug(this + " security configuration: " + (securityConfig == null ?
+            "null" : "\n" + XMLUtil.elementToString(securityConfig)));
 
          log.info(this + " started, fullSize=" + fullSize + ", pageSize=" + pageSize + ", downCacheSize=" + downCacheSize);
       }

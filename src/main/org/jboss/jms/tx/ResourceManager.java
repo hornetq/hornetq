@@ -105,11 +105,12 @@ public class ResourceManager
     */
    public void addAck(Object xid, AckInfo ackInfo) throws JMSException
    {
-      if (trace) { log.trace("adding ack for xid " + xid); }
+      if (trace) { log.trace("adding " + ackInfo + " to transaction " + xid); }
+
       TxState tx = getTx(xid);
       if (tx == null)
       {
-         throw new JMSException("There is no transaction with id:" + xid);
+         throw new JMSException("There is no transaction with id " + xid);
       }
       tx.getAcks().add(ackInfo);
    }
@@ -308,7 +309,7 @@ public class ResourceManager
 
    public Xid suspendTx(Xid xid) throws XAException
    {
-      if (trace) { log.trace("Suppending tx xid=" + xid); }
+      if (trace) { log.trace("suppending " + xid); }
 
       TxState state = getTx(xid);
       if (state == null)
@@ -321,34 +322,37 @@ public class ResourceManager
 
    public Xid convertTx(LocalTxXid anonXid, Xid xid) throws XAException
    {
-      if (trace) { log.trace("Converting tx anonXid=" + anonXid + ", xid=" + xid); }
+      if (trace) { log.trace("converting " + anonXid + " to " + xid); }
 
       TxState state = getTx(anonXid);
+
       if (state == null)
       {
          log.error("Cannot find transaction with xid:" + anonXid);         
          throw new XAException(XAException.XAER_NOTA);
       }
+
       state = getTx(xid);
+
       if (state != null)
       {
          log.error("Transaction already exists:" + xid);         
          throw new XAException(XAException.XAER_DUPID);
       }
-      TxState s = removeTx(anonXid);
 
+      TxState s = removeTx(anonXid);
       transactions.put(xid, s);
       return xid;
    }
    
    public Xid startTx(Xid xid) throws XAException
    {
-      if (trace) { log.trace("Starting tx xid=" + xid); }
+      if (trace) { log.trace("starting " + xid); }
 
       TxState state = getTx(xid);
       if (state != null)
       {
-         log.error("Cannot find transaction with xid:" + xid);         
+         log.error("Cannot find transaction with xid " + xid);
          throw new XAException(XAException.XAER_DUPID);
       }
       transactions.put(xid, new TxState());
@@ -357,7 +361,7 @@ public class ResourceManager
    
    public Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
    {
-      if (trace) { log.trace("Calling recover " + flags); }
+      if (trace) { log.trace("calling recover with flags: " + flags); }
       
       if (flags == XAResource.TMSTARTRSCAN)
       {
@@ -382,7 +386,7 @@ public class ResourceManager
    
    public TxState getTx(Object xid)
    {
-      if (trace) { log.trace("Getting tx for tx id " + xid); }
+      if (trace) { log.trace("getting transaction for " + xid); }
       return (TxState)transactions.get(xid);
    }
    

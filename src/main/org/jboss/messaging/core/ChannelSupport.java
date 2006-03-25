@@ -385,7 +385,7 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       {
          // no receiver, receiver that doesn't accept the message or broken receiver
 
-         if (trace){ log.trace(this + ": no delivery returned for message" + ref); }
+         if (trace){ log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message"); }
 
          return false;
       }
