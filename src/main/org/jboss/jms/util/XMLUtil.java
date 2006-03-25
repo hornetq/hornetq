@@ -200,45 +200,35 @@ public class XMLUtil
          throw new XMLRuntimeException("nodes have different node names");
       }
 
-      boolean hasAttributes = node.hasAttributes();
+      NamedNodeMap attrs = node.getAttributes();
+      int attrCount = attrs.getLength();
 
-      if (hasAttributes != node2.hasAttributes())
+      NamedNodeMap attrs2 = node2.getAttributes();
+      int attrCount2 = attrs2.getLength();
+
+      if (attrCount != attrCount2)
       {
-         throw new XMLRuntimeException("one node has attributes and the other doesn't");
+         throw new XMLRuntimeException("nodes hava a different number of attributes");
       }
 
-      if (hasAttributes)
+      outer: for(int i = 0; i < attrCount; i++)
       {
-         NamedNodeMap attrs = node.getAttributes();
-         int length = attrs.getLength();
+         Node n = attrs.item(i);
+         String name = n.getNodeName();
+         String value = n.getNodeValue();
 
-         NamedNodeMap attrs2 = node2.getAttributes();
-         int length2 = attrs2.getLength();
-
-         if (length != length2)
+         for(int j = 0; j < attrCount; j++)
          {
-            throw new XMLRuntimeException("nodes hava a different number of attributes");
-         }
+            Node n2 = attrs2.item(j);
+            String name2 = n2.getNodeName();
+            String value2 = n2.getNodeValue();
 
-         outer: for(int i = 0; i < length; i++)
-         {
-            Node n = attrs.item(i);
-            String name = n.getNodeName();
-            String value = n.getNodeValue();
-
-            for(int j = 0; j < length; j++)
+            if (name.equals(name2) && value.equals(value2))
             {
-               Node n2 = attrs2.item(j);
-               String name2 = n2.getNodeName();
-               String value2 = n2.getNodeValue();
-
-               if (name.equals(name2) && value.equals(value2))
-               {
-                  continue outer;
-               }
+               continue outer;
             }
-            throw new XMLRuntimeException("attribute " + name + "=" + value + " doesn't match");
          }
+         throw new XMLRuntimeException("attribute " + name + "=" + value + " doesn't match");
       }
 
       boolean hasChildren = node.hasChildNodes();
