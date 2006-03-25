@@ -45,6 +45,7 @@ import org.jboss.jms.util.XMLUtil;
  * This test must be run with the Test security config. on the server
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * 
  * Much of the basic idea of the tests come from SecurityUnitTestCase.java in JBossMQ by:
  * @author <a href="pra@tim.se">Peter Antman</a>
@@ -72,12 +73,18 @@ import org.jboss.jms.util.XMLUtil;
  */
 public class SecurityTest extends MessagingTestCase
 {
-   protected Logger log = Logger.getLogger(SecurityTest.class);
-   
+   // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(SecurityTest.class);
+
    protected static final String TEST_QUEUE = "queue/testQueue";
    protected static final String TEST_TOPIC = "topic/testTopic";
    protected static final String SECURED_TOPIC = "topic/securedTopic";
    protected static final String UNSECURED_TOPIC = "topic/unsecuredTopic";
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
 
    protected InitialContext ic;
 
@@ -86,129 +93,18 @@ public class SecurityTest extends MessagingTestCase
    protected Topic testTopic;
    protected Topic securedTopic;
    protected Topic unsecuredTopic;
-   
+
    protected String oldDefaultConfig;
-   
+
    // Constructors --------------------------------------------------
-   
+
    public SecurityTest(String name)
    {
       super(name);
    }
-   
-   // TestCase overrides -------------------------------------------
-   
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      
-      setupDestinations();
-      
-      final String defaultSecurityConfig = 
-         "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
-      ServerManagement.setDefaultSecurityConfig(defaultSecurityConfig);
 
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-      testQueue = (Queue)ic.lookup("/queue/testQueue");
-      testTopic = (Topic)ic.lookup("/topic/testTopic");
-      securedTopic = (Topic)ic.lookup("/topic/securedTopic");
-      unsecuredTopic = (Topic)ic.lookup("/topic/unsecuredTopic");
-      
-      drainDestination(cf, testQueue);
-
-      log.debug("setup done");
-   }
-   
-   protected void tearDown() throws Exception
-   {
-      ServerManagement.setDefaultSecurityConfig(oldDefaultConfig);
-      ServerManagement.undeployQueue("testQueue");
-      ServerManagement.undeployTopic("testTopic");
-      ServerManagement.undeployTopic("securedTopic");
-      ServerManagement.undeployTopic("unsecuredTopic");
-
-      ic.close();
-   }
-   
    // Public --------------------------------------------------------
 
-   private boolean canReadDestination(Connection conn, Destination dest) throws Exception
-   {
-      
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      try
-      {
-         sess.createConsumer(dest);
-         return true;
-      }
-      catch (JMSSecurityException e)
-      {
-         log.trace("Can't read destination");
-         return false;
-      }     
-   }
-   
-   private boolean canWriteDestination(Connection conn, Destination dest) throws Exception
-   {
-      
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      boolean namedSucceeded = true;
-      try
-      {
-         MessageProducer prod = sess.createProducer(dest);         
-         Message m = sess.createTextMessage("Kippers");
-         prod.send(m);
-      }
-      catch (JMSSecurityException e)
-      {
-         log.trace("Can't write to destination using named producer");
-         namedSucceeded = false;
-      }
-      
-      boolean anonSucceeded = true;
-      try
-      {         
-         MessageProducer producerAnon = sess.createProducer(null);
-         Message m = sess.createTextMessage("Kippers");
-         producerAnon.send(dest, m);
-      }
-      catch (JMSSecurityException e)
-      {
-         log.trace("Can't write to destination using named producer");
-         anonSucceeded = false;
-      }
-      
-      log.trace("namedSucceeded:" + namedSucceeded + ", anonSucceeded:" + anonSucceeded);
-      return namedSucceeded || anonSucceeded;
-      
-   }
-   
-   private boolean canCreateDurableSub(Connection conn, Topic topic, String subName) throws Exception
-   {
-      
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      try
-      {
-         sess.createDurableSubscriber(topic, subName);
-         sess.unsubscribe(subName);
-         log.trace("Successfully created and unsubscribed subscription");
-         return true;
-      }
-      catch (JMSSecurityException e)
-      {
-         log.trace("Can't create durable sub");
-         return false;
-      }    
-   }
-   
    /**
     * Login with no user, no password
     * Should allow login (equivalent to guest)
@@ -229,8 +125,8 @@ public class SecurityTest extends MessagingTestCase
          if (conn2 != null) conn2.close();
       }
    }
-   
-   /** 
+
+   /**
     * Login with valid user and password
     * Should allow
     */
@@ -246,8 +142,8 @@ public class SecurityTest extends MessagingTestCase
          if (conn1 != null) conn1.close();
       }
    }
-   
-   /** 
+
+   /**
     * Login with valid user and invalid password
     * Should allow
     */
@@ -267,8 +163,8 @@ public class SecurityTest extends MessagingTestCase
          if (conn1 != null) conn1.close();
       }
    }
-   
-   /** 
+
+   /**
     * Login with invalid user and invalid password
     * Should allow
     */
@@ -289,21 +185,21 @@ public class SecurityTest extends MessagingTestCase
          if (conn1 != null) conn1.close();
       }
    }
-   
+
    /* Now some client id tests */
-   
-   
-   
+
+
+
    /*
     * user/pwd with preconfigured clientID, should return preconf
     */
    // TODO
    /*
-    
-    
+
+
     This test will not work until client id is automatically preconfigured into
     connection for specific user
-    
+
     public void testPreConfClientID() throws Exception
     {
     Connection conn = null;
@@ -343,12 +239,12 @@ public class SecurityTest extends MessagingTestCase
     * Try setting client ID on preconfigured connection - should throw exception
     */
    /*
-    * 
-    
-    
+    *
+
+
     This test will not work until client id is automatically preconfigured into
     connection for specific user
-    
+
     public void testSetClientIDPreConf() throws Exception
     {
     Connection conn = null;
@@ -368,7 +264,7 @@ public class SecurityTest extends MessagingTestCase
      }
      }
      */
-   
+
    /*
     * Try setting client ID after an operation has been performed on the connection
     */
@@ -391,22 +287,36 @@ public class SecurityTest extends MessagingTestCase
          if (conn != null) conn.close();
       }
    }
-   
-   
-   /* Authorization tests */
-   
-   
-   /*
-    * Test valid topic publisher
-    */
+
+   //
+   // Authorization tests
+   //
+
+   public void testAnonymousConnection() throws Exception
+   {
+      Connection conn = null;
+      try
+      {
+         conn = cf.createConnection();
+         assertTrue(canWriteDestination(conn, testQueue));
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    public void testValidTopicPublisher() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("john", "needle");        
+         conn = cf.createConnection("john", "needle");
          assertTrue(canWriteDestination(conn, testTopic));
-      }        
+      }
       finally
       {
          if (conn != null)
@@ -415,19 +325,15 @@ public class SecurityTest extends MessagingTestCase
          }
       }
    }
-   
-   
-   /*
-    * Test invalid topic publisher
-    */
+
    public void testInvalidTopicPublisher() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("nobody", "nobody");        
+         conn = cf.createConnection("nobody", "nobody");
          assertFalse(canWriteDestination(conn, testTopic));
-      }    
+      }
       finally
       {
          if (conn != null)
@@ -436,19 +342,15 @@ public class SecurityTest extends MessagingTestCase
          }
       }
    }
-   
-   
-   /*
-    * Test valid topic subscriber
-    */
+
    public void testValidTopicSubscriber() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("john", "needle");        
+         conn = cf.createConnection("john", "needle");
          assertTrue(canReadDestination(conn, testTopic));
-      }    
+      }
       finally
       {
          if (conn != null)
@@ -457,56 +359,46 @@ public class SecurityTest extends MessagingTestCase
          }
       }
    }
-   
-   /*
-    * Test invalid topic subscriber
-    */
+
    public void testInvalidTopicSubscriber() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("nobody", "nobody");        
+         conn = cf.createConnection("nobody", "nobody");
          assertFalse(canReadDestination(conn, testTopic));
-      }    
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
-   
-   /*
-    * Test valid queue browser
-    */
+
    public void testValidQueueBrowser() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("john", "needle");        
+         conn = cf.createConnection("john", "needle");
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          sess.createBrowser(testQueue);
-      }    
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
-   /*
-    * Test invalid queue browser
-    */
+
    public void testInvalidQueueBrowser() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("nobody", "nobody");        
+         conn = cf.createConnection("nobody", "nobody");
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          sess.createBrowser(testQueue);
          fail("should throw JMSSecurityException");
-      }    
+      }
       catch (JMSSecurityException e)
       {
          //Expected
@@ -516,107 +408,89 @@ public class SecurityTest extends MessagingTestCase
          if (conn != null) conn.close();
       }
    }
-   
-   
-   
-   /*
-    * Test valid queue sender
-    */
+
    public void testValidQueueSender() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("john", "needle");        
+         conn = cf.createConnection("john", "needle");
          assertTrue(this.canWriteDestination(conn, testQueue));
-      }        
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
-   
-   /*
-    * Test invalid queue sender
-    */
+
    public void testInvalidQueueSender() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("nobody", "nobody");        
+         conn = cf.createConnection("nobody", "nobody");
          assertFalse(this.canWriteDestination(conn, testQueue));
-      }    
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
-   
-   
-   /*
-    * Test valid queue receiver
-    */
+
    public void testValidQueueReceiver() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("john", "needle");        
+         conn = cf.createConnection("john", "needle");
          assertTrue(this.canReadDestination(conn, testQueue));
-      }    
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
-   /*
-    * Test invalid queue receiver
-    */
+
    public void testInvalidQueueReceiver() throws Exception
    {
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("nobody", "nobody");        
+         conn = cf.createConnection("nobody", "nobody");
          assertFalse(this.canReadDestination(conn, testQueue));
-      }    
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
 
-
    // TODO
    /*
     * Test valid durable subscription creation for connection preconfigured with client id
     */
-   
+
    /*
-    
+
     This test will not work until client id is automatically preconfigured into
     connection for specific user
-    
+
     public void testValidDurableSubscriptionCreationPreConf() throws Exception
     {
     Connection conn = null;
     try
     {
-    conn = cf.createConnection("john", "needle");        
+    conn = cf.createConnection("john", "needle");
     assertTrue(this.canCreateDurableSub(conn, testTopic, "sub2"));
-    }          
+    }
     finally
     {
     if (conn != null) conn.close();
     }
     }
-    
+
     */
-   
+
    /*
     * Test invalid durable subscription creation for connection preconfigured with client id
     */
@@ -624,7 +498,7 @@ public class SecurityTest extends MessagingTestCase
 
    // TODO
    /*
-    
+
     This test will not work until client id is automatically preconfigured into
     connection for specific user
     public void testInvalidDurableSubscriptionCreationPreConf() throws Exception
@@ -632,17 +506,17 @@ public class SecurityTest extends MessagingTestCase
     Connection conn = null;
     try
     {
-    conn = cf.createConnection("john", "needle");        
+    conn = cf.createConnection("john", "needle");
     assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub3"));
-    }    
+    }
     finally
     {
     if (conn != null) conn.close();
     }
     }
-    
+
     */
-   
+
    /*
     * Test valid durable subscription creation for connection not preconfigured with client id
     */
@@ -651,10 +525,10 @@ public class SecurityTest extends MessagingTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("dynsub", "dynsub");        
+         conn = cf.createConnection("dynsub", "dynsub");
          conn.setClientID("myID");
          assertTrue(this.canCreateDurableSub(conn, testTopic, "sub4"));
-      }          
+      }
       finally
       {
          if (conn != null) conn.close();
@@ -668,45 +542,45 @@ public class SecurityTest extends MessagingTestCase
    {
       Connection conn = null;
       try
-      {        
-         conn = cf.createConnection("dynsub", "dynsub");       
+      {
+         conn = cf.createConnection("dynsub", "dynsub");
          conn.setClientID("myID2");
          assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub5"));
-      }         
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
+
    public void testDefaultSecurityValid() throws Exception
    {
       Connection conn = null;
       try
-      {        
-         conn = cf.createConnection("john", "needle");       
+      {
+         conn = cf.createConnection("john", "needle");
          conn.setClientID("myID5");
          assertTrue(this.canReadDestination(conn, unsecuredTopic));
          assertTrue(this.canWriteDestination(conn, unsecuredTopic));
          assertTrue(this.canCreateDurableSub(conn, unsecuredTopic, "subxyz"));
-      }         
+      }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
+
    public void testDefaultSecurityInvalid() throws Exception
    {
       Connection conn = null;
       try
-      {        
-         conn = cf.createConnection("nobody", "nobody");       
+      {
+         conn = cf.createConnection("nobody", "nobody");
          conn.setClientID("myID6");
          assertFalse(this.canReadDestination(conn, unsecuredTopic));
          assertFalse(this.canWriteDestination(conn, unsecuredTopic));
          assertFalse(this.canCreateDurableSub(conn, unsecuredTopic, "subabc"));
-      }          
+      }
       finally
       {
          if (conn != null) conn.close();
@@ -812,17 +686,18 @@ public class SecurityTest extends MessagingTestCase
       }
    }
 
-   /* Setup all the destinations needed for the tests.
-    * We need the following destinations:
-    * 
-    *
-    * 
-    */
-   private void setupDestinations() throws Exception
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void setUp() throws Exception
    {
+      super.setUp();
+      ServerManagement.start("all");
+
       ServerManagement.undeployQueue("testQueue");
       ServerManagement.deployQueue("testQueue");
-            
+
       final String testQueueConf =
          "<security>" +
             "<role name=\"guest\" read=\"true\" write=\"true\"/>" +
@@ -831,34 +706,139 @@ public class SecurityTest extends MessagingTestCase
          "</security>";
 
       ServerManagement.configureSecurityForDestination("testQueue", testQueueConf);
-      
+
       ServerManagement.undeployTopic("testTopic");
       ServerManagement.deployTopic("testTopic");
-            
-      final String testTopicConf = 
+
+      final String testTopicConf =
          "<security>" +
             "<role name=\"guest\" read=\"true\" write=\"true\"/>" +
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
             "<role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>" +
          "</security>";
-                     
+
       ServerManagement.configureSecurityForDestination("testTopic", testTopicConf);
-      
+
       ServerManagement.undeployTopic("securedTopic");
       ServerManagement.deployTopic("securedTopic");
-      
-      final String testSecuredTopicConf = 
-         "<security>" +         
+
+      final String testSecuredTopicConf =
+         "<security>" +
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
          "</security>";
-                     
+
       ServerManagement.configureSecurityForDestination("testSecuredTopic", testSecuredTopicConf);
-      
+
       ServerManagement.undeployTopic("unsecuredTopic");
       ServerManagement.deployTopic("unsecuredTopic");
-      
+
+
+
+      final String defaultSecurityConfig =
+         "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+      oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
+      ServerManagement.setDefaultSecurityConfig(defaultSecurityConfig);
+
+      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      testQueue = (Queue)ic.lookup("/queue/testQueue");
+      testTopic = (Topic)ic.lookup("/topic/testTopic");
+      securedTopic = (Topic)ic.lookup("/topic/securedTopic");
+      unsecuredTopic = (Topic)ic.lookup("/topic/unsecuredTopic");
+
+      drainDestination(cf, testQueue);
+
+      log.debug("setup done");
    }
-   
+
+   protected void tearDown() throws Exception
+   {
+      ServerManagement.setDefaultSecurityConfig(oldDefaultConfig);
+      ServerManagement.undeployQueue("testQueue");
+      ServerManagement.undeployTopic("testTopic");
+      ServerManagement.undeployTopic("securedTopic");
+      ServerManagement.undeployTopic("unsecuredTopic");
+
+      ic.close();
+   }
+
+   // Private -------------------------------------------------------
+
+   private boolean canReadDestination(Connection conn, Destination dest) throws Exception
+   {
+
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try
+      {
+         sess.createConsumer(dest);
+         return true;
+      }
+      catch (JMSSecurityException e)
+      {
+         log.trace("Can't read destination");
+         return false;
+      }
+   }
+
+   private boolean canWriteDestination(Connection conn, Destination dest) throws Exception
+   {
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      boolean namedSucceeded = true;
+      try
+      {
+         MessageProducer prod = sess.createProducer(dest);
+         Message m = sess.createTextMessage("Kippers");
+         prod.send(m);
+      }
+      catch (JMSSecurityException e)
+      {
+         log.trace("Can't write to destination using named producer");
+         namedSucceeded = false;
+      }
+
+      boolean anonSucceeded = true;
+      try
+      {
+         MessageProducer producerAnon = sess.createProducer(null);
+         Message m = sess.createTextMessage("Kippers");
+         producerAnon.send(dest, m);
+      }
+      catch (JMSSecurityException e)
+      {
+         log.trace("Can't write to destination using named producer");
+         anonSucceeded = false;
+      }
+
+      log.trace("namedSucceeded:" + namedSucceeded + ", anonSucceeded:" + anonSucceeded);
+      return namedSucceeded || anonSucceeded;
+
+   }
+
+   private boolean canCreateDurableSub(Connection conn, Topic topic, String subName) throws Exception
+   {
+
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try
+      {
+         sess.createDurableSubscriber(topic, subName);
+         sess.unsubscribe(subName);
+         log.trace("Successfully created and unsubscribed subscription");
+         return true;
+      }
+      catch (JMSSecurityException e)
+      {
+         log.trace("Can't create durable sub");
+         return false;
+      }
+   }
+
+   // Inner classes -------------------------------------------------
+
 }
 
 
