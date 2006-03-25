@@ -220,7 +220,7 @@ public class SecurityMetadataStore implements SecurityManager
          // Apparently there is no security context, try adding java:/jaas
          log.warn("Failed to lookup securityDomain " + securityDomain, e);
 
-         if (securityDomain.startsWith("java:/jaas/") == false)
+         if (!securityDomain.startsWith("java:/jaas/"))
          {
             authenticationManager =
                (SubjectSecurityManager)ic.lookup("java:/jaas/" + securityDomain);

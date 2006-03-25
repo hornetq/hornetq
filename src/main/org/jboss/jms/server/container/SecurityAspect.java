@@ -241,8 +241,7 @@ public class SecurityAspect
          throw new JMSSecurityException(msg);                        
       }
       
-      //If we get here we're granted
-      //Add to the cache
+      // if we get here we're granted, add to the cache
       
       switch (checkType.type)
       {
