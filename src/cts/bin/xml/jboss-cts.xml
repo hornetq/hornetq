@@ -73,8 +73,11 @@
       </replaceregexp>
 
       <!-- add the extra connection factories -->
-      <copy todir="${jboss.home}/server/cts-messaging/deploy"
-         file="${ENV.JBOSS_MESSAGING_HOME}/src/cts/deploy/tck-connection-factories-*.xml"/>
+      <copy todir="${jboss.home}/server/cts-messaging/deploy">
+         <fileset dir="${ENV.JBOSS_MESSAGING_HOME}/src/cts/deploy/">
+            <include name="tck-connection-factories-*.xml"/>
+         </fileset>
+      </copy>
 
       <!-- deploy messaging -->
       <copy todir="${jboss.home}/server/cts-messaging/deploy"
