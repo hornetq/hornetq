@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.tools.jndi;
 
 import org.jboss.messaging.util.NotYetImplementedException;
+import org.jboss.util.naming.NonSerializableFactory;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -31,6 +32,8 @@ import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.Binding;
+import javax.naming.Reference;
+import javax.naming.RefAddr;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -85,7 +88,19 @@ public class InVMContext implements Context
       {
          return ((InVMContext)value).lookup(name.substring(i));
       }
-      return value;
+      if (value instanceof Reference)
+      {
+         Reference ref = (Reference)value;
+         RefAddr refAddr = ref.get("nns");
+
+         // we only deal with references create by NonSerializableFactory
+         String key = (String)refAddr.getContent();
+         return NonSerializableFactory.lookup(key);
+      }
+      else
+      {
+         return value;
+      }
    }
 
    public void bind(Name name, Object obj) throws NamingException

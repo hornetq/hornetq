@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import javax.management.ObjectName;
+import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
@@ -228,6 +229,12 @@ public class ServerManagement
    {
       insureStarted();
       return server.query(pattern);
+   }
+
+   public static UserTransaction getUserTransaction() throws Exception
+   {
+      insureStarted();
+      return server.getUserTransaction();
    }
 
    public static void log(int level, String text)

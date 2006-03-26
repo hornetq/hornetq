@@ -25,6 +25,7 @@ import java.rmi.Remote;
 import java.util.Set;
 
 import javax.management.ObjectName;
+import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
@@ -163,5 +164,7 @@ public interface Server extends Remote
     * @throws Exception
     */
    Object executeCommand(Command command) throws Exception;
+
+   UserTransaction getUserTransaction() throws Exception;
 
 }

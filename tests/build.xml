@@ -108,6 +108,9 @@
       <!-- these are only required to compile test support -->
       <path refid="jboss.jca.classpath"/>
 
+      <!-- jms-ra.jar -->
+      <path location="${jboss.jca.lib}/jms-ra.jar"/>
+
    </path>
 
    <!-- ===== -->

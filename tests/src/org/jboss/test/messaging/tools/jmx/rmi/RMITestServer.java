@@ -27,6 +27,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Set;
 
 import javax.management.ObjectName;
+import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
@@ -302,11 +303,13 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getServerPeer();
    }
 
+   public UserTransaction getUserTransaction() throws Exception
+   {
+      return server.getUserTransaction();
+   }
 
    private RMINamingDelegate getNamingDelegate()
    {
       return namingDelegate;
    }
-
-
 }

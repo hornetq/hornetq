@@ -126,6 +126,7 @@ $reldir/../../../security/output/lib/jbosssx.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-local-jdbc.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
+$reldir/../../../connector/output/lib/jms-ra.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP}\
 $reldir/../../../build/output/jboss-5.0.0alpha/client/jbossall-client.jar${SEP}\
 ${JGROUPS_LIB}${SEP}\

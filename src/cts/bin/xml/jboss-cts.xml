@@ -79,6 +79,18 @@
          </fileset>
       </copy>
 
+      <!-- Uncomment CachedConnectionValve and CachedConnectionManager dependency in Tomcat config -->
+      <replaceregexp file="${jboss.home}/server/cts-messaging/deploy/jbossweb-tomcat55.sar/server.xml" flags="s">
+         <regexp pattern="(\x3cValve className=\x22org.jboss.web.tomcat.tc5.jca.CachedConnectionValve\x22.*transactionManagerObjectName=\x22jboss:service=TransactionManager\x22[ \t\n\r]*/\x3e)"/>
+         <substitution expression="--&gt;\1&lt;!--"/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/cts-messaging/deploy/jbossweb-tomcat55.sar/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cdepends\x3e[ \t\n\r]*jboss.jca:service=CachedConnectionManager[ \t\n\r]*\x3c/depends\x3e)"/>
+         <substitution expression="--&gt;\1&lt;!--"/>
+      </replaceregexp>
+
+
       <!-- deploy messaging -->
       <copy todir="${jboss.home}/server/cts-messaging/deploy"
          file="${ENV.JBOSS_MESSAGING_HOME}/output/lib/jboss-messaging.sar"/>

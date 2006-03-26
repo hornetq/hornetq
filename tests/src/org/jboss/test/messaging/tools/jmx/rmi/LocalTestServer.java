@@ -31,6 +31,7 @@ import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.management.ObjectName;
+import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
@@ -239,7 +240,6 @@ public class LocalTestServer implements Server
       sc.invoke(channelMapperObjectName, "create", new Object[0], new String[0]);
       sc.invoke(channelMapperObjectName, "start", new Object[0], new String[0]);
 
-
       MBeanConfigurationElement persistenceManagerConfig =
          (MBeanConfigurationElement)sdd.query("service", "PersistenceManager").iterator().next();
       persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
@@ -294,6 +294,12 @@ public class LocalTestServer implements Server
          sc.invoke(on, "start", new Object[0], new String[0]);
          connFactoryObjectNames.add(on);
       }
+
+      // bind the default JMS provider
+      sc.bindDefaultJMSProvider();
+      // bind the JCA ConnectionFactory
+      sc.bindJCAJMSConnectionFactory();
+
    }
 
    public void stopServerPeer() throws Exception
@@ -305,6 +311,10 @@ public class LocalTestServer implements Server
          log.warn("ServerPeer already stopped");
          return;
       }
+
+      // unbind the JCA ConnectionFactory; nothing happens if no connection factory is bound
+      sc.unbindJCAJMSConnectionFactory();
+      sc.unbindDefaultJMSProvider();
 
       log.debug("stopping connection factories");
 
@@ -598,7 +608,12 @@ public class LocalTestServer implements Server
    { 
       return command.execute();
    }
-   
+
+   public UserTransaction getUserTransaction() throws Exception
+   {
+      return sc.getUserTransaction();
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
