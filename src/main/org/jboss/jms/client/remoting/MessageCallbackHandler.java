@@ -93,8 +93,8 @@ public class MessageCallbackHandler
          }
          else
          {
-            //Session is either transacted or CLIENT_ACKNOWLEDGE
-            //We just deliver next message
+            // Session is either transacted or CLIENT_ACKNOWLEDGE
+            // We just deliver next message
             if (trace) { log.trace("ignoring exception on " + id); }
          }
       }
@@ -108,8 +108,8 @@ public class MessageCallbackHandler
                                     boolean isConnectionConsumer)
       throws JMSException
    {
-      //If this is the callback-handler for a connection consumer we don't want
-      //to acknowledge or add anything to the tx for this session
+      // If this is the callback-handler for a connection consumer we don't want to acknowledge or
+      // add anything to the tx for this session.
       if (!isConnectionConsumer)
       {
          sess.preDeliver(m.getMessage().getMessageID(), consumerID);
@@ -122,8 +122,8 @@ public class MessageCallbackHandler
                                      boolean isConnectionConsumer)
       throws JMSException
    {
-      //If this is the callback-handler for a connection consumer we don't want
-      //to acknowledge or add anything to the tx for this session
+      // If this is the callback-handler for a connection consumer we don't want to acknowledge or
+      // add anything to the tx for this session
       if (!isConnectionConsumer)
       {
          sess.postDeliver(m.getMessage().getMessageID(), consumerID);
@@ -230,12 +230,12 @@ public class MessageCallbackHandler
             throw new IllegalStateException("Message has arrived after we have received the last one");
          }
          
-         //We record the last message we received
+         // We record the last message we received
          this.lastMessageId = md.getMessage().getMessageID();
                                  
          if (listener != null)
          {
-            //Queue the message to be delivered by the session
+            // Queue the message to be delivered by the session
             ClientDeliveryRunnable cdr = new ClientDeliveryRunnable(md);
             
             onMessageExecuting = true;         

@@ -494,10 +494,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    public int getNumberOfUnloadedReferences(long channelID) throws Exception
    {
-      if (trace)
-      {
-         log.trace("Getting number of unloaded references for channel " + channelID);
-      }
+      if (trace) { log.trace("getting number of unloaded references for channel [" + channelID + "]"); }
       
       Connection conn = null;
       PreparedStatement ps = null;
