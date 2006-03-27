@@ -375,11 +375,9 @@
       depends="_buildmagic:build-bypass-check"
       unless="build-bypass.on">
 
-      <call target="compile"/>
-
       <mkdir dir="${build.lib}"/>
-      <antcall target="jar"/>
-      <antcall target="sar"/>
+      <call target="jar"/>
+      <call target="sar"/>
 
       <!-- Update the build marker to allow bypassing -->
       <touch file="${build-bypass.marker}"/>
