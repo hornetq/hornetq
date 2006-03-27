@@ -69,16 +69,22 @@ public class ClientCrashTest extends MessagingTestCase
    {
       super.setUp();
       
-      //Start the local server
+      // Start the local server
       localServer = new LocalTestServer();
       
-      //Start all the services locally
+      // Start all the services locally
       localServer.start("all");
+
+
+      // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
+      // the default, whatever that is ...
+
+      localServer.getServerPeer().setRemotingConnectionLeasePeriod(20000);
                
       localServer.deployQueue("Queue", null);
           
-      //Connect to the remote server, but don't start a servicecontainer on it
-      //We are only using the remote server to open a client connection to the local server
+      // Connect to the remote server, but don't start a servicecontainer on it. We are only using
+      // the remote server to open a client connection to the local server.
       ServerManagement.create();
           
       remoteServer = ServerManagement.getServer();
@@ -91,13 +97,12 @@ public class ClientCrashTest extends MessagingTestCase
       localServer.stop();
    }
       
-   /*
-    * Test that when a remote jms client crashes, server side resources for connections are cleaned-up
+   /**
+    * Test that when a remote jms client crashes, server side resources for connections are
+    * cleaned-up.
     */
    public void testClientCrash() throws Exception
    {
-      if (!ServerManagement.isRemote()) return;
-       
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -112,14 +117,14 @@ public class ClientCrashTest extends MessagingTestCase
             
       assertNotNull(cm.getConnection(remotingSessionId));
       
-      //Now we should have a client connection from the remote server to the local server
+      // Now we should have a client connection from the remote server to the local server
       
       remoteServer.exit();
         
-      //Wait for connection resources to be cleared up
+      // Wait for connection resources to be cleared up
       Thread.sleep(60000);
            
-      //See if we still have a connection with this id
+      // See if we still have a connection with this id
       assertNull(cm.getConnection(remotingSessionId));            
    }
    

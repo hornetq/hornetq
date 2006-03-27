@@ -6,7 +6,6 @@
  */
 package org.jboss.test.messaging.util;
 
-import junit.framework.TestCase;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -63,9 +62,7 @@ public class ServiceContainerTest extends MessagingTestCase
       prod.send(sess.createMessage());
       conn.close();
 
-
       ServerManagement.stop();
-
 
       ServerManagement.start("all");
 

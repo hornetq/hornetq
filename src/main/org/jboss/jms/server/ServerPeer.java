@@ -397,9 +397,19 @@ public class ServerPeer extends ServiceMBeanSupport
       return remotingConnectionLeasePeriod;
    }
 
-   public void setRemotingConnectionLeasePeriod(long remotingConnectionLeasePeriod)
+   public void setRemotingConnectionLeasePeriod(long remotingConnectionLeasePeriod) throws Exception
    {
+      long oldValue = this.remotingConnectionLeasePeriod;
       this.remotingConnectionLeasePeriod = remotingConnectionLeasePeriod;
+      if (oldValue != remotingConnectionLeasePeriod)
+      {
+         // update the Connector's value
+         MBeanServer mbeanServer = getServer();
+         mbeanServer.
+            setAttribute(connectorName, new Attribute("LeasePeriod",
+                                                      new Long(remotingConnectionLeasePeriod)));
+
+      }
    }
 
    // JMX Operations ------------------------------------------------
