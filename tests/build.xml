@@ -238,11 +238,11 @@
       </java>
    </target>
 
-   <target name="stop-rmi-server"
-           description="Stops the RMI server used by remote tests">
+   <target name="stop-rmi-server" description="Stops the RMI server used by remote tests">
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer">
          <classpath>
             <path refid="jboss.common.classpath"/>
+            <path refid="jboss.j2ee.classpath"/>
             <path location="../src/resources/jboss-remoting.jar"/>
             <!-- <path refid="jboss.remoting.classpath"/> -->
             <path refid="jboss.j2se.classpath"/>
@@ -306,6 +306,7 @@
             haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
+               <!-- <include name="org/jboss/test/messaging/jms/JMSTest.class"/> -->
                <include name="**/messaging/**/*Test.class"/>
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
@@ -408,6 +409,7 @@
             haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
+               <!-- <include name="org/jboss/test/messaging/jms/JMSTest.class"/> -->
                <include name="org/jboss/test/messaging/jms/**/*Test.class"/>
                <exclude name="org/jboss/test/messaging/jms/stress/**"/>
                <exclude name="org/jboss/test/messaging/jms/server/**"/>

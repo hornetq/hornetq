@@ -360,12 +360,18 @@ public class ServiceContainer
       unloadJNDIContexts();
 
       stopService(REMOTING_OBJECT_NAME);
-      stopService(DEFAULTDS_WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
-      stopService(DEFAULTDS_CONNECTION_MANAGER_OBJECT_NAME);
-      stopService(DEFAULTDS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
-      stopService(CACHED_CONNECTION_MANAGER_OBJECT_NAME);
+
+      if (jca)
+      {
+         stopWrapperDataSourceService();
+         stopConnectionManager(DEFAULTDS_CONNECTION_MANAGER_OBJECT_NAME);
+         stopManagedConnectionPool(DEFAULTDS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
+         stopManagedConnectionFactory(DEFAULTDS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
+         stopService(CACHED_CONNECTION_MANAGER_OBJECT_NAME);
+      }
+
       stopService(TRANSACTION_MANAGER_OBJECT_NAME);
-      stopService(DEFAULTDS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
+
       if (database)
       {
          stopInVMDatabase();
@@ -538,6 +544,11 @@ public class ServiceContainer
       initialContext.bind("java:/DefaultJMSProvider", pa);
    }
 
+   public void unbindDefaultJMSProvider() throws Exception
+   {
+      initialContext.unbind("java:/DefaultJMSProvider");
+   }
+
    public void bindJCAJMSConnectionFactory() throws Exception
    {
       deployJBossJMSRA(JMS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
@@ -570,15 +581,24 @@ public class ServiceContainer
       log.debug("started " + on);
    }
 
-   public void unbindDefaultJMSProvider() throws Exception
-   {
-      //initialContext.unbind("java:/DefaultJMSProvider");
-      throw new Exception("NOT IMPLEMENTED YET!");
-   }
-
+   /**
+    * This method may be called twice successively, so it is important to handle graciously this
+    * situation.
+    */
    public void unbindJCAJMSConnectionFactory() throws Exception
    {
-      throw new Exception("NOT IMPLEMENTED YET!");
+      ObjectName on = JMS_CONNECTION_FACTORY_BINDING_SERVICE_OBJECT_NAME;
+
+      if (mbeanServer.isRegistered(on))
+      {
+         mbeanServer.invoke(on, "stop", new Object[0], new String[0]);
+         mbeanServer.invoke(on, "destroy", new Object[0], new String[0]);
+         mbeanServer.unregisterMBean(on);
+      }
+
+      stopConnectionManager(JMS_CONNECTION_MANAGER_OBJECT_NAME);
+      stopManagedConnectionPool(JMS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
+      undeployJBossJMSRA(JMS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
    }
 
    public String toString()
@@ -692,12 +712,13 @@ public class ServiceContainer
       hsqldbServer.setProperties(props);
       hsqldbServer.start();
 
-
       log.debug("started the database");
    }
 
    private void stopInVMDatabase() throws Exception
    {
+      log.debug("stopping " + hsqldbServer);
+
       Class.forName("org.hsqldb.jdbcDriver" );
       Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", "");
       Statement stat = conn.createStatement();
@@ -760,6 +781,15 @@ public class ServiceContainer
       log.debug("started " + on);
    }
 
+   /**
+    * This method may be called twice successively, so it is important to handle graciously this
+    * situation.
+    */
+   private void stopManagedConnectionFactory(ObjectName on) throws Exception
+   {
+      stopService(on);
+   }
+
    private void startManagedConnectionPool(ObjectName on,
                                            ObjectName managedConnectionFactoryObjectName,
                                            String criteria) throws Exception
@@ -773,6 +803,15 @@ public class ServiceContainer
       mbeanServer.registerMBean(mcp, on);
       mbeanServer.invoke(on, "start", new Object[0], new String[0]);
       log.debug("started " + on);
+   }
+
+   /**
+    * This method may be called twice successively, so it is important to handle graciously this
+    * situation.
+    */
+   private void stopManagedConnectionPool(ObjectName on) throws Exception
+   {
+      stopService(on);
    }
 
    private TxConnectionManager startConnectionManager(ObjectName on,
@@ -800,6 +839,15 @@ public class ServiceContainer
       return cm;
    }
 
+   /**
+    * This method may be called twice successively, so it is important to handle graciously this
+    * situation.
+    */
+   private void stopConnectionManager(ObjectName on) throws Exception
+   {
+      stopService(on);
+   }
+
    private void startWrapperDataSourceService() throws Exception
    {
       WrapperDataSourceService wdss = new WrapperDataSourceService();
@@ -815,6 +863,33 @@ public class ServiceContainer
       mbeanServer.invoke(DEFAULTDS_WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME, "start", new Object[0], new String[0]);
 
       log.debug("started " + DEFAULTDS_WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
+   }
+
+   private void stopWrapperDataSourceService() throws Exception
+   {
+      stopService(DEFAULTDS_WRAPPER_DATA_SOURCE_SERVICE_OBJECT_NAME);
+   }
+
+   private void deployJBossJMSRA(ObjectName managedConnFactoryObjectName) throws Exception
+   {
+      JmsManagedConnectionFactory mcf = new JmsManagedConnectionFactory();
+//      mcf.setClientID("");
+//      mcf.setUserName("");
+//      mcf.setPassword("");
+      mcf.setJmsProviderAdapterJNDI("java:/DefaultJMSProvider");
+      mcf.setStrict(true);
+      mcf.setSessionDefaultType("javax.jms.Queue");
+
+      registerService(new ManagedConnectionFactoryJMXWrapper(mcf), managedConnFactoryObjectName);
+   }
+
+   /**
+    * This method may be called twice successively, so it is important to handle graciously this
+    * situation.
+    */
+   private void undeployJBossJMSRA(ObjectName managedConnFactoryObjectName) throws Exception
+   {
+      stopService(managedConnFactoryObjectName);
    }
 
    private void startRemoting(boolean multiplex) throws Exception
@@ -966,24 +1041,6 @@ public class ServiceContainer
             throw new IllegalArgumentException("Unknown service: " + tok);
          }
       }
-   }
-
-   private void deployJBossJMSRA(ObjectName managedConnFactoryObjectName) throws Exception
-   {
-      JmsManagedConnectionFactory mcf = new JmsManagedConnectionFactory();
-//      mcf.setClientID("");
-//      mcf.setUserName("");
-//      mcf.setPassword("");
-      mcf.setJmsProviderAdapterJNDI("java:/DefaultJMSProvider");
-      mcf.setStrict(true);
-      mcf.setSessionDefaultType("javax.jms.Queue");
-
-      registerService(new ManagedConnectionFactoryJMXWrapper(mcf), managedConnFactoryObjectName);
-   }
-
-   private void undeployJBossJMSRA(ObjectName managedConnFactoryObjectName) throws Exception
-   {
-      unregisterService(managedConnFactoryObjectName);
    }
 
    // Inner classes -------------------------------------------------
