@@ -9,6 +9,7 @@ package org.jboss.test.messaging.util;
 import junit.framework.TestCase;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.jms.client.JBossConnectionFactory;
 
 import javax.naming.InitialContext;
@@ -23,7 +24,7 @@ import javax.jms.MessageProducer;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class ServiceContainerTest extends TestCase
+public class ServiceContainerTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
