@@ -56,6 +56,22 @@ public class StressTopicSameConnectionTest extends StressTestBase
       super.tearDown();            
    }
    
+//   public void test1() throws Exception
+//   {
+//      this.tearDown();
+//      
+//      while (true)
+//      {
+//         
+//         this.setUp();
+//         
+//         this.test_Multiple();
+//         
+//         this.tearDown();
+//      }
+//      
+//   }
+   
    /*
     * Permutations for sender
     * T/NT/X
@@ -1428,19 +1444,6 @@ public class StressTopicSameConnectionTest extends StressTestBase
       Session sessNLA = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sessNLD = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
       
-      
-//      MessageConsumer consLX = sessLX.createConsumer(topic1);
-//      MessageConsumer consLT = sessLT.createConsumer(topic1);
-//      MessageConsumer consLCA = sessLCA.createConsumer(topic1);
-//      MessageConsumer consLA = sessLA.createConsumer(topic1);
-//      MessageConsumer consLD = sessLD.createConsumer(topic1);
-//      
-//      MessageConsumer consNLX = sessNLX.createConsumer(topic1);
-//      MessageConsumer consNLT = sessNLT.createConsumer(topic1);
-//      MessageConsumer consNLCA = sessNLCA.createConsumer(topic1);
-//      MessageConsumer consNLA = sessNLA.createConsumer(topic1);
-//      MessageConsumer consNLD = sessNLD.createConsumer(topic1);
-      
       MessageConsumer consLX = sessLX.createConsumer(topic1);
       MessageConsumer consLT = sessLT.createConsumer(topic1);
       MessageConsumer consLCA = sessLCA.createConsumer(topic1);
@@ -1453,27 +1456,6 @@ public class StressTopicSameConnectionTest extends StressTestBase
       MessageConsumer consNLA = sessNLA.createConsumer(topic1);
       MessageConsumer consNLD = sessNLD.createConsumer(topic1);
       
-//      Runner[] runners = new Runner[] {             
-//            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 25), 
-//            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
-////            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 25),
-////            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
-////            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
-////            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),          
-//                        
-////            new Transactional2PCReceiver(sessLX, consLX, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
-////            new TransactionalReceiver(sessLT, consLT, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
-////            new RecoveringReceiver(sessLCA, consLCA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
-////            new Receiver(sessLA, consLA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true),
-////            new Receiver(sessLD, consLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true),
-//            
-//            new Transactional2PCReceiver(sessNLX, consNLX, NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_MESSAGES, 100, 25, false)
-// //          new TransactionalReceiver(sessNLT, consNLT, NUM_PERSISTENT_MESSAGES, 100, 25, false)
-// //           new RecoveringReceiver(sessNLCA, consNLCA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
-////            new Receiver(sessNLA, consNLA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false),
-////            new Receiver(sessNLD, consNLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false)
-////                                   
-//      };
       
       Runner[] runners = new Runner[] {             
             new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 25), 
@@ -1493,10 +1475,9 @@ public class StressTopicSameConnectionTest extends StressTestBase
             new TransactionalReceiver(sessNLT, consNLT, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
             new RecoveringReceiver(sessNLCA, consNLCA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
             new Receiver(sessNLA, consNLA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false),
-            new Receiver(sessNLD, consNLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false)
-                                   
-      };      
-      
+            new Receiver(sessNLD, consNLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false)                                  
+      };    
+        
       runRunners(runners);
       
       conn.close();      
@@ -1625,7 +1606,1464 @@ public class StressTopicSameConnectionTest extends StressTestBase
 
       conn.close();      
    }   
+   
+   
+   
+   public void test_Simple_TP_LX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 20, 3, true) };
 
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_LT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_LCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_LA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_LD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   
+   public void test_Simple_TP_NLX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_NLT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_NLCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_NLA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TP_NLD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_LX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+ 
+   public void test_Simple_TNP_LT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_LCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_LA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_LD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   
+   public void test_Simple_TNP_NLX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_NLT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_NLCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_NLA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_TNP_NLD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new TransactionalSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_LX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_LT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_LCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_LA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_LD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   
+   public void test_Simple_NTP_NLX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip");
+      conn.start();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_NLT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_NLCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_NLA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTP_NLD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   
+   public void test_Simple_NTNP_LX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 0, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+ 
+   public void test_Simple_NTNP_LT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 0, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTNP_LCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTNP_LA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTNP_LD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   
+   public void test_Simple_NTNP_NLX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTNP_NLT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTNP_NLCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTNP_NLA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_NTNP_NLD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_LX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_LT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_LCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_LA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_LD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   
+   public void test_Simple_XP_NLX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_NLT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_NLCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_NLA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XP_NLD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+ 
+   public void test_Simple_XNP_LX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_LT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_LCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_LA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_LD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, true) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_NLX_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      XASession sessReceive = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Transactional2PCReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   
+   public void test_Simple_XNP_NLT_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new TransactionalReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_NLCA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new RecoveringReceiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, 100, 67, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_NLA_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+   public void test_Simple_XNP_NLD_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("hoojamaflip"); conn.start();;
+      
+      XASession sessSend = ((XAConnection)conn).createXASession();
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sessReceive.createDurableSubscriber(topic1, "sub1");
+      MessageProducer prod = sessSend.createProducer(topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Runner[] runners = new Runner[] { new Transactional2PCSender("prod1", sessSend, prod, NUM_NON_PERSISTENT_MESSAGES, 100, 33),
+                                        new Receiver(sessReceive, cons, NUM_NON_PERSISTENT_MESSAGES, false) };
+
+      runRunners(runners);
+
+      conn.close();      
+   }
+   
+
+   
+   
+   
+   /*
+    * Multiple sender tests on a Queue
+    * We take one of each permutation of sender and couple it with one of each receiver
+    * 
+    * LX
+    * LT
+    * LCA
+    * LA
+    * LD
+    * NLX
+    * NLT
+    * NLCA
+    * NLA
+    * NLD
+    */
+
+   
+   
+   public void test_Multiple_with_Durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.setClientID("quweywyqe");
+      conn.start();
+            
+      //Sending sessions
+      XASession sessXP = ((XAConnection)conn).createXASession(); 
+      XASession sessXNP = ((XAConnection)conn).createXASession();
+      Session sessTP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessTNP = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNTP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNTNP = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prodXP = sessXP.createProducer(topic1);
+      prodXP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodXNP = sessXNP.createProducer(topic1);
+      prodXNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+      MessageProducer prodTP = sessTP.createProducer(topic1);
+      prodTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodTNP = sessTNP.createProducer(topic1);
+      prodTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prodNTP = sessNTP.createProducer(topic1);
+      prodNTP.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prodNTNP = sessNTNP.createProducer(topic1);
+      prodNTNP.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      //Receiving sessions
+      
+      XASession sessLX = ((XAConnection)conn).createXASession();
+      Session sessLT = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessLCA = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      Session sessLA = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessLD = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      XASession sessNLX = ((XAConnection)conn).createXASession();
+      Session sessNLT = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sessNLCA = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      Session sessNLA = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessNLD = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      MessageConsumer consLX = sessLX.createConsumer(topic1);
+      MessageConsumer consLT = sessLT.createConsumer(topic1);
+      MessageConsumer consLCA = sessLCA.createDurableSubscriber(topic1, "sub1");
+      MessageConsumer consLA = sessLA.createDurableSubscriber(topic1, "sub2");
+      MessageConsumer consLD = sessLD.createDurableSubscriber(topic1, "sub3");
+      
+      MessageConsumer consNLX = sessNLX.createConsumer(topic1);
+      MessageConsumer consNLT = sessNLT.createConsumer(topic1);
+      MessageConsumer consNLCA = sessNLCA.createDurableSubscriber(topic1, "sub4");
+      MessageConsumer consNLA = sessNLA.createDurableSubscriber(topic1, "sub5");
+      MessageConsumer consNLD = sessNLD.createDurableSubscriber(topic1, "sub6");
+      
+      
+      Runner[] runners = new Runner[] {             
+            new Transactional2PCSender("prod1", sessXP, prodXP, NUM_PERSISTENT_MESSAGES, 100, 25), 
+            new Transactional2PCSender("prod2", sessXNP, prodXNP, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
+            new TransactionalSender("prod3", sessTP, prodTP, NUM_PERSISTENT_MESSAGES, 100, 25),
+            new TransactionalSender("prod4", sessTNP, prodTNP, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
+            new Sender("prod5", sessNTP, prodNTP, NUM_PERSISTENT_MESSAGES),
+            new Sender("prod6", sessNTNP, prodNTNP, NUM_NON_PERSISTENT_MESSAGES),          
+                        
+            new Transactional2PCReceiver(sessLX, consLX, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
+            new TransactionalReceiver(sessLT, consLT, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
+            new RecoveringReceiver(sessLCA, consLCA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, true),
+            new Receiver(sessLA, consLA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true),
+            new Receiver(sessLD, consLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, true),
+            
+            new Transactional2PCReceiver(sessNLX, consNLX, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
+            new TransactionalReceiver(sessNLT, consNLT, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
+            new RecoveringReceiver(sessNLCA, consNLCA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
+            new Receiver(sessNLA, consNLA, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false),
+            new Receiver(sessNLD, consNLD, 3 * NUM_PERSISTENT_MESSAGES + 3 * NUM_NON_PERSISTENT_MESSAGES, false)                                  
+      };    
+        
+      runRunners(runners);
+      
+      conn.close();      
+   }
+   
+   
+   
+   public void test_Multiple_Tx_durable() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      
+      //Sending sessions
+      
+      Session sess1 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess3 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess4 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess5 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess6 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess7 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess8 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      XASession sess9 = ((XAConnection)conn).createXASession();
+      XASession sess10 = ((XAConnection)conn).createXASession();
+      XASession sess11 = ((XAConnection)conn).createXASession();
+      XASession sess12 = ((XAConnection)conn).createXASession();
+      XASession sess13 = ((XAConnection)conn).createXASession();
+      XASession sess14 = ((XAConnection)conn).createXASession();
+      XASession sess15 = ((XAConnection)conn).createXASession();
+      XASession sess16 = ((XAConnection)conn).createXASession();
+
+      
+      MessageProducer prod1 = sess1.createProducer(topic1);
+      prod1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod2 = sess2.createProducer(topic1);
+      prod2.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prod3 = sess3.createProducer(topic1);
+      prod3.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod4 = sess4.createProducer(topic1);
+      prod4.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prod5 = sess5.createProducer(topic1);
+      prod5.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod6 = sess6.createProducer(topic1);
+      prod6.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prod7 = sess7.createProducer(topic1);
+      prod7.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod8 = sess8.createProducer(topic1);
+      prod8.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      MessageProducer prod9 = sess9.createProducer(topic1);
+      prod9.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod10 = sess10.createProducer(topic1);
+      prod10.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prod11 = sess11.createProducer(topic1);
+      prod11.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod12 = sess12.createProducer(topic1);
+      prod12.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prod13 = sess13.createProducer(topic1);
+      prod13.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod14 = sess14.createProducer(topic1);
+      prod14.setDeliveryMode(DeliveryMode.PERSISTENT);
+      MessageProducer prod15 = sess15.createProducer(topic1);
+      prod15.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod16 = sess16.createProducer(topic1);
+      prod16.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      //Receiving sessions
+      
+      Session sess17 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess18 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess19 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess20 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      XASession sess21= ((XAConnection)conn).createXASession();
+      XASession sess22 = ((XAConnection)conn).createXASession();
+      XASession sess23 = ((XAConnection)conn).createXASession();
+      XASession sess24 = ((XAConnection)conn).createXASession();
+      
+      MessageConsumer cons1 = sess17.createDurableSubscriber(topic1, "sub1");
+      MessageConsumer cons2 = sess18.createDurableSubscriber(topic1, "sub2");
+      MessageConsumer cons3 = sess19.createDurableSubscriber(topic1, "sub3");
+      MessageConsumer cons4 = sess20.createDurableSubscriber(topic1, "sub4");
+      MessageConsumer cons5 = sess21.createConsumer(topic1);
+      MessageConsumer cons6 = sess22.createConsumer(topic1);
+      MessageConsumer cons7 = sess23.createConsumer(topic1);
+      MessageConsumer cons8 = sess24.createConsumer(topic1);
+      
+
+      Runner[] runners = 
+         new Runner[] {
+            new TransactionalSender("prod1", sess1, prod1, NUM_NON_PERSISTENT_MESSAGES, 1, 1),
+            new TransactionalSender("prod2", sess2, prod2, NUM_PERSISTENT_MESSAGES, 1, 1),
+            new TransactionalSender("prod3", sess3, prod3, NUM_NON_PERSISTENT_MESSAGES, 10, 5),
+            new TransactionalSender("prod4", sess4, prod4, NUM_PERSISTENT_MESSAGES, 10, 5),
+            new TransactionalSender("prod5", sess5, prod5, NUM_NON_PERSISTENT_MESSAGES, 50, 25),
+            new TransactionalSender("prod6", sess6, prod6, NUM_PERSISTENT_MESSAGES, 50, 25),
+            new TransactionalSender("prod7", sess7, prod7, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
+            new TransactionalSender("prod8", sess8, prod8, NUM_PERSISTENT_MESSAGES, 100, 25),            
+            new Transactional2PCSender("prod9", sess9, prod9, NUM_NON_PERSISTENT_MESSAGES, 1, 1),
+            new Transactional2PCSender("prod10", sess10, prod10, NUM_PERSISTENT_MESSAGES, 1, 1),
+            new Transactional2PCSender("prod11", sess11, prod11, NUM_NON_PERSISTENT_MESSAGES, 10, 5),
+            new Transactional2PCSender("prod12", sess12, prod12, NUM_PERSISTENT_MESSAGES, 10, 5),
+            new Transactional2PCSender("prod13", sess13, prod13, NUM_NON_PERSISTENT_MESSAGES, 50, 25),
+            new Transactional2PCSender("prod14", sess14, prod14, NUM_PERSISTENT_MESSAGES, 50, 25),
+            new Transactional2PCSender("prod15", sess15, prod15, NUM_NON_PERSISTENT_MESSAGES, 100, 25),
+            new Transactional2PCSender("prod16", sess16, prod16, NUM_PERSISTENT_MESSAGES, 100, 25),            
+            
+            new TransactionalReceiver(sess17, cons1,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 1, 1, false),
+            new TransactionalReceiver(sess18, cons2,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 10, 5, false),
+            new TransactionalReceiver(sess19, cons3,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 50, 25, false),
+            new TransactionalReceiver(sess20, cons4,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false),
+
+            new Transactional2PCReceiver(sess21, cons5,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 1, 1, false),
+            new Transactional2PCReceiver(sess22, cons6,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 10, 5, false),
+            new Transactional2PCReceiver(sess23, cons7,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 50, 25, false),
+            new Transactional2PCReceiver(sess24, cons8,  8 * NUM_PERSISTENT_MESSAGES + 8 * NUM_NON_PERSISTENT_MESSAGES, 100, 25, false)
+                       };
+
+      runRunners(runners);
+
+      conn.close();      
+   }   
+      
 }
    
    

@@ -733,8 +733,6 @@ public class StressQueueSameConnectionTest extends StressTestBase
       MessageProducer prod = sessSend.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       
-      log.info("blah");
-      
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, NUM_PERSISTENT_MESSAGES),
                                         new Receiver(sessReceive, cons, NUM_PERSISTENT_MESSAGES, false) };
 

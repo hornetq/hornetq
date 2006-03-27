@@ -65,6 +65,7 @@ public class Sender extends Runner
             m.setStringProperty("PROD_NAME", prodName);
             m.setIntProperty("MSG_NUMBER", count);
             prod.send(m);
+        //    log.info("sent: " + prodName + ":" + count +" id:" + m.getJMSMessageID());
             count++;
          }
       }

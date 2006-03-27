@@ -69,7 +69,7 @@ public class Receiver extends Runner implements MessageListener
    protected volatile Message theMessage;
    
    public void onMessage(Message m)
-   {
+   {      
       try
       {
          theMessage = m;

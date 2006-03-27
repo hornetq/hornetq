@@ -26,6 +26,7 @@ import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
+import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -71,6 +72,8 @@ public class StressTestBase extends MessagingTestCase
       
       ServerManagement.start("all");
       
+      
+      
       //We test with small values for paging params to really stress it
       
       final int fullSize = 3000;
@@ -78,6 +81,12 @@ public class StressTestBase extends MessagingTestCase
       final int pageSize = 2000;
       
       final int downCacheSize = 1000;
+      
+//      final int fullSize = 150000;
+//      
+//      final int pageSize = 2000;
+//      
+//      final int downCacheSize = 1000;
        
       ServerManagement.deployQueue("Queue1", fullSize, pageSize, downCacheSize);
       ServerManagement.deployQueue("Queue2", fullSize, pageSize, downCacheSize);
@@ -108,6 +117,7 @@ public class StressTestBase extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
+      assertEquals(0, LockMap.instance.getSize());
             
       ServerManagement.undeployQueue("Queue1");
       ServerManagement.undeployQueue("Queue2");
@@ -119,6 +129,11 @@ public class StressTestBase extends MessagingTestCase
       ServerManagement.undeployTopic("Topic3");
       ServerManagement.undeployTopic("Topic4");
       
+      ServerManagement.stop();
+      
+      log.info("Torn down");
+      
+      log.info("lock map size:" + LockMap.instance.getSize());
       
       super.tearDown();            
    }
@@ -144,7 +159,6 @@ public class StressTestBase extends MessagingTestCase
             fail("Runner " + i + " failed");
             log.info("runner failed");
          }
-      }
- 
+      } 
    }
 }
