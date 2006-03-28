@@ -75,7 +75,7 @@ $reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
 $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../thirdparty/jgroups/lib/jgroups.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP}\
-$reldir/../../../naming/output/lib/jnpserver.jar${SEP} \
+$reldir/../../../naming/output/lib/jnpserver.jar${SEP}\
 $reldir/../../../connector/output/lib/jms-ra.jar${SEP} \
 -Dtest.bind.address=localhost \
 org.jboss.test.messaging.tools.jmx.rmi.RMITestServer &
