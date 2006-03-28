@@ -498,7 +498,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          catch(Throwable t)
          {
             throw new MessagingJMSException("Message " + messageID +
-                                        "cannot be acknowledged to the source", t);
+                                            "cannot be acknowledged to the source", t);
          } 
       }
       else

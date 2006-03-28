@@ -88,7 +88,7 @@ public class ChannelState implements State
    
    private Object deliveryLock;
    
-   //When we load refs from the channel we do so with values of ordering >= this value
+   // When we load refs from the channel we do so with values of ordering >= this value
    private long loadFromOrderingValue;
     
    // Constructors --------------------------------------------------
@@ -327,9 +327,7 @@ public class ChannelState implements State
    {      
       synchronized (refLock)
       {
-         MessageReference ref = (MessageReference)messageRefs.peekFirst();
-         
-         return ref;
+         return (MessageReference)messageRefs.peekFirst();
       }
    }
     

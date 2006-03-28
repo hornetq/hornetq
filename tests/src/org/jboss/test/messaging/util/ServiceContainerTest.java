@@ -6,7 +6,6 @@
  */
 package org.jboss.test.messaging.util;
 
-import junit.framework.TestCase;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -35,7 +34,6 @@ public class ServiceContainerTest extends MessagingTestCase
    // Attributes ----------------------------------------------------
    
    private ConnectionFactory cf;
-   private InitialContext ic;
    private Queue queue;
 
    // Constructors --------------------------------------------------
@@ -109,7 +107,7 @@ public class ServiceContainerTest extends MessagingTestCase
       
       ServerManagement.start("all");
 
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
 
       log.info("connection factory is " + cf);

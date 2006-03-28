@@ -23,7 +23,6 @@ package org.jboss.messaging.core;
 
 import java.io.Serializable;
 
-
 /**
  * A message is a routable instance that has a payload. The payload is opaque to the messaging
  * system.
@@ -39,7 +38,6 @@ import java.io.Serializable;
  */
 public interface Message extends Routable
 {
-   
    Serializable getPayload();
    
    byte[] getPayloadAsByteArray();

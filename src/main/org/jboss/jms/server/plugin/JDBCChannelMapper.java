@@ -1157,9 +1157,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    
    protected long getNextId() throws Exception
    {
-      long id = this.channelIDManager.getId();
-      
-      return id;
+      return channelIDManager.getId();
    }
    
    // Private -------------------------------------------------------

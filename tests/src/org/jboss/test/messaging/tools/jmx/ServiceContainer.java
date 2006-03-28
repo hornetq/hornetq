@@ -732,6 +732,8 @@ public class ServiceContainer
    {
       if (hsql)
       {
+         log.debug("stop " + hsqldbServer);
+
          Class.forName("org.hsqldb.jdbcDriver" );
          Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", "");
          Statement stat = conn.createStatement();

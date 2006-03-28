@@ -33,7 +33,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
+import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -281,13 +281,12 @@ public class MessageProducerTest extends MessagingTestCase
 
          cconn.start();
 
-         Message m = new SimpleJMSMessage();
+         Message m = new SimpleJMSTextMessage("something");
          p.send(m);         
 
-         Message rec = c.receive(3000);
+         TextMessage rec = (TextMessage)c.receive(3000);
          
-         //test not valid - messages id are not preserved
-         //assertEquals(m.getJMSMessageID(), rec.getJMSMessageID());
+         assertEquals("something", rec.getText());
 
       }
       finally

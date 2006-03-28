@@ -1113,16 +1113,15 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    protected Message createMessage(byte i, boolean reliable) throws Exception
    {
       Map headers = generateFilledMap(true);
-      
-      Message m = MessageFactory.createCoreMessage(i,
-            reliable,
-            System.currentTimeMillis() + 1000 * 60 * 60,
-            System.currentTimeMillis(),
-            (byte)(i % 10),
-            headers,            
-            i % 2 == 0 ? new WibblishObject() : null);
-      
-      return m;
+
+      return MessageFactory.
+         createCoreMessage(i,
+                           reliable,
+                           System.currentTimeMillis() + 1000 * 60 * 60,
+                           System.currentTimeMillis(),
+                           (byte)(i % 10),
+                           headers,
+                           i % 2 == 0 ? new WibblishObject() : null);
    }
    
    protected Message[] createMessages(int num) throws Exception
@@ -1306,7 +1305,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    protected Boolean randBool()
    {
-      return new Boolean(Math.random() > 0.5 ? true : false);
+      return new Boolean(Math.random() > 0.5);
    }
    
    protected Float randFloat()

@@ -46,6 +46,7 @@ import org.jboss.tm.TxManager;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
+ * $Id$
  */
 public class XATest extends MessagingTestCase
 {

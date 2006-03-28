@@ -81,11 +81,6 @@ public class ServerPeer extends ServiceMBeanSupport
    // Remoting connector
    public static final String REMOTING_JMS_SUBSYSTEM = "JMS";
 
-   //TODO - Make this configurable
-   
-   //FIXME - This is currently set high due to problems in remoting
-   private static final long CONNECTION_LEASE_PERIOD = 1200000;
-      
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------

@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.TransactionRolledBackException;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.delegate.ClientSessionDelegate;

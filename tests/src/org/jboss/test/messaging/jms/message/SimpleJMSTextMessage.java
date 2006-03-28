@@ -21,8 +21,6 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
-
 import javax.jms.TextMessage;
 import javax.jms.JMSException;
 
@@ -43,6 +41,16 @@ public class SimpleJMSTextMessage extends SimpleJMSMessage implements TextMessag
    private String text;
 
    // Constructors --------------------------------------------------
+
+   public SimpleJMSTextMessage()
+   {
+      this(null);
+   }
+
+   public SimpleJMSTextMessage(String text)
+   {
+      this.text = text;
+   }
 
    // TextMessage implementation ------------------------------------
 

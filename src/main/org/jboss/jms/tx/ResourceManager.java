@@ -163,7 +163,6 @@ public class ResourceManager
       catch (TransactionRolledBackException e)
       {
          log.error("An error occurred in sending transaction and the transaction was rolled back", e);
-         log.info("Cause is" + e.getCause());
          if (e.getCause() != null)
          {
             log.error("Cause", e.getCause());
