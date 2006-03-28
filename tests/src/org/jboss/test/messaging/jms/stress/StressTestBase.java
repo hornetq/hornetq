@@ -26,7 +26,7 @@ import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.core.plugin.LockMap;
+//import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -117,7 +117,7 @@ public class StressTestBase extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      assertEquals(0, LockMap.instance.getSize());
+//      assertEquals(0, LockMap.instance.getSize());
             
       ServerManagement.undeployQueue("Queue1");
       ServerManagement.undeployQueue("Queue2");
@@ -133,8 +133,8 @@ public class StressTestBase extends MessagingTestCase
       
       log.info("Torn down");
       
-      log.info("lock map size:" + LockMap.instance.getSize());
-      
+//      log.info("lock map size:" + LockMap.instance.getSize());
+
       super.tearDown();            
    }
    
