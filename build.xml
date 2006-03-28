@@ -375,7 +375,6 @@
       depends="_buildmagic:build-bypass-check"
       unless="build-bypass.on">
 
-      <mkdir dir="${build.lib}"/>
       <call target="jar"/>
       <call target="sar"/>
 
@@ -493,6 +492,7 @@
    <!-- Release tasks -->
 
    <target name="jar" depends="compile">
+      <mkdir dir="${build.lib}"/>
       <jar jarfile="${build.lib}/jboss-${module.name}.jar"
          manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}">
@@ -502,7 +502,7 @@
       </jar>
    </target>
 
-   <target name="sar-structure" depends="compile">
+   <target name="sar-structure" depends="compile, jar">
 
       <mkdir dir="${build.lib}"/>
       <mkdir dir="${build.classes}/META-INF"/>

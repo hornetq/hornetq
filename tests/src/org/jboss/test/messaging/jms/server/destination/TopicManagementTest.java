@@ -428,6 +428,72 @@ public class TopicManagementTest extends DestinationManagementTestBase
       ServerManagement.undeployTopic("TopicMessageList");
    }
 
+   /**
+    * The jmx-console has the habit of sending an empty string if no argument is specified, so
+    * we test this eventuality.
+    */
+   public void testListMessagesEmptySelector() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      ServerManagement.deployTopic("TopicMessageList2");
+      Topic topic = (Topic)ic.lookup("/topic/TopicMessageList2");
+
+      TopicConnection conn = cf.createTopicConnection();
+      conn.setClientID("Client1");
+      TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      s.createDurableSubscriber(topic, "SubscriberA");
+
+      ObjectName topicON =
+         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicMessageList2");
+
+      List listSub = (List)ServerManagement.invoke(topicON, "listSubscriptions", null, null);
+      String channelID = ((String[])listSub.get(0))[0];
+
+      List messages = (List)ServerManagement.invoke(topicON,
+                                                    "listMessages",
+                                                    new Object[]
+                                                       {
+                                                          new Long(channelID),
+                                                          "Client1",
+                                                          "SubscriberA",
+                                                          ""
+                                                       },
+                                                    new String[]
+                                                       {
+                                                          "long",
+                                                          "java.lang.String",
+                                                          "java.lang.String",
+                                                          "java.lang.String"
+                                                       });
+      assertTrue(messages.isEmpty());
+
+      messages = (List)ServerManagement.invoke(topicON,
+                                               "listMessages",
+                                               new Object[]
+                                                  {
+                                                     new Long(channelID),
+                                                     "Client1",
+                                                     "SubscriberA",
+                                                     "                   "
+                                                  },
+                                               new String[]
+                                                  {
+                                                     "long",
+                                                     "java.lang.String",
+                                                     "java.lang.String",
+                                                     "java.lang.String"
+                                                  });
+
+      assertTrue(messages.isEmpty());
+
+      // Clean-up
+      conn.close();
+      ServerManagement.undeployTopic("TopicMessageList2");
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

@@ -66,7 +66,7 @@ public class Queue extends DestinationServiceSupport
       ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
       try 
       {
-         return q.getMessages(selector);
+         return q.getMessages(trimSelector(selector));
       }
       catch (InvalidSelectorException e)
       {

@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 import javax.management.ObjectName;
 
 /**
- * The base of a  JBoss Messaging destination service. Both deployed or programatically created
+ * The base of a JBoss Messaging destination service. Both deployed or programatically created
  * destinations will eventually get one of these.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -33,6 +33,28 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    private static final int DOWN_CACHE_SIZE = 1000;
 
    // Static --------------------------------------------------------
+
+   /**
+    * Destination implementations don't like empty string selectors, but this is how the jmx-console
+    * sends arguments that are not filled out. This method pre-processes the selector String and
+    * makes it a valid argument for destination methods.
+    */
+   static String trimSelector(String selector)
+   {
+      if (selector == null)
+      {
+         return null;
+      }
+
+      selector = selector.trim();
+
+      if (selector.length() == 0)
+      {
+         return null;
+      }
+
+      return selector;
+   }
    
    // Attributes ----------------------------------------------------
 

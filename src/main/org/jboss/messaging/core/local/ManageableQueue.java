@@ -41,11 +41,11 @@ public interface ManageableQueue extends ManageableCoreDestination
 
    /**
     * Get messages from the queue.
-    * @param selector See readme for the syntax of the expression.
+    * @param selector See readme for the syntax of the expression. Null means no selector.
     * @return List of javax.jms.Message.
-    * @throws InvalidSelectorException.
+    * @throws InvalidSelectorException
     */
    List getMessages(String selector)  throws InvalidSelectorException;
    
-   // TODO adding more manageable operations
+   // TODO adding more management operations
 }

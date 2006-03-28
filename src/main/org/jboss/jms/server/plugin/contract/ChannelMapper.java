@@ -40,7 +40,7 @@ public interface ChannelMapper extends ServerPlugin
          
    CoreDestination getCoreDestination(JBossDestination jbDest) throws JMSException;
    
-   JBossDestination getJBossDestination(long coreDestinationId);
+   JBossDestination getJBossDestination(long coreDestinationID);
       
    void deployCoreDestination(boolean isQueue, 
                               String destName, 
@@ -60,12 +60,15 @@ public interface ChannelMapper extends ServerPlugin
                                                      MessageStore ms,
                                                      PersistenceManager pm) throws JMSException;
    
-   CoreSubscription createSubscription(String topicName, String selector, boolean noLocal,
-                                       MessageStore ms, PersistenceManager pm)
-      throws JMSException;
+   CoreSubscription createSubscription(String topicName,
+                                       String selector,
+                                       boolean noLocal,
+                                       MessageStore ms,
+                                       PersistenceManager pm) throws JMSException;
 
    CoreDurableSubscription getDurableSubscription(String clientID,
-                                                  String subscriptionName, MessageStore ms,
+                                                  String subscriptionName,
+                                                  MessageStore ms,
                                                   PersistenceManager pm) throws JMSException;
 
    boolean removeDurableSubscription(String clientID, String subscriptionName) throws JMSException;

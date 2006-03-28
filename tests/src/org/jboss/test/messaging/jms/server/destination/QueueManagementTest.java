@@ -229,6 +229,34 @@ public class QueueManagementTest extends DestinationManagementTestBase
       
       ServerManagement.undeployQueue("QueueListMessages");
    }
+
+   /**
+    * The jmx-console has the habit of sending an empty string if no argument is specified, so
+    * we test this eventuality.
+    */
+   public void testListMessagesEmptySelector() throws Exception
+   {
+      ServerManagement.deployQueue("QueueListMessages");
+
+      ObjectName destObjectName =
+         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueListMessages");
+
+      List list = (List)ServerManagement.invoke(destObjectName,
+                                                "listMessages",
+                                                new Object[] {""},
+                                                new String[] {"java.lang.String"});
+      assertNotNull(list);
+      assertEquals(0, list.size());
+
+      list = (List)ServerManagement.invoke(destObjectName,
+                                                "listMessages",
+                                                new Object[] {"             "},
+                                                new String[] {"java.lang.String"});
+      assertNotNull(list);
+      assertEquals(0, list.size());
+
+      ServerManagement.undeployQueue("QueueListMessages");
+   }
    
    // Package protected ---------------------------------------------
    

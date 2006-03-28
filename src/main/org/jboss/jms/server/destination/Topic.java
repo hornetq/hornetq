@@ -7,11 +7,16 @@
 package org.jboss.jms.server.destination;
 
 import java.util.List;
+import java.util.Iterator;
 
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.local.ManageableTopic;
+import org.jboss.messaging.core.local.CoreSubscription;
+import org.jboss.messaging.core.local.CoreDurableSubscription;
+import org.jboss.messaging.core.Receiver;
+
 
 /**
  * A deployable JBoss Messaging topic.
@@ -26,7 +31,7 @@ public class Topic extends DestinationServiceSupport
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -44,7 +49,7 @@ public class Topic extends DestinationServiceSupport
    // JMX managed attributes ----------------------------------------
 
    // JMX managed operations ----------------------------------------
-   
+
    /**
     * Remove all messages from subscription's storage.
     */
@@ -80,7 +85,7 @@ public class Topic extends DestinationServiceSupport
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.subscriptionCount(durable);
    }
-   
+
    /**
     * Get all subscription list.
     * @return List of CoreSubscription. Never null. 
@@ -92,6 +97,50 @@ public class Topic extends DestinationServiceSupport
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.getSubscriptions();
+   }
+
+   /**
+    * Returns a human readable list containing the names of current subscriptions.
+    */
+   public String listSubscriptionsAsText() throws JMSException
+   {
+      StringBuffer sb = new StringBuffer();
+
+      org.jboss.messaging.core.local.Topic coreTopic =
+         (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(new JBossTopic(name));
+
+      for(Iterator i = coreTopic.iterator(); i.hasNext();)
+      {
+         Receiver r = (Receiver)i.next();
+
+         if (r instanceof CoreDurableSubscription)
+         {
+            CoreDurableSubscription ds = (CoreDurableSubscription)r;
+            sb.append(ds.getName());
+            sb.append(" (durable, clientID=\"");
+            sb.append(ds.getClientID());
+            sb.append("\", ChannelID=");
+            sb.append(ds.getChannelID());
+            sb.append(")");
+         }
+         else if (r instanceof CoreSubscription)
+         {
+            CoreSubscription s = (CoreSubscription)r;
+            sb.append(s.getChannelID()).append(" (non durable)");
+         }
+
+         if (i.hasNext())
+         {
+            sb.append('\n');
+         }
+      }
+
+      if (sb.length() == 0)
+      {
+         sb.append("No subscriptions\n");
+      }
+
+      return sb.toString();
    }
 
    /**
@@ -118,13 +167,14 @@ public class Topic extends DestinationServiceSupport
     * @throws JMSException
     * @see ManageableTopic#getMessages(long, String, String, String)
     */
-   public List listMessages(long channelID, String clientID, String subName, String selector) throws JMSException
+   public List listMessages(long channelID, String clientID, String subName, String selector)
+      throws JMSException
    {
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
-      return t.getMessages(channelID, clientID, subName, selector);
+      return t.getMessages(channelID, clientID, subName, trimSelector(selector));
    }
-   
+
    // TODO implement these:
 
 //   int getAllMessageCount();

@@ -91,9 +91,13 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    public List getMessages(String selector) throws InvalidSelectorException
    {
       if (null == selector)
+      {
          return browse();
+      }
       else
+      {
          return browse(new Selector(selector));
+      }
    }
 
    // CoreDestination implementation -------------------------------

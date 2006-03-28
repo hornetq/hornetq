@@ -419,6 +419,7 @@
                <exclude name="org/jboss/test/messaging/jms/ClientCrashTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/CallbackFailureTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/XATransactionTest.class"/>
             </fileset>
          </batchtest>
       </junit>
