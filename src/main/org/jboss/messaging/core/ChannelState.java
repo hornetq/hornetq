@@ -88,6 +88,9 @@ public class ChannelState implements State
    
    private Object deliveryLock;
    
+   //When we load refs from the channel we do so with values of ordering >= this value
+   private long loadFromOrderingValue;
+    
    // Constructors --------------------------------------------------
    
    public ChannelState(Channel channel, PersistenceManager pm,
@@ -175,8 +178,9 @@ public class ChannelState implements State
          synchronized (refLock)
          {
             ref.setOrdering(getNextReferenceOrdering());
-            AddReferenceCallback callback = new AddReferenceCallback(ref);
-            tx.addCallback(callback);
+            //AddReferenceCallback callback = new AddReferenceCallback(ref);
+            //tx.addCallback(callback);
+            this.getCallback(tx).addRef(ref);
             if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
          }                  
       }                
@@ -274,9 +278,11 @@ public class ChannelState implements State
    {
       //Transactional so remove after tx commit
 
-      RemoveDeliveryCallback callback = new RemoveDeliveryCallback(d);
+//      RemoveDeliveryCallback callback = new RemoveDeliveryCallback(d);
+//      
+//      tx.addCallback(callback);
       
-      tx.addCallback(callback);
+      this.getCallback(tx).addDelivery(d);
       
       if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
       
@@ -411,8 +417,10 @@ public class ChannelState implements State
       if (trace) { log.trace(this + " loading channel state"); }
       synchronized (refLock)
       {         
-         refsInStorage = pm.getNumberOfUnloadedReferences(channel.getChannelID());                  
+         refsInStorage = pm.getNumberOfUnloadedReferences(channel.getChannelID()); 
          
+         loadFromOrderingValue = pm.getMinOrdering(channel.getChannelID());
+
          if (refsInStorage > 0)
          {
             load(Math.min(refsInStorage, fullSize));
@@ -517,14 +525,14 @@ public class ChannelState implements State
          first = messageRefs.addLast(ref, ref.getPriority());
 
          if (trace) { log.trace(this + " added " + ref + " non-transactionally in memory"); }
-
+         
          if (messageRefs.size() == fullSize)
          {            
             // We are full in memory - go into paging mode
 
             if (trace) { log.trace(this + " going into paging mode"); }
             
-            paging = true;
+            paging = true;           
          }                         
       }   
       
@@ -565,9 +573,13 @@ public class ChannelState implements State
       
       Iterator iter = downCache.iterator();
       
+      long minOrdering = Long.MAX_VALUE;
+      
       while (iter.hasNext())
       {
          MessageReference ref = (MessageReference)iter.next();
+         
+         minOrdering = Math.min(minOrdering, ref.getOrdering());                 
          
          if (ref.isReliable() && recoverable)
          {
@@ -600,6 +612,28 @@ public class ChannelState implements State
       }
            
       downCache.clear();
+      
+      //when we select refs to load from the channel we load them with a value of ordering >= loadFromOrderingValue      
+      if (this.loadFromOrderingValue == 0)
+      {
+         //First time paging
+         this.loadFromOrderingValue = minOrdering;
+      }
+      else
+      {
+         //It's possible that one of the refs that we're spilling to disk
+         //has a lower ordering value than the current loadFromOrderingValue value
+         //normally this will not be the case but it can be the case if
+         //messages are cancelled out of normal delivery order
+         //or with committing transactions since the ordering for refs in a
+         //transaction is determined when the refs are added to the tx, not
+         //at commit time.
+         //In these cases we need to adjust loadFromOrderingValue appropriately
+         if (minOrdering < loadFromOrderingValue)
+         {
+            loadFromOrderingValue = minOrdering;
+         }         
+      }
                   
       if (trace) { log.trace(this + " cleared downcache"); }
    }
@@ -655,18 +689,16 @@ public class ChannelState implements State
       //Must flush the down cache first
       flushDownCache();
       
-      List refInfos = pm.getReferenceInfos(channel.getChannelID(), number);
+      List refInfos = pm.getReferenceInfos(channel.getChannelID(), loadFromOrderingValue, number);
+      
+      //We may load less than desired due to "holes" - this is ok
+      int numberLoaded = refInfos.size();
        
-      if (refInfos.isEmpty())
+      if (numberLoaded == 0)
       {
          throw new IllegalStateException("Trying to page refs in from persitent storage - but can't find any!");
       }
-            
-      if (refInfos.size() != number)
-      {
-         throw new IllegalStateException("Only loaded " + refInfos.size() + " references, wanted " + number);
-      }
-      
+                        
       MessageStore ms = channel.getMessageStore();
             
       Map refMap = new HashMap(refInfos.size());
@@ -787,7 +819,9 @@ public class ChannelState implements State
          pm.updateReliableReferencesLoadedInRange(channel.getChannelID(), firstOrdering, lastOrdering);         
       }
       
-      refsInStorage -= number;
+      refsInStorage -= numberLoaded;
+      
+      loadFromOrderingValue = lastOrdering + 1;
        
       if (refsInStorage != 0 || messageRefs.size() == fullSize)
       {
@@ -798,6 +832,20 @@ public class ChannelState implements State
          paging = false;
       }         
    }  
+   
+   protected InMemoryCallback getCallback(Transaction tx)
+   {
+      InMemoryCallback callback = (InMemoryCallback) tx.getKeyedCallback(this);
+
+      if (callback == null)
+      {
+         callback = new InMemoryCallback();
+
+         tx.addKeyedCallback(callback, this);
+      }
+
+      return callback;
+   }
          
    // Private -------------------------------------------------------
    
@@ -808,14 +856,31 @@ public class ChannelState implements State
          
    // Inner classes -------------------------------------------------  
    
-
-   private class AddReferenceCallback implements TxCallback
+   private class InMemoryCallback implements TxCallback
    {
-      private MessageReference ref;
+      private List refsToAdd;
       
-      private AddReferenceCallback(MessageReference ref)
+      private List deliveriesToRemove;
+      
+      private long minOrder;
+      
+      private InMemoryCallback()
       {
-         this.ref = ref;
+         refsToAdd = new ArrayList();
+         
+         deliveriesToRemove = new ArrayList();
+      }
+      
+      private void addRef(MessageReference ref)
+      {
+         refsToAdd.add(ref);
+         
+         minOrder = Math.min(minOrder, ref.getOrdering());
+      }
+      
+      private void addDelivery(Delivery del)
+      {
+         deliveriesToRemove.add(del);
       }
       
       public void beforePrepare()
@@ -825,7 +890,6 @@ public class ChannelState implements State
       
       public void beforeCommit(boolean onePhase)
       {         
-         //NOOP
       }
       
       public void beforeRollback(boolean onePhase)
@@ -840,88 +904,189 @@ public class ChannelState implements State
       
       public void afterCommit(boolean onePhase)
       {
-         //We add the reference to the state
+         //We add the references to the state
          
-         if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-             
-         boolean first = false;
-         try
+         Iterator iter = refsToAdd.iterator();
+         
+         synchronized (refLock)
          {         
-            synchronized (refLock)
+            while (iter.hasNext())
             {
-               first = addReferenceInMemory(ref);
-            }
+               MessageReference ref = (MessageReference)iter.next();
+               
+               if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
+                   
+               boolean first = false;
+               try
+               {                        
+                  first = addReferenceInMemory(ref);               
+               }
+               catch (Throwable t)
+               {
+                  // FIXME  - Sort out this exception handling
+                  log.error("Failed to add reference", t);
+               }
+                           
+               if (first)
+               {
+                  //No need to call prompt delivery if there are already messages in the queue
+                  channel.deliver(null);
+               }
+            }              
          }
-         catch (Throwable t)
-         {
-            // FIXME  - Sort out this exception handling
-            log.error("Failed to add reference", t);
-         }
-                     
-         if (first)
-         {
-            //No need to call prompt delivery if there are already messages in the queue
-            channel.deliver(null);
-         }
-      } 
-      
-      public void afterRollback(boolean onePhase)
-      {
-         ref.releaseMemoryReference();
-      }           
-   }
-   
-   private class RemoveDeliveryCallback implements TxCallback
-   {
-      private Delivery del;
-      
-      private RemoveDeliveryCallback(Delivery del)
-      {
-         this.del = del;
-      }
-      
-      public void beforePrepare()
-      {         
-         //NOOP
-      }
-      
-      public void beforeCommit(boolean onePhase)
-      {                                       
-      }
-      
-      public void beforeRollback(boolean onePhase)
-      {         
-         //NOOP
-      }
-      
-      public void afterPrepare()
-      {         
-         //NOOP
-      }
-      
-      public void afterCommit(boolean onePhase)
-      {
-         if (trace) { log.trace(this + " removing " + del + " after commit"); }
-                     
-         del.getReference().releaseMemoryReference();
          
-         try
-         {            
-            synchronized (deliveryLock)
-            {
-               acknowledgeInMemory(del);
-            }
-         }
-         catch (Throwable t)
-         {
-            //FIXME Sort out this exception handling!!!
-            log.error("Failed to ack message", t);
-         }                  
+         //Remove deliveries
+         
+         iter = this.deliveriesToRemove.iterator();
+         
+         synchronized (deliveryLock)
+         {         
+            while (iter.hasNext())
+            {            
+               Delivery del = (Delivery)iter.next();
+            
+               if (trace) { log.trace(this + " removing " + del + " after commit"); }
+               
+               del.getReference().releaseMemoryReference();
+               
+               try
+               {            
+                  acknowledgeInMemory(del);                  
+               }
+               catch (Throwable t)
+               {
+                  //FIXME Sort out this exception handling!!!
+                  log.error("Failed to ack message", t);
+               }   
+            }   
+         }         
       } 
       
       public void afterRollback(boolean onePhase)
       {
-         //NOOP
-      }           
-   }  
+         Iterator iter = refsToAdd.iterator();
+         
+         while (iter.hasNext())
+         {
+            MessageReference ref = (MessageReference)iter.next();
+            
+            ref.releaseMemoryReference();
+         }
+      }          
+   }
+
+//   private class AddReferenceCallback implements TxCallback
+//   {
+//      private MessageReference ref;
+//      
+//      private AddReferenceCallback(MessageReference ref)
+//      {
+//         this.ref = ref;
+//      }
+//      
+//      public void beforePrepare()
+//      {         
+//         //NOOP
+//      }
+//      
+//      public void beforeCommit(boolean onePhase)
+//      {         
+//      }
+//      
+//      public void beforeRollback(boolean onePhase)
+//      {         
+//         //NOOP
+//      }
+//      
+//      public void afterPrepare()
+//      {         
+//         //NOOP
+//      }
+//      
+//      public void afterCommit(boolean onePhase)
+//      {
+//         //We add the reference to the state
+//         
+//         if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
+//             
+//         boolean first = false;
+//         try
+//         {         
+//            synchronized (refLock)
+//            {
+//               first = addReferenceInMemory(ref);
+//            }
+//         }
+//         catch (Throwable t)
+//         {
+//            // FIXME  - Sort out this exception handling
+//            log.error("Failed to add reference", t);
+//         }
+//                     
+//         if (first)
+//         {
+//            //No need to call prompt delivery if there are already messages in the queue
+//            channel.deliver(null);
+//         }
+//      } 
+//      
+//      public void afterRollback(boolean onePhase)
+//      {
+//         ref.releaseMemoryReference();
+//      }           
+//   }
+   
+//   private class RemoveDeliveryCallback implements TxCallback
+//   {
+//      private Delivery del;
+//      
+//      private RemoveDeliveryCallback(Delivery del)
+//      {
+//         this.del = del;
+//      }
+//      
+//      public void beforePrepare()
+//      {         
+//         //NOOP
+//      }
+//      
+//      public void beforeCommit(boolean onePhase)
+//      {                                       
+//      }
+//      
+//      public void beforeRollback(boolean onePhase)
+//      {         
+//         //NOOP
+//      }
+//      
+//      public void afterPrepare()
+//      {         
+//         //NOOP
+//      }
+//      
+//      public void afterCommit(boolean onePhase)
+//      {
+//         if (trace) { log.trace(this + " removing " + del + " after commit"); }
+//                     
+//         del.getReference().releaseMemoryReference();
+//         
+//         try
+//         {            
+//            synchronized (deliveryLock)
+//            {
+//               acknowledgeInMemory(del);
+//            }
+//         }
+//         catch (Throwable t)
+//         {
+//            //FIXME Sort out this exception handling!!!
+//            log.error("Failed to ack message", t);
+//         }                  
+//      } 
+//      
+//      public void afterRollback(boolean onePhase)
+//      {
+//         //NOOP
+//      }           
+//   }  
 }

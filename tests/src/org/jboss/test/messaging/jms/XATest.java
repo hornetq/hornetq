@@ -60,6 +60,8 @@ public class XATest extends MessagingTestCase
    protected JBossConnectionFactory cf;
    protected Destination queue;
    protected TransactionManager tm;
+   
+   protected Transaction suspendedTx;
 
    // Constructors --------------------------------------------------
 
@@ -74,22 +76,29 @@ public class XATest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      initialContext = new InitialContext();
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      
+            
       if (!ServerManagement.isRemote()) tm = TxManager.getInstance();
       
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/queue/Queue"); 
-      drainDestination(cf, queue);
+      queue = (Destination)initialContext.lookup("/queue/Queue");
+      
+      if (!ServerManagement.isRemote()) suspendedTx = tm.suspend();
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
       
+      if (suspendedTx != null)
+      {
+         tm.resume(suspendedTx);
+      }
+
       super.tearDown();
    }
    

@@ -52,6 +52,7 @@ $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
+$reldir/../../src/resources/mysql-connector-java-3.1.12-bin.jar${SEP}\
 ${REMOTING_LIB}${SEP}\
 ${SERIALIZATION_LIB}${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
@@ -75,5 +76,6 @@ $reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
 $reldir/../../../thirdparty/jgroups/lib/jgroups.jar${SEP}\
 $reldir/../../../server/output/lib/jboss.jar${SEP}\
 $reldir/../../../naming/output/lib/jnpserver.jar${SEP} \
+$reldir/../../../connector/output/lib/jms-ra.jar${SEP} \
 -Dtest.bind.address=localhost \
 org.jboss.test.messaging.tools.jmx.rmi.RMITestServer &

@@ -83,7 +83,6 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    
    protected JDBCPersistenceManager createPM() throws Exception
    {
-      log.info("Creating pm");
       try
       {
          cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
@@ -95,8 +94,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
          cm.setPersistenceManager(pm);
          
          cm.start();
-         
-                    
+                      
          return pm;
       }
       catch (Exception e)

@@ -95,6 +95,7 @@ public class JDBCChannelMapperTest extends MessagingTestCase
    public void tearDown() throws Exception
    {
       log.debug("starting tear down");
+      
       super.tearDown();
    }
 
@@ -181,9 +182,9 @@ public class JDBCChannelMapperTest extends MessagingTestCase
 
       TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-      String username = new GUID().toString();
-      String clientID = new GUID().toString();
-      String password = new GUID().toString();
+      String username = "user123";
+      String clientID = "clientid-4354";
+      String password = "my_password";
 
       Transaction txOld = mgr.suspend();
       mgr.begin();

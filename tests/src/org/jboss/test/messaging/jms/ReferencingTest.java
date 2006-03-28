@@ -77,6 +77,8 @@ public class ReferencingTest extends MessagingTestCase
 
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -85,14 +87,12 @@ public class ReferencingTest extends MessagingTestCase
 
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
       
-      drainDestination(cf, queue);
-     
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
-      
+        
       super.tearDown();
    }
 

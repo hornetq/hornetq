@@ -82,13 +82,13 @@
    </category>
 
    <category name="org.jboss.test">
-      <!-- <priority value="INFO"/> -->
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <priority value="INFO"/>
+      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
    </category>
 
    <category name="org.jboss.jms">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="INFO"/> -->
+      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
+      <priority value="INFO"/>
    </category>
 
    <category name="org.jboss.jms.server.remoting.JMSWireFormat">
@@ -104,13 +104,13 @@
    </category>
 
    <category name="org.jboss.jms.perf">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="INFO"/> -->
+      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
+      <priority value="INFO"/>
    </category>
 
    <category name="org.jboss.messaging">
-      <!-- <priority value="INFO"/> -->
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <priority value="INFO"/>
+      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
    </category>
 
    <!--

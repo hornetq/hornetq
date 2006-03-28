@@ -263,7 +263,7 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       assertFalse(channel.deliver(receiver));
 
-      log.info("ok");
+
    }
 
    //////////

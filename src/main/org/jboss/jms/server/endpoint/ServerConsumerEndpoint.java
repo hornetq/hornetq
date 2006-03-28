@@ -37,7 +37,7 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSDispatcher;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
@@ -299,7 +299,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
    // ConsumerEndpoint implementation -------------------------------
 
-   public void cancelMessage(long messageID) throws JMSException
+   public void cancelDelivery(long messageID) throws JMSException
    {
       SingleReceiverDelivery del = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
       if (del != null)
@@ -310,7 +310,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }
          catch (Throwable t)
          {
-            throw new JBossJMSException("Failed to cancel delivery " + del, t);
+            throw new MessagingJMSException("Failed to cancel delivery " + del, t);
          }
          promptDelivery();
       }
@@ -320,7 +320,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
    }
 
-   public void cancelMessages(List messageIDs) throws JMSException
+   public void cancelDeliveries(List messageIDs) throws JMSException
    {
       //Cancel in reverse order to preserve order in queue
 
@@ -328,7 +328,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       {
          Long id = (Long)messageIDs.get(i);
 
-         cancelMessage(id.longValue());
+         cancelDelivery(id.longValue());
       }
    }
 
@@ -416,7 +416,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }
          catch(Throwable t)
          {
-            throw new JBossJMSException("Failed to cancel delivery", t);
+            throw new MessagingJMSException("Failed to cancel delivery", t);
          }
       }
       deliveries.clear();
@@ -461,7 +461,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       catch(Throwable t)
       {
-         throw new JBossJMSException("Failed to acknowledge deliveries", t);
+         throw new MessagingJMSException("Failed to acknowledge deliveries", t);
       }
    }
    
@@ -497,7 +497,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }
          catch(Throwable t)
          {
-            throw new JBossJMSException("Message " + messageID +
+            throw new MessagingJMSException("Message " + messageID +
                                         "cannot be acknowledged to the source", t);
          } 
       }

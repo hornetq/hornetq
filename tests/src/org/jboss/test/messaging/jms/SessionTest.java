@@ -71,6 +71,40 @@ public class SessionTest extends MessagingTestCase
       super(name);
    }
    
+
+   // TestCase overrides -------------------------------------------
+   
+   public void setUp() throws Exception
+   {
+      super.setUp();                  
+      
+      ServerManagement.start("all");
+      
+      
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      
+      ServerManagement.undeployTopic("TestTopic");
+      ServerManagement.deployTopic("TestTopic");
+      topic = (Topic)initialContext.lookup("/topic/TestTopic");
+      
+      ServerManagement.undeployQueue("TestQueue");
+      ServerManagement.deployQueue("TestQueue");
+      queue = (Queue)initialContext.lookup("/queue/TestQueue");
+      
+      log.debug("Done setup()");
+          
+   }
+   
+   public void tearDown() throws Exception
+   {
+      ServerManagement.undeployTopic("TestTopic"); 
+      ServerManagement.undeployQueue("TestQueue");
+      super.tearDown();
+   }
+   
+   
+
    // Public --------------------------------------------------------
 
    public void testCreateProducer() throws Exception
@@ -392,34 +426,7 @@ public class SessionTest extends MessagingTestCase
    
    // Protected -----------------------------------------------------
 
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.deployTopic("TestTopic");
-      topic = (Topic)initialContext.lookup("/topic/TestTopic");
-
-      ServerManagement.undeployQueue("TestQueue");
-      ServerManagement.deployQueue("TestQueue");
-      queue = (Queue)initialContext.lookup("/queue/TestQueue");
-
-      drainDestination(cf, queue);
-
-      log.debug("Done setup()");
-
-   }
-
-   protected void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.undeployQueue("TestQueue");
-      super.tearDown();
-   }
+  
 
    // Private -------------------------------------------------------
    

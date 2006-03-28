@@ -73,6 +73,8 @@ public class TemporaryDestinationTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployTopic("Topic");
@@ -90,7 +92,7 @@ public class TemporaryDestinationTest extends MessagingTestCase
       connection.close();
 
       ServerManagement.undeployTopic("Topic");
-
+      
       super.tearDown();
    }
 

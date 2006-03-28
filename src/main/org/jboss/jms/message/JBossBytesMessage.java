@@ -40,7 +40,7 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 
 /**
@@ -203,7 +203,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -220,7 +220,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -237,7 +237,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -254,7 +254,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -271,7 +271,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -288,7 +288,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -305,7 +305,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -322,7 +322,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -339,7 +339,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -356,7 +356,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -373,7 +373,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -386,7 +386,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -399,7 +399,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -411,7 +411,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -423,7 +423,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -435,7 +435,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -447,7 +447,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -459,7 +459,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -471,7 +471,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -483,7 +483,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -495,7 +495,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -507,7 +507,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -519,7 +519,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -531,7 +531,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 
@@ -587,7 +587,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
 
    }
@@ -616,7 +616,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
       catch (IOException e)
       {
-         throw new JBossJMSException("IOException", e);
+         throw new MessagingJMSException("IOException", e);
       }
    }
 

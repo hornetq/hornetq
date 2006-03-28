@@ -30,6 +30,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.LockMap;
 
 
 /**
@@ -41,9 +42,9 @@ import org.jboss.messaging.core.message.MessageFactory;
  *
  * ChannelShare_P_NT.java,v 1.1 2006/03/22 10:23:35 timfox Exp
  */
-public class ChannelShare_P_NT extends PagingStateTestBase
+public class ChannelShare_P_NTTest extends PagingStateTestBase
 {
-   public ChannelShare_P_NT(String name)
+   public ChannelShare_P_NTTest(String name)
    {
       super(name);
    }
@@ -368,6 +369,8 @@ public class ChannelShare_P_NT extends PagingStateTestBase
       assertNull(state1.removeFirstInMemory());
       
       assertNull(state2.removeFirstInMemory());
+      
+      assertEquals(0, LockMap.instance.getSize());
       
    }
 }

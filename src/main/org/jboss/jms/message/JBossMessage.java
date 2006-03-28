@@ -47,7 +47,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
@@ -397,7 +397,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
       else
       {
-         throw new JBossJMSException("Delivery mode must be either DeliveryMode.PERSISTENT "
+         throw new MessagingJMSException("Delivery mode must be either DeliveryMode.PERSISTENT "
                + "or DeliveryMode.NON_PERSISTENT");
       }
    }

@@ -83,13 +83,13 @@ public class MessageCallbackHandler
 
          log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
          
-         //See JMS1.1 spec 4.5.2
+         //See JMS 1.1 spec 4.5.2
 
          if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            //Cancel the message - this means it will be immediately redelivered
+            //Cancel the delivery - this means it will be immediately redelivered
             if (trace) { log.trace("cancelling " + id); }
-            cons.cancelMessage(id);
+            cons.cancelDelivery(id);
          }
          else
          {
@@ -391,7 +391,7 @@ public class MessageCallbackHandler
                   
                   ids.add(new Long(mp.getMessage().getMessageID()));                                    
                }
-               cancelMessages(ids);
+               cancelDeliveries(ids);
             }
           
             //Now we are done
@@ -571,15 +571,15 @@ public class MessageCallbackHandler
       }     
    }
     
-   protected void cancelMessages(List ids)
+   protected void cancelDeliveries(List ids)
    {
       try
       {
-         consumerDelegate.cancelMessages(ids);
+         consumerDelegate.cancelDeliveries(ids);
       }
       catch (Exception e)
       {
-         String msg = "Failed to cancel messages";
+         String msg = "Failed to cancel deliveries";
          log.warn(msg, e);         
       }
    }

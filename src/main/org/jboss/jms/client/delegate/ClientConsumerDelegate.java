@@ -81,7 +81,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void cancelMessage(long messageID) throws JMSException
+   public void cancelDelivery(long messageID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -90,7 +90,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void cancelMessages(List ids) throws JMSException
+   public void cancelDeliveries(List ids) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }   

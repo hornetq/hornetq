@@ -30,22 +30,22 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.plugin.LockMap;
 
 /**
  * 
- * A PagingTest_P_T_Recoverable.
+ * A PagingTest_NP_NT_Recoverable.
  * 
- * Persistent messages, transactional, recoverable
+ * Non Persistent messages, non transactional, recoverable
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * SingleChannel_P_T.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * SingleChannel_NP_NT.java,v 1.1 2006/03/22 10:23:35 timfox Exp
  */
-public class SingleChannel_P_T extends PagingStateTestBase
+public class SingleChannel_NP_NTTest extends PagingStateTestBase
 {
-   public SingleChannel_P_T(String name)
+   public SingleChannel_NP_NTTest(String name)
    {
       super(name);
    }
@@ -75,29 +75,21 @@ public class SingleChannel_P_T extends PagingStateTestBase
   
       //Send 99
       
-      Transaction tx = tr.createTransaction();
       for (int i = 0; i < 99; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);
+         state.addReference(refs[i]);
       }
-      tx.commit();
       
-      //verify no unloaded refs in storage
+      //verify no refs in storage
             
-      List refIds = getUnloadedReferenceIds(queue.getChannelID());
+      List refIds = getReferenceIds(queue.getChannelID());
       assertTrue(refIds.isEmpty());
       
-      //verify 99 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(99, refIds.size());
-      assertSameIds(refIds, refs, 0, 98);
-      
-      //Verify 99 msgs in storage
+      //Verify no msgs in storage
       List msgIds = getMessageIds();
-      assertEquals(99, msgIds.size());
-      assertSameIds(msgIds, refs, 0, 98);
+      assertTrue(msgIds.isEmpty());
       
       //Verify 99 msgs in store
       assertEquals(99, ms.size());
@@ -117,26 +109,18 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Send one more ref
       
-      tx = tr.createTransaction();
-      msgs[99] = MessageFactory.createCoreMessage(99, true, null);
+      msgs[99] = MessageFactory.createCoreMessage(99, false, null);
       refs[99] = ms.reference(msgs[99]);
-      state.addReference(refs[99], tx);
-      tx.commit();
+      state.addReference(refs[99]);
       
-      //verify no unloaded refs in storage
+      //verify no refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertTrue(refIds.isEmpty());
       
-      //verify 100 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(100, refIds.size());
-      assertSameIds(refIds, refs, 0, 99);
-      
-      //Verify 100 msgs in storage
+      //Verify no msgs in storage
       msgIds = getMessageIds();
-      assertEquals(100, msgIds.size());
-      assertSameIds(msgIds, refs, 0, 99);
+      assertTrue(msgIds.isEmpty());
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -152,35 +136,26 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Verify no deliveries
       assertEquals(0, state.memoryDeliveryCount());
-            
-      
+                  
       //Send 9 more
       
-      tx = tr.createTransaction();
       for (int i = 100; i < 109; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);         
+         state.addReference(refs[i]); 
       }
-      tx.commit();
       
-      //verify no unloaded refs in storage
+      //verify no refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertTrue(refIds.isEmpty());
       
-      //verify 109 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(109, refIds.size());
-      assertSameIds(refIds, refs, 0, 108);      
-      
-      //Verify 100 msgs in storage
+      //Verify no msgs in storage
       msgIds = getMessageIds();
-      assertEquals(109, msgIds.size());
-      assertSameIds(msgIds, refs, 0, 108);
+      assertTrue(msgIds.isEmpty());
       
-      //Verify 109 msgs in store
+      //Verify 100 msgs in store
       assertEquals(109, ms.size());
       
       //Verify 100 refs in queue
@@ -200,27 +175,20 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Send one more ref - should clear the down cache
       
-      tx = tr.createTransaction();
-      msgs[109] = MessageFactory.createCoreMessage(109, true, null);
+      msgs[109] = MessageFactory.createCoreMessage(109, false, null);
       refs[109] = ms.reference(msgs[109]);
-      state.addReference(refs[109], tx);
-      tx.commit();
+      state.addReference(refs[109]);
       
-      //verify 10 unloaded refs in storage
+      //verify 10 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(10, refIds.size());
       assertSameIds(refIds, refs, 100, 109);
       
-      //verify 110 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(110, refIds.size());
-      assertSameIds(refIds, refs, 0, 109);
-      
-      //Verify 110 msgs in storage
+      //Verify 10 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(110, msgIds.size()); 
-      assertSameIds(msgIds, refs, 0, 109);
+      assertEquals(10, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 109);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -240,27 +208,21 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       //Send one more ref
-      tx = tr.createTransaction();
-      msgs[110] = MessageFactory.createCoreMessage(110, true, null);
+      
+      msgs[110] = MessageFactory.createCoreMessage(110, false, null);
       refs[110] = ms.reference(msgs[110]);
-      state.addReference(refs[110], tx);
-      tx.commit();
+      state.addReference(refs[110]);
       
-      //verify 10 unloaded refs in storage
+      //verify 10 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(10, refIds.size());
       assertSameIds(refIds, refs, 100, 109);
       
-      //verify 111 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(111, refIds.size());
-      assertSameIds(refIds, refs, 0, 110);
-      
-      //Verify 111 msgs in storage
+      //Verify 10 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(111, msgIds.size()); 
-      assertSameIds(msgIds, refs, 0, 110);
+      assertEquals(10, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 109);
       
       //Verify 101 msgs in store
       assertEquals(101, ms.size());
@@ -280,30 +242,24 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       //Send 9 more refs
-      tx = tr.createTransaction();
+      
       for (int i = 111; i < 120; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);         
+         state.addReference(refs[i]);         
       }      
-      tx.commit();
       
-      //verify 20 unloaded refs in storage
+      //verify 20 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(20, refIds.size());
       assertSameIds(refIds, refs, 100, 119);
       
-      //verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(120, refIds.size());
-      assertSameIds(refIds, refs, 0, 119);
-      
-      //Verify 120 msgs in storage
+      //Verify 20 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(120, msgIds.size()); 
-      assertSameIds(msgIds, refs, 0, 119);
+      assertEquals(20, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 119);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -324,30 +280,24 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       //Send 10 more refs
-      tx = tr.createTransaction();
+      
       for (int i = 120; i < 130; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);         
+         state.addReference(refs[i]);         
       }  
-      tx.commit();
       
-      //verify 30 unloaded refs in storage
+      //verify 30 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(30, refIds.size());
       assertSameIds(refIds, refs, 100, 129);
       
-      //verify 130 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(130, refIds.size());
-      assertSameIds(refIds, refs, 0, 129);
-      
-      //Verify 130 msgs in storage
+      //Verify 30 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(130, msgIds.size()); 
-      assertSameIds(msgIds, refs, 0, 129);
+      assertEquals(30, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 129);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -364,42 +314,28 @@ public class SingleChannel_P_T extends PagingStateTestBase
       //Verify no deliveries
       assertEquals(0, state.memoryDeliveryCount());
             
-      //Send 100 more refs then roll back
-      tx = tr.createTransaction();
-      for (int i = 200; i < 300; i++)
-      {
-         Message m = MessageFactory.createCoreMessage(i, true, null);
-         MessageReference ref = ms.reference(m);
-         state.addReference(ref, tx);         
-      }  
-      tx.rollback();
+      
       
       
       //Send 10 more refs
-      tx = tr.createTransaction();
+      
       for (int i = 130; i < 140; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);         
+         state.addReference(refs[i]);         
       }  
-      tx.commit();
       
-      //verify 40 unloaded refs in storage
+      //verify 40 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
-      //verify 140 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(140, refIds.size());
-      assertSameIds(refIds, refs, 0, 139);
-      
-      //Verify 140 msgs in storage
+      //Verify 40 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(140, msgIds.size()); 
-      assertSameIds(msgIds, refs, 0, 139);
+      assertEquals(40, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 139);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -420,29 +356,23 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       //Send one more ref
-      tx = tr.createTransaction();
-      msgs[140] = MessageFactory.createCoreMessage(140, true, null);
+      
+      msgs[140] = MessageFactory.createCoreMessage(140, false, null);
       refs[140] = ms.reference(msgs[140]);
-      state.addReference(refs[140], tx);
-      tx.commit();
+      state.addReference(refs[140]);
       
-      //verify 40 unloaded refs in storage
+      //verify 40 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
-      //verify 141 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(141, refIds.size());
-      assertSameIds(refIds, refs, 0, 140);
-      
-      //Verify 141 msgs in storage
+      //Verify 40 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(141, msgIds.size()); 
-      assertSameIds(msgIds, refs, 0, 140);
+      assertEquals(40, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 139);
       
-      //Verify 101 msgs in store
+      //Verify 100 msgs in store
       assertEquals(101, ms.size());
       
       //Verify 100 refs in queue
@@ -457,28 +387,24 @@ public class SingleChannel_P_T extends PagingStateTestBase
       //Verify no deliveries
       assertEquals(0, state.memoryDeliveryCount());
             
-                            
+                
+      
+      
       //Consume 1
       int consumeCount = 0;
-      
-      consumeInTx(queue, state, consumeCount, refs, 1);
+      consume(queue, state, consumeCount, refs, 1);
       consumeCount++;
-
-      //verify 40 unloaded refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      //verify 40 refs in storage
+      
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
-      //verify 140 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(140, refIds.size());
-      assertSameIds(refIds, refs, 1, 140);      
-      
-      //Verify 140 msgs in storage
+      //Verify 40 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(140, msgIds.size()); 
-      assertSameIds(msgIds, refs, 1, 140);
+      assertEquals(40, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 139);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -498,29 +424,24 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       
-      //Now we should have 99 refs in memory, 140 refs in storage, and 1 in down cache, 99 msgs in memory
+      //Now we should have 99 refs in memory, 40 refs in storage, and 1 in down cache, 100 msgs in memory
       
       //Consume 18 more
-     
-      consumeInTx(queue, state, consumeCount, refs, 18);
+      consume(queue, state, consumeCount, refs, 18);
       consumeCount += 18;
       
+      //We should have 81 refs in memory, 40 refs in storage, and 1 in down cache, 82 msgs in memory
       
-      //verify 40 unloaded refs in storage
+      //verify 40 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
-      //Verify 122 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(122, refIds.size()); 
-      assertSameIds(refIds, refs, 19, 140);
-      
-      //Verify 122 msgs in storage
+      //Verify 40 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(122, msgIds.size()); 
-      assertSameIds(msgIds, refs, 19, 140);
+      assertEquals(40, msgIds.size()); 
+      assertSameIds(msgIds, refs, 100, 139);
       
       //Verify 82 msgs in store
       assertEquals(82, ms.size());
@@ -542,26 +463,22 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Consume one more
       
-      consumeInTx(queue, state, consumeCount, refs, 1);
+      consume(queue, state, consumeCount, refs, 1);
       consumeCount++;
       
       //This should force a load of 20 and flush the downcache
       
-      //verify 21 unloaded refs in storage
+      //verify 21 refs in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
+      
       assertEquals(21, refIds.size());
       assertSameIds(refIds, refs, 120, 140);
       
-      //Verify 121 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(121, refIds.size()); 
-      assertSameIds(refIds, refs, 20, 140);
-      
-      //Verify 121 msgs in storage
+      //Verify 21 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(121, msgIds.size()); 
-      assertSameIds(msgIds, refs, 20, 140);
+      assertEquals(21, msgIds.size()); 
+      assertSameIds(msgIds, refs, 120, 140);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -583,24 +500,19 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Consume 20 more
       
-      consumeInTx(queue, state, consumeCount, refs, 20);
+      consume(queue, state, consumeCount, refs, 20);
       consumeCount += 20;
       
-      //verify 1 unloaded ref in storage
+      //verify 1 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(1, refIds.size());
       assertSameIds(refIds, refs, 140, 140);
       
-      //Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(101, refIds.size()); 
-      assertSameIds(refIds, refs, 40, 140);
-      
-      //Verify 120 msgs in storage
+      //Verify 1 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(101, msgIds.size()); 
-      assertSameIds(msgIds, refs, 40, 140);
+      assertEquals(1, msgIds.size()); 
+      assertSameIds(msgIds, refs, 140, 140);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -622,23 +534,17 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Consume 1 more
       
-      consumeInTx(queue, state, consumeCount, refs, 1);
+      consume(queue, state, consumeCount, refs, 1);
       consumeCount ++;
       
-      //verify 0 unloaded refs in storage
+      //verify 0 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      //Verify 100 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(100, refIds.size()); 
-      assertSameIds(refIds, refs, 41, 140);
-      
-      //Verify 100 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(100, msgIds.size()); 
-      assertSameIds(msgIds, refs, 41, 140); 
+      assertEquals(0, msgIds.size()); 
       
       //Verify 81 msgs in store
       assertEquals(100, ms.size());
@@ -660,23 +566,17 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Consume 20 more
       
-      consumeInTx(queue, state, consumeCount, refs, 20);
+      consume(queue, state, consumeCount, refs, 20);
       consumeCount += 20;
       
-      //verify 0 unloaded refs in storage
+      //verify 0 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      //Verify 80 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(80, refIds.size()); 
-      assertSameIds(refIds, refs, 61, 140);
-      
-      //Verify 80 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(80, msgIds.size()); 
-      assertSameIds(msgIds, refs, 61, 140); 
+      assertEquals(0, msgIds.size()); 
       
       //Verify 80 msgs in store
       assertEquals(80, ms.size());
@@ -698,23 +598,17 @@ public class SingleChannel_P_T extends PagingStateTestBase
       //Consumer 60 more
       
             
-      consumeInTx(queue, state, consumeCount, refs, 60);
+      consume(queue, state, consumeCount, refs, 60);
       consumeCount += 60;
       
-      //verify 0 unloaded refs in storage
+      //verify 0 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      //Verify 20 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(20, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 140);
-      
-      //Verify 20 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(20, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 140);  
+      assertEquals(0, msgIds.size()); 
       
       //Verify 20 msgs in store
       assertEquals(20, ms.size());
@@ -734,27 +628,21 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       //Add 20 more messages
-      tx = tr.createTransaction();
       for (int i = 141; i < 161; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);
+         state.addReference(refs[i]);
       }
-      tx.commit();
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      //verify 0 ref in storage
+      
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      //Verify 40 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(40, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 160);
-      
-      //Verify 40 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(40, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 160);
+      assertEquals(0, msgIds.size()); 
       
       //Verify 40 msgs in store
       assertEquals(40, ms.size());
@@ -775,27 +663,21 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       //Add 20 more messages
-      tx = tr.createTransaction();
       for (int i = 161; i < 181; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);
+         state.addReference(refs[i]);
       }
-      tx.commit();
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      //verify 0 ref in storage
+      
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      //Verify 60 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(60, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 180);
-      
-      //Verify 60 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(60, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 180); 
+      assertEquals(0, msgIds.size()); 
       
       //Verify 60 msgs in store
       assertEquals(60, ms.size());
@@ -815,30 +697,23 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       
       //Add 60 more messages
-      tx = tr.createTransaction();
       for (int i = 181; i < 241; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i], tx);
+         state.addReference(refs[i]);
       }
-      tx.commit();
       
-      //verify 20 unloaded ref in storage
+      //verify 20 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(20, refIds.size());
       assertSameIds(refIds, refs, 221, 240);
       
-      // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(120, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 240);
-      
-      //Verify 120 msgs in storage
+      //Verify 20 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(120, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 240);
+      assertEquals(20, msgIds.size()); 
+      assertSameIds(msgIds, refs, 221, 240);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -874,18 +749,12 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(120, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 240);
-      
-      //Verify 120 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(120, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 240);
+      assertEquals(0, msgIds.size()); 
   
       //Verify 120 msgs in store
       assertEquals(120, ms.size());
@@ -912,18 +781,12 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(120, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 240);
-      
-      //Verify 120 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(120, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 240);      
+      assertEquals(0, msgIds.size()); 
   
       //Verify 120 msgs in store
       assertEquals(120, ms.size());
@@ -950,20 +813,15 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //verify 10 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(10, refIds.size());
       assertSameIds(refIds, refs, 231, 240);
       
-      // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(120, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 240);
-      
-      //Verify 120 msgs in storage
+      //Verify 10 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(120, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 240);      
-            
+      assertEquals(10, msgIds.size()); 
+      assertSameIds(msgIds, refs, 231, 240);
+      
       //Verify 110 msgs in store
       assertEquals(110, ms.size());
       
@@ -991,19 +849,14 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //verify 20 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(20, refIds.size());
       assertSameIds(refIds, refs, 221, 240);
       
-      // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(120, refIds.size()); 
-      assertSameIds(refIds, refs, 121, 240);
-      
-      //Verify 120 msgs in storage
+      //Verify 20 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(120, msgIds.size()); 
-      assertSameIds(msgIds, refs, 121, 240);
+      assertEquals(20, msgIds.size()); 
+      assertSameIds(msgIds, refs, 221, 240);
       
       //Verify 100 msgs in store
       assertEquals(100, ms.size());
@@ -1024,23 +877,17 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Consume 50
       
-      consumeInTx(queue, state, consumeCount, refs, 50);
+      consume(queue, state, consumeCount, refs, 50);
       consumeCount += 50;
       
       //verify 0 ref in storage
       
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
+      refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());     
       
-      // Verify 70 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
-      assertEquals(70, refIds.size()); 
-      assertSameIds(refIds, refs, 171, 240);
-      
-      //Verify 70 msgs in storage
+      //Verify 0 msgs in storage
       msgIds = getMessageIds();
-      assertEquals(70, msgIds.size()); 
-      assertSameIds(msgIds, refs, 171, 240); 
+      assertEquals(0, msgIds.size()); 
 
       //Verify 70 msgs in store
       assertEquals(70, ms.size());
@@ -1059,13 +906,10 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       //Consume the rest
       
-      consumeInTx(queue, state, consumeCount, refs, 70);
+      consume(queue, state, consumeCount, refs, 70);
       consumeCount += 70;
       
       //verify 0 ref in storage
-      
-      refIds = getUnloadedReferenceIds(queue.getChannelID());
-      assertEquals(0, refIds.size());     
       
       refIds = getReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());     
@@ -1086,7 +930,8 @@ public class SingleChannel_P_T extends PagingStateTestBase
       
       assertNull(ref);
          
+      assertEquals(0, LockMap.instance.getSize());
    }
    
-   
+
 }

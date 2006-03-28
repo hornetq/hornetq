@@ -76,16 +76,16 @@ public class AcknowledgmentTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+                  
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
+                 
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
-      topic = (Topic)initialContext.lookup("/topic/Topic");
-      drainDestination(cf, queue);
+      topic = (Topic)initialContext.lookup("/topic/Topic");     
 
       log.debug("setup done");
    }
@@ -94,6 +94,7 @@ public class AcknowledgmentTest extends MessagingTestCase
    {
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
+      
       super.tearDown();
       
    }

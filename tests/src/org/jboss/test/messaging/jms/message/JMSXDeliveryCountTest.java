@@ -67,6 +67,8 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -84,7 +86,6 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      
       super.tearDown();
    }
 

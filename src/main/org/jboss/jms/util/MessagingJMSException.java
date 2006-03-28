@@ -25,11 +25,11 @@ import javax.jms.JMSException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>1.1</tt>
  *
- * $Id$
+ * MessagingJMSException.java,v 1.1 2006/03/28 14:26:17 timfox Exp
  */
-public class JBossJMSException extends JMSException
+public class MessagingJMSException extends JMSException
 {
    // Constants -----------------------------------------------------
    
@@ -42,24 +42,24 @@ public class JBossJMSException extends JMSException
 
    // Constructors --------------------------------------------------
   
-   public JBossJMSException(String reason) {
+   public MessagingJMSException(String reason) {
      this(reason, null, null);
    }
 
-   public JBossJMSException(Exception cause) {
+   public MessagingJMSException(Exception cause) {
      this(null, null, cause);
    }
 
-   public JBossJMSException(String reason, String errorCode) {
+   public MessagingJMSException(String reason, String errorCode) {
      this(reason, errorCode, null);
    }
 
-   public JBossJMSException(String reason, Throwable cause)
+   public MessagingJMSException(String reason, Throwable cause)
    {
       this(reason, null, cause);
    }
 
-   public JBossJMSException(String reason, String errorCode, Throwable cause)
+   public MessagingJMSException(String reason, String errorCode, Throwable cause)
    {
       super(reason, errorCode);
       if (cause != null)

@@ -66,5 +66,10 @@ public class MessageIdGeneratorFactory
       }
       return gen;
    }
+   
+   public synchronized void clear()
+   {
+      generators.clear();
+   }
   
 }

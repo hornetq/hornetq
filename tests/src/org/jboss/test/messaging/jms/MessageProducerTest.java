@@ -71,6 +71,9 @@ public class MessageProducerTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
+      
+      
+      
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployTopic("Topic2");
       ServerManagement.undeployQueue("Queue");
@@ -84,8 +87,8 @@ public class MessageProducerTest extends MessagingTestCase
       topic2 = (Destination)ic.lookup("/topic/Topic2");
       queue = (Destination)ic.lookup("/queue/Queue");
       
-      drainDestination(cf, queue);
-
+      this.drainDestination(cf, queue);
+      
       log.debug("setup done");
    }
 
@@ -95,7 +98,6 @@ public class MessageProducerTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic2");
       ServerManagement.undeployQueue("Queue");
       
-
       super.tearDown();
    }
 

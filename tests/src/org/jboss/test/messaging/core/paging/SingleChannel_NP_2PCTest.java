@@ -30,21 +30,23 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.LockMap;
+import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * 
- * A PagingTest_NP_NT_Recoverable.
+ * A PagingTest_NP_2PC_Recoverable.
  * 
- * Non Persistent messages, non transactional, recoverable
+ * Non Persistent messages, 2pc , recoverable
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * SingleChannel_NP_NT.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * SingleChannel_NP_2PC.java,v 1.1 2006/03/22 10:23:35 timfox Exp
  */
-public class SingleChannel_NP_NT extends PagingStateTestBase
+public class SingleChannel_NP_2PCTest extends PagingStateTestBase
 {
-   public SingleChannel_NP_NT(String name)
+   public SingleChannel_NP_2PCTest(String name)
    {
       super(name);
    }
@@ -74,12 +76,17 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
   
       //Send 99
       
+      Transaction tx = createXATx();
+      
       for (int i = 0; i < 99; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+                
+         state.addReference(refs[i], tx); 
       }
+      tx.prepare();
+      tx.commit();
       
       //verify no refs in storage
             
@@ -108,9 +115,14 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Send one more ref
       
+      tx = createXATx();
+      
       msgs[99] = MessageFactory.createCoreMessage(99, false, null);
       refs[99] = ms.reference(msgs[99]);
-      state.addReference(refs[99]);
+      state.addReference(refs[99], tx);
+      
+      tx.prepare();
+      tx.commit();
       
       //verify no refs in storage
       
@@ -135,15 +147,19 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Verify no deliveries
       assertEquals(0, state.memoryDeliveryCount());
-                  
+            
+      
       //Send 9 more
       
+      tx = createXATx();
       for (int i = 100; i < 109; i++)
-      {
+      {         
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]); 
+         state.addReference(refs[i], tx);         
       }
+      tx.prepare();
+      tx.commit();
       
       //verify no refs in storage
       
@@ -154,7 +170,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       msgIds = getMessageIds();
       assertTrue(msgIds.isEmpty());
       
-      //Verify 100 msgs in store
+      //Verify 109 msgs in store
       assertEquals(109, ms.size());
       
       //Verify 100 refs in queue
@@ -174,9 +190,12 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Send one more ref - should clear the down cache
       
+      tx = createXATx();
       msgs[109] = MessageFactory.createCoreMessage(109, false, null);
       refs[109] = ms.reference(msgs[109]);
-      state.addReference(refs[109]);
+      state.addReference(refs[109], tx);
+      tx.prepare();
+      tx.commit();
       
       //verify 10 refs in storage
       
@@ -208,9 +227,12 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Send one more ref
       
+      tx = createXATx();
       msgs[110] = MessageFactory.createCoreMessage(110, false, null);
       refs[110] = ms.reference(msgs[110]);
-      state.addReference(refs[110]);
+      state.addReference(refs[110], tx);
+      tx.prepare();
+      tx.commit();
       
       //verify 10 refs in storage
       
@@ -242,12 +264,15 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Send 9 more refs
       
+      tx = createXATx();
       for (int i = 111; i < 120; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);         
+         state.addReference(refs[i], tx);         
       }      
+      tx.prepare();
+      tx.commit();
       
       //verify 20 refs in storage
       
@@ -275,17 +300,29 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       //Verify no deliveries
       assertEquals(0, state.memoryDeliveryCount());
             
-      
+      //    Send 100 more refs then roll back
+      tx = this.createXATx();
+      for (int i = 200; i < 300; i++)
+      {
+         Message m = MessageFactory.createCoreMessage(i, true, null);
+         MessageReference ref = ms.reference(m);
+         state.addReference(ref, tx);         
+      }  
+      tx.prepare();
+      tx.rollback();
       
       
       //Send 10 more refs
       
+      tx = createXATx();
       for (int i = 120; i < 130; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);         
+         state.addReference(refs[i], tx);         
       }  
+      tx.prepare();
+      tx.commit();
       
       //verify 30 refs in storage
       
@@ -318,12 +355,15 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Send 10 more refs
       
+      tx = createXATx();
       for (int i = 130; i < 140; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);         
+         state.addReference(refs[i], tx);         
       }  
+      tx.prepare();
+      tx.commit();
       
       //verify 40 refs in storage
       
@@ -356,9 +396,12 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Send one more ref
       
+      tx = createXATx();
       msgs[140] = MessageFactory.createCoreMessage(140, false, null);
       refs[140] = ms.reference(msgs[140]);
-      state.addReference(refs[140]);
+      state.addReference(refs[140], tx);
+      tx.prepare();
+      tx.commit();
       
       //verify 40 refs in storage
       
@@ -371,7 +414,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       assertEquals(40, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 139);
       
-      //Verify 100 msgs in store
+      //Verify 101 msgs in store
       assertEquals(101, ms.size());
       
       //Verify 100 refs in queue
@@ -391,7 +434,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Consume 1
       int consumeCount = 0;
-      consume(queue, state, consumeCount, refs, 1);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 1);
       consumeCount++;
       
       //verify 40 refs in storage
@@ -426,7 +469,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       //Now we should have 99 refs in memory, 40 refs in storage, and 1 in down cache, 100 msgs in memory
       
       //Consume 18 more
-      consume(queue, state, consumeCount, refs, 18);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 18);
       consumeCount += 18;
       
       //We should have 81 refs in memory, 40 refs in storage, and 1 in down cache, 82 msgs in memory
@@ -462,7 +505,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Consume one more
       
-      consume(queue, state, consumeCount, refs, 1);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 1);
       consumeCount++;
       
       //This should force a load of 20 and flush the downcache
@@ -470,7 +513,6 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       //verify 21 refs in storage
       
       refIds = getReferenceIds(queue.getChannelID());
-      
       assertEquals(21, refIds.size());
       assertSameIds(refIds, refs, 120, 140);
       
@@ -499,7 +541,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Consume 20 more
       
-      consume(queue, state, consumeCount, refs, 20);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 20);
       consumeCount += 20;
       
       //verify 1 ref in storage
@@ -533,7 +575,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Consume 1 more
       
-      consume(queue, state, consumeCount, refs, 1);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 1);
       consumeCount ++;
       
       //verify 0 ref in storage
@@ -565,7 +607,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       //Consume 20 more
       
-      consume(queue, state, consumeCount, refs, 20);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 20);
       consumeCount += 20;
       
       //verify 0 ref in storage
@@ -597,7 +639,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       //Consumer 60 more
       
             
-      consume(queue, state, consumeCount, refs, 60);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 60);
       consumeCount += 60;
       
       //verify 0 ref in storage
@@ -627,12 +669,15 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       
       //Add 20 more messages
+      tx = createXATx();
       for (int i = 141; i < 161; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+         state.addReference(refs[i], tx);
       }
+      tx.prepare();
+      tx.commit();
       
       //verify 0 ref in storage
       
@@ -662,12 +707,15 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       
       //Add 20 more messages
+      tx = createXATx();
       for (int i = 161; i < 181; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+         state.addReference(refs[i], tx);
       }
+      tx.prepare();
+      tx.commit();
       
       //verify 0 ref in storage
       
@@ -696,12 +744,15 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       
       //Add 60 more messages
+      tx = createXATx();
       for (int i = 181; i < 241; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+         state.addReference(refs[i], tx);
       }
+      tx.prepare();
+      tx.commit();
       
       //verify 20 ref in storage
       
@@ -731,7 +782,7 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       
       
        
-      //test cancellation
+      // test cancellation
       
       //remove 20 but don't ack them yet
       //this should cause a load to be triggered
@@ -842,7 +893,6 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
          state.cancelDelivery(dels[i]);
       }
       
-      //consumeCount += 20;
       
       //This should cause the down cache to be flushed
       
@@ -870,13 +920,11 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       assertEquals(0, state.memoryDeliveryCount());;      
       
       
-
-
       //Now there should be 120 message left to consume
       
       //Consume 50
       
-      consume(queue, state, consumeCount, refs, 50);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 50);
       consumeCount += 50;
       
       //verify 0 ref in storage
@@ -900,12 +948,10 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       //Verify 0 deliveries
       assertEquals(0, state.memoryDeliveryCount());
       
-      
-      
-      
+                  
       //Consume the rest
       
-      consume(queue, state, consumeCount, refs, 70);
+      consumeIn2PCTx(queue, state, consumeCount, refs, 70);
       consumeCount += 70;
       
       //verify 0 ref in storage
@@ -928,8 +974,8 @@ public class SingleChannel_NP_NT extends PagingStateTestBase
       MessageReference ref = state.removeFirstInMemory();
       
       assertNull(ref);
-         
-   }
+      assertEquals(0, LockMap.instance.getSize());
+      
    
-
+   }
 }

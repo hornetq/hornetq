@@ -80,15 +80,16 @@ public class BrowserTest extends MessagingTestCase
 
 		super.setUp();
       ServerManagement.start("all");
+      
+            
 		initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 		cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-		
+		      
       ServerManagement.undeployQueue("Queue");
       
 		ServerManagement.deployQueue("Queue");
 		queue = (Queue)initialContext.lookup("/queue/Queue");
-      drainDestination(cf, queue);
-		
+      		
       connection = cf.createConnection();
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       producer = session.createProducer(queue);
@@ -101,9 +102,8 @@ public class BrowserTest extends MessagingTestCase
       
       connection.stop();
       connection = null;
-		
-		super.tearDown();
-      
+      	
+		super.tearDown();     
 	}
 	
 	// Public --------------------------------------------------------

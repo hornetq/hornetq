@@ -27,6 +27,7 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 //import org.jboss.messaging.core.plugin.LockMap;
+import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -59,8 +60,6 @@ public class StressTestBase extends MessagingTestCase
    protected Topic topic3;
    protected Topic topic4;
 
-
-
    public StressTestBase(String name)
    {
       super(name);
@@ -70,9 +69,7 @@ public class StressTestBase extends MessagingTestCase
    {
       super.setUp();
       
-      ServerManagement.start("all");
-      
-      
+      ServerManagement.start("all");            
       
       //We test with small values for paging params to really stress it
       
@@ -82,12 +79,6 @@ public class StressTestBase extends MessagingTestCase
       
       final int downCacheSize = 1000;
       
-//      final int fullSize = 150000;
-//      
-//      final int pageSize = 2000;
-//      
-//      final int downCacheSize = 1000;
-       
       ServerManagement.deployQueue("Queue1", fullSize, pageSize, downCacheSize);
       ServerManagement.deployQueue("Queue2", fullSize, pageSize, downCacheSize);
       ServerManagement.deployQueue("Queue3", fullSize, pageSize, downCacheSize);
@@ -97,8 +88,7 @@ public class StressTestBase extends MessagingTestCase
       ServerManagement.deployTopic("Topic2", fullSize, pageSize, downCacheSize);
       ServerManagement.deployTopic("Topic3", fullSize, pageSize, downCacheSize);
       ServerManagement.deployTopic("Topic4", fullSize, pageSize, downCacheSize);
-      
-      
+            
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
@@ -111,13 +101,12 @@ public class StressTestBase extends MessagingTestCase
       topic1 = (Topic)ic.lookup("/topic/Topic1");
       topic2 = (Topic)ic.lookup("/topic/Topic2");
       topic3 = (Topic)ic.lookup("/topic/Topic3");
-      topic4 = (Topic)ic.lookup("/topic/Topic4");
-            
+      topic4 = (Topic)ic.lookup("/topic/Topic4");            
    }
 
    public void tearDown() throws Exception
    {
-//      assertEquals(0, LockMap.instance.getSize());
+      assertEquals(0, LockMap.instance.getSize());
             
       ServerManagement.undeployQueue("Queue1");
       ServerManagement.undeployQueue("Queue2");
@@ -133,8 +122,6 @@ public class StressTestBase extends MessagingTestCase
       
       log.info("Torn down");
       
-//      log.info("lock map size:" + LockMap.instance.getSize());
-
       super.tearDown();            
    }
    

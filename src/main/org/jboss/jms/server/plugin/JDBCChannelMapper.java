@@ -36,7 +36,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.local.CoreDurableSubscription;
@@ -93,27 +93,26 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    // =============================================================================
    
    private String createMappingTable = 
-      "CREATE TABLE CHANNEL_MAPPING (ID BIGINT, TYPE CHAR(1), " +
+      "CREATE TABLE JMS_CHANNEL_MAPPING (ID BIGINT, TYPE CHAR(1), " +
       "JMS_DEST_NAME VARCHAR(1024), JMS_SUB_NAME VARCHAR(1024), " +
       "CLIENT_ID VARCHAR(128), SELECTOR VARCHAR(1024), NO_LOCAL CHAR(1), PRIMARY KEY(ID))";
    
    private String insertMapping = 
-      "INSERT INTO CHANNEL_MAPPING (ID, TYPE, JMS_DEST_NAME, JMS_SUB_NAME, CLIENT_ID, SELECTOR, NO_LOCAL) " +
+      "INSERT INTO JMS_CHANNEL_MAPPING (ID, TYPE, JMS_DEST_NAME, JMS_SUB_NAME, CLIENT_ID, SELECTOR, NO_LOCAL) " +
       "VALUES (?, ?, ?, ?, ?, ?, ?)";
    
    private String deleteMapping =
-      "DELETE FROM CHANNEL_MAPPING WHERE ID = ?";
+      "DELETE FROM JMS_CHANNEL_MAPPING WHERE ID = ?";
    
    private String selectIdForDestination = 
-      "SELECT ID FROM CHANNEL_MAPPING WHERE TYPE=? AND JMS_DEST_NAME=?";
+      "SELECT ID FROM JMS_CHANNEL_MAPPING WHERE TYPE=? AND JMS_DEST_NAME=?";
    
    private String selectDurableSub = 
-      "SELECT JMS_DEST_NAME, ID, SELECTOR, NO_LOCAL FROM CHANNEL_MAPPING WHERE CLIENT_ID=? AND JMS_SUB_NAME=?";
+      "SELECT JMS_DEST_NAME, ID, SELECTOR, NO_LOCAL FROM JMS_CHANNEL_MAPPING WHERE CLIENT_ID=? AND JMS_SUB_NAME=?";
    
    private String selectSubscriptionsForTopic = 
-      "SELECT ID, CLIENT_ID, JMS_SUB_NAME, SELECTOR, NO_LOCAL FROM CHANNEL_MAPPING WHERE TYPE='D' AND JMS_DEST_NAME=?";
-   
-      
+      "SELECT ID, CLIENT_ID, JMS_SUB_NAME, SELECTOR, NO_LOCAL FROM JMS_CHANNEL_MAPPING WHERE TYPE='D' AND JMS_DEST_NAME=?";
+    
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -343,8 +342,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
       catch (Exception e)
       {
-         e.printStackTrace();
-         throw new JBossJMSException("Failed to deploy core destination", e);        
+         log.error("Failed to deploy core destination", e);
+         throw new MessagingJMSException("Failed to deploy core destination", e);        
       }
    }
    
@@ -484,7 +483,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       catch (Exception e)
       {
          e.printStackTrace();
-         throw new JBossJMSException("Failed to create durable subscription", e);        
+         throw new MessagingJMSException("Failed to create durable subscription", e);        
       }
      
    }
@@ -508,7 +507,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
       catch (Exception e)
       {
-         throw new JBossJMSException("Failed to create durable subscription", e);        
+         throw new MessagingJMSException("Failed to create durable subscription", e);        
       }
    }
    
@@ -552,7 +551,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
       catch (Exception e)
       {
-         throw new JBossJMSException("Failed to remove durable subscription", e);        
+         throw new MessagingJMSException("Failed to remove durable subscription", e);        
       }
    }
    
@@ -617,7 +616,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
    }
    
-  
+ 
+   
    // MBean operations ----------------------------------------------
    
    public String getSqlProperties()
@@ -807,7 +807,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
       catch (Exception e)
       {
-         throw new JBossJMSException("Failed to load durable subscriptions for topic", e);        
+         throw new MessagingJMSException("Failed to load durable subscriptions for topic", e);        
       }
    }
 
@@ -1069,7 +1069,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       selectIdForDestination = sqlProperties.getProperty("SELECT_ID_FOR_DESTINATION", selectIdForDestination);
       selectDurableSub = sqlProperties.getProperty("SELECT_DURABLE_SUB", selectDurableSub);
       selectSubscriptionsForTopic = sqlProperties.getProperty("SELECT_SUBSCRIPTIONS_FOR_TOPIC", selectSubscriptionsForTopic);
-            
+   
       for (Iterator i = sqlProperties.entrySet().iterator(); i.hasNext();)
       {
          Map.Entry entry = (Map.Entry) i.next();

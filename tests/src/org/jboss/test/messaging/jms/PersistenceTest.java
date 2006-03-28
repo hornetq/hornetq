@@ -74,6 +74,8 @@ public class PersistenceTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
+      
+      
 
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
@@ -86,8 +88,6 @@ public class PersistenceTest extends MessagingTestCase
 
       queue = (Queue)initialContext.lookup("/queue/Queue");
       topic = (Topic)initialContext.lookup("/topic/Topic");
-
-      drainDestination(cf, queue);
 
       log.debug("setup done");
    }

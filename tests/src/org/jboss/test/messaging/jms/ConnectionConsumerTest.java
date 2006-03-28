@@ -73,6 +73,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+            
 
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
@@ -82,14 +83,12 @@ public class ConnectionConsumerTest extends MessagingTestCase
       queue = (Destination)ic.lookup("/queue/Queue");
 
       log.debug("setup done");
-      
-      super.drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
-      
+       
       super.tearDown();
    }
 

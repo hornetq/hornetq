@@ -30,21 +30,22 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
 
 
 /**
  * 
- * A ChannelShare_P_T_Recoverable.
+ * A ChannelShare_NP_T_Recoverable.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * ChannelShare_P_T.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * ChannelShare_NP_T.java,v 1.1 2006/03/22 10:23:35 timfox Exp
  */
-public class ChannelShare_P_T extends PagingStateTestBase
+public class ChannelShare_NP_TTest extends PagingStateTestBase
 {
-   public ChannelShare_P_T(String name)
+   public ChannelShare_NP_TTest(String name)
    {
       super(name);
    }
@@ -62,7 +63,7 @@ public class ChannelShare_P_T extends PagingStateTestBase
       super.tearDown();
    }
    
-   public void test1() throws Throwable
+   public void testChannelShareNP_Transactional() throws Throwable
    {
       Channel queue1 = new Queue(1, ms, pm, true, 100, 20, 10);
       
@@ -79,10 +80,11 @@ public class ChannelShare_P_T extends PagingStateTestBase
       MessageReference[] refs2 = new MessageReference[150];
       
       //Send 50 refs to both channels
+  
       Transaction tx = tr.createTransaction();
       for (int i = 0; i < 50; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
@@ -95,11 +97,8 @@ public class ChannelShare_P_T extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      List refIds = getUnloadedReferenceIds(queue1.getChannelID());
+      List refIds = getReferenceIds(queue1.getChannelID());
       assertEquals(0, refIds.size());
-      
-      refIds = getReferenceIds(queue1.getChannelID());
-      assertEquals(50, refIds.size());
                                     
       assertEquals(50, state1.memoryRefCount());
       
@@ -111,11 +110,8 @@ public class ChannelShare_P_T extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
-      assertEquals(0, refIds.size());
-      
       refIds = getReferenceIds(queue2.getChannelID());
-      assertEquals(50, refIds.size());
+      assertEquals(0, refIds.size());
                               
       assertEquals(50, state2.memoryRefCount());
       
@@ -130,13 +126,14 @@ public class ChannelShare_P_T extends PagingStateTestBase
       assertEquals(50, ms.size());
       
       List msgIds = getMessageIds();
-      assertEquals(50, msgIds.size()); 
+      assertEquals(0, msgIds.size()); 
       
       //Add 25 more
+      
       tx = tr.createTransaction();
       for (int i = 50; i < 75; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
@@ -149,12 +146,9 @@ public class ChannelShare_P_T extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getUnloadedReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIds(queue1.getChannelID());
               
       assertEquals(0, refIds.size());
-      
-      refIds = getReferenceIds(queue1.getChannelID());
-      assertEquals(75, refIds.size());
                                     
       assertEquals(75, state1.memoryRefCount());
       
@@ -166,11 +160,8 @@ public class ChannelShare_P_T extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
-      assertEquals(25, refIds.size());
-      
       refIds = getReferenceIds(queue2.getChannelID());
-      assertEquals(75, refIds.size());
+      assertEquals(25, refIds.size());
                               
       assertEquals(50, state2.memoryRefCount());
       
@@ -185,7 +176,7 @@ public class ChannelShare_P_T extends PagingStateTestBase
       assertEquals(75, ms.size());
       
       msgIds = getMessageIds();
-      assertEquals(75, msgIds.size());
+      assertEquals(25, msgIds.size());
       
       
       
@@ -193,7 +184,7 @@ public class ChannelShare_P_T extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 75; i < 100; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
@@ -206,12 +197,9 @@ public class ChannelShare_P_T extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getUnloadedReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIds(queue1.getChannelID());
                 
       assertEquals(0, refIds.size());
-      
-      refIds = getReferenceIds(queue1.getChannelID());
-      assertEquals(100, refIds.size());
                                     
       assertEquals(100, state1.memoryRefCount());
       
@@ -223,8 +211,55 @@ public class ChannelShare_P_T extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(50, refIds.size());
+                              
+      assertEquals(50, state2.memoryRefCount());
+      
+      assertEquals(0, state2.downCacheCount());
+      
+      assertTrue(state2.isPaging());      
+      
+      assertEquals(0, state2.memoryDeliveryCount());
+            
+      //Msgs
+      
+      assertEquals(100, ms.size());
+      
+      msgIds = getMessageIds();
+      assertEquals(50, msgIds.size());
+      
+      
+      // Add 50 more
+      tx = tr.createTransaction();
+      for (int i = 100; i < 150; i++)
+      {
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         
+         refs1[i] = ms.reference(msgs[i]);
+                
+         state1.addReference(refs1[i], tx); 
+         
+         refs2[i] = ms.reference(msgs[i]);
+         
+         state2.addReference(refs2[i], tx); 
+      }
+      tx.commit();
+      
+      //Queue1
+      refIds = getReferenceIds(queue1.getChannelID());
+                
+      assertEquals(50, refIds.size());
+                                    
+      assertEquals(100, state1.memoryRefCount());
+      
+      assertEquals(0, state1.downCacheCount());
+      
+      assertTrue(state1.isPaging());      
+      
+      assertEquals(0, state1.memoryDeliveryCount());
+      
+      //Queue2
       
       refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(100, refIds.size());
@@ -243,62 +278,6 @@ public class ChannelShare_P_T extends PagingStateTestBase
       
       msgIds = getMessageIds();
       assertEquals(100, msgIds.size());
-      
-      
-      // Add 50 more
-      tx = tr.createTransaction();
-      for (int i = 100; i < 150; i++)
-      {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
-         
-         refs1[i] = ms.reference(msgs[i]);
-                
-         state1.addReference(refs1[i], tx); 
-         
-         refs2[i] = ms.reference(msgs[i]);
-         
-         state2.addReference(refs2[i], tx); 
-      }
-      tx.commit();
-      
-      //Queue1
-      refIds = getUnloadedReferenceIds(queue1.getChannelID());
-                
-      assertEquals(50, refIds.size());
-      
-      refIds = getReferenceIds(queue1.getChannelID());
-      assertEquals(150, refIds.size());
-                                    
-      assertEquals(100, state1.memoryRefCount());
-      
-      assertEquals(0, state1.downCacheCount());
-      
-      assertTrue(state1.isPaging());      
-      
-      assertEquals(0, state1.memoryDeliveryCount());
-      
-      //Queue2
-      
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
-      assertEquals(100, refIds.size());
-      
-      refIds = getReferenceIds(queue2.getChannelID());
-      assertEquals(150, refIds.size());
-                              
-      assertEquals(50, state2.memoryRefCount());
-      
-      assertEquals(0, state2.downCacheCount());
-      
-      assertTrue(state2.isPaging());      
-      
-      assertEquals(0, state2.memoryDeliveryCount());
-            
-      //Msgs
-      
-      assertEquals(100, ms.size());
-      
-      msgIds = getMessageIds();
-      assertEquals(150, msgIds.size());
       
       //    Remove 100 then cancel
       SimpleDelivery[] dels1 = new SimpleDelivery[100];
@@ -326,7 +305,7 @@ public class ChannelShare_P_T extends PagingStateTestBase
       for (int i = 99; i >=0; i--)
       {
          state2.cancelDelivery(dels2[i]);
-      }   
+      }
       
       //Now consume them all
       
@@ -373,8 +352,9 @@ public class ChannelShare_P_T extends PagingStateTestBase
       
       assertNull(state2.removeFirstInMemory());
       
+      assertEquals(0, LockMap.instance.getSize());
+      
    }
 
 }
-
 

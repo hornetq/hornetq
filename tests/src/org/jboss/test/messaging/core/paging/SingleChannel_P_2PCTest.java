@@ -30,6 +30,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -43,9 +44,9 @@ import org.jboss.messaging.core.tx.Transaction;
  *
  * SingleChannel_P_2PC.java,v 1.1 2006/03/22 10:23:35 timfox Exp
  */
-public class SingleChannel_P_2PC extends PagingStateTestBase
+public class SingleChannel_P_2PCTest extends PagingStateTestBase
 {
-   public SingleChannel_P_2PC(String name)
+   public SingleChannel_P_2PCTest(String name)
    {
       super(name);
    }
@@ -1098,6 +1099,8 @@ public class SingleChannel_P_2PC extends PagingStateTestBase
       MessageReference ref = state.removeFirstInMemory();
       
       assertNull(ref);
+      
+      assertEquals(0, LockMap.instance.getSize());
          
    }
 }

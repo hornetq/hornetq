@@ -74,6 +74,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       super.setUp();
       ServerManagement.start("all");
+      
+      
    }
 
    public void tearDown() throws Exception

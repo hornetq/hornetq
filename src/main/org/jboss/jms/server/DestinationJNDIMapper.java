@@ -36,7 +36,7 @@ import javax.naming.NameNotFoundException;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
 import org.w3c.dom.Element;
@@ -120,7 +120,7 @@ class DestinationJNDIMapper implements DestinationManager
       catch(Exception e)
       {
          e.printStackTrace();
-         throw new JBossJMSException("JNDI failure", e);
+         throw new MessagingJMSException("JNDI failure", e);
       }
 
       Destination jmsDestination =
@@ -141,7 +141,7 @@ class DestinationJNDIMapper implements DestinationManager
       }
       catch(Exception e)
       {
-         throw new JBossJMSException("JNDI failure", e);
+         throw new MessagingJMSException("JNDI failure", e);
       }
 
       // if the destination has no security configuration, then the security manager will always
@@ -180,7 +180,7 @@ class DestinationJNDIMapper implements DestinationManager
       }
       catch(Exception e)
       {
-         throw new JBossJMSException("JNDI failure", e);
+         throw new MessagingJMSException("JNDI failure", e);
       }
 
       serverPeer.getSecurityManager().clearSecurityConfig(isQueue, name);
@@ -262,7 +262,7 @@ class DestinationJNDIMapper implements DestinationManager
 
          if (!(context instanceof Context))
          {
-            throw new JBossJMSException(contextName + " is already bound " +
+            throw new MessagingJMSException(contextName + " is already bound " +
                                         " and is not a JNDI context!");
          }
       }

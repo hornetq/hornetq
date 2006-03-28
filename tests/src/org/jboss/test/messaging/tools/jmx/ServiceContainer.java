@@ -24,14 +24,16 @@ package org.jboss.test.messaging.tools.jmx;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Collections;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
@@ -70,6 +72,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
+import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 
@@ -90,6 +93,9 @@ public class ServiceContainer
    private static final Logger log = Logger.getLogger(ServiceContainer.class);
 
    // Static --------------------------------------------------------
+   
+   //FIXME - Configure this properly
+   private static final boolean hsql = true;
 
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
    public static ObjectName CLASS_LOADER_OBJECT_NAME;
@@ -255,7 +261,6 @@ public class ServiceContainer
 
    public void start() throws Exception
    {
-
       try
       {
          configureAddress();
@@ -345,6 +350,9 @@ public class ServiceContainer
          }
 
          loadJNDIContexts();
+         
+         //We make sure the database is clean
+         deleteAllData();         
 
          log.debug(this + " started");
       }
@@ -698,35 +706,41 @@ public class ServiceContainer
 
    private void startInVMDatabase() throws Exception
    {
-      HsqlProperties props = new HsqlProperties();
-      props.setProperty("server.database.0", "mem:test");
-      props.setProperty("server.dbname.0", "memtest");
-      props.setProperty("server.trace", "false");
-      props.setProperty("server.silent", "true");
-      props.setProperty("server.no_system_exit", "true");
-      props.setProperty("server.port", 27862);
-      props.setProperty("server.address", ipAddressOrHostName);
+      if (hsql)
+      {
+         HsqlProperties props = new HsqlProperties();
+         props.setProperty("server.database.0", "mem:test");
+         props.setProperty("server.dbname.0", "memtest");
+         props.setProperty("server.trace", "false");
+         props.setProperty("server.silent", "true");
+         props.setProperty("server.no_system_exit", "true");
+         props.setProperty("server.port", 27862);
+         props.setProperty("server.address", ipAddressOrHostName);
+   
+         hsqldbServer = new Server();
+         hsqldbServer.setLogWriter(null);
+         hsqldbServer.setProperties(props);
+         hsqldbServer.start();
+   
+   
+         log.debug("started the database");
+      }
 
-      hsqldbServer = new Server();
-      hsqldbServer.setLogWriter(null);
-      hsqldbServer.setProperties(props);
-      hsqldbServer.start();
-
-      log.debug("started the database");
    }
 
    private void stopInVMDatabase() throws Exception
    {
-      log.debug("stopping " + hsqldbServer);
-
-      Class.forName("org.hsqldb.jdbcDriver" );
-      Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", "");
-      Statement stat = conn.createStatement();
-      stat.executeUpdate("SHUTDOWN");
-      conn.close();
-
-      // faster stop
-//      hsqldbServer.stop();
+      if (hsql)
+      {
+         Class.forName("org.hsqldb.jdbcDriver" );
+         Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", "");
+         Statement stat = conn.createStatement();
+         stat.executeUpdate("SHUTDOWN");
+         conn.close();
+   
+         // faster stop
+   //      hsqldbServer.stop();
+      }
    }
 
    private void startTransactionManager() throws Exception
@@ -771,9 +785,22 @@ public class ServiceContainer
                                               String userName) throws Exception
    {
       LocalManagedConnectionFactory mcf = new LocalManagedConnectionFactory();
-      mcf.setConnectionURL(connectionURL);
-      mcf.setDriverClass(driverClass);
-      mcf.setUserName(userName);
+         
+      if (hsql)
+      {
+         mcf.setConnectionURL("jdbc:hsqldb:mem:test");
+         mcf.setDriverClass("org.hsqldb.jdbcDriver");
+         mcf.setUserName("sa");
+      }
+      else
+      {
+         //mysql
+         mcf.setConnectionURL("jdbc:mysql://localhost:3306/messaging");
+         mcf.setDriverClass("com.mysql.jdbc.Driver");
+         mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
+         mcf.setUserName("root");
+       //  mcf.setPassword("disco2000");
+      }
 
       ManagedConnectionFactoryJMXWrapper mbean = new ManagedConnectionFactoryJMXWrapper(mcf);
       mbeanServer.registerMBean(mbean, on);
@@ -905,11 +932,13 @@ public class ServiceContainer
 
       String locatorURI;
       if (multiplex)
-      {
+      {         
+         log.info("********* STARTING MULTIPLEX");
          locatorURI = "multiplex://" + ipAddressOrHostName + ":9111" + params;
       }
       else
       {
+         log.info("********** STARTING SOCKET");
          locatorURI = "socket://" + ipAddressOrHostName + ":9111" + params;
       }
 
@@ -954,6 +983,76 @@ public class ServiceContainer
          ic.unbind(name);
       }
       ic.close();
+   }
+   
+   protected void deleteAllData() throws Exception
+   {
+      try
+      {
+         InitialContext ctx = new InitialContext();
+   
+         TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+         DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+         
+         javax.transaction.Transaction txOld = mgr.suspend();
+         mgr.begin();
+   
+         Connection conn = ds.getConnection();
+         
+         String sql = "DELETE FROM JMS_CHANNEL_MAPPING";
+         PreparedStatement ps = conn.prepareStatement(sql);
+         
+         int rows = ps.executeUpdate();
+            
+         ps.close();
+         
+         sql = "DELETE FROM JMS_MESSAGE_REFERENCE";
+         ps = conn.prepareStatement(sql);
+         
+         rows = ps.executeUpdate();
+         
+         ps.close();
+         
+         sql = "DELETE FROM JMS_MESSAGE";
+         ps = conn.prepareStatement(sql);
+         
+         rows = ps.executeUpdate();
+            
+         ps.close();
+         
+         sql = "DELETE FROM JMS_TRANSACTION";
+         ps = conn.prepareStatement(sql);
+         
+         rows = ps.executeUpdate();
+                
+         ps.close();
+         
+         sql = "DELETE FROM JMS_COUNTER";
+         ps = conn.prepareStatement(sql);
+         
+         rows = ps.executeUpdate();
+         
+         ps.close();
+         
+         sql = "DELETE FROM JMS_USER";
+         ps = conn.prepareStatement(sql);
+         
+         rows = ps.executeUpdate();
+         
+         ps.close();
+         conn.close();
+   
+         mgr.commit();
+   
+         if (txOld != null)
+         {
+            mgr.resume(txOld);
+         }
+      }
+      catch (SQLException e)
+      {
+         //Ignore - tables might not exist      
+      }
    }
 
    private void parseConfig(String config)

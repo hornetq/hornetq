@@ -29,7 +29,7 @@ import javax.jms.Topic;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -65,12 +65,13 @@ public class ServerPeerTest extends MessagingTestCase
 
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
    }
 
    public void tearDown() throws Exception
    {
-      ServerManagement.stopServerPeer();
       super.tearDown();
    }
 
@@ -85,7 +86,7 @@ public class ServerPeerTest extends MessagingTestCase
          ServerManagement.startServerPeer("0", "/some-new-context", null);
          fail("should throw exception");
       }
-      catch(JBossJMSException e)
+      catch(MessagingJMSException e)
       {
          // OK
       }

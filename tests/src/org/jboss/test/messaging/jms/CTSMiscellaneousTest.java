@@ -133,14 +133,10 @@ public class CTSMiscellaneousTest extends MessagingTestCase
 
       QueueSender qsender = qs.createSender(queue);
 
-      log.info("sending first message");
-
       qsender.send(m);
 
       m.setText("two");
       m.setBooleanProperty("targetMessage", true);
-
-      log.info("sending second message");
 
       qsender.send(m);
 
@@ -172,7 +168,7 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
 
       ic.close();
-
+      
       super.tearDown();
    }
 

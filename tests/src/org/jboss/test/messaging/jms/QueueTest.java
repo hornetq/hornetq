@@ -65,6 +65,8 @@ public class QueueTest extends MessagingTestCase
       super.setUp();                  
       
       ServerManagement.start("all");
+      
+      
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
       

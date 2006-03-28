@@ -68,6 +68,8 @@ public class MessageProxyTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       

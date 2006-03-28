@@ -30,6 +30,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.util.MessagingXAException;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -162,13 +163,18 @@ public class ResourceManager
       catch (TransactionRolledBackException e)
       {
          log.error("An error occurred in sending transaction and the transaction was rolled back", e);
-         throw new XAException(XAException.XA_RBROLLBACK);
+         log.info("Cause is" + e.getCause());
+         if (e.getCause() != null)
+         {
+            log.error("Cause", e.getCause());
+         }
+         throw new MessagingXAException(XAException.XA_RBROLLBACK, e);
       }
       catch (Throwable t)
       {
          //Catch anything else
          log.error("A Throwable was caught in sending the transaction", t);
-         throw new XAException(XAException.XAER_RMERR);
+         throw new MessagingXAException(XAException.XAER_RMERR, t);
       }
    }
    
@@ -184,7 +190,7 @@ public class ResourceManager
          if (tx == null)
          {
             log.error("Cannot find transaction with xid:" + xid);         
-            throw new XAException(XAException.XAER_NOTA);
+            throw new MessagingXAException(XAException.XAER_NOTA);
          }
          
          TransactionRequest request =
@@ -199,7 +205,7 @@ public class ResourceManager
             if (tx.getState() != TxState.TX_PREPARED)
             {
                log.error("commit called for transaction, but it is not prepared");         
-               throw new XAException(XAException.XAER_PROTO);
+               throw new MessagingXAException(XAException.XAER_PROTO);
             }
          }
          else

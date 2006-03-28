@@ -30,20 +30,22 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.LockMap;
+import org.jboss.messaging.core.tx.Transaction;
 
 
 /**
  * 
- * A ChannelShare_NP_NT_Recoverable.
+ * A ChannelShare_NP_2PC_Recoverable.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * ChannelShare_NP_NT.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * ChannelShare_NP_2PC.java,v 1.1 2006/03/22 10:23:35 timfox Exp
  */
-public class ChannelShare_NP_NT extends PagingStateTestBase
+public class ChannelShare_NP_2PCTest extends PagingStateTestBase
 {
-   public ChannelShare_NP_NT(String name)
+   public ChannelShare_NP_2PCTest(String name)
    {
       super(name);
    }
@@ -61,7 +63,7 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       super.tearDown();
    }
    
-   public void test1() throws Throwable
+   public void testChannelShareNP_2PC() throws Throwable
    {
       Channel queue1 = new Queue(1, ms, pm, true, 100, 20, 10);
       
@@ -79,18 +81,21 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       
       //Send 50 refs to both channels
   
+      Transaction tx = this.createXATx();
       for (int i = 0; i < 50; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         state1.addReference(refs1[i], tx); 
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         state2.addReference(refs2[i], tx); 
       }
+      tx.prepare();
+      tx.commit();
       
       //Queue1
       List refIds = getReferenceIds(queue1.getChannelID());
@@ -126,18 +131,21 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       
       //Add 25 more
       
+      tx = this.createXATx();
       for (int i = 50; i < 75; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         state1.addReference(refs1[i], tx); 
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         state2.addReference(refs2[i], tx); 
       }
+      tx.prepare();
+      tx.commit();
       
       //Queue1
       refIds = getReferenceIds(queue1.getChannelID());
@@ -175,19 +183,21 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       
       
       // Add 25 more
-      
+      tx = this.createXATx();
       for (int i = 75; i < 100; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         state1.addReference(refs1[i], tx); 
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         state2.addReference(refs2[i], tx); 
       }
+      tx.prepare();
+      tx.commit();
       
       //Queue1
       refIds = getReferenceIds(queue1.getChannelID());
@@ -224,19 +234,21 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       
       
       // Add 50 more
-      
+      tx = this.createXATx();
       for (int i = 100; i < 150; i++)
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         state1.addReference(refs1[i], tx); 
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         state2.addReference(refs2[i], tx); 
       }
+      tx.prepare();
+      tx.commit();
       
       //Queue1
       refIds = getReferenceIds(queue1.getChannelID());
@@ -271,7 +283,7 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(100, msgIds.size());
       
-      //Remove 100 then cancel
+      //    Remove 100 then cancel
       SimpleDelivery[] dels1 = new SimpleDelivery[100];
       for (int i = 0; i < 100; i++)
       {
@@ -301,9 +313,9 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       
       //Now consume them all
       
-      this.consume(queue1, state1, 0, refs1, 150);
+      this.consumeIn2PCTx(queue1, state1, 0, refs1, 150);
        
-      this.consume(queue2, state2, 0, refs2, 150);
+      this.consumeIn2PCTx(queue2, state2, 0, refs2, 150);
       
       //    Queue1
       refIds = getReferenceIds(queue1.getChannelID());
@@ -344,5 +356,9 @@ public class ChannelShare_NP_NT extends PagingStateTestBase
       
       assertNull(state2.removeFirstInMemory());
       
+      assertEquals(0, LockMap.instance.getSize());
+      
    }
+ 
 }
+

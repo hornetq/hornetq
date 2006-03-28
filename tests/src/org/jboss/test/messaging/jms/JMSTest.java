@@ -66,11 +66,10 @@ public class JMSTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
-
+           
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       
       ServerManagement.deployQueue("JMSTestQueue");
-
 
       log.debug("setup done");
    }

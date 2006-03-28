@@ -118,6 +118,8 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
+      
+      
 
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
 
@@ -148,6 +150,7 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
       ServerManagement.removeServerInvocationHandler("DEFAULT_INVOCATION_HANDLER");
       ServerManagement.undeployQueue("MultipleServerInvocationHandlerTestQueue");
       ic.close();
+      ServerManagement.stop();
       super.tearDown();
    }
 

@@ -19,36 +19,30 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint;
+package org.jboss.jms.util;
 
-import java.util.List;
+import javax.transaction.xa.XAException;
 
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.Closeable;
-import org.jboss.jms.message.MessageProxy;
-
-/**
- * Represents the set of methods from the ConsumerDelegate that are handled on the server.
- * The rest of the methods are handled in the advice stack.
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
- */
-public interface ConsumerEndpoint extends Closeable
+public class MessagingXAException extends XAException
 {
-   void cancelDelivery(long messageID) throws JMSException;
-
-   void cancelDeliveries(List messageIDs) throws JMSException;
-
-   MessageProxy getMessageNow(boolean wait) throws JMSException;
-
-   void activate() throws JMSException;
-
-   /**
-    * @return the last message ID delivered to the client consumer
-    */
-   long deactivate() throws JMSException;
+   private static final long serialVersionUID = 1144870736311098699L;
+   
+   private Throwable cause;
+   
+   public MessagingXAException(int code)
+   {
+      super(code);
+   }
+   
+   public MessagingXAException(int code, Throwable cause)
+   {
+      super(code);
+      
+      this.cause = cause;
+   }
+   
+   public Throwable getCause()
+   {
+      return cause;
+   }
 }

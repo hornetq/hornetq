@@ -102,7 +102,10 @@ public class SecurityTest extends MessagingTestCase
    {
       super(name);
    }
-
+   
+   // TestCase overrides -------------------------------------------
+   
+   
    // Public --------------------------------------------------------
 
    /**

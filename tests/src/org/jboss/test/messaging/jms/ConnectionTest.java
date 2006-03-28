@@ -86,6 +86,8 @@ public class ConnectionTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployTopic("Topic");

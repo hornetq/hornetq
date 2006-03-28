@@ -49,7 +49,8 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.TxState;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.CoreDestination;
@@ -375,62 +376,125 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          {
             throw new IllegalStateException("Connection is closed");
          }
-         
-         Transaction tx = null;
-         
-         try
+                        
+         if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
          {
-                
-            if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
-            {
-               if (trace) { log.trace("one phase commit request received"); }
-               
+            if (trace) { log.trace("One phase commit request received"); }
+            
+            Transaction tx = null;
+            try
+            {               
                tx = tr.createTransaction();
-
                processCommit(request.getState(), tx);
-               tx.commit();         
+               tx.commit();
             }
-            else if (request.getRequestType() == TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST)
+            catch (Throwable t)
             {
-               if (trace) { log.trace("one phase rollback request received"); }
-               
-               //We just need to cancel deliveries
-               cancelDeliveriesForTransaction(request.getState());
+               log.error("Exception occured", t);
+               if (tx != null)
+               {                  
+                  try
+                  {
+                     tx.rollback();
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to rollback tx", e);
+                  }
+               }
+               throw new MessagingTransactionRolledBackException("Transaction was rolled back.", t);
             }
-            else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
-            {                        
-               if (trace) { log.trace("two phase commit prepare request received"); }
-
+         }
+         else if (request.getRequestType() == TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST)
+         {
+            if (trace) { log.trace("One phase rollback request received"); }
+            
+            //We just need to cancel deliveries
+            cancelDeliveriesForTransaction(request.getState());
+         }
+         else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
+         {                        
+            if (trace) { log.trace("Two phase commit prepare request received"); }        
+            Transaction tx = null;            
+            try
+            {
                tx = tr.createTransaction(request.getXid());
-
                processCommit(request.getState(), tx);     
                tx.prepare();
             }
-            else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
-            {   
-               if (trace) { log.trace("two phase commit commit request received"); }
-
-               tx = tr.getPreparedTx(request.getXid());
-   
-               if (trace) { log.trace("committing " + tx); }
+            catch (Throwable t)
+            {
+               log.error("Exception occured", t);
+               if (tx != null)
+               {                  
+                  try
+                  {
+                     tx.rollback();
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to rollback tx", e);
+                  }
+               }
+               throw new MessagingTransactionRolledBackException("Transaction was rolled back.", t);
+            }
+         }
+         else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
+         {   
+            if (trace) { log.trace("Two phase commit commit request received"); }
+            Transaction tx = null;            
+            try
+            {
+               tx = tr.getPreparedTx(request.getXid());            
+               if (trace) { log.trace("Committing " + tx); }
                tx.commit();
             }
-            else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
+            catch (Throwable t)
             {
-               if (trace) { log.trace("two phase commit rollback request received"); }
-
-               tx = tr.getPreparedTx(request.getXid());
-                  
-               if (trace) { log.trace("rolling back " + tx); }
-               tx.rollback();
-            }      
+               log.error("Exception occured", t);
+               if (tx != null)
+               {                  
+                  try
+                  {
+                     tx.rollback();
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to rollback tx", e);
+                  }
+               }
+               throw new MessagingTransactionRolledBackException("Transaction was rolled back.", t);
+            }
          }
-         catch (Throwable t)
+         else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
          {
-            handleFailure(t, tx);
-         }
-         
-         if (trace) { log.trace("request processed ok"); }
+            if (trace) { log.trace("Two phase commit rollback request received"); }
+            Transaction tx = null;            
+            try
+            {
+               tx = tr.getPreparedTx(request.getXid());              
+               if (trace) { log.trace("Rolling back " + tx); }
+               tx.rollback();
+            }
+            catch (Throwable t)
+            {
+               log.error("Exception occured", t);
+               if (tx != null)
+               {                  
+                  try
+                  {
+                     tx.rollback();
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to rollback tx", e);
+                  }
+               }
+               throw new MessagingTransactionRolledBackException("Transaction was rolled back.", t);
+            }
+         }      
+                 
+         if (trace) { log.trace("Request processed ok"); }
       }
       finally
       {
@@ -651,7 +715,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          catch (Exception e)
          {
-            throw new JBossJMSException("Failed to create internal transaction", e);
+            throw new MessagingJMSException("Failed to create internal transaction", e);
          }
          internalTx = true;
       }
@@ -687,7 +751,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          {
             String msg = "The message was not acknowledged by destination " + coreDestination;
             log.error(msg);
-            throw new JBossJMSException(msg);
+            throw new MessagingJMSException(msg);
          }
       }
       catch (Throwable t)
@@ -703,7 +767,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                log.error("Failed to rollback internal transaction", e);
             }
          }
-         throw new JBossJMSException("Failed to send message", t);
+         throw new MessagingJMSException("Failed to send message", t);
       }
    }
    
@@ -728,7 +792,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       {
          throw new IllegalStateException("Cannot find consumer " + consumerID);
       }
-      consumer.cancelMessage(messageID);
+      consumer.cancelDelivery(messageID);
    }
 
    // Private -------------------------------------------------------
@@ -744,32 +808,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          started = s;
       }
-   }
-   
- 
-   private void handleFailure(Throwable t, Transaction tx) throws JMSException
-   {
-      final String msg1 = "Exception caught in processing transaction";
-      log.error(msg1, t);
-      
-      log.trace("Attempting to rollback");
-      try
-      {
-         tx.rollback();
-         Exception e = new TransactionRolledBackException("Failed to process transaction - so rolled it back");
-         e.setStackTrace(t.getStackTrace());
-         log.trace("Rollback succeeded");
-         throw e;
-      }
-      catch (Throwable t2)
-      {
-         final String msg2 = "Failed to rollback after failing to process tx";
-         log.error(msg2, t2);               
-         JMSException e = new IllegalStateException(msg2);
-         e.setStackTrace(t2.getStackTrace());
-         throw e;
-      }        
-   }
+   }   
    
    private void processCommit(TxState txState, Transaction tx) throws JMSException
    {

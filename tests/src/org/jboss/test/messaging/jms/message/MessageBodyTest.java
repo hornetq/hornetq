@@ -84,6 +84,8 @@ public class MessageBodyTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
+      
+      
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 
@@ -119,8 +121,7 @@ public class MessageBodyTest extends MessagingTestCase
       consumerConnection.close();
 
       ServerManagement.undeployQueue("Queue");
-      
-
+       
       super.tearDown();
    }
    

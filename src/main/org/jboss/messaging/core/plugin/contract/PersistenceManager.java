@@ -57,23 +57,20 @@ public interface PersistenceManager extends ServerPlugin
    
    void removeReferences(long channelID, List refs) throws Exception;
    
+   long getMinOrdering(long channelID) throws Exception;
+   
    
    void updateReferencesNotLoaded(long channelID, List references) throws Exception;
    
    void updateReliableReferencesLoadedInRange(long channelID, long orderStart, long orderEnd) throws Exception;
             
-
-   long getMaxOrdering(long channelID) throws Exception;
-   
    int getNumberOfUnloadedReferences(long channelID) throws Exception;
    
-   List getReferenceInfos(long channelID, int number) throws Exception;
+   List getReferenceInfos(long channelID, long minOrdering, int number) throws Exception;
    
    List getMessages(List messageIds) throws Exception;
    
    long reserveIDBlock(String counterName, int size) throws Exception;
-   
-   
    
  
    /*

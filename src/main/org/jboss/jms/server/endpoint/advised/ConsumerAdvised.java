@@ -62,14 +62,14 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.activate();
    }
 
-   public void cancelMessage(long messageID) throws JMSException
+   public void cancelDelivery(long messageID) throws JMSException
    {
-      endpoint.cancelMessage(messageID);
+      endpoint.cancelDelivery(messageID);
    }
    
-   public void cancelMessages(List messageIDs) throws JMSException
+   public void cancelDeliveries(List messageIDs) throws JMSException
    {
-      endpoint.cancelMessages(messageIDs);
+      endpoint.cancelDeliveries(messageIDs);
    }
 
    public void close() throws JMSException

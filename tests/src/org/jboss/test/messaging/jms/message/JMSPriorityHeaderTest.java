@@ -64,6 +64,8 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -71,14 +73,11 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");
-      
-      super.drainDestination(cf, queue);
-      
+          
    }
 
    public void tearDown() throws Exception
    {
-      
       super.tearDown();
    }
 

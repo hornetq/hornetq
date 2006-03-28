@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
@@ -148,7 +148,7 @@ public class JMSRemotingConnection
             {
                final String msg = "Cannot start callbackserver after " + MAX_RETRIES + " retries";
                log.error(msg, e);
-               throw new JBossJMSException(msg, e);
+               throw new MessagingJMSException(msg, e);
             }
          }
       }

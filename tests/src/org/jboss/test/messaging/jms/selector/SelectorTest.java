@@ -68,6 +68,8 @@ public class SelectorTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
+      
+      
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 

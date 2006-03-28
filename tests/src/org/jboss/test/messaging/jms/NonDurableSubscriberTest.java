@@ -62,6 +62,8 @@ public class NonDurableSubscriberTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
+      
+      
 
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
@@ -78,7 +80,7 @@ public class NonDurableSubscriberTest extends MessagingTestCase
       ic.close();
 
       ServerManagement.undeployTopic("Topic");
-
+      
       super.tearDown();
    }
 

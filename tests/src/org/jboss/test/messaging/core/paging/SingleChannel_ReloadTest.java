@@ -30,6 +30,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
@@ -42,9 +43,9 @@ import org.jboss.messaging.core.tx.TransactionRepository;
  *
  * SingleChannel_Reload.java,v 1.1 2006/03/22 10:23:35 timfox Exp
  */
-public class SingleChannel_Reload extends PagingStateTestBase
+public class SingleChannel_ReloadTest extends PagingStateTestBase
 {
-   public SingleChannel_Reload(String name)
+   public SingleChannel_ReloadTest(String name)
    {
       super(name);
    }
@@ -105,9 +106,7 @@ public class SingleChannel_Reload extends PagingStateTestBase
       
       //Stop and restart the persistence manager
       //Only the persistent messages should survive
-      
-      log.info("Stopping");
-      
+       
       tr.stop();
       ms.stop();
       pm.stop();
@@ -122,9 +121,7 @@ public class SingleChannel_Reload extends PagingStateTestBase
       tr = new TransactionRepository();
       
       tr.start(pm);
-      
-      log.info("Restarted");
-      
+         
       Channel queue2 = new Queue(1, ms, pm, true, 100, 20, 10);
       
       ChannelState state2 = new ChannelState(queue2, pm, true, true, 100, 20, 10);
@@ -151,5 +148,6 @@ public class SingleChannel_Reload extends PagingStateTestBase
       
       assertNull(ref);
       
+      assertEquals(0, LockMap.instance.getSize());
    }
 }

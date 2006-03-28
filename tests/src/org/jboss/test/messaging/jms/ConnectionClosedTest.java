@@ -77,6 +77,8 @@ public class ConnectionClosedTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployTopic("Topic");
@@ -86,13 +88,13 @@ public class ConnectionClosedTest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");
-      //drainDestination(cf, queue);
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
+      
       super.tearDown();
    }
 

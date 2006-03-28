@@ -32,6 +32,7 @@ import java.util.Set;
 import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
+import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
@@ -150,6 +151,8 @@ public class ServerManagement
       {
          log.info("REMOTE TEST");
       }
+      
+      MessageIdGeneratorFactory.instance.clear();      
 
       server.start(config);
 

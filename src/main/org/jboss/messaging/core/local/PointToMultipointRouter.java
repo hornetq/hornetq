@@ -29,6 +29,9 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.logging.Logger;
 
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -54,23 +57,37 @@ public class PointToMultipointRouter implements Router
    private boolean trace = log.isTraceEnabled();
 
    List receivers;
+   
+   ReadWriteLock lock;
 
    // Constructors --------------------------------------------------
 
    public PointToMultipointRouter()
    {
       receivers = new ArrayList();
+      
+      lock = new WriterPreferenceReadWriteLock();
    }
 
    // Router implementation -----------------------------------------
-
+   
    public Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       Set deliveries = new HashSet();
 
-      // TODO synchronizing this is going to produce a bottleneck, do we really need to?
-      synchronized(receivers)
+      boolean acquired;
+      try
       {
+         lock.readLock().acquire();
+         acquired = true;
+      }
+      catch (InterruptedException e)
+      {
+         throw new RuntimeException("Failed to obtain lock", e);
+      }
+      
+      try
+      {      
          for(Iterator i = receivers.iterator(); i.hasNext(); )
          {
             Receiver receiver = (Receiver)i.next();
@@ -93,52 +110,146 @@ public class PointToMultipointRouter implements Router
             }
          }
       }
+      finally
+      {
+         if (acquired)
+         {
+            lock.readLock().release();
+         }
+      }
+      
       return deliveries;
    }
 
    public boolean add(Receiver r)
    {
-      synchronized(receivers)
+      boolean acquired;
+      try
+      {
+         lock.writeLock().acquire();
+         acquired = true;
+      }
+      catch (InterruptedException e)
+      {
+         throw new RuntimeException("Failed to obtain lock", e);
+      }
+      try
       {
          if (receivers.contains(r))
          {
             return false;
          }
          receivers.add(r);
+      
+         return true;
       }
-      return true;
+      finally
+      {
+         if (acquired)
+         {
+            lock.writeLock().release();
+         }
+      }
    }
 
 
    public boolean remove(Receiver r)
    {
-      synchronized(receivers)
+      boolean acquired;
+      try
+      {
+         lock.writeLock().acquire();
+         acquired = true;
+      }
+      catch (InterruptedException e)
+      {
+         throw new RuntimeException("Failed to obtain lock", e);
+      }
+      try
       {
          return receivers.remove(r);
       }
+      finally
+      {
+         if (acquired)
+         {
+            lock.writeLock().release();
+         }
+      }     
    }
 
    public void clear()
    {
-      synchronized(receivers)
+      boolean acquired;
+      try
+      {
+         lock.writeLock().acquire();
+         acquired = true;
+      }
+      catch (InterruptedException e)
+      {
+         throw new RuntimeException("Failed to obtain lock", e);
+      }
+      try
       {
          receivers.clear();
+      }
+      finally
+      {
+         if (acquired)
+         {
+            lock.writeLock().release();
+         }
       }
    }
 
    public boolean contains(Receiver r)
    {
-      synchronized(receivers)
+      boolean acquired;
+      try
       {
-         return receivers.contains(r);
+         lock.writeLock().acquire();
+         acquired = true;
+      }
+      catch (InterruptedException e)
+      {
+         throw new RuntimeException("Failed to obtain lock", e);
+      }
+      try
+      {
+         return receivers.contains(r);      
+      }
+      finally
+      {
+         if (acquired)
+         {
+            lock.writeLock().release();
+         }
       }
    }
 
    public Iterator iterator()
    {
-      synchronized(receivers)
+      boolean acquired;
+      try
+      {
+         lock.writeLock().acquire();
+         acquired = true;
+      }
+      catch (InterruptedException e)
+      {
+         throw new RuntimeException("Failed to obtain lock", e);
+      }
+      try
       {
          return receivers.iterator();
+      }
+      finally
+      {
+         if (acquired)
+         {
+            lock.writeLock().release();
+         }
       }
    }
 

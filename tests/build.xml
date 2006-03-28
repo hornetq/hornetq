@@ -73,6 +73,7 @@
       <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>
       <path location="../src/resources/jboss-remoting.jar"/>
       <path location="../src/resources/jboss-serialization.jar"/>
+      <path location="../src/resources/mysql-connector-java-3.1.12-bin.jar"/>
 
    </path>
 
@@ -132,6 +133,14 @@
       <path refid="library.classpath"/>
       <path refid="dependentmodule.classpath"/>
       <pathelement path="${module.root}/etc"/>
+      <pathelement path="${module.root}/../src/etc"/>
+      <pathelement path="${module.root}/../output/etc"/>
+   </path>
+
+   <path id="stress.test.classpath">
+      <path refid="library.classpath"/>
+      <path refid="dependentmodule.classpath"/>
+      <pathelement path="${module.root}/etc/stress"/>
       <pathelement path="${module.root}/../src/etc"/>
       <pathelement path="${module.root}/../output/etc"/>
    </path>
@@ -222,6 +231,23 @@
    <target name="start-rmi-server"
            description="Starts the RMI server used by remote tests">
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+         <classpath>
+            <pathelement location="${module.output}/classes"/>
+            <pathelement location="${module.root}/../output/classes"/>
+            <path refid="test.classpath"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="start-rmi-server-stress"
+           description="Starts the RMI server used by remote stress tests">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <jvmarg value="-Xmx768M"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="remote.test.suffix" value="-remote"/>
@@ -230,10 +256,9 @@
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <pathelement location="${module.output}/classes"/>
             <pathelement location="${module.root}/../output/classes"/>
-            <path refid="test.classpath"/>
+            <path refid="stress.test.classpath"/>
          </classpath>
       </java>
    </target>
@@ -255,13 +280,6 @@
    </target>
 
    <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-      <antcall target="crash-tests"/>
-      <antcall target="invm-tests"/>
-      <antcall target="remote-tests"/>
-      <!-- <antcall target="stress-tests"/> -->
-   </target>
-
-   <target name="tests-no-stress" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
       <antcall target="remote-tests"/>
@@ -295,7 +313,6 @@
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
          -->
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
@@ -340,11 +357,12 @@
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
          -->
          <classpath>
-            <pathelement location="${module.root}/etc"/>
-            <path refid="test.classpath"/>
+            <path refid="stress.test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
-         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <sysproperty key="messaging-test-configuration" value="StressInVM"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-StressInVM.xml"/>
          <batchtest fork="${junit.batchtest.fork}"
             todir="${junit.batchtest.todir}"
             haltonfailure="${junit.batchtest.haltonfailure}"
@@ -381,7 +399,6 @@
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
          -->
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             <pathelement location="${module.root}/output/classes"/>
@@ -432,7 +449,7 @@
       description="Runs remotely all stress tests for which it makes sense to run remotely">
 
       <antcall target="stop-rmi-server"/>
-      <antcall target="start-rmi-server"/>
+      <antcall target="start-rmi-server-stress"/>
       <mkdir dir="${build.tests.reports}"/>
       <antcall target="print-testclasspath"/>
 
@@ -452,8 +469,7 @@
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
          -->
          <classpath>
-            <pathelement location="${module.root}/etc"/>
-            <path refid="test.classpath"/>
+            <path refid="stress.test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             <pathelement location="${module.root}/output/classes"/>
 
@@ -470,9 +486,9 @@
             usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
          -->
 
-         <sysproperty key="messaging-test-configuration" value="Remote"/>
+         <sysproperty key="messaging-test-configuration" value="StressRemote"/>
          <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
-            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+            usefile="${junit.formatter.usefile}" extension="-StressRemote.xml"/>
 
          <batchtest fork="${junit.batchtest.fork}"
             todir="${junit.batchtest.todir}"
@@ -526,7 +542,6 @@
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
          -->
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
             <pathelement location="${module.root}/output/classes"/>
@@ -582,7 +597,6 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
@@ -624,7 +638,6 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
@@ -662,7 +675,6 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>
@@ -709,7 +721,6 @@
 -->
          <jvmarg value="-Xmx1024M"/>
          <classpath>
-            <pathelement location="${module.root}/etc"/>
             <path refid="test.classpath"/>
             <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
          </classpath>

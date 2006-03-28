@@ -68,6 +68,8 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       super.setUp();
       ServerManagement.start("all");
+      
+      
 
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
@@ -79,8 +81,6 @@ public class ConnectionFactoryTest extends MessagingTestCase
       super.tearDown();
 
       initialContext.close();
-
-      ServerManagement.stop();
    }
 
    public void testDefaultConnectionFactory() throws Exception

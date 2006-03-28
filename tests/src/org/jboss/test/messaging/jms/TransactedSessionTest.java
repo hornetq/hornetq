@@ -67,6 +67,8 @@ public class TransactedSessionTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -77,8 +79,6 @@ public class TransactedSessionTest extends MessagingTestCase
       queue = (Destination)initialContext.lookup("/queue/Queue");
       topic = (Destination)initialContext.lookup("/topic/Topic");
       
-      drainDestination(cf, queue);
-
       log.debug("setup done");
    }
    

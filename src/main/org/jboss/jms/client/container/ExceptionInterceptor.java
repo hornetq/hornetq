@@ -25,7 +25,7 @@ import javax.jms.JMSException;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 
 /**
@@ -74,7 +74,7 @@ public class ExceptionInterceptor implements Interceptor
          Exception linked = e.getLinkedException();
          if (linked != null)
          {
-            log.error("Linked exception is: " + linked);
+            log.error("Linked exception is: ", linked);
          }
          logCause(e);
          throw e;
@@ -97,7 +97,7 @@ public class ExceptionInterceptor implements Interceptor
          if (trace) { log.trace("Caught Exception:" + e); }
          log.error("Caught Exception: ", e);
          logCause(e);         
-         throw new JBossJMSException("Caught exception", e);
+         throw new MessagingJMSException("Caught exception", e);
       }
       catch (Error e)
       {
@@ -116,9 +116,11 @@ public class ExceptionInterceptor implements Interceptor
    
    private void logCause(Throwable e)
    {
-      if (e.getCause() != null)
+      Throwable e2 = e.getCause();
+      if (e2 != null)
       {
-         log.error("Cause of exception:", e.getCause());
+         log.error("Cause of exception:", e2);
+         logCause(e2);
       }
    }
 

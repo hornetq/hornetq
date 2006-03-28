@@ -29,7 +29,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdBlock;
 
@@ -117,7 +117,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       }
       catch (Exception e)
       {
-         throw new JBossJMSException("Failed to create connection stub", e);
+         throw new MessagingJMSException("Failed to create connection stub", e);
       }  
       
       return delegate;
@@ -136,7 +136,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       }
       catch (Exception e)
       {
-         throw new JBossJMSException("Failed to get id block", e);
+         throw new MessagingJMSException("Failed to get id block", e);
       }
    }
 

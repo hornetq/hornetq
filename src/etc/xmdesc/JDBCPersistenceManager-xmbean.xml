@@ -47,7 +47,19 @@
       <description>Should JDBC batch updates be used?</description>
       <name>UsingBatchUpdates</name>
       <type>boolean</type>
-   </attribute>       
+   </attribute>  
+   
+   <attribute access="read-write" getMethod="getSqlProperties" setMethod="setSqlProperties">
+      <description>DML and DDL overrides</description>
+      <name>SqlProperties</name>
+      <type>java.lang.String</type>
+   </attribute>    
+   
+   <attribute access="read-write" getMethod="getMaxParams" setMethod="setMaxParams">
+      <description>The max number of params to be used in a generated PreparedStatement</description>
+      <name>MaxParams</name>
+      <type>int</type>
+   </attribute>     
 
    <!-- Managed operations -->
 

@@ -29,10 +29,12 @@ import javax.jms.Session;
 import javax.jms.MessageProducer;
 import javax.jms.Message;
 import javax.jms.TextMessage;
+import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.tm.TxManager;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -61,32 +63,46 @@ public class XATransactionTest extends MessagingTestCase
 
    public void testSimpleTransactedSend() throws Exception
    {
-      ConnectionFactory mcf = (ConnectionFactory)ic.lookup("java:/JCAConnectionFactory");
-      Connection conn = mcf.createConnection();
-      conn.start();
-
-      UserTransaction ut = ServerManagement.getUserTransaction();
-
-      ut.begin();
-
-      Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageProducer p = s.createProducer(queue);
-      Message m = s.createTextMessage("one");
-
-      p.send(m);
-
-      ut.commit();
-
-      conn.close();
-
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      conn = cf.createConnection();
-      s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      conn.start();
-
-      TextMessage rm = (TextMessage)s.createConsumer(queue).receiveNoWait();
-
-      assertEquals("one", rm.getText());
+      Transaction suspended = TxManager.getInstance().suspend();
+      
+      try
+      {
+         
+         ConnectionFactory mcf = (ConnectionFactory)ic.lookup("java:/JCAConnectionFactory");
+         Connection conn = mcf.createConnection();
+         conn.start();
+   
+         UserTransaction ut = ServerManagement.getUserTransaction();
+   
+         ut.begin();
+   
+         Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageProducer p = s.createProducer(queue);
+         Message m = s.createTextMessage("one");
+   
+         p.send(m);
+   
+         ut.commit();
+   
+         conn.close();
+   
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+         conn = cf.createConnection();
+         s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         conn.start();
+   
+         TextMessage rm = (TextMessage)s.createConsumer(queue).receiveNoWait();
+   
+         assertEquals("one", rm.getText());
+      }
+      finally
+      {
+         
+         if (suspended != null)
+         {
+            TxManager.getInstance().resume(suspended);
+         }
+      }
    }
 
    // Package protected ---------------------------------------------

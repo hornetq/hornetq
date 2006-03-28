@@ -38,7 +38,7 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectSecurityManager;
-import org.jboss.jms.util.JBossJMSException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.w3c.dom.Element;
 
 /**
@@ -131,7 +131,7 @@ public class SecurityMetadataStore implements SecurityManager
       }
       catch(Exception e)
       {
-         throw new JBossJMSException("Cannot create security metadata", e);
+         throw new MessagingJMSException("Cannot create security metadata", e);
       }
 
       if (isQueue)

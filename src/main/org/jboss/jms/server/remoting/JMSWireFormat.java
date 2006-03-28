@@ -98,9 +98,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
    protected static final byte GET_ID_BLOCK = 7;
    
-   protected static final byte CANCEL_MESSAGE = 8;
+   protected static final byte CANCEL_DELIVERY = 8;
    
-   protected static final byte CANCEL_MESSAGES = 9;
+   protected static final byte CANCEL_DELIVERIES = 9;
    
    
    //The response codes - start from 100
@@ -325,9 +325,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                if (trace) { log.trace("wrote getIdBlock()"); }
             }
-            else if ("cancelMessage".equals(methodName))
+            else if ("cancelDelivery".equals(methodName))
             {
-               oos.writeByte(CANCEL_MESSAGE);
+               oos.writeByte(CANCEL_DELIVERY);
                
                writeHeader(mi, oos);
                
@@ -337,11 +337,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                oos.flush();
                
-               if (trace) { log.trace("wrote cancelMessage()"); }              
+               if (trace) { log.trace("wrote cancelDelivery)"); }              
             }
-            else if ("cancelMessages".equals(methodName))
+            else if ("cancelDeliveries".equals(methodName) && mi.getArguments() != null)
             {
-               oos.writeByte(CANCEL_MESSAGES);
+               oos.writeByte(CANCEL_DELIVERIES);
                
                writeHeader(mi, oos);
                
@@ -359,7 +359,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                               
                oos.flush();
                
-               if (trace) { log.trace("wrote cancelMessage()"); }              
+               if (trace) { log.trace("wrote cancelDeliveries()"); }              
             }
             else
             { 
@@ -639,7 +639,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             
             return request;
          }         
-         case CANCEL_MESSAGE:
+         case CANCEL_DELIVERY:
          {
             MethodInvocation mi = readHeader(ois);
             
@@ -653,11 +653,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
                                      new MessagingMarshallable(version, mi), null, null, null);
             
-            if (trace) { log.trace("read cancelMessage()"); }
+            if (trace) { log.trace("read cancelDelivery()"); }
             
             return request;
          }
-         case CANCEL_MESSAGES:
+         case CANCEL_DELIVERIES:
          {
             MethodInvocation mi = readHeader(ois);
             
@@ -680,7 +680,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
                                      new MessagingMarshallable(version, mi), null, null, null);
             
-            if (trace) { log.trace("read cancelMessages()"); }
+            if (trace) { log.trace("read cancelDeliveries()"); }
             
             return request;
          }

@@ -58,6 +58,8 @@ public class XARecoveryTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
+      
+      
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -67,8 +69,7 @@ public class XARecoveryTest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
-      drainDestination(cf, queue);
-      
+
       //if (!ServerManagement.isRemote()) tm = TxManager.getInstance();
    }
 

@@ -90,9 +90,9 @@ public class WireFormatTest extends TestCase
    
    protected Method sendTransactionMethod;
    
-   protected Method cancelMessageMethod;
+   protected Method cancelDeliveryMethod;
    
-   protected Method cancelMessagesMethod;
+   protected Method cancelDeliveriesMethod;
 
    // Constructors --------------------------------------------------
 
@@ -127,9 +127,9 @@ public class WireFormatTest extends TestCase
       
       sendTransactionMethod = connectionDelegate.getMethod("sendTransaction", new Class[] { TransactionRequest.class });
       
-      cancelMessageMethod = consumerDelegate.getMethod("cancelMessage", new Class[] { Long.TYPE });
+      cancelDeliveryMethod = consumerDelegate.getMethod("cancelDelivery", new Class[] { Long.TYPE });
       
-      cancelMessagesMethod = consumerDelegate.getMethod("cancelMessages", new Class[] { List.class });
+      cancelDeliveriesMethod = consumerDelegate.getMethod("cancelDeliveries", new Class[] { List.class });
    }
 
    public void tearDown() throws Exception
@@ -203,14 +203,14 @@ public class WireFormatTest extends TestCase
       wf.testDeactivateResponse();
    }
    
-   public void testCancelMessage() throws Exception
+   public void testCancelDelivery() throws Exception
    {
-      wf.testCancelMessage();
+      wf.testCancelDelivery();
    }
    
-   public void testCancelMessages() throws Exception
+   public void testCancelDeliveries() throws Exception
    {
-      wf.testCancelMessages();
+      wf.testCancelDeliveries();
    }
    
   
@@ -615,7 +615,7 @@ public class WireFormatTest extends TestCase
                   
       }  
       
-      public void testCancelMessage() throws Exception
+      public void testCancelDelivery() throws Exception
       {                            
          long methodHash = 62365354;
          
@@ -623,7 +623,7 @@ public class WireFormatTest extends TestCase
          
          Long lid = new Long(87654321);
          
-         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelMessageMethod, cancelMessageMethod, null);
+         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelDeliveryMethod, cancelDeliveryMethod, null);
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
@@ -653,7 +653,7 @@ public class WireFormatTest extends TestCase
          assertEquals(77, ois.readByte());
          
          //Next byte should be CANCEL_MESSAGE
-         assertEquals(JMSWireFormat.CANCEL_MESSAGE, ois.readByte());
+         assertEquals(JMSWireFormat.CANCEL_DELIVERY, ois.readByte());
          
          //Next int should be objectId
          assertEquals(objectId, ois.readInt());
@@ -700,7 +700,7 @@ public class WireFormatTest extends TestCase
          assertEquals(lid, lid2);                  
       }  
       
-      public void testCancelMessages() throws Exception
+      public void testCancelDeliveries() throws Exception
       {                            
          long methodHash = 62365354;
          
@@ -710,7 +710,7 @@ public class WireFormatTest extends TestCase
          ids.add(new Long(123));
          ids.add(new Long(456));
          
-         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelMessagesMethod, cancelMessagesMethod, null);
+         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelDeliveriesMethod, cancelDeliveriesMethod, null);
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
@@ -740,7 +740,7 @@ public class WireFormatTest extends TestCase
          assertEquals(77, ois.readByte());
          
          //Next byte should be CANCEL_MESSAGES
-         assertEquals(JMSWireFormat.CANCEL_MESSAGES, ois.readByte());
+         assertEquals(JMSWireFormat.CANCEL_DELIVERIES, ois.readByte());
          
          //Next int should be objectId
          assertEquals(objectId, ois.readInt());

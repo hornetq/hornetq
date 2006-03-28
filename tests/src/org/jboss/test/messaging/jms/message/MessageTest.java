@@ -463,6 +463,8 @@ public class MessageTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
+      
+      
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       
