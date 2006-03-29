@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.InvalidSelectorException;
@@ -46,6 +47,12 @@ public class Queue extends DestinationServiceSupport
    
    public int getMessageCount() throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Queue is stopped.");
+         return 0;
+      }
+
       JBossQueue jbq = new JBossQueue(name);
 	   ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
 	   return q.getMessageCount();
@@ -55,6 +62,12 @@ public class Queue extends DestinationServiceSupport
    
    public void removeAllMessages() throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Queue is stopped.");
+         return;
+      }
+
       JBossQueue jbq = new JBossQueue(name);
       ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
       q.removeAllMessages();
@@ -62,6 +75,12 @@ public class Queue extends DestinationServiceSupport
    
    public List listMessages(String selector) throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Queue is stopped.");
+         return new ArrayList();
+      }
+
       JBossQueue jbq = new JBossQueue(name);
       ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
       try 

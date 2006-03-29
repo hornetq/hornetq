@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -51,6 +52,11 @@ public class Topic extends DestinationServiceSupport
     */
    public void removeAllMessages() throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Topic is stopped.");
+         return;
+      }
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       t.removeAllMessages();
@@ -63,6 +69,12 @@ public class Topic extends DestinationServiceSupport
     */
    public int subscriptionCount() throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Topic is stopped.");
+         return 0;
+      }
+
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.subscriptionCount();
@@ -77,6 +89,12 @@ public class Topic extends DestinationServiceSupport
     */
    public int subscriptionCount(boolean durable) throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Topic is stopped.");
+         return 0;
+      }
+
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.subscriptionCount(durable);
@@ -104,6 +122,12 @@ public class Topic extends DestinationServiceSupport
     */
    public String listSubscriptionsAsText() throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Topic is stopped.");
+         return "";
+      }
+
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.getSubscriptionsAsText(true) + t.getSubscriptionsAsText(false);
@@ -117,6 +141,12 @@ public class Topic extends DestinationServiceSupport
     */
    public String listSubscriptionsAsText(boolean durable) throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Topic is stopped.");
+         return "";
+      }
+
       JBossTopic jbt = new JBossTopic(name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.getSubscriptionsAsText(durable);
@@ -173,6 +203,12 @@ public class Topic extends DestinationServiceSupport
    public List listMessagesDurableSub(String name, String clientID, String selector)
       throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Topic is stopped.");
+         return new ArrayList();
+      }
+
       JBossTopic jbt = new JBossTopic(this.name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.getMessagesFromDurableSub(name, clientID, trimSelector(selector));
@@ -189,11 +225,18 @@ public class Topic extends DestinationServiceSupport
    public List listMessagesNonDurableSub(long channelID, String selector)
       throws JMSException
    {
+      if (!started)
+      {
+         log.warn("Topic is stopped.");
+         return new ArrayList();
+      }
+      
       JBossTopic jbt = new JBossTopic(this.name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.getMessagesFromNonDurableSub(channelID, trimSelector(selector));
    }
 
+   
    // TODO implement these:
 
 //   int getAllMessageCount();
