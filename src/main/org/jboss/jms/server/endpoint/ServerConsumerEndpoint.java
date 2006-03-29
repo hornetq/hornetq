@@ -295,6 +295,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       disconnect();
 
       JMSDispatcher.instance.unregisterTarget(new Integer(id));
+      
+      //Remove the subscription if non durable
+      if (channel instanceof CoreSubscription)
+      {
+         CoreSubscription sub = (CoreSubscription)channel;
+         sub.closeConsumer();         
+      }           
    }
 
    // ConsumerEndpoint implementation -------------------------------
@@ -427,13 +434,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       
       sessionEndpoint.getConnectionEndpoint().
-         getServerPeer().removeConsumerEndpoint(new Integer(id));
-      
-      if (this.channel instanceof CoreSubscription)
-      {
-         ((CoreSubscription)channel).closeConsumer();
-      }
-      
+         getServerPeer().removeConsumerEndpoint(new Integer(id));                  
+            
       sessionEndpoint.removeConsumerEndpoint(id);
    }  
    

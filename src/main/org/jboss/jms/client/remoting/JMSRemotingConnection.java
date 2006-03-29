@@ -188,8 +188,6 @@ public class JMSRemotingConnection
    {
       Map configuration = new HashMap();
 
-      configuration.put(Client.ENABLE_LEASE, "true");
-
       if (isMultiplex)
       {
          configuration.put(MultiplexServerInvoker.CLIENT_MULTIPLEX_ID_KEY, id);

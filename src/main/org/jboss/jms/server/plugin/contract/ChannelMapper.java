@@ -65,7 +65,7 @@ public interface ChannelMapper extends ServerPlugin
                                        boolean noLocal,
                                        MessageStore ms,
                                        PersistenceManager pm) throws JMSException;
-
+   
    CoreDurableSubscription getDurableSubscription(String clientID,
                                                   String subscriptionName,
                                                   MessageStore ms,

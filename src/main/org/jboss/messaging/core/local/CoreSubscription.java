@@ -90,7 +90,7 @@ public class CoreSubscription extends Pipe
       {
          if (pm != null)
          {
-            pm.removeAllChannelData(this.channelID);
+            pm.removeAllChannelData(this.channelID);            
          }
       }
       catch (Exception e)

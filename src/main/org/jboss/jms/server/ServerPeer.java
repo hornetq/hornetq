@@ -612,16 +612,7 @@ public class ServerPeer extends ServiceMBeanSupport
       JMSWireFormat wf = new JMSWireFormat();
 
       MarshalFactory.addMarshaller("jms", wf, wf);
-
-      String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
-
-      locator = new InvokerLocator(s);
-
-      //FIXME Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
-      //a socket timeout on the invoker locator URI then it always makes a remote call
-      //even when in the same JVM
-
-      log.debug("LocatorURI: " + getLocatorURI());
+      
 
       // first remove the invocation handler specified in the config
 
@@ -641,15 +632,40 @@ public class ServerPeer extends ServiceMBeanSupport
                          new String[] { "java.lang.String",
                                         "org.jboss.remoting.ServerInvocationHandler"});
 
-      // install the connection listener that listens for failed connections
-
-      mbeanServer.
-         setAttribute(connectorName, new Attribute("LeasePeriod",
-                                                   new Long(remotingConnectionLeasePeriod)));
       
-      mbeanServer.invoke(connectorName, "addConnectionListener",
-                         new Object[] {connectionManager},
-                         new String[] {"org.jboss.remoting.ConnectionListener"});
+      String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
+            
+      //To turn off remoting leasing need to ensure that the connection listener hasn't been set
+      //OR set the lease period to zero
+      //Client side pinging is DISABLED by default so even if set connection listener
+      //on the server side the client won't ping unless add InvokerLocator.CLIENT_LEASE is set      
+      if (remotingConnectionLeasePeriod != -1)
+      {
+         mbeanServer.
+            setAttribute(connectorName, new Attribute("LeasePeriod",
+                  new Long(remotingConnectionLeasePeriod)));
+         
+         //install the connection listener that listens for failed connections
+         
+         mbeanServer.invoke(connectorName, "addConnectionListener",
+               new Object[] {connectionManager},
+               new String[] {"org.jboss.remoting.ConnectionListener"});
+         
+         //Enable client side pinging
+         s += "&" + InvokerLocator.CLIENT_LEASE + "=true";
+      }
+      else
+      {
+         log.info("LeasePeriod == -1, not activating connection checking");
+      }            
+      
+      locator = new InvokerLocator(s);
+
+      //FIXME Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
+      //a socket timeout on the invoker locator URI then it always makes a remote call
+      //even when in the same JVM
+
+      log.debug("LocatorURI: " + getLocatorURI());
    }
 
    private void loadServerAOPConfig() throws Exception

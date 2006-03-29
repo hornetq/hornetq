@@ -27,6 +27,7 @@ import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
+import javax.jms.Topic;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -105,6 +106,31 @@ public class MessagingTestCase extends TestCase
          Message m = null;
          conn.start();
          log.trace("Draining messages from " + dest);
+         while (true)
+         {
+            m = cons.receiveNoWait();
+            if (m == null) break;
+            log.trace("Drained message");
+         }         
+      }
+      finally
+      {
+         if (conn!= null) conn.close();
+      }
+   }
+   
+   protected void drainSub(ConnectionFactory cf, Topic topic, String subName, String clientID) throws Exception
+   {
+      Connection conn = null;
+      try
+      {         
+         conn = cf.createConnection();
+         conn.setClientID(clientID);
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sess.createDurableSubscriber(topic, subName);
+         Message m = null;
+         conn.start();
+         log.trace("Draining messages from " + topic + ":" + subName);
          while (true)
          {
             m = cons.receiveNoWait();

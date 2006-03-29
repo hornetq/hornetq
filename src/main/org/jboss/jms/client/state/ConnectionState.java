@@ -55,10 +55,17 @@ public class ConnectionState extends HierarchicalStateSupport
    private MessageIdGenerator idGenerator;
    
    //Thread pool used for making asynch calls to server - e.g. activateConsumer
-   private PooledExecutor pooledExecutor;
+   private static PooledExecutor pooledExecutor;
+   
+   static
+   {
+      //TODO Make size configurable
+      pooledExecutor = new PooledExecutor(new LinkedQueue(), 40);
+      pooledExecutor.setMinimumPoolSize(40);
+   }
  
    private Version versionToUse;
-   
+    
    public ConnectionState(ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection, Version versionToUse,
                           ResourceManager rm,
@@ -71,10 +78,6 @@ public class ConnectionState extends HierarchicalStateSupport
       
       children = new SyncSet(new HashSet(), new WriterPreferenceReadWriteLock());
             
-      //TODO size should be configurable
-      pooledExecutor = new PooledExecutor(new LinkedQueue(), 50);
-      pooledExecutor.setMinimumPoolSize(50);
-      
       this.remotingConnection = remotingConnection;
       
       this.versionToUse = versionToUse;

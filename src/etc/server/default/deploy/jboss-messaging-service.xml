@@ -28,7 +28,7 @@
                <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="socketTimeout">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
-               <attribute name="serverBindPort">4457</attribute>                              
+               <attribute name="serverBindPort">4457</attribute>                            
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
@@ -62,7 +62,8 @@
       <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
 
-      <attribute name="RemotingConnectionLeasePeriod">2000</attribute>
+      <!-- Set to -1 to completely disable client leasing -->
+      <attribute name="RemotingConnectionLeasePeriod">-1</attribute>
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
         <security>
@@ -85,9 +86,11 @@
    <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
+   
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
            the DataSource JNDI name in order to actually get a reference to it. Fix this.
       -->   
+   
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
@@ -96,7 +99,7 @@
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>
       
-   <!-- MYSQL pm config
+   <!-- MYSQL pm config 
       
       FIXME - This is temporary so servicecontainer can be used with mysql
       
@@ -116,7 +119,7 @@ CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFEREN
 CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)
 CREATE_IDX_MESSAGE_REF_MESSAGEID=CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON JMS_MESSAGE_REFERENCE (MESSAGEID)
 CREATE_IDX_MESSAGE_REF_LOADED=CREATE INDEX JMS_MESSAGE_REF_LOADED ON JMS_MESSAGE_REFERENCE (LOADED)
-CREATE_IDX_MESSAGE_REF_RELIABLE=CREATE INDEX JMS_MESSAGE_REF_LOADED ON JMS_MESSAGE_REFERENCE (RELIABLE)
+CREATE_IDX_MESSAGE_REF_RELIABLE=CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON JMS_MESSAGE_REFERENCE (RELIABLE)
 INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, RELIABLE, LOADED) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 DELETE_MESSAGE_REF=DELETE FROM JMS_MESSAGE_REFERENCE WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'
 UPDATE_MESSAGE_REF=UPDATE JMS_MESSAGE_REFERENCE SET TRANSACTIONID=?, STATE='-' WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'
@@ -132,7 +135,7 @@ DELETE_CHANNEL_MESSAGE_REFS=DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=?
 REMOVE_ALL_NONRELIABLE_REFS=DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE='N'
 UPDATE_ALL_RELIABLE_REFS=UPDATE JMS_MESSAGE_REFERENCE SET LOADED='N'   
 SELECT_MIN_ORDERING=SELECT MIN(ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? AND STATE <> '+' AND LOADED = 'N'       
-DELETE_ALL_REFS=DELETE FROM JMS_MESSAGE_REFERENCE     
+DELETE_NON_DURABLE=DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID NOT IN (SELECT ID FROM JMS_CHANNEL_MAPPING)          
 CREATE_MESSAGE=CREATE TABLE JMS_MESSAGE (MESSAGEID BIGINT, RELIABLE CHAR(1), EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, COREHEADERS MEDIUMBLOB, PAYLOAD LONGBLOB, CHANNELCOUNT INTEGER, TYPE TINYINT, JMSTYPE VARCHAR(255), CORRELATIONID VARCHAR(255), CORRELATIONID_BYTES VARBINARY(254), DESTINATION_ID BIGINT, REPLYTO_ID BIGINT, JMSPROPERTIES MEDIUMBLOB, REFERENCECOUNT TINYINT, PRIMARY KEY (MESSAGEID))
 LOAD_MESSAGES=SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, COREHEADERS, PAYLOAD, CHANNELCOUNT, TYPE, JMSTYPE, CORRELATIONID, CORRELATIONID_BYTES, DESTINATION_ID, REPLYTO_ID, JMSPROPERTIES FROM JMS_MESSAGE
 INSERT_MESSAGE=INSERT INTO JMS_MESSAGE (MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, COREHEADERS, PAYLOAD, CHANNELCOUNT, TYPE, JMSTYPE, CORRELATIONID, CORRELATIONID_BYTES, DESTINATION_ID, REPLYTO_ID, JMSPROPERTIES, REFERENCECOUNT) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -284,6 +287,17 @@ DELETE_ALL_COUNTERS=DELETE FROM JMS_COUNTER
       name="jboss.messaging.destination:service=Queue,name=ex"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Queue,name=openTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="SecurityConfig">
+         <security>
+            <role name="guest" read="true" write="true" create="true"/>
+         </security>
+      </attribute>
    </mbean>
 
 </server>

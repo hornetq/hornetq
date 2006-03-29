@@ -327,6 +327,8 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/ClientCrashTest.class"/>
                <exclude name="**/jms/CallbackFailureTest.class"/>
+               <exclude name="**/jms/ManualCrashTest.class"/>
+               <exclude name="**/jms/MemLeakTest.class"/>
                <!-- TODO Exclude all distributed tests until after 1.0 release -->
                <exclude name="**/messaging/core/distributed/**/*Test.class"/>
             </fileset>
@@ -432,6 +434,8 @@
                <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/ClientCrashTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/ManualCrashTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/MemLeakTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/CallbackFailureTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/XATransactionTest.class"/>

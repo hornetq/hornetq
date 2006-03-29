@@ -73,9 +73,7 @@ public class DurableSubscriberTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
-      
-      
-
+            
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
 
@@ -91,7 +89,7 @@ public class DurableSubscriberTest extends MessagingTestCase
       ic.close();
 
       ServerManagement.undeployTopic("Topic");
-      
+        
       super.tearDown();
    }
 
@@ -466,7 +464,7 @@ public class DurableSubscriberTest extends MessagingTestCase
          // OK
       }
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

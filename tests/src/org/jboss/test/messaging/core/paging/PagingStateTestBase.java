@@ -32,6 +32,7 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.server.plugin.JDBCChannelMapper;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
@@ -93,9 +94,13 @@ public class PagingStateTestBase extends MessagingTestCase
       sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
+      JDBCChannelMapper cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
+      
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm, false);
+      
+      cm.start();
+      
       ((JDBCPersistenceManager)pm).start();
 
       ms = new SimpleMessageStore("store1");

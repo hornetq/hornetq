@@ -87,7 +87,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       {
          cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
                   
-         JDBCPersistenceManager pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
+         JDBCPersistenceManager pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm, false);
          
          pm.start();
          

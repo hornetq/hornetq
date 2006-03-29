@@ -905,59 +905,59 @@ public class ChannelState implements State
          //We add the references to the state
          
          Iterator iter = refsToAdd.iterator();
-         
-         synchronized (refLock)
-         {         
-            while (iter.hasNext())
+                         
+         while (iter.hasNext())
+         {
+            MessageReference ref = (MessageReference)iter.next();
+            
+            if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
+                
+            boolean first = false;
+            try
+            {                        
+               synchronized (refLock)
+               {
+                  first = addReferenceInMemory(ref);
+               }
+            }
+            catch (Throwable t)
             {
-               MessageReference ref = (MessageReference)iter.next();
-               
-               if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-                   
-               boolean first = false;
-               try
-               {                        
-                  first = addReferenceInMemory(ref);               
-               }
-               catch (Throwable t)
-               {
-                  // FIXME  - Sort out this exception handling
-                  log.error("Failed to add reference", t);
-               }
-                           
-               if (first)
-               {
-                  //No need to call prompt delivery if there are already messages in the queue
-                  channel.deliver(null);
-               }
-            }              
+               // FIXME  - Sort out this exception handling
+               log.error("Failed to add reference", t);
+            }
+                        
+            if (first)
+            {
+               //No need to call prompt delivery if there are already messages in the queue
+               channel.deliver(null);
+            }                      
          }
          
          //Remove deliveries
          
          iter = this.deliveriesToRemove.iterator();
+                          
+         while (iter.hasNext())
+         {            
+            Delivery del = (Delivery)iter.next();
          
-         synchronized (deliveryLock)
-         {         
-            while (iter.hasNext())
-            {            
-               Delivery del = (Delivery)iter.next();
+            if (trace) { log.trace(this + " removing " + del + " after commit"); }
             
-               if (trace) { log.trace(this + " removing " + del + " after commit"); }
-               
-               del.getReference().releaseMemoryReference();
-               
-               try
-               {            
-                  acknowledgeInMemory(del);                  
+            del.getReference().releaseMemoryReference();
+            
+            try
+            {          
+               synchronized (deliveryLock)
+               { 
+                  acknowledgeInMemory(del);
                }
-               catch (Throwable t)
-               {
-                  //FIXME Sort out this exception handling!!!
-                  log.error("Failed to ack message", t);
-               }   
+            }
+            catch (Throwable t)
+            {
+               //FIXME Sort out this exception handling!!!
+               log.error("Failed to ack message", t);
             }   
-         }         
+         }                  
       } 
       
       public void afterRollback(boolean onePhase)
@@ -972,119 +972,4 @@ public class ChannelState implements State
          }
       }          
    }
-
-//   private class AddReferenceCallback implements TxCallback
-//   {
-//      private MessageReference ref;
-//      
-//      private AddReferenceCallback(MessageReference ref)
-//      {
-//         this.ref = ref;
-//      }
-//      
-//      public void beforePrepare()
-//      {         
-//         //NOOP
-//      }
-//      
-//      public void beforeCommit(boolean onePhase)
-//      {         
-//      }
-//      
-//      public void beforeRollback(boolean onePhase)
-//      {         
-//         //NOOP
-//      }
-//      
-//      public void afterPrepare()
-//      {         
-//         //NOOP
-//      }
-//      
-//      public void afterCommit(boolean onePhase)
-//      {
-//         //We add the reference to the state
-//         
-//         if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-//             
-//         boolean first = false;
-//         try
-//         {         
-//            synchronized (refLock)
-//            {
-//               first = addReferenceInMemory(ref);
-//            }
-//         }
-//         catch (Throwable t)
-//         {
-//            // FIXME  - Sort out this exception handling
-//            log.error("Failed to add reference", t);
-//         }
-//                     
-//         if (first)
-//         {
-//            //No need to call prompt delivery if there are already messages in the queue
-//            channel.deliver(null);
-//         }
-//      } 
-//      
-//      public void afterRollback(boolean onePhase)
-//      {
-//         ref.releaseMemoryReference();
-//      }           
-//   }
-   
-//   private class RemoveDeliveryCallback implements TxCallback
-//   {
-//      private Delivery del;
-//      
-//      private RemoveDeliveryCallback(Delivery del)
-//      {
-//         this.del = del;
-//      }
-//      
-//      public void beforePrepare()
-//      {         
-//         //NOOP
-//      }
-//      
-//      public void beforeCommit(boolean onePhase)
-//      {                                       
-//      }
-//      
-//      public void beforeRollback(boolean onePhase)
-//      {         
-//         //NOOP
-//      }
-//      
-//      public void afterPrepare()
-//      {         
-//         //NOOP
-//      }
-//      
-//      public void afterCommit(boolean onePhase)
-//      {
-//         if (trace) { log.trace(this + " removing " + del + " after commit"); }
-//                     
-//         del.getReference().releaseMemoryReference();
-//         
-//         try
-//         {            
-//            synchronized (deliveryLock)
-//            {
-//               acknowledgeInMemory(del);
-//            }
-//         }
-//         catch (Throwable t)
-//         {
-//            //FIXME Sort out this exception handling!!!
-//            log.error("Failed to ack message", t);
-//         }                  
-//      } 
-//      
-//      public void afterRollback(boolean onePhase)
-//      {
-//         //NOOP
-//      }           
-//   }  
 }

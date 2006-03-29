@@ -102,18 +102,17 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          if (log.isTraceEnabled()) { log.trace(this + " notified that client " + client + " has disconnected"); }
          return;
       }
-
-      log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure " +
-               "(" + (t == null ? "null Throwable" : t.getClass().toString()) + ")", t);
-
+      
       ServerConnectionEndpoint ce = (ServerConnectionEndpoint)connections.remove(remotingSessionID);
 
       if (ce == null)
       {
-         log.error(this + " cannot identify connection endpoint corresponding " +
-                   "to remoting session " + remotingSessionID);
+         //Not all remoting sessions correspond to jms connections so this is ok to ignore         
          return;
       }
+      
+      log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure " +
+            "(" + (t == null ? "null Throwable" : t.getClass().toString()) + ")", t);
 
       try
       {

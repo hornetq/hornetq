@@ -120,8 +120,8 @@
    -->
 
    <category name="org.jboss.remoting">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="WARN"/>
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <!-- <priority value="WARN"/> -->
    </category>
 
    <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">

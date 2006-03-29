@@ -111,8 +111,9 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       "SELECT JMS_DEST_NAME, ID, SELECTOR, NO_LOCAL FROM JMS_CHANNEL_MAPPING WHERE CLIENT_ID=? AND JMS_SUB_NAME=?";
    
    private String selectSubscriptionsForTopic = 
-      "SELECT ID, CLIENT_ID, JMS_SUB_NAME, SELECTOR, NO_LOCAL FROM JMS_CHANNEL_MAPPING WHERE TYPE='D' AND JMS_DEST_NAME=?";
-    
+      "SELECT ID, CLIENT_ID, JMS_SUB_NAME, SELECTOR, NO_LOCAL FROM JMS_CHANNEL_MAPPING WHERE TYPE='D' AND J" +
+      "MS_DEST_NAME=?";
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -959,8 +960,6 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          wrap.end();
       }
    }
-   
-   
    
    
    protected boolean deleteMappingRow(long id) throws Exception

@@ -324,9 +324,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
       
       // Find the location of durable
       int durableStart = text.indexOf("Durable");
-      assert (durableStart != -1);
-      assert (text.indexOf("SubscriberA", durableStart) != -1);
-      assert (text.indexOf("Client1", durableStart) != -1);
+      assertTrue (durableStart != -1);
+      assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
+      assertTrue (text.indexOf("Client1", durableStart) != -1);
       // Find the first location of Non-durable
       int nonDurableStart = text.indexOf("Non-durable");
       assertTrue(nonDurableStart != -1);
@@ -343,9 +343,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
       //System.out.println("Durable Text: \n" + text);
       
       durableStart = text.indexOf("Durable");
-      assert (durableStart != -1);
-      assert (text.indexOf("SubscriberA", durableStart) != -1);
-      assert (text.indexOf("Client1", durableStart) != -1);
+      assertTrue (durableStart != -1);
+      assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
+      assertTrue (text.indexOf("Client1", durableStart) != -1);
       
       // Test non-durable subscriptions
       text = (String)ServerManagement.invoke(
@@ -366,9 +366,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
       // There should be only 1 subscription totally
       text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
       durableStart = text.indexOf("Durable");
-      assert (durableStart != -1);
-      assert (text.indexOf("SubscriberA", durableStart) != -1);
-      assert (text.indexOf("Client1", durableStart) != -1);
+      assertTrue (durableStart != -1);
+      assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
+      assertTrue (text.indexOf("Client1", durableStart) != -1);
       
       // There should be 1 durable subscription
       text = (String)ServerManagement.invoke(
@@ -377,9 +377,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
             new Object[] {Boolean.TRUE}, 
             new String[] {"boolean"});
       durableStart = text.indexOf("Durable");
-      assert (durableStart != -1);
-      assert (text.indexOf("SubscriberA", durableStart) != -1);
-      assert (text.indexOf("Client1", durableStart) != -1);
+      assertTrue (durableStart != -1);
+      assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
+      assertTrue (text.indexOf("Client1", durableStart) != -1);
        
       // There should be 0 non-durable subscription
       text = (String)ServerManagement.invoke(

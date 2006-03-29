@@ -71,6 +71,8 @@ import org.jboss.serial.io.JBossObjectOutputStream;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.tm.TransactionManagerServiceMBean;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+
 /**
  *  
  * JDBC implementation of PersistenceManager 
@@ -106,7 +108,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected String createIdxMessageRefLoaded = "CREATE INDEX JMS_MESSAGE_REF_LOADED ON JMS_MESSAGE_REFERENCE (LOADED)";
    
-   protected String createIdxMessageRefReliable = "CREATE INDEX JMS_MESSAGE_REF_LOADED ON JMS_MESSAGE_REFERENCE (RELIABLE)";
+   protected String createIdxMessageRefReliable = "CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON JMS_MESSAGE_REFERENCE (RELIABLE)";
    
    protected String insertMessageRef = "INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, RELIABLE, LOADED) "
       + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -145,6 +147,9 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected String removeAllNonReliableRefs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE='N'";
       
    protected String updateAllReliableRefs = "UPDATE JMS_MESSAGE_REFERENCE SET LOADED='N'";
+   
+   //FIXME Must have channel mapper table maintained here too since have cross dependency
+   protected String deleteNonDurableSubs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID NOT IN (SELECT ID FROM JMS_CHANNEL_MAPPING)";
    
    //JMS_MESSAGE
    
@@ -235,24 +240,30 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected int maxParams = 100;
    
    protected int minOrdering;
+   
+   protected Map channelMultipliers;
+   
+   protected boolean deleteSubs;
     
    // Constructors --------------------------------------------------
    
    public JDBCPersistenceManager() throws Exception
    {
-      this(null, null, null);
+      this(null, null, null, true);
    }
    
    /**
     * Only used for testing. In a real deployment, the data source and the transaction manager are
     * injected as dependencies.
     */
-   public JDBCPersistenceManager(DataSource ds, TransactionManager tm, ChannelMapper cm) throws Exception
+   public JDBCPersistenceManager(DataSource ds, TransactionManager tm, ChannelMapper cm, boolean deleteSubs) throws Exception
    {
       this.ds = ds;
       this.tm = tm;
       this.cm = cm;
       sqlProperties = new Properties();
+      channelMultipliers = new ConcurrentReaderHashMap();      
+      this.deleteSubs = deleteSubs;
    }
    
    /**
@@ -261,9 +272,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     */
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm) throws Exception
    {
-      this.ds = ds;
-      this.tm = tm;
-      sqlProperties = new Properties();
+      this(ds, tm, null, false);
    }
    
    // ServiceMBeanSupport overrides ---------------------------------
@@ -295,6 +304,33 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          cm = (ChannelMapper) server.getAttribute(cmObjectName, "Instance");
       }
       
+      Connection conn = null;
+      
+      try
+      {
+         conn = ds.getConnection();      
+         //JBossMessaging requires transaction isolation of READ_COMMITTED
+         //Any looser isolation level and we cannot maintain consistency for paging (HSQL)
+         if (conn.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED)
+         {
+            int level = conn.getTransactionIsolation();
+            String sLevel = level == Connection.TRANSACTION_NONE ? "'Transactions not supported'" :
+                                 level == Connection.TRANSACTION_READ_UNCOMMITTED ? "READ_UNCOMMITTED" :
+                                    level == Connection.TRANSACTION_READ_COMMITTED ? "READ_COMMITTED" :
+                                       level == Connection.TRANSACTION_REPEATABLE_READ ? "REPEATABLE_READ" :
+                                          level == Connection.TRANSACTION_SERIALIZABLE ? "SERIALIZABLE" :
+                                             "UNKNOWN";            
+            log.warn("Connection transaction isolation should be READ_COMMITTED, it is currently: "
+                   + sLevel
+                   + " .Using an isolation level less strict than READ_COMMITTED can lead to data consistency problems, "
+                   + "using an isolation level more strict than READ_COMMITTED can lead to deadlock");             
+         }
+      }
+      finally
+      {
+         conn.close();
+      }
+            
       initSqlProperties();
       
       if (createTablesOnStartup)
@@ -343,7 +379,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          ps = conn.prepareStatement(selectCounter);
          
@@ -451,7 +487,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          ps = conn.prepareStatement(updateReliableRefs);
          
@@ -512,7 +548,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          ps = conn.prepareStatement(selectCountReferences);
          
@@ -594,7 +630,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          Iterator iter = messageIds.iterator();
          
@@ -777,7 +813,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          //Now we get a lock on all the messages. Since we have ordered the refs we should avoid deadlock
          getLocks(references);
          
-         conn = getConnection();
+         conn = ds.getConnection();
          
          Iterator iter = references.iterator();
          
@@ -1014,7 +1050,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          //We get locks on all the messages - since they are ordered we avoid deadlock
          getLocks(references);
          
-         conn = getConnection();
+         conn = ds.getConnection();
          
          Iterator iter = references.iterator();
          
@@ -1241,7 +1277,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          //First get the min ordering
          ps = conn.prepareStatement(selectMinOrdering);
@@ -1301,7 +1337,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          wrap.end();
       }
       
-   }
+   }      
+     
    
    /*
     * Load some refs from the channel.
@@ -1317,23 +1354,37 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     * We select references where ordering < min_ordering + x
     * This might not select any references due to holes, in which case we double x and repeat until 
     * we find refs.
+    * We store the multiplier for next time so it self adjusts
     */      
    public List getReferenceInfos(long channelID, long minOrdering, int number) throws Exception
-   {          
-      
-      //TODO - "Learning": Let the channel "remember" the average number of tries it takes to get all messages
-      //So doesn't have to try so many times each time
-                  
+   {                          
       if (trace)
       {
          log.trace("loading message reference info for channel " + channelID + " for " + number + " refs");
       }
-               
-      final int MAX_TRIES = 15;
+                    
+      List refs = new ArrayList();
+      
+      if (number == 0)
+      {
+         return refs;
+      }
+      
+      //Start with a reasonable multiplier
+      double multiplier = 1.15;
+      
+      Double d = (Double)channelMultipliers.get(new Long(channelID));
+      
+      if (d != null)
+      {
+         multiplier = d.doubleValue();
+      }
+           
+      final int MAX_TRIES = 20;
       
       final double SCALING = 2;
             
-      double size = 1.2 * number;
+      double size = multiplier * number;
       
       Connection conn = null;
       PreparedStatement ps = null;
@@ -1342,16 +1393,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          int tries = 0;
-         
-         List refs = new ArrayList();
-         
-         if (number == 0)
-         {
-            return refs;
-         }
+
+         long lastOrdering = 0;
          
          do
          {                 
@@ -1377,6 +1423,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                refs.add(ri);        
                
                count++;
+               
+               lastOrdering = ordering;
             }
 
             size *= SCALING;
@@ -1394,7 +1442,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                if (trace)
                {
                   log.trace("Could not find sufficient refs in one query, trying again");
-               }
+               }              
             }               
          }
          while (refs.size() < number && tries < MAX_TRIES);
@@ -1403,7 +1451,17 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          {
             //HIghly unlikely to happen
             throw new IllegalStateException("Could not find sufficient references after trying " + tries + " times");
-         }            
+         }          
+          
+         //We now adjust the multiplier so it 'learns' how many tries it needs which should aid performance         
+         long actSize = lastOrdering - minOrdering + 1;
+         
+         double idealMultiplier = (double)actSize / number;
+         
+         //Give 15% leeway
+         idealMultiplier *= 1.15;
+         
+         channelMultipliers.put(new Long(channelID), new Double(idealMultiplier));
    
          return refs;
       }
@@ -1461,7 +1519,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
         
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          Iterator iter = references.iterator();
          
@@ -1564,7 +1622,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          PreparedStatement psReference = null;
          PreparedStatement psMessage = null;
          
-         Connection conn = getConnection();
+         Connection conn = ds.getConnection();
          
          Message m = ref.getMessage();     
          
@@ -1686,7 +1744,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          PreparedStatement psReference = null;
          PreparedStatement psMessage = null;
          
-         Connection conn = getConnection();
+         Connection conn = ds.getConnection();
          
          Message m = ref.getMessage();         
          
@@ -1803,7 +1861,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          ps = conn.prepareStatement(deleteChannelMessageRefs);
          
@@ -1861,7 +1919,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       {
          List transactions = new ArrayList();
          
-         conn = getConnection();
+         conn = ds.getConnection();
          
          st = conn.createStatement();
          rs = st.executeQuery(selectPreparedTransactions);
@@ -1933,7 +1991,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     
     try
     {
-    conn = getConnection();
+    conn = ds.getConnection();
     
     ps = conn.prepareStatement(selectReferenceCount);
     ps.setString(1, (String)messageID);
@@ -2136,7 +2194,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          try
          {
@@ -2295,6 +2353,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       removeAllNonReliableRefs = sqlProperties.getProperty("REMOVE_ALL_NONRELIABLE_REFS", removeAllNonReliableRefs);
       updateAllReliableRefs = sqlProperties.getProperty("UPDATE_ALL_RELIABLE_REFS", updateAllReliableRefs);
       selectMinOrdering = sqlProperties.getProperty("SELECT_MIN_ORDERING", selectMinOrdering);
+      
+      deleteNonDurableSubs = sqlProperties.getProperty("DELETE_NON_DURABLE", deleteNonDurableSubs);
  
       //Message
       createMessage = sqlProperties.getProperty("CREATE_MESSAGE", createMessage);
@@ -2355,11 +2415,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
       
-      log.info("Resetting message data. This may take several minutes for large queues...");
+      log.trace("Resetting message data. This may take several minutes for large queues/subscriptions...");
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          log.info("Removing all non-reliable message references");
          
@@ -2373,14 +2433,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                   + " removed " + rows + " rows");
          }
          
-         log.info("Removed " + rows + " non-reliable references");
-         
          ps.close();
          
          ps = null;
-         
-         log.info("Removing all non-reliable messages");
-         
+          
          ps = conn.prepareStatement(removeAllNonReliableMessages);
          
          rows = ps.executeUpdate();
@@ -2390,8 +2446,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             log.trace(JDBCUtil.statementToString(removeAllNonReliableMessages)
                   + " removed " + rows + " rows");
          }
-         
-         log.info("Removed " + rows + " non-reliable messages");
          
          ps.close();
          
@@ -2408,9 +2462,23 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             log.trace(JDBCUtil.statementToString(updateAllReliableRefs)
                   + " updated " + rows + " rows");
          }
+               
+         ps.close();
          
-         log.info("Updated " + rows + " rows");
-         
+         ps = null;
+                   
+         if (deleteSubs)
+         {            
+            ps = conn.prepareStatement(deleteNonDurableSubs);
+            
+            rows = ps.executeUpdate();
+            
+            if (trace)
+            {
+               log.trace(JDBCUtil.statementToString(deleteNonDurableSubs)
+                     + " deleted " + rows + " rows");
+            }          
+         }
       }
       catch (Exception e)
       {
@@ -2483,7 +2551,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       try
       {
-         conn = getConnection();
+         conn = ds.getConnection();
          
          //obtain locks on all messages
          getLocks(allRefs);
@@ -2891,7 +2959,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          //get locks on all the refs
          this.getLocks(refs);
          
-         conn = getConnection();
+         conn = ds.getConnection();
                   
          //2PC commit
          
@@ -3104,7 +3172,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          //get the locks
          getLocks(refs);
          
-         conn = getConnection();
+         conn = ds.getConnection();
          
          //Insert the tx record
          if (!refsToAdd.isEmpty() || !refsToRemove.isEmpty())
@@ -3401,7 +3469,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       {
          this.getLocks(refs);
          
-         conn = getConnection();
+         conn = ds.getConnection();
          
          rollbackPreparedTransaction(tx, conn);
          
@@ -4198,20 +4266,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          ref.getMessage().decPersistentChannelCount();
       }
       
-   }
-   
-   protected Connection getConnection() throws Exception
-   {
-      Connection conn = ds.getConnection();
-      
-      //JBossMessaging requires transaction isolation of READ_COMMITTED
-      //Any looser isolation level and we cannot maintain consistency for paging(HSQL)
-      if (conn.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED)
-      {
-         log.warn("Connection transaction isolation should be READ_COMMITTED, it is currently:" + conn.getTransactionIsolation());
-      }
-      
-      return conn;
    }
    
    protected void logBatchUpdate(String name, int[] rows, String action)

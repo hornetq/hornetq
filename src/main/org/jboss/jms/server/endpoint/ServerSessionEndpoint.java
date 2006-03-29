@@ -229,7 +229,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                               noLocal,
                                                               ms,
                                                               pm);
-               }
+               }               
             }
          }
       }
