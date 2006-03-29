@@ -189,7 +189,6 @@ public class Topic extends DestinationServiceSupport
    public List listMessagesNonDurableSub(long channelID, String selector)
       throws JMSException
    {
-      System.out.println("XXXXX channelID is " + channelID);
       JBossTopic jbt = new JBossTopic(this.name);
       ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
       return t.getMessagesFromNonDurableSub(channelID, trimSelector(selector));
