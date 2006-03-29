@@ -43,7 +43,6 @@
          <include component="javassist"/>
          <include component="jgroups"/>
          <include component="junit"/>
-         <include component="gnu-regexp"/>
          <include component="common"/>
          <include component="j2ee"/>
          <include component="jboss/remoting"/>

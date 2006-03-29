@@ -61,7 +61,6 @@
       <path refid="trove.classpath"/>
       <path refid="dom4j.dom4j.classpath"/>
       <path refid="jgroups.jgroups.classpath"/>
-      <path refid="gnu.regexp.classpath"/>
       <path refid="sun.servlet.classpath"/>
       <path refid="apache.commons.classpath"/>
       <path refid="apache.tomcat.classpath"/>
