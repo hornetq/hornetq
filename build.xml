@@ -109,7 +109,6 @@
        <path refid="javassist.classpath"/>
        <path refid="jgroups.jgroups.classpath"/>
        <path refid="junit.junit.classpath"/>
-       <path refid="gnu.regexp.classpath"/>
        <path refid="trove.trove.classpath"/>
     </path>
 
