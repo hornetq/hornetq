@@ -230,7 +230,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("FullSize can only be changed when destination is stopped");
          return;
       }
-      this.fullSize = fullSize;
+      
+      if (validateParameters(fullSize, this.pageSize, this.downCacheSize))
+         this.fullSize = fullSize;
    }
 
    /**
@@ -254,7 +256,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("PageSize can only be changed when destination is stopped");
          return;
       }
-      this.pageSize = pageSize;
+      
+      if (validateParameters(this.fullSize, pageSize, this.downCacheSize))
+         this.pageSize = pageSize;
    }
 
    /**
@@ -278,7 +282,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("DownCacheSize can only be changed when destination is stopped");
          return;
       }
-      this.downCacheSize = downCacheSize;
+      
+      if (validateParameters(this.fullSize, this.pageSize, downCacheSize))
+         this.downCacheSize = downCacheSize;
    }
 
    // JMX managed operations ----------------------------------------
@@ -370,6 +376,35 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    protected abstract boolean isQueue();
 
    // Private -------------------------------------------------------
+   
+   /**
+    * Check if fullSize, pageSize and downCacheSize are valid.
+    * @return true only when they are valid.
+    */
+   private boolean validateParameters(int fullSize, int pageSize, int downCacheSize)
+   {
+      if (pageSize >= fullSize)
+      {
+         log.warn("pageSize must be less than fullSize");
+         return false;
+      }
+      if (downCacheSize > pageSize)
+      {
+         log.warn("pageSize cannot be smaller than downCacheSize");
+         return false;
+      }
+      if (pageSize <= 0)
+      {
+         log.warn("pageSize must be greater than zero");
+         return false;
+      }
+      if (downCacheSize <= 0)
+      {
+         log.warn("downCacheSize must be greater than zero");
+         return false;
+      }
+      return true;
+   }
 
    // Inner classes -------------------------------------------------
 }
