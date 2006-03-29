@@ -312,21 +312,20 @@ public class ServiceContainer
 
          registerClassLoader();
 
-         if (database)
-         {
-            startInVMDatabase();
-         }
          if (transaction)
          {
             startTransactionManager();
+         }
+         if (database)
+         {
+            startInVMDatabase();
          }
          if (jca)
          {
             startCachedConnectionManager(CACHED_CONNECTION_MANAGER_OBJECT_NAME);
 
             // DefaultDS specific
-            startManagedConnectionFactory(DEFAULTDS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME,
-                                          "jdbc:hsqldb:mem:test", "org.hsqldb.jdbcDriver", "sa");
+            startManagedConnectionFactory(DEFAULTDS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
             startManagedConnectionPool(DEFAULTDS_MANAGED_CONNECTION_POOL_OBJECT_NAME,
                                        DEFAULTDS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME,
                                        "ByContainer");
@@ -349,10 +348,22 @@ public class ServiceContainer
             startSecurityManager();
          }
 
+         if (database && transaction && jca)
+         {
+            // We make sure the database is clean (only if we have all dependencies the database,
+            // othewise we'll get an access error)
+            deleteAllData();
+         }
+         else
+         {
+            if (database)
+            {
+               log.warn("Previous data has not been cleared, there may be " + "" +
+                        "garbage lying around in the database!");
+            }
+         }
+
          loadJNDIContexts();
-         
-         //We make sure the database is clean
-         deleteAllData();         
 
          log.debug(this + " started");
       }
@@ -781,10 +792,10 @@ public class ServiceContainer
 
    }
 
-   private void startManagedConnectionFactory(ObjectName on,
-                                              String connectionURL,
-                                              String driverClass,
-                                              String userName) throws Exception
+   /**
+    * Database specific.
+    */
+   private void startManagedConnectionFactory(ObjectName on) throws Exception
    {
       LocalManagedConnectionFactory mcf = new LocalManagedConnectionFactory();
          
@@ -1012,6 +1023,8 @@ public class ServiceContainer
          ps = conn.prepareStatement(sql);
          
          rows = ps.executeUpdate();
+
+         log.debug("deleted " + rows);
          
          ps.close();
          
@@ -1019,6 +1032,8 @@ public class ServiceContainer
          ps = conn.prepareStatement(sql);
          
          rows = ps.executeUpdate();
+
+         log.debug("deleted " + rows);
             
          ps.close();
          
@@ -1026,6 +1041,8 @@ public class ServiceContainer
          ps = conn.prepareStatement(sql);
          
          rows = ps.executeUpdate();
+
+         log.debug("deleted " + rows);
                 
          ps.close();
          
@@ -1033,6 +1050,8 @@ public class ServiceContainer
          ps = conn.prepareStatement(sql);
          
          rows = ps.executeUpdate();
+
+         log.debug("deleted " + rows);
          
          ps.close();
          
@@ -1040,6 +1059,8 @@ public class ServiceContainer
          ps = conn.prepareStatement(sql);
          
          rows = ps.executeUpdate();
+
+         log.debug("deleted " + rows);
          
          ps.close();
          conn.close();

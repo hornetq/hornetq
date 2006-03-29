@@ -115,6 +115,7 @@ public class ServerPeerTest extends MessagingTestCase
       {
          ServerManagement.undeployQueue("SomeQueue");
          ServerManagement.undeployTopic("SomeTopic");
+         ServerManagement.stopServerPeer();
       }
    }
 

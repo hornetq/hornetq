@@ -62,7 +62,7 @@
       <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
 
-      <attribute name="RemotingConnectionLeasePeriod">100000000</attribute>
+      <attribute name="RemotingConnectionLeasePeriod">2000</attribute>
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
         <security>

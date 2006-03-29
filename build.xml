@@ -693,6 +693,18 @@
       <ant dir="tests/smoke" antfile="build.xml" target="smoke-test" inheritAll="false"/>
    </target>
 
+   <target name="zip-test-results" depends="init, configure">
+      <copy todir="./tests/output/jboss-messaging-test-reports-${module.version}">
+         <fileset dir="./tests/output/reports">
+            <include name="**"/>
+         </fileset>
+      </copy>
+      <zip basedir="./tests/output/"
+           destfile="./tests/output/jboss-messaging-test-reports-${module.version}.zip"
+           includes="jboss-messaging-test-reports-${module.version}/**"/>
+   </target>
+
+
 </project>
 
 
