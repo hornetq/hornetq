@@ -216,8 +216,10 @@ public class Topic implements CoreDestination, ManageableTopic
    }
    
    /**
+    * XXX Placeholder
     * @see ManageableTopic#getSubscriptions()
     */
+   /*
    public List getSubscriptions()
    {
       ArrayList list = new ArrayList();
@@ -236,10 +238,42 @@ public class Topic implements CoreDestination, ManageableTopic
       }
       return list;
    }
+   */
    
    /**
+    * @see ManageableTopic#getSubscriptionsAsText(boolean)
+    */
+   public String getSubscriptionsAsText(boolean durable)
+   {
+      StringBuffer sb = new StringBuffer();
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         CoreSubscription sub = (CoreSubscription)iter.next();
+         if (durable && sub instanceof CoreDurableSubscription)
+         {
+            CoreDurableSubscription ds = (CoreDurableSubscription)sub;
+            sb.append("Durable, name=\"");
+            sb.append(ds.getName());
+            sb.append("\", clientID=\"");
+            sb.append(ds.getClientID());
+            sb.append("\"\n");
+         }
+         else if (!durable && !(sub instanceof CoreDurableSubscription))
+         {
+            sb.append("Non-durable, subscriptionID=\"");
+            sb.append(sub.getChannelID());
+            sb.append("\"\n");
+         }
+      }
+      return sb.toString();
+   }
+   
+   /**
+    * XXX Placeholder
     * @see ManageableTopic#getSubscriptions(boolean)
     */
+   /*
    public List getSubscriptions(boolean durable)
    {
       ArrayList list = new ArrayList();
@@ -258,11 +292,13 @@ public class Topic implements CoreDestination, ManageableTopic
       }
       return list;
    }
-      
+   */   
    
    /**
+    * XXX Placeholder
     * @see ManageableTopic#getMessages(long, String, String, String)
     */
+   /*
    public List getMessages(long channelID, String clientID, String subName, String selector) throws InvalidSelectorException
    {
       Iterator iter = iterator();
@@ -271,6 +307,41 @@ public class Topic implements CoreDestination, ManageableTopic
          CoreSubscription sub = (CoreSubscription)iter.next();
          // If subID matches, then get message list from the subscription
          if (matchSubscription(channelID, clientID, subName, sub))
+            return sub.browse(null == selector ? null : new Selector(selector));
+      }   
+      // No match, return an empty list
+      return new ArrayList();
+   }
+   */
+   
+   /**
+    * @see ManageableTopic#getMessagesFromDurableSub(String, String, String)
+    */
+   public List getMessagesFromDurableSub(String name, String clientID, String selector) throws InvalidSelectorException
+   {
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         CoreSubscription sub = (CoreSubscription)iter.next();
+         // If subID matches, then get message list from the subscription
+         if (matchDurableSubscription(name, clientID, sub))
+            return sub.browse(null == selector ? null : new Selector(selector));
+      }   
+      // No match, return an empty list
+      return new ArrayList();
+   }
+   
+   /**
+    * @see ManageableTopic#getMessagesFromNonDurableSub(Long, String)
+    */
+   public List getMessagesFromNonDurableSub(long channelID, String selector) throws InvalidSelectorException
+   {
+      Iterator iter = iterator();
+      while (iter.hasNext())
+      {
+         CoreSubscription sub = (CoreSubscription)iter.next();
+         // If subID matches, then get message list from the subscription
+         if (matchNonDurableSubscription(channelID, sub))
             return sub.browse(null == selector ? null : new Selector(selector));
       }   
       // No match, return an empty list
@@ -290,25 +361,37 @@ public class Topic implements CoreDestination, ManageableTopic
    
    // Private -------------------------------------------------------
 
-   // Test if the subID array matches the subscription
-   private boolean matchSubscription(long channelID, String clientID, String subName, CoreSubscription sub)
+   // Test if the durable subscriptions match
+   private boolean matchDurableSubscription(String name, String clientID, CoreSubscription sub)
    {
-      // Validate the subID
-      if (null == clientID || null == subName)
+      // Validate the name
+      if (null == name)
          throw new IllegalArgumentException();
-      // First channel ID must be the same
+      // Must be durable
+      if (!(sub instanceof CoreDurableSubscription))
+         return false;
+
+      CoreDurableSubscription duraSub = (CoreDurableSubscription)sub;
+      // Subscription name check
+      if (!name.equals(duraSub.getName()))
+         return false;
+      // Client ID check: if no client ID specified, it's considered as matched 
+      if (null == clientID || 0 == clientID.length())
+         return true;
+      if (!clientID.equals(duraSub.getClientID()))
+         return false;
+      return true;
+   }
+   
+   // Test if the non-durable subscriptions match
+   private boolean matchNonDurableSubscription(long channelID, CoreSubscription sub)
+   {
+      // Must be non-durable
+      if (sub instanceof CoreDurableSubscription)
+         return false;
+      // Channel ID must be the same
       if (channelID != sub.getChannelID())
          return false;
-      if (sub instanceof CoreDurableSubscription)
-      {
-         CoreDurableSubscription duraSub = (CoreDurableSubscription)sub;
-         // Client ID check
-         if (!clientID.equals(duraSub.getClientID()))
-            return false;
-         // Subscription name check
-         if (!subName.equals(duraSub.getName()))
-            return false;
-      }
       return true;
    }
    

@@ -133,45 +133,50 @@
    </operation>
 
    <operation>
-      <description>Get a subscription list of String[] {ChannelID, ClientID, SubscriptionName}</description>
-      <name>listSubscriptions</name>
-      <return-type>java.util.List</return-type>
-   </operation>
-
-   <operation>
-      <description>Returns a human readable list containing the names of current subscriptions.</description>
+      <description>Returns a readable list containing the names of current subscriptions.</description>
       <name>listSubscriptionsAsText</name>
       <return-type>java.lang.String</return-type>
    </operation>
 
    <operation>
-      <description>Get a subscription list of String[] {ChannelID, ClientID, SubscriptionName}</description>
-      <name>listSubscriptions</name>
+      <description>Returns a readable list containing the names of current subscriptions.</description>
+      <name>listSubscriptionsAsText</name>
       <parameter>
          <description>Set the value to true to get durable subscription list; false to get nondurable list</description>
          <name>durable</name>
          <type>boolean</type>
       </parameter>
-      <return-type>java.util.List</return-type>
+      <return-type>java.lang.String</return-type>
    </operation>
 
    <operation>
-      <description>Get a list of messages for certain subscription that filtered by selector</description>
-      <name>listMessages</name>
+      <description>Get a list of messages for a durable subscription that filtered by selector</description>
+      <name>listMessagesDurableSub</name>
       <parameter>
-         <description>The non-durable subscription ID</description>
-         <name>channelID</name>
-         <type>long</type>
+         <description>The durable subscription name (must specify)</description>
+         <name>name</name>
+         <type>java.lang.String</type>
       </parameter>
       <parameter>
-         <description>The durable subscription client ID</description>
+         <description>The durable subscription client ID (if empty, the first matched subscription name will be chosen)</description>
          <name>clientID</name>
          <type>java.lang.String</type>
       </parameter>
       <parameter>
-         <description>The durable subscription name</description>
-         <name>name</name>
+          <description>Expression to define the selector</description>
+         <name>selector</name>
          <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+
+   <operation>
+      <description>Get a list of messages for a non-durable subscription that filtered by selector</description>
+      <name>listMessagesNonDurableSub</name>
+      <parameter>
+         <description>The non-durable subscription ID (must specify)</description>
+         <name>subscriptionID</name>
+         <type>long</type>
       </parameter>
       <parameter>
          <description>Expression to define the selector</description>
@@ -179,5 +184,5 @@
          <type>java.lang.String</type>
       </parameter>
       <return-type>java.util.List</return-type>
-   </operation>
+  </operation>
 </mbean>

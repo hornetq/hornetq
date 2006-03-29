@@ -52,20 +52,33 @@ public interface ManageableTopic extends ManageableCoreDestination
    int subscriptionCount(boolean durable);
    
    /**
+    * XXX Placeholder
     * Get all subscription list.
     * @return List of String[] {ChannelID, ClientID, SubscriptionName}. Never null. 
     */
-   List getSubscriptions();
+   //List getSubscriptions();
    
    /**
+    * Get all subscriptions as readable text in the format of 
+    *    Durable/Non-durable, name=<name>, clientID=<clID>, channelID=<chID)
+    *    ...
+    * @param durable If true, return durable subscriptions.
+    *                If false, return non-durable subscriptions.
+    * @return String of readable subscription list
+    */
+   String getSubscriptionsAsText(boolean durable);
+   
+   /**
+    * XXX Placeholder
     * Get durable/non-durable subscription list.
     * @param durable If true, return durable subscription list.
     *                If false, return non-durable subscription list.
     * @return List of String[] {ChannelID, ClientID, SubscriptionName}. Never null. 
     */
-   List getSubscriptions(boolean durable);
+   //List getSubscriptions(boolean durable);
    
    /**
+    * XXX Placeholder
     * Get list of messages that is in certain subscription and meet the condition of selector.
     * @param channelID String array element 0 that you get from getSubscriptions().
     * @param clientID String array element 1 that you get from getSubscriptions().
@@ -74,7 +87,26 @@ public interface ManageableTopic extends ManageableCoreDestination
     * @return List of javax.jms.Message. Never null.
     * @throws InvalidSelectorException
     */
-   List getMessages(long channelID, String clientID, String subName, String selector) throws InvalidSelectorException;
+   //List getMessages(long channelID, String clientID, String subName, String selector) throws InvalidSelectorException;
+   
+   /**
+    * Get list of messages that is in a durable subscription and meet the condition of selector.
+    * @param name Subscription name, shouldn't be null.
+    * @param clientID String client ID.
+    * @param selector Filter expression
+    * @return List of javax.jms.Message. Never null.
+    * @throws InvalidSelectorException
+    */
+   List getMessagesFromDurableSub(String name, String clientID, String selector) throws InvalidSelectorException;
+   
+   /**
+    * Get list of messages that is in a non-durable subscription and meet the condition of selector.
+    * @param channelID long channel ID.
+    * @param selector Filter expression
+    * @return List of javax.jms.Message. Never null.
+    * @throws InvalidSelectorException
+    */
+   List getMessagesFromNonDurableSub(long channelID, String selector) throws InvalidSelectorException;
    
    // TODO adding more manageable operations
 }
