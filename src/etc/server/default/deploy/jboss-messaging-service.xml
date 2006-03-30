@@ -86,7 +86,6 @@
    <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
-   
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
            the DataSource JNDI name in order to actually get a reference to it. Fix this.
       -->   
@@ -101,7 +100,7 @@
       
    <!-- MYSQL pm config 
       
-      FIXME - This is temporary so servicecontainer can be used with mysql
+      FIXME - This is temporary so servicecontainer can be used with mysql 
       
    <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
       name="jboss.messaging:service=PersistenceManager"

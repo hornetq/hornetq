@@ -72,6 +72,8 @@ public class ClientConnectionFactoryDelegate
    protected String serverID;
    
    protected transient Client client;
+   
+   protected JMSRemotingConnection nextConnection;
 
    // Static --------------------------------------------------------
    
@@ -121,7 +123,7 @@ public class ClientConnectionFactoryDelegate
    
    // Public --------------------------------------------------------
     
-   public Object invoke(Invocation invocation) throws Throwable
+   public synchronized Object invoke(Invocation invocation) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
       
@@ -137,7 +139,8 @@ public class ClientConnectionFactoryDelegate
       {         
          // this must be invoked on the same connection subsequently used by the created JMS
          // connection
-         JMSRemotingConnection connection = new JMSRemotingConnection(serverLocatorURI);
+         JMSRemotingConnection connection = getRemotingConnection();
+         nextConnection = null;
          
          MethodInvocation mi = (MethodInvocation)invocation;
          
@@ -173,8 +176,10 @@ public class ClientConnectionFactoryDelegate
       {         
          byte v = getVersionToUse().getProviderIncrementingVersion();
             
+         Client cl = getRemotingConnection().getInvokingClient();
+         
          MessagingMarshallable mm = (MessagingMarshallable)
-            getClient().invoke(new MessagingMarshallable(v, invocation), null);
+            cl.invoke(new MessagingMarshallable(v, invocation), null);
          
          ret = mm.getLoad();                           
       }
@@ -220,31 +225,18 @@ public class ClientConnectionFactoryDelegate
    
    // Protected -----------------------------------------------------
    
-   protected synchronized Client getClient() throws Exception
+   protected JMSRemotingConnection getRemotingConnection() throws Throwable
    {
-      if (client == null)
-      {
-         //we force this client to use a different invoker by adding a dummy parameter on the invoker locator
-         //we do this otherwise the pinger will get started with this client
-         //since remoting only provides one pinger per invoker 
-         InvokerLocator locator = new InvokerLocator(serverLocatorURI + "&dummy=xyz");
-         
-         Map config = new HashMap();
-                          
-         client = new Client(locator, ServerPeer.REMOTING_JMS_SUBSYSTEM, config);
-         
-         client.connect();
+      if (nextConnection == null)
+      {         
+         nextConnection = new JMSRemotingConnection(serverLocatorURI);
       }
-      
-      return client;
+      return nextConnection;
    }
    
-   protected void finalize() throws Throwable
+   protected Client getClient()
    {
-      if (client != null)
-      {
-         client.disconnect();
-      }
+      return null;
    }
    
    // Package Private -----------------------------------------------
