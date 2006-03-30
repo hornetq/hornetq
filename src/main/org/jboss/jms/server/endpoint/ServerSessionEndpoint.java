@@ -237,7 +237,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID,
                                     subscription == null ? (Channel)coreDestination : subscription,
-                                    this, selector, noLocal);
+                                    this, selector, noLocal, jmsDestination);
        
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
          

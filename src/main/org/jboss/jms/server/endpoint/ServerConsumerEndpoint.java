@@ -28,10 +28,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
@@ -109,6 +111,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    private DeliveryCallback deliveryCallback;
 
    private boolean selectorRejected;
+   
+   private JBossDestination destination;
 
    // We record the id of the last message delivered to the client consumer
    private long lastMessageIDDelivered = -1;
@@ -117,7 +121,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
    protected ServerConsumerEndpoint(int id, Channel channel,
                                     ServerSessionEndpoint sessionEndpoint,
-                                    String selector, boolean noLocal)
+                                    String selector, boolean noLocal, JBossDestination dest)
                                     throws InvalidSelectorException
    {
       if (trace) { log.trace("creating consumer endpoint " + id); }
@@ -128,6 +132,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       this.threadPoolDelegate =
          sessionEndpoint.getConnectionEndpoint().getServerPeer().getThreadPoolDelegate();
       this.noLocal = noLocal;
+      this.destination = dest;
 
       if (selector != null)
       {
@@ -403,6 +408,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    public String toString()
    {
       return "ConsumerEndpoint[" + id + "]" + (active ? "(active)" : "");
+   }
+   
+   public JBossDestination getDestination()
+   {
+      return destination;
+   }
+   
+   public ServerSessionEndpoint getSessionEndpoint()
+   {
+      return sessionEndpoint;
    }
    
    // Package protected ---------------------------------------------

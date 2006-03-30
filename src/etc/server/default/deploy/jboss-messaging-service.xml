@@ -63,7 +63,7 @@
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
 
       <!-- Set to -1 to completely disable client leasing -->
-      <attribute name="RemotingConnectionLeasePeriod">-1</attribute>
+      <attribute name="RemotingConnectionLeasePeriod">20000</attribute>
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
         <security>

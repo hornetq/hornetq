@@ -187,6 +187,10 @@ public class JMSRemotingConnection
    protected Map getConfig()
    {
       Map configuration = new HashMap();
+      
+      //Enable client pinging
+      //Server leasing is enabled separately on the server side
+      configuration.put(InvokerLocator.CLIENT_LEASE, "true");
 
       if (isMultiplex)
       {

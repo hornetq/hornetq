@@ -33,7 +33,9 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
@@ -147,6 +149,30 @@ public class SecurityAspect
             
       return invocation.invokeNext();
    }   
+   
+   public Object handleGetMessageNow(Invocation invocation) throws Throwable
+   {           
+      checkConsumerAccess(invocation);
+            
+      return invocation.invokeNext();
+   }   
+   
+   public Object handleActivate(Invocation invocation) throws Throwable
+   {           
+      checkConsumerAccess(invocation);
+      
+      return invocation.invokeNext();
+   } 
+   
+   protected void checkConsumerAccess(Invocation invocation) throws Throwable
+   {
+      ConsumerAdvised del = (ConsumerAdvised)invocation.getTargetObject();
+      ServerConsumerEndpoint cons = (ServerConsumerEndpoint)del.getEndpoint();
+      ServerConnectionEndpoint conn = cons.getSessionEndpoint().getConnectionEndpoint();
+      JBossDestination dest = cons.getDestination();
+      
+      check(dest, CheckType.READ, conn);
+   }
    
    // Package protected ---------------------------------------------
    

@@ -77,6 +77,8 @@ public class MessageProxyTest extends MessagingTestCase
       ServerManagement.deployQueue("Queue");
       queue = (Destination)initialContext.lookup("/queue/Queue");
       
+      this.drainDestination(cf, queue);
+      
       log.debug("setup done");
    }
    
@@ -107,6 +109,7 @@ public class MessageProxyTest extends MessagingTestCase
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
          MessageConsumer cons = sess.createConsumer(queue);
          

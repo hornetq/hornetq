@@ -66,6 +66,8 @@ public class ClientConnectionFactoryDelegate
    protected Version serverVersion;
    
    protected String serverID;
+   
+   protected transient Client client;
 
    // Static --------------------------------------------------------
    
@@ -118,17 +120,17 @@ public class ClientConnectionFactoryDelegate
    public Object invoke(Invocation invocation) throws Throwable
    {
       if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
-
-      invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
-                                           Dispatcher.OID,
-                                           new Integer(id), PayloadKey.AS_IS);
       
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
       
       Object ret = null;
+      
+      invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
+            Dispatcher.OID,
+            new Integer(id), PayloadKey.AS_IS);      
             
       if ("createConnectionDelegate".equals(methodName))
-      {
+      {         
          // this must be invoked on the same connection subsequently used by the created JMS
          // connection
          JMSRemotingConnection connection = new JMSRemotingConnection(serverLocatorURI);
@@ -161,27 +163,13 @@ public class ClientConnectionFactoryDelegate
          } 
       }
       else
-      {
-         // this is invoked on its own connection
-         InvokerLocator locator = new InvokerLocator(serverLocatorURI);
-         
-         Client client = new Client(locator, ServerPeer.REMOTING_JMS_SUBSYSTEM);
-         
-         client.connect();
-         
-         try
-         {                                    
-            byte v = getVersionToUse().getProviderIncrementingVersion();
+      {         
+         byte v = getVersionToUse().getProviderIncrementingVersion();
             
-            MessagingMarshallable mm = (MessagingMarshallable)
-               client.invoke(new MessagingMarshallable(v, invocation), null);
-            
-            ret = mm.getLoad();
-         }
-         finally
-         {
-            client.disconnect();
-         }
+         MessagingMarshallable mm = (MessagingMarshallable)
+            getClient().invoke(new MessagingMarshallable(v, invocation), null);
+         
+         ret = mm.getLoad();                           
       }
 
       if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
@@ -225,9 +213,26 @@ public class ClientConnectionFactoryDelegate
    
    // Protected -----------------------------------------------------
    
-   protected Client getClient()
+   protected synchronized Client getClient() throws Exception
    {
-      return null;
+      if (client == null)
+      {
+         InvokerLocator locator = new InvokerLocator(serverLocatorURI);
+         
+         client = new Client(locator, ServerPeer.REMOTING_JMS_SUBSYSTEM);
+         
+         client.connect();
+      }
+      
+      return client;
+   }
+   
+   protected void finalize() throws Throwable
+   {
+      if (client != null)
+      {
+         client.disconnect();
+      }
    }
    
    // Package Private -----------------------------------------------

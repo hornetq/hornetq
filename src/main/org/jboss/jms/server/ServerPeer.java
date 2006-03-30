@@ -661,9 +661,12 @@ public class ServerPeer extends ServiceMBeanSupport
                new Object[] {connectionManager},
                new String[] {"org.jboss.remoting.ConnectionListener"});
          
-         // Enable client side pinging
-         s += "&" + InvokerLocator.CLIENT_LEASE + "=true";
 
+         //NOTE! Client pinging is configured from the client side
+         //We cannot just add a "leasing" param on the locator since then the server
+         //and client locators will be different and a remote invoker will be used even 
+         //for invm invocations
+         
          log.debug("connection lease period " +  remotingConnectionLeasePeriod +
                    ",  activated connection checking");
 

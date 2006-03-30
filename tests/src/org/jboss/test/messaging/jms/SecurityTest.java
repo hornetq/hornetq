@@ -27,6 +27,7 @@ import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -771,12 +772,14 @@ public class SecurityTest extends MessagingTestCase
 
    private boolean canReadDestination(Connection conn, Destination dest) throws Exception
    {
-
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       try
       {
-         sess.createConsumer(dest);
+         MessageConsumer cons = sess.createConsumer(dest);    
+             
+        // cons.receiveNoWait();
+         
          return true;
       }
       catch (JMSSecurityException e)
@@ -784,6 +787,7 @@ public class SecurityTest extends MessagingTestCase
          log.trace("Can't read destination");
          return false;
       }
+            
    }
 
    private boolean canWriteDestination(Connection conn, Destination dest) throws Exception

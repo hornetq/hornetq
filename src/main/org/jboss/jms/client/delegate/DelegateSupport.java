@@ -154,7 +154,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       return ((Advised)this)._getInstanceAdvisor().getMetaData();
    }
    
-   protected abstract Client getClient();
+   protected abstract Client getClient() throws Exception;
 
 
    // Private -------------------------------------------------------
