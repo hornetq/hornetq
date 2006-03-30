@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ====================================================================== -->
+<!--                                                                        -->
+<!--  Ant file to create a JBoss 4.x messaging configuration based on a     -->
+<!--  default configuration.                                                -->
+<!--                                                                        -->
+<!-- ====================================================================== -->
+
+<!-- $Id$ -->
+
+<project default="create-config" name="Create JBoss 4.x Messaging Configuration">
+
+   <property environment="ENV"/>
+
+   <property file="./do-not-distribute.properties"/>
+
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+   <property name="messaging.config.name" value="messaging"/>
+   <property name="relative.sar.location" value="../output/lib"/>
+   <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+
+   <target name="validate-jboss">
+
+      <fail unless="jboss.home" message="JBOSS_HOME environment variable not set! Set it and try again."/>
+
+      <available property="default-config" type="dir" file="${jboss.home}/server/default"/>
+      <fail unless="default-config" message="${jboss.home}/server/default not found!"/>
+
+      <available property="messaging-config" type="dir" file="${jboss.home}/server/${messaging.config.name}"/>
+      <fail if="messaging-config" message="'${messaging.config.name}' configuration already exists! Delete it manually and try again."/>
+   </target>
+
+   <target name="validate-messaging-sar">
+      <available property="messaging-sar-exists" type="file" file="${relative.sar.location}/${messaging.sar.name}"/>
+      <fail unless="messaging-sar-exists" message="${relative.sar.location}/${messaging.sar.name} does not exist! Build it and try again."/>
+   </target>
+
+   <target name="create-config" depends="validate-jboss">
+
+      <echo message="Creating JBoss Messaging configuration '${messaging.config.name}' for ${jboss.home}"/>
+
+      <mkdir dir="${jboss.home}/server/${messaging.config.name}"/>
+      <copy todir="${jboss.home}/server/${messaging.config.name}">
+         <fileset dir="${jboss.home}/server/default"/>
+      </copy>
+      <copy file="${jboss.home}/server/${messaging.config.name}/deploy/jms/jms-ra.rar"
+            todir="${jboss.home}/server/${messaging.config.name}/deploy"/>            
+      <delete dir="${jboss.home}/server/${messaging.config.name}/data" quiet="yes"/>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/work" quiet="yes"/>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/log" quiet="yes"/>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/tmp" quiet="yes"/>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/deploy/jms"/>
+      <delete file="${jboss.home}/server/${messaging.config.name}/lib/jboss-messaging.jar" quiet="yes"/>
+
+      <!-- add a "messaging" security domain -->
+
+      <replaceregexp file="${jboss.home}/server/${messaging.config.name}/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3cpolicy\x3e)"/>
+         <substitution expression="\1 &lt;application-policy name = &quot;messaging&quot;&gt;
+         &lt;authentication&gt;&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
+            flag = &quot;required&quot; &gt;
+         &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
+         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;
+         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;
+         &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
+      </replaceregexp>
+
+      <!-- copy the scoped sar -->
+      <copy todir="${jboss.home}/server/${messaging.config.name}/deploy"
+            file="${relative.sar.location}/${messaging.sar.name}"/>
+
+   </target>
+
+   <target name="dump">
+      <echo message="jboss.home=${jboss.home}"/>
+      <echo message="messaging.config.name=${messaging.config.name}"/>
+      <echo message="relative.sar.location=${relative.sar.location}"/>
+   </target>
+
+
+</project>
+
