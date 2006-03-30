@@ -556,21 +556,36 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
 
       Object value = properties.get(name);
+
       if (value == null)
+      {
          throw new NumberFormatException("Message property '" + name + "' not set.");
+      }
 
       if (value instanceof Byte)
+      {
          return ((Byte) value).longValue();
+      }
       else if (value instanceof Short)
+      {
          return ((Short) value).longValue();
+      }
       else if (value instanceof Integer)
+      {
          return ((Integer) value).longValue();
+      }
       else if (value instanceof Long)
+      {
          return ((Long) value).longValue();
+      }
       else if (value instanceof String)
+      {
          return Long.parseLong((String) value);
+      }
       else
+      {
          throw new MessageFormatException("Invalid conversion");
+      }
    }
 
    public float getFloatProperty(String name) throws JMSException
@@ -661,7 +676,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       HashSet set = new HashSet();
       set.addAll(properties.keySet());
-      // http://jira.jboss.org/jira/browse/JBMESSAGING-278
       set.add("JMSXDeliveryCount");
       return Collections.enumeration(set);
    }

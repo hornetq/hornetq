@@ -369,6 +369,10 @@ public class ConnectionTest extends MessagingTestCase
          // has more than one ServerInvocationHandler instance
          ServerManagement.startServerPeer();
 
+         // We need to re-lookup the connection factory after server restart, the new connection
+         // factory points to a different thing
+         cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
          Connection connection = cf.createConnection();
          connection.close();
       }

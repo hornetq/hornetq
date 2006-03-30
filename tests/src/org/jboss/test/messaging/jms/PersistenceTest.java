@@ -74,8 +74,6 @@ public class PersistenceTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
-      
-      
 
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
@@ -124,6 +122,9 @@ public class PersistenceTest extends MessagingTestCase
       ServerManagement.stopServerPeer();
       
       ServerManagement.startServerPeer();
+
+      // Messaging server restart implies new ConnectionFactory lookup
+      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
       ServerManagement.deployQueue("Queue");
       
@@ -183,6 +184,9 @@ public class PersistenceTest extends MessagingTestCase
       ServerManagement.stopServerPeer();
 
       ServerManagement.startServerPeer();
+
+      // Messaging server restart implies new ConnectionFactory lookup
+      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
       ServerManagement.deployQueue("Queue");
       
@@ -298,6 +302,9 @@ public class PersistenceTest extends MessagingTestCase
 
       ServerManagement.startServerPeer();
 
+      // Messaging server restart implies new ConnectionFactory lookup
+      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
       ServerManagement.deployQueue("Queue");
       
       conn = cf.createConnection();
@@ -403,6 +410,9 @@ public class PersistenceTest extends MessagingTestCase
       ServerManagement.startServerPeer();
       log.debug("server started");
 
+      // Messaging server restart implies new ConnectionFactory lookup
+      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
       ServerManagement.deployTopic("YetAnotherTopic");
       log.debug("topic deployed");
 
@@ -454,6 +464,9 @@ public class PersistenceTest extends MessagingTestCase
       ServerManagement.stopServerPeer();
 
       ServerManagement.startServerPeer();
+
+      // Messaging server restart implies new ConnectionFactory lookup
+      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
       ServerManagement.deployTopic("Topic");
       
