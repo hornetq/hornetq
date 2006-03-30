@@ -29,6 +29,7 @@ import javax.jms.Session;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import java.io.StringReader;
+import java.sql.Connection;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -42,48 +43,59 @@ public class Util
 
    // Static --------------------------------------------------------
 
-   public static String guidToString(Object o)
-   {
-      if (o == null)
-      {
-         return "null";
-      }
-      if (!(o instanceof String))
-      {
-         return o.toString();
-      }
-      String s = (String)o;
-      int idx = s.lastIndexOf('-', s.lastIndexOf('-') - 1);
-      if (idx < 0)
-      {
-         return s;
-      }
-      return "...-" + s.substring(idx + 1);
-   }
+    public static String guidToString(Object o)
+    {
+       if (o == null)
+       {
+          return "null";
+       }
+       if (!(o instanceof String))
+       {
+          return o.toString();
+       }
+       String s = (String)o;
+       int idx = s.lastIndexOf('-', s.lastIndexOf('-') - 1);
+       if (idx < 0)
+       {
+          return s;
+       }
+       return "...-" + s.substring(idx + 1);
+    }
 
-   public static String acknowledgmentModeToString(int ackMode)
-   {
+    public static String acknowledgmentModeToString(int ackMode)
+    {
 
-      if (ackMode == Session.AUTO_ACKNOWLEDGE)
-      {
-         return "AUTO_ACKNOWLEDGE";
-      }
-      else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
-      {
-         return "CLIENT_ACKNOWLEDGE";
-      }
-      else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-      {
-         return "DUPS_OK_ACKNOWLEDGE";
-      }
-      else if (ackMode == Session.SESSION_TRANSACTED)
-      {
-         return "SESSION_TRANSACTED";
-      }
-      return "UNKNOWN: " + ackMode;
-   }
+       if (ackMode == Session.AUTO_ACKNOWLEDGE)
+       {
+          return "AUTO_ACKNOWLEDGE";
+       }
+       else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
+       {
+          return "CLIENT_ACKNOWLEDGE";
+       }
+       else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+       {
+          return "DUPS_OK_ACKNOWLEDGE";
+       }
+       else if (ackMode == Session.SESSION_TRANSACTED)
+       {
+          return "SESSION_TRANSACTED";
+       }
+       return "UNKNOWN: " + ackMode;
+    }
 
-   /**
+    public static String transactionIsolationToString(int level)
+    {
+       return
+          level == Connection.TRANSACTION_NONE ? "NONE" :
+             level == Connection.TRANSACTION_READ_UNCOMMITTED ? "READ_UNCOMMITTED" :
+                level == Connection.TRANSACTION_READ_COMMITTED ? "READ_COMMITTED" :
+                   level == Connection.TRANSACTION_REPEATABLE_READ ? "REPEATABLE_READ" :
+                      level == Connection.TRANSACTION_SERIALIZABLE ? "SERIALIZABLE" :
+                         "UNKNOWN";
+    }
+
+    /**
     * TODO this is a duplicate of test.XMLUtil.stringToElement().
     *      Only used by ServerPeer.createDestination(). Get rid of this when I fix that method.
     */
@@ -106,9 +118,9 @@ public class Util
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

@@ -232,7 +232,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       }
       
       if (validateParameters(fullSize, this.pageSize, this.downCacheSize))
+      {
          this.fullSize = fullSize;
+      }
    }
 
    /**
@@ -258,7 +260,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       }
       
       if (validateParameters(this.fullSize, pageSize, this.downCacheSize))
+      {
          this.pageSize = pageSize;
+      }
    }
 
    /**

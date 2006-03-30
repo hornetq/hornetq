@@ -123,18 +123,20 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       this.serverSessionPool = sessPool;
       this.maxMessages = maxMessages;
       if (this.maxMessages < 1)
+      {
          this.maxMessages = 1;
-
-      //Create a consumer - we must create with CLIENT_ACKNOWLEDGE - they get must not get acked
-      //via this session!
-      sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
-
+      }
 
       ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
 
       try
       {
          tccc.set(getClass().getClassLoader());
+
+         // Create a consumer. We must create with CLIENT_ACKNOWLEDGE, they get must not get acked
+         // via this session!
+         sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
+
          cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
       }
       finally
@@ -150,7 +152,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       internalThread = new Thread(this, "Connection Consumer for dest " + destination + " id=" + id);
       internalThread.start();
 
-      if (trace) { log.trace("New " + this); }
+      if (trace) { log.trace(this + " created"); }
    }
    
    // ConnectionConsumer implementation -----------------------------

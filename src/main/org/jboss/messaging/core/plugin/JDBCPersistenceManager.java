@@ -66,6 +66,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.messaging.util.Util;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
 import org.jboss.system.ServiceMBeanSupport;
@@ -314,16 +315,13 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          if (conn.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED)
          {
             int level = conn.getTransactionIsolation();
-            String sLevel = level == Connection.TRANSACTION_NONE ? "'Transactions not supported'" :
-                                 level == Connection.TRANSACTION_READ_UNCOMMITTED ? "READ_UNCOMMITTED" :
-                                    level == Connection.TRANSACTION_READ_COMMITTED ? "READ_COMMITTED" :
-                                       level == Connection.TRANSACTION_REPEATABLE_READ ? "REPEATABLE_READ" :
-                                          level == Connection.TRANSACTION_SERIALIZABLE ? "SERIALIZABLE" :
-                                             "UNKNOWN";            
-            log.warn("Connection transaction isolation should be READ_COMMITTED, it is currently: "
-                   + sLevel
-                   + " .Using an isolation level less strict than READ_COMMITTED can lead to data consistency problems, "
-                   + "using an isolation level more strict than READ_COMMITTED can lead to deadlock");             
+
+            String warn =
+               "\n\n" +
+               "Warning! Connection transaction isolation should be READ_COMMITTED, but it is currently " + Util.transactionIsolationToString(level) + ".\n" +
+               "         Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.\n" +
+               "         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.\n";
+            log.warn(warn);
          }
       }
       finally

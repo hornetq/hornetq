@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
  * @author droy@boostmyscore.com
  * @author Scott.Stark@jboss.org
  * @author Loren Rosen
+ *
+ * $Id$
  */
 public class RegExp 
 {

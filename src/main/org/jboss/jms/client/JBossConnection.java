@@ -132,31 +132,29 @@ public class JBossConnection implements
       delegate.close();
    }
 
-   public ConnectionConsumer createConnectionConsumer(
-         Destination destination,
-         String messageSelector,
-         ServerSessionPool sessionPool,
-         int maxMessages)
-         throws JMSException
+   public ConnectionConsumer createConnectionConsumer(Destination destination,
+                                                      String messageSelector,
+                                                      ServerSessionPool sessionPool,
+                                                      int maxMessages) throws JMSException
    {
-      return delegate.createConnectionConsumer(destination, null, messageSelector, sessionPool, maxMessages);
+      return delegate.
+         createConnectionConsumer(destination, null, messageSelector, sessionPool, maxMessages);
    }
 
-   public ConnectionConsumer createDurableConnectionConsumer(
-         Topic topic,
-         String subscriptionName,
-         String messageSelector,
-         ServerSessionPool sessionPool,
-         int maxMessages)
-         throws JMSException
+   public ConnectionConsumer createDurableConnectionConsumer(Topic topic,
+                                                             String subscriptionName,
+                                                             String messageSelector,
+                                                             ServerSessionPool sessionPool,
+                                                             int maxMessages) throws JMSException
    {      
-      //As spec. section 4.11
+      // As spec. section 4.11
       if (connectionType == TYPE_QUEUE_CONNECTION)
       {
          String msg = "Cannot create a durable connection consumer on a QueueConnection";
          throw new IllegalStateException(msg);
       }
-      return delegate.createConnectionConsumer(topic, subscriptionName, messageSelector, sessionPool, maxMessages);
+      return delegate.
+         createConnectionConsumer(topic, subscriptionName, messageSelector, sessionPool, maxMessages);
    }
    
    // QueueConnection implementation ---------------------------------

@@ -213,7 +213,12 @@ public class ServerPeer extends ServiceMBeanSupport
 
       started = true;
 
-      log.info("JMS " + this + " started");
+      long lease = getRemotingConnectionLeasePeriod();
+
+      log.info("JMS " + this + " started, " +
+         (lease < 0 ?
+            "no connection failure checking" :
+            "connection failure checking active, lease period " + lease + " ms"));
    }
 
    public synchronized void stopService() throws Exception
@@ -604,8 +609,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
-      //We explicitly associate the datatype "jms" with the java SerializationManager
-      //This is vital for performance reasons.
+      // We explicitly associate the datatype "jms" with the java SerializationManager
+      // This is vital for performance reasons.
       SerializationStreamFactory.setManagerClassName(
          "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
 
@@ -635,35 +640,40 @@ public class ServerPeer extends ServiceMBeanSupport
       
       String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
             
-      //To turn off remoting leasing need to ensure that the connection listener hasn't been set
-      //OR set the lease period to zero
-      //Client side pinging is DISABLED by default so even if set connection listener
-      //on the server side the client won't ping unless add InvokerLocator.CLIENT_LEASE is set      
-      if (remotingConnectionLeasePeriod != -1)
+      // To turn off remoting leasing need to ensure that the connection listener hasn't been set
+      // OR set the lease period to zero. Client side pinging is DISABLED by default so even if set
+      // connection listener on the server side the client won't ping unless add
+      // InvokerLocator.CLIENT_LEASE is set.
+      if (remotingConnectionLeasePeriod < 0)
+      {
+         log.debug("connection lease period " +  remotingConnectionLeasePeriod +
+                   ",  NOT activating connection checking");
+      }
+      else
       {
          mbeanServer.
             setAttribute(connectorName, new Attribute("LeasePeriod",
                   new Long(remotingConnectionLeasePeriod)));
          
-         //install the connection listener that listens for failed connections
+         // install the connection listener that listens for failed connections
          
          mbeanServer.invoke(connectorName, "addConnectionListener",
                new Object[] {connectionManager},
                new String[] {"org.jboss.remoting.ConnectionListener"});
          
-         //Enable client side pinging
+         // Enable client side pinging
          s += "&" + InvokerLocator.CLIENT_LEASE + "=true";
+
+         log.debug("connection lease period " +  remotingConnectionLeasePeriod +
+                   ",  activated connection checking");
+
       }
-      else
-      {
-         log.info("LeasePeriod == -1, not activating connection checking");
-      }            
-      
+
       locator = new InvokerLocator(s);
 
-      //FIXME Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
-      //a socket timeout on the invoker locator URI then it always makes a remote call
-      //even when in the same JVM
+      // FIXME Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
+      // a socket timeout on the invoker locator URI then it always makes a remote call
+      // even when in the same JVM.
 
       log.debug("LocatorURI: " + getLocatorURI());
    }

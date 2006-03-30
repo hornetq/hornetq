@@ -160,7 +160,9 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
       {
          throw new InvalidDestinationException("Not a JBossDestination:" + destination);
       }
+
       delegate.send((JBossDestination)destination, m, deliveryMode, priority, timeToLive);
+
    }
 
 

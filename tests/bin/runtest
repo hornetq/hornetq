@@ -12,6 +12,8 @@
 #            will attempt to connect to the debugger, which should be lisening on 'rmiserver'
 #
 #
+# $Id$
+#
 
 
 reldir=`dirname $0`

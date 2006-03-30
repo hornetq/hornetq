@@ -145,7 +145,8 @@ public class StateCreationAspect
    
    public Object handleCreateProducerDelegate(Invocation invocation) throws Throwable
    {
-      //ProducerDelegates are not created on the server
+      // ProducerDelegates are not created on the server
+      
       ProducerDelegate prod = new ClientProducerDelegate();
       
       DelegateSupport delegate = (DelegateSupport)prod;
@@ -159,6 +160,11 @@ public class StateCreationAspect
       ProducerState state = new ProducerState(sessState, prod, theDest);
       
       delegate.setState(state);
+
+      // send an arbitrary invocation into the producer delegate, this will trigger AOP stack
+      // initialization and AOP aspect class loading, using the "good" class loader, which is set
+      // now. This will save us from having to switch the thread context class loader on every send.
+      prod.getDeliveryMode();
       
       return prod;
    }
