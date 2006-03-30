@@ -42,4 +42,6 @@ public class MetaDataConstants
    public static final String CLIENT_CONNECTION_ID = "CC_ID";
    
    public static final String VERSION_NUMBER = "VERSION_NUMBER";
+   
+   public static final String JMS_CLIENT_ID = "JMS_CLIENT_ID";
 }

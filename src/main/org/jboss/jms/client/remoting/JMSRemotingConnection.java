@@ -190,7 +190,7 @@ public class JMSRemotingConnection
       
       //Enable client pinging
       //Server leasing is enabled separately on the server side
-      configuration.put(InvokerLocator.CLIENT_LEASE, "true");
+      configuration.put(Client.ENABLE_LEASE, "true");
 
       if (isMultiplex)
       {
@@ -213,7 +213,8 @@ public class JMSRemotingConnection
                       "socketTimeout=0&" +
                       "socket.check_connection=false";
 
-      client = new Client(serverLocator, getConfig());
+      Map config = getConfig();
+      client = new Client(serverLocator, config);
 
       // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
       // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation

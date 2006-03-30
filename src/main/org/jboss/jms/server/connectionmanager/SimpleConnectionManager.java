@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.server.connectionmanager;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -33,6 +35,7 @@ import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
@@ -52,38 +55,66 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    // Attributes ----------------------------------------------------
 
-   protected Map connections;
-
+   protected Map jmsClients;
+   
+   protected Map sessions;
+   
    // Constructors --------------------------------------------------
 
    public SimpleConnectionManager()
    {
-      connections = new ConcurrentReaderHashMap();
+      jmsClients = new HashMap();
+      
+      sessions = new HashMap();
    }
 
    // ConnectionManager ---------------------------------------------
 
-   public void registerConnection(String remotingClientSessionID, ServerConnectionEndpoint endpoint)
+   public synchronized void registerConnection(String jmsClientId, String remotingClientSessionID, ServerConnectionEndpoint endpoint)
    {    
-      connections.put(remotingClientSessionID, endpoint);
-
+      Map endpoints = (Map)jmsClients.get(jmsClientId);
+      
+      if (endpoints == null)
+      {
+         endpoints = new HashMap();
+         jmsClients.put(jmsClientId, endpoints);                  
+      }
+      
+      endpoints.put(remotingClientSessionID, endpoint);
+      
+      sessions.put(remotingClientSessionID, jmsClientId);
+      
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
    }
 
-   public ServerConnectionEndpoint unregisterConnection(String remotingClientSessionID)
+   public synchronized ServerConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID)
    {
-      ServerConnectionEndpoint e =
-         (ServerConnectionEndpoint)connections.remove(remotingClientSessionID);
-
-      log.debug("unregistered connection " + e + " with remoting session ID " +
-                Util.guidToString(remotingClientSessionID));
-      return e;
+      Map endpoints = (Map)jmsClients.get(jmsClientId);
+      
+      if (endpoints != null)
+      {
+         ServerConnectionEndpoint e =
+            (ServerConnectionEndpoint)endpoints.remove(remotingClientSessionID);
+         
+         log.debug("unregistered connection " + e + " with remoting session ID " +
+               Util.guidToString(remotingClientSessionID));
+         
+         if (endpoints.isEmpty())
+         {
+            jmsClients.remove(jmsClientId);
+         }
+         
+         sessions.remove(remotingClientSessionID);
+         
+         return e;
+      }
+      return null;
    }
-
-   public ServerConnectionEndpoint getConnection(String remotingClientSessionID)
+   
+   public boolean containsSession(String remotingClientSessionID)
    {
-      return (ServerConnectionEndpoint)connections.get(remotingClientSessionID);
+      return sessions.containsKey(remotingClientSessionID);
    }
 
    // ConnectionListener --------------------------------------------
@@ -92,7 +123,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
     * Be aware that ConnectionNotifier uses to call this method with null Throwables.
     * @param t - expect it to be null!
     */
-   public void handleConnectionException(Throwable t, Client client)
+   public synchronized void handleConnectionException(Throwable t, Client client)
    {  
       String remotingSessionID = client.getSessionId();
 
@@ -103,26 +134,45 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          return;
       }
       
-      ServerConnectionEndpoint ce = (ServerConnectionEndpoint)connections.remove(remotingSessionID);
-
-      if (ce == null)
-      {
-         //Not all remoting sessions correspond to jms connections so this is ok to ignore         
-         return;
-      }
+      String jmsClientId = (String)sessions.get(remotingSessionID);
       
-      log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure " +
-            "(" + (t == null ? "null Throwable" : t.getClass().toString()) + ")", t);
-
-      try
+      if (jmsClientId != null)
       {
-         ce.close();
-         log.debug("cleared up state for connection " + ce);
-      }
-      catch (JMSException e)
-      {
-         log.error("Failed to close connection", e);
-      }
+         log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure " +
+               "(" + (t == null ? "null Throwable" : t.getClass().toString()) + ")", t);
+         
+         //Remoting only provides one pinger per invoker, not per connection therefore when the pinger dies
+         //we must close ALL the connections corresponding to that jms client id
+         Map endpoints = (Map)jmsClients.get(jmsClientId);
+         
+         if (endpoints != null)
+         {
+            Iterator iter = endpoints.entrySet().iterator();
+            
+            while (iter.hasNext())
+            {
+               Map.Entry entry = (Map.Entry)iter.next();
+               
+               String sessionId = (String)entry.getKey();
+               
+               ServerConnectionEndpoint sce = (ServerConnectionEndpoint)entry.getValue();
+               
+               try
+               {
+                  sce.close();
+                  log.debug("cleared up state for connection " + sce);
+               }
+               catch (JMSException e)
+               {
+                  log.error("Failed to close connection", e);
+               }
+               
+               sessions.remove(sessionId);
+            }
+            
+            jmsClients.remove(jmsClientId);
+         }
+      } 
    }
 
    // Public --------------------------------------------------------

@@ -94,6 +94,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    private String remotingClientSessionId;
    
+   private String jmsClientId;
+   
    private String clientID;
 
    // Map<sessionID - ServerSessionEndpoint>
@@ -342,7 +344,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          temporaryDestinations.clear();
 
-         cm.unregisterConnection(remotingClientSessionId);
+         cm.unregisterConnection(jmsClientId, remotingClientSessionId);
 
          JMSDispatcher.instance.unregisterTarget(new Integer(connectionID));
          closed = true;
@@ -549,11 +551,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
    
    //IOC
-   public void setRemotingClientSessionId(String remotingClientSessionId)
+   public void setRemotingInformation(String jmsClientId, String remotingClientSessionId)
    {
       this.remotingClientSessionId = remotingClientSessionId;
       
-      this.serverPeer.getConnectionManager().registerConnection(remotingClientSessionId, this);
+      this.jmsClientId = jmsClientId;
+      
+      this.serverPeer.getConnectionManager().registerConnection(jmsClientId, remotingClientSessionId, this);
    }
    
    public void setUsingVersion(byte version)
@@ -671,6 +675,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionId;
    }
    
+   protected String getJmsClientId()
+   {
+      return jmsClientId;
+   }
 
    protected void sendMessage(JBossMessage jbm, Transaction tx) throws JMSException
    {

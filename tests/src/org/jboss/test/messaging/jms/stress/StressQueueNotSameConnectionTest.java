@@ -162,6 +162,8 @@ public class StressQueueNotSameConnectionTest extends StressTestBase
    
    public void test_Simple_TP_LT() throws Exception
    {
+      log.info("************** messags: " + NUM_PERSISTENT_MESSAGES);
+      
       Connection conn1 = cf.createConnection();
       Connection conn2 = cf.createConnection();
       conn2.start();

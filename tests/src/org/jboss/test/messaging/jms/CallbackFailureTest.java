@@ -126,7 +126,7 @@ public class CallbackFailureTest extends MessagingTestCase
       
       Thread.sleep(20000);
                  
-      assertNotNull(cm.getConnection(remotingSessionId));
+      assertTrue(cm.containsSession(remotingSessionId));
       
       //Now we send a message which should prompt delivery to the dead consumer causing
       //an exception which should cause connection cleanup
@@ -151,7 +151,7 @@ public class CallbackFailureTest extends MessagingTestCase
       
       Thread.sleep(10000);
       
-      assertNull(cm.getConnection(remotingSessionId));   
+      assertFalse(cm.containsSession(remotingSessionId));   
                
    }
    

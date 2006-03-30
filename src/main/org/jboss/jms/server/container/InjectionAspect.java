@@ -88,7 +88,17 @@ public class InjectionAspect
           throw new IllegalStateException("Can't find session id");
        }
        
-       endpoint.setRemotingClientSessionId(sessionId);
+       //Then we inject the unique id of the client
+       String jmsClientID =
+          (String)mi.getMetaData(MetaDataConstants.JMS,
+                                 MetaDataConstants.JMS_CLIENT_ID);
+       
+       if (jmsClientID == null)
+       {
+          throw new IllegalStateException("Can't find jms client id");
+       }
+       
+       endpoint.setRemotingInformation(jmsClientID, sessionId);       
        
        //Then we inject the version number from to be used
        

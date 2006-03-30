@@ -21,12 +21,16 @@
  */
 package org.jboss.jms.client.delegate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.JMSException;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.client.container.JMSClientIdentifier;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
@@ -138,11 +142,14 @@ public class ClientConnectionFactoryDelegate
          MethodInvocation mi = (MethodInvocation)invocation;
          
          Client client = connection.getInvokingClient();
-         
-         // I will need this on the server-side to create the ConsumerDelegate instance
+            
          mi.getMetaData().addMetaData(MetaDataConstants.JMS,
                                       MetaDataConstants.REMOTING_SESSION_ID,
                                       client.getSessionId(), PayloadKey.AS_IS);
+         
+         mi.getMetaData().addMetaData(MetaDataConstants.JMS,
+                                      MetaDataConstants.JMS_CLIENT_ID,
+                                      JMSClientIdentifier.instance, PayloadKey.AS_IS);
              
          try
          {            
@@ -217,9 +224,14 @@ public class ClientConnectionFactoryDelegate
    {
       if (client == null)
       {
-         InvokerLocator locator = new InvokerLocator(serverLocatorURI);
+         //we force this client to use a different invoker by adding a dummy parameter on the invoker locator
+         //we do this otherwise the pinger will get started with this client
+         //since remoting only provides one pinger per invoker 
+         InvokerLocator locator = new InvokerLocator(serverLocatorURI + "&dummy=xyz");
          
-         client = new Client(locator, ServerPeer.REMOTING_JMS_SUBSYSTEM);
+         Map config = new HashMap();
+                          
+         client = new Client(locator, ServerPeer.REMOTING_JMS_SUBSYSTEM, config);
          
          client.connect();
       }

@@ -26,7 +26,6 @@ import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-//import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;

@@ -79,7 +79,7 @@ public class ClientCrashTest extends MessagingTestCase
       // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
       // the default, whatever that is ...
 
-      localServer.getServerPeer().setRemotingConnectionLeasePeriod(20000);
+      localServer.getServerPeer().setRemotingConnectionLeasePeriod(3000);
                
       localServer.deployQueue("Queue", null);
           
@@ -115,17 +115,18 @@ public class ClientCrashTest extends MessagingTestCase
       
       ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
             
-      assertNotNull(cm.getConnection(remotingSessionId));
+      assertTrue(cm.containsSession(remotingSessionId));
       
       // Now we should have a client connection from the remote server to the local server
       
       remoteServer.exit();
+      log.info("killed remote server");
         
       // Wait for connection resources to be cleared up
-      Thread.sleep(60000);
+      Thread.sleep(15000);
            
       // See if we still have a connection with this id
-      assertNull(cm.getConnection(remotingSessionId));            
+      assertFalse(cm.containsSession(remotingSessionId));            
    }
    
    

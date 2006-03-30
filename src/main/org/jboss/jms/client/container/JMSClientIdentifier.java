@@ -19,24 +19,20 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server;
+package org.jboss.jms.client.container;
 
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.util.id.GUID;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
+ * 
+ * Unique id of a JMS client
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version 1.1
  *
- * $Id$
+ * JMSClientIdentifier.java,v 1.1 2006/03/30 19:17:53 timfox Exp
  */
-public interface ConnectionManager
+public class JMSClientIdentifier
 {
-   void registerConnection(String jmsClientId, String remotingClientSessionID, ServerConnectionEndpoint endpoint);
-
-   /**
-    * @return null if there is no such connection.
-    */
-   ServerConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID);
-   
-   boolean containsSession(String remotingClientSessionID);
+   public static String instance = new GUID().toString();
 }
