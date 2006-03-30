@@ -70,10 +70,10 @@
      <property name="messaging.version.minor" value="0"/>
      <property name="messaging.version.revision" value="0"/>
      <property name="messaging.version.incrementing" value="1"/>
-     <property name="messaging.version.tag" value="Beta1-20060328180000"/>
+     <property name="messaging.version.tag" value="Beta1"/>
      <property name="messaging.version.name" value=""/>
      <!-- This must be set to the CVS tag for any release -->
-     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_Beta1_20060328180000"/>
+     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_Beta1"/>
 
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
@@ -154,6 +154,11 @@
     <property name="build.gen-src" value="${module.output}/gen-src"/>
     <property name="build.gen" value="${module.output}/gen"/>
     <property name="build.parsers" value="${module.output}/parsers"/>
+
+     <!-- Messaging specific structure properties -->
+     <property name="build.sar" value="${module.output}/sar"/>
+     <property name="build.scoped-sar" value="${module.output}/scoped-sar"/>
+     <property name="build.dependencies" value="${module.output}/dependecies"/>
 
     <!-- Install/Release structure -->
     <property name="install.id" value="${module.name}-${module.version}"/>
@@ -372,7 +377,6 @@
       depends="_buildmagic:build-bypass-check"
       unless="build-bypass.on">
 
-      <call target="jar"/>
       <call target="sar"/>
 
       <!-- Update the build marker to allow bypassing -->
@@ -449,6 +453,8 @@
       <ant dir="./docs/examples/queue" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/topic" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/mdb" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/stateless" antfile="build.xml" inheritAll="false" target="clean"/>
+
       <ant dir="./tests" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./perf" antfile="build.xml" inheritAll="false" target="clean"/>
   </target>
@@ -482,148 +488,140 @@
       <echo message="${path.representation}"/>
    </target>
 
-   <!-- Messaging-specific tasks -->
+   <!-- ================================================================== -->
+   <!-- Messaging-specific tasks                                           -->
+   <!-- ================================================================== -->
 
    <property environment="ENV"/>
 
-   <!-- Release tasks -->
-
-   <target name="jar" depends="compile">
+   <target name="create-lib-dir">
       <mkdir dir="${build.lib}"/>
-      <jar jarfile="${build.lib}/jboss-${module.name}.jar"
-         manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}">
-            <include name="**"/>
-            <exclude name="org/jboss/jms/perf/**"/>
-         </fileset>
+   </target>
+
+   <target name="jar" depends="compile, create-lib-dir">
+      <jar jarfile="${build.lib}/jboss-${module.name}.jar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="**"/>
       </jar>
    </target>
 
-   <target name="sar-structure" depends="compile, jar">
+   <target name="client-jar" depends="compile, create-lib-dir, extract-dependencies">
+      <jar jarfile="${build.lib}/jboss-${module.name}-client.jar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.dependencies}" includes="**"/>
+         <fileset dir="${build.etc}" includes="VERSION"/>
+      </jar>
+   </target>
 
-      <mkdir dir="${build.lib}"/>
-      <mkdir dir="${build.classes}/META-INF"/>
-      <mkdir dir="${build.classes}/xmdesc"/>
+   <target name="sar" depends="compile, create-lib-dir, jar, client-jar, sar-structure">
+      <jar jarfile="${build.lib}/jboss-${module.name}.sar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.sar}" includes="**"/>
+      </jar>
+   </target>
 
+   <target name="scoped-client-jar" depends="compile, create-lib-dir, extract-dependencies">
+      <jar jarfile="${build.lib}/jboss-${module.name}-client-scoped.jar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.dependencies}" includes="**"/>
+         <fileset dir="${build.etc}" includes="VERSION"/>
+      </jar>
+   </target>
+
+   <target name="scoped-sar" depends="compile, create-lib-dir, scoped-client-jar, scoped-sar-structure, extract-dependencies">
+      <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.sar}" includes="**" excludes="${build.sar}/META-INF/jboss-service.xml"/>
+         <fileset dir="${build.scoped-sar}" includes="**"/>
+         <fileset dir="${build.dependencies}" includes="**"/>
+      </jar>
+   </target>
+
+   <target name="sar-structure">
+      <mkdir dir="${build.sar}/META-INF"/>
+      <mkdir dir="${build.sar}/xmdesc"/>
       <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
-         tofile="${build.classes}/META-INF/jboss-service.xml"/>
-
-      <copy file="${build.etc}/VERSION" toFile="${build.classes}/VERSION"/>
-
+            tofile="${build.sar}/META-INF/jboss-service.xml"/>
+      <copy file="${build.etc}/VERSION" toFile="${build.sar}/VERSION"/>
       <!-- copy all other deployment descriptors from ${source.etc}/server/default/deploy -->
-      <copy todir="${build.classes}">
+      <copy todir="${build.sar}">
          <fileset dir="${source.etc}/server/default/deploy/"
-            includes="*.xml"
-            excludes="jboss-messaging-service.xml"/>
+                  includes="*.xml"
+                  excludes="jboss-messaging-service.xml"/>
       </copy>
-
-      <copy todir="${build.classes}/xmdesc">
+      <copy todir="${build.sar}/xmdesc">
          <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
       </copy>
-      <copy todir="${build.classes}" file="${source.etc}/aop-messaging-server.xml"/>
-      <copy todir="${build.classes}" file="${source.etc}/aop-messaging-client.xml"/>
+      <copy todir="${build.sar}" file="${source.etc}/aop-messaging-server.xml"/>
+      <copy todir="${build.sar}" file="${source.etc}/aop-messaging-client.xml"/>
+      <copy todir="${build.sar}" file="${source.etc}/server/default/config/messaging-users.properties"/>
+      <copy todir="${build.sar}" file="${source.etc}/server/default/config/messaging-roles.properties"/>
    </target>
 
-   <!-- Create a non-scoped sar that relies on dependencies from default/lib -->
-   <target name="sar" depends="sar-structure">
-      <jar jarfile="${build.lib}/jboss-${module.name}.sar"
-         manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}">
-            <include name="**"/>
-            <exclude name="org/jboss/jms/perf/**"/>
-         </fileset>
-      </jar>
+   <target name="scoped-sar-structure" depends="sar-structure">
+      <mkdir dir="${build.scoped-sar}"/>
+      <antcall target="extract-dependencies">
+         <param name="scoped.dependencies.dir" value="${build.scoped-sar}"/>
+      </antcall>
+      <!-- enable scoping -->
+      <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
+            tofile="${build.scoped-sar}/META-INF/jboss-service.xml"/>
+      <replaceregexp file="${build.scoped-sar}/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <substitution expression="\2"/>
+      </replaceregexp>
    </target>
 
-   <!-- Create a scoped sar ready to be deployed under a JBoss 4 (and JBoss 5) instance -->
-   <target name="sar-scoped" depends="sar-structure">
+   <target name="extract-dependencies">
 
-      <fail message="Fix the build script to correctly define 'current.jboss.remoting.lib'!"
-         unless="current.jboss.remoting.lib"/>
+      <fail message="Fix the build script to correctly define 'current.jboss.remoting.lib'!" unless="current.jboss.remoting.lib"/>
+      <fail message="Fix the build script to correctly define 'current.jboss.serialization.lib'!" unless="current.jboss.serialization.lib"/>
 
-      <!-- copy dependencies that are not available, are obsolete or need to be scoped in JBoss 4 -->
+      <mkdir dir="${build.dependencies}"/>
 
-      <copy file="${jboss.aop.lib}/jboss-aop.jar" todir="${build.classes}"/>
-      <copy file="${jboss.aspects.lib}/jboss-aspect-library.jar" todir="${build.classes}"/>
-      <copy file="${current.jboss.remoting.lib}/jboss-remoting.jar" todir="${build.classes}"/>
-      <copy file="${current.jboss.serialization.lib}/jboss-serialization.jar" todir="${build.classes}"/>
-      <copy file="${javassist.javassist.lib}/javassist.jar" todir="${build.classes}"/>
-      <copy file="${trove.trove.lib}/trove.jar" todir="${build.classes}"/>
+      <unjar dest="${build.dependencies}" src="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
+      <unjar dest="${build.dependencies}" src="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
+      <unjar dest="${build.dependencies}" src="${jboss.aop.lib}/jboss-aop.jar"/>
+      <unjar dest="${build.dependencies}" src="${jboss.aspects.lib}/jboss-aspect-library.jar"/>
+      <unjar dest="${build.dependencies}" src="${javassist.javassist.lib}/javassist.jar"/>
+      <unjar dest="${build.dependencies}" src="${trove.trove.lib}/trove.jar"/>
 
-      <!-- we need org/jboss/util/collection.SoftValueHashMap 
-       which was moved http://jira.jboss.org/jira/browse/JBMESSAGING-281
+      <!-- we need org/jboss/util/collection.SoftValueHashMap
+           which was moved http://jira.jboss.org/jira/browse/JBMESSAGING-281
       -->
-      <mkdir dir="${build.classes}/tmp"/>
-      <unjar src="${jboss.common.lib}/jboss-common.jar"
-         dest="${build.classes}/tmp">
+      <unjar dest="${build.dependencies}" src="${jboss.common.lib}/jboss-common.jar" >
          <patternset>
             <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
          </patternset>
       </unjar>
-      <jar jarfile="${build.classes}/jboss-common-SoftValueHashMap.jar">
-         <fileset dir="${build.classes}/tmp">
-            <include name="**"/>
-         </fileset>
-      </jar>
-      <delete dir="${build.classes}/tmp"/>
-                      
-      <mkdir dir="${build.classes}/tmp"/>
+
       <!-- I need InvocationMarshaller both on server and client side, and versions prior to
            JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
            org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
            like javaURLContextFactory, which will mess up JNDI and other things.
       -->
-      <unjar src="${jboss.server.lib}/jboss.jar"
-         dest="${build.classes}/tmp">
+      <unjar dest="${build.dependencies}" src="${jboss.server.lib}/jboss.jar">
          <patternset>
             <include name="org/jboss/invocation/unified/**"/>
          </patternset>
       </unjar>
-      <jar jarfile="${build.classes}/jboss-unified-invoker.jar">
-         <fileset dir="${build.classes}/tmp">
-            <include name="**"/>
-         </fileset>
-      </jar>
-      <delete>
-         <fileset dir="${build.classes}/tmp" includes="**"/>
-      </delete>
-      
+
       <!-- I also need org.jboss.util.stream.* -->
-      <unjar src="${jboss.common.lib}/jboss-common.jar"
-         dest="${build.classes}/tmp">
+      <unjar dest="${build.dependencies}" src="${jboss.common.lib}/jboss-common.jar">
          <patternset>
             <include name="org/jboss/util/stream/**"/>
          </patternset>
       </unjar>
-      <jar jarfile="${build.classes}/jboss-common-stream.jar">
-         <fileset dir="${build.classes}/tmp">
-            <include name="**"/>
-         </fileset>
-      </jar>
-      <delete dir="${build.classes}/tmp"/>
-
-      <copy todir="${build.classes}" file="${source.etc}/server/default/config/users.properties"/>
-      <copy todir="${build.classes}" file="${source.etc}/server/default/config/roles.properties"/>
-
-      <!-- enable scoping -->
-      <replaceregexp file="${build.classes}/META-INF/jboss-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
-
-      <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar"
-         manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}">
-            <include name="**"/>
-         </fileset>
-      </jar>
    </target>
 
+   <!-- ================================================================== -->
+   <!-- Release tasks                                                      -->
+   <!-- ================================================================== -->
+
    <target name="release-structure" depends="init">
-      <property name="release.output"
-         value="${module.output}/release/JBossMessaging-${module.version}"/>
+      <property name="release.output" value="${module.output}/release/jboss-messaging-${module.version}"/>
       <mkdir dir="${release.output}/src"/>
       <mkdir dir="${release.output}/examples"/>
+      <mkdir dir="${release.output}/tools"/>
    </target>
 
    <target name="source" depends="release-structure">
@@ -635,40 +633,46 @@
    </target>
 
    <target name="source-zip" depends="source">
-      <zip destfile="${release.output}/JBossMessaging-${module.version}-src.zip"
+      <zip destfile="${release.output}/jboss-messaging-${module.version}-src.zip"
          basedir="${release.output}/src"/>
    </target>
 
+   <!-- Note: This target must be ran after the smoke test -->
    <target name="examples" depends="release-structure">
-
-      <!-- Make sure examples compile -->
-      <ant dir="./docs/examples/queue" target="compile"/>
-      <ant dir="./docs/examples/queue" target="clean"/>
-
       <copy todir="${release.output}/examples">
          <fileset dir="./docs/examples">
-            <exclude name="mdb"/>
+            <exclude name="programatic-deployment"/>
+            <exclude name="**/do-not-distribute*"/>
          </fileset>
       </copy>
    </target>
 
+   <target name="zip-test-results" depends="release-structure">
+      <copy todir="./tests/output/jboss-messaging-test-reports-${module.version}">
+         <fileset dir="./tests/output/reports">
+            <include name="**"/>
+         </fileset>
+      </copy>
+      <zip basedir="./tests/output/"
+           destfile="${release.output}/jboss-messaging-test-reports-${module.version}.zip"
+           includes="jboss-messaging-test-reports-${module.version}/**"/>
+   </target>
+
    <target name="release-bundle"
-      depends="release-structure, sar-scoped, source, source-zip, examples">
+      depends="release-structure, scoped-sar, source, source-zip, examples">
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
 
-      <zip destfile="${build.lib}/JBossMessaging-${module.version}.zip"
+      <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
          basedir="${module.output}/release"/>
-      <echo message="Release bundle JBossMessaging-${module.version}.zip done"/>
+      <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
    </target>
 
-   <target name="deployscoped" depends="sar-scoped">
+   <target name="deployscoped" depends="scoped-sar">
          <copy file="${build.lib}/jboss-${module.name}-scoped.sar"
             todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
    </target>
-
-   <!-- CTS deployment/undeployment -->
 
    <target name="deploydefault" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
@@ -679,30 +683,26 @@
       <delete file="${ENV.JBOSS_HOME}/server/default/deploy/jboss-${module.name}.sar"/>
    </target>
 
+   <!-- ================================================================== -->
+   <!-- TCK tasks                                                          -->
+   <!-- ================================================================== -->
+
    <target name="cts-deploy" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
          todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
    </target>
 
-   <target name="undeploy" depends="init">
+   <target name="cts-undeploy" depends="init">
       <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
    </target>
+
+   <!-- ================================================================== -->
+   <!-- smoke test                                                         -->
+   <!-- ================================================================== -->
 
    <target name="smoke">
       <ant dir="tests/smoke" antfile="build.xml" target="smoke-test" inheritAll="false"/>
    </target>
-
-   <target name="zip-test-results" depends="init, configure">
-      <copy todir="./tests/output/jboss-messaging-test-reports-${module.version}">
-         <fileset dir="./tests/output/reports">
-            <include name="**"/>
-         </fileset>
-      </copy>
-      <zip basedir="./tests/output/"
-           destfile="./tests/output/jboss-messaging-test-reports-${module.version}.zip"
-           includes="jboss-messaging-test-reports-${module.version}/**"/>
-   </target>
-
 
 </project>
 
