@@ -38,7 +38,7 @@ areas:<br>
 internals are based on an asynchronous channel
 architecture, which reduces the number of synchronization bottlenecks
 and maximize the throughput of the system. The threading and the
-persistence mechansim have been completely re-thought and
+persistence mechanism have been completely re-thought and
 re-implemented. <br>
   </li>
   <li>Better high availability/load balancing features. JBossMQ is
@@ -72,13 +72,23 @@ directories:<br>
 - the deployable JBoss service archive that contains JBoss Messaging
 and its dependencies. For instructions on how to deploy the service, go
 to the "Installation" section.</li>
+  <li><span style="font-family: monospace;">jboss-messaging-client-scoped.sar</span>
+- the client-side library that need to be in the classpath of the
+client that opens a remote connection to the Messaging server. <br>
+  </li>
   <li><span style="font-family: monospace;">examples</span><span
  style="font-family: times new roman,times,serif;"> </span>- a
-collection of simple JMS examples that should run out of the box and
-help you validate the installation.</li>
-  <li><small><span style="font-family: courier new,courier,monospace;">tools<span
+collection of examples that should run out of the box and
+help you validate the installation. Detailed instructions are provided
+with each example, which range from very simple JMS queue and topic
+examples to relatively sophisticated use cases in which EJBs and JCA
+JMS ConnectionFactories are involved.<br>
+  </li>
+  <li><small><span style="font-family: courier new,courier,monospace;">util<span
  style="font-family: times new roman,times,serif;"> </span></span></small>-
-a collection of scripts and ant configuration files that will help you
+a collection of scripts and <small><span
+ style="font-family: courier new,courier,monospace;">ant </span></small>configuration
+files that will help you
 with installation, JBossMQ replacement and various other tasks.<br>
   </li>
   <li><span style="font-family: monospace;">src</span> - the expanded
@@ -86,7 +96,7 @@ JBoss Messaging source code. Note that JBoss Messaging cannot be built
 using exclusively this source snapshot, which is provided here for
 reference only. If you want to build JBoss Messaging from source,
 follow
-the instructions from the "Building JBoss Messaging from sources"
+the instructions from the "Building JBoss Messaging from Sources"
 section.<br>
   </li>
   <li><span style="font-family: monospace;">jboss-messaging-1.0.0.Beta1-src.zip</span>
@@ -96,13 +106,14 @@ debugger.<br>
   </li>
   <li><small><span style="font-family: courier new,courier,monospace;">jboss-messaging-test-results-1.0.0.Beta1.zip</span></small>
 - the results of the release functional testuite run, in XML, text and
-HTML format.<br>
+HTML format.</li>
+  <li>This <span style="font-family: monospace;">README </span>file.<br>
   </li>
 </ul>
 <br>
 <h2>Building JBoss Messaging from source</h2>
 Building JBoss Messaging from source is optional. You don't need to do
-it if you only want to test the binary distribution. <br>
+it if you only want to use the binary distribution. <br>
 <br>
 In order to build this version of JBoss Messaging from source, you will
 need to check out the whole JBoss AS source tree from the anonymous
@@ -111,7 +122,7 @@ JBoss CVS. Instructions on how to do this are available at <a
 The essential steps of the procedure are provided below:<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cvs
-co -r JBossMessaging_1_0_0_alpha_PR2_1 jboss-head</span><br
+co -r JBossMessaging_1_0_0_Beta1 jboss-head</span><br
  style="font-family: monospace;">
 <span style="font-family: monospace;">cd jboss-head</span><br
  style="font-family: monospace;">
@@ -119,14 +130,17 @@ co -r JBossMessaging_1_0_0_alpha_PR2_1 jboss-head</span><br
  style="font-family: monospace;">
 <span style="font-family: monospace;">cd jms</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">./build sar-scoped</span><br>
+<span style="font-family: monospace;">./build scoped-sar</span><br>
 </div>
 <br>
 This will generate a <span style="font-family: monospace;">jboss-messaging-scoped.sar</span>
-service archive in <span style="font-family: monospace;">output/lib</span>.<br>
+service archive and its corresponding <span
+ style="font-family: monospace;">jboss-messaging-client-scoped.jar</span>
+in <span style="font-family: monospace;">output/lib</span>.<br>
 <br>
 <br>
-<h2>JBoss 4.x Messaging Installation</h2>
+<h2>Messaging Installation with JBoss 4.x<br>
+</h2>
 <table style="width: 90%; text-align: left; margin-left: 40px;"
  border="0" cellpadding="20" cellspacing="2">
   <tbody>
@@ -140,21 +154,54 @@ service archive in <span style="font-family: monospace;">output/lib</span>.<br>
 1.0.0 Beta1 installation conflicts with the existing JBossMQ
 instance that comes part of the standard JBoss 4.x distribution. In
 order to install JBoss Messaging you will need to create a new JBoss
-configuration, by following the procedure described below.<br>
-      <br>
-You can also use the <small><span
- style="font-family: courier new,courier,monospace;">create-messaging-config.xml</span></small>
-ant script provided with the release.</span> </div>
-      <span style="font-family: monospace;"></span><span
- style="font-family: monospace;"><br>
-      <br style="font-family: monospace;">
+configuration, following one of the alternative procedures described
+below.<br>
+      </span></div>
+      <span style="font-family: monospace;"><br
+ style="font-family: monospace;">
       </span><span style="color: rgb(255, 0, 0);"></span></td>
     </tr>
   </tbody>
 </table>
 <br>
 <br>
-<h3>JBoss 4.x Messaging Installation - Manual Procedure</h3>
+<br>
+<h3>1. JBoss 4.x Messaging Installation - Automated Procedure</h3>
+<span style="font-weight: bold;">1.1</span>. Set up the JBOSS_HOME
+environment variable to point towards the JBoss 4.x installation you
+want to use JBoss Messaging with.<br>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">1.2</span> Run the installation
+script, available in the <small><span
+ style="font-family: courier new,courier,monospace;">util </span></small>directory
+of the release bundle. Note that you need <small><span
+ style="font-family: courier new,courier,monospace;">ant </span></small>installed
+and present in your path.<br>
+<br>
+<br>
+<table style="width: 90%; text-align: left; margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 255);"><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"> <span style="font-family: monospace;"><br>
+&nbsp;cd util<br>
+&nbsp;ant -f create-messaging-config.xml<br>
+      <br style="font-family: monospace;">
+      </span> </span><span style="color: rgb(255, 0, 0);"></span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The installation script will create a <small><span
+ style="font-family: courier new,courier,monospace;">$JBOSS_HOME/server/messaging</span></small>
+configuration.<br>
+<br>
+<br>
+<br>
+<h3>2. JBoss 4.x Messaging Installation - Alternative Manual Procedure</h3>
 <span style="font-weight: bold;">1.</span> Create a new JBoss
 configuration named <span style="font-family: monospace;">messaging. </span>
 <h1><span style="font-family: monospace;"></span></h1>
@@ -222,17 +269,9 @@ the <span style="font-family: monospace;">messaging </span>configuration.<br>
   </tbody>
 </table>
 <span style="font-weight: bold;"><br>
-4. </span>Configure the <span style="font-family: monospace;">"other"</span>
-security domain to provide an unauthenticated user identity. For this,
-modify <span style="font-family: monospace;">$JBOSS_HOME/server/messaging/conf/login-config.xml
-</span>security configuration file and add <span
- style="font-family: monospace;">&lt;module-option
-name="unauthenticatedIdentity"&gt;guest&lt;/module-option&gt; </span>to
-the configuration of the&nbsp; <span style="font-family: monospace;">UsersRolesLoginModule
-</span>that is part of the JAAS stack of the <span
- style="font-family: monospace;">"other"</span> security domain. The
-correct configuration of the <span style="font-family: monospace;">"other"</span>
-security domain should be similar to:<br>
+4. </span>Add a <span style="font-family: monospace;">"messaging"</span>
+security domain to the <span style="font-family: monospace;">$JBOSS_HOME/server/messaging/conf/login-config.xml
+</span>security configuration file:<br>
 <br>
 <br>
 <table style="width: 90%; text-align: left; margin-left: 40px;"
@@ -244,7 +283,7 @@ security domain should be similar to:<br>
  style="font-family: monospace;"><br>
 &nbsp;.......<br>
       <br>
-&nbsp;&lt;application-policy name = "other"&gt;<br>
+&nbsp;&lt;application-policy name = "messaging"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;authentication&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;login-module
 code = "org.jboss.security.auth.spi.UsersRolesLoginModule" flag =
@@ -252,6 +291,13 @@ code = "org.jboss.security.auth.spi.UsersRolesLoginModule" flag =
 &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 &lt;module-option
 name="unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;module-option
+name="usersProperties"&gt;messaging-users.properties&lt;/module-option&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &lt;module-option
+name="rolesProperties"&gt;messaging-roles.properties&lt;/module-option&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;/login-module&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/authentication&gt;<br>
@@ -265,7 +311,7 @@ name="unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;<br>
 </table>
 <br>
 <br>
-<span style="font-weight: bold;">5.</span> Copy the PR2.1 service
+<span style="font-weight: bold;">5.</span> Copy the Beta1 service
 archive that comes as part of the
 current Messaging distribution to the <span
  style="font-family: monospace;">messaging </span>configuration's
@@ -374,19 +420,6 @@ readme files and the source code are available under the <span
  style="font-family: monospace;">examples</span> directory.<br>
 <br>
 <br>
-<h3>JBoss 4.x Messaging Installation - Automated Procedure</h3>
-<h2>Limitations</h2>
-This release is still an alpha and a preview release. I<span
- class="postbody">t passed 100% of the Sun
-Microsystem's CTS relevant tests. However it cannot be use in
-production yet. Some of the known major
-limitations are:</span><br>
-<ul>
-  <li>Support for high availability and load balancing is not complete.</li>
-  <li>No reliable performance data</li>
-</ul>
-<h2><br>
-</h2>
 <h2>JBoss Messaging Links</h2>
 JBoss Messaging home page: <a
  href="http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging">http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging</a><br>
