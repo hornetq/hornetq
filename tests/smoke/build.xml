@@ -146,6 +146,12 @@
       </java>
    </target>
 
+   <!-- ========================================================================  -->
+   <!--                                                                           -->
+   <!--                       Add examples/tests below:                           -->
+   <!--                                                                           -->
+   <!-- ========================================================================  -->
+
    <target name="queue-example">
       <ant dir="../../docs/examples/queue" antfile="build.xml" inheritAll="false">
          <property name="example.queue.name" value="SmokeTestQueue"/>
@@ -246,10 +252,18 @@
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
       <antcall target="ping-topic"/>
 
+      <!-- ====================================================  -->
+      <!--                                                       -->
+      <!--  List your example here:                              -->
+      <!--                                                       -->
+      <!-- ====================================================  -->
+
       <antcall target="queue-example"/>
       <antcall target="topic-example"/>
       <antcall target="mdb-example"/>
       <antcall target="stateless-example"/>
+
+
 
       <antcall target="stop-jboss"/>
       <antcall target="sleep"><param name="sleep.interval" value="20"/></antcall>
@@ -282,6 +296,12 @@
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
       <antcall target="ping-topic"/>
 
+      <!-- ====================================================  -->
+      <!--                                                       -->
+      <!--  List your example here:                              -->
+      <!--                                                       -->
+      <!-- ====================================================  -->
+
       <antcall target="queue-example"/>
       <antcall target="topic-example"/>
       <antcall target="mdb-example"/>
@@ -294,7 +314,7 @@
    </target>
 
    <target name="smoke">
-      <!-- <antcall target="smoke4" inheritAll="false"/> -->
+      <antcall target="smoke4" inheritAll="false"/>
       <antcall target="smoke5" inheritAll="false"/>
    </target>
 

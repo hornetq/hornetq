@@ -637,16 +637,6 @@
          basedir="${release.output}/src"/>
    </target>
 
-   <!-- Note: This target must be ran after the smoke test -->
-   <target name="examples" depends="release-structure">
-      <copy todir="${release.output}/examples">
-         <fileset dir="./docs/examples">
-            <exclude name="programatic-deployment"/>
-            <exclude name="**/do-not-distribute*"/>
-         </fileset>
-      </copy>
-   </target>
-
    <target name="zip-test-results" depends="release-structure">
       <copy todir="./tests/output/jboss-messaging-test-reports-${module.version}">
          <fileset dir="./tests/output/reports">
@@ -658,25 +648,34 @@
            includes="jboss-messaging-test-reports-${module.version}/**"/>
    </target>
 
-   <target name="release-bundle"
-      depends="release-structure, scoped-sar, source, source-zip, examples">
+   <!-- Note: This target must be ran after the smoke test -->
+   <target name="examples" depends="release-structure">
+      <copy todir="${release.output}/examples">
+         <fileset dir="./docs/examples">
+            <exclude name="programmatic-deployment"/>
+            <exclude name="**/do-not-distribute*"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="release-bundle" depends="release-structure, scoped-sar, source, source-zip, examples">
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
 
       <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
-         basedir="${module.output}/release"/>
+           basedir="${module.output}/release"/>
       <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
    </target>
 
    <target name="deployscoped" depends="scoped-sar">
-         <copy file="${build.lib}/jboss-${module.name}-scoped.sar"
+      <copy file="${build.lib}/jboss-${module.name}-scoped.sar"
             todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
    </target>
 
    <target name="deploydefault" depends="sar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
-         todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
+            todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
    </target>
 
    <target name="undeploydefault" depends="init">
