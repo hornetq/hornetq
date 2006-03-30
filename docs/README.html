@@ -7,8 +7,8 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.0.0alpha-PR2.1 Release Notes</h1>
-Dec 3, 2005<br>
+JBoss Messaging 1.0.0 Beta1 Release Notes</h1>
+Mar 28, 2005<br>
 <br>
 $Revision$<br>
 <br>
@@ -16,15 +16,15 @@ $Revision$<br>
 </span>
 <div style="text-align: left;"><span style="font-weight: bold;">Note</span>:
 The current JBoss Messaging distribution is a <span
- style="font-style: italic;">preview </span><span
- style="font-style: italic;">alpha </span><span
- style="font-style: italic;">release. </span>We strongly advise
+ style="font-style: italic;"></span><span style="font-style: italic;">beta
+</span><span style="font-style: italic;">release. </span>We advise
 against using it in a production environment.<br>
 <br>
 </div>
 <br>
 <h2>Overview</h2>
-This notes document an intermediate preview release of JBoss Messaging.
+This notes document an intermediate beta preview release of JBoss
+Messaging.
 In
 its final production release, JBoss
 Messaging will be a JMS 1.1 compliant JMS provider, based on a
@@ -37,13 +37,17 @@ areas:<br>
   <li>&nbsp;Increased performance under high load. The JBoss Messaging
 internals are based on an asynchronous channel
 architecture, which reduces the number of synchronization bottlenecks
-and maximize the throughput of the system.</li>
+and maximize the throughput of the system. The threading and the
+persistence mechansim have been completely re-thought and
+re-implemented. <br>
+  </li>
   <li>Better high availability/load balancing features. JBossMQ is
 essentially a singleton (hub and spoke server architecture).
 Some HA features have been later bolted on it, but it lacks in-memory
 replication of NON_PERSISTENT messages, distributed/replicated
 destinations and transparent fail-over. JBoss Messaging will add these
-features.<br>
+features. However, production quality clustering will be available only
+in the Messaging 1.2 release.<br>
   </li>
   <li>Better modular architecture. There is a clear distinction between
 the reliable distributed messaging
@@ -56,14 +60,9 @@ thicker
 clients and serverless JMS. <br>
   </li>
 </ul>
-<span style="font-style: italic;">The current release passes all
-relevant JMS TCK tests. However, it still has a series a limitations
-that prevents it from being used in a production envrionment. For a
-highlight of the current
-release limitations, go to the "Limitations" section.</span><br>
-<br>
+<span style="font-style: italic;"></span><br>
 The current release has been tested with
-JBoss 4.x series and JBoss 5.0.0 alpha.<br>
+JBoss 4.x series and JBoss 5.0.0 Alpha.<br>
 <br>
 <h2>Contents</h2>
 The JBoss Messaging release bundle includes the following files and
@@ -72,7 +71,15 @@ directories:<br>
   <li><span style="font-family: monospace;">jboss-messaging-scoped.sar</span>
 - the deployable JBoss service archive that contains JBoss Messaging
 and its dependencies. For instructions on how to deploy the service, go
-to the "Installation" section.<br>
+to the "Installation" section.</li>
+  <li><span style="font-family: monospace;">examples</span><span
+ style="font-family: times new roman,times,serif;"> </span>- a
+collection of simple JMS examples that should run out of the box and
+help you validate the installation.</li>
+  <li><small><span style="font-family: courier new,courier,monospace;">tools<span
+ style="font-family: times new roman,times,serif;"> </span></span></small>-
+a collection of scripts and ant configuration files that will help you
+with installation, JBossMQ replacement and various other tasks.<br>
   </li>
   <li><span style="font-family: monospace;">src</span> - the expanded
 JBoss Messaging source code. Note that JBoss Messaging cannot be built
@@ -82,13 +89,14 @@ follow
 the instructions from the "Building JBoss Messaging from sources"
 section.<br>
   </li>
-  <li><span style="font-family: monospace;">JBossMessaging-1.0.0alpha-pr2.1-src.zip</span>
+  <li><span style="font-family: monospace;">jboss-messaging-1.0.0.Beta1-src.zip</span>
 - the zipped <span style="font-family: monospace;">src</span>
-directory.<br>
+directory. The file can be directly installed into and use with a
+debugger.<br>
   </li>
-  <li><span style="font-family: monospace;">examples </span>- a
-collection of simple JMS examples that should run out of the box and
-help you validate the installation.<br>
+  <li><small><span style="font-family: courier new,courier,monospace;">jboss-messaging-test-results-1.0.0.Beta1.zip</span></small>
+- the results of the release functional testuite run, in XML, text and
+HTML format.<br>
   </li>
 </ul>
 <br>
@@ -129,11 +137,14 @@ service archive in <span style="font-family: monospace;">output/lib</span>.<br>
       <div style="text-align: justify;"><span
  style="font-family: monospace;"></span><span
  style="color: rgb(255, 0, 0); font-weight: bold;">A JBoss Messaging
-1.0.0 alpha PR2.1 installation conflicts with the existing JBossMQ
+1.0.0 Beta1 installation conflicts with the existing JBossMQ
 instance that comes part of the standard JBoss 4.x distribution. In
 order to install JBoss Messaging you will need to create a new JBoss
-configuration, by following the procedure described below.</span><br>
-      </div>
+configuration, by following the procedure described below.<br>
+      <br>
+You can also use the <small><span
+ style="font-family: courier new,courier,monospace;">create-messaging-config.xml</span></small>
+ant script provided with the release.</span> </div>
       <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"><br>
       <br style="font-family: monospace;">
@@ -142,6 +153,8 @@ configuration, by following the procedure described below.</span><br>
   </tbody>
 </table>
 <br>
+<br>
+<h3>JBoss 4.x Messaging Installation - Manual Procedure</h3>
 <span style="font-weight: bold;">1.</span> Create a new JBoss
 configuration named <span style="font-family: monospace;">messaging. </span>
 <h1><span style="font-family: monospace;"></span></h1>
@@ -360,6 +373,8 @@ contains instructions on how to run it. The
 readme files and the source code are available under the <span
  style="font-family: monospace;">examples</span> directory.<br>
 <br>
+<br>
+<h3>JBoss 4.x Messaging Installation - Automated Procedure</h3>
 <h2>Limitations</h2>
 This release is still an alpha and a preview release. I<span
  class="postbody">t passed 100% of the Sun

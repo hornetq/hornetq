@@ -12,10 +12,17 @@
 
    <property environment="ENV"/>
 
+   <!--
+        If you don't find this file in the current directory, it's ok, it's intended to provide
+        defaults for in-workarea testing and it's not meant for distribution with the example bundle.
+   -->
+   <property file="do-not-distribute.properties"/>
+
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
-   <property name="messaging.deployment.archive.name" value="jboss-messaging-scoped.sar"/>
+   <property name="messaging.client.jar.path" value="../.."/>
+   <property name="messaging.client.jar.name" value="jboss-messaging-client-scoped.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
-   <property name="jboss.configuration.name" value="default"/>
+   <property name="jboss.configuration.name" value="messaging"/>
    <property name="example.queue.name" value="testQueue"/>
 
    <path id="common.compilation.classpath">
@@ -33,8 +40,7 @@
       <pathelement path="../common/output"/>
       <pathelement path="./output"/>
       <pathelement path="./output/classes"/>
-      <fileset dir="./output" includes="*.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"/>
+      <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <fileset dir="${jboss.home}/client" includes="*.jar"/>
       <fileset file="${jboss.home}/server/default/lib/javax.servlet.jar"/>
       <fileset file="${jboss.home}/lib/commons-httpclient.jar"/>
@@ -47,10 +53,9 @@
 
    <target name="sanity-check" depends="identify">
       <fail message="The example needs JBOSS_HOME to run!" unless="ENV.JBOSS_HOME"/>
-      <available file="${jboss.home}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
-         property="sar.present"/>
-      <fail message="Could not find ${messaging.deployment.archive.name} in ${jboss.home}/server/${jboss.configuration.name}/deploy"
-         unless="sar.present"/>
+      <available property="client.jar.present" file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+      <fail message="Could not find client jar ${messaging.client.jar.path}/${messaging.client.jar.name}"
+            unless="client.jar.present"/>
    </target>
 
    <target name="init" depends="sanity-check">
@@ -78,36 +83,19 @@
          </filterset>
       </copy>
       <jar destfile="./output/lib/mdb-example.jar"
-         basedir="./output/classes"
-         includes="META-INF/**,org/jboss/example/**/MDBExample.class"/>
+           basedir="./output/classes"
+           includes="META-INF/**,org/jboss/example/**/MDBExample.class"/>
    </target>
 
    <target name="deploy" depends="jar">
       <copy file="./output/lib/mdb-example.jar"
-         todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
+            todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
    </target>
 
    <target name="run" depends="deploy">
-
-      <!-- extract jboss-remoting.jar, jboss.jar from jboss messaging sar and store it locally -->
-      <unjar src="${jboss.home}/server/${jboss.configuration.name}/deploy/${messaging.deployment.archive.name}"
-         dest="./output">
-         <patternset>
-            <include name="jboss-remoting.jar"/>
-            <include name="jboss-unified-invoker.jar"/>
-            <include name="jboss-common-stream.jar"/>
-            <include name="jboss-serialization.jar"/>
-            <include name="jboss-aop.jar"/>
-            <include name="javassist.jar"/>
-            <include name="trove.jar"/>
-         </patternset>
-      </unjar>
-
       <antcall target="send"/>
-
    </target>
-
 
    <target name="send">
       <!-- MDBExample expects to find the name of the queue to connect to as value of the
@@ -124,7 +112,7 @@
 
    <target name="undeploy">
       <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/mdb-example.jar"
-         quiet="true"/>
+              quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">

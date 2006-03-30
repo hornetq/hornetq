@@ -9,7 +9,6 @@ package org.jboss.example.jms.mdb;
 import javax.jms.MessageListener;
 import javax.jms.Message;
 import javax.jms.TextMessage;
-import javax.jms.JMSException;
 import javax.jms.Destination;
 import javax.jms.Session;
 import javax.jms.Connection;
@@ -40,6 +39,7 @@ public class MDBExample implements MessageDrivenBean, MessageListener
          InitialContext ic = new InitialContext();
 
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
+
          connection = cf.createConnection();
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
