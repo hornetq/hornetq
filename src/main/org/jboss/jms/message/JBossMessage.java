@@ -550,6 +550,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public long getLongProperty(String name) throws JMSException
    {
+      if ("JMSXDeliveryCount".equals(name))
+      {
+         return (long)deliveryCount;
+      }
+
       Object value = properties.get(name);
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
@@ -600,6 +605,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public String getStringProperty(String name) throws JMSException
    {
+      if ("JMSXDeliveryCount".equals(name))
+      {
+         return String.valueOf(deliveryCount);
+      }
+
       Object value = properties.get(name);
       if (value == null)
          return null;
