@@ -95,7 +95,7 @@ public class ServiceContainer
    // Static --------------------------------------------------------
    
    //FIXME - Configure this properly
-   private static final boolean hsql = false;
+   private static final boolean hsql = true;
 
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
    public static ObjectName CLASS_LOADER_OBJECT_NAME;

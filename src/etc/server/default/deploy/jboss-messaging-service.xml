@@ -82,15 +82,15 @@
          <arg type="int" value="40" />
       </constructor>
    </mbean>
-<!--
+
    <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
-   -->
+   
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
            the DataSource JNDI name in order to actually get a reference to it. Fix this.
       -->   
-   <!--
+   
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
@@ -98,15 +98,14 @@
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>
-      -->
-   <!-- MYSQL pm config -->
+      
+   <!-- MYSQL pm config 
       
       FIXME - This is temporary so servicecontainer can be used with mysql
       
    <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
       name="jboss.messaging:service=PersistenceManager"
-      xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
-      
+      xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">      
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
@@ -158,7 +157,7 @@ DELETE_ALL_COUNTERS=DELETE FROM JMS_COUNTER
       <attribute name="MaxParams">500</attribute>
    </mbean>
       
-      
+      -->
 
    <mbean code="org.jboss.messaging.core.plugin.SimpleMessageStore"
       name="jboss.messaging:service=MessageStore"
