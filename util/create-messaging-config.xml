@@ -76,7 +76,7 @@
 
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
       <unjar src="${relative.sar.location}/${messaging.sar.name}"
-         dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging">
+         dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging.sar">
       </unjar>
 
 
