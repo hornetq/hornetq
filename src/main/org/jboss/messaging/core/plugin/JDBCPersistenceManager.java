@@ -2419,7 +2419,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       {
          conn = ds.getConnection();
          
-         log.info("Removing all non-reliable message references");
+         log.debug("Removing all non-reliable message references");
          
          ps = conn.prepareStatement(removeAllNonReliableRefs);
          
@@ -2449,7 +2449,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          ps = null;
          
-         log.info("Updating all reliable references to not loaded");
+         log.debug("Updating all reliable references to not loaded");
                   
          ps = conn.prepareStatement(updateAllReliableRefs);
          
