@@ -8,21 +8,10 @@
 	
   <section id="examples.queue">
     <title>Sending messages to a queue</title>
-    <para>
-    </para>
-		
-    <programlisting>
-      cd $JBOSS_HOME/server
-      cp -r default messaging
-    </programlisting>
 
-  </section>
-  
-  
-  <section id="examples.topic">
-    <title>Sending messages to a topic</title>
-    <para>In this example, a standalone Java client sends a text-based JMS message to a queue and a single receiver pulls the message off the queue.
-    </para>
+	 <para>
+	 Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file	
+	</para>
 		
     <programlisting>
 public class QueueExample extends ExampleSupport
@@ -113,33 +102,282 @@ public class QueueExample extends ExampleSupport
 }
     </programlisting>
 
-    <para>The client may be run using the following command line:
+  </section>
+  
+  
+  <section id="examples.topic">
+    <title>Sending messages to a topic</title>
+    <para>In this example, a standalone Java client publishes a text-based JMS message to a topic and a single subscriber pulls the message off the queue.
     </para>
+		
+	 <para>
+	 Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file	
+	</para>
 	
 	<programlisting>
-	
-	
-	
-	
+public class TopicExample extends ExampleSupport
+{
+   public void example() throws Exception
+   {
+      String destinationName = getDestinationJNDIName();
+
+       InitialContext ic = null;
+       Connection connection = null;
+
+       try {
+
+           ic = new InitialContext();
+
+           ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+           Topic topic = (Topic)ic.lookup(destinationName);
+           log("Topic " + destinationName + " exists");
+
+           connection = cf.createConnection();
+           Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageProducer publisher = session.createProducer(topic);
+           MessageConsumer subscriber = session.createConsumer(topic);
+
+           ExampleListener messageListener = new ExampleListener();
+           subscriber.setMessageListener(messageListener);
+           connection.start();
+
+           TextMessage message = session.createTextMessage("Hello!");
+           publisher.send(message);
+           log("The message was successfully published on the topic");
+
+           messageListener.waitForMessage();
+
+           message = (TextMessage)messageListener.getMessage();
+           log("Received message: " + message.getText());
+           assertEquals("Hello!", message.getText());
+
+           displayProviderInfo(connection.getMetaData());
+
+       }finally{
+
+           if(ic != null) {
+               try {
+                   ic.close();
+               }catch(Exception e){
+                   throw e;
+               }
+           }
+
+           //ALWAYS close your connection in a finally block to avoid leaks
+           //Closing connection also takes care of closing its related objects e.g. sessions
+           closeConnection(connection);
+       }
+   }
+
+   private void closeConnection(Connection con) throws JMSException {
+
+       try {
+           con.close();
+
+       }catch(JMSException jmse) {
+           log("Could not close connection " + con +" exception was " +jmse);
+           throw jmse;
+       }
+   }
+
+
+   protected boolean isQueueExample()
+   {
+      return false;
+   }
+
+   public static void main(String[] args)
+   {
+      new TopicExample().run();
+   }
+
+}
 	</programlisting>
 	
   </section>
-    	
-  <section id="examples.mdb">
-    <title>Using Message-driven beans</title>
-    <para>xxxxxx
-    </para>
-		
-    <programlisting>
-      cd $JBOSS_HOME/server
-      cp -r default messaging
-    </programlisting>
-
-  </section>
 
   <section id="examples.stateless">
-    <title>Using JMS from a EJB</title>
-    <para>xxxxxx
+    <title>Using JMS from an EJB</title>
+    <para>This example deploys a simple Stateless Session Bean that is used as a proxy to send and receive JMS messages in a managed environment.
+    </para>
+		
+    <programlisting>
+public class StatelessSessionExampleBean implements SessionBean
+{
+
+   private SessionContext ctx;
+
+    private ConnectionFactory cf = null;
+
+   public void drain(String queueName) throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      Queue queue = (Queue)ic.lookup(queueName);
+      ic.close();
+
+      Session session = null;
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer consumer = session.createConsumer(queue);
+         Message m = null;
+         do
+         {
+            m = consumer.receiveNoWait();
+         }
+         while(m != null);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            closeConnection(conn);
+         }
+      }
+   }
+
+   public void send(String txt, String queueName) throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      Queue queue = (Queue)ic.lookup(queueName);
+      ic.close();
+
+      Session session = null;
+      Connection conn = null;
+
+       try
+      {
+         conn = getConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer producer = session.createProducer(queue);
+
+         TextMessage tm = session.createTextMessage(txt);
+
+         producer.send(tm);
+         System.out.println("message " + txt + " sent to " + queueName);
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            closeConnection(conn);
+         }
+      }
+   }
+
+   public List browse(String queueName) throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      Queue queue = (Queue)ic.lookup(queueName);
+      ic.close();
+
+      Session session = null;
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         QueueBrowser browser = session.createBrowser(queue);
+
+         ArrayList list = new ArrayList();
+         for(Enumeration e = browser.getEnumeration(); e.hasMoreElements(); )
+         {
+            list.add(e.nextElement());
+         }
+
+         return list;
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            closeConnection(conn);
+         }
+      }
+   }
+
+   public String receive(String queueName) throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      Queue queue = (Queue)ic.lookup(queueName);
+      ic.close();
+
+      Session session = null;
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer consumer = session.createConsumer(queue);
+
+         System.out.println("blocking to receive message from queue " + queueName + " ...");
+         TextMessage tm = (TextMessage)consumer.receive(5000);
+
+         if (tm == null)
+         {
+            throw new Exception("No message!");
+         }
+
+         System.out.println("Message " + tm.getText() + " received");
+
+         return tm.getText();
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            closeConnection(conn);
+         }
+      }
+   }
+
+    public Connection getConnection() throws Exception {
+
+        Connection connection = null;
+
+        try {
+            connection = cf.createConnection();
+            connection.start();
+
+        }catch(Exception e ){
+           if(connection != null)
+               closeConnection(connection);
+           System.out.println("Failed to get connection...exception is " +e);
+           throw e;
+        }
+
+        return connection;
+    }
+
+    public void closeConnection(Connection con) throws Exception {
+
+       try {
+           con.close();
+
+       }catch(JMSException jmse) {
+           System.out.println("Could not close connection " + con +" exception was " +jmse);
+           throw jmse;
+
+       }
+    }
+     
+	.......
+    </programlisting>
+
+  </section>
+
+  <section id="examples.mdb">
+    <title>Using Message-driven beans</title>
+    <para>This example deploys a simple Message Driven Bean that processes messages sent to a test queue.  Once it receives a message and "processes" it, the MDB sends an acknowledgment message to a temporary destination created by the sender for this purpose. The example is considered successful if the sender receives the acknowledgment message.
     </para>
 		
     <programlisting>
@@ -147,8 +385,133 @@ public class QueueExample extends ExampleSupport
       cp -r default messaging
     </programlisting>
 
-  </section>
+	<para>The MDB ejb-jar.xml descriptor
+    </para>	
+    <programlisting>
+&lt;ejb-jar&gt;
+&lt;enterprise-beans&gt;
+&lt;message-driven&gt;
+&lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
+&lt;ejb-class&gt;org.jboss.example.jms.mdb.MDBExample&lt;/ejb-class&gt;
+&lt;transaction-type&gt;Container&lt;/transaction-type&gt;
+&lt;/message-driven&gt;
+&lt;/enterprise-beans&gt;
+&lt;/ejb-jar&gt;
+    </programlisting>
 
+	<para>The MDB jboss.xml descriptor
+	</para>
+    <programlisting>
+&lt;enterprise-beans&gt;
+&lt;message-driven&gt;
+&lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
+&lt;destination-jndi-name&gt;queue/@QUEUE_NAME@&lt;/destination-jndi-name&gt;
+&lt;/message-driven&gt;
+&lt;/enterprise-beans&gt;
+    </programlisting>
+	
+	<programlisting>
+public class MDBExample implements MessageDrivenBean, MessageListener
+{
+
+   private MessageDrivenContext ctx;
+
+   private ConnectionFactory cf = null;
+
+   public void onMessage(Message m)
+   {
+      Session session = null;
+      Connection conn = null;
+
+      try
+      {
+         TextMessage tm = (TextMessage)m;
+
+         String text = tm.getText();
+         System.out.println("message " + text + " received");
+         String result = process(text);
+         System.out.println("message processed, result: " + result);
+
+         conn = getConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Destination replyTo = m.getJMSReplyTo();
+         MessageProducer producer = session.createProducer(replyTo);
+         TextMessage reply = session.createTextMessage(result);
+
+         producer.send(reply);
+         producer.close();
+
+      }
+      catch(Exception e)
+      {
+         ctx.setRollbackOnly();
+         e.printStackTrace();
+         System.out.println("The Message Driven Bean failed!");
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            try {
+                closeConnection(conn);
+            }catch(Exception e){
+                System.out.println("Could not close the connection!" +e);
+            }
+         }
+      }
+   }
+
+   private String process(String text)
+   {
+      // flip the string
+
+      String result = "";
+
+      for(int i = 0; i &lt; text.length(); i++)
+      {
+         result = text.charAt(i) + result;
+      }
+      return result;
+   }
+
+   public Connection getConnection() throws Exception {
+
+        Connection connection = null;
+
+        try {
+            connection = cf.createConnection();
+            connection.start();
+
+        }catch(Exception e ){
+           if(connection != null)
+               closeConnection(connection);
+           System.out.println("Failed to get connection...exception is " +e);
+           throw e;
+        }
+
+        return connection;
+    }
+
+    public void closeConnection(Connection con) throws Exception {
+
+       try {
+           con.close();
+
+       }catch(JMSException jmse) {
+           System.out.println("Could not close connection " + con +" exception was " +jmse);
+           throw jmse;
+       }
+    }
+	
+	......
+	</programlisting>
+	
+
+  </section>
+  
+  
+  
 
   <para>
   

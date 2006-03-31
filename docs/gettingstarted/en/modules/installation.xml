@@ -4,83 +4,117 @@
 
   <para>As of today, JBoss Messaging is conflicting with the existing JBoss MQ server that ships with the JBoss 4.x and 5.x distributions. Therefore the provider is packaged as a scoped Service ARchive (.sar) <emphasis role="bold">named jboss-messaging-scoped.sar</emphasis> 
 	</para>
-	
-  <section id="creatingserverconf">
-    <title>Creating the server configuration</title>
-    <para>We need to create a server configuration based on the <literal>default</literal> folder 
-    </para>
-		
-    <programlisting>
-      cd $JBOSS_HOME/server
-      cp -r default messaging
-    </programlisting>
 
-	<para>
-	  Note: The "all" configuration can be also used as a template. If you choose to base your configuration on "all", you will need to
-	  adjust the steps 4.1, 4.2 and 4.3 accordingly, given the fact that in a clustered configuration, JBossMQ is deployed as a HASingleton under server/all/deploy-hasingleton/jms. 
-	</para>
+  <section id="install4">
+    <title>Installing JBoss Messaging with JBossAS 4.x</title>
+  
+  
+    <section id="install4.automated">
+	  <title>JBossAS 4.x Messaging installation - Automated procedure</title>
 	
-  </section>		
+      <para>Set up the JBOSS_HOME environment variable to point towards the JBoss 4.x installation you want to use JBoss Messaging with.
+       Run the installation script, available in the util directory of the release bundle. 
+       Note that you need Apache Ant 1.6.x installed and accessible from your current directory.
+      </para>
 
-	
-  <section id="configuringjmsra">
-    <title>Configuring the JMS Resource adapter</title>
-    <para>
-	In jms-ds.xml, JBoss Messaging defines a connection factory bound by  the JMS Resource adapter at “java:/JmsXA”. Before we remove the whole jms folder (see 1.2.4) we need to move jms-rar.ar to /deploy
-    </para>
-		
-   <programlisting>
-     cd $JBOSS_HOME/server/messaging/deploy/jms
-     cp jms-ra.rar ..
-   </programlisting>
-	
-  </section>		
+		<programlisting>
+    cd util
+    ant -f create-messaging-config.xml
+		</programlisting>
 
-  <section id="removingjbossmq">
-    <title>Removing JBossMQ</title>
-    <para>
-	 As aforementioned, JBossMQ should be taken out of the distribution.
-	</para>
+		<para>
+		The installation script will create a $JBOSS_HOME/server/messaging configuration.
+		</para>	
 		
-   <programlisting>
+	</section>
+	
+	
+    <section id="install4.manual">
+	  <title>JBossAS 4.x Messaging installation - Alternative manual procedure</title>
+	  
+		  <section id="creatingserverconf">
+			<title>Creating the server configuration</title>
+			<para>We need to create a server configuration based on the <literal>default</literal> folder 
+			</para>
+				
+			<programlisting>
+    cd $JBOSS_HOME/server
+    cp -r default messaging
+			</programlisting>
+		
+			<para>
+			  Note: The "all" configuration can be also used as a template. If you choose to base your configuration on "all", you will need to
+			  adjust the steps 4.1, 4.2 and 4.3 accordingly, given the fact that in a clustered configuration, JBossMQ is deployed as a HASingleton under server/all/deploy-hasingleton/jms. 
+			</para>
+			
+		  </section>		
+		
+			
+		  <section id="configuringjmsra">
+			<title>Configuring the JMS Resource adapter</title>
+			<para>
+			In jms-ds.xml, JBoss Messaging defines a connection factory bound by  the JMS Resource adapter at “java:/JmsXA”. Before we remove the whole jms folder (see 1.2.4) we need to move jms-rar.ar to /deploy
+			</para>
+				
+		   <programlisting>
+    cd $JBOSS_HOME/server/messaging/deploy/jms
+    cp jms-ra.rar ..
+		   </programlisting>
+			
+		  </section>		
+		
+		  <section id="removingjbossmq">
+			<title>Removing JBossMQ</title>
+			<para>
+			 As aforementioned, JBossMQ should be taken out of the distribution.
+			</para>
+				
+		   <programlisting>
     cd $JBOSS_HOME/server/messaging/deploy
     rm -r jms
-   </programlisting>
-	
-  </section>		
-
-    
-  <section id="configuringsecuritydomain">
-    <title>Configuring the security domain</title>
-    <para>
-	 Modify $JBOSS_HOME/server/messaging/conf/login-config.xml security configuration file and add &lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt; to the configuration of the UsersRolesLoginModule that is part of the JAAS stack of the "other" security domain. The correct configuration of the "other" security domain should be similar to:
-	</para>
+		   </programlisting>
+			
+		  </section>		
 		
-   <programlisting>
-    
-        &lt;application-policy name = &quot;other&quot;&gt;
-            &lt;authentication&gt;
-                &lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot; flag = &quot;required&quot;&gt;
-                    &lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
-                &lt;/login-module&gt;
-            &lt;/authentication&gt;
-        &lt;/application-policy&gt;
-	
-   </programlisting>
-
-  </section>		
-
-  <section id="deployingtheservice">
-    <title>Deploying the service archive</title>
-    <para>
-	 You are now ready to deploy the provider. Please copy jboss-messaging-scoped.sar service archive to the messaging configuration's deployment directory.
-	</para>
+			
+		  <section id="configuringsecuritydomain">
+			<title>Configuring the security domain</title>
+			<para>
+			 Modify $JBOSS_HOME/server/messaging/conf/login-config.xml security configuration file and add &lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt; to the configuration of the UsersRolesLoginModule that is part of the JAAS stack of the "other" security domain. The correct configuration of the "other" security domain should be similar to:
+			</para>
+				
+		   <programlisting>
+			
+				&lt;application-policy name = &quot;other&quot;&gt;
+					&lt;authentication&gt;
+						&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot; flag = &quot;required&quot;&gt;
+							&lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
+						&lt;/login-module&gt;
+					&lt;/authentication&gt;
+				&lt;/application-policy&gt;
+			
+		   </programlisting>
 		
-   <programlisting>
+		  </section>		
+		
+		  <section id="deployingtheservice">
+			<title>Deploying the service archive</title>
+			<para>
+			 You are now ready to deploy the provider. Please copy jboss-messaging-scoped.sar service archive to the messaging configuration's deployment directory.
+			</para>
+				
+		   <programlisting>
     cp jboss-messaging-scoped.sar $JBOSS_HOME/server/messaging/deploy
-   </programlisting>
+		   </programlisting>
+			
+		  </section>		
+	  
+	  
+	</section>
 	
-  </section>		
+	
+  </section>	
+	
 
   <section id="startingtheservice">
     <title>Starting the server</title>
@@ -99,67 +133,75 @@
 	
    <programlisting>
 	....
-	15:12:32,916 INFO  [JDBCPersistenceManager] creating tables
-	15:12:34,628 INFO  [ServerPeer] JMS ServerPeer [server.0] started
-	15:12:34,628 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] deploy
-	ed
-	15:12:34,648 INFO  [Topic] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,648 INFO  [Topic] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,648 INFO  [Topic] Topic[/topic/testDurableTopic] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,678 INFO  [Queue] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,678 INFO  [Queue] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,678 INFO  [Queue] Queue[/queue/A] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,678 INFO  [Queue] Queue[/queue/B] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,688 INFO  [Queue] Queue[/queue/C] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,688 INFO  [Queue] Queue[/queue/D] started, fullSize=75000, pageSize=2000, downCacheSize=1000
-	15:12:34,688 INFO  [Queue] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:46,155 WARN  [JDBCPersistenceManager]
+
+Warning! Connection transaction isolation should be READ_COMMITTED, but it is currently NONE.
+         Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
+         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
+
+13:56:46,165 INFO  [JDBCPersistenceManager] Removing all non-reliable message references
+13:56:46,175 INFO  [JDBCPersistenceManager] Updating all reliable references to not loaded
+13:56:47,006 INFO  [ServerPeer] JMS ServerPeer [server.0] started, connection failure checking active, lease period 20000 ms
+13:56:47,006 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] deploy
+ed
+13:56:47,026 INFO  [Topic] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,026 INFO  [Topic] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,026 INFO  [Topic] Topic[/topic/testDurableTopic] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,046 INFO  [Queue] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,056 INFO  [Queue] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,056 INFO  [Queue] Queue[/queue/A] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,056 INFO  [Queue] Queue[/queue/B] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,066 INFO  [Queue] Queue[/queue/C] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,066 INFO  [Queue] Queue[/queue/D] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,066 INFO  [Queue] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, downCacheSize=1000
+13:56:47,076 INFO  [Topic] Topic[/topic/openTopic] started, fullSize=75000, pageSize=2000, downCacheSize=1000
 	....
    </programlisting>
 	   			
-  </section>		
+	<para>
+	<emphasis role="bold">Note:</emphasis> 
+	<literal>"Warning! Connection transaction isolation should be READ_COMMITTED, but it is currently NONE."</literal>
+	</para>
+	<para>
+	By default JBossAS is shipped with HyperSonic, an in-memory Java-based database engine. Via the default datasource, HSQL is used by Messaging for persistence, caching, etc...
+	</para>
+	<para>The following wiki page <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=ConfigJBossMQDB"> Critique of Hypersonic</ulink> outlines some of the well-known issues occuring when using this database.
+	</para>
+	<para>During development and before going in production, you <emphasis role="bold">must</emphasis> use an enterprise-class database backend such as MySQL, Oracle or PostgreSQL. See Section x.x for details about replacing HSQL.  
+	</para>
 
+				
+  </section>		
 
   <section id="inst.validation">
     <title>Validation</title>
 
     <para>
       To validate the installation procedure, we will be running a basic example which send a persistent JMS message to a queue called queue/testQueue.
-Navigate to the folder where you exploded the main archive and drill down to /examples/queue.
-You need to use Apache Ant to execute the build.xml file
-		
-		[TODO]
-		changing path to point at JBossAS installation
-		
-		
+     </para>
+	 <para>
+	 Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file	
 	</para>
 		
    <programlisting>
-   
-	>ant
-	Buildfile: build.xml
-	
-	init:
-	
-	compile:
-		[javac] Compiling 1 source file to D:\tmp\JBossMessaging-1.0.0alpha-PR2.2\examples\queue\output
-	
-	run:
-	 [unjar]  Expanding:  D:\tmp\distro\jboss-4.0.3SP1\server\messaging\deploy\jboss-messaging-scoped.sar  into D:\tmp\JBossMessaging-1.0.0alpha-PR2.2\examples\queue\output
-	 [java]  Queue /queue/testQueue exists
-	 [java]  FieldsManager in use =  org.jboss.serial.classmetamodel.UnsafeFieldsManager
-	 [java]  19:14:30,201 INFO  @main [SocketServerInvoker] Invoker started for  locator: InvokerLocator [socket://192.168.4.86:2909/?dataType
-	=jms&amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&amp;serializationtype=jboss&amp;socket.check_connection=false&amp;socketTimeout=0&amp;unmarshall
-	er=org.jboss.jms.server.remoting.JMSWireFormat]
-	 [java]  The message was successfully sent to the testQueue queue
-	 [java]  19:14:30,832 INFO  @main [SocketServerInvoker] Invoker started for  locator: InvokerLocator [socket://192.168.4.86:2910/?dataType
-	=jms&amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&amp;serializationtype=jboss&amp;socket.check_connection=false&amp;socketTimeout=0&amp;unmarshall
-	er=org.jboss.jms.server.remoting.JMSWireFormat]
-	 [java]  Received message: Hello!
-	 [java]  The example connected to JBoss Messaging version 1.0.0alpha-PR2.2  (1.0)
-	
-	 [java]  #####################
-	 [java]  ###    SUCCESS!   ###
-	 [java]  #####################
+$ant
+
+Buildfile: build.xml
+identify:
+  [echo] Running the queue example
+  [echo] The queue: testQueue
+sanity-check:
+init:
+compile:
+run:
+  [java] Queue /queue/testQueue exists
+  [java] 14:34:11,884 INFO  @main [FieldsManager] FieldsManager in use = org.jboss.serial.classmetamodel.UnsafeFieldsManager
+  [java] The message was successfully sent to the testQueue queue
+  [java] Received message: Hello!
+  [java] The example connected to JBoss Messaging version 1.0.0 (1.0)
+ [java] #####################
+  [java] ###    SUCCESS!   ###
+  [java] #####################
 
    </programlisting>
 

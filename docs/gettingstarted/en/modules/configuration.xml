@@ -1,18 +1,44 @@
 <chapter id="configuration">
   <title>Configuration</title>
   
-  <para>The simplest way to configure JBoss Messaging is 
+  <para>JBoss Messaging is composed of several services working together to provide JMS api level services to client applications. Some of the services that make up Messaging are introduced in this section.
   </para>
   
-  
+  <para>
+   <emphasis role="bold">Note:</emphasis> In JBoss Messaging 1.0 most of those services are configurable via mbean definitions which are <emphasis role="bold">all</emphasis> located in <literal>jboss-messaging.sar/META-INF/jboss-service.xml</literal>. In the next release, configurations will be broken down into separate xml files.
+  </para>
   
   <section id="conf.persistence">
     <title>Configuring JDBC persistence</title>
 
-    <para>
-	xxxx
-	
+    <para>The JDBC2 Persistence Manager (PM) is used to store jms messages marked as being persistent into a relational database using JDBC. 
+	  JBoss Messaging is shipped with several pm configuration files for the most commonly used database servers such as Oracle, mySQL or MSSQL. These files are located in <literal>/docs/examples/config</literal>
 	</para>
+  
+  <para>Example of a PM configuration for mySQL database
+  </para>
+  <programlisting>
+&lt;mbean code=&quot;org.jboss.messaging.core.plugin.JDBCPersistenceManager&quot;
+name=&quot;jboss.messaging:service=PersistenceManager&quot;
+xmbean-dd=&quot;xmdesc/JDBCPersistenceManager-xmbean.xml&quot;&gt; 
+&lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+&lt;depends optional-attribute-name=&quot;TransactionManager&quot;&gt;jboss:service=TransactionManager&lt;/depends&gt;
+&lt;depends optional-attribute-name=&quot;ChannelMapper&quot;&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
+&lt;attribute name=&quot;DataSource&quot;&gt;java:/DefaultDS&lt;/attribute&gt;
+&lt;attribute name=&quot;CreateTablesOnStartup&quot;&gt;true&lt;/attribute&gt;
+&lt;attribute name=&quot;UsingBatchUpdates&quot;&gt;true&lt;/attribute&gt; 
+&lt;attribute name=&quot;SqlProperties&quot;&gt;&lt;![CDATA[
+CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE (CHANNELID BIGINT, MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), ORD BIGINT, DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID)) 
+CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID) 
+CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)
+.... 
+  </programlisting>
+  
+  <para>
+   To change the pm configuration, navigate to /server/$SERVER_CONF/deploy/jboss-messaging.sar/META-INF and edit jboss-service.xml  
+   From the example folder, copy the mbean definition  that is appropriate for your database server e.g. mysql-jdbcpersistencemanager-service.xml
+   Paste it in place of the existing one then restart the server.  
+  </para>
   
   </section>
   
@@ -36,6 +62,14 @@
   
   </section>
   
+  <section id="conf.changingds">
+    <title>Changing the database</title>
+
+    <para>By default, the Messaging services, relying on a datastore, are referencing <literal>"java:/DefaultDS"</literal>. If you are deploying a datasource with a different jndi name, you need to update all the <literal>DataSource</literal> attribute in jboss-service.xml as well.
+	</para>
   
+  </section>
+  
+    
   
 </chapter>
