@@ -38,10 +38,11 @@ accordingly.</span><br>
 <h2>Running the example</h2>
 1. Set up the JBOSS_HOME environment variable to point to the JBoss
 instance you deployed JBoss Messaging into. For example, if you
-deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.2\server\default\deploy,</span>
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.3SP1\server\default\deploy,</span>
 then your JBOSS_HOME value should be <span
- style="font-family: monospace;">C:\jboss-4.0.2<br>
-<br>
+ style="font-family: monospace;">C:\</span><span
+ style="font-family: monospace;">jboss-4.0.3SP1.</span><br>
+<span style="font-family: monospace;"><br>
 </span>Remember that the example's build script expects to find <span
  style="font-family: monospace;">jboss-messaging-scoped.sar</span> under<span
  style="font-family: monospace;"> $JBOSS_HOME/server/default/deploy</span>.
@@ -100,7 +101,7 @@ into C:\work\src\cvs\jboss-head\jms\docs\examples<br>
 on the topic<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello!<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.0.0 alpha PR3 (1.0)<br>
+Messaging version 1.0.0.Beta1 (1.0)<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example executed successfully<br>
       <br>
 BUILD SUCCESSFUL<br>
@@ -122,7 +123,9 @@ User null is NOT authenticated" <br>
 You probably didn't install JBoss Messaging correctly. A fresh JBoss
 Messaging installation requires changes in the security configuration
 of a <span style="font-family: monospace;">default </span>JBoss
-instance.&nbsp; Follow the instructions from the "Installation"
+instance, specifically a properly configured "<small><span
+ style="font-family: courier new,courier,monospace;">messaging</span></small>"
+security domain.&nbsp; Follow the instructions from the "Installation"
 paragraph of the release documentation. <br>
 <br>
 <br>
