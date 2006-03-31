@@ -37,6 +37,7 @@ import javax.jms.*;
  * code 0 in case of successful execution and a non-zero value on failure.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:luc.texier@jboss.org">Luc Texier</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -97,6 +98,7 @@ public class QueueExample extends ExampleSupport
            closeConnection(connection);
 
            closeConnection(connection2);
+
        }
 
    }

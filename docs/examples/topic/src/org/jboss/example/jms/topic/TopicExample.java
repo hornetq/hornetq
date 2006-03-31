@@ -24,13 +24,7 @@ package org.jboss.example.jms.topic;
 import org.jboss.example.jms.common.ExampleSupport;
 
 import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.TextMessage;
-import javax.jms.MessageConsumer;
-import javax.jms.Topic;
+import javax.jms.*;
 
 /**
  * The example creates a connection to the default provider and uses the connection to send a
@@ -40,6 +34,7 @@ import javax.jms.Topic;
  * code 0 in case of successful execution and a non-zero value on failure.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:luc.texier@jboss.org">Luc Texier</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -50,70 +45,64 @@ public class TopicExample extends ExampleSupport
    {
       String destinationName = getDestinationJNDIName();
 
+       InitialContext ic = null;
+       Connection connection = null;
 
+       try {
 
-      InitialContext ic = new InitialContext();
+           ic = new InitialContext();
 
+           ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+           Topic topic = (Topic)ic.lookup(destinationName);
+           log("Topic " + destinationName + " exists");
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Topic topic = (Topic)ic.lookup(destinationName);
+           connection = cf.createConnection();
+           Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageProducer publisher = session.createProducer(topic);
+           MessageConsumer subscriber = session.createConsumer(topic);
 
+           ExampleListener messageListener = new ExampleListener();
+           subscriber.setMessageListener(messageListener);
+           connection.start();
 
+           TextMessage message = session.createTextMessage("Hello!");
+           publisher.send(message);
+           log("The message was successfully published on the topic");
 
-      log("Topic " + destinationName + " exists");
+           messageListener.waitForMessage();
 
+           message = (TextMessage)messageListener.getMessage();
+           log("Received message: " + message.getText());
+           assertEquals("Hello!", message.getText());
 
+           displayProviderInfo(connection.getMetaData());
 
-      Connection connection = cf.createConnection();
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer publisher = session.createProducer(topic);
-      MessageConsumer subscriber = session.createConsumer(topic);
+       }finally{
 
+           if(ic != null) {
+               try {
+                   ic.close();
+               }catch(Exception e){
+                   throw e;
+               }
+           }
 
-
-      ExampleListener messageListener = new ExampleListener();
-      subscriber.setMessageListener(messageListener);
-
-
-
-      connection.start();
-
-
-
-      TextMessage message = session.createTextMessage("Hello!");
-
-
-
-      publisher.send(message);
-
-
-
-      log("The message was successfully published on the topic");
-
-
-      messageListener.waitForMessage();
-
-
-      message = (TextMessage)messageListener.getMessage();
-
-
-
-      log("Received message: " + message.getText());
-
-
-
-      assertEquals("Hello!", message.getText());
-
-
-
-      displayProviderInfo(connection.getMetaData());
-
-
-
-      connection.close();
+           //ALWAYS close your connection in a finally block to avoid leaks
+           //Closing connection also takes care of closing its related objects e.g. sessions
+           closeConnection(connection);
+       }
    }
 
+   private void closeConnection(Connection con) throws JMSException {
 
+       try {
+           con.close();
+
+       }catch(JMSException jmse) {
+           log("Could not close connection " + con +" exception was " +jmse);
+           throw jmse;
+       }
+   }
 
 
    protected boolean isQueueExample()
