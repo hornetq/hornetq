@@ -8,6 +8,20 @@
    <emphasis role="bold">Note:</emphasis> In JBoss Messaging 1.0 most of those services are configurable via mbean definitions which are <emphasis role="bold">all</emphasis> located in <literal>jboss-messaging.sar/META-INF/jboss-service.xml</literal>. In the next release, configurations will be broken down into separate xml files.
   </para>
   
+  
+  <section id="conf.serverpeer">
+    <title>Configuring the ServerPeer</title>
+
+    <para>
+	xxxxx
+	
+	</para>
+  
+  </section>
+  
+  
+  
+    
   <section id="conf.persistence">
     <title>Configuring JDBC persistence</title>
 
@@ -35,7 +49,7 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
   </programlisting>
   
   <para>
-   To change the pm configuration, navigate to /server/$SERVER_CONF/deploy/jboss-messaging.sar/META-INF and edit jboss-service.xml  
+   To change the pm configuration, navigate to <literal>/server/$SERVER_CONF/deploy/jboss-messaging.sar/META-INF</literal> and edit <literal>jboss-service.xml</literal>  
    From the example folder, copy the mbean definition  that is appropriate for your database server e.g. mysql-jdbcpersistencemanager-service.xml
    Paste it in place of the existing one then restart the server.  
   </para>
@@ -44,12 +58,25 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
   
   <section id="conf.destination">
     <title>Configuring destinations</title>
-
-    <para>
-	xxxx
-	
-	</para>
   
+    <para>Since JBoss Messaging is deployed in its own class loading domain, you need to deploy the destinations you want to use with JBoss Messaging within the same class loading domain. 
+	</para>
+	<para>An example of a deployment descriptor that does that is presented below. Create a new deployment descriptor named myqueue-service.xml (or anything else that ends in -service.xml) and copy it in your deployment directory.
+	</para>
+	
+	<programlisting>		
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+  &lt;server&gt;
+    &lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
+      &lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
+    &lt;/loader-repository&gt;
+    &lt;mbean code=&quot;org.jboss.jms.server.jmx.Queue&quot;
+  name=&quot;jboss.messaging.destination:service=Queue,name=myQueue&quot;&gt;
+     &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+    &lt;/mbean&gt;
+ &lt;/server&gt; 
+	</programlisting>
+	
   </section>
 
   <section id="conf.connections">
@@ -65,7 +92,7 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
   <section id="conf.changingds">
     <title>Changing the database</title>
 
-    <para>By default, the Messaging services, relying on a datastore, are referencing <literal>"java:/DefaultDS"</literal>. If you are deploying a datasource with a different jndi name, you need to update all the <literal>DataSource</literal> attribute in jboss-service.xml as well.
+    <para>By default, the Messaging services, relying on a datastore, are referencing <literal>"java:/DefaultDS"</literal> for the datasource. If you are deploying a datasource with a different jndi name, you need to update all the <literal>DataSource</literal> attribute in jboss-service.xml as well.
 	</para>
   
   </section>

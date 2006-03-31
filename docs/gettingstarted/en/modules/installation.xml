@@ -2,7 +2,7 @@
 
   <title>Installation</title>
 
-  <para>As of today, JBoss Messaging is conflicting with the existing JBoss MQ server that ships with the JBoss 4.x and 5.x distributions. Therefore the provider is packaged as a scoped Service ARchive (.sar) <emphasis role="bold">named jboss-messaging-scoped.sar</emphasis> 
+  <para>As of today, JBoss Messaging is conflicting with the existing JBoss MQ server that ships with the JBoss 4.x and 5.x distributions. Therefore the provider is packaged as a scoped Service ARchive (.sar).
 	</para>
 
   <section id="install4">
@@ -85,13 +85,13 @@
 				
 		   <programlisting>
 			
-				&lt;application-policy name = &quot;other&quot;&gt;
-					&lt;authentication&gt;
-						&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot; flag = &quot;required&quot;&gt;
-							&lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
-						&lt;/login-module&gt;
-					&lt;/authentication&gt;
-				&lt;/application-policy&gt;
+&lt;application-policy name = &quot;other&quot;&gt;
+  &lt;authentication&gt;
+     &lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot; flag = &quot;required&quot;&gt;
+       &lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
+     &lt;/login-module&gt;
+   &lt;/authentication&gt;
+&lt;/application-policy&gt;
 			
 		   </programlisting>
 		
@@ -167,7 +167,7 @@ ed
 	</para>
 	<para>The following wiki page <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=ConfigJBossMQDB"> Critique of Hypersonic</ulink> outlines some of the well-known issues occuring when using this database.
 	</para>
-	<para>During development and before going in production, you <emphasis role="bold">must</emphasis> use an enterprise-class database backend such as MySQL, Oracle or PostgreSQL. See Section x.x for details about replacing HSQL.  
+	<para>During development and before going in production, you <emphasis role="bold">must</emphasis> use an enterprise-class database backend such as MySQL, Oracle or PostgreSQL. See Section 5.4 for details about replacing HSQL.  
 	</para>
 
 				

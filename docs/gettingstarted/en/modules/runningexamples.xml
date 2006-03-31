@@ -379,23 +379,18 @@ public class StatelessSessionExampleBean implements SessionBean
     <title>Using Message-driven beans</title>
     <para>This example deploys a simple Message Driven Bean that processes messages sent to a test queue.  Once it receives a message and "processes" it, the MDB sends an acknowledgment message to a temporary destination created by the sender for this purpose. The example is considered successful if the sender receives the acknowledgment message.
     </para>
-		
-    <programlisting>
-      cd $JBOSS_HOME/server
-      cp -r default messaging
-    </programlisting>
 
 	<para>The MDB ejb-jar.xml descriptor
     </para>	
     <programlisting>
 &lt;ejb-jar&gt;
-&lt;enterprise-beans&gt;
-&lt;message-driven&gt;
-&lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
-&lt;ejb-class&gt;org.jboss.example.jms.mdb.MDBExample&lt;/ejb-class&gt;
-&lt;transaction-type&gt;Container&lt;/transaction-type&gt;
-&lt;/message-driven&gt;
-&lt;/enterprise-beans&gt;
+  &lt;enterprise-beans&gt;
+    &lt;message-driven&gt;
+      &lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
+      &lt;ejb-class&gt;org.jboss.example.jms.mdb.MDBExample&lt;/ejb-class&gt;
+      &lt;transaction-type&gt;Container&lt;/transaction-type&gt;
+    &lt;/message-driven&gt;
+  &lt;/enterprise-beans&gt;
 &lt;/ejb-jar&gt;
     </programlisting>
 
@@ -403,10 +398,10 @@ public class StatelessSessionExampleBean implements SessionBean
 	</para>
     <programlisting>
 &lt;enterprise-beans&gt;
-&lt;message-driven&gt;
-&lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
-&lt;destination-jndi-name&gt;queue/@QUEUE_NAME@&lt;/destination-jndi-name&gt;
-&lt;/message-driven&gt;
+  &lt;message-driven&gt;
+    &lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
+    &lt;destination-jndi-name&gt;queue/@QUEUE_NAME@&lt;/destination-jndi-name&gt;
+  &lt;/message-driven&gt;
 &lt;/enterprise-beans&gt;
     </programlisting>
 	
@@ -466,7 +461,7 @@ public class MDBExample implements MessageDrivenBean, MessageListener
    {
       // flip the string
 
-      String result = "";
+      String result = ";
 
       for(int i = 0; i &lt; text.length(); i++)
       {
@@ -509,21 +504,6 @@ public class MDBExample implements MessageDrivenBean, MessageListener
 	
 
   </section>
-  
-  
-  
-
-  <para>
-  
-     Bonus
-
-
-      Using an IDE
-
-  
-  
-  </para>
-
 
 
 </chapter>

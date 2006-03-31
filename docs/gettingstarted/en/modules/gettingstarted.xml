@@ -2,25 +2,25 @@
 
   <title>Getting started</title>
   <para>
-    The most recent official release of JBoss Messaging is available as a free download from <ulink url="http://www.jboss.com/products/messaging">the main JBoss messaging downloads page</ulink>.
+    The official release of JBoss Messaging is available as a free download from <ulink url="http://labs.jboss.com/portal/index.html?ctrl:id=page.default.info&amp;project=jbossmessaging">the JBoss Messaging project landing page.</ulink>
   </para>
+
+  <section id="releasebundle">
+    <title>The JBoss Messaging release bundle</title>  
   
-  <section id="directorystructure">  
-    <title>Directory overview</title>    
-    <para>After you have downloaded the package, extract the archive content into a location of your choice.
-    </para>
-    <para>
-	Expanding the JBoss Messaging distribution creates a JBossMessaging-[release number] directory which contains the scoped archive, the source code, the examples and other documentation.
-	</para>
-	
-   <figure id="img.directorystructure">
-    <title>A view of the JBoss Messaging installation directory</title>
-    <mediaobject><imageobject><imagedata align="center" fileref="images/directorystructure.jpg"/></imageobject></mediaobject>
-   </figure>
-  
+    <itemizedlist>
+    <listitem><emphasis role="bold">jboss-messaging-scoped.sar: </emphasis> the deployable JBoss service archive that contains JBoss Messaging and its dependencies.</listitem>
+<listitem><emphasis role="bold">jboss-messaging-client-scoped.sar: </emphasis> the client-side library that need to be in the classpath of the client that opens a remote connection to the Messaging server.</listitem>
+<listitem><emphasis role="bold">examples: </emphasis> a collection of examples that should run out of the box and help you validate the installation. Detailed instructions are provided with each example, which range from very simple JMS queue and topic examples to relatively sophisticated use cases in which EJBs and JCA JMS ConnectionFactories are involved.</listitem>
+<listitem><emphasis role="bold">util: </emphasis> a collection of scripts and ant configuration files that will help you with installation, JBossMQ replacement and various other tasks.</listitem>
+<listitem><emphasis role="bold">src: </emphasis> the expanded JBoss Messaging source code. Note that JBoss Messaging cannot be built using exclusively this source snapshot, which is provided here for reference only.</listitem>
+<listitem><emphasis role="bold">jboss-messaging-1.0.0-src.zip: </emphasis> the zipped src directory. The file can be directly installed into and use with a debugger.</listitem>
+<listitem><emphasis role="bold">jboss-messaging-test-results-1.0.0.zip: </emphasis> the results of the release functional testuite run, in XML, text and HTML format.</listitem>
+    </itemizedlist>
   
   </section>
   
+    
   <section id="CVS">
     <title>CVS Access</title>
  
@@ -41,7 +41,5 @@
       <listitem><emphasis role="bold"><ulink url="http://sourceforge.net/project/showfiles.php?group_id=70542">downloads</ulink></emphasis>: sourceforge download page for jBPM</listitem>
     </itemizedlist>
   </section>  
-  
-  
   
 </chapter>

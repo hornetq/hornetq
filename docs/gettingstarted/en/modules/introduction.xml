@@ -101,7 +101,7 @@ initiative.
       
 	  <title>Compatibility with JBossMQ</title>
 
-      <para> JBossMQ is the JMS currently embedded within JBoss AS. Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code       written against JBossMQ will run with JBoss Messaging without any changes. The backward compatibility will extend to deployment descriptors       as well. 
+      <para> JBossMQ is the JMS implementation currently embedded within JBossAS. Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code       written against JBossMQ will run with JBoss Messaging without any changes. The backward compatibility will extend to deployment descriptors as well 
 	  </para>
 	  
     </section>
