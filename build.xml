@@ -71,7 +71,7 @@
      <property name="messaging.version.revision" value="0"/>
      <property name="messaging.version.incrementing" value="1"/>
      <property name="messaging.version.tag" value="Beta1"/>
-     <property name="messaging.version.name" value=""/>
+     <property name="messaging.version.name" value="Shizzle"/>
      <!-- This must be set to the CVS tag for any release -->
      <property name="messaging.version.cvstag" value="JBossMessaging_1_0_0_Beta1"/>
 
