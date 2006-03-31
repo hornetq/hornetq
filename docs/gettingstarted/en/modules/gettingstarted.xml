@@ -1,0 +1,47 @@
+<chapter id="gettingstarted">
+
+  <title>Getting started</title>
+  <para>
+    The most recent official release of JBoss Messaging is available as a free download from <ulink url="http://www.jboss.com/products/messaging">the main JBoss messaging downloads page</ulink>. 
+  </para>
+  
+  <section id="directorystructure">  
+    <title>Directory overview</title>    
+    <para>After you have downloaded the package, extract the archive content into a location of your choice.
+    </para>
+    <para>
+	Expanding the JBoss Messaging distribution creates a JBossMessaging-[release number] directory which contains the scoped archive, the source code, the examples and other documentation.
+	</para>
+	
+   <figure id="img.directorystructure">
+    <title>A view of the JBoss Messaging installation directory</title>
+    <mediaobject><imageobject><imagedata align="center" fileref="images/directorystructure.jpg"/></imageobject></mediaobject>
+   </figure>
+  
+  
+  </section>
+  
+  <section id="CVS">
+    <title>CVS Access</title>
+ 
+   <para>
+   If you want to experiment with the latest developments you may checkout the latest code from the 5.0 head branch. Be aware that the information provided in this manual might then not be accurate. Check out the following wiki fot the latest instructions http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingBuildInstructions 
+   </para>
+  
+  </section>
+  
+  <section id="projectdirectory">
+    <title>The JBoss Messaging project directory</title>
+    <itemizedlist>
+      <listitem><emphasis role="bold"><ulink url="mailto:sales@jboss.com?subject=JBossMessaging">Professional Support</ulink></emphasis>: JBoss is the company that backs this project with professional support, training and consultancy services.</listitem>
+      <listitem><emphasis role="bold">Getting Started Guide</emphasis>: is the document you're reading and serves as the main entry point into the project.</listitem>
+      <listitem><emphasis role="bold"><ulink url="http://www.jboss.com/index.htmlmodule=bbop=viewforumf=153">forums</ulink></emphasis>: get in contact with the community, ask questions and discuss JBoss Messaging issues</listitem>
+      <listitem><emphasis role="bold"><ulink url="http://www.jboss.com/wiki/Wiki.jsp?page=JBossMessaging">wiki</ulink></emphasis>: extra information, mostly provided by the community</listitem>
+      <listitem><emphasis role="bold"><ulink url="http://jira.jboss.com/jira/browse/JBMESSAGING">issue tracker</ulink></emphasis>: for submitting bugs and feature requests</listitem>
+      <listitem><emphasis role="bold"><ulink url="http://sourceforge.net/project/showfiles.php?group_id=70542">downloads</ulink></emphasis>: sourceforge download page for jBPM</listitem>
+    </itemizedlist>
+  </section>  
+  
+  
+  
+</chapter>

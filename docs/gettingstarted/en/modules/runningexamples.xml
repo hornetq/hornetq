@@ -1,0 +1,166 @@
+<chapter id="examples">
+
+  <title>Running the examples</title>
+
+  <para>
+  In the following sections, we will look at examples of the various JMS messaging models and message-driven beans. The example source is located in the distribution under <literal>/docs/examples</literal>. 
+  </para>
+	
+  <section id="examples.queue">
+    <title>Sending messages to a queue</title>
+    <para>
+    </para>
+		
+    <programlisting>
+      cd $JBOSS_HOME/server
+      cp -r default messaging
+    </programlisting>
+
+  </section>
+  
+  
+  <section id="examples.topic">
+    <title>Sending messages to a topic</title>
+    <para>In this example, a standalone Java client sends a text-based JMS message to a queue and a single receiver pulls the message off the queue.
+    </para>
+		
+    <programlisting>
+public class QueueExample extends ExampleSupport
+{
+
+   public void example() throws Exception
+   {
+      String destinationName = getDestinationJNDIName();
+
+       InitialContext ic = null;
+       ConnectionFactory cf = null;
+       Connection connection =  null;
+       Connection connection2 =  null;
+
+       try {
+
+           ic = new InitialContext();
+
+           cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+           Queue queue = (Queue)ic.lookup(destinationName);
+           log("Queue " + destinationName + " exists");
+
+           connection = cf.createConnection();
+           Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageProducer sender = session.createProducer(queue);
+
+           TextMessage message = session.createTextMessage("Hello!");
+           sender.send(message);
+           log("The message was successfully sent to the " + queue.getQueueName() + " queue");
+
+           connection2 = cf.createConnection();
+           Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageConsumer consumer =  session2.createConsumer(queue);
+
+           connection2.start();
+
+           message = (TextMessage)consumer.receive(2000);
+           log("Received message: " + message.getText());
+           assertEquals("Hello!", message.getText());
+
+           displayProviderInfo(connection2.getMetaData());
+
+       }catch(NamingException ne){
+           ne.printStackTrace();
+
+       }catch(JMSException jmse){
+           jmse.printStackTrace();
+
+       }catch(Exception e){
+           e.printStackTrace();
+
+       }finally{
+
+           if(ic != null) {
+               try {
+                   ic.close();
+               }catch(Exception ignore){ }
+           }
+
+           closeConnection(connection);
+
+           closeConnection(connection2);
+       }
+
+   }
+
+   private void closeConnection(Connection con){
+
+       try {
+           con.close();
+
+       }catch(JMSException jmse) {
+           log("Could not close connection " + con +" exception was " +jmse);
+       }
+   }
+
+
+   protected boolean isQueueExample()
+   {
+      return true;
+   }
+
+   public static void main(String[] args)
+   {
+      new QueueExample().run();
+   }
+
+}
+    </programlisting>
+
+    <para>The client may be run using the following command line:
+    </para>
+	
+	<programlisting>
+	
+	
+	
+	
+	</programlisting>
+	
+  </section>
+    	
+  <section id="examples.mdb">
+    <title>Using Message-driven beans</title>
+    <para>xxxxxx
+    </para>
+		
+    <programlisting>
+      cd $JBOSS_HOME/server
+      cp -r default messaging
+    </programlisting>
+
+  </section>
+
+  <section id="examples.stateless">
+    <title>Using JMS from a EJB</title>
+    <para>xxxxxx
+    </para>
+		
+    <programlisting>
+      cd $JBOSS_HOME/server
+      cp -r default messaging
+    </programlisting>
+
+  </section>
+
+
+  <para>
+  
+     Bonus
+
+
+      Using an IDE
+
+  
+  
+  </para>
+
+
+
+</chapter>

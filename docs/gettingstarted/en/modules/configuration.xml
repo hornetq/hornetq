@@ -1,0 +1,41 @@
+<chapter id="configuration">
+  <title>Configuration</title>
+  
+  <para>The simplest way to configure JBoss Messaging is 
+  </para>
+  
+  
+  
+  <section id="conf.persistence">
+    <title>Configuring JDBC persistence</title>
+
+    <para>
+	xxxx
+	
+	</para>
+  
+  </section>
+  
+  <section id="conf.destination">
+    <title>Configuring destinations</title>
+
+    <para>
+	xxxx
+	
+	</para>
+  
+  </section>
+
+  <section id="conf.connections">
+    <title>Configuring connection factories</title>
+
+    <para>
+	xxxxx
+	
+	</para>
+  
+  </section>
+  
+  
+  
+</chapter>

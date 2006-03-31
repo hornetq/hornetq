@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
+"../../../../docbook-support/support/docbook-dtd/docbookx.dtd" [
+<!ENTITY about SYSTEM "modules/about.xml">
+<!ENTITY introduction SYSTEM "modules/introduction.xml">
+<!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">
+<!ENTITY installation SYSTEM "modules/installation.xml">
+<!ENTITY configuration SYSTEM "modules/configuration.xml">
+<!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
+]>
+<book lang="en">
+  <bookinfo>
+    <title>Getting started with JBoss Messaging 1.0</title>
+
+    <subtitle>JBoss Messaging in a nutshell</subtitle>
+  </bookinfo>
+
+  <toc></toc>
+  
+  &about
+  
+  &introduction;
+
+  &gettingstarted;
+
+  &installation;
+
+  &configuration;
+
+  &runningexamples;
+
+
+</book>

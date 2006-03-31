@@ -1,0 +1,112 @@
+<chapter id="introduction">
+  <title>Introduction</title>
+
+  <para>
+JBoss Messaging provides an open source and standards-based messaging platform 
+that brings enterprise-class messaging to the mass market. JBoss Messaging 
+implements a high performance, robust messaging core that is designed to support 
+the largest and most heavily utilized SOAs, enterprise service busses (ESBs) and other 
+integration needs ranging from the simplest to the highest demand networks. JBoss 
+Messaging includes a JMS front-end to deliver messaging in a standards-based format. 
+Additionally, JBoss Messaging is designed to support other messaging protocols. 
+</para>
+
+<para>JBoss Messaging is an integral component of the JBoss Enterprise Middleware Suite 
+(JEMS) and is available as a stand alone product and for embedded use within the 
+JBoss Application Server (JBoss AS). The large and vibrant JEMS developer community 
+fosters its continued innovation and enterprise quality. JBoss Messaging enables much 
+more agile applications in a wide range of scenarios – from simple messaging needs to 
+an enterprise-wide messaging foundation. JBoss Messaging adds flexibility to any SOA 
+initiative. 
+  </para>
+  	
+    <section id="features">
+      <title>JBoss Messaging 1.0 Features</title>
+
+      <para>JBoss Messaging provides:</para>
+
+      <itemizedlist>
+		<listitem><para>A fully compatible JMS 1.1 implementation, which will work standalone as well as with JBoss AS.
+		</para></listitem>
+		<listitem><para>A strong focus on performance throughput and low latency. 
+		</para></listitem>
+		<listitem><para>A foundation for ESB requirements within SOA initiatives. JBoss ESB, due in late 2006, will use JBoss Messaging as its foundation. 
+		</para></listitem>
+	  </itemizedlist>
+  
+       <para>JBoss Messaging consists of two major parts: </para>
+	   
+      <itemizedlist>
+		<listitem>
+			<para>JBoss Messaging Core – a transactionally reliable, distributed messaging transport system.</para>
+			<itemizedlist>
+			  <listitem>
+			   <para>Supports generalized messages (not just JMS).</para>
+			  </listitem>
+			  <listitem>
+			   <para>Enables other messaging protocol facades to be added</para>
+			  </listitem>
+			  <listitem>
+			   <para>Transactionally reliable – supports ACID semantics </para>
+			  </listitem>
+			  <listitem>
+			   <para>Distributed – spans multiple address spaces </para>
+			  </listitem>
+			</itemizedlist>
+		</listitem>
+		
+		<listitem>
+			<para>JMS Façade – the JMS “personality” of JBoss Messaging.</para>		
+		</listitem>
+		
+	  </itemizedlist>
+	  
+       <para>Other JBoss Messaging features include:</para>
+	   
+      <itemizedlist>
+		<listitem><para>Publish-subscribe and point-to-point messaging models 
+		</para></listitem>
+		<listitem><para>Message queues used by one or shared by many receivers  
+		</para></listitem>
+		<listitem><para>Topics that feed multiple message queues 
+		</para></listitem>
+		<listitem><para>Persistent and non-persistent messages 
+		</para></listitem>
+		<listitem><para>Guaranteed message delivery that ensures that messages arrive once and only once 
+		</para></listitem>
+		<listitem>
+           <para>Transactionally reliable supporting ACID semantics </para>
+			<itemizedlist>
+			  <listitem>
+			   <para>Atomicity – messages can be sent to the core in the context of a transaction and either all messages or none of them will be accepted </para>
+			  </listitem>
+			  <listitem>
+			   <para>Isolation – messages can be sent to the core on multiple threads (in the same address space or in different address spaces) </para>
+			  </listitem>
+			  <listitem>
+			   <para>Durability – “reliable” messages survive failures leveraging transactional persistent storage </para>
+			  </listitem>
+			</itemizedlist>
+		</listitem>
+		<listitem><para>Distributed messaging infrastructure which may span multiple address spaces 
+		</para></listitem>
+		<listitem><para>Customizable security framework 
+		</para></listitem>				
+	  </itemizedlist>
+	  
+    </section>	
+	
+	
+    <section id="compatibility">
+      
+	  <title>Compatibility with JBossMQ</title>
+
+      <para> JBossMQ is the JMS currently embedded within JBoss AS. Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code       written against JBossMQ will run with JBoss Messaging without any changes. The backward compatibility will extend to deployment descriptors       as well. 
+	  </para>
+	  
+    </section>
+
+	
+	
+
+</chapter>
