@@ -3995,7 +3995,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       //Now set the fields from org.jboss.messaging.core.Message
       
-      log.info("storing message");
       byte[] payload = m.getPayloadAsByteArray();
       if (payload != null)
       {
