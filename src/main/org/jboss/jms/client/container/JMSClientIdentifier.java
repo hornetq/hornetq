@@ -25,7 +25,7 @@ import org.jboss.util.id.GUID;
 
 /**
  * 
- * Unique id of a JMS client
+ * Unique id of a JMS client VM
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1

@@ -243,6 +243,9 @@ public class JMSExpirationHeaderTest extends MessageTest
 
       // allow the message to expire
       Thread.sleep(3000);
+      
+      //When a consumer is closed while a receive() is in progress it will make the
+      //receive return with null
 
       final Latch latch = new Latch();
       // blocking read for a while to make sure I don't get anything, not even a null
@@ -254,15 +257,19 @@ public class JMSExpirationHeaderTest extends MessageTest
             {
                log.trace("Attempting to receive");
                expectedMessage = queueConsumer.receive();
+               
+               //NOTE on close, the receive() call will return with null
                log.trace("Receive exited without exception:" + expectedMessage);
             }
             catch(Exception e)
             {
                log.trace("receive() exits with an exception", e);
+               fail();
             }
             catch(Throwable t)
             {
                log.trace("receive() exits with an throwable", t);
+               fail();
             }
             finally
             {
@@ -280,9 +287,7 @@ public class JMSExpirationHeaderTest extends MessageTest
 
       log.trace("Expected message:" + expectedMessage);
       
-      assertNotNull(expectedMessage);
-
-      assertEquals(123456, ((JBossMessage)expectedMessage).getMessageID());
+      assertNull(expectedMessage);      
    }
 
 

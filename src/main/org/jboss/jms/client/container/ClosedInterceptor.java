@@ -97,6 +97,9 @@ public class ClosedInterceptor  implements Interceptor
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
+      
+      if (trace) { log.trace(this + " invoking " + methodName); }
+      
 
       if (isClosing)
       {         

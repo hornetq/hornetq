@@ -503,6 +503,8 @@ public class LocalTestServer implements Server
    
    public void deployDestination(boolean isQueue, String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
+      log.info("deploying queue, fullsize:" + fullSize + ", ps:" + pageSize + " dc size:" + downCacheSize);
+      
       String config =
          "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "Queue" : "Topic") + "\"" +
          "       name=\"jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + name + "\"" +

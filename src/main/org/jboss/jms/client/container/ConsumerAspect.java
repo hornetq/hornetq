@@ -86,16 +86,15 @@ public class ConsumerAspect
    }
    
    public Object handleClosing(Invocation invocation) throws Throwable
-   {
-      
+   {      
       ConsumerState state = getState(invocation);
       
       ConnectionState cState = (ConnectionState)state.getParent().getParent();
-      
-      cState.getRemotingConnection().getCallbackManager().unregisterHandler(state.getConsumerID());
-      
+            
       state.getMessageCallbackHandler().close();  
       
+      cState.getRemotingConnection().getCallbackManager().unregisterHandler(state.getConsumerID());
+            
       return invocation.invokeNext();
    }
    

@@ -28,6 +28,12 @@
       <name>TransactionManager</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getSqlProperties" setMethod="setSqlProperties">
+      <description>DML and DDL overrides</description>
+      <name>SqlProperties</name>
+      <type>java.lang.String</type>
+   </attribute> 
 
    <!-- Managed operations -->
 

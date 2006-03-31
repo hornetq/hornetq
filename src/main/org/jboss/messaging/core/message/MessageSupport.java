@@ -21,10 +21,6 @@
   */
 package org.jboss.messaging.core.message;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.serial.io.JBossObjectInputStream;
-import org.jboss.serial.io.JBossObjectOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,6 +28,11 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Message;
+import org.jboss.serial.io.JBossObjectInputStream;
+import org.jboss.serial.io.JBossObjectOutputStream;
 
 
 /**
@@ -168,6 +169,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
                oos = new JBossObjectOutputStream(bos);
                writePayloadExternal(oos, payload);
                payloadAsByteArray = bos.toByteArray();
+               payload = null;
             }
             finally
             {

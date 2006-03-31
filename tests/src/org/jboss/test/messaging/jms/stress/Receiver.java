@@ -24,9 +24,15 @@ package org.jboss.test.messaging.jms.stress;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionConsumer;
+import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import javax.jms.ServerSession;
+import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
@@ -54,6 +60,26 @@ public class Receiver extends Runner implements MessageListener
    protected boolean isListener;
    
    protected Map counts = new HashMap();
+   
+   protected boolean isCC;
+   
+   protected Connection conn;
+   
+   protected ConnectionConsumer cc;
+   
+   public Receiver(Connection conn, Session sess, int numMessages, Destination dest) throws Exception
+   {
+      super(sess, numMessages);
+      
+      this.isListener = true;
+      
+      this.isCC = true;
+      
+      sess.setMessageListener(this);
+      
+      this.cc = conn.createConnectionConsumer(dest, null, new MockServerSessionPool(sess), 10);         
+            
+   }
    
    public Receiver(Session sess, MessageConsumer cons, int numMessages, boolean isListener) throws Exception
    {
@@ -195,6 +221,43 @@ public class Receiver extends Runner implements MessageListener
          log.error("Failed to receive message", e);
          failed = true;
       }
+   }
+   
+   class MockServerSessionPool implements ServerSessionPool
+   {
+      private ServerSession serverSession;
+      
+      MockServerSessionPool(Session sess)
+      {
+         serverSession = new MockServerSession(sess);
+      }
+
+      public ServerSession getServerSession() throws JMSException
+      {
+         return serverSession;
+      }      
+   }
+   
+   class MockServerSession implements ServerSession
+   {
+      Session session;
+      
+      MockServerSession(Session sess)
+      {
+         this.session = sess;
+      }
+      
+
+      public Session getSession() throws JMSException
+      {
+         return session;
+      }
+
+      public void start() throws JMSException
+      {
+         session.run();
+      }
+      
    }
 
 }

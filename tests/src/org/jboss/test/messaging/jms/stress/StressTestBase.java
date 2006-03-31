@@ -74,7 +74,7 @@ public class StressTestBase extends MessagingTestCase
       
       final int fullSize = 3000;
       
-      final int pageSize = 2000;
+      final int pageSize = 1000;
       
       final int downCacheSize = 1000;
       

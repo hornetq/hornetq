@@ -96,7 +96,7 @@ public class ChannelState implements State
    public ChannelState(Channel channel, PersistenceManager pm,
                        boolean acceptReliableMessages, boolean recoverable,
                        int fullSize, int pageSize, int downCacheSize)
-   {
+   {      
       if (pm == null)
       {
           throw new IllegalArgumentException("ChannelState requires a " +

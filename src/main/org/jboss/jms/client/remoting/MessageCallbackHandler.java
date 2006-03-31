@@ -52,6 +52,10 @@ public class MessageCallbackHandler
    
    private static final Logger log;
    
+   //TODO Make configurable
+   private static final int CLOSE_TIMEOUT = 20000;
+   
+   
    // Static --------------------------------------------------------
    
    private static boolean trace;
@@ -158,13 +162,11 @@ public class MessageCallbackHandler
        
    protected Object mainLock;
    
-   protected Object activationLock;
-   
    protected Object onMessageLock;
    
    protected boolean closed;
       
-   protected boolean closing;
+   protected volatile boolean closing;
    
    protected boolean gotLastMessage;
    
@@ -198,9 +200,7 @@ public class MessageCallbackHandler
       this.consumerID = consumerID;
       
       mainLock = new Object();
-        
-      activationLock = new Object();      
-      
+          
       onMessageLock = new Object();
    }
         
@@ -313,6 +313,8 @@ public class MessageCallbackHandler
       {
          synchronized (mainLock)
          {
+            if (trace) { log.trace(this + " closing"); }
+            
             if (closed)
             {
                return;
@@ -325,7 +327,21 @@ public class MessageCallbackHandler
             //The ensures a clean, gracefully closure of the client side consumer, without
             //any messages in transit which might arrive after the consumer is closed and which
             //subsequently might be cancelled out of sequence causing message ordering problems
-            waitForActivationsToComplete();
+            
+            if (activationCount > 0)
+            {
+               long waitTime = CLOSE_TIMEOUT;
+               
+               while (activationCount > 0 && waitTime > 0)
+               {               
+                  waitTime = waitOnLock(mainLock, waitTime);           
+               }
+               
+               if (activationCount > 0)
+               {
+                  log.warn("Timed out waiting for activations to complete");
+               }
+            }                       
                
             //Now we know there are no activations in progress but the consumer may still be active so we call
             //deactivate which returns the id of the last message we should have received
@@ -333,15 +349,12 @@ public class MessageCallbackHandler
             //transit and we can close down with confidence
             //otherwise we wait for this message and timeout if it doesn't arrive which might be the case
             //if the connection to the server has been lost
-            
-            //TODO Make configurable
-            final int TIMEOUT = 20000;
-            
+                        
             long lastMessageIDToExpect = deactivateConsumer();
             
             if (lastMessageIDToExpect != -1)
             {            
-               long waitTime = TIMEOUT;
+               long waitTime = CLOSE_TIMEOUT;
                
                while (lastMessageIDToExpect != lastMessageId && waitTime > 0)
                {               
@@ -358,11 +371,13 @@ public class MessageCallbackHandler
             gotLastMessage = true;            
             
             //Wake up any receive() thread that might be waiting
+            if (trace) { log.trace("Notifying main lock"); }
             mainLock.notify();
+            if (trace) { log.trace("Notified main lock"); }
             
             //Now make sure that any onMessage of a listener has finished executing
             
-            long waitTime = TIMEOUT;
+            long waitTime = CLOSE_TIMEOUT;
             
             synchronized (onMessageLock)
             {               
@@ -404,9 +419,9 @@ public class MessageCallbackHandler
       }
       catch (InterruptedException e)
       {
-         //No one should be interrupting the thread so this shouldn't occur
-         throw new IllegalStateException("Thread interrupted while closing consumer");
+         //Ignore         
       }
+      if (trace) { log.trace(this + " closed"); }
    }
    
    /**
@@ -420,10 +435,13 @@ public class MessageCallbackHandler
    public MessageProxy receive(long timeout) throws JMSException
    {                    
       synchronized (mainLock)
-      {         
-         if (closed)
+      {        
+         if (trace) { log.trace(this + " receiving: " + timeout); }
+         
+         if (closed || closing)
          {
-            throw new JMSException("Cannot call receive(..) Consumer is closed");
+            //If consumer is closed or closing calling receive returns null
+            return null;
          }
          
          if (listener != null)
@@ -531,25 +549,6 @@ public class MessageCallbackHandler
    
    // Protected -----------------------------------------------------
    
-   protected void waitForActivationsToComplete()
-   {
-      synchronized (activationLock)
-      {
-         while (activationCount > 0)
-         {
-            try
-            {
-               activationLock.wait();              
-            }
-            catch (InterruptedException e)
-            {
-               //This should never occur
-               throw new IllegalStateException("Thread interrupted in waiting for activation count to reach zero");
-            }
-         }
-      }
-   }
-    
    protected long waitOnLock(Object lock, long waitTime) throws InterruptedException
    {
       long start = System.currentTimeMillis();
@@ -649,7 +648,9 @@ public class MessageCallbackHandler
                //Wait for ever potentially
                while (!closing && buffer.isEmpty())
                {
+                  if (trace) { log.trace("Waiting on main lock"); }
                   mainLock.wait();               
+                  if (trace) { log.trace("Done Waiting on main lock"); }
                }
             }
             else
@@ -681,8 +682,8 @@ public class MessageCallbackHandler
          }
          catch (InterruptedException e)
          {
-            //No one should be interrupting the thread so this shouldn't occur
-            throw new IllegalStateException("Thread interrupted while receiving");
+            //interrupting receive thread should make it return null
+            m = null;
          }         
          finally
          {
@@ -774,21 +775,34 @@ public class MessageCallbackHandler
             //If the message is not available, the consumer will stay active and
             //the message will delivered asynchronously (pushed) (that is what the boolean param is for)
             
-            MessageProxy m = (MessageProxy)consumerDelegate.getMessageNow(true);
-               
-            if (m != null)
+            if (trace) { log.trace("Activation runnable running, getting message now"); }
+            
+            try
             {
-               handleMessage(m);
+               MessageProxy m = (MessageProxy)consumerDelegate.getMessageNow(true);
+               
+               if (trace) { log.trace("Got message:" + m); }
+               
+               if (m != null)
+               {
+                  if (trace) { log.trace("Handling:" + m); }
+                  handleMessage(m);
+               }                                 
+               if (trace) { log.trace("Activation runnable done"); }
             }
-                
-            synchronized (activationLock)
+            finally
             {
                activationCount--;
-               if (activationCount == 0)
+               //closing is volatile so we don't have to do the check inside the synchronized (mainLock) {} block
+               //which should aid concurrency
+               if (closing)
                {
-                  activationLock.notify();
+                  synchronized (mainLock)
+                  {
+                     mainLock.notifyAll();                     
+                  }
                }
-            }            
+            }                        
          }
          catch(Throwable t)
          {
@@ -796,7 +810,7 @@ public class MessageCallbackHandler
             if (t.getCause() != null)
             {
                log.error("Cause:" + t.getCause());
-            }
+            }            
             try
             {
                close();
@@ -805,7 +819,7 @@ public class MessageCallbackHandler
             {
                log.error("Failed to close consumer", e);
             }
-         }        
+         }             
       } 
    }      
 }

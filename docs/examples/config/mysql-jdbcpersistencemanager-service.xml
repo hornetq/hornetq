@@ -4,10 +4,13 @@
 
 <server>
 
+  <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
+       <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
+  </loader-repository>
+
   <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
         name="jboss.messaging:service=PersistenceManager"
         xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
-
         <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
         <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
         <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>

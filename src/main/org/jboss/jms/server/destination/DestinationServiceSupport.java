@@ -6,15 +6,15 @@
  */
 package org.jboss.jms.server.destination;
 
-import org.jboss.system.ServiceMBeanSupport;
+import javax.management.ObjectName;
+
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.util.XMLUtil;
+import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
-
-import javax.management.ObjectName;
 
 /**
  * The base of a JBoss Messaging destination service. Both deployed or programatically created
@@ -229,12 +229,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       {
          log.warn("FullSize can only be changed when destination is stopped");
          return;
-      }
-      
-      if (validateParameters(fullSize, this.pageSize, this.downCacheSize))
-      {
-         this.fullSize = fullSize;
-      }
+      }      
+      this.fullSize = fullSize;
    }
 
    /**
@@ -258,11 +254,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("PageSize can only be changed when destination is stopped");
          return;
       }
-      
-      if (validateParameters(this.fullSize, pageSize, this.downCacheSize))
-      {
-         this.pageSize = pageSize;
-      }
+      this.pageSize = pageSize;
    }
 
    /**
@@ -286,9 +278,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("DownCacheSize can only be changed when destination is stopped");
          return;
       }
-      
-      if (validateParameters(this.fullSize, this.pageSize, downCacheSize))
-         this.downCacheSize = downCacheSize;
+      this.downCacheSize = downCacheSize;
    }
 
    // JMX managed operations ----------------------------------------

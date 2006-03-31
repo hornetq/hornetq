@@ -222,6 +222,8 @@ public class MessageProxyTest extends MessagingTestCase
          
          MessageProducer prod = sess.createProducer(queue);
          
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
          MessageConsumer cons = sess.createConsumer(queue);
          
          MapMessage msent = sess.createMapMessage();
@@ -254,9 +256,12 @@ public class MessageProxyTest extends MessagingTestCase
          assertTrue(urec_2.getJMSProperties() == urec_1.getJMSProperties());
          assertTrue(usent_1.getJMSProperties() == urec_1.getJMSProperties());
          
-
          //And the bodies shouldn't be copied since we didn't change it either
          assertTrue(usent_2.getPayload() == usent_1.getPayload());
+         
+         log.info("urec2:" + urec_2.getPayload());
+         log.info("urec1:" + urec_1.getPayload());
+         
          assertTrue(urec_2.getPayload() == urec_1.getPayload());
          assertTrue(usent_1.getPayload() == urec_1.getPayload());
          

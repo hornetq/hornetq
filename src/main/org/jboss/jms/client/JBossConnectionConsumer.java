@@ -21,7 +21,8 @@
   */
 package org.jboss.jms.client;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.ConnectionConsumer;
 import javax.jms.Destination;
@@ -67,6 +68,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
    private static boolean trace = log.isTraceEnabled();
    
+   private static final int TIMEOUT = 20000;
+   
    // Attributes ----------------------------------------------------
    
    protected ConsumerDelegate cons;
@@ -97,7 +100,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    /** The thread id generator */
    protected static SynchronizedInt threadId = new SynchronizedInt(0);
    
-   protected Object closeLock = new Object();
+   protected Object closeLock = new Object();      
    
    // Static --------------------------------------------------------
    
@@ -133,8 +136,9 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       {
          tccc.set(getClass().getClassLoader());
 
-         // Create a consumer. We must create with CLIENT_ACKNOWLEDGE, they get must not get acked
-         // via this session!
+         // Create a consumer.
+         // The MessageCallbackhandler knows we are a connection consumer so will not 
+         // call pre or postDeliver so messages won't be acked, or stored in session/tx
          sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
 
          cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
@@ -146,7 +150,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
       ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
 
-      this.consumerID = state.getConsumerID();
+      this.consumerID = state.getConsumerID();      
 
       id = threadId.increment();
       internalThread = new Thread(this, "Connection Consumer for dest " + destination + " id=" + id);
@@ -162,98 +166,84 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       return serverSessionPool;
    }
 
-   public void close() throws javax.jms.JMSException
+   public void close() throws JMSException
    {
       if (trace) { log.trace("close " + this); }
       
-      closed = true;
+      doClose();
       
-      if (trace) { log.trace("Closed message handler"); }
+      //Wait for internal thread to complete
+      if (trace) { log.trace(this + " Waiting for internal thread to complete"); }
       
-      internalThread.interrupt();
-          
       try
       {
-         internalThread.join(3000);
+         internalThread.join(TIMEOUT);
+         
          if (internalThread.isAlive())
-         {
-            internalThread.interrupt();
-            internalThread.join();
-         }         
+         {            
+            throw new JMSException(this + " Waited " + TIMEOUT + " ms for internal thread to complete, but it didn't");
+         }
       }
       catch (InterruptedException e)
       {
-         if (trace)
-            log.trace("Ignoring interrupting while joining thread " + this);
+         if (trace) { log.trace(this + " Thread interrupted while waiting for internal thread to complete"); }
+         //Ignore
       }
       
-      sess.close();
-      
-      if (trace) { log.trace("Closed: " + this); }
-      
+      if (trace) { log.trace("Closed: " + this); }      
    }
    
    // Runnable implementation ---------------------------------------
-     
+    
    public void run()
    {
       if (trace) { log.trace("running connection consumer"); }
       try
       {
-         LinkedList queue = new LinkedList();
-         while (true)
-         {
-            
+         List mesList = new ArrayList();
+         
+         outer: while (true)
+         {            
             if (closed)
             {
                if (trace) { log.trace("Connection consumer is closed, breaking"); }
-               break;
+               break outer;
             }
             
-            if (queue.isEmpty())
+            if (mesList.isEmpty())
             {
                // Remove up to maxMessages messages from the consumer
-               for (int i = 0; i < maxMessages; i++)
+               inner: for (int i = 0; i < maxMessages; i++)
                {               
                   // receiveNoWait
 
                   if (trace) { log.trace(this + " attempting to get message with receiveNoWait"); }
 
-                  Message m = null;                  
-
-                  if (!closed)
-                  {
-                     m = cons.receive(-1);
-                  }
-                  
+                  Message m = cons.receive(-1);
+                                    
                   if (m == null)
                   {
                      if (trace) { log.trace("receiveNoWait did not retrieve any message"); }
-                     break;
+                     break inner;
                   }
 
                   if (trace) { log.trace("receiveNoWait got message " + m + " adding to queue"); }
-                  queue.addLast(m);
+                  mesList.add(m);
                }
 
-               if (queue.isEmpty())
+               if (mesList.isEmpty())
                {
                   // We didn't get any messages doing receiveNoWait, so let's wait. This returns if
                   // a message is received or by the consumer closing.
 
                   if (trace) { log.trace(this + " attempting to get message with blocking receive (no timeout)"); }
 
-                  Message m = null;
-                  
-                  if (!closed)
-                  {
-                     m = cons.receive(0);
-                  }
+                  Message m = cons.receive(0);
                   
                   if (m != null)
                   {
                      if (trace) { log.trace("receive (no timeout) got message " + m + " adding to queue"); }
-                     queue.addLast(m);
+                     mesList.add(m);
                   }
                   else
                   {
@@ -264,9 +254,9 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                }
             }
             
-            if (!queue.isEmpty())
+            if (!mesList.isEmpty())
             {
-               if (trace) { log.trace("there are " + queue.size() + " messages to send to session"); }
+               if (trace) { log.trace("there are " + mesList.size() + " messages to send to session"); }
 
                ServerSession serverSession = serverSessionPool.getServerSession();
                JBossSession session = (JBossSession)serverSession.getSession();
@@ -279,9 +269,9 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   if (trace) { log.trace(this + ": session " + session + " did not have a set MessageListener"); }
                }
 
-               for (int i = 0; i < queue.size(); i++)
+               for (int i = 0; i < mesList.size(); i++)
                {
-                  MessageProxy m = (MessageProxy)queue.get(i);
+                  MessageProxy m = (MessageProxy)mesList.get(i);
                   session.addAsfMessage(m, consumerID, cons);
                   if (trace) { log.trace("added " + m + " to session"); }
                }
@@ -292,20 +282,43 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
                if (trace) { log.trace(this + "'s serverSession processed messages"); }
 
-               queue.clear();
-            }
-            
+               mesList.clear();
+            }            
          }
          if (trace) { log.trace("ConnectionConsumer run() exiting"); }
       }
-      catch (JMSException e)
-      {
-         //Receive interrupted - ignore
-      }
       catch (Throwable t)
       {
-         log.error("Caught Throwable in processing run()", t);         
-      }      
+         log.warn("Connection consumer closing due to error in listening thread " + this, t);
+         
+         try
+         {
+            //Closing
+            doClose();
+         }
+         catch (JMSException e)
+         {
+            log.error("Failed to close connection consumer", e);
+         }
+      }            
+   }
+   
+   protected synchronized void doClose() throws JMSException
+   {
+      if (closed)
+      {
+         return;
+      }
+      
+      closed = true;            
+      
+      //Calling session.closing() will cause the consumer to close which
+      //will make any receive() calls return null
+      //and not return until the consumer close protocol is complete
+      sess.closing();
+      sess.close();           
+      
+      if (trace) { log.trace(this + "Closed message handler"); }
    }
 
    // Public --------------------------------------------------------

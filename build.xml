@@ -158,7 +158,7 @@
      <!-- Messaging specific structure properties -->
      <property name="build.sar" value="${module.output}/sar"/>
      <property name="build.scoped-sar" value="${module.output}/scoped-sar"/>
-     <property name="build.dependencies" value="${module.output}/dependecies"/>
+     <property name="build.dependencies" value="${module.output}/dependencies"/>
 
     <!-- Install/Release structure -->
     <property name="install.id" value="${module.name}-${module.version}"/>

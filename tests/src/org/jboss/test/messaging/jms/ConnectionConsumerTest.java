@@ -99,7 +99,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
 
-      final int NUM_MESSAGES = 10;
+      final int NUM_MESSAGES = 100;
 
       Connection connConsumer = null;
 
@@ -246,7 +246,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
 
-      final int NUM_MESSAGES = 10;
+      final int NUM_MESSAGES = 100;
 
       Connection connConsumer = null;
 

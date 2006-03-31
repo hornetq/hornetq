@@ -191,7 +191,7 @@ public class MessageProducerTest extends MessagingTestCase
                try
                {
                   // this is needed to make sure the main thread has enough time to block
-                  Thread.sleep(1000);
+                  Thread.sleep(3000);
                   p.send(m1);
                }
                catch(Exception e)
@@ -203,7 +203,7 @@ public class MessageProducerTest extends MessagingTestCase
 
          t.start();
 
-         TextMessage m2 = (TextMessage)c.receive(5000);
+         TextMessage m2 = (TextMessage)c.receive(8000);
 
          assertEquals(m2.getJMSMessageID(), m1.getJMSMessageID());
          assertEquals("test", m2.getText());

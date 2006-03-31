@@ -7,11 +7,17 @@
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
-<!-- $Id$ -->
+<!-- log4j.xml,v 1.1 2006/03/31 21:20:11 timfox Exp -->
 
 <!--
    | For more configuration infromation and examples see the Jakarta Log4j
    | owebsite: http://jakarta.apache.org/log4j
+ -->
+
+ <!--
+ Only to be used for stress tests
+ Stress tests cannot be run using TRACE or DEBUG level since they produce too much output
+ hence they have their own log4j config
  -->
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
@@ -24,7 +30,7 @@
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
 
-      <param name="File" value="${module.output}/logs/messaging-tests${remote.test.suffix}.trace.log"/>
+      <param name="File" value="${module.output}/logs/messaging-tests${remote.test.suffix}.stress.trace.log"/>
 
       <!-- since majority of the tests are ran in fork mode by ant, the log file is overwritten
            for each test. We need to append if we want to preserve a full testsuite run log.
@@ -33,8 +39,7 @@
       <param name="Append" value="true"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
-      <!-- <param name="Threshold" value="INFO"/> -->
-      <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
+     <!-- <param name="Threshold" value="INFO"/> -->
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -53,7 +58,6 @@
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="Target" value="System.out"/>
 
-      <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
       <param name="Threshold" value="INFO"/>
 
       <layout class="org.apache.log4j.PatternLayout">
@@ -66,83 +70,7 @@
    <!-- Limit categories -->
    <!-- ================ -->
 
-   <!-- Limit the org.apache category to INFO as its DEBUG is verbose -->
-   <category name="org.apache">
-      <priority value="INFO"/>
-   </category>
 
-   <!-- Limit the org.jgroups category to WARN as its INFO is verbose -->
-   <category name="org.jgroups">
-      <priority value="WARN"/>
-   </category>
-
-   <!-- Limit JBoss categories -->
-   <category name="org.jboss">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.test">
-      <priority value="INFO"/>
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-   </category>
-
-   <category name="org.jboss.jms">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.jms.client.JBossConnectionConsumer">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="INFO"/> -->
-   </category>
-
-   <category name="org.jboss.jms.client.remoting.MessageCallbackHandler">
-         <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-         <!-- <priority value="INFO"/> -->
-   </category>
-
-
-
-   <category name="org.jboss.jms.server.remoting.JMSWireFormat">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.jms.server.remoting.JMSServerInvocationHandler">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.jms.server.security">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.jms.perf">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.messaging">
-      <priority value="INFO"/>
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/>  -->
-   </category>
-
-   <!--
-   <category name="org.jboss.messaging.core.message">
-      <priority value="INFO"/>
-   </category>
-   -->
-
-   <category name="org.jboss.remoting">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="WARN"/>
-   </category>
-
-   <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">
-      <priority value="WARN"/>
-   </category>
-
-   <category name="org.jboss.resource.connectionmanager.ConnectionFactoryBindingService">
-      <priority value="WARN"/>
-   </category>
 
    <!-- ======================= -->
    <!-- Setup the Root category -->
