@@ -95,6 +95,7 @@
 
    <target name="run" depends="deploy">
       <antcall target="send"/>
+      <antcall target="undeploy"/>
    </target>
 
    <target name="send">
@@ -111,7 +112,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/mdb-example.jar"/>
+      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/mdb-example.jar" quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">

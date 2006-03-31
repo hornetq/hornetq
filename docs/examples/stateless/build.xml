@@ -92,6 +92,7 @@
 
    <target name="run" depends="deploy">
       <antcall target="send-and-receive"/>
+      <antcall target="undeploy"/>
    </target>
 
    <target name="send-and-receive">
