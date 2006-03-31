@@ -24,13 +24,9 @@ package org.jboss.example.jms.queue;
 import org.jboss.example.jms.common.ExampleSupport;
 
 import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.Queue;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
+import javax.naming.NamingException;
+import javax.jms.*;
+
 
 /**
  * The example creates a connection to the default provider and uses the connection to send a
@@ -52,72 +48,69 @@ public class QueueExample extends ExampleSupport
    {
       String destinationName = getDestinationJNDIName();
 
+       InitialContext ic = null;
+       ConnectionFactory cf = null;
+       Connection connection =  null;
+       Connection connection2 =  null;
+
+       try {
+
+           ic = new InitialContext();
+
+           cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+           Queue queue = (Queue)ic.lookup(destinationName);
+           log("Queue " + destinationName + " exists");
+
+           connection = cf.createConnection();
+           Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageProducer sender = session.createProducer(queue);
+
+           TextMessage message = session.createTextMessage("Hello!");
+           sender.send(message);
+           log("The message was successfully sent to the " + queue.getQueueName() + " queue");
+
+           connection2 = cf.createConnection();
+           Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageConsumer consumer =  session2.createConsumer(queue);
+
+           connection2.start();
+
+           message = (TextMessage)consumer.receive(2000);
+           log("Received message: " + message.getText());
+           assertEquals("Hello!", message.getText());
+
+           displayProviderInfo(connection2.getMetaData());
 
 
-      InitialContext ic = new InitialContext();
+       }finally{
 
+           if(ic != null) {
+               try {
+                   ic.close();
+               }catch(Exception e){
+                   throw e;
+               }
+           }
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup(destinationName);
+           //ALWAYS close your connection in a finally block to avoid leaks
+           //Closing connection also takes care of closing its related objects e.g. sessions
+           closeConnection(connection);
 
+           closeConnection(connection2);
+       }
 
-
-      log("Queue " + destinationName + " exists");
-
-
-
-      Connection connection = cf.createConnection();
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer sender = session.createProducer(queue);
-
-
-
-      TextMessage message = session.createTextMessage("Hello!");
-
-
-
-      sender.send(message);
-
-
-
-      log("The message was successfully sent to the " + queue.getQueueName() + " queue");
-
-
-
-      connection.close();
-
-
-
-      Connection connection2 = cf.createConnection();
-      Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer consumer =  session2.createConsumer(queue);
-
-
-
-      connection2.start();
-
-
-
-      message = (TextMessage)consumer.receive(2000);
-
-
-
-      log("Received message: " + message.getText());
-
-
-
-      assertEquals("Hello!", message.getText());
-
-
-
-      displayProviderInfo(connection2.getMetaData());
-
-
-
-      connection2.close();
    }
 
+   private void closeConnection(Connection con) throws JMSException {
 
+       try {
+           con.close();
+
+       }catch(JMSException jmse) {
+           log("Could not close connection " + con +" exception was " +jmse);
+           throw jmse;
+       }
+   }
 
 
    protected boolean isQueueExample()
