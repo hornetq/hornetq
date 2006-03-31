@@ -260,10 +260,12 @@
 
       <antcall target="queue-example"/>
       <antcall target="topic-example"/>
-      <antcall target="mdb-example"/>
-      <antcall target="stateless-example"/>
-
-
+      <antcall target="mdb-example">
+         <param name="jboss.home" value="${jboss.home}"/>
+      </antcall>
+      <antcall target="stateless-example">
+         <param name="jboss.home" value="${jboss.home}"/>
+      </antcall>
 
       <antcall target="stop-jboss"/>
       <antcall target="sleep"><param name="sleep.interval" value="20"/></antcall>
@@ -304,8 +306,12 @@
 
       <antcall target="queue-example"/>
       <antcall target="topic-example"/>
-      <antcall target="mdb-example"/>
-      <antcall target="stateless-example"/>
+      <antcall target="mdb-example">
+         <param name="jboss.home" value="${jboss.home}"/>
+      </antcall>
+      <antcall target="stateless-example">
+         <param name="jboss.home" value="${jboss.home}"/>
+      </antcall>
 
       <antcall target="stop-jboss"/>
       <antcall target="sleep"><param name="sleep.interval" value="20"/></antcall>

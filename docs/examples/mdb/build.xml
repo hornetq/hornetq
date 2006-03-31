@@ -111,8 +111,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/mdb-example.jar"
-              quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/mdb-example.jar"/>
    </target>
 
    <target name="clean" depends="undeploy">
