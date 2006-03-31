@@ -658,11 +658,33 @@
       </copy>
    </target>
 
-   <target name="release-bundle" depends="release-structure, scoped-sar, source, source-zip, examples">
+   <target name="javadoc" depends="compile">
+      <javadoc destdir="${build.api}" author="true" version="true" use="true" windowtitle="JBoss Messaging ${module.version}">
+
+         <packageset dir="${source.java}" defaultexcludes="yes">
+            <include name="org/jboss/**"/>
+         </packageset>
+
+         <doctitle><![CDATA[<h2>JBoss Messaging  ${module.version}</h2>]]></doctitle>
+         <bottom><![CDATA[<i>Copyright &#169; 2006 JBoss Inc. All Rights Reserved.</i>]]></bottom>
+         <tag name="todo" scope="all" description="To do:"/>
+         <group title="JMS Facade" packages="org.jboss.jms.*"/>
+         <group title="Messaging Core" packages="org.jboss.messaging.*"/>
+         <!--
+         <link offline="true" href="http://java.sun.com/products/jdk/1.2/docs/api/" packagelistLoc="C:\tmp"/>
+         <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
+         -->
+      </javadoc>
+   </target>
+
+   <target name="release-bundle" depends="release-structure, scoped-sar, source, source-zip, examples, javadoc">
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client-scoped.jar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
+      <copy todir="${release.output}/api">
+         <fileset dir="${build.api}" includes="**"/>
+      </copy>
       <copy todir="${release.output}/util">
          <fileset dir="./util">
             <include name="*.xml"/>
