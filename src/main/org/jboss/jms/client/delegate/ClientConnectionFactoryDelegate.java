@@ -21,9 +21,6 @@
  */
 package org.jboss.jms.client.delegate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.jms.JMSException;
 
 import org.jboss.aop.Dispatcher;
@@ -35,13 +32,11 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.Version;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
 
 /**
  * The client-side ConnectionFactory delegate class.
