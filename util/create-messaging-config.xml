@@ -69,9 +69,16 @@
          &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
       </replaceregexp>
 
-      <!-- copy the scoped sar -->
+      <!-- copy the scoped sar
       <copy todir="${jboss.home}/server/${messaging.config.name}/deploy"
             file="${relative.sar.location}/${messaging.sar.name}"/>
+      -->
+
+      <!-- we deploy the archive exploded so that users can easily access the configuration files -->
+      <unjar src="${relative.sar.location}/${messaging.sar.name}"
+         dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging">
+      </unjar>
+
 
    </target>
 
