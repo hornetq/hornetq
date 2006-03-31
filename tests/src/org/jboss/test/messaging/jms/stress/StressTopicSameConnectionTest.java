@@ -1675,6 +1675,7 @@ public class StressTopicSameConnectionTest extends StressTestBase
    public void test_Simple_TP_LA_durable() throws Exception
    {
       Connection conn = cf.createConnection();
+      conn.setClientID("hoojamapso");
       conn.start();
       
       Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -2949,6 +2950,7 @@ public class StressTopicSameConnectionTest extends StressTestBase
    public void test_Multiple_Tx_durable() throws Exception
    {
       Connection conn = cf.createConnection();
+      conn.setClientID("hoojamapso");
       conn.start();
       
       

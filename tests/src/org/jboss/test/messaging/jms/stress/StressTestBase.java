@@ -41,9 +41,9 @@ import org.jboss.test.messaging.tools.ServerManagement;
  */
 public class StressTestBase extends MessagingTestCase
 {
-   protected static final int NUM_PERSISTENT_MESSAGES = 5000;
+   protected static final int NUM_PERSISTENT_MESSAGES = 4000;
    
-   protected static final int NUM_NON_PERSISTENT_MESSAGES = 8000;
+   protected static final int NUM_NON_PERSISTENT_MESSAGES = 6000;
    
    protected ConnectionFactory cf;
 
