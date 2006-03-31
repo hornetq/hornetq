@@ -8,20 +8,11 @@
 <body>
 <h1><br>
 JBoss Messaging 1.0.0 Beta1 Release Notes</h1>
-Mar 28, 2005<br>
+Mar 30, 2006<br>
 <br>
 $Revision$<br>
-<br>
 <span style="font-weight: bold;"><br>
 </span>
-<div style="text-align: left;"><span style="font-weight: bold;">Note</span>:
-The current JBoss Messaging distribution is a <span
- style="font-style: italic;"></span><span style="font-style: italic;">beta
-</span><span style="font-style: italic;">release. </span>We advise
-against using it in a production environment.<br>
-<br>
-</div>
-<br>
 <h2>Overview</h2>
 This notes document an intermediate beta preview release of JBoss
 Messaging.
@@ -176,7 +167,7 @@ script, available in the <small><span
  style="font-family: courier new,courier,monospace;">util </span></small>directory
 of the release bundle. Note that you need <small><span
  style="font-family: courier new,courier,monospace;">ant </span></small>installed
-and present in your path.<br>
+and accessible from your current directory.<br>
 <br>
 <br>
 <table style="width: 90%; text-align: left; margin-left: 40px;"
@@ -311,7 +302,7 @@ name="rolesProperties"&gt;messaging-roles.properties&lt;/module-option&gt;<br>
 </table>
 <br>
 <br>
-<span style="font-weight: bold;">5.</span> Copy the Beta1 service
+<span style="font-weight: bold;">5.</span> Copy the service
 archive that comes as part of the
 current Messaging distribution to the <span
  style="font-family: monospace;">messaging </span>configuration's
@@ -333,10 +324,15 @@ deployment directory.<br>
 </table>
 <span style="font-weight: bold;"><br>
 6.</span> Shut down any JBoss instance that may be running on your test
-machine.<br>
+machine. In case you want to start the JBoss instance configured to run
+Messaging in parallel with another running JBoss instance on the same
+physical machine, you need to enable the ServiceBindingManager in your <small><span
+ style="font-family: courier new,courier,monospace;">messaging<span
+ style="font-family: times new roman,times,serif;"> </span></span></small>configuration.<br>
 <br>
 <span style="font-weight: bold;">7.</span> Start the JBoss instance
-with the <span style="font-family: monospace;">messaging </span>configuration.<br>
+with the <span style="font-family: monospace;">messaging</span><span
+ style="font-family: times new roman,times,serif;"> </span>configuration.<br>
 <br>
 <table style="width: 90%; text-align: left; margin-left: 40px;"
  border="1" cellpadding="2" cellspacing="2">
@@ -366,41 +362,34 @@ Messaging deployment generates logging output similar to:<br>
  style="font-family: monospace;"><br>
 .......<br>
       <br>
-      </span><span style="font-family: monospace;">17:29:41,466
-INFO&nbsp; [ServerPeer] ServerPeer (id=0) starting<br>
-17:29:41,926 INFO&nbsp; [SecurityManager] JMS SecurityManager
-initialized<br>
-17:29:42,066 INFO&nbsp; [ServerPeer] JMS ServerPeer (id=0) started<br>
-17:29:42,086 INFO&nbsp; [DestinationManagerImpl] Topic testTopic
-created and bound in JNDI as /topic/testTopic<br>
-17:29:42,086 INFO&nbsp; [Topic] Topic:testTopic started<br>
-17:29:42,086 INFO&nbsp; [DestinationManagerImpl] Topic securedTopic
-created and bound in JNDI as /topic/securedTopic<br>
-17:29:42,086 INFO&nbsp; [Topic] Topic:securedTopic started<br>
-17:29:42,086 INFO&nbsp; [DestinationManagerImpl] Topic testDurableTopic
-created and bound in JNDI as /topic/testDurableTopic<br>
-17:29:42,086 INFO&nbsp; [Topic] Topic:testDurableTopic started<br>
-17:29:42,106 INFO&nbsp; [DestinationManagerImpl] Queue testQueue
-created and bound in JNDI as /queue/testQueue<br>
-17:29:42,106 INFO&nbsp; [Queue] Queue:testQueue started<br>
-17:29:42,106 INFO&nbsp; [DestinationManagerImpl] Queue DLQ created and
-bound in JNDI as /queue/DLQ<br>
-17:29:42,106 INFO&nbsp; [Queue] Queue:DLQ started<br>
-17:29:42,116 INFO&nbsp; [DestinationManagerImpl] Queue A created and
-bound in JNDI as /queue/A<br>
-17:29:42,116 INFO&nbsp; [Queue] Queue:A started<br>
-17:29:42,116 INFO&nbsp; [DestinationManagerImpl] Queue B created and
-bound in JNDI as /queue/B<br>
-17:29:42,116 INFO&nbsp; [Queue] Queue:B started<br>
-17:29:42,387 INFO&nbsp; [DestinationManagerImpl] Queue C created and
-bound in JNDI as /queue/C<br>
-17:29:42,387 INFO&nbsp; [Queue] Queue:C started<br>
-17:29:42,397 INFO&nbsp; [DestinationManagerImpl] Queue D created and
-bound in JNDI as /queue/D<br>
-17:29:42,397 INFO&nbsp; [Queue] Queue:D started<br>
-17:29:42,397 INFO&nbsp; [DestinationManagerImpl] Queue ex created and
-bound in JNDI as /queue/ex<br>
-17:29:42,397 INFO&nbsp; [Queue] Queue:ex started<br>
+      </span><span style="font-family: monospace;">18:25:42,530
+INFO&nbsp; [ServerPeer] JMS ServerPeer [server.0] started, connection
+failure checking active, lease period 20000 ms<br>
+18:25:42,540 INFO&nbsp; [ConnectionFactory] [/ConnectionFactory,
+/XAConnectionFactory, java:/ConnectionFactory,
+java:/XAConnectionFactory] deployed<br>
+18:25:42,560 INFO&nbsp; [Topic] Topic[/topic/testTopic] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,820 INFO&nbsp; [Topic] Topic[/topic/securedTopic] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,830 INFO&nbsp; [Topic] Topic[/topic/testDurableTopic] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,850 INFO&nbsp; [Queue] Queue[/queue/testQueue] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,850 INFO&nbsp; [Queue] Queue[/queue/DLQ] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/A] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/B] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/C] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/D] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,870 INFO&nbsp; [Queue] Queue[/queue/ex] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
+18:25:42,880 INFO&nbsp; [Topic] Topic[/topic/openTopic] started,
+fullSize=75000, pageSize=2000, downCacheSize=1000<br>
       <br>
 ......<br>
       <br>
@@ -413,22 +402,80 @@ bound in JNDI as /queue/ex<br>
 <span style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);"></span></span>You
 can use a number of simple JMS examples that are
 provided
-with the release to validate the deployment. Each example has its own <span
- style="font-family: monospace;">README.html</span> file that
+with the release to validate the deployment. Each example comes with
+its own <span style="font-family: monospace;">README.html</span> file
+that
 contains instructions on how to run it. The
-readme files and the source code are available under the <span
+<span style="font-family: monospace;">README.html </span>files and the
+source code are available under the <span
  style="font-family: monospace;">examples</span> directory.<br>
 <br>
+<h2>Changes introduced by the release </h2>
+<h3 style="margin-left: 40px;">Feature Requests</h3>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-6">JBMESSAGING-6</a>]
+- Performance Metrics</li>
+</ul>
+<h3 style="margin-left: 40px;">Fixed Bugs</h3>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-93">JBMESSAGING-93</a>]
+- Must not be possible to create a TemporaryQueue/TemporaryTopic on a
+closed Session</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-219">JBMESSAGING-219</a>]
+- JBossRemoting connection checking reduces performance</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-226">JBMESSAGING-226</a>]
+- Serialization lacks versioning</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-281">JBMESSAGING-281</a>]
+- java.lang.NoClassDefFoundError:
+org/jboss/util/collection/SoftValueHashMap when deploying JBM on JBoss
+4.0.x</li>
+</ul>
+<h3 style="margin-left: 40px;">Tasks</h3>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-27">JBMESSAGING-27</a>]
+- Refactor server-side AOP support</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-40">JBMESSAGING-40</a>]
+- Lazily Loading Queues</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-45">JBMESSAGING-45</a>]
+- Non-colocated JMS Facade tests</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-50">JBMESSAGING-50</a>]
+- JBoss Messaging 1.0 Beta</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-66">JBMESSAGING-66</a>]
+- XAResource implementation</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-83">JBMESSAGING-83</a>]
+- Refactor JMS facade interceptor stack to use AOP Remote Proxy</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-84">JBMESSAGING-84</a>]
+- Refactor JMS interceptors as more generic JBoss AOP aspects</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-86">JBMESSAGING-86</a>]
+- Review the JMS facade code for thread safety</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-90">JBMESSAGING-90</a>]
+- Generate a correct manifest file</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-95">JBMESSAGING-95</a>]
+- Scoped deployment under JBoss 4</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-161">JBMESSAGING-161</a>]
+- Amend the lifecycle of the remoting Client created by
+RemotingClientInterceptor</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-179">JBMESSAGING-179</a>]
+- Improve locking on ref queue</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-241">JBMESSAGING-241</a>]
+- Run TCK before each release</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-263">JBMESSAGING-263</a>]
+- Completely enable performance testing framework</li>
+</ul>
 <br>
 <h2>JBoss Messaging Links</h2>
 JBoss Messaging home page: <a
- href="http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging">http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging</a><br>
+ href="http://www.jboss.com/products/messaging">http://www.jboss.com/products/messaging</a><a
+ href="http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging"></a><br>
 JBoss Messaging project roadmap: <a
  href="http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel">http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel</a><br>
+JBoss Messaging user forum: <a
+ href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238</a><br>
 JBoss Messaging design forum: <a
  href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153">http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153</a><br>
-JBoss Messaging CVS: <a
- href="http://anoncvs.forge.jboss.com:8080/viewrep/JBoss/jboss-jms">http://anoncvs.forge.jboss.com:8080/viewrep/JBoss/jboss-jms</a><br>
+JBoss Messaging repository: <a
+ href="http://fisheye.jboss.com/viewrep/JBoss/jboss-jms">http://fisheye.jboss.com/viewrep/JBoss/jboss-jms</a><a
+ href="http://anoncvs.forge.jboss.com:8080/viewrep/JBoss/jboss-jms"></a><br>
 <br>
 <hr style="width: 100%; height: 2px;">
 </body>
