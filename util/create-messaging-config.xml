@@ -17,7 +17,10 @@
 
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="messaging.config.name" value="messaging"/>
-   <property name="relative.sar.location" value="../output/lib"/>
+   <!-- DO NOT change this value here, otherwise the installation script won't work. Change it in
+        do-not-distribute.properties.
+   -->
+   <property name="relative.sar.location" value=".."/>  
    <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
 
    <target name="validate-jboss">
