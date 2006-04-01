@@ -41,9 +41,6 @@
       <pathelement path="./output"/>
       <pathelement path="./output/classes"/>
       <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
-      <fileset dir="${jboss.home}/client" includes="*.jar"/>
-      <fileset file="${jboss.home}/server/default/lib/javax.servlet.jar"/>
-      <fileset file="${jboss.home}/lib/commons-httpclient.jar"/>
    </path>
 
    <target name="identify">

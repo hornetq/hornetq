@@ -94,7 +94,7 @@ public class Sender extends ExampleSupport
 
 
 
-      message = (TextMessage)consumer.receive(2000);
+      message = (TextMessage)consumer.receive(5000);
 
 
 
