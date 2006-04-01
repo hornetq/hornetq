@@ -7,18 +7,15 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.0.0 Beta1 Release Notes</h1>
-Mar 30, 2006<br>
+JBoss Messaging 1.0.0 Release Notes</h1>
+Mar 31, 2006<br>
 <br>
 $Revision$<br>
 <span style="font-weight: bold;"><br>
 </span>
 <h2>Overview</h2>
-This notes document an intermediate beta preview release of JBoss
-Messaging.
-In
-its final production release, JBoss
-Messaging will be a JMS 1.1 compliant JMS provider, based on a
+JBoss
+Messaging is a JMS 1.1 compliant JMS provider, based on a
 completely
 new design, which recycles a
 limited number of JBossMQ well-designed sub-systems and replaces
@@ -37,7 +34,7 @@ essentially a singleton (hub and spoke server architecture).
 Some HA features have been later bolted on it, but it lacks in-memory
 replication of NON_PERSISTENT messages, distributed/replicated
 destinations and transparent fail-over. JBoss Messaging will add these
-features. However, production quality clustering will be available only
+features. However, production quality clustering will be only available
 in the Messaging 1.2 release.<br>
   </li>
   <li>Better modular architecture. There is a clear distinction between
@@ -53,7 +50,7 @@ clients and serverless JMS. <br>
 </ul>
 <span style="font-style: italic;"></span><br>
 The current release has been tested with
-JBoss 4.x series and JBoss 5.0.0 Alpha.<br>
+JBoss 4.x series and JBoss 5.0.0.Alpha.<br>
 <br>
 <h2>Contents</h2>
 The JBoss Messaging release bundle includes the following files and
@@ -67,14 +64,15 @@ to the "Installation" section.</li>
 - the client-side library that need to be in the classpath of the
 client that opens a remote connection to the Messaging server. <br>
   </li>
-  <li><span style="font-family: monospace;">examples</span><span
+  <li><span style="font-family: monospace;">docs/examples</span><span
  style="font-family: times new roman,times,serif;"> </span>- a
 collection of examples that should run out of the box and
 help you validate the installation. Detailed instructions are provided
 with each example, which range from very simple JMS queue and topic
 examples to relatively sophisticated use cases in which EJBs and JCA
-JMS ConnectionFactories are involved.<br>
-  </li>
+JMS ConnectionFactories are involved.</li>
+  <li><span style="font-family: monospace;">docs/api</span><span
+ style="font-family: times new roman,times,serif;"> - the Javadoc.</span></li>
   <li><small><span style="font-family: courier new,courier,monospace;">util<span
  style="font-family: times new roman,times,serif;"> </span></span></small>-
 a collection of scripts and <small><span
@@ -90,14 +88,16 @@ follow
 the instructions from the "Building JBoss Messaging from Sources"
 section.<br>
   </li>
-  <li><span style="font-family: monospace;">jboss-messaging-1.0.0.Beta1-src.zip</span>
+  <li><span style="font-family: monospace;">jboss-messaging-1.0.0-src.zip</span>
 - the zipped <span style="font-family: monospace;">src</span>
 directory. The file can be directly installed into and use with a
 debugger.<br>
   </li>
-  <li><small><span style="font-family: courier new,courier,monospace;">jboss-messaging-test-results-1.0.0.Beta1.zip</span></small>
+  <li><small><span style="font-family: courier new,courier,monospace;">jboss-messaging-test-results-1.0.0.zip</span></small>
 - the results of the release functional testuite run, in XML, text and
 HTML format.</li>
+  <li><small><span style="font-family: courier new,courier,monospace;">jboss-messaging-stress-test-results-1.0.0.zip</span></small>
+- the results of the release functional testuite in HTML format.</li>
   <li>This <span style="font-family: monospace;">README </span>file.<br>
   </li>
 </ul>
@@ -113,7 +113,7 @@ JBoss CVS. Instructions on how to do this are available at <a
 The essential steps of the procedure are provided below:<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cvs
-co -r JBossMessaging_1_0_0_Beta1 jboss-head</span><br
+co -r JBossMessaging_1_0_0 jboss-head</span><br
  style="font-family: monospace;">
 <span style="font-family: monospace;">cd jboss-head</span><br
  style="font-family: monospace;">
@@ -142,7 +142,7 @@ in <span style="font-family: monospace;">output/lib</span>.<br>
       <div style="text-align: justify;"><span
  style="font-family: monospace;"></span><span
  style="color: rgb(255, 0, 0); font-weight: bold;">A JBoss Messaging
-1.0.0 Beta1 installation conflicts with the existing JBossMQ
+1.0.0 installation conflicts with the existing JBossMQ
 instance that comes part of the standard JBoss 4.x distribution. In
 order to install JBoss Messaging you will need to create a new JBoss
 configuration, following one of the alternative procedures described
@@ -411,57 +411,6 @@ source code are available under the <span
  style="font-family: monospace;">examples</span> directory.<br>
 <br>
 <h2>Changes introduced by the release </h2>
-<h3 style="margin-left: 40px;">Feature Requests</h3>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-6">JBMESSAGING-6</a>]
-- Performance Metrics</li>
-</ul>
-<h3 style="margin-left: 40px;">Fixed Bugs</h3>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-93">JBMESSAGING-93</a>]
-- Must not be possible to create a TemporaryQueue/TemporaryTopic on a
-closed Session</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-219">JBMESSAGING-219</a>]
-- JBossRemoting connection checking reduces performance</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-226">JBMESSAGING-226</a>]
-- Serialization lacks versioning</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-281">JBMESSAGING-281</a>]
-- java.lang.NoClassDefFoundError:
-org/jboss/util/collection/SoftValueHashMap when deploying JBM on JBoss
-4.0.x</li>
-</ul>
-<h3 style="margin-left: 40px;">Tasks</h3>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-27">JBMESSAGING-27</a>]
-- Refactor server-side AOP support</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-40">JBMESSAGING-40</a>]
-- Lazily Loading Queues</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-45">JBMESSAGING-45</a>]
-- Non-colocated JMS Facade tests</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-50">JBMESSAGING-50</a>]
-- JBoss Messaging 1.0 Beta</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-66">JBMESSAGING-66</a>]
-- XAResource implementation</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-83">JBMESSAGING-83</a>]
-- Refactor JMS facade interceptor stack to use AOP Remote Proxy</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-84">JBMESSAGING-84</a>]
-- Refactor JMS interceptors as more generic JBoss AOP aspects</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-86">JBMESSAGING-86</a>]
-- Review the JMS facade code for thread safety</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-90">JBMESSAGING-90</a>]
-- Generate a correct manifest file</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-95">JBMESSAGING-95</a>]
-- Scoped deployment under JBoss 4</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-161">JBMESSAGING-161</a>]
-- Amend the lifecycle of the remoting Client created by
-RemotingClientInterceptor</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-179">JBMESSAGING-179</a>]
-- Improve locking on ref queue</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-241">JBMESSAGING-241</a>]
-- Run TCK before each release</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-263">JBMESSAGING-263</a>]
-- Completely enable performance testing framework</li>
-</ul>
 <br>
 <h2>JBoss Messaging Links</h2>
 JBoss Messaging home page: <a
