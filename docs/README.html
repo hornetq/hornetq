@@ -64,14 +64,14 @@ to the "Installation" section.</li>
 - the client-side library that need to be in the classpath of the
 client that opens a remote connection to the Messaging server. <br>
   </li>
-  <li><span style="font-family: monospace;">docs/examples</span><span
+  <li><span style="font-family: monospace;">examples</span><span
  style="font-family: times new roman,times,serif;"> </span>- a
 collection of examples that should run out of the box and
 help you validate the installation. Detailed instructions are provided
 with each example, which range from very simple JMS queue and topic
 examples to relatively sophisticated use cases in which EJBs and JCA
 JMS ConnectionFactories are involved.</li>
-  <li><span style="font-family: monospace;">docs/api</span><span
+  <li><span style="font-family: monospace;">api</span><span
  style="font-family: times new roman,times,serif;"> - the Javadoc.</span></li>
   <li><small><span style="font-family: courier new,courier,monospace;">util<span
  style="font-family: times new roman,times,serif;"> </span></span></small>-
@@ -410,8 +410,76 @@ contains instructions on how to run it. The
 source code are available under the <span
  style="font-family: monospace;">examples</span> directory.<br>
 <br>
-<h2>Changes introduced by the release </h2>
+<h2>Changes introduced by this release </h2>
 <br>
+<h2 style="margin-left: 40px;"><small>Feature Requests</small></h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-183">JBMESSAGING-183</a>]
+- Crash and recovery tests</li>
+</ul>
+<h2 style="margin-left: 40px;"><small>Bugs</small></h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-214">JBMESSAGING-214</a>]
+- SecurityAspect performs unnecessary checks</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-256">JBMESSAGING-256</a>]
+- MessageReference.acquire not called from copy constructor</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-270">JBMESSAGING-270</a>]
+- ConnectionManager detects "broken client connection" and closes the
+connection when it shouldn't</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-272">JBMESSAGING-272</a>]
+- JBossStreamMessage.readBytes(byte[]) under certain conditions doesn't
+increment the stream position correctly causing next read to fail</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-276">JBMESSAGING-276</a>]
+- Connection checking using Remoting lease mechanism broken</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-285">JBMESSAGING-285</a>]
+- Non-durable subscriptions survive reboot</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-291">JBMESSAGING-291</a>]
+- Remoting too many threads</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-293">JBMESSAGING-293</a>]
+- Remoting version socket read</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-298">JBMESSAGING-298</a>]
+- Fix ConnectionConsumer (timeout)</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-299">JBMESSAGING-299</a>]
+- Simple remote send dies with java.lang.NoClassDefFoundError</li>
+</ul>
+<h2 style="margin-left: 40px;"><small>Tasks</small></h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-8">JBMESSAGING-8</a>]
+- Documentation</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-42">JBMESSAGING-42</a>]
+- Javadocs</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-94">JBMESSAGING-94</a>]
+- Automate CTS runs</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-114">JBMESSAGING-114</a>]
+- Connection resources need to be garbage collected on connection
+failure</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-223">JBMESSAGING-223</a>]
+- peformance framework destinations don't belong in
+jboss-messaging-service.xml</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-243">JBMESSAGING-243</a>]
+- Add seurity checks on activate, deactivate and getmessagenow</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-245">JBMESSAGING-245</a>]
+- Optimise createProducer</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-249">JBMESSAGING-249</a>]
+- Add foreign message persistence manager test</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-251">JBMESSAGING-251</a>]
+- Rename message delegates to messag proxies</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-252">JBMESSAGING-252</a>]
+- Commit and rollback should use custom wire format</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-253">JBMESSAGING-253</a>]
+- Test for memory leaks</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-258">JBMESSAGING-258</a>]
+- Check behaviour of failure handling</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-260">JBMESSAGING-260</a>]
+- Create jboss-messaging-client.jar</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-261">JBMESSAGING-261</a>]
+- Apply the new product versioning scheme to Messaging</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-278">JBMESSAGING-278</a>]
+- JMSXDeliveryCount support</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-297">JBMESSAGING-297</a>]
+- Manually test the management interface</li>
+</ul>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <h2>JBoss Messaging Links</h2>
 JBoss Messaging home page: <a
  href="http://www.jboss.com/products/messaging">http://www.jboss.com/products/messaging</a><a
