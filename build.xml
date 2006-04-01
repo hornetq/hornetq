@@ -158,7 +158,8 @@
      <!-- Messaging specific structure properties -->
      <property name="build.sar" value="${module.output}/sar"/>
      <property name="build.scoped-sar" value="${module.output}/scoped-sar"/>
-     <property name="build.dependencies" value="${module.output}/dependencies"/>
+     <property name="build.server.dependencies" value="${module.output}/server-dependencies"/>
+     <property name="build.client.dependencies" value="${module.output}/client-dependencies"/>
 
     <!-- Install/Release structure -->
     <property name="install.id" value="${module.name}-${module.version}"/>
@@ -504,10 +505,11 @@
       </jar>
    </target>
 
-   <target name="client-jar" depends="compile, create-lib-dir, extract-dependencies">
+   <target name="client-jar" depends="compile, create-lib-dir, extract-server-dependencies, extract-client-dependencies">
       <jar jarfile="${build.lib}/jboss-${module.name}-client.jar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
-         <fileset dir="${build.dependencies}" includes="**"/>
+         <fileset dir="${build.server.dependencies}" includes="**"/>
+         <fileset dir="${build.client.dependencies}" includes="**"/>
          <fileset dir="${build.etc}" includes="VERSION"/>
       </jar>
    </target>
@@ -519,20 +521,21 @@
       </jar>
    </target>
 
-   <target name="scoped-client-jar" depends="compile, create-lib-dir, extract-dependencies">
+   <target name="scoped-client-jar" depends="compile, create-lib-dir, extract-server-dependencies, extract-client-dependencies">
       <jar jarfile="${build.lib}/jboss-${module.name}-client-scoped.jar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
-         <fileset dir="${build.dependencies}" includes="**"/>
+         <fileset dir="${build.server.dependencies}" includes="**"/>
+         <fileset dir="${build.client.dependencies}" includes="**"/>
          <fileset dir="${build.etc}" includes="VERSION"/>
       </jar>
    </target>
 
-   <target name="scoped-sar" depends="compile, create-lib-dir, scoped-client-jar, scoped-sar-structure, extract-dependencies">
+   <target name="scoped-sar" depends="compile, create-lib-dir, scoped-client-jar, scoped-sar-structure, extract-server-dependencies">
       <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
          <fileset dir="${build.sar}" includes="**" excludes="${build.sar}/META-INF/jboss-service.xml"/>
          <fileset dir="${build.scoped-sar}" includes="**"/>
-         <fileset dir="${build.dependencies}" includes="**"/>
+         <fileset dir="${build.server.dependencies}" includes="**"/>
       </jar>
    </target>
 
@@ -559,7 +562,7 @@
 
    <target name="scoped-sar-structure" depends="sar-structure">
       <mkdir dir="${build.scoped-sar}"/>
-      <antcall target="extract-dependencies">
+      <antcall target="extract-server-dependencies">
          <param name="scoped.dependencies.dir" value="${build.scoped-sar}"/>
       </antcall>
       <!-- enable scoping -->
@@ -571,24 +574,24 @@
       </replaceregexp>
    </target>
 
-   <target name="extract-dependencies">
+   <target name="extract-server-dependencies">
 
       <fail message="Fix the build script to correctly define 'current.jboss.remoting.lib'!" unless="current.jboss.remoting.lib"/>
       <fail message="Fix the build script to correctly define 'current.jboss.serialization.lib'!" unless="current.jboss.serialization.lib"/>
 
-      <mkdir dir="${build.dependencies}"/>
+      <mkdir dir="${build.server.dependencies}"/>
 
-      <unjar dest="${build.dependencies}" src="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
-      <unjar dest="${build.dependencies}" src="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
-      <unjar dest="${build.dependencies}" src="${jboss.aop.lib}/jboss-aop.jar"/>
-      <unjar dest="${build.dependencies}" src="${jboss.aspects.lib}/jboss-aspect-library.jar"/>
-      <unjar dest="${build.dependencies}" src="${javassist.javassist.lib}/javassist.jar"/>
-      <unjar dest="${build.dependencies}" src="${trove.trove.lib}/trove.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${jboss.aop.lib}/jboss-aop.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${jboss.aspects.lib}/jboss-aspect-library.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${javassist.javassist.lib}/javassist.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${trove.trove.lib}/trove.jar"/>
 
       <!-- we need org/jboss/util/collection.SoftValueHashMap
            which was moved http://jira.jboss.org/jira/browse/JBMESSAGING-281
       -->
-      <unjar dest="${build.dependencies}" src="${jboss.common.lib}/jboss-common.jar" >
+      <unjar dest="${build.server.dependencies}" src="${jboss.common.lib}/jboss-common.jar" >
          <patternset>
             <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
          </patternset>
@@ -599,18 +602,28 @@
            org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
            like javaURLContextFactory, which will mess up JNDI and other things.
       -->
-      <unjar dest="${build.dependencies}" src="${jboss.server.lib}/jboss.jar">
+      <unjar dest="${build.server.dependencies}" src="${jboss.server.lib}/jboss.jar">
          <patternset>
             <include name="org/jboss/invocation/unified/**"/>
          </patternset>
       </unjar>
 
       <!-- I also need org.jboss.util.stream.* -->
-      <unjar dest="${build.dependencies}" src="${jboss.common.lib}/jboss-common.jar">
+      <unjar dest="${build.server.dependencies}" src="${jboss.common.lib}/jboss-common.jar">
          <patternset>
             <include name="org/jboss/util/stream/**"/>
          </patternset>
       </unjar>
+   </target>
+
+   <target name="extract-client-dependencies">
+      <mkdir dir="${build.client.dependencies}"/>
+      <unjar dest="${build.client.dependencies}" src="${jboss.common.lib}/jboss-common-client.jar"/>
+      <unjar dest="${build.client.dependencies}" src="${jboss.j2ee.lib}/jboss-j2ee.jar"/>
+      <unjar dest="${build.client.dependencies}" src="${jboss.j2se.lib}/jboss-j2se.jar"/>
+      <unjar dest="${build.client.dependencies}" src="${jboss.naming.lib}/jnp-client.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${oswego.concurrent.lib}/concurrent.jar"/>
+      <unjar dest="${build.server.dependencies}" src="${apache.log4j.lib}/log4j.jar"/>
    </target>
 
    <!-- ================================================================== -->
