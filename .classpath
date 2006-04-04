@@ -14,7 +14,6 @@
 	<classpathentry kind="lib" path="/thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="src" path="/j2se"/>
 	<classpathentry kind="src" path="/aspects"/>
-	<classpathentry kind="lib" path="/thirdparty/gnu-regexp/lib/gnu-regexp.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/server"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/connector"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/transaction"/>
