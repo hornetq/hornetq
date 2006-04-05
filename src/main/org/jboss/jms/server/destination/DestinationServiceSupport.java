@@ -371,34 +371,5 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    // Private -------------------------------------------------------
    
-   /**
-    * Check if fullSize, pageSize and downCacheSize are valid.
-    * @return true only when they are valid.
-    */
-   private boolean validateParameters(int fullSize, int pageSize, int downCacheSize)
-   {
-      if (pageSize >= fullSize)
-      {
-         log.warn("pageSize must be less than fullSize");
-         return false;
-      }
-      if (downCacheSize > pageSize)
-      {
-         log.warn("pageSize cannot be smaller than downCacheSize");
-         return false;
-      }
-      if (pageSize <= 0)
-      {
-         log.warn("pageSize must be greater than zero");
-         return false;
-      }
-      if (downCacheSize <= 0)
-      {
-         log.warn("downCacheSize must be greater than zero");
-         return false;
-      }
-      return true;
-   }
-
    // Inner classes -------------------------------------------------
 }
