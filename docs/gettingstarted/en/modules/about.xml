@@ -1,8 +1,7 @@
 <chapter id="about">
 
   <title>About this guide</title>
-  <para>The primary focus of this manual is to introduce a brand new module in the JEMS stack; JBoss Messaging 1.0. </para>
-  
+  <para>The purpose of this guide is to get you up and running quickly with JBoss Messaging 1.0 - the new module in the JEMS stack</para>
 
    <para>  </para>
    <para>  </para>
@@ -19,23 +18,27 @@
    <para>  </para>
    <para>  </para>
    <para>  </para>
-    
+
    <para>
    <emphasis role="bold">Team:</emphasis>
    </para>
-   
-   
+
+
    <para>
- 	Ovidiu Feodorov, Project Lead
+    Ovidiu Feodorov, Project Lead
    </para>
-   
+
    <para>
-    Tim Fox, Senior Core Developer Messaging
+    Tim Fox, Senior Core Messaging Developer
    </para>
-   
+
    <para>
     Luc Texier, Lead Support EMEA
    </para>
 
-  
+   <para>
+    Other contributions by: Bela Ban, Adrian Brock, Alex Fu, Aaaron Walker
+   </para>
+
+
 </chapter>

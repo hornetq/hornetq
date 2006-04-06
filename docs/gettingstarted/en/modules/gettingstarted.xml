@@ -6,8 +6,8 @@
   </para>
 
   <section id="releasebundle">
-    <title>The JBoss Messaging release bundle</title>  
-  
+    <title>The JBoss Messaging release bundle</title>
+
     <itemizedlist>
     <listitem><emphasis role="bold">jboss-messaging-scoped.sar: </emphasis> the deployable JBoss service archive that contains JBoss Messaging and its dependencies.</listitem>
 <listitem><emphasis role="bold">jboss-messaging-client-scoped.sar: </emphasis> the client-side library that need to be in the classpath of the client that opens a remote connection to the Messaging server.</listitem>
@@ -17,19 +17,19 @@
 <listitem><emphasis role="bold">jboss-messaging-1.0.0-src.zip: </emphasis> the zipped src directory. The file can be directly installed into and use with a debugger.</listitem>
 <listitem><emphasis role="bold">jboss-messaging-test-results-1.0.0.zip: </emphasis> the results of the release functional testuite run, in XML, text and HTML format.</listitem>
     </itemizedlist>
-  
+
   </section>
-  
-    
+
+
   <section id="CVS">
     <title>CVS Access</title>
- 
+
    <para>
-   If you want to experiment with the latest developments you may checkout the latest code from the 5.0 head branch. Be aware that the information provided in this manual might then not be accurate. Check out the following wiki fot the latest instructions http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingBuildInstructions 
+   If you want to experiment with the latest developments you may checkout the latest code from the 5.0 head branch. Be aware that the information provided in this manual might then not be accurate. Check out the following wiki for the latest instructions http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingBuildInstructions
    </para>
-  
+
   </section>
-  
+
   <section id="projectdirectory">
     <title>The JBoss Messaging project directory</title>
     <itemizedlist>
@@ -40,6 +40,6 @@
       <listitem><emphasis role="bold"><ulink url="http://jira.jboss.com/jira/browse/JBMESSAGING">issue tracker</ulink></emphasis>: for submitting bugs and feature requests</listitem>
       <listitem><emphasis role="bold"><ulink url="http://sourceforge.net/project/showfiles.php?group_id=70542">downloads</ulink></emphasis>: sourceforge download page for jBPM</listitem>
     </itemizedlist>
-  </section>  
-  
+  </section>
+
 </chapter>

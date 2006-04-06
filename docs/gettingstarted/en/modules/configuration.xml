@@ -1,102 +1,364 @@
 <chapter id="configuration">
   <title>Configuration</title>
-  
-  <para>JBoss Messaging is composed of several services working together to provide JMS api level services to client applications. Some of the services that make up Messaging are introduced in this section.
+
+  <para>JBoss Messaging is composed of several services working together to provide JMS API level services to client applications. Some of the services that make up Messaging are introduced in this section.
   </para>
-  
+
   <para>
    <emphasis role="bold">Note:</emphasis> In JBoss Messaging 1.0 most of those services are configurable via mbean definitions which are <emphasis role="bold">all</emphasis> located in <literal>jboss-messaging.sar/META-INF/jboss-service.xml</literal>. In the next release, configurations will be broken down into separate xml files.
   </para>
-  
-  
+
+
   <section id="conf.serverpeer">
-    <title>Configuring the ServerPeer</title>
+    <title>Configuring the Server Peer</title>
 
     <para>
-	xxxxx
-	
-	</para>
-  
-  </section>
-  
-  
-  
-    
-  <section id="conf.persistence">
-    <title>Configuring JDBC persistence</title>
+      The Server Peer is the "heart" of the JBoss Messaging JMS facade.
+    </para>
+    <para>An example of a Server Peer configuration is presented below</para>
 
-    <para>The JDBC2 Persistence Manager (PM) is used to store jms messages marked as being persistent into a relational database using JDBC. 
-	  JBoss Messaging is shipped with several pm configuration files for the most commonly used database servers such as Oracle, mySQL or MSSQL. These files are located in <literal>/docs/examples/config</literal>
-	</para>
-  
+    <programlisting>
+
+     &lt;mbean code=&quot;org.jboss.jms.server.ServerPeer&quot;
+       name=&quot;jboss.messaging:service=ServerPeer&quot;
+       xmbean-dd=&quot;xmdesc/ServerPeer-xmbean.xml&quot;&gt;
+
+       &lt;constructor&gt;
+          &lt;!-- ServerPeerID --&gt;
+          &lt;arg type=&quot;java.lang.String&quot; value=&quot;server.0&quot; /&gt;
+          &lt;!-- DefaultQueueJNDIContext --&gt;
+          &lt;arg type=&quot;java.lang.String&quot; value=&quot;/queue&quot; /&gt;
+          &lt;!-- DefaultTopicJNDIContext --&gt;
+          &lt;arg type=&quot;java.lang.String&quot; value=&quot;/topic&quot; /&gt;
+       &lt;/constructor&gt;
+
+       &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;jboss.messaging:service=Connector,transport=socket&lt;/depends&gt;
+       &lt;depends optional-attribute-name=&quot;ThreadPool&quot;&gt;jboss.messaging:service=ThreadPool&lt;/depends&gt;
+       &lt;depends optional-attribute-name=&quot;PersistenceManager&quot;&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
+       &lt;depends optional-attribute-name=&quot;MessageStore&quot;&gt;jboss.messaging:service=MessageStore&lt;/depends&gt;
+       &lt;depends optional-attribute-name=&quot;ChannelMapper&quot;&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
+
+       &lt;!-- Set to -1 to completely disable client leasing --&gt;
+       &lt;attribute name=&quot;RemotingConnectionLeasePeriod&quot;&gt;20000&lt;/attribute&gt;
+       &lt;attribute name=&quot;SecurityDomain&quot;&gt;java:/jaas/messaging&lt;/attribute&gt;
+       &lt;attribute name=&quot;DefaultSecurityConfig&quot;&gt;
+         &lt;security&gt;
+             &lt;role name=&quot;guest&quot; read=&quot;true&quot; write=&quot;true&quot; create=&quot;true&quot;/&gt;
+         &lt;/security&gt;
+       &lt;/attribute&gt;
+   &lt;/mbean&gt;
+
+   </programlisting>
+
+   <section id="conf.serverpeer.leaseperiod">
+       <title>RemotingConnectionLeasePeriod</title>
+
+       <para>By default JBoss Messaging sends "Pings" down JMS connections to ensure they are stil alive. If the connection does not respond, it's resources are cleaned up.
+       </para>
+       <para>
+       This setting determines the period of time in milliseconds between pings.
+       </para>
+       <para>Set to <literal>-1</literal> to turn connection checking off altogether, but be warned that if JMS clients then crash, their corresponding server side resources will not be cleaned-up causing a resource "leak".
+       </para>
+   </section>
+
+   <section id="conf.serverpeer.securitydomain">
+      <title>SecurityDomain</title>
+      <para>
+      This identifies the JBoss security domain that will be used when JBoss Messaging authenticates and authorises access to JMS destinations for reading, writing or creating.
+      </para>
+      <para>It should correspond to a entry in login-config.xml where it is configured in exactly the same way as any other security domain in JBoss.
+      </para>
+   </section>
+
+   <section id="conf.serverpeer.defaultsecurity">
+      <title>DefaultSecurityConfig</title>
+      <para>
+      Default security configuration is used when the security configuration for a specific queue or topic has not been overridden in the destination's deployment descriptor. It has exactly the same syntax and semantics as in JBoss MQ.
+      </para>
+      <para>
+      The <literal>DefaultSecurityConfig</literal> element should contain one <literal>Security</literal> element.
+      </para>
+      <para>
+      The <literal>Security</literal> element can contain multiple <literal>Role</literal> elements.
+      </para>
+      <para>
+      Each <literal>Role</literal> element defines the default access for that particular role.
+      </para>
+      <para>
+      If the <literal>read</literal> attrtibute is <literal>true</literal> then that role will be able to read (create consumers, receive messaages or browse) destinations by default.
+      </para>
+      <para>
+      If the <literal>write</literal> attrtibute is <literal>true</literal> then that role will be able to write (create producers or send messages) to destinations by default.
+      </para>
+      <para>
+      If the <literal>create</literal> attrtibute is <literal>true</literal> then that role will be able to create durable subscriptions on topics by default.
+      </para>
+   </section>
+
+  </section>
+
+
+  <section id="conf.persistence">
+    <title>Configuring persistence</title>
+
+    <para>The Persistence Manager (PM) is used to handle all persistence of messages and message related data to and from persistent storage.
+    </para>
+    <para>
+    JBoss Messaging ships with a JDBC PM used for handling persistence of message data in a relational database accessed via JDBC.
+    The PM is pluggable making it possible to provide other implementations for persisting message data in non relational stores, file stores etc.
+    </para>
+    <para>
+    The default PM configuration is designed to work out of the box with HSQL, however it must be stressed that HSQL should not be used in a production environment mainly due to it's limited support for transaction isolation.
+    </para>
+    <para>
+    JBoss Messaging also ships with a pre-made PM configuration for MySQL. Configurations for Oracle, MSSQL and other popular databases should be available soon.
+    The JDBC PM has been designed to use standard SQL wherever possible so writing a JDBC PM config for another database is usually only a fairly simple matter of changing column types in the configuration.
+    </para>
+    <para>
+    The MySQL configuration is located in <literal>/docs/examples/config</literal>
+   </para>
+
   <para>Example of a PM configuration for mySQL database
   </para>
   <programlisting>
 &lt;mbean code=&quot;org.jboss.messaging.core.plugin.JDBCPersistenceManager&quot;
 name=&quot;jboss.messaging:service=PersistenceManager&quot;
-xmbean-dd=&quot;xmdesc/JDBCPersistenceManager-xmbean.xml&quot;&gt; 
+xmbean-dd=&quot;xmdesc/JDBCPersistenceManager-xmbean.xml&quot;&gt;
 &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
 &lt;depends optional-attribute-name=&quot;TransactionManager&quot;&gt;jboss:service=TransactionManager&lt;/depends&gt;
 &lt;depends optional-attribute-name=&quot;ChannelMapper&quot;&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
 &lt;attribute name=&quot;DataSource&quot;&gt;java:/DefaultDS&lt;/attribute&gt;
 &lt;attribute name=&quot;CreateTablesOnStartup&quot;&gt;true&lt;/attribute&gt;
-&lt;attribute name=&quot;UsingBatchUpdates&quot;&gt;true&lt;/attribute&gt; 
+&lt;attribute name=&quot;UsingBatchUpdates&quot;&gt;true&lt;/attribute&gt;
 &lt;attribute name=&quot;SqlProperties&quot;&gt;&lt;![CDATA[
-CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE (CHANNELID BIGINT, MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), ORD BIGINT, DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID)) 
-CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID) 
-CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)
-.... 
+CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE (CHANNELID BIGINT, MESSAGEID BIGINT...
+DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID...
+CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACT...
+CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)...
+....
   </programlisting>
-  
+
   <para>
-   To change the pm configuration, navigate to <literal>/server/$SERVER_CONF/deploy/jboss-messaging.sar/META-INF</literal> and edit <literal>jboss-service.xml</literal>  
+   To change the pm configuration, navigate to <literal>/server/$SERVER_CONF/deploy/jboss-messaging.sar/META-INF</literal> and edit <literal>jboss-service.xml</literal>
+   </para>
+   <para>
    From the example folder, copy the mbean definition  that is appropriate for your database server e.g. mysql-jdbcpersistencemanager-service.xml
-   Paste it in place of the existing one then restart the server.  
+   Paste it in place of the existing one then restart the server.
   </para>
-  
+
+  <section id="conf.persistence.createtables">
+        <title>CreateTablesOnStartup</title>
+        <para>Set this to <literal>true</literal> if you wish the PM to attempt to create the tables (and indexes) when it starts. If the tables (or indexes) already exist a SQLException will be thrown by the JDBC driver and ignored by the PM, allowing it to continue.
+        By default this is set to <literal>true</literal>
+        </para>
   </section>
-  
+
+   <section id="conf.persistence.batchupdates">
+        <title>UsingBatchUpdates</title>
+
+        <para>
+          Set this to <literal>true</literal> if the database supports JDBC batch updates. The JDBC PM will then group multiple database updates in batches to aid performance.
+          By default this is set to <literal>true</literal>
+        </para>
+    </section>
+
+    <section id="conf.persistence.sqlproperties">
+        <title>SQLProperties</title>
+        <para>
+         This is where the DDL and DML for the particular database is specified. If a particular DDL or DML statement is not overridden the default HSQL configuration will be used for that statement.
+        </para>
+   </section>
+
+  </section>
+
   <section id="conf.destination">
     <title>Configuring destinations</title>
-  
-    <para>Since JBoss Messaging is deployed in its own class loading domain, you need to deploy the destinations you want to use with JBoss Messaging within the same class loading domain. 
-	</para>
-	<para>An example of a deployment descriptor that does that is presented below. Create a new deployment descriptor named myqueue-service.xml (or anything else that ends in -service.xml) and copy it in your deployment directory.
-	</para>
-	
-	<programlisting>		
+
+    <para>Since JBoss Messaging is deployed in its own class loading domain, you need to deploy the destinations you want to use with JBoss Messaging within the same class loading domain.
+   </para>
+   <para>An example of a deployment descriptor that does that is presented below.
+   </para>
+   <para>
+   Create a new deployment descriptor named myqueue-service.xml (or anything else that ends in -service.xml) and copy it in your deployment directory.
+   </para>
+
+   <programlisting>
+
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
   &lt;server&gt;
-    &lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
-      &lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
-    &lt;/loader-repository&gt;
-    &lt;mbean code=&quot;org.jboss.jms.server.jmx.Queue&quot;
-  name=&quot;jboss.messaging.destination:service=Queue,name=myQueue&quot;&gt;
-     &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
-    &lt;/mbean&gt;
- &lt;/server&gt; 
-	</programlisting>
-	
+     &lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
+        &lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
+     &lt;/loader-repository&gt;
+     &lt;mbean code=&quot;org.jboss.jms.server.destination.Queue&quot;
+         name=&quot;jboss.messaging.destination:service=Queue,name=testQueue&quot;
+         xmbean-dd=&quot;xmdesc/Queue-xmbean.xml&quot;&gt;
+         &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+         &lt;attribute name=&quot;SecurityConfig&quot;&gt;
+            &lt;security&gt;
+               &lt;role name=&quot;guest&quot; read=&quot;true&quot; write=&quot;true&quot;/&gt;
+               &lt;role name=&quot;publisher&quot; read=&quot;true&quot; write=&quot;true&quot; create=&quot;false&quot;/&gt;
+               &lt;role name=&quot;noacc&quot; read=&quot;false&quot; write=&quot;false&quot; create=&quot;false&quot;/&gt;
+            &lt;/security&gt;
+         &lt;/attribute&gt;
+         &lt;attribute name=&quot;fullSize&quot;&gt;75000&lt;/attribute&gt;
+         &lt;attribute name=&quot;pageSize&quot;&gt;2000&lt;/attribute&gt;
+         &lt;attribute name=&quot;downCacheSize&quot;&gt;2000&lt;/attribute&gt;
+   &lt;/mbean&gt;
+ &lt;/server&gt;
+
+   </programlisting>
+
+   <section id="conf.destination.security">
+    <title>Destination security configuration</title>
+
+      <para>
+         <literal>SecurityConfig</literal> - this allows you to determine which roles are allowed to read, write and create on the destination.
+         It has exactly the same syntax and semantics as the security configuration in JBossMQ destinations.
+      </para>
+      <para>
+         The <literal>SecurityConfig</literal> element should contain one <literal>Security</literal> element.
+      </para>
+      <para>
+         The <literal>Security</literal> element can contain multiple <literal>Role</literal> elements.
+      </para>
+      <para>
+         Each <literal>Role</literal> element defines the access for that particular role.
+      </para>
+      <para>
+         If the <literal>read</literal> attrtibute is <literal>true</literal> then that role will be able to read (create consumers, receive messaages or browse) this destination.
+      </para>
+      <para>
+         If the <literal>write</literal> attrtibute is <literal>true</literal> then that role will be able to write (create producers or send messages) to this destination.
+      </para>
+      <para>
+         If the <literal>create</literal> attrtibute is <literal>true</literal> then that role will be able to create durable subscriptions on this destination.
+      </para>
+      <para> Note that the security configuration for a destination is optional.
+      </para>
+      <para>If a <literal>SecurityConfig</literal> element is not specifed then the default security configuration from the Server Peer will be used.
+      </para>
+
+   </section>
+
+   <section id="conf.destination.paging">
+    <title>Destination paging parameters</title>
+
+      <para>
+      'Pageable Channels' are a sophisticated new feature available in JBoss Messaging.
+      </para>
+      <para>If your application needs to support very large queues or subscriptions containing potentially millions of messages, then it's not possible to store them all in memory at once.</para>
+      <para>JBoss Messaging solves this problem but letting you specify the maximum number of messages that can be stored in memory at any one time, on a queue-by-queue, or topic-by-topic basis.
+      </para>
+      <para>
+      JBoss Messaging then pages messages to and from storage transparently in blocks, allowing queues and subscriptions to grow to very large sizes without any performance degradation as channel size increases.
+      </para>
+      <para>
+      This has been tested with in excess of 10 million 2K messages on very basic hardware and has the potential to scale to much larger number of messages.
+      </para>
+      <para>
+      The individual parameters are:
+      </para>
+      <para>
+      <literal>fullSize</literal> - this is the maximum number of messages held by the queue or topic subscriptions in memory at any one time. The actual queue or subscription can hold many more messages than this but these are paged to and from storage as necessary as messages are added or consumed.
+      </para>
+      <para>
+      <literal>pageSize</literal> - When loading messages from the queue or subscrition this is the maximum number of messages to pre-load in one operation.
+      </para>
+      <para>
+      <literal>downCacheSize</literal> - When paging messages to storage from the queue they first go into a "Down Cache" before being written to storage. This enables the write to occur as a single operation thus aiding performance. This setting determines the max number of messages that the Down Cache will hold before they are flushed to storage.
+      </para>
+
+      <para>If no values for <literal>fullSize</literal>, <literal>pageSize</literal>, or <literal>downCacheSize</literal> are specified they will default to values 75000, 2000, 2000 respectively.</para>
+
+
+   </section>
+
   </section>
 
   <section id="conf.connections">
     <title>Configuring connection factories</title>
 
     <para>
-	xxxxx
-	
-	</para>
-  
+      By default JBossMessaging binds just one connection factory in JNDI on start-up.
+    </para>
+    <para>
+    This connection factory has no client id and is bound into the following JNDI contexts:
+       <literal>/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory</literal>
+    </para>
+    <para>
+      You may want to configure additional connection factories, for instance if you want to provide a default client id for a connection factory, or if you want to bind it in different places in JNDI.
+    </para>
+    <para>
+      An example connection factory configuration is presented below:
+
+      <programlisting>
+     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+     &lt;server&gt;
+        &lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
+           &lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
+        &lt;/loader-repository&gt;
+        &lt;mbean code=&quot;org.jboss.jms.server.connectionfactory.ConnectionFactory&quot;
+           name=&quot;jboss.messaging.destination:service=ConnectionFactory&quot;
+           xmbean-dd=&quot;xmdesc/ConnectionFactory-xmbean.xml&quot;&gt;
+           &lt;constructor&gt;
+              &lt;arg type=&quot;java.lang.String&quot; value=&quot;myClientID&quot;/&gt;
+           &lt;/constructor&gt;
+           &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+           &lt;attribute name=&quot;JNDIBindings&quot;&gt;
+              &lt;bindings&gt;
+                 &lt;binding&gt;/MyConnectionFactory1&lt;/binding&gt;
+                 &lt;binding&gt;/factories/cf1&lt;/binding>&gt;
+              &lt;/bindings&gt;
+           &lt;/attribute&gt;
+        &lt;/mbean&gt;
+     &lt;/server&gt;
+
+    </programlisting>
+
+    </para>
+
+    <para>
+      The above example would creater a connection factory with pre-configured client id <literal>myClientID</literal> and bind the connection factory in two places in the JNDI tree: <literal>/MyConnectionFactory</literal> and <literal>/factories/cf</literal>.
+    </para>
+
   </section>
-  
+
   <section id="conf.changingds">
     <title>Changing the database</title>
 
     <para>By default, the Messaging services, relying on a datastore, are referencing <literal>"java:/DefaultDS"</literal> for the datasource. If you are deploying a datasource with a different jndi name, you need to update all the <literal>DataSource</literal> attribute in jboss-service.xml as well.
-	</para>
-  
+   </para>
+
   </section>
-  
-    
-  
+
+  <section id="conf.connector">
+      <title>Configuring the remoting connector</title>
+
+      <para>
+        JBoss Messaging uses JBoss Remoting  for all client to server communication.
+      </para>
+      <para>
+        For full details of what JBoss Remoting is capable of and how it is configured please consult the JBoss Remoting project page.
+      </para>
+      <para>
+        JBoss Messaging currently uses only one connector per server peer, although this is set to change in future releases.
+      </para>
+      <para>
+        The default connector is configured to use the remoting socket transport.
+      </para>
+      <para>
+        This transport opens TCP connections from client to server for client to server communications (e.g. sending messages) and TCP connections from server to client for server to client communications (e.g. receiving messages).
+      </para>
+      <para>
+        The transport can be configured to use SSL where a higher level of security is required.
+      </para>
+      <para>
+        Future releases JBoss Messaging will support a bidirectional socket transport (similar to UIL2 in JBoss MQ) and an HTTP transport, both of which are useful in network environments where TCP connections from server to client are not possible.
+      </para>
+
+  </section>
+
+
+
 </chapter>
