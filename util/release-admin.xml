@@ -9,7 +9,7 @@
 
 <!-- $Id$ -->
 
-<project default="create-config" name="Create JBoss 4.x Messaging Configuration">
+<project default="install" name="Create JBoss 4.x Messaging Configuration">
 
    <property environment="ENV"/>
 
@@ -20,16 +20,17 @@
    <!-- DO NOT change this value here, otherwise the installation script won't work. Change it in
         do-not-distribute.properties.
    -->
-   <property name="relative.sar.location" value=".."/>  
+   <property name="relative.sar.location" value=".."/>
    <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+   
 
    <target name="validate-jboss">
-
       <fail unless="jboss.home" message="JBOSS_HOME environment variable not set! Set it and try again."/>
-
       <available property="default-config" type="dir" file="${jboss.home}/server/default"/>
       <fail unless="default-config" message="${jboss.home}/server/default not found!"/>
+   </target>
 
+   <target name="prevent-messaging-overwrite">
       <available property="messaging-config" type="dir" file="${jboss.home}/server/${messaging.config.name}"/>
       <fail if="messaging-config" message="'${messaging.config.name}' configuration already exists! Delete it manually and try again."/>
    </target>
@@ -39,25 +40,27 @@
       <fail unless="messaging-sar-exists" message="${relative.sar.location}/${messaging.sar.name} does not exist! Build it and try again."/>
    </target>
 
-   <target name="create-config" depends="validate-jboss">
+   <target name="install" depends="create-server-config"/>
+
+   <target name="create-server-config" depends="validate-jboss, prevent-messaging-overwrite, validate-messaging-sar">
 
       <echo message="Creating JBoss Messaging configuration '${messaging.config.name}' for ${jboss.home}"/>
 
       <mkdir dir="${jboss.home}/server/${messaging.config.name}"/>
       <copy todir="${jboss.home}/server/${messaging.config.name}">
-         <fileset dir="${jboss.home}/server/default"/>
+         <fileset dir="${jboss.home}/server/default">
+            <exclude name="data/**"/>
+            <exclude name="work/**"/>
+            <exclude name="log/**"/>
+            <exclude name="tmp/**"/>
+            <exclude name="deploy/jms/**"/>
+            <exclude name="lib/jboss-messaging.jar"/>
+         </fileset>
       </copy>
-      <copy file="${jboss.home}/server/${messaging.config.name}/deploy/jms/jms-ra.rar"
-            todir="${jboss.home}/server/${messaging.config.name}/deploy"/>            
-      <delete dir="${jboss.home}/server/${messaging.config.name}/data" quiet="yes"/>
-      <delete dir="${jboss.home}/server/${messaging.config.name}/work" quiet="yes"/>
-      <delete dir="${jboss.home}/server/${messaging.config.name}/log" quiet="yes"/>
-      <delete dir="${jboss.home}/server/${messaging.config.name}/tmp" quiet="yes"/>
-      <delete dir="${jboss.home}/server/${messaging.config.name}/deploy/jms"/>
-      <delete file="${jboss.home}/server/${messaging.config.name}/lib/jboss-messaging.jar" quiet="yes"/>
+      <copy file="${jboss.home}/server/default/deploy/jms/jms-ra.rar"
+            todir="${jboss.home}/server/${messaging.config.name}/deploy"/>
 
       <!-- add a "messaging" security domain -->
-
       <replaceregexp file="${jboss.home}/server/${messaging.config.name}/conf/login-config.xml" flags="s">
          <regexp pattern="(\x3cpolicy\x3e)"/>
          <substitution expression="\1 &lt;application-policy name = &quot;messaging&quot;&gt;
@@ -73,13 +76,10 @@
       <copy todir="${jboss.home}/server/${messaging.config.name}/deploy"
             file="${relative.sar.location}/${messaging.sar.name}"/>
       -->
-
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
       <unjar src="${relative.sar.location}/${messaging.sar.name}"
-         dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging.sar">
+             dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging.sar">
       </unjar>
-
-
    </target>
 
    <target name="dump">

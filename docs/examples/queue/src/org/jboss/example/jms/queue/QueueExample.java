@@ -24,8 +24,14 @@ package org.jboss.example.jms.queue;
 import org.jboss.example.jms.common.ExampleSupport;
 
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.jms.*;
+import javax.jms.TextMessage;
+import javax.jms.Session;
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.jms.MessageProducer;
+import javax.jms.Connection;
+import javax.jms.MessageConsumer;
+import javax.jms.JMSException;
 
 
 /**

@@ -2,10 +2,15 @@
 
 <!-- $Id$ -->
 
-<project default="smoke" name="Messaging Smoke Test">
+<project default="smoke-all" name="Messaging Smoke Test">
 
    <property environment="ENV"/>
+   <property file="./last-run.properties"/>
+   <property file="./smoke.properties"/>
    <property name="sleep.interval" value="60"/>
+   <property name="messaging.sar.name" value="jboss-messaging.sar"/>
+   <property name="relative.client.jar.location" value="../../util"/>
+   <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
 
    <path id="twiddle.classpath">
       <pathelement location="${jboss.home}/bin/twiddle.jar"/>
@@ -16,34 +21,51 @@
       <pathelement location="${jboss.home}/lib/dom4j.jar"/>
    </path>
 
-   <target name="setup-jboss-4-environment">
-      <fail unless="ENV.JBOSS4_HOME">JBOSS4_HOME variable not found! Set it and try again.</fail>
-      <property name="jboss.home" value="${ENV.JBOSS4_HOME}"/>
-      <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
-      <property name="messaging.client.jar.name" value="jboss-messaging-client-scoped.jar"/>
-      <property name="is.jboss4" value="true"/>
+   <!-- ======================================================================== -->
+   <!--      Targets                                                             -->
+   <!-- ======================================================================== -->
+
+   <target name="check-jboss-availability">
+      <fail unless="jboss.home">jboss.home property not set!</fail>
    </target>
 
-   <target name="setup-jboss-5-environment">
-      <fail unless="ENV.JBOSS5_HOME">JBOSS4_HOME variable not found! Set it and try again.</fail>
-      <property name="jboss.home" value="${ENV.JBOSS5_HOME}"/>
-      <property name="messaging.sar.name" value="jboss-messaging.sar"/>
-      <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
-      <property name="is.jboss5" value="true"/>
+   <target name="sleep">
+      <echo message="Sleeping for ${sleep.interval} seconds ..."/>
+      <sleep seconds="${sleep.interval}"/>
    </target>
 
-   <target name="build-sar-from-scratch">
+   <target name="build-deployment-archives-from-scratch">
       <ant dir="../.." antfile="build.xml" target="clean" inheritAll="false"/>
-      <ant dir="../.." antfile="build.xml" target="sar" inheritAll="false"/>
+      <ant dir="../.." antfile="build.xml" target="artifacts" inheritAll="false"/>
    </target>
 
-   <target name="build-scoped-sar-from-scratch">
-      <ant dir="../.." antfile="build.xml" target="clean" inheritAll="false"/>
-      <ant dir="../.." antfile="build.xml" target="scoped-sar" inheritAll="false"/>
+   <target name="create-messaging-config">
+      <available file="../../output/lib/${messaging.sar.name}" property="archive.present"/>
+      <fail unless="archive.present">Cannot find deployment archive ../../output/lib/${messaging.sar.name}</fail>
+      <ant antfile="../../util/release-admin.xml">
+         <property name="jboss.home" value="${jboss.home}"/>
+         <property name="messaging.config.name" value="messaging-smoke-test"/>
+         <property name="relative.sar.location" value="../../output/lib"/>
+         <property name="messaging.sar.name" value="${messaging.sar.name}"/>
+      </ant>
+      <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
+      <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
+      <antcall target="replace-remoting"/>
    </target>
 
-   <target name="start-jboss">
-      <fail unless="jboss.home" message="jboss.home environment variable not set! Use start-jboss4 or start-jboss5."/>
+   <target name="replace-remoting" if="replace.remoting">
+      <echo message="###"/>
+      <echo message="###"/>
+      <echo message="### WARNING! Substituting jboss-remoting.jar, jboss-serialization.jar"/>
+      <echo message="###"/>
+      <echo message="###"/>
+      <copy file="../../src/resources/jboss-remoting.jar" todir="${jboss.home}/server/messaging-smoke-test/lib" overwrite="true"/>
+      <copy file="../../src/resources/jboss-serialization.jar" todir="${jboss.home}/server/messaging-smoke-test/lib"  overwrite="true"/>
+   </target>
+
+   <target name="start" description="Starts the jboss instance">
+      <fail unless="jboss.home" message="jboss.home property not set!"/>
+      <echo message="Starting 'messaging-smoke-test' config on ${jboss.home}"/>
       <java classname="org.jboss.Main" fork="yes" spawn="yes" dir="${jboss.home}/bin">
          <jvmarg value="-server"/>
          <jvmarg value="-Xms128m"/>
@@ -58,32 +80,10 @@
       </java>
    </target>
 
-   <target name="start-jboss4" depends="setup-jboss-4-environment, start-jboss"/>
-
-   <target name="start-jboss5" depends="setup-jboss-5-environment, start-jboss"/>
-
-   <target name="stop-jboss">
-      <fail unless="jboss.home" message="Use stop-jboss4 or stop-jboss5."/>
-      <java classname="org.jboss.Shutdown" fork="yes" dir="${jboss.home}/bin">
-         <jvmarg value="-server"/>
-         <jvmarg value="-Xms128m"/>
-         <jvmarg value="-Xmx128m"/>
-         <arg value="-S"/>
-         <classpath>
-            <pathelement location="${jboss.home}/bin/shutdown.jar"/>
-            <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
-         </classpath>
-      </java>
-   </target>
-
-   <target name="stop-jboss4" depends="setup-jboss-4-environment, stop-jboss"/>
-
-   <target name="stop-jboss5" depends="setup-jboss-5-environment, stop-jboss"/>
-
-   <!-- allow the server time to start/shut down -->
-   <target name="sleep">
-      <echo message="Sleeping for ${sleep.interval} seconds ..."/>
-      <sleep seconds="${sleep.interval}"/>
+   <target name="write-current-jboss-home">
+      <path id="crt.jboss.home"><pathelement location="${jboss.home}"/></path>
+      <pathconvert targetos="unix" property="crt.jboss.home.tostring" refid="crt.jboss.home"/>
+      <echo message="jboss.home=${crt.jboss.home.tostring}" file="./last-run.properties"/>
    </target>
 
    <target name="ping-jms-server">
@@ -146,102 +146,64 @@
       </java>
    </target>
 
-   <!-- ========================================================================  -->
-   <!--                                                                           -->
-   <!--                       Add examples/tests below:                           -->
-   <!--                                                                           -->
-   <!-- ========================================================================  -->
-
-   <target name="queue-example">
-      <ant dir="../../docs/examples/queue" antfile="build.xml" inheritAll="false">
-         <property name="example.queue.name" value="SmokeTestQueue"/>
+   <target name="run-example">
+      <ant dir="../../docs/examples/${example.name}" antfile="build.xml" inheritAll="false" target="clean">
+         <property name="jboss.home" value="${jboss.home}"/>
+         <property name="jboss.configuration.name" value="${jboss.configuration.name}"/>
+      </ant>
+      <ant dir="../../docs/examples/${example.name}" antfile="build.xml" inheritAll="false">
+         <property name="example.queue.name" value="${example.queue.name}"/>
+         <property name="example.topic.name" value="${example.topic.name}"/>
          <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
          <property name="messaging.client.jar.name" value="${messaging.client.jar.name}"/>
          <property name="jboss.home" value="${jboss.home}"/>
+         <property name="jboss.configuration.name" value="${jboss.configuration.name}"/>
       </ant>
-      <antcall target="clean-queue-example"/>
-   </target>
-
-   <target name="clean-queue-example">
-      <ant dir="../../docs/examples/queue" antfile="build.xml" inheritAll="false" target="clean"/>
-   </target>
-
-   <target name="topic-example">
-      <ant dir="../../docs/examples/topic" antfile="build.xml" inheritAll="false">
-         <property name="example.topic.name" value="SmokeTestTopic"/>
-         <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
-         <property name="messaging.client.jar.name" value="${messaging.client.jar.name}"/>
+      <echo message="Example ${example.name} executed successfully, cleaning ..."/>
+      <ant dir="../../docs/examples/${example.name}" antfile="build.xml" inheritAll="false" target="clean">
          <property name="jboss.home" value="${jboss.home}"/>
-      </ant>
-      <antcall target="clean-topic-example"/>
-   </target>
-
-   <target name="clean-topic-example">
-      <ant dir="../../docs/examples/topic" antfile="build.xml" inheritAll="false" target="clean"/>
-   </target>
-
-   <target name="mdb-example">
-      <ant dir="../../docs/examples/mdb" antfile="build.xml" inheritAll="false">
-         <property name="example.queue.name" value="SmokeTestQueue"/>
-         <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
-         <property name="messaging.client.jar.name" value="${messaging.client.jar.name}"/>
-         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
-         <property name="jboss.home" value="${jboss.home}"/>
-      </ant>
-      <antcall target="clean-mdb-example"/>
-   </target>
-
-   <target name="clean-mdb-example">
-      <ant dir="../../docs/examples/mdb" antfile="build.xml" inheritAll="false" target="clean">
-         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
+         <property name="jboss.configuration.name" value="${jboss.configuration.name}"/>
       </ant>
    </target>
 
-   <target name="stateless-example">
-      <ant dir="../../docs/examples/stateless" antfile="build.xml" inheritAll="false">
-         <property name="example.queue.name" value="SmokeTestQueue"/>
-         <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
-         <property name="messaging.client.jar.name" value="${messaging.client.jar.name}"/>
-         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
-         <property name="jboss.home" value="${jboss.home}"/>
-      </ant>
-      <antcall target="clean-stateless-example"/>
-   </target>
-
-   <target name="clean-stateless-example">
-      <ant dir="../../docs/examples/stateless" antfile="build.xml" inheritAll="false" target="clean">
-         <property name="jboss.configuration.name" value="messaging-smoke-test"/>
-      </ant>
+   <target name="stop" description="Stops the jboss instance">
+      <fail unless="jboss.home" message="jboss.home property not set!"/>
+      <java classname="org.jboss.Shutdown" fork="yes" dir="${jboss.home}/bin">
+         <jvmarg value="-server"/>
+         <jvmarg value="-Xms128m"/>
+         <jvmarg value="-Xmx128m"/>
+         <arg value="-S"/>
+         <classpath>
+            <pathelement location="${jboss.home}/bin/shutdown.jar"/>
+            <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
+         </classpath>
+      </java>
    </target>
 
    <target name="clean">
-      <fail unless="jboss.home" message="jboss.home environment variable not set! Use clean4 or clean5."/>
+      <fail unless="jboss.home" message="jboss.home property not set!"/>
       <delete dir="${jboss.home}/server/messaging-smoke-test" quiet="false" failonerror="true"/>
+      <delete dir="../../output/lib/jboss-messaging-client.jar" quiet="false" failonerror="true"/>
+      <delete file="./last-run.properties"/>
    </target>
-
-   <target name="clean4" depends="setup-jboss-4-environment, clean"/>
-
-   <target name="clean5" depends="setup-jboss-5-environment, clean"/>
 
    <target name="print-classpath">
       <pathconvert targetos="unix" property="classpath.tostring.property" refid="twiddle.classpath"/>
       <echo message="${classpath.tostring.property}"/>
    </target>
 
-   <target name="smoke4" depends="setup-jboss-4-environment">
+   <target name="smoke" depends="check-jboss-availability">
 
       <echo message="Smoking on JBOSS_HOME ${jboss.home}"/>
 
-      <antcall target="build-scoped-sar-from-scratch"/>
+      <antcall target="create-messaging-config"/>
 
-      <ant antfile="../../util/create-messaging-config.xml">
-         <property name="jboss.home" value="${jboss.home}"/>
-         <property name="messaging.config.name" value="messaging-smoke-test"/>
-         <property name="relative.sar.location" value="../../output/lib"/>
-      </ant>
+      <antcall target="start"/>
 
-      <antcall target="start-jboss"/>
-      <antcall target="sleep"><param name="sleep.interval" value="50"/></antcall>
+      <antcall target="write-current-jboss-home"/>
+
+      <antcall target="sleep"><param name="sleep.interval" value="35"/></antcall>
+
       <antcall target="ping-jms-server"/>
 
       <antcall target="deploy-scoped-queue"/>
@@ -258,71 +220,110 @@
       <!--                                                       -->
       <!-- ====================================================  -->
 
-      <antcall target="queue-example"/>
-      <antcall target="topic-example"/>
-      <antcall target="mdb-example">
-         <param name="jboss.home" value="${jboss.home}"/>
-      </antcall>
-      <antcall target="stateless-example">
-         <param name="jboss.home" value="${jboss.home}"/>
+      <antcall target="run-example">
+         <param name="example.name" value="queue"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
       </antcall>
 
-      <antcall target="stop-jboss"/>
-      <antcall target="sleep"><param name="sleep.interval" value="20"/></antcall>
+      <antcall target="run-example">
+         <param name="example.name" value="topic"/>
+         <param name="example.topic.name" value="SmokeTestTopic"/>
+      </antcall>
+
+      <antcall target="run-example">
+         <param name="example.name" value="mdb"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.home" value="${jboss.home}"/>
+         <param name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </antcall>
+
+      <antcall target="run-example">
+         <param name="example.name" value="stateless"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.home" value="${jboss.home}"/>
+         <param name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </antcall>
+
+      <!-- ====================================================  -->
+      <!--                                                       -->
+      <!--  End of example list                                  -->
+      <!--                                                       -->
+      <!-- ====================================================  -->
+
+      <antcall target="stop"/>
+      <antcall target="sleep"><param name="sleep.interval" value="15"/></antcall>
       <antcall target="clean"/>
 
    </target>
 
-   <target name="smoke5" depends="setup-jboss-5-environment">
+   <target name="smoke-all">
 
-      <echo message="Smoking on JBOSS_HOME ${jboss.home}"/>
+      <antcall target="build-deployment-archives-from-scratch"/>
 
-      <antcall target="build-sar-from-scratch"/>
-
-      <ant antfile="../../util/create-messaging-config.xml">
-         <property name="jboss.home" value="${jboss.home}"/>
-         <property name="messaging.config.name" value="messaging-smoke-test"/>
-         <property name="relative.sar.location" value="../../output/lib"/>
-      </ant>
-
-      <antcall target="start-jboss"/>
-
-      <antcall target="sleep"><param name="sleep.interval" value="50"/></antcall>
-      <antcall target="ping-jms-server"/>
-
-      <antcall target="deploy-queue"/>
-      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
-      <antcall target="ping-queue"/>
-
-      <antcall target="deploy-topic"/>
-      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
-      <antcall target="ping-topic"/>
-
-      <!-- ====================================================  -->
-      <!--                                                       -->
-      <!--  List your example here:                              -->
-      <!--                                                       -->
-      <!-- ====================================================  -->
-
-      <antcall target="queue-example"/>
-      <antcall target="topic-example"/>
-      <antcall target="mdb-example">
-         <param name="jboss.home" value="${jboss.home}"/>
+      <!--
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss400.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
-      <antcall target="stateless-example">
-         <param name="jboss.home" value="${jboss.home}"/>
+      -->
+
+      <!--
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss401.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+      -->
+
+      <!--
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss401sp1.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+      -->
+
+      <!--
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss402.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+      -->
+
+
+      <!--
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss403.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+      -->
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss403SP1.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
-      <antcall target="stop-jboss"/>
-      <antcall target="sleep"><param name="sleep.interval" value="20"/></antcall>
-      <antcall target="clean"/>
+      <!--
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss500Alpha.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+      -->
+
+      <!--
+           Unscoped deployment in JBoss 5. Special precautions need to be taken to replace the
+           jboss-remoting.jar and jboss-serialization.jar with Messaging's versions.
+           TODO the 'replace.remoting' flag and task should go away when http://jira.jboss.org/jira/browse/JBMESSAGING-319 is done.
+      -->
+      <!--
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss500Alpha.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging.sar"/>
+         <param name="replace.remoting" value="true"/>
+      </antcall>
+      -->
 
    </target>
 
-   <target name="smoke">
-      <antcall target="smoke4" inheritAll="false"/>
-      <antcall target="smoke5" inheritAll="false"/>
-   </target>
+
 
 
 

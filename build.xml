@@ -158,8 +158,6 @@
      <!-- Messaging specific structure properties -->
      <property name="build.sar" value="${module.output}/sar"/>
      <property name="build.scoped-sar" value="${module.output}/scoped-sar"/>
-     <property name="build.server.dependencies" value="${module.output}/server-dependencies"/>
-     <property name="build.client.dependencies" value="${module.output}/client-dependencies"/>
 
     <!-- Install/Release structure -->
     <property name="install.id" value="${module.name}-${module.version}"/>
@@ -505,39 +503,22 @@
       </jar>
    </target>
 
-   <target name="client-jar" depends="compile, create-lib-dir, extract-server-dependencies, extract-client-dependencies">
-      <jar jarfile="${build.lib}/jboss-${module.name}-client.jar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}" includes="**"/>
-         <fileset dir="${build.server.dependencies}" includes="**"/>
-         <fileset dir="${build.client.dependencies}" includes="**"/>
-         <fileset dir="${build.etc}" includes="VERSION"/>
-      </jar>
-   </target>
-
-   <target name="sar" depends="compile, create-lib-dir, jar, client-jar, sar-structure">
+   <target name="sar" depends="compile, create-lib-dir, jar, sar-structure">
       <jar jarfile="${build.lib}/jboss-${module.name}.sar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
          <fileset dir="${build.sar}" includes="**"/>
       </jar>
    </target>
 
-   <target name="scoped-client-jar" depends="compile, create-lib-dir, extract-server-dependencies, extract-client-dependencies">
-      <jar jarfile="${build.lib}/jboss-${module.name}-client-scoped.jar" manifest="${build.etc}/default.mf">
+   <target name="scoped-sar" depends="compile, create-lib-dir, scoped-sar-structure, extract-server-dependencies">
+      <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
-         <fileset dir="${build.server.dependencies}" includes="**"/>
-         <fileset dir="${build.client.dependencies}" includes="**"/>
-         <fileset dir="${build.etc}" includes="VERSION"/>
+         <fileset dir="${build.scoped-sar}" includes="**"/>
+         <fileset dir="${build.sar}" includes="**" excludes="META-INF/jboss-service.xml"/>
       </jar>
    </target>
 
-   <target name="scoped-sar" depends="compile, create-lib-dir, scoped-client-jar, scoped-sar-structure, extract-server-dependencies">
-      <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}" includes="**"/>
-         <fileset dir="${build.sar}" includes="**" excludes="${build.sar}/META-INF/jboss-service.xml"/>
-         <fileset dir="${build.scoped-sar}" includes="**"/>
-         <fileset dir="${build.server.dependencies}" includes="**"/>
-      </jar>
-   </target>
+   <target name="artifacts" depends="sar, scoped-sar, client-jar"/>
 
    <target name="sar-structure">
       <mkdir dir="${build.sar}/META-INF"/>
@@ -545,7 +526,10 @@
       <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
             tofile="${build.sar}/META-INF/jboss-service.xml"/>
       <copy file="${build.etc}/VERSION" toFile="${build.sar}/VERSION"/>
-      <!-- copy all other deployment descriptors from ${source.etc}/server/default/deploy -->
+      <!--
+           copy all other deployment descriptors from ${source.etc}/server/default/deploy,
+           for example jms-ds.xml, etc.
+      -->
       <copy todir="${build.sar}">
          <fileset dir="${source.etc}/server/default/deploy/"
                   includes="*.xml"
@@ -560,11 +544,7 @@
       <copy todir="${build.sar}" file="${source.etc}/server/default/config/messaging-roles.properties"/>
    </target>
 
-   <target name="scoped-sar-structure" depends="sar-structure">
-      <mkdir dir="${build.scoped-sar}"/>
-      <antcall target="extract-server-dependencies">
-         <param name="scoped.dependencies.dir" value="${build.scoped-sar}"/>
-      </antcall>
+   <target name="scoped-sar-structure" depends="sar-structure, extract-server-dependencies">
       <!-- enable scoping -->
       <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
             tofile="${build.scoped-sar}/META-INF/jboss-service.xml"/>
@@ -579,51 +559,88 @@
       <fail message="Fix the build script to correctly define 'current.jboss.remoting.lib'!" unless="current.jboss.remoting.lib"/>
       <fail message="Fix the build script to correctly define 'current.jboss.serialization.lib'!" unless="current.jboss.serialization.lib"/>
 
-      <mkdir dir="${build.server.dependencies}"/>
+      <mkdir dir="${build.scoped-sar}"/>
 
-      <unjar dest="${build.server.dependencies}" src="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
-      <unjar dest="${build.server.dependencies}" src="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
-      <unjar dest="${build.server.dependencies}" src="${jboss.aop.lib}/jboss-aop.jar"/>
-      <unjar dest="${build.server.dependencies}" src="${jboss.aspects.lib}/jboss-aspect-library.jar"/>
-      <unjar dest="${build.server.dependencies}" src="${javassist.javassist.lib}/javassist.jar"/>
-      <unjar dest="${build.server.dependencies}" src="${trove.trove.lib}/trove.jar"/>
+      <copy todir="${build.scoped-sar}" file="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
+      <copy todir="${build.scoped-sar}" file="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
+      <copy todir="${build.scoped-sar}" file="${jboss.aop.lib}/jboss-aop.jar"/>
+      <copy todir="${build.scoped-sar}" file="${jboss.aspects.lib}/jboss-aspect-library.jar"/>
+      <copy todir="${build.scoped-sar}" file="${javassist.javassist.lib}/javassist.jar"/>
+      <copy todir="${build.scoped-sar}" file="${trove.trove.lib}/trove.jar"/>
 
+      <mkdir dir="${build.scoped-sar}/tmp"/>
       <!-- we need org/jboss/util/collection.SoftValueHashMap
            which was moved http://jira.jboss.org/jira/browse/JBMESSAGING-281
       -->
-      <unjar dest="${build.server.dependencies}" src="${jboss.common.lib}/jboss-common.jar" >
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar" >
          <patternset>
             <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
          </patternset>
       </unjar>
-
+      <jar jarfile="${build.scoped-sar}/jboss-common-softvaluehashmap.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      <delete>
+          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </delete>
+      <!-- I also need org.jboss.util.stream.* -->
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar">
+         <patternset>
+            <include name="org/jboss/util/stream/**"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.scoped-sar}/jboss-common-stream.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      <delete>
+          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </delete>
       <!-- I need InvocationMarshaller both on server and client side, and versions prior to
            JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
            org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
            like javaURLContextFactory, which will mess up JNDI and other things.
       -->
-      <unjar dest="${build.server.dependencies}" src="${jboss.server.lib}/jboss.jar">
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.server.lib}/jboss.jar">
          <patternset>
             <include name="org/jboss/invocation/unified/**"/>
          </patternset>
       </unjar>
-
-      <!-- I also need org.jboss.util.stream.* -->
-      <unjar dest="${build.server.dependencies}" src="${jboss.common.lib}/jboss-common.jar">
-         <patternset>
-            <include name="org/jboss/util/stream/**"/>
-         </patternset>
-      </unjar>
+      <jar jarfile="${build.scoped-sar}/jboss-unified-invocation.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      <delete dir="${build.scoped-sar}/tmp"/>
    </target>
 
-   <target name="extract-client-dependencies">
-      <mkdir dir="${build.client.dependencies}"/>
-      <unjar dest="${build.client.dependencies}" src="${jboss.common.lib}/jboss-common-client.jar"/>
-      <unjar dest="${build.client.dependencies}" src="${jboss.j2ee.lib}/jboss-j2ee.jar"/>
-      <unjar dest="${build.client.dependencies}" src="${jboss.j2se.lib}/jboss-j2se.jar"/>
-      <unjar dest="${build.client.dependencies}" src="${jboss.naming.lib}/jnp-client.jar"/>
-      <unjar dest="${build.server.dependencies}" src="${oswego.concurrent.lib}/concurrent.jar"/>
-      <unjar dest="${build.server.dependencies}" src="${apache.log4j.lib}/log4j.jar"/>
+   <target name="client-jar" depends="compile, scoped-sar">
+      <mkdir dir="${module.output}/jboss-messaging-client"/>
+
+      <unjar dest="${module.output}/jboss-messaging-client" src="${jboss.aop.lib}/jboss-aop.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${javassist.javassist.lib}/javassist.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${trove.trove.lib}/trove.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${build.scoped-sar}/jboss-common-softvaluehashmap.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${jboss.common.lib}/jboss-common-client.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${jboss.j2ee.lib}/jboss-j2ee.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${jboss.j2se.lib}/jboss-j2se.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${jboss.naming.lib}/jnp-client.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${oswego.concurrent.lib}/concurrent.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${apache.log4j.lib}/log4j.jar"/>
+
+      <jar jarfile="${build.lib}/jboss-messaging-client.jar">
+         <fileset dir="${build.classes}">
+            <include name="org/jboss/**"/>
+         </fileset>
+         <fileset dir="${build.etc}">
+            <include name="VERSION"/>
+         </fileset>
+         <fileset dir="${module.output}/jboss-messaging-client">
+            <include name="VERSION"/>
+         </fileset>
+         <fileset dir="${module.output}/jboss-messaging-client" includes="**"/>
+      </jar>
+
+      <delete dir="${module.output}/jboss-messaging-client"/>
    </target>
 
    <!-- ================================================================== -->
@@ -693,7 +710,6 @@
    <target name="release-bundle" depends="release-structure, scoped-sar, source, source-zip, examples, javadoc">
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
-      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client-scoped.jar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
       <copy todir="${release.output}/api">
          <fileset dir="${build.api}" includes="**"/>
