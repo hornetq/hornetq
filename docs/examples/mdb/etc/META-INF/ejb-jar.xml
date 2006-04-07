@@ -8,6 +8,9 @@
             <ejb-name>MDBExample</ejb-name>
             <ejb-class>org.jboss.example.jms.mdb.MDBExample</ejb-class>
             <transaction-type>Container</transaction-type>
+            <message-driven-destination>
+               <destination-type>javax.jms.Queue</destination-type>
+            </message-driven-destination>
         </message-driven>
     </enterprise-beans>
 </ejb-jar>
