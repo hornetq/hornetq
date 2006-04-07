@@ -186,6 +186,7 @@
    <target name="display-warnings-and-errors">
       <java classname="org.jboss.test.messaging.tools.ant.DisplayWarningsAndErrors">
          <arg value="${jboss.home}/server/messaging-smoke-test/log/server.log"/>
+         <arg value="WARN  [org.jboss.messaging.core.plugin.JDBCPersistenceManager] "/>
          <classpath>
             <pathelement location="../output/classes"/>
          </classpath>
@@ -264,6 +265,7 @@
 
       <antcall target="stop"/>
       <antcall target="sleep"><param name="sleep.interval" value="15"/></antcall>
+      <antcall target="display-warnings-and-errors"/>
       <antcall target="clean"/>
 
    </target>
