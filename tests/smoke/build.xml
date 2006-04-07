@@ -37,6 +37,8 @@
    <target name="build-deployment-archives-from-scratch">
       <ant dir="../.." antfile="build.xml" target="clean" inheritAll="false"/>
       <ant dir="../.." antfile="build.xml" target="artifacts" inheritAll="false"/>
+      <!-- I need this because the smoke test itself uses org.jboss.test.messaging.tools classes -->
+      <ant dir="../../tests" antfile="build.xml" target="compile" inheritAll="false"/>
    </target>
 
    <target name="create-messaging-config">
@@ -164,6 +166,7 @@
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="jboss.configuration.name" value="${jboss.configuration.name}"/>
       </ant>
+      <antcall target="display-warnings-and-errors"/>
    </target>
 
    <target name="stop" description="Stops the jboss instance">
@@ -176,6 +179,15 @@
          <classpath>
             <pathelement location="${jboss.home}/bin/shutdown.jar"/>
             <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="display-warnings-and-errors">
+      <java classname="org.jboss.test.messaging.tools.ant.DisplayWarningsAndErrors">
+         <arg value="${jboss.home}/server/messaging-smoke-test/log/server.log"/>
+         <classpath>
+            <pathelement location="../output/classes"/>
          </classpath>
       </java>
    </target>

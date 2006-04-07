@@ -57,7 +57,8 @@ public class JChannelClient
    {
       jChannel = new JChannel(props);
       // this may be replaced by other listener by subclasses
-      jChannel.setChannelListener(new ChannelListenerImpl());
+      // TODO commented out to get rid of deprecated warnings at compilation. If needed, replace with something valid
+      //jChannel.setChannelListener(new ChannelListenerImpl());
 
    }
 
