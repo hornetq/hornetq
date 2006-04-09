@@ -195,10 +195,10 @@ public class XMLUtil
                   if (idx != -1)
                   {
                      textContent = s.substring(idx + 6).trim();
-                  }
-                  if (textContent.endsWith("]"))
-                  {
-                     textContent = textContent.substring(0, textContent.length() - 1);
+                     if (textContent.endsWith("]"))
+                     {
+                        textContent = textContent.substring(0, textContent.length() - 1);
+                     }
                   }
                }
                if (textContent == null)
