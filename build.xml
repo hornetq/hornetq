@@ -575,6 +575,7 @@
       <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar" >
          <patternset>
             <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
+            <include name="org/jboss/util/propertyeditor/**"/> <!-- required by 4.0.1 and lower deployments -->
          </patternset>
       </unjar>
       <jar jarfile="${build.scoped-sar}/jboss-common-softvaluehashmap.jar">
