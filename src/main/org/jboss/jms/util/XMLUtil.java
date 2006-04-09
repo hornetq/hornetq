@@ -73,7 +73,11 @@ public class XMLUtil
          for(int i = 0; i < attrs.getLength(); i++)
          {
             Node attr = attrs.item(i);
-            sb.append(' ').append(attr.getNodeName() + "=\"" + attr.getNodeValue() + "\"");
+            sb.append(' ').
+               append(attr.getNodeName()).
+               append("=\"").
+               append(attr.getNodeValue()).
+               append("\"");
          }
       }
 
@@ -128,6 +132,8 @@ public class XMLUtil
     *
     * Note: if the content is another element or set of elements, it returns a string representation
     *       of the hierarchy.
+    *
+    * TODO implementation of this method is a hack. Implement it properly.
     */
    public static String getTextContent(Node n) throws XMLException
    {
@@ -170,17 +176,49 @@ public class XMLUtil
          }
       }
 
-      // JDK 1.4
+      String textContent = null;
 
-      String s = n.toString();
-      int i = s.indexOf('>');
-      int i2 = s.indexOf("</");
-      if (i == -1 || i2 == -1)
+      if (n.hasChildNodes())
       {
-         return null;
-      }
-      return s.substring(i + 1, i2);
+         NodeList nl = n.getChildNodes();
+         for(int i = 0; i < nl.getLength(); i++)
+         {
+            Node c = nl.item(i);
+            if (c.getNodeType() == Node.TEXT_NODE)
+            {
+               textContent = n.getNodeValue();
+               if (textContent == null)
+               {
+                  // TODO This is a hack. Get rid of it and implement this properly
+                  String s = c.toString();
+                  int idx = s.indexOf("#text:");
+                  if (idx != -1)
+                  {
+                     textContent = s.substring(idx + 6).trim();
+                  }
+                  if (textContent.endsWith("]"))
+                  {
+                     textContent = textContent.substring(0, textContent.length() - 1);
+                  }
+               }
+               if (textContent == null)
+               {
+                 break;
+               }
+            }
+         }
 
+         // TODO This is a hack. Get rid of it and implement this properly
+         String s = n.toString();
+         int i = s.indexOf('>');
+         int i2 = s.indexOf("</");
+         if (i != -1 && i2 != -1)
+         {
+            textContent = s.substring(i + 1, i2);
+         }
+      }
+
+      return textContent;
    }
 
    public static void assertEquivalent(Node node, Node node2)
