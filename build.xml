@@ -575,7 +575,10 @@
       <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar" >
          <patternset>
             <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
-            <include name="org/jboss/util/propertyeditor/**"/> <!-- required by 4.0.1 and lower deployments -->
+            <!-- 
+                 required by 4.0.1sp1 and lower
+            -->
+            <include name="org/jboss/util/propertyeditor/**"/>
          </patternset>
       </unjar>
       <jar jarfile="${build.scoped-sar}/jboss-common-softvaluehashmap.jar">
@@ -609,6 +612,25 @@
       <jar jarfile="${build.scoped-sar}/jboss-unified-invocation.jar">
          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
       </jar>
+      <delete>
+          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </delete>
+
+      <!--
+           Required to deploy in 4.0.1 and lower. Currently we don't support it.
+      -->
+      <!--
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.security.lib}/jbosssx.jar">
+         <patternset>
+            <include name="org/jboss/security/SecurityAssociation*.class"/>
+            <include name="org/jboss/security/SecurityActions*.class"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.scoped-sar}/jboss-securityassociation.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      -->
+
       <delete dir="${build.scoped-sar}/tmp"/>
    </target>
 

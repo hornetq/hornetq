@@ -145,6 +145,7 @@ public abstract class ExampleSupport
 
       if (!Util.doesDestinationExist(jndiDestinationName))
       {
+         System.out.println("Destination " + jndiDestinationName + " does not exist, deploying it");
          Util.deployQueue(jndiDestinationName);
          deployed = true;
       }

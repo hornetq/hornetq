@@ -99,8 +99,8 @@
     </target>
 
    <target name="deploy-queue">
-       <copy file="artifacts/smoketest-queue-service.xml"
-         todir="${jboss.home}/server/messaging-smoke-test/deploy"/>
+      <copy file="artifacts/smoketest-queue-service.xml"
+            todir="${jboss.home}/server/messaging-smoke-test/deploy"/>
    </target>
 
    <target name="deploy-scoped-queue">
@@ -187,6 +187,16 @@
       <java classname="org.jboss.test.messaging.tools.ant.DisplayWarningsAndErrors">
          <arg value="${jboss.home}/server/messaging-smoke-test/log/server.log"/>
          <arg value="WARN  [org.jboss.messaging.core.plugin.JDBCPersistenceManager] "/>
+         <arg value="ejb3.deployer/"/> <!-- EJB3 doesn't deploy with java 1.4 -->
+         <arg value="ejb3-interceptors-aop.xml"/> <!-- EJB3 doesn't deploy with java 1.4 -->
+         <arg value="WARN  [org.jboss.system.ServiceController] Problem creating service jboss.aop:service=AspectManager"/>
+         <arg value="ERROR [org.jboss.deployment.scanner.URLDeploymentScanner] Incomplete Deployment listing:"/>
+         <arg value="ERROR [org.jboss.aop.deployment.AspectDeployer] failed to stop"/>
+         <arg value="restart will delete it"/>
+
+         <arg value="web-console.war/"/> <!-- Only on JBoss 5 -->
+         <arg value="jmx-console.war/"/> <!-- Only on JBoss 5 -->
+
          <classpath>
             <pathelement location="../output/classes"/>
          </classpath>
@@ -264,7 +274,7 @@
       <!-- ====================================================  -->
 
       <antcall target="stop"/>
-      <antcall target="sleep"><param name="sleep.interval" value="15"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
       <antcall target="display-warnings-and-errors"/>
       <antcall target="clean"/>
 
@@ -275,6 +285,7 @@
       <antcall target="build-deployment-archives-from-scratch"/>
 
       <!--
+      NOT SUPPORTED
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss400.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
@@ -282,39 +293,48 @@
       -->
 
       <!--
+      NOT SUPPORTED
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
       -->
 
-      <!--
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
-      -->
 
-      <!--
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss402.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
-      -->
 
-
-      <!--
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
-      -->
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss404RC1.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss404CR2.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+
+      <!--
+         Stateless Session Bean smoke test will fail on this because the client talks to
+         Messaging's remoting and to Unified Invoker's remoting and runs into compatibility
+         problems.
+      -->
       <!--
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
@@ -327,19 +347,13 @@
            jboss-remoting.jar and jboss-serialization.jar with Messaging's versions.
            TODO the 'replace.remoting' flag and task should go away when http://jira.jboss.org/jira/browse/JBMESSAGING-319 is done.
       -->
-      <!--
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging.sar"/>
          <param name="replace.remoting" value="true"/>
       </antcall>
-      -->
 
    </target>
-
-
-
-
 
 </project>
 

@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
@@ -177,7 +176,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          // anywhere
          if (ref.getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
          {
-            log.warn("Message has exceed maximum delivery attempts and will be removed " + message);
+            log.warn(message + " has exceed maximum delivery attempts and will be removed");
             delivery = new SimpleDelivery(observer, ref, true);
             return delivery;
          }

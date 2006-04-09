@@ -42,12 +42,13 @@
    </path>
 
    <target name="identify">
-      <echo message="Running the topic example"/>
+      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
+      <echo message="X                       Running the TOPIC example                         X"/>
+      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
       <echo message="The topic: ${example.topic.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">
-      <fail message="The example needs JBOSS_HOME to run!" unless="ENV.JBOSS_HOME"/>
       <available property="client.jar.present" file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <fail message="Could not find client jar ${messaging.client.jar.path}/${messaging.client.jar.name}"
             unless="client.jar.present"/>
