@@ -298,7 +298,7 @@
          <param name="jboss.home" value="${jboss401.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
-      -->
+      -->                                                                         
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
@@ -327,6 +327,11 @@
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404CR2.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss404CR2-installer.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 

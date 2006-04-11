@@ -224,8 +224,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected ObjectName tmObjectName;
    
-   protected TransactionManager tm;
-   
    protected ObjectName cmObjectName;
    
    protected ChannelMapper cm;
@@ -245,7 +243,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected Map channelMultipliers;
    
    protected boolean deleteSubs;
-    
+
    // Constructors --------------------------------------------------
    
    public JDBCPersistenceManager() throws Exception
@@ -257,7 +255,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     * Only used for testing. In a real deployment, the data source and the transaction manager are
     * injected as dependencies.
     */
-   public JDBCPersistenceManager(DataSource ds, TransactionManager tm, ChannelMapper cm, boolean deleteSubs) throws Exception
+   public JDBCPersistenceManager(DataSource ds, TransactionManager tm,
+                                 ChannelMapper cm, boolean deleteSubs) throws Exception
    {
       this.ds = ds;
       this.tm = tm;
@@ -292,12 +291,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          throw new Exception("No DataSource found. This service dependencies must "
                + "have not been enforced correctly!");
       }
-      if (tm == null)
-      {
-         throw new Exception("No TransactionManager found. This service dependencies must "
-               + "have not been enforced correctly!");
-      }
-      
+
       if (cmObjectName != null)
       {
          MBeanServer server = getServer();
@@ -682,8 +676,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             {
                rs = ps.executeQuery();
                
-               int innerCount = 0;
-               
                while (rs.next())
                {
                   long messageId = rs.getLong(1);
@@ -732,7 +724,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                   }
                   
                   msgs.add(m);
-                  innerCount++;
                }
                
                rs.close();
@@ -2069,11 +2060,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    public void setTransactionManager(ObjectName tmObjectName) throws Exception
    {
       this.tmObjectName = tmObjectName;
-      
-      TransactionManagerServiceMBean tms = (TransactionManagerServiceMBean) MBeanServerInvocationHandler
-      .newProxyInstance(getServer(), tmObjectName, TransactionManagerServiceMBean.class, false);
-      
-      tm = tms.getTransactionManager();
    }
    
    /**
@@ -4277,6 +4263,24 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    }
    
    // Private -------------------------------------------------------
+
+   // never access directly
+   private TransactionManager tm;
+
+   private TransactionManager getTransactionManagerReference()
+   {
+      // lazy initialization
+      if (tm == null)
+      {
+         TransactionManagerServiceMBean tms = (TransactionManagerServiceMBean)
+            MBeanServerInvocationHandler.newProxyInstance(getServer(), tmObjectName,
+                                                          TransactionManagerServiceMBean.class, false);
+
+         tm = tms.getTransactionManager();
+      }
+
+      return tm;
+   }
    
    // Inner classes -------------------------------------------------
    
@@ -4288,6 +4292,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       private TransactionWrapper() throws Exception
       {
+         TransactionManager tm = getTransactionManagerReference();
+
          oldTx = tm.suspend();
          
          tm.begin();
@@ -4295,6 +4301,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       private void end() throws Exception
       {
+         TransactionManager tm = getTransactionManagerReference();
+
          try
          {
             if (Status.STATUS_MARKED_ROLLBACK == tm.getStatus())
@@ -4309,7 +4317,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          }
          finally
          {
-            if (oldTx != null)
+            if (oldTx != null && tm != null)
             {
                tm.resume(oldTx);
             }
@@ -4318,9 +4326,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       
       private void exceptionOccurred() throws Exception
       {
-         tm.setRollbackOnly();
+         getTransactionManagerReference().setRollbackOnly();
       }
-      
    }
    
    private static class ChannelRefPair

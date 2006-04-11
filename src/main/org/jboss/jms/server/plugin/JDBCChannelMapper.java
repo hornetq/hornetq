@@ -133,14 +133,13 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    protected String dataSourceJNDIName;
    protected DataSource ds;
    protected ObjectName tmObjectName;
-   protected TransactionManager tm;
-   
+
    protected IdManager channelIDManager;
    
    protected boolean createTablesOnStartup = true;
    protected Properties sqlProperties;
    protected List populateTables;
-   
+
    // Constructors --------------------------------------------------
    
    public JDBCChannelMapper()
@@ -197,12 +196,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          throw new IllegalStateException("No DataSource found. This service dependencies must " +
          "have not been enforced correctly!");
       }
-      if (tm == null)
-      {
-         throw new IllegalStateException("No TransactionManager found. This service dependencies must " +
-         "have not been enforced correctly!");
-      }
-      
+
       initSqlProperties();
       
       if (createTablesOnStartup)
@@ -675,12 +669,6 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    public void setTransactionManager(ObjectName tmObjectName) throws Exception
    {
       this.tmObjectName = tmObjectName;
-      
-      TransactionManagerServiceMBean tms =
-         (TransactionManagerServiceMBean)MBeanServerInvocationHandler.
-         newProxyInstance(getServer(), tmObjectName, TransactionManagerServiceMBean.class, false);
-      
-      tm = tms.getTransactionManager();
    }
    
    /**
@@ -1160,7 +1148,25 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    }
    
    // Private -------------------------------------------------------
-   
+
+   // never access directly
+   private TransactionManager tm;
+
+   private TransactionManager getTransactionManagerReference()
+   {
+      // lazy initialization
+      if (tm == null)
+      {
+         TransactionManagerServiceMBean tms =
+            (TransactionManagerServiceMBean)MBeanServerInvocationHandler.
+            newProxyInstance(getServer(), tmObjectName, TransactionManagerServiceMBean.class, false);
+
+         tm = tms.getTransactionManager();
+      }
+
+      return tm;
+   }
+
    // Inner classes -------------------------------------------------
    
    /*
@@ -1172,6 +1178,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       
       private TransactionWrapper() throws Exception
       {
+         TransactionManager tm = getTransactionManagerReference();
+
          oldTx = tm.suspend();
          
          tm.begin();
@@ -1179,6 +1187,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       
       private void end() throws Exception
       {
+         TransactionManager tm = getTransactionManagerReference();
+
          try
          {
             if (Status.STATUS_MARKED_ROLLBACK == tm.getStatus())
@@ -1192,7 +1202,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          }
          finally
          {
-            if (oldTx != null)
+            if (oldTx != null && tm != null)
             {
                tm.resume(oldTx);
             }
@@ -1201,7 +1211,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       
       private void exceptionOccurred() throws Exception
       {
-         tm.setRollbackOnly();
+         getTransactionManagerReference().setRollbackOnly();
       }
    }
    
