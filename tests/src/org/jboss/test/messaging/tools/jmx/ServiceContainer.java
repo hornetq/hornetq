@@ -94,9 +94,13 @@ public class ServiceContainer
 
    // Static --------------------------------------------------------
    
+   private static final int HSQL = 1;
+   private static final int MYSQL = 2;
+   private static final int ORACLE = 3;
+   
    //FIXME - Configure this properly
-   private static final boolean hsql = true;
-
+   private static final int DB = HSQL;
+   
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
    public static ObjectName CLASS_LOADER_OBJECT_NAME;
    public static ObjectName TRANSACTION_MANAGER_OBJECT_NAME;
@@ -717,7 +721,7 @@ public class ServiceContainer
 
    private void startInVMDatabase() throws Exception
    {
-      if (hsql)
+      if (DB == HSQL)
       {
          HsqlProperties props = new HsqlProperties();
          props.setProperty("server.database.0", "mem:test");
@@ -741,7 +745,7 @@ public class ServiceContainer
 
    private void stopInVMDatabase() throws Exception
    {
-      if (hsql)
+      if (DB == HSQL)
       {
          log.debug("stop " + hsqldbServer);
 
@@ -799,20 +803,36 @@ public class ServiceContainer
    {
       LocalManagedConnectionFactory mcf = new LocalManagedConnectionFactory();
          
-      if (hsql)
+      switch (DB)
       {
-         mcf.setConnectionURL("jdbc:hsqldb:mem:test");
-         mcf.setDriverClass("org.hsqldb.jdbcDriver");
-         mcf.setUserName("sa");
-      }
-      else
-      {
-         //mysql
-         mcf.setConnectionURL("jdbc:mysql://localhost:3306/messaging");
-         mcf.setDriverClass("com.mysql.jdbc.Driver");
-         mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
-         mcf.setUserName("root");
-       //  mcf.setPassword("disco2000");
+         case (HSQL) :
+         {
+            mcf.setConnectionURL("jdbc:hsqldb:mem:test");
+            mcf.setDriverClass("org.hsqldb.jdbcDriver");
+            mcf.setUserName("sa");
+            break;
+         }
+         case (MYSQL) :
+         {
+            //mysql
+            mcf.setConnectionURL("jdbc:mysql://localhost:3306/messaging");
+            mcf.setDriverClass("com.mysql.jdbc.Driver");
+            mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
+            break;
+         }
+         case (ORACLE) :
+         {
+            mcf.setConnectionURL("jdbc:oracle:thin:@localhost:1521/XE");
+            mcf.setDriverClass("oracle.jdbc.driver.OracleDriver");
+            mcf.setUserName("messaging");
+            mcf.setPassword("messaging");
+            mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
+            break;
+         }
+         default :
+         {
+            throw new IllegalStateException("No such DB " + DB);
+         }
       }
 
       ManagedConnectionFactoryJMXWrapper mbean = new ManagedConnectionFactoryJMXWrapper(mcf);

@@ -114,6 +114,7 @@ $reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../src/resources/hsqldb.jar${SEP}\
 $reldir/../../src/resources/mysql-connector-java-3.1.12-bin.jar${SEP}\
+$reldir/../../src/resources/ojdbc14.jar${SEP}\
 ${REMOTING_LIB}${SEP}\
 ${SERIALIZATION_LIB}${SEP}\
 $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\

@@ -112,14 +112,14 @@
     The default PM configuration is designed to work out of the box with HSQL, however it must be stressed that HSQL should not be used in a production environment mainly due to it's limited support for transaction isolation.
     </para>
     <para>
-    JBoss Messaging also ships with a pre-made PM configuration for MySQL. Configurations for Oracle, MSSQL and other popular databases should be available soon.
+    JBoss Messaging also ships with a pre-made PM configuration for MySQL and Oracle. Configurations for MSSQL and other popular databases should be available soon.
     The JDBC PM has been designed to use standard SQL wherever possible so writing a JDBC PM config for another database is usually only a fairly simple matter of changing column types in the configuration.
     </para>
     <para>
-    The MySQL configuration is located in <literal>/docs/examples/config</literal>
+    The MySQL and Oracle configurations are located in <literal>/docs/examples/config</literal>
    </para>
 
-  <para>Example of a PM configuration for mySQL database
+  <para>Example of a PM configuration for MySQL database
   </para>
   <programlisting>
 &lt;mbean code=&quot;org.jboss.messaging.core.plugin.JDBCPersistenceManager&quot;
@@ -159,7 +159,7 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
 
         <para>
           Set this to <literal>true</literal> if the database supports JDBC batch updates. The JDBC PM will then group multiple database updates in batches to aid performance.
-          By default this is set to <literal>true</literal>
+          By default this is set to <literal>false</literal>
         </para>
     </section>
 

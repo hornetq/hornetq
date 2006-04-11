@@ -30,7 +30,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    // Constants -----------------------------------------------------
    private static final int FULL_SIZE = 75000;
    private static final int PAGE_SIZE = 2000;
-   private static final int DOWN_CACHE_SIZE = 1000;
+   private static final int DOWN_CACHE_SIZE = 2000;
 
    // Static --------------------------------------------------------
 
@@ -370,6 +370,6 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    protected abstract boolean isQueue();
 
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

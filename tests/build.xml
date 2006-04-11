@@ -71,7 +71,10 @@
       <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>
       <path location="../src/resources/jboss-remoting.jar"/>
       <path location="../src/resources/jboss-serialization.jar"/>
+      <!-- MySQl JDBC driver -->
       <path location="../src/resources/mysql-connector-java-3.1.12-bin.jar"/>
+      <!-- Oracle JDBC driver -->
+      <path location="../src/resources/ojdbc14.jar"/>
 
    </path>
 

@@ -37,6 +37,8 @@ import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
+
 /**
  * Represents the state of a Channel.
  * 
@@ -70,7 +72,7 @@ public class ChannelState implements State
    
    protected boolean recoverable;
     
-   protected long messageOrdering;
+   protected SynchronizedLong messageOrdering;
    
    protected PersistenceManager pm;
    
@@ -147,6 +149,8 @@ public class ChannelState implements State
       refLock = new Object();
       
       deliveryLock = new Object();
+      
+      messageOrdering = new SynchronizedLong(0);
    }
 
    // State implementation -----------------------------------
@@ -175,14 +179,9 @@ public class ChannelState implements State
       else
       {
          //add to post commit callback
-         synchronized (refLock)
-         {
-            ref.setOrdering(getNextReferenceOrdering());
-            //AddReferenceCallback callback = new AddReferenceCallback(ref);
-            //tx.addCallback(callback);
-            this.getCallback(tx).addRef(ref);
-            if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
-         }                  
+         ref.setOrdering(getNextReferenceOrdering());             
+         this.getCallback(tx).addRef(ref);
+         if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }                          
       }                
         
       if (ref.isReliable() && recoverable)
@@ -199,21 +198,18 @@ public class ChannelState implements State
    {
       boolean first;
              
-      synchronized (refLock)
-      {         
-         ref.setOrdering(getNextReferenceOrdering());
+      ref.setOrdering(getNextReferenceOrdering());      
                
-         if (ref.isReliable() && recoverable)
-         {
-            //Reliable message in a recoverable state - also add to db
-            if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
-            
-            pm.addReference(channel.getChannelID(), ref, null);            
-         }
+      if (ref.isReliable() && recoverable)
+      {
+         //Reliable message in a recoverable state - also add to db
+         if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
          
-         first = addReferenceInMemory(ref);
-                               
+         pm.addReference(channel.getChannelID(), ref, null);            
       }
+      
+      first = addReferenceInMemory(ref);      
+                                     
       return first; 
    }
    
@@ -222,9 +218,9 @@ public class ChannelState implements State
       synchronized (deliveryLock)
       {
          deliveries.add(d);
-         
-         if (trace) { log.trace(this + " added " + d + " to memory"); }
       }
+         
+      if (trace) { log.trace(this + " added " + d + " to memory"); }      
    }
    
    /*
@@ -235,53 +231,51 @@ public class ChannelState implements State
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); } 
         
+      boolean removed;
+      
       synchronized (deliveryLock)
       {         
-         boolean removed = deliveries.remove(del);
+         removed = deliveries.remove(del);
+      }
          
-         if (!removed)
+      if (!removed)
+      {
+         //This is ok
+         //This can happen if the message is cancelled before the result of ServerConsumerDelegate.handle
+         //has returned, in which case we won't have a record of the delivery in the Set
+         
+         //In this case we don't want to add the message reference back into the state
+         //since it was never removed in the first place
+         
+         if (trace) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
+         
+      }
+      else
+      {         
+         synchronized (refLock)
          {
-            //This is ok
-            //This can happen if the message is cancelled before the result of ServerConsumerDelegate.handle
-            //has returned, in which case we won't have a record of the delivery in the Set
-            
-            //In this case we don't want to add the message reference back into the state
-            //since it was never removed in the first place
-            
-            if (trace) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
-            
-         }
-         else
-         {         
-            synchronized (refLock)
+            messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
+                                    
+            if (paging)
             {
-               messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
-                           
-               if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }
+               //if paging we need to evict the end reference to storage to preserve the number of refs in the queue
+                              
+               MessageReference ref = (MessageReference)messageRefs.removeLast();
                
-               if (paging)
-               {
-                  //if paging we need to evict the end reference to storage to preserve the number of refs in the queue
-                                 
-                  MessageReference ref = (MessageReference)messageRefs.removeLast();
-                  
-                  addToDownCache(ref);                                                                           
-                  
-                  refsInStorage++;
-               }
+               addToDownCache(ref);                                                                           
+               
+               refsInStorage++;
             }
          }
-      }
+         
+         if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }         
+      }      
    }
   
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
       //Transactional so remove after tx commit
-
-//      RemoveDeliveryCallback callback = new RemoveDeliveryCallback(d);
-//      
-//      tx.addCallback(callback);
-      
+     
       this.getCallback(tx).addDelivery(d);
       
       if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
@@ -510,29 +504,32 @@ public class ChannelState implements State
       
       boolean first;
       
-      if (paging)
-      {             
-         addToDownCache(ref);        
-         
-         refsInStorage++;
-                  
-         first = false;                 
-      }
-      else
-      {                  
-         first = messageRefs.addLast(ref, ref.getPriority());
-
-         if (trace) { log.trace(this + " added " + ref + " non-transactionally in memory"); }
-         
-         if (messageRefs.size() == fullSize)
-         {            
-            // We are full in memory - go into paging mode
-
-            if (trace) { log.trace(this + " going into paging mode"); }
+      synchronized (refLock)
+      {         
+         if (paging)
+         {             
+            addToDownCache(ref);        
             
-            paging = true;           
-         }                         
-      }   
+            refsInStorage++;
+                     
+            first = false;                 
+         }
+         else
+         {                  
+            first = messageRefs.addLast(ref, ref.getPriority());
+   
+            if (trace) { log.trace(this + " added " + ref + " non-transactionally in memory"); }
+            
+            if (messageRefs.size() == fullSize)
+            {            
+               // We are full in memory - go into paging mode
+   
+               if (trace) { log.trace(this + " going into paging mode"); }
+               
+               paging = true;           
+            }                         
+         }   
+      }
       
       return first;
    }
@@ -849,7 +846,7 @@ public class ChannelState implements State
    
    private long getNextReferenceOrdering()
    {
-      return ++messageOrdering;
+      return messageOrdering.increment();
    }    
          
    // Inner classes -------------------------------------------------  
@@ -887,7 +884,8 @@ public class ChannelState implements State
       }
       
       public void beforeCommit(boolean onePhase)
-      {         
+      {        
+         //NOOP         
       }
       
       public void beforeRollback(boolean onePhase)
@@ -915,10 +913,7 @@ public class ChannelState implements State
             boolean first = false;
             try
             {                        
-               synchronized (refLock)
-               {
-                  first = addReferenceInMemory(ref);
-               }
+               first = addReferenceInMemory(ref);               
             }
             catch (Throwable t)
             {

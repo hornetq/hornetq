@@ -158,7 +158,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    + "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, COREHEADERS LONGVARBINARY, "
    + "PAYLOAD LONGVARBINARY, CHANNELCOUNT INTEGER, TYPE TINYINT, JMSTYPE VARCHAR(255), CORRELATIONID VARCHAR(255), "
    + "CORRELATIONID_BYTES VARBINARY(254), DESTINATION_ID BIGINT, REPLYTO_ID BIGINT, "
-   + "JMSPROPERTIES LONGVARBINARY, REFERENCECOUNT TINYINT, "
+   + "JMSPROPERTIES LONGVARBINARY, "
    + "PRIMARY KEY (MESSAGEID))";
    
    protected String loadMessages = "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, "
@@ -168,9 +168,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected String insertMessage = "INSERT INTO JMS_MESSAGE (MESSAGEID, RELIABLE, EXPIRATION, "
    + "TIMESTAMP, PRIORITY, COREHEADERS, PAYLOAD, CHANNELCOUNT, TYPE, JMSTYPE, CORRELATIONID, "
-   + "CORRELATIONID_BYTES, DESTINATION_ID, REPLYTO_ID, JMSPROPERTIES, "
-   + "REFERENCECOUNT) "
-   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+   + "CORRELATIONID_BYTES, DESTINATION_ID, REPLYTO_ID, JMSPROPERTIES) "
+   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
    
    protected String updateMessageChannelCount = 
       "UPDATE JMS_MESSAGE SET CHANNELCOUNT=? WHERE MESSAGEID=?";
@@ -204,14 +203,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected String selectCounter = "SELECT NEXT_ID FROM JMS_COUNTER WHERE NAME=?";
    
    protected String insertCounter = "INSERT INTO JMS_COUNTER (NAME, NEXT_ID) VALUES (?, ?)";
-   
-   
-   //   protected String selectReferenceCount =
-   //      "SELECT REFERENCECOUNT FROM MESSAGE WHERE MESSAGEID = ?";
-   //   
-   //   protected String updateReferenceCount =
-   //      "UPDATE MESSAGE SET REFERENCECOUNT=? WHERE MESSAGEID=?";
-   
+        
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -232,7 +224,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected boolean createTablesOnStartup = true;
    
-   protected boolean usingBatchUpdates = true;
+   protected boolean usingBatchUpdates = false;
    
    protected boolean usingBinaryStream = true;
    
@@ -333,8 +325,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       resetMessageData();
         
       log.debug(this + " started");
-      
-      this.usingBatchUpdates = false;
    }
    
    protected void stopService() throws Exception
@@ -683,9 +673,9 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                   long expiration = rs.getLong(3);
                   long timestamp = rs.getLong(4);
                   byte priority = rs.getByte(5);
-                  byte[] bytes = getLongVarBinary(rs, 6);
+                  byte[] bytes = getBytes(rs, 6);
                   HashMap coreHeaders = bytesToMap(bytes);
-                  byte[] payload = getLongVarBinary(rs, 7);
+                  byte[] payload = getBytes(rs, 7);
                   int persistentChannelCount = rs.getInt(8);
                   
                   //FIXME - We are mixing concerns here
@@ -706,7 +696,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                      long destinationId = rs.getLong(13);
                      long replyToId = rs.getLong(14);
                      boolean replyToExists = rs.wasNull();
-                     bytes = getLongVarBinary(rs, 15);
+                     bytes = getBytes(rs, 15);
                      HashMap jmsProperties = bytesToMap(bytes);
                      JBossDestination dest = cm.getJBossDestination(destinationId);
                      JBossDestination replyTo = replyToExists ? cm.getJBossDestination(replyToId) : null;
@@ -2149,6 +2139,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     */
    public void setUsingBatchUpdates(boolean b) throws Exception
    {
+      Exception e = new Exception();
       usingBatchUpdates = b;
    }
    
@@ -2282,7 +2273,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          catch (SQLException e)
          {
             log.debug(createMessage + " failed!", e);
-         }
+         }                  
          
          try
          {
@@ -2495,6 +2486,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
+   
    protected void handleBeforeCommit1PC(List refsToAdd, List refsToRemove, Transaction tx)
       throws Exception
    {
@@ -2569,7 +2561,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             
             //Now store the reference
             addReference(pair.channelId, ref, psReference, true);
-                        
+              
             if (batch)
             {
                psReference.addBatch();
@@ -2603,14 +2595,14 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
             {
                //First time so add message
                storeMessage(m, psInsertMessage);
-               
+
                added = true;
             }
             else
             {
                //Update message channel count
                updateMessageChannelCount(m, psUpdateMessage);
-               
+ 
                added = false;
             }
             
@@ -3937,30 +3929,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     * Stores the message in the MESSAGE table.
     */
    protected void storeMessage(Message m, PreparedStatement ps) throws Exception
-   {
-      /*
-       
-       Reference counting code commented out until 1.2
-       
-       // get the reference count from the database
-        // TODO Probably this can be done smarter than that incrementing directly in the database
-         ps = conn.prepareStatement(selectReferenceCount);
-         ps.setString(1, id);
-         
-         int referenceCount = 0;
-         ResultSet rs = ps.executeQuery();
-         if (rs.next())
-         {
-         referenceCount = rs.getInt(1);
-         }
-         
-         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, id) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
-         
-         if (referenceCount == 0)
-         {
-         
-         */
-      
+   {      
       // physically insert the row in the database
       //First set the fields from org.jboss.messaging.core.Routable
       ps.setLong(1, m.getMessageID());
@@ -3972,7 +3941,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       byte[] bytes = mapToBytes(((MessageSupport) m).getHeaders());
       if (bytes != null)
       {
-         setLongVarBinary(ps, 6, bytes);
+         setBytes(ps, 6, bytes);
       }
       else
       {
@@ -3984,7 +3953,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       byte[] payload = m.getPayloadAsByteArray();
       if (payload != null)
       {
-         setLongVarBinary(ps, 7, payload);
+         setBytes(ps, 7, payload);
       }
       else
       {
@@ -4005,9 +3974,30 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          JBossMessage jbm = (JBossMessage) m;
          
          ps.setByte(9, jbm.getType());
-         ps.setString(10, jbm.getJMSType());
-         ps.setString(11, jbm.getJMSCorrelationID());
-         ps.setBytes(12, jbm.getJMSCorrelationIDAsBytes());
+         if (jbm.getJMSType() != null)
+         {
+            ps.setString(10, jbm.getJMSType());
+         }
+         else
+         {
+            ps.setNull(10, Types.VARCHAR);
+         }
+         if (jbm.getJMSCorrelationID() != null)
+         {
+            ps.setString(11, jbm.getJMSCorrelationID());
+         }
+         else
+         {
+            ps.setNull(11, Types.VARCHAR);
+         }
+         if (jbm.getJMSCorrelationIDAsBytes() != null)
+         {
+            ps.setBytes(12, jbm.getJMSCorrelationIDAsBytes());
+         }
+         else
+         {
+            ps.setNull(12, Types.BINARY);
+         }
          
          JBossDestination jbd = (JBossDestination) jbm.getJMSDestination();
          
@@ -4030,7 +4020,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          bytes = mapToBytes(jbm.getJMSProperties());
          if (bytes != null)
          {
-            setLongVarBinary(ps, 15, bytes);
+            setBytes(ps, 15, bytes);
          }
          else
          {
@@ -4047,9 +4037,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          ps.setNull(14, Types.BIGINT);
          ps.setNull(15, Types.LONGVARBINARY);
       }
-            
-      //reference count - not currently used (and probably never will be)
-      ps.setInt(16, 1);
    }
    
    /**
@@ -4057,59 +4044,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     */
    protected void removeMessage(Message message, PreparedStatement ps) throws Exception
    {
-      /*
-       
-       Reference counting code commented out until 1.2
-       
-       // get the reference count from the database
-        ps = conn.prepareStatement(selectReferenceCount);
-        ps.setString(1, (String)message.getMessageID());
-        
-        //TODO this can be combined into one query
-         int referenceCount = 0;
-         ResultSet rs = ps.executeQuery();
-         if (rs.next())
-         {
-         referenceCount = rs.getInt(1);
-         }
-         
-         if (trace) { log.trace(JDBCUtil.statementToString(selectReferenceCount, message.getMessageID()) + " returned " + (referenceCount == 0 ? "no rows" : Integer.toString(referenceCount))); }
-         
-         if (referenceCount == 0)
-         {
-         if (trace) { log.trace("no message " + message.getMessageID() + " to delete in the database"); }
-         return false;
-         }
-         else if (referenceCount == 1)
-         {
-         
-         */
-      
       // physically delete the row in the database
-      ps.setLong(1, message.getMessageID());
-      
-      /*   
-       
-       Reference counting code commented out until 1.2   
-       
-       }
-       else
-       {
-       // decrement the reference count
-        ps = conn.prepareStatement(updateReferenceCount);
-        ps.setInt(1, --referenceCount);
-        ps.setString(2, (String)message.getMessageID());
-        
-        ps.executeUpdate();
-        if (trace) { log.trace(JDBCUtil.statementToString(updateReferenceCount, new Integer(referenceCount), message.getMessageID()) + " executed successfully"); }
-        return true;
-        }
-        
-        */
-      
+      ps.setLong(1, message.getMessageID());      
    }
      
-   protected void setLongVarBinary(PreparedStatement ps, int columnIndex, byte[] bytes) throws Exception
+   protected void setBytes(PreparedStatement ps, int columnIndex, byte[] bytes) throws Exception
    {
       if (usingBinaryStream)
       {
@@ -4138,7 +4077,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
-   protected byte[] getLongVarBinary(ResultSet rs, int columnIndex) throws Exception
+   protected byte[] getBytes(ResultSet rs, int columnIndex) throws Exception
    {
       if (usingBinaryStream)
       {
