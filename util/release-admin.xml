@@ -22,7 +22,6 @@
    -->
    <property name="relative.sar.location" value=".."/>
    <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
-   
 
    <target name="validate-jboss">
       <fail unless="jboss.home" message="JBOSS_HOME environment variable not set! Set it and try again."/>
@@ -72,14 +71,27 @@
          &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
       </replaceregexp>
 
+      <!-- Make sure JNDI CallByValue is disabled, otherwise MDB deployments will fail -->
+      <property name="naming.config.file" value="${jboss.home}/server/${messaging.config.name}/deploy/naming-service.xml"/>
+      <available property="naming.service.config.present" file="${naming.config.file}"/>
+      <antcall target="enable-jndi-call-by-reference"/>
+
       <!-- copy the scoped sar
       <copy todir="${jboss.home}/server/${messaging.config.name}/deploy"
             file="${relative.sar.location}/${messaging.sar.name}"/>
       -->
+      
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
       <unjar src="${relative.sar.location}/${messaging.sar.name}"
              dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging.sar">
       </unjar>
+   </target>
+
+   <target name="enable-jndi-call-by-reference" if="naming.service.config.present">
+      <replaceregexp file="${naming.config.file}" flags="s">
+         <regexp pattern="\x3cattribute name=\x22CallByValue\x22\x3etrue\x3c/attribute\x3e"/>
+         <substitution expression="&lt;attribute name=&quot;CallByValue&quot;&gt;false&lt;/attribute&gt;"/>
+      </replaceregexp>
    </target>
 
    <target name="dump">

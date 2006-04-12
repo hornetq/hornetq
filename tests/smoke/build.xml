@@ -89,14 +89,14 @@
    </target>
 
    <target name="ping-jms-server">
-       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
-           dir="${jboss.home}/bin">
-          <arg line="get jboss.messaging:service=ServerPeer serverPeerID"/>
-          <classpath>
-             <path refid="twiddle.classpath"/>
-          </classpath>
-       </java>
-    </target>
+      <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
+            dir="${jboss.home}/bin">
+         <arg line="get jboss.messaging:service=ServerPeer serverPeerID"/>
+         <classpath>
+            <path refid="twiddle.classpath"/>
+         </classpath>
+      </java>
+   </target>
 
    <target name="deploy-queue">
       <copy file="artifacts/smoketest-queue-service.xml"
@@ -298,7 +298,7 @@
          <param name="jboss.home" value="${jboss401.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
-      -->                                                                         
+      -->                                                                              
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
@@ -317,6 +317,11 @@
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
+         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 

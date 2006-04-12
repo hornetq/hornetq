@@ -97,6 +97,11 @@ public class Sender extends ExampleSupport
       message = (TextMessage)consumer.receive(5000);
 
 
+      if (message == null)
+      {
+         throw new Exception("Have not received any reply. The example failed!");
+      }
+
 
       log("Received message: " + message.getText());
 

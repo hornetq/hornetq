@@ -148,8 +148,104 @@ instance, specifically a properly configured "<small><span
 security domain.&nbsp; Follow the instructions from the "Installation"
 paragraph of the release documentation. <br>
 <br>
+<big><span style="font-weight: bold;">2. The example fails with <small>"<span
+ style="font-family: courier new,courier,monospace;">Have not received
+any reply. The example failed!</span>"</small> and the server log
+contains ClassNotFoundExceptions</span></big><br>
 <br>
-<hr style="width: 100%; height: 2px;"><br>
+If all you get after running the example is<br>
+<br>
+<small><span style="font-family: courier new,courier,monospace;">send:</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] Queue /queue/SmokeTestQueue exists</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] The Hello! message was successfully sent to the SmokeTestQueue
+queue</span><br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] java.lang.Exception: Have not received any reply. The example
+failed!</span><br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.example.jms.mdb.Sender.example(Sender.java:102)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.example.jms.common.ExampleSupport.run(ExampleSupport.java:58)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.example.jms.mdb.Sender.main(Sender.java:131)</span><br
+ style="font-family: courier new,courier,monospace;">
+<br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] #####################</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] ###&nbsp;&nbsp;&nbsp; FAILURE!&nbsp;&nbsp; ###</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] #####################</span></small><br
+ style="font-family: courier new,courier,monospace;">
+<br style="font-family: courier new,courier,monospace;">
+check the server log. The presence of <br>
+<small><br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">2006-04-11
+17:14:58,370 DEBUG [org.jboss.ejb.plugins.jms.DLQHandler]
+Initialization failed DLQHandler</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">javax.naming.CommunicationException
+[<span style="font-weight: bold;">Root exception is
+java.lang.ClassNotFoundException: No ClassLoaders found for:
+org.jboss.jms.client.JBossConnectionFactory</span> (no security manager</span><span
+ style="font-family: courier new,courier,monospace;">: RMI class loader
+disabled)]</span><br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at org.jnp.interfaces.NamingContext.lookup(NamingContext.java:713)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at org.jnp.interfaces.NamingContext.lookup(NamingContext.java:572)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at javax.naming.InitialContext.lookup(InitialContext.java:347)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at
+org.jboss.ejb.plugins.jms.DLQHandler.createService(DLQHandler.java:151)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at
+org.jboss.system.ServiceMBeanSupport.jbossInternalCreate(ServiceMBeanSupport.java:245)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at
+org.jboss.system.ServiceMBeanSupport.create(ServiceMBeanSupport.java:173)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...<br>
+<span style="font-family: times new roman,times,serif;"><br>
+<big>means that your Naming service was configured with a CallByValue
+semantics. There are two solutions:<br>
+</big></span></span></small><br>
+1) Enable JNDI call by reference semantics.<br>
+<br>
+<div style="margin-left: 40px;">To do that, modify the Naming (JNDI)
+service configuration and set its "CallByValue" attribute to "false".<br>
+<br>
+The Naming configuration file is <small><span
+ style="font-family: courier new,courier,monospace;">$JBOSS_HOME/server/default/deploy/naming-service.xml</span></small>
+for an installer-generated JBoss configuration and <small><span
+ style="font-family: courier new,courier,monospace;">$JBOSS_HOME/server/conf/jboss-service.xml
+</span></small>(the JNDI section, search for "jboss:service=Naming")
+for a raw installation.<br>
+</div>
+<br>
+2) In case you don't want to change JNDI CallByValue semantics, deploy
+the MDB in the same class loading domain as the Messaging server.<br>
+<br style="font-family: courier new,courier,monospace;">
+<hr
+ style="width: 100%; height: 2px; font-family: courier new,courier,monospace;"><br>
 <br>
 <br>
 <br>
