@@ -52,19 +52,22 @@ import javax.transaction.UserTransaction;
 
 import org.hsqldb.Server;
 import org.hsqldb.persist.HsqlProperties;
+import org.jboss.jms.jndi.JNDIProviderAdapter;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.jms.jndi.JNDIProviderAdapter;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService;
 import org.jboss.resource.adapter.jms.JmsManagedConnectionFactory;
 import org.jboss.resource.connectionmanager.CachedConnectionManager;
 import org.jboss.resource.connectionmanager.CachedConnectionManagerMBean;
+import org.jboss.resource.connectionmanager.ConnectionFactoryBindingService;
 import org.jboss.resource.connectionmanager.JBossManagedConnectionPool;
 import org.jboss.resource.connectionmanager.TxConnectionManager;
-import org.jboss.resource.connectionmanager.ConnectionFactoryBindingService;
 import org.jboss.system.Registry;
 import org.jboss.system.ServiceController;
 import org.jboss.system.ServiceCreator;
@@ -961,7 +964,8 @@ public class ServiceContainer
                       "serializationtype=jboss&" +
                       "dataType=jms&" +
                       "socketTimeout=0&" +
-                      "socket.check_connection=false";
+                      "socket.check_connection=false&" +
+                      "leasePeriod=20000";
 
       String locatorURI;
       if (multiplex)
@@ -984,6 +988,14 @@ public class ServiceContainer
       mbean = new RemotingJMXWrapper(locator);
       mbeanServer.registerMBean(mbean, REMOTING_OBJECT_NAME);
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
+      
+      ServerInvocationHandler handler = new JMSServerInvocationHandler();
+      
+      mbeanServer.invoke(REMOTING_OBJECT_NAME, "addInvocationHandler",
+          new Object[] { ServerPeer.REMOTING_JMS_SUBSYSTEM, handler},
+          new String[] { "java.lang.String",
+                         "org.jboss.remoting.ServerInvocationHandler"});
+                 
       log.debug("started " + REMOTING_OBJECT_NAME);
    }
 

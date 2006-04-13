@@ -328,9 +328,7 @@
                <include name="**/messaging/**/*Test.class"/>
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
-               <exclude name="**/jms/ClientCrashTest.class"/>
-               <exclude name="**/jms/CallbackFailureTest.class"/>
-               <exclude name="**/jms/ManualCrashTest.class"/>
+               <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
                <!-- TODO Exclude all distributed tests until after 1.0 release -->
                <exclude name="**/messaging/core/distributed/**/*Test.class"/>
@@ -436,10 +434,9 @@
                <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
                <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
-               <exclude name="org/jboss/test/messaging/jms/ClientCrashTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/crash/*Test.class"/>
                <exclude name="org/jboss/test/messaging/jms/ManualCrashTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/MemLeakTest.class"/>
-               <exclude name="org/jboss/test/messaging/jms/CallbackFailureTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/XATransactionTest.class"/>
             </fileset>
@@ -517,13 +514,31 @@
       <antcall target="start-rmi-server"/>
 
       <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.ClientCrashTest"/>
+         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTest"/>
       </antcall>
 
       <antcall target="start-rmi-server"/>
 
       <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.CallbackFailureTest"/>
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashNegativeLeaseTest"/>
+      </antcall>
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashZeroLeaseTest"/>
+      </antcall>
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashLargeLeaseTest"/>
+      </antcall>
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.CallbackFailureTest"/>
       </antcall>
 
    </target>

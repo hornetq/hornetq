@@ -64,13 +64,4 @@ public class Subscription extends CoreSubscription
    {
       return isNoLocal;
    }
-   
-   public String asText()
-   {
-      StringBuffer sb = new StringBuffer();
-      sb.append("Non-durable, subscriptionID=\"");
-      sb.append(this.getChannelID());
-      sb.append("\"\n");
-      return sb.toString();
-   }
 }

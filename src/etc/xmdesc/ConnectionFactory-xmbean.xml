@@ -50,6 +50,12 @@
       <name>ServerPeer</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getConnector" setMethod="setConnector">
+      <description>The ObjectName of the remoting connector this destination will use</description>
+      <name>Connector</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
 
    <!-- Managed operations -->
 

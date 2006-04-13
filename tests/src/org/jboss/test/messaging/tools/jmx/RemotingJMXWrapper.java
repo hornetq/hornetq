@@ -21,15 +21,16 @@
 */
 package org.jboss.test.messaging.tools.jmx;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.logging.Logger;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.transport.Connector;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
 
 
 /**
@@ -41,7 +42,7 @@ import java.util.HashSet;
 public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
 {
    // Constants -----------------------------------------------------
-
+   
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -138,6 +139,11 @@ public class RemotingJMXWrapper implements RemotingJMXWrapperMBean
    public void setLeasePeriod(long leasePeriod)
    {
       connector.setLeasePeriod(leasePeriod);
+   }
+   
+   public long getLeasePeriod()
+   {
+      return connector.getLeasePeriod();
    }
 
    // Public --------------------------------------------------------

@@ -129,7 +129,8 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
       ServerManagement.stopServerPeer();
 
       Set subsystems = ServerManagement.getConnectorSubsystems();
-      assertTrue(subsystems.isEmpty());
+      assertEquals(1, subsystems.size());
+      assertTrue(subsystems.contains(ServerPeer.REMOTING_JMS_SUBSYSTEM));
 
       ServerManagement.addServerInvocationHandler("DEFAULT_INVOCATION_HANDLER",
                                                   new SimpleServerInvocationHandler());

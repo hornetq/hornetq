@@ -552,6 +552,8 @@ public class LocalTestServer implements Server
                 "name=\"" + objectName + "\"\n" +
                 "xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
          "<depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
+         "<depends optional-attribute-name=\"Connector\">" + ServiceContainer.REMOTING_OBJECT_NAME +
+         "</depends>\n" +
          "<attribute name=\"JNDIBindings\"><bindings>";
 
       for(int i = 0; i < jndiBindings.length; i++)

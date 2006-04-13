@@ -19,40 +19,38 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.jms.crash;
 
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.Session;
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.CreateClientOnServerCommand;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 
 /**
  * 
- * A CallbackFailureTest.
+ * A ClientCrashLargeLeaseTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * CallbackFailureTest.java,v 1.1 2006/02/21 08:22:28 timfox Exp
+ * ClientCrashLargeLeaseTest.java,v 1.1 2006/04/13 19:43:06 timfox Exp
  */
-public class CallbackFailureTest extends MessagingTestCase
+public class ClientCrashLargeLeaseTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(CallbackFailureTest.class);
+   private static final Logger log = Logger.getLogger(ClientCrashLargeLeaseTest.class);
    
    // Attributes ----------------------------------------------------
    
@@ -62,7 +60,7 @@ public class CallbackFailureTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public CallbackFailureTest(String name)
+   public ClientCrashLargeLeaseTest(String name)
    {
       super(name);
    }
@@ -73,87 +71,64 @@ public class CallbackFailureTest extends MessagingTestCase
    {
       super.setUp();
       
-      //Start the local server
+      // Start the local server
       localServer = new LocalTestServer();
       
-      //Start all the services locally
+      // Start all the services locally
       localServer.start("all");
-            
+
+      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "30000");
+       
       localServer.deployQueue("Queue", null);
-           
-      //Connect to the remote server, but don't start a servicecontainer on it
-      //We are only using the remote server to open a client connection to the local server
+          
+      // Connect to the remote server, but don't start a servicecontainer on it. We are only using
+      // the remote server to open a client connection to the local server.
       ServerManagement.create();
           
       remoteServer = ServerManagement.getServer();
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {       
       localServer.stop();
    }
-        
-   /*
-    * Test that when a client callback fails, server side resources for connections are cleaned-up
+      
+   /**
+    * Test that when a remote jms client crashes, server side resources for connections are
+    * cleaned-up.
     */
-   public void testCallbackFailure() throws Exception
+   public void testClientCrash() throws Exception
    {
-      if (!ServerManagement.isRemote()) return;
-      
-      //We need to disable exception listener otherwise it will clear up the connection itself
-      
-      ObjectName connectorName = localServer.getServerPeer().getConnector();
-      
-      ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
-      
-      localServer.getServerPeer().getServer().invoke(connectorName, "removeConnectionListener",
-                                                     new Object[] {cm},
-                                                     new String[] {"org.jboss.remoting.ConnectionListener"}); 
-       
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
       Queue queue = (Queue)ic.lookup("/queue/Queue");
       
-      CreateHangingConsumerCommand command = new CreateHangingConsumerCommand(cf, queue);
+      CreateClientOnServerCommand command = new CreateClientOnServerCommand(cf, queue, true);
       
       String remotingSessionId = (String)remoteServer.executeCommand(command);
       
-      remoteServer.exit();
-      
-      //we have removed the exception listener so the server side resouces shouldn't be cleared up
-      
-      Thread.sleep(20000);
-                 
+      ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
+            
       assertTrue(cm.containsSession(remotingSessionId));
       
-      //Now we send a message which should prompt delivery to the dead consumer causing
-      //an exception which should cause connection cleanup
-                  
-      Connection conn = cf.createConnection();
+      // Now we should have a client connection from the remote server to the local server
       
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      remoteServer.exit();
+      log.info("killed remote server");
         
-      MessageProducer prod = sess.createProducer(queue);
+      // Wait for connection resources to be cleared up
+      Thread.sleep(15000);
+           
+      // See if we still have a connection with this id
       
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      
-      Thread.sleep(10000);
-      
-      assertFalse(cm.containsSession(remotingSessionId));   
-               
+      //Connection state shouldn't have been cleared up by now
+      assertTrue(cm.containsSession(remotingSessionId));            
    }
+   
    
    // Package protected ---------------------------------------------
    
@@ -165,3 +140,4 @@ public class CallbackFailureTest extends MessagingTestCase
    // Inner classes -------------------------------------------------
 
 }
+

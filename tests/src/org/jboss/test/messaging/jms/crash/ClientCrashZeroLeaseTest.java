@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.jms.crash;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
@@ -28,27 +28,29 @@ import javax.naming.InitialContext;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.CreateClientOnServerCommand;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 
 /**
  * 
- * A ClientCrashTest.
+ * A ClientCrashZeroLeaseTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * ClientCrashTest.java,v 1.1 2006/02/21 08:22:28 timfox Exp
+ * ClientCrashZeroLeaseTest.java,v 1.1 2006/04/13 19:43:06 timfox Exp
  */
-public class ClientCrashTest extends MessagingTestCase
+public class ClientCrashZeroLeaseTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(ClientCrashTest.class);
+   private static final Logger log = Logger.getLogger(ClientCrashZeroLeaseTest.class);
    
    // Attributes ----------------------------------------------------
    
@@ -58,7 +60,7 @@ public class ClientCrashTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public ClientCrashTest(String name)
+   public ClientCrashZeroLeaseTest(String name)
    {
       super(name);
    }
@@ -76,11 +78,10 @@ public class ClientCrashTest extends MessagingTestCase
       localServer.start("all");
 
 
-      // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
-      // the default, whatever that is ...
-
-      localServer.getServerPeer().setRemotingConnectionLeasePeriod(3000);
-               
+      //Set lease period to 0 --> this should disable leasing so the state won't be cleared up
+      
+      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "0");
+       
       localServer.deployQueue("Queue", null);
           
       // Connect to the remote server, but don't start a servicecontainer on it. We are only using
@@ -126,7 +127,7 @@ public class ClientCrashTest extends MessagingTestCase
       Thread.sleep(15000);
            
       // See if we still have a connection with this id
-      assertFalse(cm.containsSession(remotingSessionId));            
+      assertTrue(cm.containsSession(remotingSessionId));            
    }
    
    
@@ -140,3 +141,4 @@ public class ClientCrashTest extends MessagingTestCase
    // Inner classes -------------------------------------------------
 
 }
+

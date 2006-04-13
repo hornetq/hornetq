@@ -21,25 +21,21 @@
   */
 package org.jboss.jms.server;
 
-import org.jboss.jms.server.connectionfactory.JNDIBindings;
+import javax.management.ObjectName;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
+ * 
+ * A ConnectorManager.
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version 1.1
  *
- * $Id$
+ * ConnectorManager.java,v 1.1 2006/04/13 19:43:05 timfox Exp
  */
-public interface ConnectionFactoryManager
+public interface ConnectorManager
 {
-   /**
-    * @param jndiBindings - if null, the connection factory will be created and registered with the
-    *        AOP subsystem, but not bound in JNDI.
-    *
-    * @return an identifier that uniques identifies the registered ConnectionFactory.
-    */
-   int registerConnectionFactory(String clientID, JNDIBindings jndiBindings, String locatorURI, boolean clientPing) throws Exception;
-
-   void unregisterConnectionFactory(int connectionFactoryID) throws Exception;
-
-   javax.jms.ConnectionFactory getConnectionFactory(int connectionFactoryID);
+   void registerConnector(ObjectName connectorName, boolean enablePing) throws Exception;
+   
+   void unregisterConnector(ObjectName connectorName) throws Exception;
+   
 }

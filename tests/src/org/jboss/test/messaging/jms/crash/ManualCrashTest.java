@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.jms.crash;
 
 import java.util.Hashtable;
 
@@ -39,7 +39,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 
 /**
  * 
- * A CrashTest.
+ * A ManualCrashTest.
  * 
  * For now crash tests should be run manually due to complexities in killing server
  * but leaving database intact.

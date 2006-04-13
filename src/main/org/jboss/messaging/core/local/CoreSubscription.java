@@ -117,12 +117,7 @@ public class CoreSubscription extends Pipe
    {
       state.load();
    }
-   
-   public String asText()
-   {
-      return toString();
-   }
-   
+     
    public String toString()
    {
       return "CoreSubscription[" + getChannelID() + ", " + topic + "]";

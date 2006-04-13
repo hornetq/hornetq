@@ -72,10 +72,11 @@ public class JMSRemotingConnection
    protected boolean isMultiplex;
    protected CallbackManager callbackManager;
    protected InvokerCallbackHandler dummy;
+   protected boolean clientPing;
 
    // Constructors --------------------------------------------------
 
-   public JMSRemotingConnection(String serverLocatorURI) throws Throwable
+   public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Throwable
    {
       callbackManager = new CallbackManager();
 
@@ -86,6 +87,8 @@ public class JMSRemotingConnection
       serverLocator = new InvokerLocator(serverLocatorURI);
 
       isMultiplex = serverLocator.getProtocol().equals("multiplex");
+      
+      this.clientPing = clientPing;
 
       final int MAX_RETRIES = 50;
 
@@ -124,10 +127,6 @@ public class JMSRemotingConnection
                //Probably not necessary and may fail since it didn't get properly started
                try
                {
-                  //callbackServer.removeInvocationHandler("Callback");
-
-                  //log.trace("Removed invocation handler");
-
                   callbackServer.stop();
 
                   log.trace("Stopped callback server");
@@ -190,7 +189,7 @@ public class JMSRemotingConnection
       
       //Enable client pinging
       //Server leasing is enabled separately on the server side
-      configuration.put(Client.ENABLE_LEASE, "true");
+      configuration.put(Client.ENABLE_LEASE, String.valueOf(clientPing));
 
       if (isMultiplex)
       {

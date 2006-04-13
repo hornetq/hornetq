@@ -160,6 +160,11 @@ public class JBossConnectionFactory implements
       return "JBossConnectionFactory->" + delegate;
    }
    
+   public ConnectionFactoryDelegate getDelegate()
+   {
+      return delegate;
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

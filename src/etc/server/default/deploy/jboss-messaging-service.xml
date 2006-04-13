@@ -28,7 +28,8 @@
                <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="socketTimeout">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
-               <attribute name="serverBindPort">4457</attribute>                            
+               <attribute name="serverBindPort">4457</attribute> 
+               <attribute name="leasePeriod">20000</attribute>                           
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
@@ -56,14 +57,12 @@
          <arg type="java.lang.String" value="/topic" />
       </constructor>
 
-      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
       <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
       <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
 
       <!-- Set to -1 to completely disable client leasing -->
-      <attribute name="RemotingConnectionLeasePeriod">20000</attribute>
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
         <security>
@@ -287,6 +286,7 @@ SELECT_SUBSCRIPTIONS_FOR_TOPIC=SELECT ID, CLIENT_ID, JMS_SUB_NAME, SELECTOR, NO_
       name="jboss.messaging.destination:service=ConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
       <attribute name="JNDIBindings">
          <bindings>
             <binding>/ConnectionFactory</binding>

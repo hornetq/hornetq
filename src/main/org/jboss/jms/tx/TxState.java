@@ -173,8 +173,6 @@ public class TxState implements Externalizable
       }  
    }
    
-   // Class YYY overrides -------------------------------------------
-   
    // Protected -----------------------------------------------------
    
    // Package Private -----------------------------------------------

@@ -322,12 +322,29 @@ public class Topic extends DestinationServiceSupport
       {
          Subscription sub = (Subscription)iter.next();
          if (durable && sub.isRecoverable())
-         {
-            sb.append(sub.asText());
+         {            
+            DurableSubscription ds = (DurableSubscription)sub;
+            sb.append("Durable, subscriptionID=\"");
+            sb.append(sub.getChannelID());    
+            sb.append("\", name=\"");
+            sb.append(ds.getName());
+            sb.append("\", clientID=\"");
+            sb.append(ds.getClientID());
+            sb.append("\", selector=\"");
+            sb.append(ds.getSelector());
+            sb.append("\", noLocal=\"");
+            sb.append(ds.isNoLocal());
+            sb.append("\"\n");
          }
          else if (!durable && !sub.isRecoverable())
-         {
-            sb.append(sub.asText());
+         {            
+            sb.append("Non-durable, subscriptionID=\"");
+            sb.append(sub.getChannelID());
+            sb.append("\", selector=\"");
+            sb.append(sub.getSelector());
+            sb.append("\", noLocal=\"");
+            sb.append(sub.isNoLocal());
+            sb.append("\"\n");
          }
       }
       return sb.toString();

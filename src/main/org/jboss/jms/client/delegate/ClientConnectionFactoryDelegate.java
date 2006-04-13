@@ -69,13 +69,16 @@ public class ClientConnectionFactoryDelegate
    protected transient Client client;
    
    protected JMSRemotingConnection nextConnection;
+   
+   protected boolean clientPing;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
    public ClientConnectionFactoryDelegate(int objectID, String serverLocatorURI,
-                                          Version serverVersion, String serverID)
+                                          Version serverVersion, String serverID,
+                                          boolean clientPing)
    {
       super(objectID);
       
@@ -84,6 +87,8 @@ public class ClientConnectionFactoryDelegate
       this.serverVersion = serverVersion;
       
       this.serverID = serverID;
+      
+      this.clientPing = clientPing;
    }
    
    // ConnectionFactoryDelegateImplementation -----------------------
@@ -218,13 +223,18 @@ public class ClientConnectionFactoryDelegate
       return versionToUse;
    }
    
+   public String getServerLocatorURI()
+   {
+      return serverLocatorURI;
+   }
+   
    // Protected -----------------------------------------------------
    
    protected JMSRemotingConnection getRemotingConnection() throws Throwable
    {
       if (nextConnection == null)
       {         
-         nextConnection = new JMSRemotingConnection(serverLocatorURI);
+         nextConnection = new JMSRemotingConnection(serverLocatorURI, clientPing);
       }
       return nextConnection;
    }

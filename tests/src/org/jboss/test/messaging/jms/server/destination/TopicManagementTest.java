@@ -502,10 +502,13 @@ public class TopicManagementTest extends DestinationManagementTestBase
       assertTrue(listMsg.get(0) instanceof TextMessage);
       assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
       
+      log.info(strSub);
+      
       // Non-durable sub 1
-      int ptr1 = strSub.indexOf("subscriptionID=\"");
-      int ptr2 = strSub.indexOf("\n", ptr1);
-      long sID1 = Long.parseLong(strSub.substring(ptr1 + 16, ptr2 - 1));
+      int ptr1 = strSub.indexOf("Non-durable, subscriptionID=\"");
+      int ptr2 = strSub.indexOf("\"", ptr1 + 30);
+      String sub = strSub.substring(ptr1 + 29, ptr2);
+      long sID1 = Long.parseLong(sub);
       listMsg = (List)ServerManagement.invoke(destObjectName, 
             "listMessagesNonDurableSub",
             new Object[] {new Long(sID1), null},
@@ -516,9 +519,10 @@ public class TopicManagementTest extends DestinationManagementTestBase
 
       // Non-durable sub 2
       strSub = strSub.substring(ptr2 + 1);
-      ptr1 = strSub.indexOf("subscriptionID=\"");
-      ptr2 = strSub.indexOf("\n", ptr1);
-      long sID2 = Long.parseLong(strSub.substring(ptr1 + 16, ptr2 - 1));
+      ptr1 = strSub.indexOf("Non-durable, subscriptionID=\"");
+      ptr2 = strSub.indexOf("\"", ptr1 + 30);
+      sub = strSub.substring(ptr1 + 29, ptr2);
+      long sID2 = Long.parseLong(sub);
       assertFalse(sID1 == sID2);
       listMsg = (List)ServerManagement.invoke(destObjectName, 
             "listMessagesNonDurableSub",

@@ -24,10 +24,9 @@ package org.jboss.jms.server;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
-import javax.jms.XAConnectionFactory;
 import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -38,13 +37,13 @@ import javax.naming.NamingException;
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
+import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
+import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
-import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
-import org.jboss.jms.tx.JMSRecoverable;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -52,12 +51,13 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
-import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
+
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
@@ -86,8 +86,6 @@ public class ServerPeer extends ServiceMBeanSupport
    // Attributes ----------------------------------------------------
 
    protected String serverPeerID;
-   protected ObjectName connectorName;
-   protected InvokerLocator locator;
    protected byte[] clientAOPConfig;
    private Version version;
 
@@ -98,8 +96,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    protected int objectIDSequence = Integer.MIN_VALUE + 1;
 
-   protected long remotingConnectionLeasePeriod;
-
    // wired components
 
    protected DestinationJNDIMapper destinationJNDIMapper;
@@ -107,6 +103,7 @@ public class ServerPeer extends ServiceMBeanSupport
    protected ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
    protected TransactionRepository txRepository;
    protected ConnectionManager connectionManager;
+   protected ConnectorManager connectorManager;
    protected IdManager messageIdManager;
 
    // plugins
@@ -129,7 +126,7 @@ public class ServerPeer extends ServiceMBeanSupport
    // still succeed. For more details, see the JIRA issue.
 
    private Map consumers;
-
+   
    // Constructors --------------------------------------------------
 
    public ServerPeer(String serverPeerID,
@@ -140,18 +137,16 @@ public class ServerPeer extends ServiceMBeanSupport
       this.defaultQueueJNDIContext = defaultQueueJNDIContext;
       this.defaultTopicJNDIContext = defaultTopicJNDIContext;
 
-      // the default value to use, unless the JMX attribute is modified
-      connectorName = new ObjectName("jboss.remoting:service=Connector,transport=socket");
-
       securityStore = new SecurityMetadataStore();
       txRepository = new TransactionRepository();
 
       destinationJNDIMapper = new DestinationJNDIMapper(this);
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
       connectionManager = new SimpleConnectionManager();
+      connectorManager = new SimpleConnectorManager(connectionManager);
 
       consumers = new ConcurrentReaderHashMap();
-
+      
       version = Version.instance();
 
       started = false;
@@ -203,6 +198,8 @@ public class ServerPeer extends ServiceMBeanSupport
       connFactoryJNDIMapper.start();
       txRepository.start(persistenceManagerDelegate);
       txRepository.loadPreparedTransactions();
+      
+      ((SimpleConnectorManager)connectorManager).setServer(server);
 
       //TODO Make block size configurable
       messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
@@ -211,14 +208,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
       createRecoverable();
 
-      started = true;
-
-      long lease = getRemotingConnectionLeasePeriod();
-
-      log.info("JMS " + this + " started, " +
-         (lease < 0 ?
-            "no connection failure checking" :
-            "connection failure checking active, lease period " + lease + " ms"));
+      started = true;      
    }
 
    public synchronized void stopService() throws Exception
@@ -233,11 +223,6 @@ public class ServerPeer extends ServiceMBeanSupport
       started = false;
 
       removeRecoverable();
-
-      // remove the JMS subsystem invocation handler
-      getServer().invoke(connectorName, "removeInvocationHandler",
-                         new Object[] { REMOTING_JMS_SUBSYSTEM },
-                         new String[] {"java.lang.String"});
 
       // stop the internal components
       txRepository.stop();
@@ -343,15 +328,6 @@ public class ServerPeer extends ServiceMBeanSupport
       return serverPeerID;
    }
 
-   public String getLocatorURI()
-   {
-      if (locator == null)
-      {
-         return null;
-      }
-      return locator.getLocatorURI();
-   }
-
    public String getDefaultQueueJNDIContext()
    {
       return defaultQueueJNDIContext;
@@ -360,16 +336,6 @@ public class ServerPeer extends ServiceMBeanSupport
    public String getDefaultTopicJNDIContext()
    {
       return defaultTopicJNDIContext;
-   }
-
-   public ObjectName getConnector()
-   {
-      return connectorName;
-   }
-
-   public void setConnector(ObjectName on)
-   {
-      connectorName = on;
    }
 
    public void setSecurityDomain(String securityDomain)
@@ -397,24 +363,9 @@ public class ServerPeer extends ServiceMBeanSupport
       return messageIdManager;
    }
 
-   public long getRemotingConnectionLeasePeriod()
+   public ServerInvocationHandler getInvocationHandler()
    {
-      return remotingConnectionLeasePeriod;
-   }
-
-   public void setRemotingConnectionLeasePeriod(long remotingConnectionLeasePeriod) throws Exception
-   {
-      long oldValue = this.remotingConnectionLeasePeriod;
-      this.remotingConnectionLeasePeriod = remotingConnectionLeasePeriod;
-      if (oldValue != remotingConnectionLeasePeriod)
-      {
-         // update the Connector's value
-         MBeanServer mbeanServer = getServer();
-         mbeanServer.
-            setAttribute(connectorName, new Attribute("LeasePeriod",
-                                                      new Long(remotingConnectionLeasePeriod)));
-
-      }
+      return handler;
    }
 
    // JMX Operations ------------------------------------------------
@@ -507,6 +458,11 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return connectionManager;
    }
+   
+   public ConnectorManager getConnectorManager()
+   {
+      return connectorManager;
+   }
 
    // access to plugin references
 
@@ -562,33 +518,38 @@ public class ServerPeer extends ServiceMBeanSupport
     * Place a Recoverable instance in the JNDI tree. This can be used by a transaction manager in
     * order to obtain an XAResource so it can perform XA recovery.
     */
+   
+   //Commented out until XA Recovery is complete
+   
    private void createRecoverable() throws Exception
    {
-      InitialContext ic = new InitialContext();
-
-      int connFactoryID = connFactoryJNDIMapper.registerConnectionFactory(null, null);
-
-      XAConnectionFactory xaConnFactory =
-         (XAConnectionFactory)connFactoryJNDIMapper.getConnectionFactory(connFactoryID);
-
-      JMSRecoverable recoverable = new JMSRecoverable(serverPeerID, xaConnFactory);
-
-      Context recCtx = null;
-      try
-      {
-         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
-      }
-      catch (NamingException e)
-      {
-         //Ignore
-      }
-
-      if (recCtx == null)
-      {
-         recCtx = ic.createSubcontext(RECOVERABLE_CTX_NAME);
-      }
-
-      recCtx.rebind(this.serverPeerID, recoverable);
+      //Disabled until XA Recovery is complete with Arjuna transaction integration
+      
+//      InitialContext ic = new InitialContext();
+//
+//      int connFactoryID = connFactoryJNDIMapper.registerConnectionFactory(null, null);
+//
+//      XAConnectionFactory xaConnFactory =
+//         (XAConnectionFactory)connFactoryJNDIMapper.getConnectionFactory(connFactoryID);
+//
+//      JMSRecoverable recoverable = new JMSRecoverable(serverPeerID, xaConnFactory);
+//
+//      Context recCtx = null;
+//      try
+//      {
+//         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
+//      }
+//      catch (NamingException e)
+//      {
+//         //Ignore
+//      }
+//
+//      if (recCtx == null)
+//      {
+//         recCtx = ic.createSubcontext(RECOVERABLE_CTX_NAME);
+//      }
+//
+//      recCtx.rebind(this.serverPeerID, recoverable);
    }
 
    private void removeRecoverable() throws Exception
@@ -606,7 +567,7 @@ public class ServerPeer extends ServiceMBeanSupport
          //Ignore
       }
    }
-
+   
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
       // We explicitly associate the datatype "jms" with the java SerializationManager
@@ -618,67 +579,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
       MarshalFactory.addMarshaller("jms", wf, wf);
       
-
-      // first remove the invocation handler specified in the config
-
-      // TODO: Why removing this? Isn't ServerPeer.stopService() supposed to remove it?
-      //       If it doesn't, fix ServerPeer.stopService(), don't add unnecessary behavior here.
-
-      mbeanServer.invoke(connectorName, "removeInvocationHandler",
-                         new Object[] { REMOTING_JMS_SUBSYSTEM },
-                         new String[] { "java.lang.String" });
-
-      // add the JMS subsystem invocation handler
-
-      handler = new JMSServerInvocationHandler();
-
-      mbeanServer.invoke(connectorName, "addInvocationHandler",
-                         new Object[] { REMOTING_JMS_SUBSYSTEM, handler},
-                         new String[] { "java.lang.String",
-                                        "org.jboss.remoting.ServerInvocationHandler"});
-
-      
-      String s = (String)mbeanServer.getAttribute(connectorName, "InvokerLocator");
-            
-      // To turn off remoting leasing need to ensure that the connection listener hasn't been set
-      // OR set the lease period to zero. Client side pinging is DISABLED by default so even if set
-      // connection listener on the server side the client won't ping unless add
-      // InvokerLocator.CLIENT_LEASE is set.
-      if (remotingConnectionLeasePeriod < 0)
-      {
-         log.debug("connection lease period " +  remotingConnectionLeasePeriod +
-                   ",  NOT activating connection checking");
-      }
-      else
-      {
-         mbeanServer.
-            setAttribute(connectorName, new Attribute("LeasePeriod",
-                  new Long(remotingConnectionLeasePeriod)));
-         
-         // install the connection listener that listens for failed connections
-         
-         mbeanServer.invoke(connectorName, "addConnectionListener",
-               new Object[] {connectionManager},
-               new String[] {"org.jboss.remoting.ConnectionListener"});
-         
-
-         //NOTE! Client pinging is configured from the client side
-         //We cannot just add a "leasing" param on the locator since then the server
-         //and client locators will be different and a remote invoker will be used even 
-         //for invm invocations
-         
-         log.debug("connection lease period " +  remotingConnectionLeasePeriod +
-                   ",  activated connection checking");
-
-      }
-
-      locator = new InvokerLocator(s);
-
-      // FIXME Note - There seems to be a bug (feature?) in JBoss Remoting which if you specify
-      // a socket timeout on the invoker locator URI then it always makes a remote call
-      // even when in the same JVM.
-
-      log.debug("LocatorURI: " + getLocatorURI());
+      handler = new JMSServerInvocationHandler();     
    }
 
    private void loadServerAOPConfig() throws Exception

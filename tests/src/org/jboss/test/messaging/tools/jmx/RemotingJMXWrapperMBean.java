@@ -72,4 +72,6 @@ public interface RemotingJMXWrapperMBean
    void removeConnectionListener(ConnectionListener listener);
 
    void setLeasePeriod(long leasePeriod);
+   
+   long getLeasePeriod();
 }

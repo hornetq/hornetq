@@ -110,12 +110,6 @@
       <type>java.lang.String</type>
    </attribute>
 
-   <attribute access="read-only" getMethod="getLocatorURI">
-      <description>The LocatorURI of the Connector to be used by this ServerPeer</description>
-      <name>locatorURI</name>
-      <type>java.lang.String</type>
-   </attribute>
-
    <attribute access="read-only" getMethod="getDefaultQueueJNDIContext">
       <description>The default JNDI context queues are bound under.</description>
       <name>DefaultQueueJNDIContext</name>
@@ -126,12 +120,6 @@
       <description>The default JNDI context topics are bound under.</description>
       <name>DefaultTopicJNDIContext</name>
       <type>java.lang.String</type>
-   </attribute>
-
-   <attribute access="read-write" getMethod="getConnector" setMethod="setConnector">
-      <description>The ObjectName of the Connector used by this ServerPeer</description>
-      <name>Connector</name>
-      <type>javax.management.ObjectName</type>
    </attribute>
 
    <attribute access="read-only" getMethod="getDestinations">
@@ -150,15 +138,6 @@
       <description>The Security config to use when the destination does not supply any</description>
       <name>DefaultSecurityConfig</name>
       <type>org.w3c.dom.Element</type>
-   </attribute>
-
-   <attribute access="read-write" getMethod="getRemotingConnectionLeasePeriod" setMethod="setRemotingConnectionLeasePeriod">
-      <description>Remoting connection lease period. The number of milliseconds that should be
-         used when establishing the client lease period (meaning client will need to update its
-         lease within this amount of time or will be considered dead). A negative value disables
-         lease management, the clients won't be checked anymore.</description>
-      <name>RemotingConnectionLeasePeriod</name>
-      <type>long</type>
    </attribute>
 
    <!-- Managed operations -->

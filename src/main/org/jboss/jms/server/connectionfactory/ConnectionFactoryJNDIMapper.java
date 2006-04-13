@@ -74,7 +74,9 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
    // ConnectionFactoryManager implementation -----------------------
 
    public synchronized int registerConnectionFactory(String clientID,
-                                                     JNDIBindings jndiBindings) throws Exception
+                                                     JNDIBindings jndiBindings,
+                                                     String locatorURI,
+                                                     boolean clientPing) throws Exception
    {
       int id = serverPeer.getNextObjectID();
 
@@ -84,9 +86,10 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       ClientConnectionFactoryDelegate delegate;
       try
       {
-         delegate = new ClientConnectionFactoryDelegate(id, serverPeer.getLocatorURI(),
+         delegate = new ClientConnectionFactoryDelegate(id, locatorURI,
                                                         serverPeer.getVersion(),
-                                                        serverPeer.getServerPeerID());
+                                                        serverPeer.getServerPeerID(),
+                                                        clientPing);
       }
       catch (Exception e)
       {

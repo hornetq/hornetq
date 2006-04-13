@@ -76,17 +76,5 @@ public class DurableSubscription extends Subscription
       {
          throw new MessagingJMSException("Failed to remove subscription data");
       }
-   }
-   
-   public String asText()
-   {
-      StringBuffer sb = new StringBuffer();
-      sb.append("Durable, name=\"");
-      sb.append(name);
-      sb.append("\", clientID=\"");
-      sb.append(clientID);
-      sb.append("\"\n");
-      return sb.toString();
-   }
-      
+   }   
 }

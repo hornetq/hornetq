@@ -21,6 +21,9 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.io.Serializable;
+import java.util.Set;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
@@ -32,19 +35,17 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
-import javax.naming.InitialContext;
 import javax.management.MBeanServer;
+import javax.naming.InitialContext;
 
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
-
-import java.util.Set;
-import java.io.Serializable;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
@@ -356,11 +357,15 @@ public class ConnectionTest extends MessagingTestCase
       ServerManagement.stopServerPeer();
 
       Set subsystems = ServerManagement.getConnectorSubsystems();
-      assertTrue(subsystems.isEmpty());
+      assertTrue(subsystems.contains(ServerPeer.REMOTING_JMS_SUBSYSTEM));
+      assertEquals(1, subsystems.size());
 
       ServerManagement.addServerInvocationHandler("DEFAULT_INVOCATION_HANDLER",
                                                   new SimpleServerInvocationHandler());
-      log.info("DEFAULT_INVOCATION_HANDLER installed");
+      subsystems = ServerManagement.getConnectorSubsystems();
+      assertTrue(subsystems.contains(ServerPeer.REMOTING_JMS_SUBSYSTEM));
+      assertTrue(subsystems.contains("DEFAULT_INVOCATION_HANDLER"));
+      assertEquals(2, subsystems.size());
 
       try
       {
