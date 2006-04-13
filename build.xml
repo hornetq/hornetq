@@ -673,6 +673,7 @@
    <target name="release-structure" depends="init">
       <property name="release.output" value="${module.output}/release/jboss-messaging-${module.version}"/>
       <mkdir dir="${release.output}/src"/>
+      <mkdir dir="${release.output}/tests"/>
       <mkdir dir="${release.output}/examples"/>
       <mkdir dir="${release.output}/util"/>
    </target>
@@ -680,6 +681,12 @@
    <target name="source" depends="release-structure">
       <copy todir="${release.output}/src">
          <fileset dir="${source.java}">
+            <exclude name="**/CVS"/>
+         </fileset>
+      </copy>
+      <copy todir="${release.output}/tests">
+         <fileset dir="${module.root}/tests/src">
+            <include name="org/jboss/test/**"/>
             <exclude name="**/CVS"/>
          </fileset>
       </copy>
