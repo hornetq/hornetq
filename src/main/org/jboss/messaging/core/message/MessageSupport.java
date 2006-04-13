@@ -29,7 +29,6 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;

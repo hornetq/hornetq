@@ -44,5 +44,5 @@ public interface Filter extends Serializable
     *
 	 * @return true if the Filter accepts the routable - i.e. let's it pass.
 	 */
-	public boolean accept(Routable routable);
+	boolean accept(Routable routable);
 }

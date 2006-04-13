@@ -38,6 +38,7 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSDispatcher;
+import org.jboss.jms.server.subscription.Subscription;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -49,7 +50,6 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.SingleReceiverDelivery;
-import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
@@ -300,11 +300,22 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
       JMSDispatcher.instance.unregisterTarget(new Integer(id));
       
-      //Remove the subscription if non durable
-      if (channel instanceof CoreSubscription)
+      //If it's a subscription, remove it
+      if (channel instanceof Subscription)
       {
-         CoreSubscription sub = (CoreSubscription)channel;
-         sub.closeConsumer();         
+         Subscription sub = (Subscription)channel;
+         try
+         {
+            if (!sub.isRecoverable())
+            {
+               //We don't disconnect durable subs
+               sub.disconnect();
+            }
+         }
+         catch (Exception e)
+         {
+            throw new MessagingJMSException("Failed to disconnect", e);
+         }
       }           
    }
 

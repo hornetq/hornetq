@@ -21,18 +21,19 @@
 */
 package org.jboss.test.messaging.core.local;
 
-import org.jboss.messaging.core.local.CoreDurableSubscription;
+import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.test.messaging.core.base.ChannelTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class DurableSubscriptionTest extends ChannelTestBase
+public class RecoverableSubscriptionTest extends ChannelTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -44,7 +45,7 @@ public class DurableSubscriptionTest extends ChannelTestBase
 
    // Constructors --------------------------------------------------                                        /
 
-   public DurableSubscriptionTest(String name)
+   public RecoverableSubscriptionTest(String name)
    {
       super(name);
    }
@@ -62,8 +63,8 @@ public class DurableSubscriptionTest extends ChannelTestBase
 
       tr.start(tl);
    
-      channel = new CoreDurableSubscription(123, "clientid123", "testDurableSubscription",
-                                            null, null, false, ms, tl, 100, 20, 10);
+      channel = new CoreSubscription(123, null, ms, tl, true, 100, 20, 10, null);
+      
 
       log.debug("setup done");
    }

@@ -31,7 +31,7 @@ import org.jboss.test.messaging.core.local.base.QueueTestBase;
  * 
  * $Id$
  */
-public class SubscriptionTest extends QueueTestBase
+public class NonRecoverableSubscriptionTest extends QueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -41,7 +41,7 @@ public class SubscriptionTest extends QueueTestBase
 
    // Constructors --------------------------------------------------
 
-   public SubscriptionTest(String name)
+   public NonRecoverableSubscriptionTest(String name)
    {
       super(name);
    }
@@ -52,7 +52,7 @@ public class SubscriptionTest extends QueueTestBase
    {
       super.setUp();
       
-      channel = new CoreSubscription(123, null, null, false, ms, pm, 100, 20, 10);
+      channel = new CoreSubscription(123, null, ms, pm, false, 100, 20, 10, null);
       
       log.debug("setup done");
    }

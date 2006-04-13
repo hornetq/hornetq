@@ -11,9 +11,9 @@ import java.util.Set;
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.local.CoreDurableSubscription;
-import org.jboss.messaging.core.local.CoreSubscription;
+import org.jboss.jms.server.subscription.DurableSubscription;
+import org.jboss.jms.server.subscription.Subscription;
+import org.jboss.messaging.core.local.CoreDestination;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
@@ -52,21 +52,21 @@ public interface ChannelMapper extends ServerPlugin
 
    CoreDestination undeployCoreDestination(boolean isQueue, String destName);
    
-   CoreDurableSubscription createDurableSubscription(String topicName,
-                                                     String clientID,
-                                                     String subscriptionName,
-                                                     String selector,
-                                                     boolean noLocal,
-                                                     MessageStore ms,
-                                                     PersistenceManager pm) throws JMSException;
+   DurableSubscription createDurableSubscription(String topicName,
+                                                  String clientID,
+                                                  String subscriptionName,
+                                                  String selector,
+                                                  boolean noLocal,
+                                                  MessageStore ms,
+                                                  PersistenceManager pm) throws JMSException;
    
-   CoreSubscription createSubscription(String topicName,
+   Subscription createSubscription(String topicName,
                                        String selector,
                                        boolean noLocal,
                                        MessageStore ms,
                                        PersistenceManager pm) throws JMSException;
    
-   CoreDurableSubscription getDurableSubscription(String clientID,
+   DurableSubscription getDurableSubscription(String clientID,
                                                   String subscriptionName,
                                                   MessageStore ms,
                                                   PersistenceManager pm) throws JMSException;

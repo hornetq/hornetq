@@ -34,8 +34,8 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
-import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.local.CoreDurableSubscription;
+import org.jboss.jms.server.subscription.DurableSubscription;
+import org.jboss.messaging.core.local.CoreDestination;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.persistence.JDBCUtil;
@@ -104,11 +104,11 @@ public class JDBCChannelMapperTest extends MessagingTestCase
       String topicName = new GUID().toString();
       String clientID = new GUID().toString();
       String subscriptionName = new GUID().toString();
-      String selector = new GUID().toString();
+      String selector = "color = 'red'";
 
       ServerManagement.deployTopic(topicName);
 
-      CoreDurableSubscription sub = channelMapper.createDurableSubscription(topicName,
+      DurableSubscription sub = channelMapper.createDurableSubscription(topicName,
                                                                clientID,
                                                                subscriptionName,
                                                                selector,
@@ -117,7 +117,7 @@ public class JDBCChannelMapperTest extends MessagingTestCase
 
       assertEquals(sub.getSelector(), selector);
 
-      CoreDurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
+      DurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
                                                               subscriptionName,
                                                               ms, pm);
 
@@ -143,7 +143,7 @@ public class JDBCChannelMapperTest extends MessagingTestCase
 
       ServerManagement.deployTopic(topicName);
 
-      CoreDurableSubscription sub = channelMapper.createDurableSubscription(topicName,
+      DurableSubscription sub = channelMapper.createDurableSubscription(topicName,
                                                                clientID,
                                                                subscriptionName,
                                                                null,
@@ -152,7 +152,7 @@ public class JDBCChannelMapperTest extends MessagingTestCase
 
       assertNull(sub.getSelector());
 
-      CoreDurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
+      DurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
                                                               subscriptionName,
                                                               ms, pm);
 

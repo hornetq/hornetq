@@ -173,5 +173,5 @@ public interface State
    int messageCount();   
    
    void load() throws Exception;
-         
+       
 }

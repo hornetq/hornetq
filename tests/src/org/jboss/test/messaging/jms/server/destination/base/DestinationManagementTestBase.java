@@ -35,7 +35,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.core.local.CoreDestination;
 import org.w3c.dom.Element;
 
 import java.util.Set;

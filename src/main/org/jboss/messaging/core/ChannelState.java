@@ -166,7 +166,7 @@ public class ChannelState implements State
    }      
    
    public void addReference(MessageReference ref, Transaction tx) throws Throwable
-   {
+   {   
       if (trace) { log.trace(this + " adding " + ref + "transactionally in transaction: " + tx); }
 
       if (ref.isReliable() && !acceptReliableMessages)

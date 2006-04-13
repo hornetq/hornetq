@@ -41,7 +41,7 @@ import org.jboss.messaging.core.tx.Transaction;
  *
  * $Id$
  */
-public abstract class ChannelSupport implements Channel, ManageableCoreDestination
+public abstract class ChannelSupport implements Channel
 {
    // Constants -----------------------------------------------------
 
@@ -308,8 +308,6 @@ public abstract class ChannelSupport implements Channel, ManageableCoreDestinati
       state = null;
    }
   
-   // ManageableCoreDestination implementation ----------------------
-   
    public void removeAllMessages()
    {
       state.removeAll();

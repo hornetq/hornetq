@@ -44,10 +44,12 @@ import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.remoting.JMSDispatcher;
+import org.jboss.jms.server.subscription.DurableSubscription;
+import org.jboss.jms.server.subscription.Subscription;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.CoreDestination;
-import org.jboss.messaging.core.local.CoreDurableSubscription;
+import org.jboss.messaging.core.local.CoreDestination;
 import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -145,7 +147,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
           
       int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
      
-      CoreSubscription subscription = null;
+      Subscription subscription = null;
 
       if (jmsDestination.isTopic())
       {
@@ -219,7 +221,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                            subscriptionName + " to unsubscribe");
                   }
 
-                  subscription.unsubscribe();
+                  try
+                  {
+                     //Remove data for the durable sub
+                     ((DurableSubscription)subscription).unsubscribe();
+                  }
+                  catch (Exception e)
+                  {
+                     throw new MessagingJMSException("Failed to unsubscribe", e);
+                  }
 
                   // create a fresh new subscription
                   subscription = cm.createDurableSubscription(jmsDestination.getName(),
@@ -245,7 +255,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (subscription != null)
       {
-         subscription.subscribe();
+         subscription.connect();
       }
             
       putConsumerEndpoint(consumerID, ep); // caching consumer locally
@@ -474,7 +484,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new JMSException("null clientID on connection");
       }
 
-      CoreDurableSubscription subscription =
+      DurableSubscription subscription =
          cm.getDurableSubscription(clientID, subscriptionName, ms, pm);
 
       if (subscription == null)
@@ -490,18 +500,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          throw new JMSException("Failed to remove durable subscription");
       }
-
-      
-      subscription.unsubscribe();
       
       try
       {
-         pm.removeAllChannelData(subscription.getChannelID());
+         subscription.unsubscribe();
       }
       catch (Exception e)
       {
-         log.error("Failed to remove message data", e);
-         throw new IllegalStateException("Failed to remove message data");
+         throw new MessagingJMSException("Failed to unsubscribe", e);
       }
    }
    

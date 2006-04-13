@@ -19,23 +19,33 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core;
+package org.jboss.messaging.core.local;
+
+import org.jboss.messaging.core.Distributor;
+import org.jboss.messaging.core.Receiver;
 
 /**
- * Common manageable interface for a core destination (queue, topic, etc.)
+ * Common type for a core destination (queue, topic)
  *
- * @author <a href="mailto:alex.fu@novell.com">Alex Fu</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- * 
+ *
  * $Id$
  */
-public interface ManageableCoreDestination
+public interface CoreDestination extends Distributor, Receiver
 {
-   /**
-    * Remove all messages from the destination. 
-    *
-    */
-   void removeAllMessages();
+   long getId();     
    
-   // TODO adding more common manageable operations
+   /**
+    * 
+    * @return true if the CoreDestination represents a Queue
+    */
+   boolean isQueue();
+   
+   int getFullSize();
+   
+   int getPageSize();
+   
+   int getDownCacheSize();
 }

@@ -21,11 +21,14 @@
   */
 package org.jboss.messaging.core.local;
 
-import javax.jms.JMSException;
-
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * Represents a subscription to a destination (topic or queue).
@@ -38,84 +41,88 @@ public class CoreSubscription extends Pipe
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(CoreSubscription.class);
-
+   private static final Logger log;
+   
+   private static final boolean trace;
+   
+   private boolean connected;
+   
+   static
+   {
+      log = Logger.getLogger(CoreSubscription.class);
+      trace = log.isTraceEnabled();
+   }
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
    protected Topic topic;
-   protected String selector;
-   protected boolean noLocal;
+
+   protected Filter filter;
    
    // Constructors --------------------------------------------------
  
-   protected CoreSubscription(long id, Topic topic, String selector, boolean noLocal,
-                              MessageStore ms, PersistenceManager pm, boolean recoverable,
-                              int fullSize, int pageSize, int downCacheSize)
+   public CoreSubscription(long id, Topic topic, 
+                           MessageStore ms, PersistenceManager pm, boolean recoverable,
+                           int fullSize, int pageSize, int downCacheSize, Filter filter)
                               
    {
       // A CoreSubscription must accept reliable messages
       super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
       this.topic = topic;
-      this.selector = selector;
-      this.noLocal = noLocal;
+      this.filter = filter;
    }
-
-   public CoreSubscription(long id, Topic topic, String selector, boolean noLocal,
-                           MessageStore ms, PersistenceManager pm, int fullSize,
-                           int pageSize, int downCacheSize)
-   {
-      this(id, topic, selector, noLocal, ms, pm, false, fullSize, pageSize, downCacheSize);
-   }
-   
+  
    // Channel implementation ----------------------------------------
+   
+   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
+   { 
+      //If the subscription has a Filter we do not accept any Message references that do not
+      //match the Filter
+      if (filter != null && !filter.accept(r))
+      {
+         if (trace) { log.trace(this + " not accepting " + r); }
+         return null;
+      }
+      
+      return super.handle(sender, r, tx);
+   }
 
    // Public --------------------------------------------------------
    
-   public void subscribe()
+   public void connect()
    {
-      topic.add(this);
-   }
-   
-   public void unsubscribe() throws JMSException
-   {
-      topic.remove(this);
-   }
-   
-   public void closeConsumer() throws JMSException
-   {
-      unsubscribe();
-      try
+      if (!connected)
       {
-         if (pm != null)
-         {
-            pm.removeAllChannelData(this.channelID);            
-         }
-      }
-      catch (Exception e)
-      {
-         final String msg = "Failed to remove message data for subscription";
-         log.error(msg, e);
-         throw new IllegalStateException(msg);
+         topic.add(this);
+         connected = true;
       }
    }
    
+   public void disconnect()
+   {
+      if (connected)
+      {
+         topic.remove(this);
+         connected = false;
+      }
+   }
+      
    public Topic getTopic()
    {
       return topic;
    }
    
-   public String getSelector()
+   public void load() throws Exception
    {
-      return selector;
+      state.load();
    }
    
-   public boolean isNoLocal()
+   public String asText()
    {
-      return noLocal;
+      return toString();
    }
-
+   
    public String toString()
    {
       return "CoreSubscription[" + getChannelID() + ", " + topic + "]";

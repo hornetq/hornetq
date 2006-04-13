@@ -21,16 +21,10 @@
   */
 package org.jboss.messaging.core.local;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
-import javax.jms.InvalidSelectorException;
-
-import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.CoreDestination;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Receiver;
@@ -46,7 +40,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * 
  * $Id$
  */
-public class Topic implements CoreDestination, ManageableTopic
+public class Topic implements CoreDestination
 {
    // Constants -----------------------------------------------------
 
@@ -56,15 +50,17 @@ public class Topic implements CoreDestination, ManageableTopic
    
    // Attributes ----------------------------------------------------
    
+   private int fullSize;
+   
+   private int pageSize;
+   
+   private int downCacheSize;
+   
    private boolean trace = log.isTraceEnabled();
    
    protected Router router;
    
    protected long destinationId;
-   
-   private int fullSize;
-   private int pageSize;
-   private int downCacheSize;
    
    // Constructors --------------------------------------------------
    
@@ -74,7 +70,7 @@ public class Topic implements CoreDestination, ManageableTopic
       
       if (log.isTraceEnabled()) { log.trace(this + " created"); }
       
-      this.destinationId = id;
+      this.destinationId = id;     
       
       this.fullSize = fullSize;
       this.pageSize = pageSize;
@@ -139,213 +135,24 @@ public class Topic implements CoreDestination, ManageableTopic
       return destinationId;
    }
 
-   /**
-    * @see CoreDestination#getFullSize()
-    */
-   public int getFullSize()
-   {
-      return fullSize;
-   }
-   
-   /**
-    * @see CoreDestination#getPageSize()
-    */
-   public int getPageSize()
-   {
-      return pageSize;
-   }
-   
-   /**
-    * @see CoreDestination#getDownCacheSize()
-    */
-   public int getDownCacheSize()
-   {
-      return downCacheSize;
-   }
-   
    public boolean isQueue()
    {
       return false;
    }
    
-   // ManageableTopic implementation --------------------------------
-   
-   /**
-    * @see ManageableCoreDestination#removeAllMessages()
-    */
-   public void removeAllMessages()
+   public int getFullSize()
    {
-      // XXX How to lock down all subscriptions?
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         Object sub = iter.next();
-         ((CoreSubscription)sub).removeAllMessages();
-      }
-   }
- 
-   /**
-    * @see ManageableTopic#subscriptionCount()
-    */
-   public int subscriptionCount()
-   {
-      int count = 0;
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         count++;
-         iter.next();
-      }
-      return count;
-   }
-
-   /**
-    * @see ManageableTopic#subscriptionCount(boolean)
-    */
-   public int subscriptionCount(boolean durable)
-   {
-      int count = 0;
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         Object sub = iter.next();
-         if ((sub instanceof CoreDurableSubscription) ^ (!durable))
-            count++;
-      }
-      return count;
+      return fullSize;
    }
    
-   /**
-    * XXX Placeholder
-    * @see ManageableTopic#getSubscriptions()
-    */
-   /*
-   public List getSubscriptions()
+   public int getPageSize()
    {
-      ArrayList list = new ArrayList();
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         if (sub instanceof CoreDurableSubscription)
-            list.add(new String[]{ 
-                        Long.toString(sub.getChannelID()), 
-                        ((CoreDurableSubscription)sub).getClientID(),
-                        ((CoreDurableSubscription)sub).getName()});
-         else
-            list.add(new String[]{ 
-                  Long.toString(sub.getChannelID()), "", ""});
-      }
-      return list;
-   }
-   */
-   
-   /**
-    * @see ManageableTopic#getSubscriptionsAsText(boolean)
-    */
-   public String getSubscriptionsAsText(boolean durable)
-   {
-      StringBuffer sb = new StringBuffer();
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         if (durable && sub instanceof CoreDurableSubscription)
-         {
-            CoreDurableSubscription ds = (CoreDurableSubscription)sub;
-            sb.append("Durable, name=\"");
-            sb.append(ds.getName());
-            sb.append("\", clientID=\"");
-            sb.append(ds.getClientID());
-            sb.append("\"\n");
-         }
-         else if (!durable && !(sub instanceof CoreDurableSubscription))
-         {
-            sb.append("Non-durable, subscriptionID=\"");
-            sb.append(sub.getChannelID());
-            sb.append("\"\n");
-         }
-      }
-      return sb.toString();
+      return pageSize;
    }
    
-   /**
-    * XXX Placeholder
-    * @see ManageableTopic#getSubscriptions(boolean)
-    */
-   /*
-   public List getSubscriptions(boolean durable)
+   public int getDownCacheSize()
    {
-      ArrayList list = new ArrayList();
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         if (sub instanceof CoreDurableSubscription && durable)
-            list.add(new String[]{ 
-                        Long.toString(sub.getChannelID()), 
-                        ((CoreDurableSubscription)sub).getClientID(),
-                        ((CoreDurableSubscription)sub).getName()});
-         else if (!(sub instanceof CoreDurableSubscription) && !durable)
-            list.add(new String[]{ 
-                  Long.toString(sub.getChannelID()), "", ""});
-      }
-      return list;
-   }
-   */   
-   
-   /**
-    * XXX Placeholder
-    * @see ManageableTopic#getMessages(long, String, String, String)
-    */
-   /*
-   public List getMessages(long channelID, String clientID, String subName, String selector) throws InvalidSelectorException
-   {
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         // If subID matches, then get message list from the subscription
-         if (matchSubscription(channelID, clientID, subName, sub))
-            return sub.browse(null == selector ? null : new Selector(selector));
-      }   
-      // No match, return an empty list
-      return new ArrayList();
-   }
-   */
-   
-   /**
-    * @see ManageableTopic#getMessagesFromDurableSub(String, String, String)
-    */
-   public List getMessagesFromDurableSub(String name, String clientID, String selector) throws InvalidSelectorException
-   {
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         // If subID matches, then get message list from the subscription
-         if (matchDurableSubscription(name, clientID, sub))
-            return sub.browse(null == selector ? null : new Selector(selector));
-      }   
-      // No match, return an empty list
-      return new ArrayList();
-   }
-   
-   /**
-    * @see ManageableTopic#getMessagesFromNonDurableSub(Long, String)
-    */
-   public List getMessagesFromNonDurableSub(long channelID, String selector) throws InvalidSelectorException
-   {
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         // If subID matches, then get message list from the subscription
-         if (matchNonDurableSubscription(channelID, sub))
-            return sub.browse(null == selector ? null : new Selector(selector));
-      }   
-      // No match, return an empty list
-      return new ArrayList();
+      return downCacheSize;
    }
    
    // Public --------------------------------------------------------
@@ -360,40 +167,6 @@ public class Topic implements CoreDestination, ManageableTopic
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-
-   // Test if the durable subscriptions match
-   private boolean matchDurableSubscription(String name, String clientID, CoreSubscription sub)
-   {
-      // Validate the name
-      if (null == name)
-         throw new IllegalArgumentException();
-      // Must be durable
-      if (!(sub instanceof CoreDurableSubscription))
-         return false;
-
-      CoreDurableSubscription duraSub = (CoreDurableSubscription)sub;
-      // Subscription name check
-      if (!name.equals(duraSub.getName()))
-         return false;
-      // Client ID check: if no client ID specified, it's considered as matched 
-      if (null == clientID || 0 == clientID.length())
-         return true;
-      if (!clientID.equals(duraSub.getClientID()))
-         return false;
-      return true;
-   }
-   
-   // Test if the non-durable subscriptions match
-   private boolean matchNonDurableSubscription(long channelID, CoreSubscription sub)
-   {
-      // Must be non-durable
-      if (sub instanceof CoreDurableSubscription)
-         return false;
-      // Channel ID must be the same
-      if (channelID != sub.getChannelID())
-         return false;
-      return true;
-   }
    
    // Inner classes -------------------------------------------------   
 }

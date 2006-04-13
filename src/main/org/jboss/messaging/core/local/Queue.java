@@ -21,15 +21,9 @@
   */
 package org.jboss.messaging.core.local;
 
-import java.util.List;
-
-import javax.jms.InvalidSelectorException;
-
-import org.jboss.jms.selector.Selector;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
-import org.jboss.messaging.core.CoreDestination;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -38,17 +32,22 @@ import org.jboss.messaging.core.CoreDestination;
  *
  * $Id$
  */
-public class Queue extends ChannelSupport implements CoreDestination, ManageableQueue
+public class Queue extends ChannelSupport implements CoreDestination
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   private int m_fullSize;
-   private int m_pageSize;
-   private int m_downCacheSize;
    
+   //TODO - Do we really need to cache these values here?
+   //Can't we just return the values from the corresponding ChannelState?
+   private int fullSize;
+   
+   private int pageSize;
+   
+   private int downCacheSize;
+
    // Constructors --------------------------------------------------
 
    public Queue(long id, MessageStore ms, PersistenceManager pm,
@@ -56,9 +55,9 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
    {      
       super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
       router = new PointToPointRouter();
-      m_fullSize = fullSize;
-      m_pageSize = pageSize;
-      m_downCacheSize = downCacheSize;
+      this.fullSize = fullSize;
+      this.pageSize = pageSize;
+      this.downCacheSize = downCacheSize;
    }
 
    // Public --------------------------------------------------------
@@ -78,57 +77,31 @@ public class Queue extends ChannelSupport implements CoreDestination, Manageable
       return true;
    }
    
-   // ManageableQueue implementation --------------------------------
-   
-   /**
-    * @see ManageableQueue#getMessageCount()
-    */
    public int getMessageCount()
    {
-	   return state.messageCount();
+      return state.messageCount();
    }
    
-   public List getMessages(String selector) throws InvalidSelectorException
-   {
-      if (null == selector)
-      {
-         return browse();
-      }
-      else
-      {
-         return browse(new Selector(selector));
-      }
-   }
-
    // CoreDestination implementation -------------------------------
    
    public long getId()
    {
       return channelID;
    }
-
-   /**
-    * @see CoreDestination#getFullSize()
-    */
+   
    public int getFullSize()
    {
-      return m_fullSize;
+      return fullSize;
    }
    
-   /**
-    * @see CoreDestination#getPageSize()
-    */
    public int getPageSize()
    {
-      return m_pageSize;
+      return pageSize;
    }
    
-   /**
-    * @see CoreDestination#getDownCacheSize()
-    */
    public int getDownCacheSize()
    {
-      return m_downCacheSize;
+      return downCacheSize;
    }
 
    // Package protected ---------------------------------------------

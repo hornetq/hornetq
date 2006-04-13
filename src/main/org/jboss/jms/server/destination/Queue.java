@@ -13,12 +13,14 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossQueue;
-import org.jboss.messaging.core.local.ManageableQueue;
+import org.jboss.jms.selector.Selector;
 
 /**
  * A deployable JBoss Messaging queue.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:alex.fu@novell.com">Alex Fu</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -54,7 +56,7 @@ public class Queue extends DestinationServiceSupport
       }
 
       JBossQueue jbq = new JBossQueue(name);
-	   ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
+      org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
 	   return q.getMessageCount();
    }
 
@@ -69,7 +71,7 @@ public class Queue extends DestinationServiceSupport
       }
 
       JBossQueue jbq = new JBossQueue(name);
-      ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
+      org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
       q.removeAllMessages();
    }
    
@@ -80,12 +82,30 @@ public class Queue extends DestinationServiceSupport
          log.warn("Queue is stopped.");
          return new ArrayList();
       }
+      
+      if (selector != null)
+      {
+         selector = selector.trim();
+         if (selector.equals(""))
+         {
+            selector = null;
+         }
+      }
 
       JBossQueue jbq = new JBossQueue(name);
-      ManageableQueue q = (ManageableQueue)cm.getCoreDestination(jbq);
+      org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
       try 
       {
-         return q.getMessages(trimSelector(selector));
+         List msgs;
+         if (selector == null)
+         {
+            msgs = q.browse();
+         }
+         else
+         {
+            msgs = q.browse(new Selector(selector));
+         }
+         return msgs;
       }
       catch (InvalidSelectorException e)
       {
@@ -94,21 +114,7 @@ public class Queue extends DestinationServiceSupport
          throw (JMSException)th;
       }
    }
-
-   // TODO implement these:
-
-//   int getQueueDepth() throws java.lang.Exception;
-//
-//   int getScheduledMessageCount() throws java.lang.Exception;
-//
-//   int getReceiversCount();
-//
-//   java.util.List listReceivers();
-//
-//   java.util.List listMessages() throws java.lang.Exception;
-//
-//   java.util.List listMessages(java.lang.String selector) throws java.lang.Exception;
-
+    
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
