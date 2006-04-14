@@ -7,6 +7,7 @@
 package org.jboss.jms.server.connectionfactory;
 
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.ConnectionFactoryManager;
@@ -38,6 +39,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    protected ConnectionFactoryManager connectionFactoryManager;
    
    protected ConnectorManager connectorManager;
+   protected ConnectionManager connectionManager;
       
    protected ObjectName connectorObjectName;
 
@@ -79,13 +81,23 @@ public class ConnectionFactory extends ServiceMBeanSupport
       
       connectorManager = serverPeer.getConnectorManager();
       
+      connectionManager = serverPeer.getConnectionManager();
+      
       long leasePeriod = ((Long)server.getAttribute(connectorObjectName, "LeasePeriod")).longValue();
       
       //If leasePeriod <= 0, disable pinging altogether
       
+      int refCount = connectorManager.registerConnector(connectorObjectName.getCanonicalName());
+      
       boolean enablePing = leasePeriod > 0;
       
-      connectorManager.registerConnector(connectorObjectName, enablePing);
+      if (refCount == 1 && enablePing)
+      {
+         // install the connection listener that listens for failed connections            
+         server.invoke(connectorObjectName, "addConnectionListener",
+               new Object[] {connectionManager},
+               new String[] {"org.jboss.remoting.ConnectionListener"});                     
+      }
       
       connectionFactoryID = connectionFactoryManager.registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing);
               
@@ -107,7 +119,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
       
       connectionFactoryManager.unregisterConnectionFactory(connectionFactoryID);
       
-      connectorManager.unregisterConnector(connectorObjectName);
+      connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
       
       log.info(this + " undeployed");
    }

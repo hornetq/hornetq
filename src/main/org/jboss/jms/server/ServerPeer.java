@@ -143,7 +143,7 @@ public class ServerPeer extends ServiceMBeanSupport
       destinationJNDIMapper = new DestinationJNDIMapper(this);
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
       connectionManager = new SimpleConnectionManager();
-      connectorManager = new SimpleConnectorManager(connectionManager);
+      connectorManager = new SimpleConnectorManager();
 
       consumers = new ConcurrentReaderHashMap();
       
@@ -199,8 +199,6 @@ public class ServerPeer extends ServiceMBeanSupport
       txRepository.start(persistenceManagerDelegate);
       txRepository.loadPreparedTransactions();
       
-      ((SimpleConnectorManager)connectorManager).setServer(server);
-
       //TODO Make block size configurable
       messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
 

@@ -21,7 +21,8 @@
   */
 package org.jboss.jms.server;
 
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ConnectionEndpoint;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -32,12 +33,12 @@ import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
  */
 public interface ConnectionManager
 {
-   void registerConnection(String jmsClientId, String remotingClientSessionID, ServerConnectionEndpoint endpoint);
+   void registerConnection(String jmsClientId, String remotingClientSessionID, ConnectionEndpoint endpoint);
 
    /**
     * @return null if there is no such connection.
     */
-   ServerConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID);
+   ConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID);
    
    boolean containsSession(String remotingClientSessionID);
 }

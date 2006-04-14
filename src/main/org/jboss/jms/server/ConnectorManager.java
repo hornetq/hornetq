@@ -34,8 +34,8 @@ import javax.management.ObjectName;
  */
 public interface ConnectorManager
 {
-   void registerConnector(ObjectName connectorName, boolean enablePing) throws Exception;
+   int registerConnector(String connectorName) throws Exception;
    
-   void unregisterConnector(ObjectName connectorName) throws Exception;
+   void unregisterConnector(String connectorName) throws Exception;
    
 }

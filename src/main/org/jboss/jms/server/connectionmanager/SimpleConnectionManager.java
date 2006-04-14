@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
@@ -67,7 +67,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    // ConnectionManager ---------------------------------------------
 
-   public synchronized void registerConnection(String jmsClientId, String remotingClientSessionID, ServerConnectionEndpoint endpoint)
+   public synchronized void registerConnection(String jmsClientId, String remotingClientSessionID, ConnectionEndpoint endpoint)
    {    
       Map endpoints = (Map)jmsClients.get(jmsClientId);
       
@@ -85,14 +85,13 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
                 Util.guidToString(remotingClientSessionID));
    }
 
-   public synchronized ServerConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID)
+   public synchronized ConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID)
    {
       Map endpoints = (Map)jmsClients.get(jmsClientId);
       
       if (endpoints != null)
       {
-         ServerConnectionEndpoint e =
-            (ServerConnectionEndpoint)endpoints.remove(remotingClientSessionID);
+         ConnectionEndpoint e = (ConnectionEndpoint)endpoints.remove(remotingClientSessionID);
          
          log.debug("unregistered connection " + e + " with remoting session ID " +
                Util.guidToString(remotingClientSessionID));
@@ -120,24 +119,30 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
     * Be aware that ConnectionNotifier uses to call this method with null Throwables.
     * @param t - expect it to be null!
     */
-   public synchronized void handleConnectionException(Throwable t, Client client)
+   public void handleConnectionException(Throwable t, Client client)
    {  
-      String remotingSessionID = client.getSessionId();
-
       if (t instanceof ClientDisconnectedException)
       {
          // This is OK
          if (log.isTraceEnabled()) { log.trace(this + " notified that client " + client + " has disconnected"); }
          return;
       }
+      String remotingSessionID = client.getSessionId();
       
+      if (remotingSessionID != null)
+      {
+         handleClientFailure(remotingSessionID);
+      }
+   }
+   
+   public synchronized void handleClientFailure(String remotingSessionID)
+   {
       String jmsClientId = (String)sessions.get(remotingSessionID);
       
       if (jmsClientId != null)
       {
-         log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure " +
-               "(" + (t == null ? "null Throwable" : t.getClass().toString()) + ")", t);
-         
+         log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure ");
+                    
          //Remoting only provides one pinger per invoker, not per connection therefore when the pinger dies
          //we must close ALL the connections corresponding to that jms client id
          Map endpoints = (Map)jmsClients.get(jmsClientId);
@@ -152,10 +157,11 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
                
                String sessionId = (String)entry.getKey();
                
-               ServerConnectionEndpoint sce = (ServerConnectionEndpoint)entry.getValue();
+               ConnectionEndpoint sce = (ConnectionEndpoint)entry.getValue();
                
                try
                {
+                  sce.closing();
                   sce.close();
                   log.debug("cleared up state for connection " + sce);
                }

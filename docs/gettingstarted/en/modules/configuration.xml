@@ -5,7 +5,7 @@
   </para>
 
   <para>
-   <emphasis role="bold">Note:</emphasis> In JBoss Messaging 1.0 most of those services are configurable via mbean definitions which are <emphasis role="bold">all</emphasis> located in <literal>jboss-messaging.sar/META-INF/jboss-service.xml</literal>. In the next release, configurations will be broken down into separate xml files.
+   <emphasis role="bold">Note:</emphasis> In JBoss Messaging 1.0 most of those services are configurable via mbean definitions which are <emphasis role="bold">all</emphasis> located in <literal>jboss-messaging.sar/META-INF/jboss-service.xml</literal>. Very soon, configurations will be broken down into separate xml files in the ditribution, making them easier to manage.
   </para>
 
 
@@ -32,14 +32,11 @@
           &lt;arg type=&quot;java.lang.String&quot; value=&quot;/topic&quot; /&gt;
        &lt;/constructor&gt;
 
-       &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;jboss.messaging:service=Connector,transport=socket&lt;/depends&gt;
        &lt;depends optional-attribute-name=&quot;ThreadPool&quot;&gt;jboss.messaging:service=ThreadPool&lt;/depends&gt;
        &lt;depends optional-attribute-name=&quot;PersistenceManager&quot;&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
        &lt;depends optional-attribute-name=&quot;MessageStore&quot;&gt;jboss.messaging:service=MessageStore&lt;/depends&gt;
        &lt;depends optional-attribute-name=&quot;ChannelMapper&quot;&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
 
-       &lt;!-- Set to -1 to completely disable client leasing --&gt;
-       &lt;attribute name=&quot;RemotingConnectionLeasePeriod&quot;&gt;20000&lt;/attribute&gt;
        &lt;attribute name=&quot;SecurityDomain&quot;&gt;java:/jaas/messaging&lt;/attribute&gt;
        &lt;attribute name=&quot;DefaultSecurityConfig&quot;&gt;
          &lt;security&gt;
@@ -49,18 +46,6 @@
    &lt;/mbean&gt;
 
    </programlisting>
-
-   <section id="conf.serverpeer.leaseperiod">
-       <title>RemotingConnectionLeasePeriod</title>
-
-       <para>By default JBoss Messaging sends "Pings" down JMS connections to ensure they are stil alive. If the connection does not respond, it's resources are cleaned up.
-       </para>
-       <para>
-       This setting determines the period of time in milliseconds between pings.
-       </para>
-       <para>Set to <literal>-1</literal> to turn connection checking off altogether, but be warned that if JMS clients then crash, their corresponding server side resources will not be cleaned-up causing a resource "leak".
-       </para>
-   </section>
 
    <section id="conf.serverpeer.securitydomain">
       <title>SecurityDomain</title>
@@ -112,11 +97,11 @@
     The default PM configuration is designed to work out of the box with HSQL, however it must be stressed that HSQL should not be used in a production environment mainly due to it's limited support for transaction isolation.
     </para>
     <para>
-    JBoss Messaging also ships with a pre-made PM configuration for MySQL and Oracle. Configurations for MSSQL and other popular databases should be available soon.
-    The JDBC PM has been designed to use standard SQL wherever possible so writing a JDBC PM config for another database is usually only a fairly simple matter of changing column types in the configuration.
+    JBoss Messaging also ships with pre-made PM configurations for MySQL, Oracle and PostgreSQL. Configurations for MSSQL and other popular databases should be available very soon.
+    The JDBC PM has been designed to use standard SQL for the DML so writing a JDBC PM config for another database is usually only a fairly simple matter of changing DDL in the configuration which is likely to be different for different databases.
     </para>
     <para>
-    The MySQL and Oracle configurations are located in <literal>/docs/examples/config</literal>
+    The configurations are located in <literal>/docs/examples/config</literal>
    </para>
 
   <para>Example of a PM configuration for MySQL database
@@ -280,14 +265,14 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
     <title>Configuring connection factories</title>
 
     <para>
-      By default JBossMessaging binds just one connection factory in JNDI on start-up.
+      With the default configuration JBossMessaging binds just one connection factory in JNDI on start-up
     </para>
     <para>
     This connection factory has no client id and is bound into the following JNDI contexts:
        <literal>/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory</literal>
     </para>
     <para>
-      You may want to configure additional connection factories, for instance if you want to provide a default client id for a connection factory, or if you want to bind it in different places in JNDI.
+      You may want to configure additional connection factories, for instance if you want to provide a default client id for a connection factory, or if you want to bind it in different places in JNDI, or if you want different connection factories to use different transports.
     </para>
     <para>
       An example connection factory configuration is presented below:
@@ -305,6 +290,7 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
               &lt;arg type=&quot;java.lang.String&quot; value=&quot;myClientID&quot;/&gt;
            &lt;/constructor&gt;
            &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+           &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;jboss.messaging:service=Connector,transport=socket&lt;/depends&gt;
            &lt;attribute name=&quot;JNDIBindings&quot;&gt;
               &lt;bindings&gt;
                  &lt;binding&gt;/MyConnectionFactory1&lt;/binding&gt;
@@ -320,6 +306,7 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
 
     <para>
       The above example would creater a connection factory with pre-configured client id <literal>myClientID</literal> and bind the connection factory in two places in the JNDI tree: <literal>/MyConnectionFactory</literal> and <literal>/factories/cf</literal>.
+      The connection factory will use the default remoting connector. To use a different remoting connector with the connection factory change the Connector attribute to specify the service name of the connector you wish to use.
     </para>
 
   </section>
@@ -342,7 +329,7 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
         For full details of what JBoss Remoting is capable of and how it is configured please consult the JBoss Remoting project page.
       </para>
       <para>
-        JBoss Messaging currently uses only one connector per server peer, although this is set to change in future releases.
+        The default configuration includes a single remoting connector which is used by the single default connection factory. Each connection factory can be configured to use it's own connector.
       </para>
       <para>
         The default connector is configured to use the remoting socket transport.
@@ -354,7 +341,7 @@ CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFER
         The transport can be configured to use SSL where a higher level of security is required.
       </para>
       <para>
-        Future releases JBoss Messaging will support a bidirectional socket transport (similar to UIL2 in JBoss MQ) and an HTTP transport, both of which are useful in network environments where TCP connections from server to client are not possible.
+        Future releases JBoss Messaging will support a bidirectional socket transport (similar to UIL2 in JBoss MQ) and an HTTP transport, both of which are useful in network environments where TCP connections from server to client are not possible. This means, for example, that you could deploy one connection factory that uses the HTTP transport for all the connections created from it, and another connection factory that uses the socket transport for all connections created from it.
       </para>
 
   </section>

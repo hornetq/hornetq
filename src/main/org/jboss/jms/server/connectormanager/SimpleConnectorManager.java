@@ -24,12 +24,7 @@ package org.jboss.jms.server.connectormanager;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
-import org.jboss.logging.Logger;
 
 /**
  * 
@@ -49,30 +44,15 @@ import org.jboss.logging.Logger;
  */
 public class SimpleConnectorManager implements ConnectorManager
 {
-   private static final Logger log = Logger.getLogger(SimpleConnectorManager.class);
-
    protected Map connectors;
-   
-   protected ConnectionManager cm;
-   
-   protected MBeanServer server;
-   
-   public SimpleConnectorManager(ConnectionManager cm)
+      
+   public SimpleConnectorManager()
    {
       connectors = new HashMap();
-      
-      this.cm = cm;
    }
-   
-   public void setServer(MBeanServer server)
-   {
-      this.server = server;
-   }
-   
-   public synchronized void unregisterConnector(ObjectName connectorName) throws Exception
+  
+   public synchronized void unregisterConnector(String name) throws Exception
    { 
-      String name = connectorName.getCanonicalName();
-      
       Integer refCount = (Integer)connectors.get(name);
       
       if (refCount == null)
@@ -90,29 +70,42 @@ public class SimpleConnectorManager implements ConnectorManager
       }         
    }
    
-   public synchronized void registerConnector(ObjectName connectorName, boolean enablePing) throws Exception
+   public int registerConnector(String name) throws Exception
    {
-      String name = connectorName.getCanonicalName();
-      
       Integer refCount = (Integer)connectors.get(name);
       
       if (refCount != null)
       {
          //This connector has already been registered by another connection factory, so no need to do anything
          //apart from increment the reference count
-         connectors.put(name, new Integer(refCount.intValue() + 1));
+         refCount = new Integer(refCount.intValue() + 1);
       }
       else
-      {                       
-         if (enablePing)
-         {        
-            // install the connection listener that listens for failed connections            
-            server.invoke(connectorName, "addConnectionListener",
-                  new Object[] {cm},
-                  new String[] {"org.jboss.remoting.ConnectionListener"});            
-         }
-               
-         connectors.put(name, new Integer(1));
+      {                                               
+         refCount = new Integer(1);
+      }
+      
+      connectors.put(name, refCount);
+      
+      return refCount.intValue();      
+   }
+   
+   public synchronized boolean containsConnector(String connectorName)
+   {
+      return connectors.containsKey(connectorName);
+   }
+   
+   public synchronized int getCount(String connectorName)
+   {
+      Integer i = (Integer)connectors.get(connectorName);
+      
+      if (i == null)
+      {
+         return 0;
+      }
+      else
+      {
+         return i.intValue();
       }
    }
 }
