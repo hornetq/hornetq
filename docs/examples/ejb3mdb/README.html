@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>JBoss Messaging Example - Message Driven Bean</title>
+</head>
+<body>
+<br>
+<h1>JBoss Messaging EJB3 Message Driven Bean Example</h1>
+$Revision$
+<h2>Overview</h2>
+<br>
+This example deploys a simple EJB3 Message Driven Bean that processes
+messages sent to a test queue.&nbsp; Once it receives a message and
+"processes" it, the EJB3 MDB sends an acknowledgment message to a&nbsp;
+temporary destination created by the sender for this purpose. The
+example is considered&nbsp; successful if the sender receives the
+acknowledgment message.<br>
+<br>
+This example relies on access to a running JBoss Messaging instance. <span
+ style="font-style: italic;"></span>The JBoss Messaging instance must
+be deployed according to the
+"Installation" paragraph from the release documentation.&nbsp; However,
+the example will automatically deploy its own queue, unless a queue
+with the same name is already deployed. <br>
+<br>
+The example was designed to work with
+a <span style="font-family: monospace;">jboss-messaging-scoped.sar</span>
+archive deployed under JBoss' <span style="font-family: monospace;">default</span>
+configuration. If you change any of these elements, please modify the
+example's<span style="font-family: monospace;"> build.xml</span>
+accordingly.<br>
+<br>
+<span style="font-weight: bold;">Important!</span><span
+ style="font-style: italic;"> </span>The JBoss instance that runs the
+Messaging server must also have EJB3 support previously installed. If
+the EJB3 support is not installed, the example will fail with an error
+message similar to:<br>
+<br>
+<div style="text-align: center;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; margin-left: auto; margin-right: auto; background-color: rgb(204, 204, 204);"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <div
+ style="margin-left: 40px; background-color: rgb(204, 204, 204);">
+      <div style="text-align: center; margin-left: 40px;"><span
+ style="font-family: monospace;"></span><br>
+      <span style="font-family: monospace;"></span></div>
+      <span style="font-family: monospace;"><br>
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3
+does not seem to be installed in
+C:\work\src\jboss-4.0.3-src\build\output\jboss-4.0.3/server/messaging! </span><span
+ style="font-family: monospace;">Install it and try again.</span></div>
+      <span style="font-family: monospace;">&nbsp;</span><br>
+      <div style="text-align: center;"><br>
+      </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="text-align: center;"><br>
+<span style="font-weight: bold;"></span><br>
+</div>
+For instructions on how to install EJB3 support, please go to <a
+ href="http://docs.jboss.org/ejb3/">http://docs.jboss.org/ejb3/</a> or
+use the JBoss Installer.<br>
+<br>
+<span style="font-style: italic;"></span><br>
+<h2>Running the example</h2>
+1. Set up the JBOSS_HOME environment variable to point to the JBoss
+instance you deployed JBoss Messaging into. For example, if you
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.3SP1\server\default\deploy,</span>
+then your JBOSS_HOME value should be <span
+ style="font-family: monospace;">C:\</span><span
+ style="font-family: monospace;">jboss-4.0.3SP1.</span><br>
+<span style="font-family: monospace;"><br>
+</span>Remember that the example's build script expects to find <span
+ style="font-family: monospace;">jboss-messaging-scoped.sar</span> under<span
+ style="font-family: monospace;"> $JBOSS_HOME/server/default/deploy</span>.
+If you use a deployment archive with a different name or a different
+JBoss
+configuration, please modify the example's <span
+ style="font-family: monospace;">build.xml</span> accordingly.<br>
+<br>
+<span style="font-family: monospace;"><br>
+</span><br>
+2. Go to the example's home directory<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">cd
+.. \examples\ejb3mdb</span><br>
+</div>
+<br>
+3. Run the example:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">ant</span>
+<br>
+<br>
+<br>
+</div>
+The output of a successful run should be similar to:<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <div style="margin-left: 40px;"><br>
+      </div>
+$ ant<br>
+Buildfile: build.xml<br>
+      <br>
+identify:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Running the EJB3 MDB
+example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] The queue: testQueue<br>
+      <br>
+sanity-check:<br>
+      <br>
+init:<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\output\classes\META-INF<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\output\lib\META-INF<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
+      <br>
+compile:<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\output\classes<br>
+      <br>
+jar:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [jar] Building jar:
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\output\lib\mdb-example.ejb3<br>
+      <br>
+deploy:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
+C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\messaging\deploy<br>
+      <br>
+sleep:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] Sleeping for 5 seconds ...<br>
+      <br>
+run:<br>
+      <br>
+send:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Queue /queue/testQueue exists<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The Hello! message was successfully
+sent to the testQueue queue<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: !olleH<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
+Messaging version 1.0.1.CR1 (1.0)<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
+SUCCESS!&nbsp;&nbsp; ###<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+      <br>
+undeploy:<br>
+&nbsp;&nbsp; [delete] Deleting:
+C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\messaging\deploy\mdb-example.ejb3<br>
+      <br>
+BUILD SUCCESSFUL<br>
+Total time: 10 seconds<br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<h2>Troublesooting</h2>
+<br>
+<h3>1. While compiling the example I get </h3>
+<tt>C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\src\org\jboss\examples\jms\ejb3mdb\EJB3MDBExample.java:29:
+illegal character: \64<br>
+@MessageDriven(activateConfig =<br>
+^<br>
+<br>
+</tt>You're compiling with Java 4. You need to use Java 5 in order to
+be able to compile and take advantage of annotations.<br>
+<h3>2. I get <span style="font-family: monospace;">"javax.jms.JMSSecurityException:
+User null is NOT authenticated" <br>
+</span></h3>
+You probably didn't install JBoss Messaging correctly. A fresh JBoss
+Messaging installation requires changes in the security configuration
+of a <span style="font-family: monospace;">default </span>JBoss
+instance, specifically a properly configured "<small><span
+ style="font-family: courier new,courier,monospace;">messaging</span></small>"
+security domain.&nbsp; Follow the instructions from the "Installation"
+paragraph of the release documentation. <br>
+<br>
+<big><span style="font-weight: bold;">3. The example fails with <small>"<span
+ style="font-family: courier new,courier,monospace;">Have not received
+any reply. The example failed!</span>"</small> and the server log
+contains ClassNotFoundExceptions</span></big><br>
+<br>
+If all you get after running the example is<br>
+<br>
+<small><span style="font-family: courier new,courier,monospace;">send:</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] Queue /queue/testQueue exists</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] The Hello! message was successfully sent to the </span></small><small><span
+ style="font-family: courier new,courier,monospace;">testQueue </span></small><small><span
+ style="font-family: courier new,courier,monospace;">queue</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] java.lang.Exception: Have not received any reply. The example
+failed!</span><br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.example.jms.mdb.Sender.example(Sender.java:102)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.example.jms.common.ExampleSupport.run(ExampleSupport.java:58)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.example.jms.mdb.Sender.main(Sender.java:131)</span><br
+ style="font-family: courier new,courier,monospace;">
+<br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] #####################</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] ###&nbsp;&nbsp;&nbsp; FAILURE!&nbsp;&nbsp; ###</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
+[java] #####################</span></small><br
+ style="font-family: courier new,courier,monospace;">
+<br style="font-family: courier new,courier,monospace;">
+check the server log. The presence of <br>
+<small><br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">2006-04-11
+17:14:58,370 DEBUG [org.jboss.ejb.plugins.jms.DLQHandler]
+Initialization failed DLQHandler</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">javax.naming.CommunicationException
+[<span style="font-weight: bold;">Root exception is
+java.lang.ClassNotFoundException: No ClassLoaders found for:
+org.jboss.jms.client.JBossConnectionFactory</span> (no security manager</span><span
+ style="font-family: courier new,courier,monospace;">: RMI class loader
+disabled)]</span><br style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at org.jnp.interfaces.NamingContext.lookup(NamingContext.java:713)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at org.jnp.interfaces.NamingContext.lookup(NamingContext.java:572)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at javax.naming.InitialContext.lookup(InitialContext.java:347)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at
+org.jboss.ejb.plugins.jms.DLQHandler.createService(DLQHandler.java:151)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at
+org.jboss.system.ServiceMBeanSupport.jbossInternalCreate(ServiceMBeanSupport.java:245)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at
+org.jboss.system.ServiceMBeanSupport.create(ServiceMBeanSupport.java:173)</span><br
+ style="font-family: courier new,courier,monospace;">
+<span style="font-family: courier new,courier,monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...<br>
+<span style="font-family: times new roman,times,serif;"><br>
+<big>means that your Naming service was configured with a CallByValue
+semantics. There are two solutions:<br>
+</big></span></span></small><br>
+1) Enable JNDI call by reference semantics.<br>
+<br>
+<div style="margin-left: 40px;">To do that, modify the Naming (JNDI)
+service configuration and set its "CallByValue" attribute to "false".<br>
+<br>
+The Naming configuration file is <small><span
+ style="font-family: courier new,courier,monospace;">$JBOSS_HOME/server/default/deploy/naming-service.xml</span></small>
+for an installer-generated JBoss configuration and <small><span
+ style="font-family: courier new,courier,monospace;">$JBOSS_HOME/server/conf/jboss-service.xml
+</span></small>(the JNDI section, search for "jboss:service=Naming")
+for a raw installation.<br>
+</div>
+<br>
+2) In case you don't want to change JNDI CallByValue semantics, deploy
+the MDB in the same class loading domain as the Messaging server.<br>
+<br style="font-family: courier new,courier,monospace;">
+<hr
+ style="width: 100%; height: 2px; font-family: courier new,courier,monospace;"><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>

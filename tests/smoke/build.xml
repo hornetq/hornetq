@@ -22,6 +22,7 @@
    <property name="run.topic.example" value="true"/>
    <property name="run.mdb.example" value="true"/>
    <property name="run.stateless.example" value="true"/>
+   <property name="run.ejb3mdb.example" value="false"/>
 
    <path id="twiddle.classpath">
       <pathelement location="${jboss.home}/bin/twiddle.jar"/>
@@ -183,6 +184,10 @@
                <equals arg1="${example.name}" arg2="stateless"/>
                <istrue value="${run.stateless.example}"/>
             </and>
+            <and>
+               <equals arg1="${example.name}" arg2="ejb3mdb"/>
+               <istrue value="${run.ejb3mdb.example}"/>
+            </and>
          </or>
       </condition>
       <antcall target="run-example-internal"/>
@@ -310,6 +315,13 @@
          <param name="jboss.configuration.name" value="messaging-smoke-test"/>
       </antcall>
 
+      <antcall target="run-example">
+         <param name="example.name" value="ejb3mdb"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.home" value="${jboss.home}"/>
+         <param name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </antcall>
+
       <!-- ====================================================  -->
       <!--                                                       -->
       <!--  End of example list                                  -->
@@ -355,6 +367,7 @@
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
+         <!-- <param name="run.ejb3mdb.example" value="true"/> -->
       </antcall>
 
       <antcall target="smoke">
@@ -370,6 +383,7 @@
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404RC1.home}"/>
+
       </antcall>
 
       <antcall target="smoke">
@@ -399,7 +413,7 @@
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging.sar"/>
          <param name="replace.remoting" value="true"/>
-      </antcall>                                                                                   
+      </antcall>                                                             
 
    </target>
 
