@@ -126,7 +126,7 @@ public class ServerPeer extends ServiceMBeanSupport
    // still succeed. For more details, see the JIRA issue.
 
    private Map consumers;
-   
+
    // Constructors --------------------------------------------------
 
    public ServerPeer(String serverPeerID,
@@ -146,7 +146,7 @@ public class ServerPeer extends ServiceMBeanSupport
       connectorManager = new SimpleConnectorManager();
 
       consumers = new ConcurrentReaderHashMap();
-      
+
       version = Version.instance();
 
       started = false;
@@ -198,7 +198,7 @@ public class ServerPeer extends ServiceMBeanSupport
       connFactoryJNDIMapper.start();
       txRepository.start(persistenceManagerDelegate);
       txRepository.loadPreparedTransactions();
-      
+
       //TODO Make block size configurable
       messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
 
@@ -208,7 +208,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
       started = true;
 
-      long lease = getRemotingConnectionLeasePeriod();
+      //TODO: fix build
+      long lease = 0; //getRemotingConnectionLeasePeriod();
 
       log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
          getServerPeerID()+ "] started, " +
@@ -464,7 +465,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return connectionManager;
    }
-   
+
    public ConnectorManager getConnectorManager()
    {
       return connectorManager;
@@ -524,13 +525,13 @@ public class ServerPeer extends ServiceMBeanSupport
     * Place a Recoverable instance in the JNDI tree. This can be used by a transaction manager in
     * order to obtain an XAResource so it can perform XA recovery.
     */
-   
+
    //Commented out until XA Recovery is complete
-   
+
    private void createRecoverable() throws Exception
    {
       //Disabled until XA Recovery is complete with Arjuna transaction integration
-      
+
 //      InitialContext ic = new InitialContext();
 //
 //      int connFactoryID = connFactoryJNDIMapper.registerConnectionFactory(null, null);
@@ -573,7 +574,7 @@ public class ServerPeer extends ServiceMBeanSupport
          //Ignore
       }
    }
-   
+
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
       // We explicitly associate the datatype "jms" with the java SerializationManager
@@ -584,8 +585,8 @@ public class ServerPeer extends ServiceMBeanSupport
       JMSWireFormat wf = new JMSWireFormat();
 
       MarshalFactory.addMarshaller("jms", wf, wf);
-      
-      handler = new JMSServerInvocationHandler();     
+
+      handler = new JMSServerInvocationHandler();
    }
 
    private void loadServerAOPConfig() throws Exception
