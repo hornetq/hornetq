@@ -208,14 +208,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
       started = true;
 
-      //TODO: fix build
-      long lease = 0; //getRemotingConnectionLeasePeriod();
-
       log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
-         getServerPeerID()+ "] started, " +
-         (lease < 0 ?
-            "no connection failure checking" :
-            "connection failure checking active, lease period " + lease + " ms"));
+         getServerPeerID()+ "] started");
    }
 
    public synchronized void stopService() throws Exception
