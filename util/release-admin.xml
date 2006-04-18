@@ -17,6 +17,7 @@
 
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="messaging.config.name" value="messaging"/>
+   <property name="standalone.messaging.config.name" value="standalone-messaging"/>
    <!-- DO NOT change this value here, otherwise the installation script won't work. Change it in
         do-not-distribute.properties.
    -->
@@ -43,7 +44,7 @@
 
    <target name="create-server-config" depends="validate-jboss, prevent-messaging-overwrite, validate-messaging-sar">
 
-      <echo message="Creating JBoss Messaging configuration '${messaging.config.name}' for ${jboss.home}"/>
+      <echo message="Creating JBoss Messaging configuration '${messaging.config.name}' for ${jboss.home} based on ${messaging.sar.name}"/>
 
       <mkdir dir="${jboss.home}/server/${messaging.config.name}"/>
       <copy todir="${jboss.home}/server/${messaging.config.name}">
@@ -92,6 +93,176 @@
          <regexp pattern="\x3cattribute name=\x22CallByValue\x22\x3etrue\x3c/attribute\x3e"/>
          <substitution expression="&lt;attribute name=&quot;CallByValue&quot;&gt;false&lt;/attribute&gt;"/>
       </replaceregexp>
+   </target>
+
+
+   <target name="standalone" depends="validate-jboss, validate-messaging-sar"
+           description="Creates a standalone Messaging server configuration based on a default JBoss instance">
+
+      <echo message="Creating Standalone Messaging configuration '${standalone.messaging.config.name}' for ${jboss.home} based on ${messaging.sar.name}"/>
+
+      <mkdir dir="${jboss.home}/server/${standalone.messaging.config.name}/conf"/>
+      <mkdir dir="${jboss.home}/server/${standalone.messaging.config.name}/lib"/>
+      <mkdir dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy"/>
+
+      <copy todir="${jboss.home}/server/${standalone.messaging.config.name}/conf">
+         <fileset dir="${jboss.home}/server/default/conf">
+            <include name="jboss-service.xml"/>
+            <include name="jndi.properties"/>
+            <include name="log4j.xml"/>
+            <include name="login-config.xml"/>
+            <include name="props/**"/>
+            <include name="xmdesc/**"/>
+         </fileset>
+      </copy>
+
+      <copy todir="${jboss.home}/server/${standalone.messaging.config.name}/deploy">
+         <fileset dir="${jboss.home}/server/default/deploy">
+            <include name="hsqldb-ds.xml"/>
+            <include name="jboss-local-jdbc.rar"/>
+            <include name="jbossjca-service.xml"/>
+            <include name="jbossweb-tomcat55.sar/**"/>
+            <include name="jmx-console.war/**"/>
+            <include name="jmx-invoker-service.xml"/>
+            <include name="management/**"/>
+            <include name="properties-service.xml"/>
+         </fileset>
+      </copy>
+
+      <copy todir="${jboss.home}/server/${standalone.messaging.config.name}/lib">
+         <fileset dir="${jboss.home}/server/default/lib">
+            <include name="commons*.jar"/>
+            <include name="hsqldb*.jar"/>
+            <include name="javax.servlet*.jar"/>
+            <include name="jboss-common-jdbc-wrapper.jar"/>
+            <include name="jboss-j2ee.jar"/>
+            <include name="jboss-jca.jar"/>
+            <include name="jboss-management.jar"/>
+            <include name="jboss-monitoring.jar"/>
+            <include name="jboss-transaction.jar"/>
+            <include name="jboss.jar"/>
+            <include name="jbosssx.jar"/>
+            <include name="jmx-adaptor-plugin.jar"/>
+            <include name="jnpserver.jar"/>
+            <include name="log4j.jar"/>
+            <include name="properties-plugin.jar"/>
+         </fileset>
+      </copy>
+
+      <!-- slim down jboss-service.xml -->
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean code=\x22org.jboss.management.j2ee.LocalJBossServerDomain\x22.*jboss:service=CorbaORB\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean code=\x22org.jboss.util.property.jmx.SystemPropertyClassValue\x22.*org.jboss.system.JBossRMIClassLoader\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean code=\x22org.jboss.web.WebService\x22.*\x3cdepends optional-attribute-name=\x22ThreadPool\x22[ \t\n\r]*proxy-type=\x22attribute\x22\x3ejboss.system:service=ThreadPool\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean code=\x22org.jboss.tm.usertx.server.ClientUserTransactionService\x22.*\x3cdepends\x3ejboss:service=invoker,type=jrmp\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e[ \t\n\r]*\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean code=\x22org.jboss.invocation.pooled.server.PooledInvoker\x22.*\x3cdepends optional-attribute-name=\x22TransactionManagerService\x22\x3ejboss:service=TransactionManager\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean code=\x22org.jboss.ejb.plugins.cmp.jdbc.metadata.MetaDataLibrary\x22.*name=\x22jboss.jdbc:service=metadata\x22/\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <!-- customize login-config.xml -->
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3cpolicy\x3e)"/>
+         <substitution expression="\1 &lt;application-policy name = &quot;messaging&quot;&gt;
+         &lt;authentication&gt;&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
+            flag = &quot;required&quot; &gt;
+         &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
+         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;
+         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;
+         &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3cpolicy\x3e)"/>
+         <substitution expression="\1 &lt;application-policy name = &quot;messaging&quot;&gt;
+         &lt;authentication&gt;&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
+            flag = &quot;required&quot; &gt;
+         &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
+         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;
+         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;
+         &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3capplication-policy name = \x22jbossmq\x22\x3e.*FROM JMS_ROLES WHERE USERID=.\x3c/module-option\x3e[ \t\n\r]*\x3c/login-module\x3e[ \t\n\r]*\x3c/authentication\x3e[ \t\n\r]*\x3c/application-policy\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3capplication-policy name = \x22jbossmq\x22\x3e.*jboss.mq:service=StateManager\x3c/module-option\x3e[ \t\n\r]*\x3c/login-module\x3e[ \t\n\r]*\x3c/authentication\x3e[ \t\n\r]*\x3c/application-policy\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/login-config.xml" flags="s">
+         <regexp pattern="(\x3capplication-policy name=\x22JBossWS\x22\x3e.*\x3cmodule-option name=\x22unauthenticatedIdentity\x22\x3eanonymous\x3c/module-option\x3e[ \t\n\r]*\x3c/login-module\x3e[ \t\n\r]*\x3c/authentication\x3e[ \t\n\r]*\x3c/application-policy\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <!-- customize hsqldb-ds.xml -->
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/hsqldb-ds.xml" flags="s">
+         <regexp pattern="(\x3cmetadata\x3e[ \t\n\r]*\x3ctype-mapping\x3eHypersonic SQL\x3c/type-mapping\x3e[ \t\n\r]*\x3c/metadata\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <!-- get rid of the AJP connector -->
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jbossweb-tomcat55.sar/server.xml" flags="s">
+         <regexp pattern="(\x3cConnector port=\x228009\x22.*protocol=\x22AJP/1.3\x22/\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <!-- deploy exploded messaging -->
+
+      <unjar src="${relative.sar.location}/${messaging.sar.name}"
+             dest="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar">
+      </unjar>
+
+      <!-- un-scope the deployment -->
+
+      <move todir="${jboss.home}/server/${standalone.messaging.config.name}/lib">
+         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar">
+            <include name="javassist.jar"/>
+            <include name="jboss-aop.jar"/>
+            <include name="jboss-aspect-library.jar"/>
+            <include name="jboss-common-softvaluehashmap.jar"/>
+            <include name="jboss-common-stream.jar"/>
+            <include name="jboss-remoting.jar"/>
+            <include name="jboss-serialization.jar"/>
+            <include name="jboss-unified-invocation.jar"/>
+            <include name="trove.jar"/>
+         </fileset>
+      </move>
+
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar/META-INF/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)"/>
+         <substitution expression=""/>
+      </replaceregexp>
+
+      <delete file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar/jms-ds.xml"/>
+
    </target>
 
    <target name="dump">

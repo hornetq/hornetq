@@ -8,9 +8,20 @@
    <property file="./last-run.properties"/>
    <property file="./smoke.properties"/>
    <property name="sleep.interval" value="60"/>
-   <property name="messaging.sar.name" value="jboss-messaging.sar"/>
+   <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
    <property name="relative.client.jar.location" value="../../util"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
+   <property name="release.admin.target" value="install"/>
+
+   <!--
+        By default, each smoke tests runs all examples. If you want to prevent a specific example
+        from during a smoke test, set run.<examplename>.example=false in the corresponding "smoke"
+        antcall.
+   -->
+   <property name="run.queue.example" value="true"/>
+   <property name="run.topic.example" value="true"/>
+   <property name="run.mdb.example" value="true"/>
+   <property name="run.stateless.example" value="true"/>
 
    <path id="twiddle.classpath">
       <pathelement location="${jboss.home}/bin/twiddle.jar"/>
@@ -44,9 +55,10 @@
    <target name="create-messaging-config">
       <available file="../../output/lib/${messaging.sar.name}" property="archive.present"/>
       <fail unless="archive.present">Cannot find deployment archive ../../output/lib/${messaging.sar.name}</fail>
-      <ant antfile="../../util/release-admin.xml">
+      <ant antfile="../../util/release-admin.xml" target="${release.admin.target}">
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="messaging.config.name" value="messaging-smoke-test"/>
+         <property name="standalone.messaging.config.name" value="messaging-smoke-test"/>
          <property name="relative.sar.location" value="../../output/lib"/>
          <property name="messaging.sar.name" value="${messaging.sar.name}"/>
       </ant>
@@ -149,6 +161,35 @@
    </target>
 
    <target name="run-example">
+      <!--
+           determine if a specific example should run with a specific smoke test; to prevent a
+           smoke test from running an example, set "run.<examplename>.example to false.
+       -->
+      <condition property="do.run" value="true">
+         <or>
+            <and>
+               <equals arg1="${example.name}" arg2="queue"/>
+               <istrue value="${run.queue.example}"/>
+            </and>
+            <and>
+               <equals arg1="${example.name}" arg2="topic"/>
+               <istrue value="${run.topic.example}"/>
+            </and>
+            <and>
+               <equals arg1="${example.name}" arg2="mdb"/>
+               <istrue value="${run.mdb.example}"/>
+            </and>
+            <and>
+               <equals arg1="${example.name}" arg2="stateless"/>
+               <istrue value="${run.stateless.example}"/>
+            </and>
+         </or>
+      </condition>
+      <antcall target="run-example-internal"/>
+   </target>
+
+   <!-- don't call this target directly, call it via "run-example" -->
+   <target name="run-example-internal" if="do.run">
       <ant dir="../../docs/examples/${example.name}" antfile="build.xml" inheritAll="false" target="clean">
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="jboss.configuration.name" value="${jboss.configuration.name}"/>
@@ -219,7 +260,9 @@
 
       <echo message="Smoking on JBOSS_HOME ${jboss.home}"/>
 
-      <antcall target="create-messaging-config"/>
+      <antcall target="create-messaging-config">
+         <param name="release.admin.target" value="${release.admin.target}"/>
+      </antcall>
 
       <antcall target="start"/>
 
@@ -288,7 +331,6 @@
       NOT SUPPORTED
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss400.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
       -->
 
@@ -296,48 +338,46 @@
       NOT SUPPORTED
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
-      -->                                                                              
+      -->
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss402.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+      </antcall>
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss403SP1.home}"/>
+         <param name="release.admin.target" value="standalone"/>
+         <param name="run.mdb.example" value="false"/>
+         <param name="run.stateless.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404RC1.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404CR2.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404CR2-installer.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
       </antcall>
 
       <!--
@@ -345,12 +385,10 @@
          Messaging's remoting and to Unified Invoker's remoting and runs into compatibility
          problems.
       -->
-      <!--
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+         <param name="run.stateless.example" value="false"/>
       </antcall>
-      -->
 
       <!--
            Unscoped deployment in JBoss 5. Special precautions need to be taken to replace the
@@ -361,7 +399,7 @@
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging.sar"/>
          <param name="replace.remoting" value="true"/>
-      </antcall>
+      </antcall>                                                                                   
 
    </target>
 
