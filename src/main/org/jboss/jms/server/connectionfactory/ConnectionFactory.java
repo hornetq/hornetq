@@ -99,11 +99,12 @@ public class ConnectionFactory extends ServiceMBeanSupport
                new String[] {"org.jboss.remoting.ConnectionListener"});                     
       }
       
-      connectionFactoryID = connectionFactoryManager.registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing);
+      connectionFactoryID = connectionFactoryManager.
+         registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing);
               
       if (enablePing)
       {
-         log.info("Connector has leasing enabled, lease period=" + leasePeriod);
+         log.info("Connector has leasing enabled, lease period " + leasePeriod + " milliseconds");
       }
       else
       {

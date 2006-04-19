@@ -208,7 +208,7 @@ public class SecurityMetadataStore implements SecurityManager
       {
          Object mgr = ic.lookup(securityDomain);
 
-         if (trace) { log.trace("JaasSecurityManager is " + mgr); }
+         log.debug("JaasSecurityManager is " + mgr);
 
          authenticationManager = (AuthenticationManager)mgr;
          realmMapping = (RealmMapping)mgr;

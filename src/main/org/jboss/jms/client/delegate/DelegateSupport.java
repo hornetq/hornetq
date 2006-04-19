@@ -128,16 +128,14 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       this.state = state;
    }
    
-   
    /**
     *  Add Invoking interceptor and prepare the stack for invocations.
     */
    public void init()
    {          
       ((Advised)this)._getInstanceAdvisor().appendInterceptor(this);
-      
+
       checkMarshallers();
-        
    }
 
    public int getID()

@@ -48,14 +48,17 @@ public class ResourceManagerFactory
    }
    
    protected Map resourceManagers;
-   
-   public synchronized ResourceManager getResourceManager(String serverId)
+
+   /**
+    * @param serverID - server peer ID.
+    */
+   public synchronized ResourceManager getResourceManager(String serverID)
    {
-      ResourceManager rm = (ResourceManager)resourceManagers.get(serverId);
+      ResourceManager rm = (ResourceManager)resourceManagers.get(serverID);
       if (rm == null)
       {
          rm = new ResourceManager();
-         resourceManagers.put(serverId, rm);
+         resourceManagers.put(serverID, rm);
       }
       return rm;
    }

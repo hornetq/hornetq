@@ -183,8 +183,8 @@ public class JBossConnectionFactory implements
          ensureAOPConfigLoaded((ClientConnectionFactoryDelegate)delegate);
          initDelegate();
            
-         //The version used by the connection is the minimum of the server version for the connection factory
-         //and the client code version
+         // The version used by the connection is the minimum of the server version for the
+         // connection factory and the client code version
          
          ConnectionDelegate cd = delegate.createConnectionDelegate(username, password);        
           

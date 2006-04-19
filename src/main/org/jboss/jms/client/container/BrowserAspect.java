@@ -35,6 +35,8 @@ import org.jboss.jms.delegate.BrowserDelegate;
  * This aspect is PER_INSTANCE.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ *
+ * $Id$
  */
 public class BrowserAspect
 {
@@ -61,7 +63,10 @@ public class BrowserAspect
 
    public Object handleNextMessage(Invocation invocation) throws Throwable
    {   
-      if (!BATCH_MESSAGES) return invocation.invokeNext();
+      if (!BATCH_MESSAGES)
+      {
+         return invocation.invokeNext();
+      }
       
       checkCache(invocation);
       Message mess = cache[pos++];
