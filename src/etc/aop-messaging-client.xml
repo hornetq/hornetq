@@ -126,6 +126,9 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->send(..))">
       <advice name="handleSend" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->close())">
+      <advice name="handleClose" aspect="org.jboss.jms.client.container.TransactionAspect"/>
+   </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>   

@@ -65,6 +65,9 @@ public class JBossXAResource implements XAResource
    private SessionState sessionState;
    
    private ConnectionDelegate connection;
+   
+   //For testing only
+   private boolean preventJoining;
 
    // Static --------------------------------------------------------
    
@@ -91,6 +94,11 @@ public class JBossXAResource implements XAResource
 
    public boolean isSameRM(XAResource xaResource) throws XAException
    {
+      if (preventJoining)
+      {
+         return false;
+      }
+      
       if (!(xaResource instanceof JBossXAResource))
       {
          return false;
@@ -157,7 +165,7 @@ public class JBossXAResource implements XAResource
    public void start(Xid xid, int flags) throws XAException
    {
       if (trace) { log.trace(this + " start " + xid + ", flags: " + flags); }
-
+      
       boolean convertTx = false;
       
       if (sessionState.getCurrentTxId() != null)
@@ -202,6 +210,17 @@ public class JBossXAResource implements XAResource
    public String toString()
    {
       return "JBossXAResource[" + sessionState.getDelegate().getID()+ "]";      
+   }
+   
+   /*
+    * This is used in testing to force isSameRM() to always return false
+    * This allows us to test 2PC properly - since otherwise the transaction manager
+    * is likely to do a 1PC optimisations if isSameRM() returns true by joining the transaction
+    * branches.
+    */
+   public void setPreventJoining(boolean preventJoining)
+   {
+      this.preventJoining = preventJoining;
    }
 
    // Package protected ---------------------------------------------

@@ -43,5 +43,5 @@ public class MetaDataConstants
    
    public static final String VERSION_NUMBER = "VERSION_NUMBER";
    
-   public static final String JMS_CLIENT_ID = "JMS_CLIENT_ID";
+   public static final String JMS_CLIENT_VM_ID = "JMS_CLIENT_VM_ID";
 }

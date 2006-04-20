@@ -56,6 +56,23 @@ public class TransactionAspect
    
    // Public --------------------------------------------------------
    
+   public Object handleClose(Invocation invocation) throws Throwable
+   {
+      SessionState state = (SessionState)getState(invocation);
+      
+      ConnectionState connState = (ConnectionState)state.getParent();
+            
+      Object xid = state.getCurrentTxId();
+      
+      if (xid != null)
+      {
+         //Remove transaction from the resource manager
+         connState.getResourceManager().removeTx(xid);
+      }           
+      
+      return invocation.invokeNext();
+   }
+   
    public Object handleCommit(Invocation invocation) throws Throwable
    {
       SessionState state = (SessionState)getState(invocation);

@@ -28,7 +28,6 @@ import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MetaDataConstants;
-import org.jboss.logging.Logger;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
@@ -41,8 +40,6 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 public class InjectionAspect
 {
     // Constants -----------------------------------------------------
-   
-    private static final Logger log = Logger.getLogger(InjectionAspect.class);
    
     // Static --------------------------------------------------------
 
@@ -88,17 +85,17 @@ public class InjectionAspect
           throw new IllegalStateException("Can't find session id");
        }
        
-       //Then we inject the unique id of the client
-       String jmsClientID =
+       //Then we inject the unique id of the client VM
+       String jmsClientVMID =
           (String)mi.getMetaData(MetaDataConstants.JMS,
-                                 MetaDataConstants.JMS_CLIENT_ID);
+                                 MetaDataConstants.JMS_CLIENT_VM_ID);
        
-       if (jmsClientID == null)
+       if (jmsClientVMID == null)
        {
           throw new IllegalStateException("Can't find jms client id");
        }
        
-       endpoint.setRemotingInformation(jmsClientID, sessionId);       
+       endpoint.setRemotingInformation(jmsClientVMID, sessionId);       
        
        //Then we inject the version number from to be used
        

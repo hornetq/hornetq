@@ -65,7 +65,6 @@ public class ResourceManager
    
    private static final Logger log = Logger.getLogger(ResourceManager.class);
    
-   
    // Constructors --------------------------------------------------
    
    ResourceManager()
@@ -107,7 +106,7 @@ public class ResourceManager
    public void addAck(Object xid, AckInfo ackInfo) throws JMSException
    {
       if (trace) { log.trace("adding " + ackInfo + " to transaction " + xid); }
-
+      
       TxState tx = getTx(xid);
       if (tx == null)
       {
@@ -229,6 +228,8 @@ public class ResourceManager
    {
       if (trace) { log.trace("Rolling back xid: " + xid); }
       TxState tx = removeTx(xid);
+      
+      log.trace("Rolling back xid: " + xid);
                   
       TransactionRequest request = null;
       
@@ -357,7 +358,7 @@ public class ResourceManager
       TxState state = getTx(xid);
       if (state != null)
       {
-         log.error("Cannot find transaction with xid " + xid);
+         log.error("Transaction already exists with xid " + xid);
          throw new XAException(XAException.XAER_DUPID);
       }
       transactions.put(xid, new TxState());

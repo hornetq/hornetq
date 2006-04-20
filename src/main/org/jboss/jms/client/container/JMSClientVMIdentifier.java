@@ -32,7 +32,7 @@ import org.jboss.util.id.GUID;
  *
  * JMSClientIdentifier.java,v 1.1 2006/03/30 19:17:53 timfox Exp
  */
-public class JMSClientIdentifier
+public class JMSClientVMIdentifier
 {
    public static String instance = new GUID().toString();
 }

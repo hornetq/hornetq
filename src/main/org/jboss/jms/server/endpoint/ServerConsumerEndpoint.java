@@ -432,10 +432,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    // Package protected ---------------------------------------------
    
+   // Protected -----------------------------------------------------
+   
    /**
     * Actually remove the consumer and clear up any deliveries it may have
     * */
-   void remove() throws JMSException
+   protected void remove() throws JMSException
    {
       if (trace) log.trace("attempting to remove receiver " + this + " from destination " + channel);
       
@@ -464,9 +466,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       sessionEndpoint.removeConsumerEndpoint(id);
    }  
    
-   void acknowledgeAll() throws JMSException
+   protected void acknowledgeAll() throws JMSException
    {
-      // acknowledge all "pending" deliveries, except the ones correspoding to messages rejected
+      // acknowledge all "pending" deliveries, except the ones corresponding to messages rejected
       // by selector, which are cancelled
       try
       {     
@@ -493,29 +495,22 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    }
    
    
-   void acknowledge(long messageID, Transaction tx) throws JMSException
+   protected void acknowledgeTransactionally(long messageID, Transaction tx) throws JMSException
    {
       if (trace) { log.trace("acknowledging " + messageID); }
       
       SingleReceiverDelivery d = null;
-      
-      if (tx == null)
+              
+      // The actual removal of the deliveries from the delivery list is deferred until tx commit
+      d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
+      if (deliveryCallback == null)
       {
-         // No transaction so we remove the delivery now
-         d = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
+         deliveryCallback = new DeliveryCallback();
+         tx.addCallback(deliveryCallback);
       }
-      else
-      {
-         // The actual removal of the deliveries from the delivery list is deferred until tx commit
-         d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
-         if (deliveryCallback == null)
-         {
-            deliveryCallback = new DeliveryCallback();
-            tx.addCallback(deliveryCallback);
-         }
-         deliveryCallback.addMessageID(messageID);
+      deliveryCallback.addMessageID(messageID);
          
-      }
+      
       if (d != null)
       {
          try
@@ -534,7 +529,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }       
    }
    
-   void removeDelivery(String messageID) throws JMSException
+   protected void removeDelivery(String messageID) throws JMSException
    {      
       if (deliveries.remove(messageID) == null)
       {
@@ -542,7 +537,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }      
    }
    
-   void cancelAllDeliveries() throws JMSException
+   protected void cancelAllDeliveries() throws JMSException
    {
       if (trace) { log.trace(this + " cancels deliveries"); }
            
@@ -576,7 +571,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       promptDelivery();      
    }
    
-   void setStarted(boolean started)
+   protected void setStarted(boolean started)
    {
       if (trace) { log.trace(this + (started ? " started" : " stopped")); }
       
@@ -588,8 +583,6 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          promptDelivery();
       }
    }
-   
-   // Protected -----------------------------------------------------
    
    protected void promptDelivery()
    {
@@ -726,25 +719,29 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       
       public void afterRollback(boolean onePhase) throws TransactionException
-      {
+      { 
          // Cancel the deliveries
          // Need to be cancelled in reverse order to maintain ordering
-         for (int i = delList.size() - 1; i >= 0; i--)
-         {               
-            Long messageID = (Long)delList.get(i);
+         Iterator iter = delList.iterator();
+         while (iter.hasNext())
+         {
+            Long messageID = (Long)iter.next();
             
-            SingleReceiverDelivery del = null;
-            if ((del = (SingleReceiverDelivery)deliveries.remove(messageID)) == null)
+            SimpleDelivery del;
+            
+            if ((del = (SimpleDelivery)deliveries.remove(messageID)) == null)
             {
                throw new TransactionException("Failed to remove delivery " + messageID);
             }
+            
+            //Cancel the delivery
             try
             {
                del.cancel();
             }
             catch (Throwable t)
             {
-               throw new TransactionException("Failed to cancel delivery", t);
+               throw new TransactionException("Failed to cancel delivery " + del, t);
             }
          }
          

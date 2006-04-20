@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -58,6 +57,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.CoreDestination;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.core.util.ConcurrentReaderHashSet;
 import org.jboss.remoting.Client;
 import org.jboss.util.id.GUID;
 
@@ -94,7 +94,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    private String remotingClientSessionId;
    
-   private String jmsClientId;
+   private String jmsClientVMId;
    
    private String clientID;
 
@@ -127,7 +127,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // Constructors --------------------------------------------------
    
-   ServerConnectionEndpoint(ServerPeer serverPeer, String clientID, String username,
+   protected ServerConnectionEndpoint(ServerPeer serverPeer, String clientID, String username,
                             String password)
    {
       this.serverPeer = serverPeer;
@@ -143,8 +143,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.clientID = clientID;
 
       sessions = new ConcurrentReaderHashMap();
-      temporaryDestinations = Collections.synchronizedSet(new HashSet()); //TODO Can probably improve concurrency for this
-
+      temporaryDestinations = new ConcurrentReaderHashSet();
+      
       this.username = username;
       this.password = password;
       
@@ -344,7 +344,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          temporaryDestinations.clear();
 
-         cm.unregisterConnection(jmsClientId, remotingClientSessionId);
+         cm.unregisterConnection(jmsClientVMId, remotingClientSessionId);
 
          JMSDispatcher.instance.unregisterTarget(new Integer(connectionID));
          closed = true;
@@ -386,7 +386,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             try
             {               
                tx = tr.createTransaction();
-               processCommit(request.getState(), tx);
+               processTransaction(request.getState(), tx);
                tx.commit();
             }
             catch (Throwable t)
@@ -409,18 +409,45 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          else if (request.getRequestType() == TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST)
          {
             if (trace) { log.trace("One phase rollback request received"); }
-            
+              
             //We just need to cancel deliveries
-            cancelDeliveriesForTransaction(request.getState());
+            //cancelDeliveriesForTransaction(request.getState());
+            
+            Transaction tx = null;
+            try
+            {               
+               tx = tr.createTransaction();
+               processTransaction(request.getState(), tx);
+               tx.rollback();
+            }
+            catch (Throwable t)
+            {
+               //FIXME - Is there any point trying to roll back here?
+               log.error("Exception occured", t);
+               if (tx != null)
+               {                  
+                  try
+                  {
+                     tx.rollback();
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to rollback tx", e);
+                  }
+               }
+               throw new MessagingTransactionRolledBackException("Transaction was rolled back.", t);
+            }
+            
          }
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
          {                        
-            if (trace) { log.trace("Two phase commit prepare request received"); }        
+            if (trace) { log.trace("Two phase commit prepare request received"); }   
+            
             Transaction tx = null;            
             try
             {
                tx = tr.createTransaction(request.getXid());
-               processCommit(request.getState(), tx);     
+               processTransaction(request.getState(), tx);     
                tx.prepare();
             }
             catch (Throwable t)
@@ -443,6 +470,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
          {   
             if (trace) { log.trace("Two phase commit commit request received"); }
+             
             Transaction tx = null;            
             try
             {
@@ -470,6 +498,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
          {
             if (trace) { log.trace("Two phase commit rollback request received"); }
+             
             Transaction tx = null;            
             try
             {
@@ -551,13 +580,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
    
    //IOC
-   public void setRemotingInformation(String jmsClientId, String remotingClientSessionId)
+   public void setRemotingInformation(String jmsClientVMId, String remotingClientSessionId)
    {
       this.remotingClientSessionId = remotingClientSessionId;
       
-      this.jmsClientId = jmsClientId;
+      this.jmsClientVMId = jmsClientVMId;
       
-      this.serverPeer.getConnectionManager().registerConnection(jmsClientId, remotingClientSessionId, this);
+      this.serverPeer.getConnectionManager().registerConnection(jmsClientVMId, remotingClientSessionId, this);
    }
    
    public void setUsingVersion(byte version)
@@ -569,9 +598,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return usingVersion;
    }
-   
-   
-   
+         
    public String toString()
    {
       return "ConnectionEndpoint[" + connectionID + "]";
@@ -675,9 +702,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionId;
    }
    
-   protected String getJmsClientId()
+   protected String getJmsClientVMId()
    {
-      return jmsClientId;
+      return jmsClientVMId;
    }
 
    protected void sendMessage(JBossMessage jbm, Transaction tx) throws JMSException
@@ -776,31 +803,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          throw new MessagingJMSException("Failed to send message", t);
       }
-   }
-   
-   protected void acknowledge(long messageID, int consumerID, Transaction tx) throws JMSException
-   {
-      if (trace) { log.trace(this + " processing acknowledge for message " + messageID + " from consumer " + consumerID + " transactionally on " + tx); }
-
-      ServerConsumerEndpoint consumer = getConsumerEndpoint(consumerID);
-      if (consumer == null)
-      {
-         throw new IllegalStateException("Cannot find consumer " + consumerID);
-      }
-      consumer.acknowledge(messageID, tx);
-   }
-   
-   protected void cancel(long messageID, int consumerID) throws JMSException
-   {
-      if (trace) { log.trace(this + " processing cancel for message " + messageID + " from consumer " + consumerID); }
-
-      ServerConsumerEndpoint consumer = getConsumerEndpoint(consumerID);
-      if (consumer == null)
-      {
-         throw new IllegalStateException("Cannot find consumer " + consumerID);
-      }
-      consumer.cancelDelivery(messageID);
-   }
+   }   
 
    // Private -------------------------------------------------------
    
@@ -817,9 +820,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }   
    
-   private void processCommit(TxState txState, Transaction tx) throws JMSException
+   private void processTransaction(TxState txState, Transaction tx) throws JMSException
    {
-      if (trace) { log.trace("processing commit, there are " + txState.getMessages().size() + " messages and " + txState.getAcks().size() + " acks "); }
+      if (trace) { log.trace("processing transaction, there are " + txState.getMessages().size() + " messages and " + txState.getAcks().size() + " acks "); }
       
       for(Iterator i = txState.getMessages().iterator(); i.hasNext(); )
       {
@@ -831,33 +834,27 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       if (trace) { log.trace("done the sends"); }
       
       // Then ack the acks
-      for(Iterator i = txState.getAcks().iterator(); i.hasNext(); )
-      {
-         AckInfo ack = (AckInfo)i.next();
-         acknowledge(ack.getMessageID(), ack.getConsumerID(), tx);
+      
+      List acks = txState.getAcks();
+      
+      //We create the transactional callbacks in reverse order so if the transaction is subsequently cancelled
+      //the refs are put back in the correct order on the queue/subscription
+      for (int i = acks.size() - 1; i >= 0; i--)
+      {      
+         AckInfo ack = (AckInfo)acks.get(i);
+         
+         ServerConsumerEndpoint consumer = getConsumerEndpoint(ack.getConsumerID());
+         if (consumer == null)
+         {
+            throw new IllegalStateException("Cannot find consumer " + ack.getConsumerID());
+         }
+         consumer.acknowledgeTransactionally(ack.getMessageID(), tx);
+         
          if (trace) { log.trace("acked " + ack.getMessageID()); }
       }
       
       if (trace) { log.trace("done the acks"); }
-   }
-   
-   private void cancelDeliveriesForTransaction(TxState txState) throws JMSException
-   {
-      if (trace) { log.trace("Cancelling deliveries for transaction"); }
-      
-      //On a rollback of a transaction (1PC) we cancel deliveries of any messages
-      //delivered in the tx
-      
-      //Need to cancel in reverse order in order to retain delivery order
-        
-      List acks = txState.getAcks();
-      for (int i = acks.size() - 1; i >= 0; i--)
-      {   
-         AckInfo ack = (AckInfo)acks.get(i);
-         cancel(ack.getMessageID(), ack.getConsumerID());
-      }
-      
-   }
+   }   
 
    // Inner classes -------------------------------------------------
 }

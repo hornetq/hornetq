@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
 

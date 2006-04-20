@@ -36,7 +36,6 @@ import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.logging.Logger;
 import org.jboss.util.Primitives;
 
 /**
@@ -56,8 +55,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 5504501713994881078L;
-
-   private static final Logger log = Logger.getLogger(JBossStreamMessage.class);
 
    public static final byte TYPE = 4;
 

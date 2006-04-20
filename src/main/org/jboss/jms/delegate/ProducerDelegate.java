@@ -26,7 +26,6 @@ import javax.jms.Message;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.JBossMessage;
 
 /**
  * Represents the minimal set of operations to provide producer functionality.

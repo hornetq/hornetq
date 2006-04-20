@@ -27,7 +27,7 @@ import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.util.PayloadKey;
-import org.jboss.jms.client.container.JMSClientIdentifier;
+import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
@@ -151,8 +151,8 @@ public class ClientConnectionFactoryDelegate
                                       client.getSessionId(), PayloadKey.AS_IS);
          
          mi.getMetaData().addMetaData(MetaDataConstants.JMS,
-                                      MetaDataConstants.JMS_CLIENT_ID,
-                                      JMSClientIdentifier.instance, PayloadKey.AS_IS);
+                                      MetaDataConstants.JMS_CLIENT_VM_ID,
+                                      JMSClientVMIdentifier.instance, PayloadKey.AS_IS);
              
          try
          {            

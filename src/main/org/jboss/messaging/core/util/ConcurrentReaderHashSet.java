@@ -19,22 +19,69 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server;
+package org.jboss.messaging.core.util;
 
+import java.util.AbstractSet;
+import java.util.Iterator;
+import java.util.Map;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * 
- * A ConnectorManager.
+ * A ConcurrentReaderHashSet.
+ * 
+ * Offers same concurrency as ConcurrentHashMap but for a Set
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * ConnectorManager.java,v 1.1 2006/04/13 19:43:05 timfox Exp
+ * ConcurrentReaderHashSet.java,v 1.1 2006/04/20 20:42:27 timfox Exp
  */
-public interface ConnectorManager
+public class ConcurrentReaderHashSet extends AbstractSet
 {
-   int registerConnector(String connectorName) throws Exception;
+   private Map theMap;
    
-   void unregisterConnector(String connectorName) throws Exception;
+   private static Object dummy = new Object();
    
+   public ConcurrentReaderHashSet()
+   {
+      theMap = new ConcurrentReaderHashMap();
+   }
+   
+   public int size()
+   {
+      return theMap.size();
+   }
+   
+   public Iterator iterator()
+   {
+      return theMap.keySet().iterator();
+   }
+   
+   public boolean isEmpty()
+   {
+      return theMap.isEmpty();
+   }
+   
+   public boolean add(Object o)
+   {
+      return theMap.put(o, dummy) == dummy;
+   }
+   
+   public boolean contains(Object o)
+   {
+      return theMap.containsKey(o);
+   }
+   
+   public void clear()
+   {
+      theMap.clear();
+   }
+   
+   public boolean remove(Object o)
+   {
+      return theMap.remove(o) == dummy;
+   }
+
 }

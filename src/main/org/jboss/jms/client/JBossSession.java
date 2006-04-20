@@ -76,7 +76,7 @@ import org.jboss.logging.Logger;
  * 
  * $Id$
  */
-class JBossSession implements
+public class JBossSession implements
    Session, XASession, QueueSession, XAQueueSession,
    TopicSession, XATopicSession, Serializable
 {   
@@ -475,6 +475,11 @@ class JBossSession implements
    public String toString()
    {
       return "JBossSession->" + delegate;
+   }
+   
+   public SessionDelegate getDelegate()
+   {
+      return delegate;
    }
 
    // Package protected ---------------------------------------------

@@ -35,6 +35,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
 import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
@@ -898,7 +899,7 @@ public class ChannelState implements State
          //NOOP
       }
       
-      public void afterCommit(boolean onePhase)
+      public void afterCommit(boolean onePhase) throws TransactionException
       {
          //We add the references to the state
          
@@ -949,13 +950,12 @@ public class ChannelState implements State
             }
             catch (Throwable t)
             {
-               //FIXME Sort out this exception handling!!!
-               log.error("Failed to ack message", t);
+               throw new TransactionException("Failed to ack message", t);
             }   
          }                  
       } 
       
-      public void afterRollback(boolean onePhase)
+      public void afterRollback(boolean onePhase) throws TransactionException
       {
          Iterator iter = refsToAdd.iterator();
          

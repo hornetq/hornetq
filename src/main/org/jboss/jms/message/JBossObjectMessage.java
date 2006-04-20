@@ -29,7 +29,6 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.logging.Logger;
 
 /**
  * This class implements javax.jms.ObjectMessage
@@ -46,8 +45,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = -1626960567569667875L;
-
-   private static final Logger log = Logger.getLogger(JBossObjectMessage.class);
 
    public static final byte TYPE = 3;
 

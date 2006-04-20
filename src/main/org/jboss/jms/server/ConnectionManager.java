@@ -33,12 +33,12 @@ import org.jboss.jms.server.endpoint.ConnectionEndpoint;
  */
 public interface ConnectionManager
 {
-   void registerConnection(String jmsClientId, String remotingClientSessionID, ConnectionEndpoint endpoint);
+   void registerConnection(String jmsClientVMId, String remotingClientSessionID, ConnectionEndpoint endpoint);
 
    /**
     * @return null if there is no such connection.
     */
-   ConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID);
+   ConnectionEndpoint unregisterConnection(String jmsClientVMId, String remotingClientSessionID);
    
    boolean containsSession(String remotingClientSessionID);
 }

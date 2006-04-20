@@ -90,7 +90,7 @@ public class TxState implements Externalizable
    
    public void clearMessages()
    {
-      messages = null;
+      messages.clear();
    }
    
    public void setState(int state)

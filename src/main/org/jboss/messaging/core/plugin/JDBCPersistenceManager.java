@@ -2139,7 +2139,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     */
    public void setUsingBatchUpdates(boolean b) throws Exception
    {
-      Exception e = new Exception();
       usingBatchUpdates = b;
    }
    

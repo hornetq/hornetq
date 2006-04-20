@@ -23,7 +23,6 @@ package org.jboss.jms.client.container;
 
 import java.util.LinkedList;
 
-import javax.jms.ConnectionConsumer;
 import javax.jms.IllegalStateException;
 import javax.jms.MessageListener;
 import javax.jms.ServerSessionPool;

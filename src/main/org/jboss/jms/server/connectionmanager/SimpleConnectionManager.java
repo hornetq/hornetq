@@ -67,27 +67,27 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    // ConnectionManager ---------------------------------------------
 
-   public synchronized void registerConnection(String jmsClientId, String remotingClientSessionID, ConnectionEndpoint endpoint)
+   public synchronized void registerConnection(String jmsClientVMId, String remotingClientSessionID, ConnectionEndpoint endpoint)
    {    
-      Map endpoints = (Map)jmsClients.get(jmsClientId);
+      Map endpoints = (Map)jmsClients.get(jmsClientVMId);
       
       if (endpoints == null)
       {
          endpoints = new HashMap();
-         jmsClients.put(jmsClientId, endpoints);                  
+         jmsClients.put(jmsClientVMId, endpoints);                  
       }
       
       endpoints.put(remotingClientSessionID, endpoint);
       
-      sessions.put(remotingClientSessionID, jmsClientId);
+      sessions.put(remotingClientSessionID, jmsClientVMId);
       
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
    }
 
-   public synchronized ConnectionEndpoint unregisterConnection(String jmsClientId, String remotingClientSessionID)
+   public synchronized ConnectionEndpoint unregisterConnection(String jmsClientVMId, String remotingClientSessionID)
    {
-      Map endpoints = (Map)jmsClients.get(jmsClientId);
+      Map endpoints = (Map)jmsClients.get(jmsClientVMId);
       
       if (endpoints != null)
       {
@@ -98,7 +98,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          
          if (endpoints.isEmpty())
          {
-            jmsClients.remove(jmsClientId);
+            jmsClients.remove(jmsClientVMId);
          }
          
          sessions.remove(remotingClientSessionID);

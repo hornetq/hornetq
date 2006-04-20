@@ -23,8 +23,6 @@ package org.jboss.messaging.core.plugin;
 
 import java.util.Map;
 
-import org.jboss.logging.Logger;
-
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 
@@ -42,9 +40,7 @@ import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
  * LockMap.java,v 1.1 2006/03/28 14:26:18 timfox Exp
  */
 public class LockMap
-{
-   private static final Logger log = Logger.getLogger(LockMap.class);
-      
+{ 
    protected Map map;
    
    private static class Entry

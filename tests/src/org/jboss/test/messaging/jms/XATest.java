@@ -39,6 +39,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossXAResource;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TxManager;
@@ -108,6 +109,66 @@ public class XATest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
+   
+   public void test2PCSendCommit1PCOptimization() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      
+      try
+      {
+      
+         conn = cf.createXAConnection();
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         XAResource res = sess.getXAResource();
+         
+         XAResource res2 = new DummyXAResource();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         tx.enlistResource(res2);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         Message m = sess.createTextMessage("XATest1");
+         prod.send(queue, m);
+         m = sess.createTextMessage("XATest2");
+         prod.send(queue, m);
+         
+         tx.commit();
+         
+         conn2 = cf.createConnection();
+         conn2.start();
+         Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         TextMessage m2 = (TextMessage)cons.receive(1000);
+         assertNotNull(m2);
+         assertEquals("XATest1", m2.getText());
+         m2 = (TextMessage)cons.receive(1000);
+         assertNotNull(m2);
+         assertEquals("XATest2", m2.getText());
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+
+   }
+   
    public void test2PCSendCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -123,11 +184,12 @@ public class XATest extends MessagingTestCase
          tm.begin();
          
          XASession sess = conn.createXASession();
-         XAResource res = sess.getXAResource();
          
-         //We also create and enroll another xa resource so the tx mgr uses 
-         //2pc protocol
+         JBossXAResource res = (JBossXAResource)sess.getXAResource();         
          XAResource res2 = new DummyXAResource();
+         
+         //To prevent 1PC optimization being used
+         res.setPreventJoining(true);
          
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
@@ -135,7 +197,9 @@ public class XATest extends MessagingTestCase
          
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         Message m = sess.createTextMessage("XATest");
+         Message m = sess.createTextMessage("XATest1");
+         prod.send(queue, m);
+         m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
          
          tx.commit();
@@ -146,7 +210,10 @@ public class XATest extends MessagingTestCase
          MessageConsumer cons = sessReceiver.createConsumer(queue);
          TextMessage m2 = (TextMessage)cons.receive(1000);
          assertNotNull(m2);
-         assertEquals("XATest", m2.getText());
+         assertEquals("XATest1", m2.getText());
+         m2 = (TextMessage)cons.receive(1000);
+         assertNotNull(m2);
+         assertEquals("XATest2", m2.getText());
       }
       finally
       {
@@ -163,6 +230,59 @@ public class XATest extends MessagingTestCase
    }
    
    
+   public void test2PCSendRollback1PCOptimization() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      try
+      {
+         conn = cf.createXAConnection();
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         XAResource res = sess.getXAResource();
+         
+         XAResource res2 = new DummyXAResource();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         tx.enlistResource(res2);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         Message m = sess.createTextMessage("XATest1");
+         prod.send(queue, m);   
+         m = sess.createTextMessage("XATest2");
+         prod.send(queue, m);
+         
+         tx.rollback();
+         
+         conn2 = cf.createConnection();
+         conn2.start();
+         Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         Message m2 = cons.receive(1000);
+         assertNull(m2);
+   
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
+   
    public void test2PCSendRollback() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -176,10 +296,11 @@ public class XATest extends MessagingTestCase
          tm.begin();
          
          XASession sess = conn.createXASession();
-         XAResource res = sess.getXAResource();
+         JBossXAResource res = (JBossXAResource)sess.getXAResource();
          
-         //We also create and enroll another xa resource so the tx mgr uses 
-         //2pc protocol
+         //prevent 1Pc optimisation
+         res.setPreventJoining(true);
+         
          XAResource res2 = new DummyXAResource();
          
          Transaction tx = tm.getTransaction();
@@ -188,8 +309,10 @@ public class XATest extends MessagingTestCase
          
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         Message m = sess.createTextMessage("XATest");
-         prod.send(queue, m);    
+         Message m = sess.createTextMessage("XATest1");
+         prod.send(queue, m);   
+         m = sess.createTextMessage("XATest2");
+         prod.send(queue, m);
          
          tx.rollback();
          
@@ -214,9 +337,11 @@ public class XATest extends MessagingTestCase
       }
    }
 
-   public void test2PCReceiveCommit() throws Exception
+   public void test2PCReceiveCommit1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
+            
+      //Since both resources have some RM, TM will probably use 1PC optimization
       
       XAConnection conn = null;
       Connection conn2 = null;
@@ -227,7 +352,9 @@ public class XATest extends MessagingTestCase
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod  = sessProducer.createProducer(queue);
-         Message m = sessProducer.createTextMessage("XATest2");
+         Message m = sessProducer.createTextMessage("XATest1");
+         prod.send(m);
+         m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
          
          conn = cf.createXAConnection();
@@ -238,8 +365,6 @@ public class XATest extends MessagingTestCase
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
          
-         //We also create and enroll another xa resource so the tx mgr uses 
-         //2pc protocol
          XAResource res2 = new DummyXAResource();
          
          Transaction tx = tm.getTransaction();
@@ -250,6 +375,11 @@ public class XATest extends MessagingTestCase
          
 
          TextMessage m2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(m2);
+         assertEquals("XATest1", m2.getText());
+         
+         m2 = (TextMessage)cons.receive(1000);
          
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
@@ -284,32 +414,33 @@ public class XATest extends MessagingTestCase
       
    }
    
-   public void test2PCReceiveRollback() throws Exception
+   public void test2PCReceiveCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+            
       XAConnection conn = null;
       Connection conn2 = null;
       
       try
       {
          conn2 = cf.createConnection();
+         conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod  = sessProducer.createProducer(queue);
-         Message m = sessProducer.createTextMessage("XATest2");
+         Message m = sessProducer.createTextMessage("XATest1");
+         prod.send(m);
+         m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
          
-         
          conn = cf.createXAConnection();
-         conn.start();   
+         conn.start();
          
          tm.begin();
          
          XASession sess = conn.createXASession();
-         XAResource res = sess.getXAResource();
+         JBossXAResource res = (JBossXAResource)sess.getXAResource();
+         res.setPreventJoining(true);
          
-         //We also create and enroll another xa resource so the tx mgr uses 
-         //2pc protocol
          XAResource res2 = new DummyXAResource();
          
          Transaction tx = tm.getTransaction();
@@ -321,6 +452,86 @@ public class XATest extends MessagingTestCase
 
          TextMessage m2 = (TextMessage)cons.receive(1000);
          
+         assertNotNull(m2);
+         assertEquals("XATest1", m2.getText());
+         
+         m2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(m2);
+         assertEquals("XATest2", m2.getText());
+         
+         tx.commit();
+         
+         //New tx
+         tm.begin();
+         tx = tm.getTransaction();
+         tx.enlistResource(res);
+         tx.enlistResource(res2);
+         
+         Message m3 = cons.receive(1000);
+         
+         assertNull(m3);
+         
+         tm.commit();
+         
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
+   public void test2PCReceiveRollback1PCOptimization() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      
+      try
+      {
+         conn2 = cf.createConnection();
+         Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod  = sessProducer.createProducer(queue);
+         Message m = sessProducer.createTextMessage("XATest1");
+         prod.send(m);
+         
+         m = sessProducer.createTextMessage("XATest2");
+         prod.send(m);
+         
+         
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         XAResource res = sess.getXAResource();
+         
+         XAResource res2 = new DummyXAResource();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         tx.enlistResource(res2);
+         
+         MessageConsumer cons = sess.createConsumer(queue);
+         
+
+         TextMessage m2 = (TextMessage)cons.receive(1000);         
+         assertNotNull(m2);
+         assertEquals("XATest1", m2.getText());
+         m2 = (TextMessage)cons.receive(1000);         
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
          
@@ -334,8 +545,90 @@ public class XATest extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
          
-         TextMessage m3 = (TextMessage)cons.receive(1000);
+         TextMessage m3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(m3);
+         assertEquals("XATest1", m3.getText());
+         m3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(m3);
+         assertEquals("XATest2", m3.getText());
          
+         assertTrue(m3.getJMSRedelivered());
+         
+         tm.commit();
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
+   public void test2PCReceiveRollback() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      
+      try
+      {
+         conn2 = cf.createConnection();
+         Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod  = sessProducer.createProducer(queue);
+         Message m = sessProducer.createTextMessage("XATest1");
+         prod.send(m);
+         
+         m = sessProducer.createTextMessage("XATest2");
+         prod.send(m);
+         
+         
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         JBossXAResource res = (JBossXAResource)sess.getXAResource();
+         res.setPreventJoining(true);
+         
+         XAResource res2 = new DummyXAResource();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         tx.enlistResource(res2);
+         
+         MessageConsumer cons = sess.createConsumer(queue);
+         
+
+         TextMessage m2 = (TextMessage)cons.receive(1000);         
+         assertNotNull(m2);
+         assertEquals("XATest1", m2.getText());
+         m2 = (TextMessage)cons.receive(1000);         
+         assertNotNull(m2);
+         assertEquals("XATest2", m2.getText());
+         
+         tx.rollback();
+         
+         //Message should be redelivered
+         
+         //New tx
+         tm.begin();
+         tx = tm.getTransaction();
+         tx.enlistResource(res);
+         tx.enlistResource(res2);
+         
+         TextMessage m3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(m3);
+         assertEquals("XATest1", m3.getText());
+         m3 = (TextMessage)cons.receive(1000);         
          assertNotNull(m3);
          assertEquals("XATest2", m3.getText());
          
@@ -359,11 +652,6 @@ public class XATest extends MessagingTestCase
    }
    
    
-   
-   
-   
-   
-
    public void test1PCSendCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -388,7 +676,9 @@ public class XATest extends MessagingTestCase
          
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         Message m = sess.createTextMessage("XATest");
+         Message m = sess.createTextMessage("XATest1");
+         prod.send(queue, m);
+         m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
          
          tx.commit();
@@ -399,7 +689,10 @@ public class XATest extends MessagingTestCase
          MessageConsumer cons = sessReceiver.createConsumer(queue);
          TextMessage m2 = (TextMessage)cons.receive(1000);
          assertNotNull(m2);
-         assertEquals("XATest", m2.getText());
+         assertEquals("XATest1", m2.getText());
+         m2 = (TextMessage)cons.receive(1000);
+         assertNotNull(m2);
+         assertEquals("XATest2", m2.getText());
       }
       finally
       {
@@ -436,8 +729,10 @@ public class XATest extends MessagingTestCase
 
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         Message m = sess.createTextMessage("XATest");
-         prod.send(queue, m);    
+         Message m = sess.createTextMessage("XATest1");
+         prod.send(queue, m); 
+         m = sess.createTextMessage("XATest2");
+         prod.send(queue, m); 
          
          tx.rollback();
          
@@ -475,7 +770,9 @@ public class XATest extends MessagingTestCase
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod  = sessProducer.createProducer(queue);
-         Message m = sessProducer.createTextMessage("XATest2");
+         Message m = sessProducer.createTextMessage("XATest1");
+         prod.send(m);
+         m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
          
          conn = cf.createXAConnection();
@@ -493,6 +790,10 @@ public class XATest extends MessagingTestCase
          
 
          TextMessage m2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(m2);
+         assertEquals("XATest1", m2.getText());
+         m2 = (TextMessage)cons.receive(1000);
          
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
@@ -538,7 +839,9 @@ public class XATest extends MessagingTestCase
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod  = sessProducer.createProducer(queue);
-         Message m = sessProducer.createTextMessage("XATest2");
+         Message m = sessProducer.createTextMessage("XATest1");
+         prod.send(m);
+         m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
          
          
@@ -559,6 +862,11 @@ public class XATest extends MessagingTestCase
          TextMessage m2 = (TextMessage)cons.receive(1000);
          
          assertNotNull(m2);
+         assertEquals("XATest1", m2.getText());
+         
+         m2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
          
          tx.rollback();
@@ -571,6 +879,11 @@ public class XATest extends MessagingTestCase
          tx.enlistResource(res);
          
          TextMessage m3 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(m3);
+         assertEquals("XATest1", m3.getText());
+         
+         m3 = (TextMessage)cons.receive(1000);
          
          assertNotNull(m3);
          assertEquals("XATest2", m3.getText());
@@ -594,12 +907,14 @@ public class XATest extends MessagingTestCase
       
    }
    
-   public void testMultipleSessionsOneTxCommitAcknowledge() throws Exception
+   public void testMultipleSessionsOneTxCommitAcknowledge1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
       
       XAConnection conn = null;
       Connection conn2 = null;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
       
       try
       {
@@ -670,8 +985,7 @@ public class XATest extends MessagingTestCase
       
    }
    
-   
-   public void testMultipleSessionsOneTxRollbackAcknowledge() throws Exception
+   public void testMultipleSessionsOneTxCommitAcknowledge() throws Exception
    {
       if (ServerManagement.isRemote()) return;
       
@@ -697,9 +1011,11 @@ public class XATest extends MessagingTestCase
          
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         XAResource res1 = sess1.getXAResource();
+         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         XAResource res2 = sess2.getXAResource();
+         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         res1.setPreventJoining(true);
+         res2.setPreventJoining(true);
          
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
@@ -720,7 +1036,99 @@ public class XATest extends MessagingTestCase
          assertNotNull(r2);
          assertEquals("jellyfish2", r2.getText());
          
-         //rollback        
+         //commit        
+         tx.commit();
+         
+         Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sess.createConsumer(queue);
+         conn2.start();
+         
+         TextMessage r3 = (TextMessage)cons.receive(1000);
+         assertNull(r3);
+       
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
+   
+   public void testMultipleSessionsOneTxRollbackAcknowledge1PCOptimization() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
+      
+      try
+      {
+         //First send 2 messages
+         conn2 = cf.createConnection();
+         Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod  = sessProducer.createProducer(queue);
+         Message m = sessProducer.createTextMessage("jellyfish1");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish2");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish3");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish4");
+         prod.send(m);
+         
+         
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         //Create 2 sessions and enlist them
+         XASession sess1 = conn.createXASession();
+         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         XASession sess2 = conn.createXASession();
+         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+ 
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res1);
+         tx.enlistResource(res2);
+         
+         //Receive the messages, two on each consumer
+         MessageConsumer cons1 = sess1.createConsumer(queue);
+         TextMessage r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish1", r1.getText());
+         
+         r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish2", r1.getText());
+                  
+         cons1.close();
+         
+         MessageConsumer cons2 = sess2.createConsumer(queue);
+         TextMessage r2 = (TextMessage)cons2.receive(1000);
+         
+         assertNotNull(r2);
+         assertEquals("jellyfish3", r2.getText());
+         
+         r2 = (TextMessage)cons2.receive(1000);
+         
+         assertNotNull(r2);
+         assertEquals("jellyfish4", r2.getText());
+         
+         //rollback                          
+         
          tx.rollback();
          
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -731,7 +1139,130 @@ public class XATest extends MessagingTestCase
          assertNotNull(r3);
          assertEquals("jellyfish1", r3.getText());
          
+         r3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r3);
+         assertEquals("jellyfish2", r3.getText());
+         //log.info(r3.getText());
+         
          TextMessage r4 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r4);
+         assertEquals("jellyfish3", r4.getText());
+         //log.info(r4.getText());
+         
+         r4 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r4);
+         assertEquals("jellyfish4", r4.getText());
+         
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
+   public void testMultipleSessionsOneTxRollbackAcknowledge() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+
+      try
+      {
+         //First send 2 messages
+         conn2 = cf.createConnection();
+         Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod  = sessProducer.createProducer(queue);
+         Message m = sessProducer.createTextMessage("jellyfish1");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish2");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish3");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish4");
+         prod.send(m);
+         
+         
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         //Create 2 sessions and enlist them
+         XASession sess1 = conn.createXASession();
+         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         XASession sess2 = conn.createXASession();
+         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         res1.setPreventJoining(true);
+         res2.setPreventJoining(true);
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res1);
+         tx.enlistResource(res2);
+         
+         //Receive the messages, two on each consumer
+         MessageConsumer cons1 = sess1.createConsumer(queue);
+         TextMessage r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish1", r1.getText());
+         
+         r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish2", r1.getText());
+                  
+         cons1.close();
+         
+         MessageConsumer cons2 = sess2.createConsumer(queue);
+         TextMessage r2 = (TextMessage)cons2.receive(1000);
+         
+         assertNotNull(r2);
+         assertEquals("jellyfish3", r2.getText());
+         
+         r2 = (TextMessage)cons2.receive(1000);
+         
+         assertNotNull(r2);
+         assertEquals("jellyfish4", r2.getText());
+         
+         //rollback                          
+         
+         tx.rollback();
+         
+         Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sess.createConsumer(queue);
+         conn2.start();
+         
+         //NOTE
+         //The order here is actually probably dependent on the transaction manager implementation
+         //In this case, rollback will be called on each session, but whether it is called first on res1
+         //or res2 determines the order the messages are put back in the queue
+         //This test assumes it is called in order res1, res2
+         
+         TextMessage r3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r3);
+         assertEquals("jellyfish3", r3.getText());
+         
+         r3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r3);
+         assertEquals("jellyfish4", r3.getText());
+         //log.info(r3.getText());
+         
+         TextMessage r4 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r4);
+         assertEquals("jellyfish1", r4.getText());
+         //log.info(r4.getText());
+         
+         r4 = (TextMessage)cons.receive(1000);         
          assertNotNull(r4);
          assertEquals("jellyfish2", r4.getText());
          
@@ -751,9 +1282,123 @@ public class XATest extends MessagingTestCase
       
    }
    
-   public void testMultipleSessionsOneTxCommitSend() throws Exception
+   public void testMultipleSessionsOneTxRollbackAcknowledgeForceFailureInCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+
+      try
+      {
+         //First send 2 messages
+         conn2 = cf.createConnection();
+         Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod  = sessProducer.createProducer(queue);
+         Message m = sessProducer.createTextMessage("jellyfish1");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish2");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish3");
+         prod.send(m);
+         m = sessProducer.createTextMessage("jellyfish4");
+         prod.send(m);
+         
+         
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         XASession sess1 = conn.createXASession();
+         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         DummyXAResource res2 = new DummyXAResource(true);
+         res1.setPreventJoining(true);
+                  
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res1);
+         tx.enlistResource(res2);
+         
+         //Receive the messages, two on each consumer
+         MessageConsumer cons1 = sess1.createConsumer(queue);
+         TextMessage r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish1", r1.getText());
+         
+         r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish2", r1.getText());
+         
+         r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish3", r1.getText());
+         
+         r1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(r1);
+         assertEquals("jellyfish4", r1.getText());
+                  
+         cons1.close();
+         
+         
+         
+         //try and commit - and we're going to make the dummyxaresource throw an exception on commit,
+         //which should cause rollback to be called on the other resource
+         try
+         {
+            tx.commit();
+         }
+         catch (Exception e)
+         {
+            //We should expect this
+         }
+         
+         Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sess.createConsumer(queue);
+         conn2.start();
+          
+         TextMessage r3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r3);
+         assertEquals("jellyfish1", r3.getText());
+         
+         r3 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r3);
+         assertEquals("jellyfish2", r3.getText());
+         //log.info(r3.getText());
+         
+         TextMessage r4 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r4);
+         assertEquals("jellyfish3", r4.getText());
+         //log.info(r4.getText());
+         
+         r4 = (TextMessage)cons.receive(1000);         
+         assertNotNull(r4);
+         assertEquals("jellyfish4", r4.getText());
+         
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+      
+   }
+   
+   public void testMultipleSessionsOneTxCommitSend1PCOptimization() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
       
       XAConnection conn = null;
       
@@ -819,10 +1464,84 @@ public class XATest extends MessagingTestCase
       
    }
    
-   
-   public void testMultipleSessionsOneTxRollbackSend() throws Exception
+   public void testMultipleSessionsOneTxCommitSend() throws Exception
    {
       if (ServerManagement.isRemote()) return;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
+      
+      XAConnection conn = null;
+      
+      Connection conn2 = null;
+      
+      try
+      {
+         
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         //Create 2 sessions and enlist them
+         XASession sess1 = conn.createXASession();
+         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         XASession sess2 = conn.createXASession();
+         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         res1.setPreventJoining(true);
+         res2.setPreventJoining(true);
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res1);
+         tx.enlistResource(res2);
+         
+         // Send 2 messages - one from each session
+         
+         MessageProducer prod1 = sess1.createProducer(queue);
+         MessageProducer prod2 = sess2.createProducer(queue);
+         
+         prod1.send(sess1.createTextMessage("echidna1"));
+         prod2.send(sess2.createTextMessage("echidna2"));
+         
+         //commit
+         tx.commit();
+         
+         //Messages should be in queue
+         
+         conn2 = cf.createConnection();
+         Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sess.createConsumer(queue);
+         conn2.start();
+         
+         TextMessage r1 = (TextMessage)cons.receive(1000);
+         assertNotNull(r1);
+         assertEquals("echidna1", r1.getText());
+         
+         TextMessage r2 = (TextMessage)cons.receive(1000);
+         assertNotNull(r2);
+         assertEquals("echidna2", r2.getText());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+      }
+      
+   }
+   
+   
+   public void testMultipleSessionsOneTxRollbackSend1PCOptimization() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      //Since both resources have some RM, TM will probably use 1PC optimization
       
       XAConnection conn = null;
       
@@ -884,14 +1603,7 @@ public class XATest extends MessagingTestCase
       
    }
    
-   
-   
-   
-   
-   
-   
-   
-   public void testOneSessionTwoTransactionsCommitAcknowledge() throws Exception
+   public void testMultipleSessionsOneTxRollbackSend() throws Exception
    {
       if (ServerManagement.isRemote()) return;
       
@@ -902,6 +1614,72 @@ public class XATest extends MessagingTestCase
       try
       {
          
+         conn = cf.createXAConnection();
+         conn.start();   
+         
+         tm.begin();
+         
+         //Create 2 sessions and enlist them
+         XASession sess1 = conn.createXASession();
+         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         XASession sess2 = conn.createXASession();
+         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         res1.setPreventJoining(true);
+         res2.setPreventJoining(true);
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res1);
+         tx.enlistResource(res2);
+         
+         // Send 2 messages - one from each session
+         
+         MessageProducer prod1 = sess1.createProducer(queue);
+         MessageProducer prod2 = sess2.createProducer(queue);
+         
+         prod1.send(sess1.createTextMessage("echidna1"));
+         prod2.send(sess2.createTextMessage("echidna2"));
+         
+         //rollback
+         tx.rollback();
+         
+         //Messages should not be in queue
+         
+         conn2 = cf.createConnection();
+         Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sess.createConsumer(queue);
+         conn2.start();
+         
+         TextMessage r1 = (TextMessage)cons.receive(1000);
+         assertNull(r1);
+         
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+      }
+      
+   }
+   
+ 
+   public void testOneSessionTwoTransactionsCommitAcknowledge() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      
+      Connection conn2 = null;
+      
+      try
+      {         
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -980,7 +1758,7 @@ public class XATest extends MessagingTestCase
    public void testOneSessionTwoTransactionsRollbackAcknowledge() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+       
       XAConnection conn = null;
       
       Connection conn2 = null;
@@ -1055,8 +1833,6 @@ public class XATest extends MessagingTestCase
          r3 = (TextMessage)cons.receive(1000);
          assertNull(r3);
          
-         
-
       }
       finally
       {
@@ -1073,15 +1849,7 @@ public class XATest extends MessagingTestCase
       
    }
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
+
    public void testOneSessionTwoTransactionsCommitSend() throws Exception
    {
       if (ServerManagement.isRemote()) return;
@@ -1247,9 +2015,19 @@ public class XATest extends MessagingTestCase
    
    static class DummyXAResource implements XAResource
    {
+      boolean failOnPrepare;
+      
+      DummyXAResource()
+      {         
+      }
+      
+      DummyXAResource(boolean failOnPrepare)
+      {
+         this.failOnPrepare = failOnPrepare;
+      }
 
       public void commit(Xid arg0, boolean arg1) throws XAException
-      {
+      {         
       }
 
       public void end(Xid arg0, int arg1) throws XAException
@@ -1272,6 +2050,10 @@ public class XATest extends MessagingTestCase
 
       public int prepare(Xid arg0) throws XAException
       {
+         if (failOnPrepare)
+         {
+            throw new XAException(XAException.XAER_RMERR);
+         }
          return XAResource.XA_OK;
       }
 

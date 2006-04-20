@@ -31,15 +31,19 @@ import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.SessionState;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -106,24 +110,44 @@ public class SessionTest extends MessagingTestCase
    
 
    // Public --------------------------------------------------------
+   
+   public void testNoTransactionAfterClose() throws Exception
+   {
+      Connection conn = cf.createConnection();      
+      conn.start();
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      MessageProducer prod = sess.createProducer(queue);
+      prod.send(sess.createMessage());
+      sess.commit();
+      MessageConsumer cons = sess.createConsumer(queue);
+      cons.receive();
+      sess.commit();
+      
+      ClientSessionDelegate del = (ClientSessionDelegate)((JBossSession)sess).getDelegate();
+      
+      SessionState state = (SessionState)del.getState();
+      ConnectionState cState = (ConnectionState)state.getParent();
+      
+      Object xid = state.getCurrentTxId();
+      assertNotNull(xid);
+      assertNotNull(cState.getResourceManager().getTx(xid));
+      
+      //Now close the session
+      sess.close();
+      
+      //Session should be removed from resource manager
+      xid = state.getCurrentTxId();
+      assertNotNull(xid);
+      assertNull(cState.getResourceManager().getTx(xid));
+      
+   }
 
    public void testCreateProducer() throws Exception
    {
-      try
-      {
-         log.debug("starting testCreateProducer");
-         Connection conn = cf.createConnection();      
-         log.debug("Got connection");
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         log.debug("Created session");            
-         sess.createProducer(topic);
-         log.debug("created producer");
-         conn.close();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      Connection conn = cf.createConnection();      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);          
+      sess.createProducer(topic);
+      conn.close();
    }
 
    public void testCreateProducerOnNullQueue() throws Exception
