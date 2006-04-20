@@ -16,7 +16,24 @@
       name="jboss.messaging.performance:service=Queue,name=simpleQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.performance:service=Queue,name=largeQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <attribute name="FullSize">500000</attribute>
    </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.performance:service=Queue,name=pagingQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <!-- <attribute name="FullSize">20000</attribute> -->
+      <attribute name="FullSize">75000</attribute>
+   </mbean>
+
+
 
 </server>
