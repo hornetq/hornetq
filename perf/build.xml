@@ -21,6 +21,10 @@
    <dirname property="remote.root" file="${basedir}"/>
    <dirname property="project.root" file="${remote.root}"/>
    <property environment="ENV"/>
+   <property name="messaging.config.name" value="messaging-mysql"/>
+   <property name="jbossmq.config.name" value="jbossmq-mysql"/>
+   <property name="perf.config.file" value="perf.xml"/>
+
 
    <import file="../../tools/etc/buildmagic/build-common.xml"/>
 
@@ -172,13 +176,13 @@
       <!-- The performance tests may need specially crafted destination that behave equivalently
            on diferent providers.
       -->
-      <copy file="./messaging-destinations-service.xml" todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/>
-      <copy file="./jbossmq-destinations-service.xml" todir="${ENV.JBOSS_HOME}/server/jbossmq/deploy"/>
+      <copy file="./messaging-destinations-service.xml" todir="${ENV.JBOSS_HOME}/server/${messaging.config.name}/deploy"/>
+      <copy file="./jbossmq-destinations-service.xml" todir="${ENV.JBOSS_HOME}/server/${jbossmq.config.name}/deploy"/>
    </target>
 
    <target name="undeploy-destinations">
-      <delete file="${ENV.JBOSS_HOME}/server/messaging/deploy/messaging-destinations-service.xml"/>
-      <delete file="${ENV.JBOSS_HOME}/server/jbossmq/deploy/jbossmq-destinations-service.xml"/>
+      <delete file="${ENV.JBOSS_HOME}/server/${messaging.config.name}/deploy/messaging-destinations-service.xml"/>
+      <delete file="${ENV.JBOSS_HOME}/server/${jbossmq.config.name}/deploy/jbossmq-destinations-service.xml"/>
    </target>
 
    <target name="run">
@@ -212,7 +216,7 @@
          <jvmarg value="-Djava.compiler=NONE"/>
          <jvmarg value="-Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=runner"/>
         -->
-         <arg line="-config ${module.root}/perf.xml -action ${action}"/>
+         <arg line="-config ${module.root}/${perf.config.file} -action ${action}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="log.suffix" value="${log.suffix}"/>
          <classpath refid="perf.execution.classpath"/>
@@ -248,8 +252,8 @@
          <param name="executor.name" value="remote2"/>
       </antcall>
       <!-- deploy colocated executors; port values hardcoded for the time being -->
-      <copy file="${module.output}/lib/rmi-executor-scoped.sar" todir="${ENV.JBOSS_HOME}/server/messaging/deploy"/>
-      <copy file="${module.output}/lib/rmi-executor.sar" todir="${ENV.JBOSS_HOME}/server/jbossmq/deploy"/>
+      <copy file="${module.output}/lib/rmi-executor-scoped.sar" todir="${ENV.JBOSS_HOME}/server/${messaging.config.name}/deploy"/>
+      <copy file="${module.output}/lib/rmi-executor.sar" todir="${ENV.JBOSS_HOME}/server/${jbossmq.config.name}/deploy"/>
    </target>
 
    <target name="kill-remoting-executors">
@@ -265,8 +269,8 @@
 
    <target name="kill-rmi-executors">
       <!-- undeploy colocated executors -->
-      <delete file="${ENV.JBOSS_HOME}/server/messaging/deploy/rmi-executor-scoped.sar"/>
-      <delete file="${ENV.JBOSS_HOME}/server/jbossmq/deploy/rmi-executor.sar"/>
+      <delete file="${ENV.JBOSS_HOME}/server/${messaging.config.name}/deploy/rmi-executor-scoped.sar"/>
+      <delete file="${ENV.JBOSS_HOME}/server/${jbossmq.config.name}/deploy/rmi-executor.sar"/>
       <!-- and kill the standalone VMs -->
       <antcall target="kill-rmi-executor">
          <param name="registry.host" value="localhost"/>
@@ -444,7 +448,7 @@
          <jvmarg value="-Djava.compiler=NONE"/>
          <jvmarg value="-Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
          -->
-         <arg line="-config ${module.root}/perf.xml"/>
+         <arg line="-config ${module.root}/${perf.config.file}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="log.suffix" value="runner"/>
          <classpath refid="perf.execution.classpath"/>
@@ -456,7 +460,7 @@
          <jvmarg value="-Djava.compiler=NONE"/>
          <jvmarg value="-Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=executor"/>
          -->
-         <arg line="-config ${module.root}/perf.xml -dump-database"/>
+         <arg line="-config ${module.root}/${perf.config.file} -dump-database"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="log.suffix" value="runner"/>
          <classpath refid="perf.execution.classpath"/>
