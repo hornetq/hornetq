@@ -231,6 +231,7 @@ class Charter
          List measurement = (List)i.next();
 
          double x = 0, y = 0;
+         boolean xReady = false, yReady = false;
 
          // TODO this won't work for multiple identical jobs, and also for more than one
          //      parallel jobs
@@ -245,8 +246,6 @@ class Charter
             }
 
             Job job = (Job)result.getRequest();
-
-            boolean addToGraph = false;
 
             if (job.getType() == xAxis.getJobType())
             {
@@ -263,7 +262,7 @@ class Charter
                   log.debug("recording " + x + " on the x axis");
                }
 
-               addToGraph = true;
+               xReady = true;
             }
 
             if (job.getType() == yAxis.getJobType())
@@ -281,11 +280,12 @@ class Charter
                   log.debug("recording " + y + " on the y axis");
                }
 
-               addToGraph = true;
+               yReady = true;
             }
 
-            if (addToGraph)
+            if (xReady && yReady)
             {
+               log.debug("adding (" + x + ", " + y + ") to series");
                series.add(x, y);
             }
          }
