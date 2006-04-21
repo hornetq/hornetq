@@ -75,6 +75,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
+import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
@@ -767,8 +768,7 @@ public class ServiceContainer
    {
       if (tm == null)
       {
-         // the default JBoss TransactionManager
-         tm = TxManager.getInstance();
+         tm = TransactionManagerLocator.getInstance().locate();
       }
 
       TransactionManagerJMXWrapper mbean = new TransactionManagerJMXWrapper(tm);

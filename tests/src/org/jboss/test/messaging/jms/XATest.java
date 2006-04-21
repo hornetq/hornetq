@@ -42,7 +42,7 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossXAResource;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TxManager;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -83,7 +83,7 @@ public class XATest extends MessagingTestCase
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
             
-      if (!ServerManagement.isRemote()) tm = TxManager.getInstance();
+      if (!ServerManagement.isRemote()) tm = TransactionManagerLocator.getInstance().locate();
       
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");

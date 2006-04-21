@@ -64,13 +64,12 @@ public class XARecoveryTest extends MessagingTestCase
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       
-      //if (!ServerManagement.isRemote()) tm = TxManager.getInstance();
+      //if (!ServerManagement.isRemote()) tm = TransactionManagerLocator.getInstance().locate();
       
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
 
-      //if (!ServerManagement.isRemote()) tm = TxManager.getInstance();
    }
 
    public void tearDown() throws Exception

@@ -21,20 +21,20 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.naming.InitialContext;
-import javax.jms.Queue;
-import javax.jms.ConnectionFactory;
 import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
+import javax.jms.ConnectionFactory;
 import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TxManager;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -63,7 +63,7 @@ public class XATransactionTest extends MessagingTestCase
 
    public void testSimpleTransactedSend() throws Exception
    {
-      Transaction suspended = TxManager.getInstance().suspend();
+      Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
       
       try
       {
@@ -100,7 +100,7 @@ public class XATransactionTest extends MessagingTestCase
          
          if (suspended != null)
          {
-            TxManager.getInstance().resume(suspended);
+            TransactionManagerLocator.getInstance().locate().resume(suspended);
          }
       }
    }
