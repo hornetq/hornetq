@@ -32,6 +32,8 @@ import org.jboss.jms.client.JBossConnectionMetaData;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.message.MessageIdGeneratorFactory;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
@@ -167,8 +169,16 @@ public class ConnectionAspect implements ConnectionListener
    {
       Object ret = invocation.invokeNext();
       
+      ConnectionState state = getState(invocation);
+      
       //Finished with the connection - we need to shutdown callback server
-      getState(invocation).getRemotingConnection().close();
+      state.getRemotingConnection().close();
+      
+      //Remove reference to resource manager
+      ResourceManagerFactory.instance.returnResourceManager(state.getServerID());
+      
+      //Remove reference to message id generator
+      MessageIdGeneratorFactory.instance.returnGenerator(state.getServerID());
       
       return ret;
    }
@@ -194,10 +204,8 @@ public class ConnectionAspect implements ConnectionListener
             {
                exceptionListener.onException(j);
             }
-         }
-         
-      }
-      
+         }         
+      }      
    }
 
    // Package protected ---------------------------------------------

@@ -19,53 +19,21 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.util;
+package org.jboss.jms.tx;
 
-import javax.transaction.xa.XAException;
-
-public class MessagingXAException extends XAException
+/**
+ * 
+ * A LocalTx
+ * 
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @version 1.3
+ *
+ * LocalTx.java,v 1.3 2006/04/21 12:41:13 timfox Exp
+ */
+public class LocalTx
 {
-   private static final long serialVersionUID = 1144870736311098699L;
-   
-   private Throwable cause;
-   
-   private String msg;
-   
-   public MessagingXAException(int code)
+   public String toString()
    {
-      super(code);
+      return "LocalTx[" + Integer.toHexString(hashCode()) + "]";
    }
-   
-   public MessagingXAException(int code, Throwable cause)
-   {
-      super(code);
-      
-      this.cause = cause;
-   }
-   
-   public MessagingXAException(int code, String msg)
-   {
-      super(code);
-      
-      this.msg = msg;
-   }
-   
-   public MessagingXAException(int code, String msg, Throwable cause)
-   {
-      super(code);
-      
-      this.msg = msg;
-      
-      this.cause = cause;
-   }
-   
-   public Throwable getCause()
-   {
-      return cause;
-   }
-   
-   public String getMessage()
-   {
-      return msg;
-   }
-}
+}  

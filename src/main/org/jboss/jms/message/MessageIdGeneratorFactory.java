@@ -39,37 +39,72 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
  */
 public class MessageIdGeneratorFactory
 {
-   public static MessageIdGeneratorFactory instance;
+   public static MessageIdGeneratorFactory instance = new MessageIdGeneratorFactory();
    
    //TODO Make configurable
-   protected static final int BLOCK_SIZE = 256;
+   private static final int BLOCK_SIZE = 256;
    
-   static
-   {
-      instance = new MessageIdGeneratorFactory();
-   }
-   
+   private Map holders;
+      
    private MessageIdGeneratorFactory()
    {      
-      generators = new HashMap();
+      holders = new HashMap();
    }
    
-   protected Map generators;
-   
+   public synchronized boolean containsMessageIdGenerator(String serverId)
+   {
+      return holders.containsKey(serverId);
+   }
+      
    public synchronized MessageIdGenerator getGenerator(String serverId, ConnectionFactoryDelegate cf) throws JMSException
    {
-      MessageIdGenerator gen = (MessageIdGenerator)generators.get(serverId);
-      if (gen == null)
+      Holder h = (Holder)holders.get(serverId);
+      
+      if (h == null)
       {
-         gen = new MessageIdGenerator(cf, BLOCK_SIZE);
-         generators.put(serverId, gen);
+         h = new Holder(new MessageIdGenerator(cf, BLOCK_SIZE));
+         
+         holders.put(serverId, h);
       }
-      return gen;
+      else
+      {
+         h.refCount++;
+      }
+      return h.generator;
+   }
+   
+   public synchronized void returnGenerator(String serverId)
+   {
+      Holder h = (Holder)holders.get(serverId);
+      
+      if (h == null)
+      {
+         throw new IllegalArgumentException("Cannot find generator for serverid:" + serverId);
+      }
+      
+      h.refCount--;
+      
+      if (h.refCount == 0)
+      {
+         holders.remove(serverId);
+      }
    }
    
    public synchronized void clear()
    {
-      generators.clear();
+      holders.clear();
    }
-  
+   
+   private class Holder
+   {
+      private Holder(MessageIdGenerator gen)
+      {
+         this.generator = gen;
+      }
+      
+      MessageIdGenerator generator;
+      
+      int refCount = 1;
+   }
+   
 }

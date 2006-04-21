@@ -85,7 +85,7 @@ public class StateCreationAspect
       
       MessageIdGenerator gen = MessageIdGeneratorFactory.instance.getGenerator(cf.getServerID(), cf);
                                      
-      delegate.setState(new ConnectionState(delegate,                                            
+      delegate.setState(new ConnectionState(cf.getServerID(), delegate,                                            
                                             delegate.getRemotingConnection(),
                                             cf.getVersionToUse(), rm, gen));
                   

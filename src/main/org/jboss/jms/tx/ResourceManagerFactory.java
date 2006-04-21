@@ -27,6 +27,12 @@ import java.util.Map;
 /**
  * This class manages instances of ResourceManager. It ensures there is one instance per instance
  * of JMS server as specified by the server id.
+ * 
+ * This allows different JMS connections to the same JMS server (the underlying resource is the JMS server)
+ * to use the same resource manager.
+ * 
+ * This means isSameRM() on XAResource returns true, allowing the Transaction manager to join work in one
+ * tx to another thus allowing 1PC optimization which should help performance.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
@@ -34,33 +40,64 @@ import java.util.Map;
  * $Id$
  */
 public class ResourceManagerFactory
-{
-   public static ResourceManagerFactory instance;
+{      
+   public static ResourceManagerFactory instance = new ResourceManagerFactory();
    
-   static
-   {
-      instance = new ResourceManagerFactory();
-   }
+   private Map holders;
    
    private ResourceManagerFactory()
    {      
-      resourceManagers = new HashMap();
+      holders = new HashMap();
+   }
+      
+   public synchronized boolean containsResourceManager(String serverID)
+   {
+      return holders.containsKey(serverID);
    }
    
-   protected Map resourceManagers;
-
    /**
     * @param serverID - server peer ID.
     */
    public synchronized ResourceManager getResourceManager(String serverID)
    {
-      ResourceManager rm = (ResourceManager)resourceManagers.get(serverID);
-      if (rm == null)
+      Holder h = (Holder)holders.get(serverID);
+      
+      if (h == null)
       {
-         rm = new ResourceManager();
-         resourceManagers.put(serverID, rm);
+         h = new Holder();
+         
+         holders.put(serverID, h);
       }
-      return rm;
+      else
+      {
+         h.refCount++;
+      }
+      
+      return h.rm;
+   }
+   
+   public synchronized void returnResourceManager(String serverID)
+   {
+      Holder h = (Holder)holders.get(serverID);
+      
+      if (h == null)
+      {
+         throw new IllegalArgumentException("Cannot find resource manager for server: " + serverID);
+      }
+      
+      h.refCount--;
+      
+      if (h.refCount == 0)
+      {
+         holders.remove(serverID);
+      }      
+   }
+   
+   private class Holder
+   {
+      ResourceManager rm = new ResourceManager();
+      
+      int refCount = 1;
    }
   
 }

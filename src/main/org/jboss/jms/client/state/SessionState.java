@@ -23,9 +23,9 @@ package org.jboss.jms.client.state;
 
 import java.util.HashSet;
 
-import org.jboss.jms.client.JBossXAResource;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.tx.MessagingXAResource;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -46,7 +46,7 @@ public class SessionState extends HierarchicalStateSupport
    
    private boolean xa;
    
-   private JBossXAResource xaResource;
+   private MessagingXAResource xaResource;
    
    private Object currentTxId;
    
@@ -64,7 +64,7 @@ public class SessionState extends HierarchicalStateSupport
       if (xa)
       {
          //Create an XA resource
-         xaResource = new JBossXAResource(parent.getResourceManager(), this);                            
+         xaResource = new MessagingXAResource(parent.getResourceManager(), this);                            
       }
       if (transacted)
       {
@@ -89,7 +89,7 @@ public class SessionState extends HierarchicalStateSupport
       return xa;
    }
    
-   public JBossXAResource getXAResource()
+   public MessagingXAResource getXAResource()
    {
       return xaResource;
    }

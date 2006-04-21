@@ -402,7 +402,24 @@ public abstract class ChannelSupport implements Channel
             //FIXME - It's actually possible the delivery could be cancelled before it reaches
             //here, in which case we wouldn't get a delivery but we still need to increment the
             //delivery count
-            del.getReference().incrementDeliveryCount();
+            //All the problems related to these race conditions and fiddly edge cases will disappear
+            //once we do http://jira.jboss.com/jira/browse/JBMESSAGING-355
+            //This will make life a lot easier
+            
+            //Note we don't increment the delivery count if the message didn't match the selector
+            //FIXME - this is a temporary hack that will disappear once
+            //http://jira.jboss.org/jira/browse/JBMESSAGING-275
+            //is solved            
+            boolean incrementCount = true;
+            if (del instanceof SimpleDelivery)
+            {
+               SimpleDelivery sd = (SimpleDelivery)del;
+               incrementCount = sd.isSelectorAccepted();
+            }                       
+            if (incrementCount)
+            {
+               del.getReference().incrementDeliveryCount();
+            }
                         
             if (del.isCancelled())
             {

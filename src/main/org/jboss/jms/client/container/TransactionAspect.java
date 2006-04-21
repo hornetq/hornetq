@@ -33,7 +33,7 @@ import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.tx.AckInfo;
-import org.jboss.jms.tx.ResourceManager.LocalTxXid;
+import org.jboss.jms.tx.LocalTx;
 
 /**
  * This aspect handles transaction related logic
@@ -58,6 +58,8 @@ public class TransactionAspect
    
    public Object handleClose(Invocation invocation) throws Throwable
    {
+      Object res = invocation.invokeNext();
+      
       SessionState state = (SessionState)getState(invocation);
       
       ConnectionState connState = (ConnectionState)state.getParent();
@@ -70,7 +72,7 @@ public class TransactionAspect
          connState.getResourceManager().removeTx(xid);
       }           
       
-      return invocation.invokeNext();
+      return res;
    }
    
    public Object handleCommit(Invocation invocation) throws Throwable
@@ -92,7 +94,7 @@ public class TransactionAspect
       
       try
       {            
-         connState.getResourceManager().commitLocal((LocalTxXid)state.getCurrentTxId(), conn);
+         connState.getResourceManager().commitLocal((LocalTx)state.getCurrentTxId(), conn);
       }
       finally
       {
@@ -124,7 +126,7 @@ public class TransactionAspect
       
       try
       {
-         connState.getResourceManager().rollbackLocal((LocalTxXid)state.getCurrentTxId(), conn);
+         connState.getResourceManager().rollbackLocal((LocalTx)state.getCurrentTxId(), conn);
       }
       finally
       {

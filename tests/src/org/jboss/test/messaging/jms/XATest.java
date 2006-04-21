@@ -39,7 +39,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.JBossXAResource;
+import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
@@ -185,7 +185,7 @@ public class XATest extends MessagingTestCase
          
          XASession sess = conn.createXASession();
          
-         JBossXAResource res = (JBossXAResource)sess.getXAResource();         
+         MessagingXAResource res = (MessagingXAResource)sess.getXAResource();         
          XAResource res2 = new DummyXAResource();
          
          //To prevent 1PC optimization being used
@@ -296,7 +296,7 @@ public class XATest extends MessagingTestCase
          tm.begin();
          
          XASession sess = conn.createXASession();
-         JBossXAResource res = (JBossXAResource)sess.getXAResource();
+         MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
          
          //prevent 1Pc optimisation
          res.setPreventJoining(true);
@@ -438,7 +438,7 @@ public class XATest extends MessagingTestCase
          tm.begin();
          
          XASession sess = conn.createXASession();
-         JBossXAResource res = (JBossXAResource)sess.getXAResource();
+         MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
          res.setPreventJoining(true);
          
          XAResource res2 = new DummyXAResource();
@@ -596,7 +596,7 @@ public class XATest extends MessagingTestCase
          tm.begin();
          
          XASession sess = conn.createXASession();
-         JBossXAResource res = (JBossXAResource)sess.getXAResource();
+         MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
          res.setPreventJoining(true);
          
          XAResource res2 = new DummyXAResource();
@@ -1011,9 +1011,9 @@ public class XATest extends MessagingTestCase
          
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
          
@@ -1094,9 +1094,9 @@ public class XATest extends MessagingTestCase
          
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
  
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
@@ -1199,9 +1199,9 @@ public class XATest extends MessagingTestCase
          
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
          
@@ -1311,7 +1311,7 @@ public class XATest extends MessagingTestCase
          tm.begin();
          
          XASession sess1 = conn.createXASession();
-         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          DummyXAResource res2 = new DummyXAResource(true);
          res1.setPreventJoining(true);
                   
@@ -1484,9 +1484,9 @@ public class XATest extends MessagingTestCase
          
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
          
@@ -1621,9 +1621,9 @@ public class XATest extends MessagingTestCase
          
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         JBossXAResource res1 = (JBossXAResource)sess1.getXAResource();
+         MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         JBossXAResource res2 = (JBossXAResource)sess2.getXAResource();
+         MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
          

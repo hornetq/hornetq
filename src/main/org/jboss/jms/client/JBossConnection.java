@@ -228,6 +228,11 @@ public class JBossConnection implements
       
       return state.getRemotingConnection().getInvokingClient().getSessionId();
    }
+   
+   public ConnectionDelegate getDelegate()
+   {
+      return delegate;
+   }
 
    // Package protected ---------------------------------------------
 

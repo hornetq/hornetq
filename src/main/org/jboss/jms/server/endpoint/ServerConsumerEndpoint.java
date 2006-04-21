@@ -251,11 +251,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    public boolean accept(Routable r)
    {
       boolean accept = true;
-      if (messageSelector != null)
+      if (this.destination.isQueue())
       {
-         accept = messageSelector.accept(r);
-
-         if (trace) { log.trace("message selector " + (accept ? "accepts " :  "DOES NOT accept ") + "the message"); }
+         //For subscriptions message selection is handled in the Subscription itself
+         //we do not want to do the check twice
+         if (messageSelector != null)
+         {
+            accept = messageSelector.accept(r);
+   
+            if (trace) { log.trace("message selector " + (accept ? "accepts " :  "DOES NOT accept ") + "the message"); }
+         }
       }
 
       if (accept)
@@ -476,6 +481,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          {
             SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
 
+            //TODO - Selector kludge - remove this
             if (d.isSelectorAccepted())
             {
                d.acknowledge(null);

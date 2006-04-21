@@ -67,20 +67,35 @@ public class ResourceManager
    
    // Constructors --------------------------------------------------
    
-   ResourceManager()
+   protected ResourceManager()
    {      
    }
    
    // Public --------------------------------------------------------
    
+   public TxState getTx(Object xid)
+   {
+      if (trace) { log.trace("getting transaction for " + xid); }
+      
+      return (TxState)transactions.get(xid);
+   }
+   
+   public TxState removeTx(Object xid)
+   {
+      return (TxState)transactions.remove(xid);
+   }
+   
    /**
-    * Create a local tx. Only used when XAResource is not enlisted as part of global transaction
+    * Create a local tx.
     */
-   public LocalTxXid createLocalTx()
+   public LocalTx createLocalTx()
    {
       TxState tx = new TxState();
-      LocalTxXid xid = getNextTxId();
+      
+      LocalTx xid = getNextTxId();
+      
       transactions.put(xid, tx);
+      
       return xid;
    }
    
@@ -93,7 +108,9 @@ public class ResourceManager
    public void addMessage(Object xid, Message m)
    {
       if (trace) { log.trace("addding message for xid " + xid); }
+      
       TxState tx = getTx(xid);
+      
       tx.getMessages().add(m);
    }
    
@@ -108,14 +125,16 @@ public class ResourceManager
       if (trace) { log.trace("adding " + ackInfo + " to transaction " + xid); }
       
       TxState tx = getTx(xid);
+      
       if (tx == null)
       {
          throw new JMSException("There is no transaction with id " + xid);
       }
+      
       tx.getAcks().add(ackInfo);
    }
          
-   public void commitLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
+   public void commitLocal(LocalTx xid, ConnectionDelegate connection) throws JMSException
    {
       if (trace) { log.trace("commiting local xid " + xid); }
       
@@ -124,56 +143,33 @@ public class ResourceManager
       //Invalid xid
       if (tx == null)
       {
-         final String msg = "Cannot find transaction with xid:";
-         log.error(msg);         
-         throw new IllegalStateException(msg);
+         throw new IllegalStateException("Cannot find transaction with xid:" + xid);
       }
       
       TransactionRequest request =
          new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
+      
       connection.sendTransaction(request);      
    }
    
-   public void rollbackLocal(LocalTxXid xid, ConnectionDelegate connection) throws JMSException
+   public void rollbackLocal(LocalTx xid, ConnectionDelegate connection) throws JMSException
    {
       if (trace) { log.trace("rolling back local xid " + xid); }
+      
       TxState tx = removeTx(xid);
+      
       if (tx == null)
-      {
-         final String msg = "Cannot find transaction with xid:" + xid;
-         log.error(msg);         
-         throw new IllegalStateException(msg);         
+      {      
+         throw new IllegalStateException("Cannot find transaction with xid:" + xid);         
       }
       
       //Don't need messages for rollback
       tx.clearMessages();
+      
       TransactionRequest request =
          new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, null, tx);
+      
       connection.sendTransaction(request);
-   }
-   
-   private void sendTransactionXA(TransactionRequest request, ConnectionDelegate connection)
-      throws XAException
-   {
-      try
-      {
-         connection.sendTransaction(request);
-      }
-      catch (TransactionRolledBackException e)
-      {
-         log.error("An error occurred in sending transaction and the transaction was rolled back", e);
-         if (e.getCause() != null)
-         {
-            log.error("Cause", e.getCause());
-         }
-         throw new MessagingXAException(XAException.XA_RBROLLBACK, e);
-      }
-      catch (Throwable t)
-      {
-         //Catch anything else
-         log.error("A Throwable was caught in sending the transaction", t);
-         throw new MessagingXAException(XAException.XAER_RMERR, t);
-      }
    }
    
    public void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
@@ -186,14 +182,15 @@ public class ResourceManager
       {
          //Invalid xid
          if (tx == null)
-         {
-            log.error("Cannot find transaction with xid:" + xid);         
-            throw new MessagingXAException(XAException.XAER_NOTA);
+         {       
+            throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
          }
          
          TransactionRequest request =
             new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
+         
          request.state = tx;    
+         
          sendTransactionXA(request, connection);
       }
       else
@@ -201,9 +198,8 @@ public class ResourceManager
          if (tx != null)
          {
             if (tx.getState() != TxState.TX_PREPARED)
-            {
-               log.error("commit called for transaction, but it is not prepared");         
-               throw new MessagingXAException(XAException.XAER_PROTO);
+            {    
+               throw new MessagingXAException(XAException.XAER_PROTO, "commit called for transaction, but it is not prepared");
             }
          }
          else
@@ -212,25 +208,27 @@ public class ResourceManager
             //may happen if we have recovered from failure and the transaction manager
             //is calling commit on the transaction as part of the recovery process.
          }
+         
          TransactionRequest request =
             new TransactionRequest(TransactionRequest.TWO_PHASE_COMMIT_REQUEST, xid, null);
+         
          request.xid = xid;      
+         
          sendTransactionXA(request, connection);
       }
+      
       if (tx != null)
       {
          tx.setState(TxState.TX_COMMITED);
       }
    }
-   
-   
+      
    public void rollback(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("Rolling back xid: " + xid); }
-      TxState tx = removeTx(xid);
       
-      log.trace("Rolling back xid: " + xid);
-                  
+      TxState tx = removeTx(xid);
+          
       TransactionRequest request = null;
       
       //We don't need to send the messages to the server on a rollback
@@ -246,126 +244,138 @@ public class ResourceManager
       else
       {
          if (tx == null)
-         {
-            log.error("Cannot find transaction with xid:" + xid);         
-            throw new XAException(XAException.XAER_NOTA);
+         {     
+            throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
          }
+         
          request = new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, xid, tx);
       }
       
       sendTransactionXA(request, connection);
    }
    
-   public void endTx(Xid xid, boolean success) throws XAException
+
+   // Protected ------------------------------------------------------
+   
+   protected void endTx(Xid xid, boolean success) throws XAException
    {
       if (trace) { log.trace("ending " + xid + ", success=" + success); }
       
       TxState state = getTx(xid);
+      
       if (state == null)
-      {
-         log.error("Cannot find transaction with xid:" + xid);         
-         throw new XAException(XAException.XAER_NOTA);
-      }         
+      {  
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
+      }        
+      
       state.setState(TxState.TX_ENDED);
    }
    
-   public Xid joinTx(Xid xid) throws XAException
+   protected Xid joinTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("joining  " + xid); }
       
       TxState state = getTx(xid);
+      
       if (state == null)
-      {
-         log.error("Cannot find transaction with xid:" + xid);         
-         throw new XAException(XAException.XAER_NOTA);
+      {         
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
       } 
+      
       return xid;
    }
    
-   public int prepare(Xid xid, ConnectionDelegate connection) throws XAException
+   protected int prepare(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("preparing " + xid); }
       
       TxState state = getTx(xid);
+      
       if (state == null)
-      {
-         log.error("Cannot find transaction with xid:" + xid);         
-         throw new XAException(XAException.XAER_NOTA);
+      { 
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
       } 
+      
       TransactionRequest request =
          new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
+      
       sendTransactionXA(request, connection);      
+      
       state.setState(TxState.TX_PREPARED);
+      
       return XAResource.XA_OK;
    }
    
-   public Xid resumeTx(Xid xid) throws XAException
+   protected Xid resumeTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("resuming " + xid); }
       
       TxState state = getTx(xid);
+      
       if (state == null)
-      {
-         log.error("Cannot find transaction with xid:" + xid);         
-         throw new XAException(XAException.XAER_NOTA);
+      {       
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
       }
+      
       return xid;
    }
    
-
-   public Xid suspendTx(Xid xid) throws XAException
+   protected Xid suspendTx(Xid xid) throws XAException
    {
-      if (trace) { log.trace("suppending " + xid); }
+      if (trace) { log.trace("suspending " + xid); }
 
       TxState state = getTx(xid);
+      
       if (state == null)
-      {
-         log.error("Cannot find transaction with xid:" + xid);         
-         throw new XAException(XAException.XAER_NOTA);
+      {       
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
       }
+      
       return xid;
    }
 
-   public Xid convertTx(LocalTxXid anonXid, Xid xid) throws XAException
+   protected Xid convertTx(LocalTx anonXid, Xid xid) throws XAException
    {
       if (trace) { log.trace("converting " + anonXid + " to " + xid); }
 
       TxState state = getTx(anonXid);
 
       if (state == null)
-      {
-         log.error("Cannot find transaction with xid:" + anonXid);         
-         throw new XAException(XAException.XAER_NOTA);
+      {        
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + anonXid);
       }
 
       state = getTx(xid);
 
       if (state != null)
-      {
-         log.error("Transaction already exists:" + xid);         
-         throw new XAException(XAException.XAER_DUPID);
+      {        
+         throw new MessagingXAException(XAException.XAER_DUPID, "Transaction already exists:" + xid);
       }
 
       TxState s = removeTx(anonXid);
+      
       transactions.put(xid, s);
+      
       return xid;
    }
    
-   public Xid startTx(Xid xid) throws XAException
+   protected Xid startTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("starting " + xid); }
 
       TxState state = getTx(xid);
+      
       if (state != null)
       {
-         log.error("Transaction already exists with xid " + xid);
-         throw new XAException(XAException.XAER_DUPID);
+         throw new MessagingXAException(XAException.XAER_DUPID, "Transaction already exists with xid " + xid);
       }
+            
       transactions.put(xid, new TxState());
+      
       return xid;
    }
    
-   public Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
+   protected Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
    {
       if (trace) { log.trace("calling recover with flags: " + flags); }
       
@@ -379,35 +389,33 @@ public class ResourceManager
       }
    }
    
-   // Protected ------------------------------------------------------
-   
    // Package Private ------------------------------------------------
    
    // Private --------------------------------------------------------
    
-   private synchronized LocalTxXid getNextTxId()
+   private synchronized LocalTx getNextTxId()
    {
-      return new LocalTxXid();
+      return new LocalTx();
    }
-   
-   public TxState getTx(Object xid)
+     
+   private void sendTransactionXA(TransactionRequest request, ConnectionDelegate connection)
+      throws XAException
    {
-      if (trace) { log.trace("getting transaction for " + xid); }
-      return (TxState)transactions.get(xid);
-   }
-   
-   public TxState removeTx(Object xid)
-   {
-      return (TxState)transactions.remove(xid);
+      try
+      {
+         connection.sendTransaction(request);
+      }
+      catch (TransactionRolledBackException e)
+      {
+         throw new MessagingXAException(XAException.XA_RBROLLBACK, "An error occurred in sending transaction and the transaction was rolled back", e);
+      }
+      catch (Throwable t)
+      {
+         //Catch anything else
+         throw new MessagingXAException(XAException.XAER_RMERR, "A Throwable was caught in sending the transaction", t);
+      }
    }
    
    // Inner Classes --------------------------------------------------
-   
-   public static class LocalTxXid
-   {
-      public String toString()
-      {
-         return "LocalTxXid[" + Integer.toHexString(hashCode()) + "]";
-      }
-   }  
+  
 }

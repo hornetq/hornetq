@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client;
+package org.jboss.jms.tx;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -27,8 +27,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.ResourceManager.LocalTxXid;
 import org.jboss.logging.Logger;
 
 /**
@@ -36,7 +34,7 @@ import org.jboss.logging.Logger;
  * 
  * This defines the contract for the application server to interact with the resource manager.
  * 
- * It basically just delegates to the resource manager.
+ * It mainly delegates to the resource manager.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -46,15 +44,15 @@ import org.jboss.logging.Logger;
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
- * @version $Revision$
+ * @version 1.1
  *
- * $Id$
+ * MessagingXAResource.java,v 1.1 2006/04/21 12:41:13 timfox Exp
  */
-public class JBossXAResource implements XAResource
+public class MessagingXAResource implements XAResource
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JBossXAResource.class);
+   private static final Logger log = Logger.getLogger(MessagingXAResource.class);
    
    // Attributes ----------------------------------------------------
    
@@ -73,7 +71,7 @@ public class JBossXAResource implements XAResource
    
    // Constructors --------------------------------------------------
 
-   public JBossXAResource(ResourceManager rm, SessionState sessionState)
+   public MessagingXAResource(ResourceManager rm, SessionState sessionState)
    { 
       this.rm = rm;
       this.sessionState = sessionState;
@@ -99,12 +97,12 @@ public class JBossXAResource implements XAResource
          return false;
       }
       
-      if (!(xaResource instanceof JBossXAResource))
+      if (!(xaResource instanceof MessagingXAResource))
       {
          return false;
       }
       
-      return ((JBossXAResource)xaResource).rm == this.rm;
+      return ((MessagingXAResource)xaResource).rm == this.rm;
    }
    
    public void commit(Xid xid, boolean onePhase) throws XAException
@@ -170,7 +168,7 @@ public class JBossXAResource implements XAResource
       
       if (sessionState.getCurrentTxId() != null)
       {
-         if (flags == TMNOFLAGS && sessionState.getCurrentTxId() instanceof LocalTxXid)
+         if (flags == TMNOFLAGS && sessionState.getCurrentTxId() instanceof LocalTx)
          {
             convertTx = true;
          }
@@ -188,7 +186,7 @@ public class JBossXAResource implements XAResource
                   //calling commit on the tx and calling start to enrolling the session in a new tx.
                   //If the session has any listeners then in that period, messages can be received asychronously
                   //but we want them to be received in the context of a tx, so we convert.
-                  setCurrentTransactionId(rm.convertTx((LocalTxXid)sessionState.getCurrentTxId(), xid));
+                  setCurrentTransactionId(rm.convertTx((LocalTx)sessionState.getCurrentTxId(), xid));
                }
                else
                {                  
@@ -233,7 +231,7 @@ public class JBossXAResource implements XAResource
    {
       if (xid == null)
       {
-         throw new org.jboss.util.NullArgumentException("xid");
+         throw new NullPointerException("null xid");
       }
 
       if (trace) { log.trace(this + " setting current xid to " + xid + ",  previous " + sessionState.getCurrentTxId()); }

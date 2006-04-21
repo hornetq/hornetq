@@ -38,7 +38,14 @@ import javax.jms.TopicConnectionFactory;
 import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.message.MessageIdGenerator;
+import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
@@ -106,6 +113,75 @@ public class ConnectionTest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
+   
+   public void testResourceManagersForSameServer() throws Exception
+   {
+      Connection conn1 = cf.createConnection();      
+            
+      ClientConnectionDelegate del1 = (ClientConnectionDelegate)((JBossConnection)conn1).getDelegate();
+      
+      ConnectionState state1 = (ConnectionState)del1.getState();
+      
+      ResourceManager rm1 = state1.getResourceManager();
+      
+      Connection conn2 = cf.createConnection();      
+      
+      ClientConnectionDelegate del2 = (ClientConnectionDelegate)((JBossConnection)conn2).getDelegate();
+      
+      ConnectionState state2 = (ConnectionState)del2.getState();
+      
+      ResourceManager rm2 = state2.getResourceManager();
+
+      //Two connections for same server should share the same resource manager
+      
+      assertTrue(rm1 == rm2);
+      
+      assertTrue(ResourceManagerFactory.instance.containsResourceManager(state2.getServerID()));
+      
+      conn1.close();
+      
+      //Check reference counting
+      assertTrue(ResourceManagerFactory.instance.containsResourceManager(state2.getServerID()));
+           
+      conn2.close();
+      
+      assertFalse(ResourceManagerFactory.instance.containsResourceManager(state2.getServerID()));     
+   }
+   
+   public void testMessageIDGeneratorsForSameServer() throws Exception
+   {
+      Connection conn1 = cf.createConnection();      
+            
+      ClientConnectionDelegate del1 = (ClientConnectionDelegate)((JBossConnection)conn1).getDelegate();
+      
+      ConnectionState state1 = (ConnectionState)del1.getState();
+      
+      MessageIdGenerator gen1 = state1.getIdGenerator();
+      
+      Connection conn2 = cf.createConnection();      
+      
+      ClientConnectionDelegate del2 = (ClientConnectionDelegate)((JBossConnection)conn2).getDelegate();
+      
+      ConnectionState state2 = (ConnectionState)del2.getState();
+      
+      MessageIdGenerator gen2 = state2.getIdGenerator();
+
+      //Two connections for same server should share the same resource manager
+      
+      assertTrue(gen1 == gen2);
+      
+      assertTrue(MessageIdGeneratorFactory.instance.containsMessageIdGenerator(state2.getServerID()));
+      
+      conn1.close();
+      
+      //Check reference counting
+      assertTrue(MessageIdGeneratorFactory.instance.containsMessageIdGenerator(state2.getServerID()));
+           
+      conn2.close();
+      
+      assertFalse(MessageIdGeneratorFactory.instance.containsMessageIdGenerator(state2.getServerID()));     
+   }
+      
 
    //
    // Note: All tests related to closing a Connection should go to ConnectionClosedTest

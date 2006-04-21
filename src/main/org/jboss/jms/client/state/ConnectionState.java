@@ -54,6 +54,8 @@ public class ConnectionState extends HierarchicalStateSupport
    
    private MessageIdGenerator idGenerator;
    
+   private String serverID;
+   
    //Thread pool used for making asynch calls to server - e.g. activateConsumer
    private static PooledExecutor pooledExecutor;
    
@@ -66,7 +68,7 @@ public class ConnectionState extends HierarchicalStateSupport
  
    private Version versionToUse;
     
-   public ConnectionState(ConnectionDelegate delegate,
+   public ConnectionState(String serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection, Version versionToUse,
                           ResourceManager rm,
                           MessageIdGenerator gen)
@@ -85,6 +87,8 @@ public class ConnectionState extends HierarchicalStateSupport
       this.resourceManager = rm;
       
       this.idGenerator = gen;
+      
+      this.serverID = serverID;
    }
     
    public ResourceManager getResourceManager()
@@ -110,6 +114,11 @@ public class ConnectionState extends HierarchicalStateSupport
    public Version getVersionToUse()
    {
       return versionToUse;
+   }
+   
+   public String getServerID()
+   {
+      return serverID;
    }
     
 }

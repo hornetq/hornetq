@@ -32,6 +32,7 @@ import javax.jms.Queue;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
+import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 /**
@@ -49,10 +50,8 @@ public class SelectorTest extends MessagingTestCase
    // Attributes ----------------------------------------------------
 
    protected ConnectionFactory cf;
-   protected Connection conn;
-   protected Session session;
-   protected MessageProducer prod;
    protected Queue queue;
+   protected Topic topic;
 
    // Constructors --------------------------------------------------
 
@@ -72,21 +71,20 @@ public class SelectorTest extends MessagingTestCase
       
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
+      ServerManagement.deployTopic("Topic");
+      
 
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       queue = (Queue)ic.lookup("/queue/Queue");
-      conn = cf.createConnection();
-      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      prod = session.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      topic = (Topic)ic.lookup("/topic/Topic");     
 
       log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
-      conn.close();
       ServerManagement.undeployQueue("Queue");
       
       super.tearDown();
@@ -106,6 +104,13 @@ public class SelectorTest extends MessagingTestCase
     */
    public void testSelectiveClosingConsumer() throws Exception
    {
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
       String selector = "color = 'red'";
       MessageConsumer redConsumer = session.createConsumer(queue, selector);
       conn.start();
@@ -133,6 +138,263 @@ public class SelectorTest extends MessagingTestCase
       
       assertEquals(rec.getJMSMessageID(), blueMessage.getJMSMessageID());
       assertEquals("blue", rec.getStringProperty("color"));
+      
+      session.close();
+   }
+   
+   public void testManyTopic() throws Exception
+   {
+      String selector1 = "beatle = 'john'";
+ 
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons1 = sess.createConsumer(topic, selector1);
+      
+      MessageProducer prod = sess.createProducer(topic);
+               
+      for (int j = 0; j < 100; j++)
+      {
+         Message m = sess.createMessage();        
+         
+         m.setStringProperty("beatle", "john");
+         
+         prod.send(m);
+         
+         m = sess.createMessage();        
+         
+         m.setStringProperty("beatle", "kermit the frog");
+         
+         prod.send(m);         
+      }
+      
+      for (int j = 0; j < 100; j++)
+      {
+         Message m = cons1.receive(1000);
+         
+         assertNotNull(m);
+      }
+      
+      Message m = cons1.receiveNoWait();
+      
+      assertNull(m);
+      
+      sess.close();                 
+   }
+   
+   public void testManyQueue() throws Exception
+   {
+      String selector1 = "beatle = 'john'";
+ 
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons1 = sess.createConsumer(queue, selector1);
+      
+      MessageProducer prod = sess.createProducer(queue);
+               
+      for (int j = 0; j < 100; j++)
+      {
+         Message m = sess.createMessage();        
+         
+         m.setStringProperty("beatle", "john");
+         
+         prod.send(m);
+         
+         m = sess.createMessage();        
+         
+         m.setStringProperty("beatle", "kermit the frog");
+         
+         prod.send(m);         
+      }
+      
+      for (int j = 0; j < 100; j++)
+      {
+         Message m = cons1.receive(1000);
+         
+         //log.info("Got message:" + m);
+         
+         assertNotNull(m);
+      }
+      
+      Message m = cons1.receiveNoWait();
+      
+      assertNull(m);
+      
+      sess.close();                 
+   }
+   
+   public void testManyRedeliveriesTopic() throws Exception
+   {
+      String selector1 = "beatle = 'john'";
+ 
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      for (int i = 0; i < 30; i++)
+      {      
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                          
+         MessageConsumer cons1 = sess.createConsumer(topic, selector1);
+         
+         MessageProducer prod = sess.createProducer(topic);
+         
+         for (int j = 0; j < 10; j++)
+         {
+            Message m = sess.createMessage();        
+            
+            m.setStringProperty("beatle", "john");
+            
+            prod.send(m);
+            
+            m = sess.createMessage();        
+            
+            m.setStringProperty("beatle", "kermit the frog");
+            
+            prod.send(m);         
+         }
+         
+         for (int j = 0; j < 10; j++)
+         {
+            Message m = cons1.receive(1000);
+            
+            assertNotNull(m);
+         }
+         
+         Message m = cons1.receiveNoWait();
+         
+         assertNull(m);
+         
+         sess.close();
+         
+      }           
+   }
+   
+   public void testManyRedeliveriesQueue() throws Exception
+   {
+      String selector1 = "beatle = 'john'";
+ 
+      Connection conn = cf.createConnection();
+      conn.start();
+      
+      for (int i = 0; i < 30; i++)
+      {      
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                          
+         MessageConsumer cons1 = sess.createConsumer(queue, selector1);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         
+         for (int j = 0; j < 10; j++)
+         {
+            Message m = sess.createMessage();        
+            
+            m.setStringProperty("beatle", "john");
+            
+            prod.send(m);
+            
+            m = sess.createMessage();        
+            
+            m.setStringProperty("beatle", "kermit the frog");
+            
+            prod.send(m);         
+         }
+         
+         for (int j = 0; j < 10; j++)
+         {
+            Message m = cons1.receive(1000);
+            
+            assertNotNull(m);
+         }
+         
+         Message m = cons1.receiveNoWait();
+         
+         assertNull(m);
+         
+         sess.close();
+         
+      }           
+      
+      super.drainDestination(cf, queue);
+   }
+      
+   public void testWithSelector() throws Exception
+   {
+      String selector1 = "beatle = 'john'";
+      String selector2 = "beatle = 'paul'";
+      String selector3 = "beatle = 'george'";
+      String selector4 = "beatle = 'ringo'";
+      String selector5 = "beatle = 'jesus'";
+      
+      Connection conn = cf.createConnection();
+      conn.start();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer cons1 = sess.createConsumer(topic, selector1);
+      MessageConsumer cons2 = sess.createConsumer(topic, selector2);
+      MessageConsumer cons3 = sess.createConsumer(topic, selector3);
+      MessageConsumer cons4 = sess.createConsumer(topic, selector4);
+      MessageConsumer cons5 = sess.createConsumer(topic, selector5);
+      
+      Message m1 = sess.createMessage();
+      m1.setStringProperty("beatle", "john");
+      
+      Message m2 = sess.createMessage();
+      m2.setStringProperty("beatle", "paul");
+      
+      Message m3 = sess.createMessage();
+      m3.setStringProperty("beatle", "george");
+      
+      Message m4 = sess.createMessage();
+      m4.setStringProperty("beatle", "ringo");
+      
+      Message m5 = sess.createMessage();
+      m5.setStringProperty("beatle", "jesus");
+      
+      MessageProducer prod = sess.createProducer(topic);
+      
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
+      prod.send(m4);
+      prod.send(m5);
+      
+      Message r1 = cons1.receive(500);
+      assertNotNull(r1);
+      Message n = cons1.receive(500);
+      assertNull(n);
+      
+      Message r2 = cons2.receive(500);
+      assertNotNull(r2);
+      n = cons2.receive(500);
+      assertNull(n);
+      
+      Message r3 = cons3.receive(500);
+      assertNotNull(r3);
+      n = cons3.receive(500);
+      assertNull(n);
+      
+      Message r4 = cons4.receive(500);
+      assertNotNull(r4);
+      n = cons4.receive(500);
+      assertNull(n);
+      
+      Message r5 = cons5.receive(500);
+      assertNotNull(r5);
+      n = cons5.receive(500);
+      assertNull(n);
+      
+      assertEquals("john", r1.getStringProperty("beatle"));
+      assertEquals("paul", r2.getStringProperty("beatle"));
+      assertEquals("george", r3.getStringProperty("beatle"));
+      assertEquals("ringo", r4.getStringProperty("beatle"));
+      assertEquals("jesus", r5.getStringProperty("beatle"));
+      
+      conn.close();
+            
    }
 
    // Package protected ---------------------------------------------
