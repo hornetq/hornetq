@@ -103,7 +103,7 @@ public class ServiceContainer
    private static final int ORACLE = 3;
    
    //FIXME - Configure this properly
-   private static final int DB = MYSQL;
+   private static final int DB = HSQL;
    
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
    public static ObjectName CLASS_LOADER_OBJECT_NAME;
