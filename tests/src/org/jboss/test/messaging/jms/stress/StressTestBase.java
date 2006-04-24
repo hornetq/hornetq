@@ -119,8 +119,6 @@ public class StressTestBase extends MessagingTestCase
       
       ServerManagement.stop();
       
-      log.info("Torn down");
-      
       super.tearDown();            
    }
    
@@ -143,7 +141,7 @@ public class StressTestBase extends MessagingTestCase
          if (runners[i].isFailed())
          {
             fail("Runner " + i + " failed");
-            log.info("runner failed");
+            log.error("runner failed");
          }
       } 
    }

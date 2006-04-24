@@ -74,7 +74,9 @@ public class MessagingXAResource implements XAResource
    public MessagingXAResource(ResourceManager rm, SessionState sessionState)
    { 
       this.rm = rm;
+      
       this.sessionState = sessionState;
+      
       this.connection = (ConnectionDelegate)(sessionState.getParent()).getDelegate();
    }
    
@@ -87,7 +89,9 @@ public class MessagingXAResource implements XAResource
 
    public int getTransactionTimeout() throws XAException
    {
-      return 0;
+      //Default to 10 mins
+      //TODO make configurable
+      return 600;
    }
 
    public boolean isSameRM(XAResource xaResource) throws XAException
@@ -108,6 +112,7 @@ public class MessagingXAResource implements XAResource
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
       if (trace) { log.trace(this + " commit " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
+      
       rm.commit(xid, onePhase, connection);
    }
 
@@ -120,7 +125,7 @@ public class MessagingXAResource implements XAResource
          switch (flags)
          {
             case TMSUSPEND :
-               unsetCurrentTransactionId(xid);
+               unsetCurrentTransactionId(xid);                             
                rm.suspendTx(xid);
                break;
             case TMFAIL :

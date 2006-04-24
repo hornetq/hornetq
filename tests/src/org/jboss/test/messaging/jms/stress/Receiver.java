@@ -185,6 +185,8 @@ public class Receiver extends Runner implements MessageListener
              
             prodName = m.getStringProperty("PROD_NAME");
             msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+            
+            //log.info("got " + prodName + ":" + msgCount);
                    
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)
@@ -201,7 +203,7 @@ public class Receiver extends Runner implements MessageListener
             {
                if (prevCount.intValue() != msgCount.intValue() - 1)
                {
-                  log.error("Message out of sequence");
+                  log.error("Message out of sequence for " + prodName + ", expected:" + (prevCount.intValue() + 1) + " got " + msgCount);
                   failed = true;
                   processingDone();
                   return;

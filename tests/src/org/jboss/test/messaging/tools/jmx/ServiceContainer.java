@@ -103,7 +103,7 @@ public class ServiceContainer
    private static final int ORACLE = 3;
    
    //FIXME - Configure this properly
-   private static final int DB = HSQL;
+   private static final int DB = MYSQL;
    
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
    public static ObjectName CLASS_LOADER_OBJECT_NAME;
@@ -821,6 +821,7 @@ public class ServiceContainer
             mcf.setConnectionURL("jdbc:mysql://localhost:3306/messaging");
             mcf.setDriverClass("com.mysql.jdbc.Driver");
             mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
+            mcf.setUserName("root");
             break;
          }
          case (ORACLE) :

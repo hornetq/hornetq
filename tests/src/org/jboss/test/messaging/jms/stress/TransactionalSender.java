@@ -74,7 +74,6 @@ public class TransactionalSender extends Sender
                m.setStringProperty("PROD_NAME", prodName);
                m.setIntProperty("MSG_NUMBER", outerCount * commitSize + innerCount);   
                prod.send(m);
-             //  log.info("sent: " + prodName + ":" + count +" id:" + m.getJMSMessageID());
             }
             sess.commit();
             for (int innerCount = 0; innerCount < rollbackSize; innerCount++)

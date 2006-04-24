@@ -87,7 +87,6 @@ public class Transactional2PCSender extends Sender
                m.setStringProperty("PROD_NAME", prodName);
                m.setIntProperty("MSG_NUMBER", outerCount * commitSize + innerCount);   
                prod.send(m);
-           //    log.info("sent: " + prodName + ":" + count +" id:" + m.getJMSMessageID());
             }
             if (commitSize > 0)
             {
