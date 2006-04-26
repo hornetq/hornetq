@@ -78,7 +78,8 @@
    </target>
 
    <target name="jar" depends="compile">
-      <!-- TODO troubles getting the deployment descriptors working correctly 
+      <!-- TODO: uncomment this when http://jira.jboss.org/jira/browse/JBMESSAGING-351 is done -->
+      <!--
       <copy todir="./output/classes/META-INF" filtering="true">
          <fileset dir="./etc/META-INF" includes="*"/>
          <filterset>
