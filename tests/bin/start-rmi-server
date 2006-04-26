@@ -54,6 +54,7 @@ $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../src/resources/mysql-connector-java-3.1.12-bin.jar${SEP}\
 $reldir/../../src/resources/ojdbc14.jar${SEP}\
+$reldir/../../src/resources/postgresql-8.1-405.jdbc3.jar${SEP}\
 ${REMOTING_LIB}${SEP}\
 ${SERIALIZATION_LIB}${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\

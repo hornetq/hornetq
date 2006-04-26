@@ -101,6 +101,7 @@ public class ServiceContainer
    private static final int HSQL = 1;
    private static final int MYSQL = 2;
    private static final int ORACLE = 3;
+   private static final int POSTGRESQL = 4;
    
    //FIXME - Configure this properly
    private static final int DB = HSQL;
@@ -830,6 +831,15 @@ public class ServiceContainer
             mcf.setDriverClass("oracle.jdbc.driver.OracleDriver");
             mcf.setUserName("messaging");
             mcf.setPassword("messaging");
+            mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
+            break;
+         }
+         case (POSTGRESQL) :
+         {
+            mcf.setConnectionURL("jdbc:postgresql://localhost:5432/jboss");
+            mcf.setDriverClass("org.postgresql.Driver");
+            mcf.setUserName("jboss");
+            mcf.setPassword("jboss");
             mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
             break;
          }
