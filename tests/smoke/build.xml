@@ -5,7 +5,7 @@
 <project default="smoke-all" name="Messaging Smoke Test">
 
    <property environment="ENV"/>
-   <property file="./last-run.properties"/>
+   <property file="./output/last-run.properties"/>
    <property file="./smoke.properties"/>
    <property name="sleep.interval" value="60"/>
    <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
@@ -98,7 +98,7 @@
    <target name="write-current-jboss-home">
       <path id="crt.jboss.home"><pathelement location="${jboss.home}"/></path>
       <pathconvert targetos="unix" property="crt.jboss.home.tostring" refid="crt.jboss.home"/>
-      <echo message="jboss.home=${crt.jboss.home.tostring}" file="./last-run.properties"/>
+      <echo message="jboss.home=${crt.jboss.home.tostring}" file="./output/last-run.properties"/>
    </target>
 
    <target name="ping-jms-server">
@@ -213,6 +213,9 @@
          <property name="jboss.configuration.name" value="${jboss.configuration.name}"/>
       </ant>
       <antcall target="display-warnings-and-errors"/>
+      <!-- record successful run -->
+      <echo message="JBOSS_HOME=${jboss.home} INSTALLATION_TYPE=${release.admin.target} SAR_NAME=${messaging.sar.name} EXAMPLE_NAME=${example.name}${line.separator}"
+            file="./output/smoke.log" append="yes"/>
    </target>
 
    <target name="stop" description="Stops the jboss instance">
@@ -249,11 +252,32 @@
       </java>
    </target>
 
-   <target name="clean">
+   <target name="generate-smoke-report">
+      <java classname="org.jboss.test.messaging.tools.ant.GenerateSmokeReport">
+         <arg value="-inputfile"/>
+         <arg value="./output/smoke.log"/>
+         <arg value="-outputdir"/>
+         <arg value="./output"/>
+         <arg value="-basename"/>
+         <arg value="smoke-test-report"/>
+         <arg value="-installerdir"/>
+         <arg value="C:\work\jnlp"/>
+         <classpath>
+            <pathelement location="../output/classes"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="clean-jboss-config">
       <fail unless="jboss.home" message="jboss.home property not set!"/>
       <delete dir="${jboss.home}/server/messaging-smoke-test" quiet="false" failonerror="true"/>
       <delete dir="../../output/lib/jboss-messaging-client.jar" quiet="false" failonerror="true"/>
-      <delete file="./last-run.properties"/>
+      <delete file="./output/last-run.properties" quiet="true"/>
+   </target>
+
+   <target name="clean">
+      <delete dir="./output"/>
+      <antcall target="clean-jboss-config"/>
    </target>
 
    <target name="print-classpath">
@@ -331,23 +355,26 @@
       <antcall target="stop"/>
       <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
       <antcall target="display-warnings-and-errors"/>
-      <antcall target="clean"/>
+      <antcall target="clean-jboss-config"/>
 
    </target>
 
    <target name="smoke-all">
 
+      <mkdir dir="./output"/>
+      <delete file="./output/smoke.log" quiet="true"/>
+
       <antcall target="build-deployment-archives-from-scratch"/>
 
       <!--
-      NOT SUPPORTED
+      4.0.0 NOT SUPPORTED
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss400.home}"/>
       </antcall>
       -->
 
       <!--
-      NOT SUPPORTED
+      4.0.1 NOT SUPPORTED
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401.home}"/>
       </antcall>
@@ -366,8 +393,16 @@
       </antcall>
 
       <antcall target="smoke">
+         <param name="jboss.home" value="${jboss403-installer.home}"/>
+      </antcall>
+
+      <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <!-- <param name="run.ejb3mdb.example" value="true"/> -->
+      </antcall>
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
       </antcall>
 
       <antcall target="smoke">
@@ -378,12 +413,7 @@
       </antcall>
 
       <antcall target="smoke">
-         <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
-      </antcall>
-
-      <antcall target="smoke">
          <param name="jboss.home" value="${jboss404RC1.home}"/>
-
       </antcall>
 
       <antcall target="smoke">
@@ -413,9 +443,12 @@
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
          <param name="messaging.sar.name" value="jboss-messaging.sar"/>
          <param name="replace.remoting" value="true"/>
-      </antcall>                                                             
+      </antcall>
+
+      <antcall target="generate-smoke-report"/>
 
    </target>
+
 
 </project>
 
