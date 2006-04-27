@@ -182,18 +182,18 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       byte version;
       if (load instanceof MessagingMarshallable)
       {
-         //We need to write the version for the marshallable
+         // we need to write the version for the marshallable
          version = ((MessagingMarshallable)load).getVersion();
       }
       else
       {
-         //This is some kind of remoting internal invocation, we still write a version
-         //but it is the version of the client code not the connection
-         //(since we are not associated to any connection)
+         // this is some kind of remoting internal invocation, we still write a version but it is
+         // the version of the client code not the connection (since we are not associated to any
+         // connection)
          version = Version.instance().getProviderIncrementingVersion();
       }
       
-      //The first byte written for any request/response is the version
+      // the first byte written for any request/response is the version
       oos.writeByte(version);         
    }
    
@@ -438,16 +438,16 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          }
          else if (res instanceof MessageProxy)
          {
-            //Return value from getMessageNow
+            // return value from getMessageNow
             oos.write(MESSAGE_RESPONSE);
             
-            MessageProxy del = (MessageProxy)res;
+            MessageProxy mp = (MessageProxy)res;
             
-            oos.writeByte(del.getMessage().getType());
+            oos.writeByte(mp.getMessage().getType());
             
-            oos.writeInt(del.getDeliveryCount());
+            oos.writeInt(mp.getDeliveryCount());
             
-            del.getMessage().writeExternal(oos);
+            mp.getMessage().writeExternal(oos);
             
             oos.flush();
             

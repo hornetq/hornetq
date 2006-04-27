@@ -770,10 +770,10 @@ public class MessageCallbackHandler
       {      
          try
          {
-            //We always try and return the message immediately, if available.
-            //This prevents an extra network call to deliver the message.
-            //If the message is not available, the consumer will stay active and
-            //the message will delivered asynchronously (pushed) (that is what the boolean param is for)
+            // We always try and return the message immediately, if available. This prevents an
+            // extra network call to deliver the message. If the message is not available,
+            // the consumer will stay active and the message will delivered asynchronously (pushed)
+            // (that is what the boolean param is for)
             
             if (trace) { log.trace("Activation runnable running, getting message now"); }
             
@@ -793,8 +793,8 @@ public class MessageCallbackHandler
             finally
             {
                activationCount--;
-               //closing is volatile so we don't have to do the check inside the synchronized (mainLock) {} block
-               //which should aid concurrency
+               // closing is volatile so we don't have to do the check inside the synchronized
+               // (mainLock) {} block which should aid concurrency
                if (closing)
                {
                   synchronized (mainLock)
