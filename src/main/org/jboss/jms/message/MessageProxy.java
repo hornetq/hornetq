@@ -424,8 +424,8 @@ public class MessageProxy implements Message, Serializable
    {
       if ((isSent() || isReceived()))
       {
-         //A header value is to be changed - we must make a shallow copy of the message
-         //This basically only copies the headers
+         // A header value is to be changed - we must make a shallow copy of the message.
+         // This basically only copies the headers
          copyMessage();
       }
    }
@@ -491,9 +491,10 @@ public class MessageProxy implements Message, Serializable
    {
       if (isSent())
       {
-         //The message has been sent - make a copy of the message to avoid changing the sent messages
-         //payload
+         // The message has been sent - make a copy of the message to avoid changing the sent
+         // messages payload
          copyMessage();
+
          if (!bodyCopied)
          {
             message.copyPayload(message.getPayload());
@@ -502,7 +503,8 @@ public class MessageProxy implements Message, Serializable
       }
       else if (isReceived())
       {
-         //Do nothing - any attempt to change the payload of the message should throw an exception (readonly)
+         // Do nothing - any attempt to change the payload of the message should throw an exception
+         // (readonly)
       }
    }
 

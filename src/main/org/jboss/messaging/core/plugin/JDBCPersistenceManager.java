@@ -1609,12 +1609,12 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          try
          {            
-            //Get lock on message
+            // Get lock on message
             LockMap.instance.obtainLock(m);
                                     
             psReference = conn.prepareStatement(insertMessageRef);
             
-            //Add the reference
+            // Add the reference
             addReference(channelID, ref, psReference, true);
             
             int rows = psReference.executeUpdate();
@@ -1629,7 +1629,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                            
             if (m.getPersistentChannelCount() == 1)
             {
-               //First time so persist the message
+               // First time so persist the message
                psMessage = conn.prepareStatement(insertMessage);
                
                storeMessage(m, psMessage);        
@@ -3930,7 +3930,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected void storeMessage(Message m, PreparedStatement ps) throws Exception
    {      
       // physically insert the row in the database
-      //First set the fields from org.jboss.messaging.core.Routable
+      // first set the fields from org.jboss.messaging.core.Routable
       ps.setLong(1, m.getMessageID());
       ps.setString(2, m.isReliable() ? "Y" : "N");
       ps.setLong(3, m.getExpiration());
@@ -3947,7 +3947,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          ps.setNull(6, Types.LONGVARBINARY);
       }
       
-      //Now set the fields from org.jboss.messaging.core.Message
+      // now set the fields from org.jboss.messaging.core.Message
       
       byte[] payload = m.getPayloadAsByteArray();
       if (payload != null)

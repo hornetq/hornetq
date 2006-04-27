@@ -142,10 +142,10 @@ public class SecurityAspect
       Destination dest = m.getJMSDestination();
 
       SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
-      ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
-      ServerConnectionEndpoint conn = sess.getConnectionEndpoint();
+      ServerSessionEndpoint se = (ServerSessionEndpoint)del.getEndpoint();
+      ServerConnectionEndpoint ce = se.getConnectionEndpoint();
                         
-      check(dest, CheckType.WRITE, conn);
+      check(dest, CheckType.WRITE, ce);
             
       return invocation.invokeNext();
    }   

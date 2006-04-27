@@ -46,6 +46,7 @@ import org.jboss.serial.io.JBossObjectOutputStream;
 public abstract class MessageSupport extends RoutableSupport implements Message
 {
    // Constants -----------------------------------------------------
+   
    private static final long serialVersionUID = -4474943687659785336L;
    
    // Attributes ----------------------------------------------------
@@ -159,7 +160,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       {
          try
          {
-            //Convert the payload into a byte array and store internally
+            // convert the payload into a byte array and store internally
             final int BUFFER_SIZE = 4096;
             JBossObjectOutputStream oos = null;
             try
@@ -198,7 +199,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       }
       else if (payloadAsByteArray != null)
       {
-         //deserialize the payload from byte[]
+         // deserialize the payload from byte[]
          JBossObjectInputStream ois = null;
          try
          {
@@ -317,7 +318,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       
       if (length == 0)
       {
-         //No payload
+         // no payload
          payloadAsByteArray = null;
       }
       else

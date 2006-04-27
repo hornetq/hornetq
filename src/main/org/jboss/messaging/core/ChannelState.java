@@ -203,7 +203,7 @@ public class ChannelState implements State
                
       if (ref.isReliable() && recoverable)
       {
-         //Reliable message in a recoverable state - also add to db
+         // Reliable message in a recoverable state - also add to db
          if (trace) { log.trace("adding " + ref + " to database non-transactionally"); }
          
          pm.addReference(channel.getChannelID(), ref, null);            

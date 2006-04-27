@@ -69,13 +69,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
 
    private boolean trace = log.isTraceEnabled();
    
-   private transient ByteArrayOutputStream ostream;
+   private transient ByteArrayOutputStream baos;
+   private transient DataOutputStream dos;
 
-   private transient DataOutputStream p;
-
-   private transient ByteArrayInputStream istream;
-
-   private transient DataInputStream m;
+   private transient ByteArrayInputStream bais;
+   private transient DataInputStream dis;
    
    // Constructor ---------------------------------------------------
 
@@ -92,36 +90,35 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    public JBossBytesMessage(long messageID)
    {
       super(messageID);
-      ostream = new ByteArrayOutputStream();
-      p = new DataOutputStream(ostream);
+      baos = new ByteArrayOutputStream();
+      dos = new DataOutputStream(baos);
    }
-   
 
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
    public JBossBytesMessage(long messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         byte priority,
-         Map coreHeaders,
-         byte[] payloadAsByteArray,         
-         int persistentChannelCount,
-         String jmsType,
-         String correlationID,
-         byte[] correlationIDBytes,
-         JBossDestination destination,
-         JBossDestination replyTo,
-         HashMap jmsProperties)
+                            boolean reliable,
+                            long expiration,
+                            long timestamp,
+                            byte priority,
+                            Map coreHeaders,
+                            byte[] payloadAsByteArray,
+                            int persistentChannelCount,
+                            String jmsType,
+                            String correlationID,
+                            byte[] correlationIDBytes,
+                            JBossDestination destination,
+                            JBossDestination replyTo,
+                            HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
             persistentChannelCount,
             jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
       
-      ostream = new ByteArrayOutputStream();
-      p = new DataOutputStream(ostream);
+      baos = new ByteArrayOutputStream();
+      dos = new DataOutputStream(baos);
    }
 
    /**
@@ -144,8 +141,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       
       foreign.reset();
       
-      ostream = new ByteArrayOutputStream();
-      p = new DataOutputStream(ostream);
+      baos = new ByteArrayOutputStream();
+      dos = new DataOutputStream(baos);
                      
       byte[] buffer = new byte[1024];
       int n = foreign.readBytes(buffer);
@@ -154,7 +151,485 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          writeBytes(buffer, 0, n);
          n = foreign.readBytes(buffer);
       }
-                             
+   }
+
+   // BytesMessage implementation -----------------------------------
+
+   public boolean readBoolean() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readBoolean();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public byte readByte() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readByte();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public int readUnsignedByte() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readUnsignedByte();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public short readShort() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readShort();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public int readUnsignedShort() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readUnsignedShort();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public char readChar() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readChar();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public int readInt() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readInt();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public long readLong() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readLong();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public float readFloat() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readFloat();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public double readDouble() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readDouble();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public String readUTF() throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.readUTF();
+      }
+      catch (EOFException e)
+      {
+         throw new MessageEOFException("");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public int readBytes(byte[] value) throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.read(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public int readBytes(byte[] value, int length) throws JMSException
+   {
+      checkRead();
+      try
+      {
+         return dis.read(value, 0, length);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeBoolean(boolean value) throws JMSException
+   {
+      try
+      {
+         dos.writeBoolean(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeByte(byte value) throws JMSException
+   {
+      try
+      {
+         dos.writeByte(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeShort(short value) throws JMSException
+   {
+      try
+      {
+         dos.writeShort(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeChar(char value) throws JMSException
+   {
+      try
+      {
+         dos.writeChar(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeInt(int value) throws JMSException
+   {
+      try
+      {
+         dos.writeInt(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeLong(long value) throws JMSException
+   {
+      try
+      {
+         dos.writeLong(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeFloat(float value) throws JMSException
+   {
+      try
+      {
+         dos.writeFloat(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeDouble(double value) throws JMSException
+   {
+      try
+      {
+         dos.writeDouble(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeUTF(String value) throws JMSException
+   {
+      try
+      {
+         dos.writeUTF(value);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeBytes(byte[] value) throws JMSException
+   {
+      try
+      {
+         dos.write(value, 0, value.length);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeBytes(byte[] value, int offset, int length) throws JMSException
+   {
+      try
+      {
+         dos.write(value, offset, length);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void writeObject(Object value) throws JMSException
+   {
+      try
+      {
+         if (value == null)
+         {
+            throw new NullPointerException("Attempt to write a new value");
+         }
+         if (value instanceof String)
+         {
+            //p.writeChars((String) value);
+            dos.writeUTF((String) value);
+         }
+         else if (value instanceof Boolean)
+         {
+            dos.writeBoolean(((Boolean) value).booleanValue());
+         }
+         else if (value instanceof Byte)
+         {
+            dos.writeByte(((Byte) value).byteValue());
+         }
+         else if (value instanceof Short)
+         {
+            dos.writeShort(((Short) value).shortValue());
+         }
+         else if (value instanceof Integer)
+         {
+            dos.writeInt(((Integer) value).intValue());
+         }
+         else if (value instanceof Long)
+         {
+            dos.writeLong(((Long) value).longValue());
+         }
+         else if (value instanceof Float)
+         {
+            dos.writeFloat(((Float) value).floatValue());
+         }
+         else if (value instanceof Double)
+         {
+            dos.writeDouble(((Double) value).doubleValue());
+         }
+         else if (value instanceof byte[])
+         {
+            dos.write((byte[]) value, 0, ((byte[]) value).length);
+         }
+         else
+         {
+            throw new MessageFormatException("Invalid object for properties");
+         }
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   public void reset() throws JMSException
+   {
+      if (trace) log.trace("reset()");
+      try
+      {
+         if (baos != null)
+         {
+            if (trace)  { log.trace("Flushing ostream to array"); }
+
+            dos.flush();
+            this.setPayload(baos.toByteArray());
+            this.clearPayloadAsByteArray();
+
+            if (trace) { log.trace("Array is now: " + this.getPayload()); }
+
+            baos.close();
+         }
+         baos = null;
+         bais = null;
+         dis = null;
+         dos = null;
+      }
+      catch (IOException e)
+      {
+         throw new MessagingJMSException("IOException", e);
+      }
+   }
+
+   // JBossMessage overrides ----------------------------------------
+
+   public void doAfterSend() throws JMSException
+   {
+      reset();
+   }
+
+   public void clearBody() throws JMSException
+   {
+      try
+      {
+         if (baos != null)
+         {
+            baos.close();
+         }
+         else
+         {
+            // REVIEW: istream is only initialised on a read.
+            // It looks like it is possible to acknowledge
+            // a message without reading it? Guard against
+            // an NPE in this case.
+            if (bais != null)
+            {
+               bais.close();
+            }
+         }
+      }
+      catch (IOException e)
+      {
+         //don't throw an exception
+      }
+
+      baos = new ByteArrayOutputStream();
+      dos = new DataOutputStream(baos);
+      this.setPayload(null);
+      this.clearPayloadAsByteArray();
+      bais = null;
+      dis = null;
+
+      super.clearBody();
+   }
+
+   public long getBodyLength() throws JMSException
+   {
+      checkRead();
+      return ((byte[])this.getPayload()).length;
    }
 
    // Public --------------------------------------------------------
@@ -187,487 +662,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }     
    }
    
-
-   // BytesMessage implementation -----------------------------------
-
-   public boolean readBoolean() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readBoolean();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public byte readByte() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readByte();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public int readUnsignedByte() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readUnsignedByte();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public short readShort() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readShort();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public int readUnsignedShort() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readUnsignedShort();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public char readChar() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readChar();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public int readInt() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readInt();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public long readLong() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readLong();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public float readFloat() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readFloat();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public double readDouble() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readDouble();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public String readUTF() throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.readUTF();
-      }
-      catch (EOFException e)
-      {
-         throw new MessageEOFException("");
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public int readBytes(byte[] value) throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.read(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public int readBytes(byte[] value, int length) throws JMSException
-   {
-      checkRead();
-      try
-      {
-         return m.read(value, 0, length);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeBoolean(boolean value) throws JMSException
-   {
-      try
-      {
-         p.writeBoolean(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeByte(byte value) throws JMSException
-   {
-      try
-      {
-         p.writeByte(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeShort(short value) throws JMSException
-   {
-      try
-      {
-         p.writeShort(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeChar(char value) throws JMSException
-   {
-      try
-      {
-         p.writeChar(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeInt(int value) throws JMSException
-   {
-      try
-      {
-         p.writeInt(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeLong(long value) throws JMSException
-   {
-      try
-      {
-         p.writeLong(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeFloat(float value) throws JMSException
-   {
-      try
-      {
-         p.writeFloat(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeDouble(double value) throws JMSException
-   {
-      try
-      {
-         p.writeDouble(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeUTF(String value) throws JMSException
-   {
-      try
-      {
-         p.writeUTF(value);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeBytes(byte[] value) throws JMSException
-   {
-      try
-      {
-         p.write(value, 0, value.length);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeBytes(byte[] value, int offset, int length) throws JMSException
-   {
-      try
-      {
-         p.write(value, offset, length);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   public void writeObject(Object value) throws JMSException
-   {
-      try
-      {
-         if (value == null)
-         {
-            throw new NullPointerException("Attempt to write a new value");
-         }
-         if (value instanceof String)
-         {
-            //p.writeChars((String) value);
-            p.writeUTF((String) value);
-         }
-         else if (value instanceof Boolean)
-         {
-            p.writeBoolean(((Boolean) value).booleanValue());
-         }
-         else if (value instanceof Byte)
-         {
-            p.writeByte(((Byte) value).byteValue());
-         }
-         else if (value instanceof Short)
-         {
-            p.writeShort(((Short) value).shortValue());
-         }
-         else if (value instanceof Integer)
-         {
-            p.writeInt(((Integer) value).intValue());
-         }
-         else if (value instanceof Long)
-         {
-            p.writeLong(((Long) value).longValue());
-         }
-         else if (value instanceof Float)
-         {
-            p.writeFloat(((Float) value).floatValue());
-         }
-         else if (value instanceof Double)
-         {
-            p.writeDouble(((Double) value).doubleValue());
-         }
-         else if (value instanceof byte[])
-         {
-            p.write((byte[]) value, 0, ((byte[]) value).length);
-         }
-         else
-         {
-            throw new MessageFormatException("Invalid object for properties");
-         }
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-
-   }
-
-   public void reset() throws JMSException
-   {
-      if (trace) log.trace("reset()");
-      try
-      {
-         if (ostream != null)
-         {
-            if (trace)  { log.trace("Flushing ostream to array"); }
-
-            p.flush();
-            this.setPayload(ostream.toByteArray());
-            this.clearPayloadAsByteArray();
-
-            if (trace) { log.trace("Array is now: " + this.getPayload()); }
-
-            ostream.close();
-         }
-         ostream = null;
-         istream = null;
-         m = null;
-         p = null;
-      }
-      catch (IOException e)
-      {
-         throw new MessagingJMSException("IOException", e);
-      }
-   }
-
-   // JBossMessage overrides ----------------------------------------
-   
-   public void doAfterSend() throws JMSException
-   {
-      reset();
-   }
-
-   public void clearBody() throws JMSException
-   {
-      try
-      {
-         if (ostream != null)
-         {
-            ostream.close();
-         }
-         else
-         {
-            // REVIEW: istream is only initialised on a read.
-            // It looks like it is possible to acknowledge
-            // a message without reading it? Guard against
-            // an NPE in this case.
-            if (istream != null)
-            {
-               istream.close();
-            }
-         }
-      }
-      catch (IOException e)
-      {
-         //don't throw an exception
-      }
-
-      ostream = new ByteArrayOutputStream();
-      p = new DataOutputStream(ostream);
-      this.setPayload(null);
-      this.clearPayloadAsByteArray();
-      istream = null;
-      m = null;
-      
-      super.clearBody();
-   }
-   
-   public long getBodyLength() throws JMSException
-   {
-      checkRead();
-      return ((byte[])this.getPayload()).length;
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -696,11 +690,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    {   
       // We have just received/reset() the message, and the client is trying to
       // read it
-      if (istream == null || m == null)
+      if (bais == null || dis == null)
       {
          if (trace) {  log.trace("internalArray:" + this.getPayload()); }
-         istream = new ByteArrayInputStream((byte[])this.getPayload());
-         m = new DataInputStream(istream);
+         bais = new ByteArrayInputStream((byte[])this.getPayload());
+         dis = new DataInputStream(bais);
       }
    }
 

@@ -367,7 +367,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void closing() throws JMSException
    {
-      //Currently does nothing
+      // currently does nothing
       if (trace) log.trace("closing (noop)");
    }
    

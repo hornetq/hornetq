@@ -337,7 +337,7 @@ public abstract class ChannelSupport implements Channel
          }
          else
          {                     
-            //Each channel has it's own copy of the reference
+            // Each channel has it's own copy of the reference
             ref = ((MessageReference)r).copy();
          }
       

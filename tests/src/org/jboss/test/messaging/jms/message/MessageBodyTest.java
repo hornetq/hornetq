@@ -133,23 +133,16 @@ public class MessageBodyTest extends MessagingTestCase
       sm.setStringProperty("COM_SUN_JMS_TESTNAME", 
                                     "xMessageEOFExceptionQTestforStreamMessage");
       queueProducer.send(sm);
-      
-     
-      
-      
+
       StreamMessage received = (StreamMessage)queueConsumer.receive(3000);
       received.readByte();
    }
    
-   
-   
-
    public void testBytesMessage() throws Exception
    {
       BytesMessage m = queueProducerSession.createBytesMessage();
 
-
-      //Some arbitrary values
+      // some arbitrary values
       boolean myBool = true;
       byte myByte = -111;
       short myShort = 15321;
@@ -160,8 +153,7 @@ public class MessageBodyTest extends MessagingTestCase
       String myString = "abcdef&^*&!^ghijkl\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
       log.trace("String is length:" + myString.length());
       char myChar = 'q';
-      byte[] myBytes = new byte[]
-      {-23, 114, -126, -12, 74, 87};
+      byte[] myBytes = new byte[] {-23, 114, -126, -12, 74, 87};
 
       m.writeBoolean(myBool);
       m.writeByte(myByte);
@@ -193,9 +185,10 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageFormatException e)
       {
+         // OK
       }
 
-      //Reading should not be possible when message is read-write
+      // Reading should not be possible when message is read-write
       try
       {
          m.readBoolean();
@@ -203,6 +196,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -211,6 +205,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -219,6 +214,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -227,6 +223,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -235,6 +232,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -243,6 +241,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -251,6 +250,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -259,6 +259,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -267,6 +268,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -275,6 +277,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -284,6 +287,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -293,6 +297,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
       try
       {
@@ -301,11 +306,12 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotReadableException e)
       {
+         // OK
       }
 
       queueProducer.send(queue, m);
 
-      BytesMessage m2 = (BytesMessage) queueConsumer.receive(2000);
+      BytesMessage m2 = (BytesMessage)queueConsumer.receive(2000);
 
       assertNotNull(m2);
 
@@ -351,7 +357,7 @@ public class MessageBodyTest extends MessagingTestCase
       ret = m2.readBytes(bytes);
       assertEquals(-1, ret);
 
-      //Try and read past the end of the stream
+      // Try and read past the end of the stream
       try
       {
          m2.readBoolean();
@@ -359,6 +365,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -368,6 +375,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -377,6 +385,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -386,6 +395,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -395,6 +405,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -404,6 +415,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -413,6 +425,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -422,6 +435,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -431,6 +445,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -440,6 +455,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
       try
@@ -449,9 +465,10 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageEOFException e)
       {
+         // OK
       }
 
-      //Message should not be writable in read-only mode
+      // Message should not be writable in read-only mode
       try
       {
          m2.writeBoolean(myBool);
@@ -459,6 +476,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
       try
       {
@@ -467,6 +485,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
       try
       {
@@ -475,6 +494,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
       try
       {
@@ -483,6 +503,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
 
       try
@@ -492,6 +513,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
       try
       {
@@ -500,6 +522,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
       try
       {
@@ -508,6 +531,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
       try
       {
@@ -516,6 +540,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
       try
       {
@@ -524,6 +549,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
 
       try
@@ -533,6 +559,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
 
       try
@@ -542,6 +569,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (javax.jms.MessageNotWriteableException e)
       {
+         // OK
       }
 
       long bodyLength = m2.getBodyLength();
@@ -550,7 +578,7 @@ public class MessageBodyTest extends MessagingTestCase
 
       m2.reset();
 
-      //test the unsigned reads
+      // test the unsigned reads
 
       m2.readBoolean();
       int unsignedByte = m2.readUnsignedByte();
@@ -570,6 +598,7 @@ public class MessageBodyTest extends MessagingTestCase
       }
       catch (MessageNotReadableException e)
       {
+         // OK
       }
 
       m2.reset();

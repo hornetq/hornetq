@@ -23,7 +23,6 @@ package org.jboss.jms.server.remoting;
 
 import java.io.Serializable;
 
-
 /**
  * 
  * A MessagingMarshallableSupport.
@@ -35,25 +34,32 @@ import java.io.Serializable;
  */
 public class MessagingMarshallable implements Serializable
 {
-   /** The serialVersionUID */
+   // Constants -----------------------------------------------------
+
    private static final long serialVersionUID = -575513130283539747L;
 
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    protected byte version;
-   
    protected Object load;
-   
+
+   // Constructors --------------------------------------------------
+
    public MessagingMarshallable(byte version, Object load)
    {
       this.version = version;
-      
       this.load = load;
    }
-   
+
+   // Public --------------------------------------------------------
+
    public Object getLoad()
    {
       return load;
    }
-   
+
    public byte getVersion()
    {
       return version;
@@ -63,5 +69,13 @@ public class MessagingMarshallable implements Serializable
    {
       return "MessagingMarshallable[" + version + ", " + load + "]";
    }
-   
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

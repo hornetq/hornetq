@@ -27,7 +27,6 @@ import javax.jms.Session;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.logging.Logger;

@@ -177,7 +177,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
    
    protected static void internalWriteObject(ObjectOutput out, Serializable value, boolean containerTypes) throws IOException
    {
-      //We cheat with some often used types - more efficient than using object serialization
+      // We cheat with some often used types - more efficient than using object serialization
       if (value == null)
       {
          out.writeByte(NULL);
@@ -241,7 +241,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
       }
       else
       {
-         //Default to standard serialization
+         // Default to standard serialization
          out.writeByte(OBJECT);
          out.writeObject(value);
       }

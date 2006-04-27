@@ -756,11 +756,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       try
       {         
-         //We must reference the message *before* we send it the destination to be handled
-         //This is so we can guarantee that the message doesn't disappear from the store
-         //before the handling is complete.
-         //Each channel then takes copies of the reference if they decide to maintain it
-         //internally
+         // We must reference the message *before* we send it the destination to be handled. This is
+         // so we can guarantee that the message doesn't disappear from the store before the
+         // handling is complete. Each channel then takes copies of the reference if they decide to
+         // maintain it internally
          
          MessageReference ref = this.serverPeer.getMessageStoreDelegate().reference(m);
          

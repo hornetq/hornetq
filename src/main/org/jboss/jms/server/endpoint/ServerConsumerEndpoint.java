@@ -205,7 +205,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          // fielded by the same underlying Message instance. This allows us to avoid expensive
          // copying of messages
 
-         MessageProxy md = JBossMessage.createThinDelegate(message, ref.getDeliveryCount());
+         MessageProxy mp = JBossMessage.createThinDelegate(message, ref.getDeliveryCount());
 
          if (!grabbing)
          {
@@ -216,7 +216,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             {
                if (trace) { log.trace("queueing message " + message + " for delivery to client"); }
                threadPoolDelegate.execute(
-                  new DeliveryRunnable(md, id, sessionEndpoint.getConnectionEndpoint(), trace));
+                  new DeliveryRunnable(mp, id, sessionEndpoint.getConnectionEndpoint(), trace));
             }
             catch (InterruptedException e)
             {
@@ -226,10 +226,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          else
          {
             // The message is being "grabbed" and returned for receiveNoWait semantics
-            toGrab = md;
+            toGrab = mp;
          }
 
-         lastMessageIDDelivered = md.getMessage().getMessageID();
+         lastMessageIDDelivered = mp.getMessage().getMessageID();
 
          return delivery;
       }

@@ -168,7 +168,7 @@ public class ProducerAspect
 
       m.setJMSDestination(destination);
 
-      JBossMessage toSend;
+      JBossMessage messageToSend;
       boolean foreign = false;
 
       if (!(m instanceof MessageProxy))
@@ -183,38 +183,38 @@ public class ProducerAspect
          // create a matching JBossMessage Type from JMS Type
          if(m instanceof BytesMessage)
          {
-            toSend = new JBossBytesMessage((BytesMessage)m,0);
+            messageToSend = new JBossBytesMessage((BytesMessage)m,0);
          }
          else if(m instanceof MapMessage)
          {
-            toSend = new JBossMapMessage((MapMessage)m,0);
+            messageToSend = new JBossMapMessage((MapMessage)m,0);
          }
          else if(m instanceof ObjectMessage)
          {
-            toSend = new JBossObjectMessage((ObjectMessage)m,0);
+            messageToSend = new JBossObjectMessage((ObjectMessage)m,0);
          }
          else if(m instanceof StreamMessage)
          {
-            toSend = new JBossStreamMessage((StreamMessage)m,0);
+            messageToSend = new JBossStreamMessage((StreamMessage)m,0);
          }
          else if(m instanceof TextMessage)
          {
-            toSend = new JBossTextMessage((TextMessage)m,0);
+            messageToSend = new JBossTextMessage((TextMessage)m,0);
          }
          else
          {
-            toSend = new JBossMessage(m, 0);
+            messageToSend = new JBossMessage(m, 0);
          }
 
-         toSend.doAfterSend();
+         messageToSend.doAfterSend();
       }
       else
       {
          // get the actual message
-         MessageProxy del = (MessageProxy)m;
-         toSend = del.getMessage();
-         toSend.doAfterSend();
-         del.setSent();
+         MessageProxy proxy = (MessageProxy)m;
+         messageToSend = proxy.getMessage();
+         messageToSend.doAfterSend();
+         proxy.setSent();
       }
       
       // set the message ID
@@ -223,19 +223,20 @@ public class ProducerAspect
       
       long id = cState.getIdGenerator().getId();
       
-      toSend.setJMSMessageID(null);
-      toSend.setMessageId(id);
+      messageToSend.setJMSMessageID(null);
+      messageToSend.setMessageId(id);
 
       // now that we know the messageID, set it also on the foreign message, if is the case
       if (foreign)
       {
-         m.setJMSMessageID(toSend.getJMSMessageID());
+         m.setJMSMessageID(messageToSend.getJMSMessageID());
       }
       
       SessionState sState = getSessionState(invocation);
               
-      // we now invoke the send(Message) method on the connection
-      ((SessionDelegate)sState.getDelegate()).send(toSend);
+      // we now invoke the send(Message) method on the session, which will eventually be fielded
+      // by connection endpoint
+      ((SessionDelegate)sState.getDelegate()).send(messageToSend);
       
       return null;
    }

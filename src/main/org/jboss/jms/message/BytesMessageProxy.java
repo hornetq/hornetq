@@ -46,7 +46,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public long getBodyLength() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).getBodyLength();
    }
@@ -54,7 +56,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public boolean readBoolean() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readBoolean();
    }
@@ -62,7 +66,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public byte readByte() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readByte();
    }
@@ -70,7 +76,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public int readUnsignedByte() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readUnsignedByte();
    }
@@ -78,7 +86,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public short readShort() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readShort();
    }
@@ -86,7 +96,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public int readUnsignedShort() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readUnsignedShort();
    }
@@ -94,7 +106,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public char readChar() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readChar();
    }
@@ -102,7 +116,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public int readInt() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readInt();
    }
@@ -110,7 +126,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public long readLong() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readLong();
    }
@@ -118,7 +136,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public float readFloat() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readFloat();
    }
@@ -126,7 +146,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public double readDouble() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readDouble();
    }
@@ -134,7 +156,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public String readUTF() throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readUTF();
    }
@@ -142,7 +166,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public int readBytes(byte[] value) throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readBytes(value);
    }
@@ -150,7 +176,9 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
    public int readBytes(byte[] value, int length) throws JMSException
    {
       if (!bodyReadOnly)
+      {
          throw new MessageNotReadableException("The message body is writeonly");
+      }
       ((JBossBytesMessage)message).checkRead();
       return ((BytesMessage)message).readBytes(value, length);
    }
