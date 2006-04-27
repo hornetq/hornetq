@@ -46,7 +46,7 @@ import org.jboss.serial.io.JBossObjectOutputStream;
 public abstract class MessageSupport extends RoutableSupport implements Message
 {
    // Constants -----------------------------------------------------
-   
+
    private static final long serialVersionUID = -4474943687659785336L;
    
    // Attributes ----------------------------------------------------
@@ -189,7 +189,8 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    }
    
    /**
-    * Warning! Calling getPayload will cause the payload to be deserialized so should not be called on the server
+    * Warning! Calling getPayload will cause the payload to be deserialized so should not be called
+    *          on the server.
     */
    public Serializable getPayload()
    {
@@ -207,8 +208,8 @@ public abstract class MessageSupport extends RoutableSupport implements Message
             {
                ByteArrayInputStream bis = new ByteArrayInputStream(payloadAsByteArray);
                ois = new JBossObjectInputStream(bis);
-               payload = readPayloadExternal(ois, payloadAsByteArray.length);               
-            }            
+               payload = readPayloadExternal(ois, payloadAsByteArray.length);
+            }
             finally
             {
                if (ois != null)
@@ -349,6 +350,14 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       return internalReadObject(in);
    }
 
+   /**
+    * It makes sense to use this method only from within JBossBytesMessage (optimization). Using it
+    * from anywhere else will lead to corrupted data.
+    */
+   protected final void copyPayloadAsByteArrayToPayload()
+   {
+      payload = payloadAsByteArray;
+   }
 
    // Private -------------------------------------------------------
 

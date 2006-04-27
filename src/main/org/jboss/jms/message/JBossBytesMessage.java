@@ -29,8 +29,6 @@ import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -113,8 +111,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
                             HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            persistentChannelCount,
-            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
+            persistentChannelCount,jmsType, correlationID, correlationIDBytes, destination, replyTo,
             jmsProperties);
       
       baos = new ByteArrayOutputStream();
@@ -151,6 +148,18 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          writeBytes(buffer, 0, n);
          n = foreign.readBytes(buffer);
       }
+   }
+
+   // Externalizable override ---------------------------------------
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      super.readExternal(in);
+
+      // transfer the value read into payloadAsBytes by superclass to payload, since this is how
+      // BytesMessage instances keep it
+      copyPayloadAsByteArrayToPayload();
+      clearPayloadAsByteArray();
    }
 
    // BytesMessage implementation -----------------------------------
@@ -584,6 +593,17 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
    }
 
+   // MessageSupport overrides --------------------------------------
+
+   /**
+    * A JBossBytesMessage avoid double serialization by holding on its original payload, which is
+    * a byte[] to start with.
+    */
+   public byte[] getPayloadAsByteArray()
+   {
+      return (byte[])getPayload();
+   }
+
    // JBossMessage overrides ----------------------------------------
 
    public void doAfterSend() throws JMSException
@@ -619,7 +639,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       baos = new ByteArrayOutputStream();
       dos = new DataOutputStream(baos);
       this.setPayload(null);
-      this.clearPayloadAsByteArray();
       bais = null;
       dis = null;
 
@@ -652,12 +671,10 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       if (otherBytes == null)
       {
          this.setPayload(null);
-         this.clearPayloadAsByteArray();
       }
       else
       {
          this.setPayload(new byte[otherBytes.length]);
-         this.clearPayloadAsByteArray();
          System.arraycopy(otherBytes, 0, this.getPayload(), 0, otherBytes.length);
       }     
    }
@@ -665,19 +682,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
-   {
-      out.write((byte[])thePayload);
-   }
-
-   protected Serializable readPayloadExternal(ObjectInput in, int length)
-      throws IOException, ClassNotFoundException
-   {
-      byte[] payload = new byte[length];
-      in.readFully(payload);      
-      return payload;
-   }
 
    // Private -------------------------------------------------------
 
