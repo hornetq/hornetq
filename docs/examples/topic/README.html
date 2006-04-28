@@ -17,24 +17,22 @@ publisher sends a message to the topic. The example is considered
 successful
 if the topic subscriber receives the message.<br>
 <br>
-This example relies on access to a running JBoss Messaging instance.
-The JBoss Messaging instance must be deployed according to the
+This example relies on having access to a running JBoss Messaging
+instance.
+The JBoss Messaging instance must be installed and started according to
+the
 "Installation" paragraph from the release documentation.&nbsp; However,
 the example will automatically deploy its own topic, unless a topic
 with the same name is already deployed. <br>
 <br>
-<span style="font-style: italic;">The example was designed to work with
-a </span><span style="font-family: monospace; font-style: italic;">jboss-messaging-scoped.sar</span><span
- style="font-style: italic;">
-archive deployed under JBoss' </span><span
- style="font-family: monospace; font-style: italic;">default</span><span
- style="font-style: italic;">
-configuration. If you change any of these elements, please modify the
-example's</span><span
- style="font-family: monospace; font-style: italic;"> build.xml</span><span
- style="font-style: italic;">
-accordingly.</span><br>
-<br>
+This example also relies on having access to <span
+ style="font-family: monospace;">jboss-messaging-client.jar</span>
+archive that comes with the release bundle. If you run this example
+from
+an unzipped installation bundle, the example run script is correctly
+configured to find the client jar. Otherwise, you must modify example's
+<span style="font-family: monospace;">build.xml</span> accordingly.<br>
+<span style="font-style: italic;"></span><br>
 <h2>Running the example</h2>
 1. Set up the JBOSS_HOME environment variable to point to the JBoss
 instance you deployed JBoss Messaging into. For example, if you
@@ -42,21 +40,11 @@ deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.3
 then your JBOSS_HOME value should be <span
  style="font-family: monospace;">C:\</span><span
  style="font-family: monospace;">jboss-4.0.3SP1.</span><br>
-<span style="font-family: monospace;"><br>
-</span>Remember that the example's build script expects to find <span
- style="font-family: monospace;">jboss-messaging-scoped.sar</span> under<span
- style="font-family: monospace;"> $JBOSS_HOME/server/default/deploy</span>.
-If you use a deployment archive with a different name or a different
-JBoss
-configuration, please modify the example's <span
- style="font-family: monospace;">build.xml</span> accordingly.<br>
-<br>
-<span style="font-family: monospace;"><br>
-</span><br>
+<span style="font-family: monospace;"></span><br>
 2. Go to the example's home directory<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cd
-.. \examples\topic</span><br>
+...\examples\topic</span><br>
 </div>
 <br>
 3. Run the example:<br>
@@ -81,31 +69,46 @@ $ ant<br>
 Buildfile: build.xml<br>
       <br>
 identify:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] Running the topic example<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Running the TOPIC
+example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] The topic: testTopic<br>
       <br>
 sanity-check:<br>
       <br>
 init:<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\topic\output<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
       <br>
 compile:<br>
-&nbsp;&nbsp;&nbsp; [javac] Compiling 1 source file to
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
 C:\work\src\cvs\jboss-head\jms\docs\examples\topic\output<br>
       <br>
 run:<br>
-&nbsp;&nbsp;&nbsp; [unjar] Expanding:
-C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\default\deploy\jboss-messaging-scoped.sar
-into C:\work\src\cvs\jboss-head\jms\docs\examples<br>
-\topic\output<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Topic /topic/testTopic exists<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully published
 on the topic<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello!<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.0.0.Beta1 (1.0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] The example executed successfully<br>
+Messaging version 1.0.1 (1.0)<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
+SUCCESS!&nbsp;&nbsp; ###<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
       <br>
 BUILD SUCCESSFUL<br>
-Total time: 8 seconds<br>
+Total time: 4 seconds<br>
       <br>
       <br>
       </td>

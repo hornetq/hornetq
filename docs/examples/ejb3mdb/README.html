@@ -18,19 +18,35 @@ temporary destination created by the sender for this purpose. The
 example is considered&nbsp; successful if the sender receives the
 acknowledgment message.<br>
 <br>
-This example relies on access to a running JBoss Messaging instance. <span
- style="font-style: italic;"></span>The JBoss Messaging instance must
-be deployed according to the
+This example relies on having access to a running JBoss Messaging
+instance. <span style="font-style: italic;"></span>The JBoss Messaging
+instance must
+be installed and started according to the
 "Installation" paragraph from the release documentation.&nbsp; However,
 the example will automatically deploy its own queue, unless a queue
 with the same name is already deployed. <br>
 <br>
-The example was designed to work with
-a <span style="font-family: monospace;">jboss-messaging-scoped.sar</span>
-archive deployed under JBoss' <span style="font-family: monospace;">default</span>
-configuration. If you change any of these elements, please modify the
-example's<span style="font-family: monospace;"> build.xml</span>
-accordingly.<br>
+This example also relies on having access to <span
+ style="font-family: monospace;">jboss-messaging-client.jar</span>
+archive that comes with the release bundle. If you run this example
+from
+an unzipped installation bundle, the example run script is correctly
+configured to find the client jar. Otherwise, you must modify example's
+<span style="font-family: monospace;">build.xml</span>
+accordingly.&nbsp;<br>
+<br>
+<span style="font-style: italic;">The example was designed to deploy
+its server-side artifacts </span><span
+ style="font-family: monospace; font-style: italic;"></span><span
+ style="font-style: italic;">under a JBoss' </span><span
+ style="font-family: monospace; font-style: italic;">messaging</span><span
+ style="font-style: italic;">
+configuration. If you intend to use the script with a JBoss
+configuration that is named differently, please modify the
+example's</span><span
+ style="font-family: monospace; font-style: italic;"> build.xml</span><span
+ style="font-style: italic;">
+accordingly.</span><br>
 <br>
 <span style="font-weight: bold;">Important!</span><span
  style="font-style: italic;"> </span>The JBoss instance that runs the
@@ -79,20 +95,11 @@ then your JBOSS_HOME value should be <span
  style="font-family: monospace;">C:\</span><span
  style="font-family: monospace;">jboss-4.0.3SP1.</span><br>
 <span style="font-family: monospace;"><br>
-</span>Remember that the example's build script expects to find <span
- style="font-family: monospace;">jboss-messaging-scoped.sar</span> under<span
- style="font-family: monospace;"> $JBOSS_HOME/server/default/deploy</span>.
-If you use a deployment archive with a different name or a different
-JBoss
-configuration, please modify the example's <span
- style="font-family: monospace;">build.xml</span> accordingly.<br>
-<br>
-<span style="font-family: monospace;"><br>
 </span><br>
 2. Go to the example's home directory<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cd
-.. \examples\ejb3mdb</span><br>
+...\examples\ejb3mdb</span><br>
 </div>
 <br>
 3. Run the example:<br>
@@ -163,7 +170,7 @@ send:<br>
 sent to the testQueue queue<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: !olleH<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.0.1.CR1 (1.0)<br>
+Messaging version 1.0.1 (1.0)<br>
       <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
@@ -283,7 +290,12 @@ org.jboss.system.ServiceMBeanSupport.create(ServiceMBeanSupport.java:173)</span>
 ...<br>
 <span style="font-family: times new roman,times,serif;"><br>
 <big>means that your Naming service was configured with a CallByValue
-semantics. There are two solutions:<br>
+semantics. There are two solutions</big></span></span></small><small><span
+ style="font-family: courier new,courier,monospace;"><span
+ style="font-family: times new roman,times,serif;"><big> for this
+situation</big></span></span></small><small><span
+ style="font-family: courier new,courier,monospace;"><span
+ style="font-family: times new roman,times,serif;"><big>:<br>
 </big></span></span></small><br>
 1) Enable JNDI call by reference semantics.<br>
 <br>
