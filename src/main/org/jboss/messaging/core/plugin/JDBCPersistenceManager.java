@@ -304,9 +304,9 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
 
             String warn =
                "\n\n" +
-               "Warning! Connection transaction isolation should be READ_COMMITTED, but it is currently " + Util.transactionIsolationToString(level) + ".\n" +
-               "         Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.\n" +
-               "         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.\n";
+               "JBoss Messaging Warning: Connection transaction isolation should be READ_COMMITTED, but it is currently " + Util.transactionIsolationToString(level) + ".\n" +
+               "                         Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.\n" +
+               "                         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.\n";
             log.warn(warn);
          }
       }
