@@ -486,10 +486,13 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       return createDurableSubscriptionInternal(id, topicName, clientID, subscriptionName, sel,
                                                noLocal, ms, pm);          
    }
-    
+
    public Subscription createSubscription(String topicName, String selector, boolean noLocal,
-         MessageStore ms, PersistenceManager pm) throws JMSException
+                                          MessageStore ms, PersistenceManager pm)
+      throws JMSException
    {
+      Selector sel = selector == null ? null : new Selector(selector);
+
       try
       {
          long id = this.getNextId();
@@ -500,9 +503,9 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          {
             throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
          }
-                                  
-         return new Subscription(id, topic, ms, pm, topic.getFullSize(),
-                                     topic.getPageSize(), topic.getDownCacheSize(), selector == null ? null : new Selector(selector), noLocal);
+
+         return new Subscription(id, topic, ms, pm, topic.getFullSize(), topic.getPageSize(),
+                                 topic.getDownCacheSize(), sel, noLocal);
       }
       catch (Exception e)
       {
@@ -1010,15 +1013,16 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       Map subs = (Map)subscriptions.get(clientID);
       return subs == null ? null : (DurableSubscription)subs.get(subscriptionName);
    }
-   
-   
+
+
    protected DurableSubscription createDurableSubscriptionInternal(long id, String topicName,
-                                                                       String clientID,
-                                                                       String subscriptionName, 
-                                                                       Selector selector, 
-                                                                       boolean noLocal,                                                            
-                                                                       MessageStore ms,
-                                                                       PersistenceManager pm) throws JMSException
+                                                                   String clientID,
+                                                                   String subscriptionName,
+                                                                   Selector selector,
+                                                                   boolean noLocal,
+                                                                   MessageStore ms,
+                                                                   PersistenceManager pm)
+      throws JMSException
    {
       Map subs = (Map)subscriptions.get(clientID);
       if (subs == null)

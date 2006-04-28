@@ -102,10 +102,7 @@ public class Selector implements Filter
       catch (Exception e)
       {
          if (log.isTraceEnabled()) { log.trace("Invalid selector:" + sel); }
-
-         InvalidSelectorException exception =
-            new InvalidSelectorException("The selector is invalid: " + sel);         
-         throw exception;
+         throw new InvalidSelectorException("The selector is invalid: " + sel);
       }
    }
    

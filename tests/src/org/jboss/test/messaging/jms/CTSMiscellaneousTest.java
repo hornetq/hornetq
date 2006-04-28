@@ -41,6 +41,11 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSender;
+import javax.jms.Topic;
+import javax.jms.InvalidSelectorException;
+import javax.jms.TopicSession;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
 
 /**
@@ -147,6 +152,64 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       qc.close();
    }
 
+   public void testInvalidSelectorOnDurableSubscription() throws Exception
+   {
+      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+      Connection c =  cf.createConnection();
+      c.setClientID("something");
+      try
+      {
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Topic topic = (Topic)ic.lookup("/topic/Topic");
+
+         try
+         {
+            s.createDurableSubscriber(topic, "somename", "=TEST 'test'", false);
+            fail("this should fail");
+         }
+         catch(InvalidSelectorException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+      }
+   }
+
+   public void testInvalidSelectorOnSubscription() throws Exception
+   {
+      TopicConnectionFactory cf = (TopicConnectionFactory)ic.lookup("/ConnectionFactory");
+      TopicConnection c =  cf.createTopicConnection();
+      c.setClientID("something");
+      try
+      {
+         TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+         Topic topic = (Topic)ic.lookup("/topic/Topic");
+
+         try
+         {
+            s.createSubscriber(topic, "=TEST 'test'", false);
+            fail("this should fail");
+         }
+         catch(InvalidSelectorException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         if (c != null)
+         {
+            c.close();
+         }
+      }
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -160,12 +223,15 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
       ServerManagement.deployQueue("Queue");
+      ServerManagement.deployTopic("Topic");
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
 
       ic.close();
       
