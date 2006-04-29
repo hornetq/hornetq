@@ -709,6 +709,17 @@
            includes="jboss-messaging-test-reports-${module.version}/**"/>
    </target>
 
+   <target name="zip-stress-test-results" depends="release-structure">
+      <copy todir="./tests/output/jboss-messaging-stress-test-reports-${module.version}">
+         <fileset dir="./tests/output/reports">
+            <include name="**"/>
+         </fileset>
+      </copy>
+      <zip basedir="./tests/output/"
+           destfile="${release.output}/jboss-messaging-stress-test-reports-${module.version}.zip"
+           includes="jboss-messaging-stress-test-reports-${module.version}/**"/>
+   </target>
+
    <!-- Note: This target must be ran after the smoke test -->
    <target name="examples" depends="release-structure">
       <copy todir="${release.output}/examples">
