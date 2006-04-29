@@ -142,42 +142,32 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       conn.setClientID("myclientid");
       
       Session sess1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons1 = sess1.createConsumer(topic);
-      
       Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons2= sess2.createConsumer(topic);
-      
       Session sess3 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons3= sess3.createDurableSubscriber(topic, "subxyz");
+
+      MessageConsumer cons1 = sess1.createConsumer(topic);
+      MessageConsumer cons2 = sess2.createConsumer(topic);
+      MessageConsumer cons3 = sess3.createDurableSubscriber(topic, "subxyz");
 
       conn.start();
       
       final int NUM_MESSAGES = 300;
-      
       final int NUM_RECOVERIES = 9;
       
       Receiver r1 = new Receiver("R1", sess1, cons1, NUM_MESSAGES, NUM_RECOVERIES);
-      
       Receiver r2 = new Receiver("R2", sess2, cons2, NUM_MESSAGES, NUM_RECOVERIES);
-      
       Receiver r3 = new Receiver("R3", sess3, cons3, NUM_MESSAGES, NUM_RECOVERIES);
       
       Thread t1 = new Thread(r1);
-      
       Thread t2 = new Thread(r2);
-      
       Thread t3 = new Thread(r3);
       
       t1.start();
-      
       t2.start();
-      
       t3.start();
       
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
       MessageProducer prod = sessSend.createProducer(topic);
-      
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       
@@ -188,19 +178,14 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       }
       
       t1.join();
-      
       t2.join();
-      
-      t3.join();      
+      t3.join();
       
       assertFalse(r1.failed);
-      
       assertFalse(r2.failed);
-      
-      assertFalse(r3.failed);            
+      assertFalse(r3.failed);
       
       conn.close();
-      
    }
    
    class Receiver implements Runnable
