@@ -710,7 +710,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       public void afterCommit(boolean onePhase) throws TransactionException
       {
-         //We remove the deliveries from the delivery map
+         // Remove the deliveries from the delivery map.
          Iterator iter = delList.iterator();
          while (iter.hasNext())
          {
@@ -721,17 +721,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                throw new TransactionException("Failed to remove delivery " + messageID);
             }
          }
+
          deliveryCallback = null;
       }
       
       public void afterRollback(boolean onePhase) throws TransactionException
       { 
-         // Cancel the deliveries
-         // Need to be cancelled in reverse order to maintain ordering
-         Iterator iter = delList.iterator();
-         while (iter.hasNext())
+         // Cancel the deliveries. Need to be cancelled in reverse order to maintain ordering
+         for(Iterator i = delList.iterator(); i.hasNext(); )
          {
-            Long messageID = (Long)iter.next();
+            Long messageID = (Long)i.next();
             
             SimpleDelivery del;
             
@@ -740,7 +739,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                throw new TransactionException("Failed to remove delivery " + messageID);
             }
             
-            //Cancel the delivery
+            // cancel the delivery
             try
             {
                del.cancel();

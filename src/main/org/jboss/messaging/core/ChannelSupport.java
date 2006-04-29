@@ -166,7 +166,7 @@ public abstract class ChannelSupport implements Channel
 
    public void acknowledge(Delivery d, Transaction tx)
    {
-      if (trace){ log.trace("acknowledge " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
+      if (trace){ log.trace("acknowledging " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
             
       try
       {      
@@ -191,7 +191,7 @@ public abstract class ChannelSupport implements Channel
 
    public void cancel(Delivery d) throws Throwable
    {
-      if (trace) { log.trace("cancel " + d); }
+      if (trace) { log.trace("cancelling " + d); }
       
       state.cancelDelivery(d);
       

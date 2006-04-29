@@ -225,13 +225,13 @@ public class ResourceManager
       
    public void rollback(Xid xid, ConnectionDelegate connection) throws XAException
    {
-      if (trace) { log.trace("Rolling back xid: " + xid); }
+      if (trace) { log.trace("rolling back xid " + xid); }
       
       TxState tx = removeTx(xid);
           
       TransactionRequest request = null;
       
-      //We don't need to send the messages to the server on a rollback
+      // we don't need to send the messages to the server on a rollback
       if (tx != null)
       {
          tx.clearMessages();

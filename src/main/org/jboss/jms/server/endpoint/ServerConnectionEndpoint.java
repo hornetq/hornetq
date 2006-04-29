@@ -380,7 +380,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                         
          if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
          {
-            if (trace) { log.trace("One phase commit request received"); }
+            if (trace) { log.trace("one phase commit request received"); }
             
             Transaction tx = null;
             try
@@ -408,11 +408,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          else if (request.getRequestType() == TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST)
          {
-            if (trace) { log.trace("One phase rollback request received"); }
+            if (trace) { log.trace("one phase rollback request received"); }
               
-            //We just need to cancel deliveries
-            //cancelDeliveriesForTransaction(request.getState());
-            
+            // We just need to cancel deliveries
+
             Transaction tx = null;
             try
             {               
@@ -524,7 +523,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             }
          }      
                  
-         if (trace) { log.trace("Request processed ok"); }
+         if (trace) { log.trace("request processed ok"); }
       }
       finally
       {
@@ -836,8 +835,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       List acks = txState.getAcks();
       
-      //We create the transactional callbacks in reverse order so if the transaction is subsequently cancelled
-      //the refs are put back in the correct order on the queue/subscription
+      // We create the transactional callbacks in reverse order so if the transaction is
+      // subsequently cancelled the refs are put back in the correct order on the queue/subscription
       for (int i = acks.size() - 1; i >= 0; i--)
       {      
          AckInfo ack = (AckInfo)acks.get(i);

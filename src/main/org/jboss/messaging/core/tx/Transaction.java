@@ -238,34 +238,26 @@ public class Transaction
       List cb = new ArrayList(callbacks);
       cb.addAll(keyedCallbacks);
       
-      Iterator iter = cb.iterator();
-      
-      while (iter.hasNext())
+      for(Iterator i = cb.iterator(); i.hasNext(); )
       {
-         TxCallback callback = (TxCallback)iter.next();
-         
+         TxCallback callback = (TxCallback)i.next();
          callback.beforeRollback(onePhase);
       }
       
       state = STATE_ROLLEDBACK;
       
       if (trace) { log.trace("rolled back " + this); }
-      
-      iter = cb.iterator();
-      
+
       if (trace) { log.trace("executing after prepare hooks " + this); }
-      
-      while (iter.hasNext())
+
+      for(Iterator i = cb.iterator(); i.hasNext();)
       {
-         TxCallback callback = (TxCallback)iter.next();
-         
+         TxCallback callback = (TxCallback)i.next();
          callback.afterRollback(onePhase);
       }            
       
       callbacks = null;
-      
       keyedCallbacks = null;
-      
       keyedCallbackMap = null;
       
       if (trace) { log.trace("rollback process complete " + this); }

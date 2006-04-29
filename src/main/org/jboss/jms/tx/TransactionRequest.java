@@ -41,6 +41,7 @@ import org.jboss.messaging.core.tx.XidImpl;
  * @author <a href="mailto:David.Maplesden@orion.co.nz">David Maplesden</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:daniel.ramagem@gmail.com">Daniel Bloomfield Ramagem</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version $Revision$
  *
  * $Id$
@@ -52,13 +53,9 @@ public class TransactionRequest implements Externalizable
    private static final long serialVersionUID = -5371388526898322431L;
    
    public final static byte ONE_PHASE_COMMIT_REQUEST = 0;
-   
    public final static byte ONE_PHASE_ROLLBACK_REQUEST = 1;
-
    public final static byte TWO_PHASE_PREPARE_REQUEST = 2;
-
    public final static byte TWO_PHASE_COMMIT_REQUEST = 3;
-
    public final static byte TWO_PHASE_ROLLBACK_REQUEST = 4;
    
    private static final byte PRESENT = 1;
@@ -87,23 +84,6 @@ public class TransactionRequest implements Externalizable
       this.requestType = requestType;
       this.xid = xid;
       this.state = state;
-   }
-   
-   // Public --------------------------------------------------------
-   
-   public TxState getState()
-   {
-      return state;
-   }
-   
-   public Xid getXid()
-   {
-      return xid;
-   }
-   
-   public int getRequestType()
-   {
-      return requestType;
    }
    
    // Externalizable implementation ---------------------------------
@@ -181,7 +161,35 @@ public class TransactionRequest implements Externalizable
         state.readExternal(in);
      }
    }
-   
+
+   // Public --------------------------------------------------------
+
+   public TxState getState()
+   {
+      return state;
+   }
+
+   public Xid getXid()
+   {
+      return xid;
+   }
+
+   public int getRequestType()
+   {
+      return requestType;
+   }
+
+   public String toString()
+   {
+      return "TransactionRequest[" +
+         (requestType == ONE_PHASE_COMMIT_REQUEST ? "ONE_PHASE_COMMIT":
+            (requestType == ONE_PHASE_ROLLBACK_REQUEST ? "ONE_PHASE_ROLLBACK":
+               (requestType == TWO_PHASE_PREPARE_REQUEST ? "TWO_PHASE_PREPARE":
+                  (requestType == TWO_PHASE_COMMIT_REQUEST ? "TWO_PHASE_COMMIT":
+                     (requestType == TWO_PHASE_ROLLBACK_REQUEST ? "TWO_PHASE_ROLLBACK_":
+                        "UNKNOW_REQUEST_TYPE"))))) + ", " + xid + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

@@ -436,7 +436,7 @@ public class MessageCallbackHandler
    {                    
       synchronized (mainLock)
       {        
-         if (trace) { log.trace(this + " receiving: " + timeout); }
+         if (trace) { log.trace(this + " receiving, timeout = " + timeout); }
          
          if (closed || closing)
          {
@@ -648,9 +648,9 @@ public class MessageCallbackHandler
                //Wait for ever potentially
                while (!closing && buffer.isEmpty())
                {
-                  if (trace) { log.trace("Waiting on main lock"); }
+                  if (trace) { log.trace("waiting on main lock"); }
                   mainLock.wait();               
-                  if (trace) { log.trace("Done Waiting on main lock"); }
+                  if (trace) { log.trace("done waiting on main lock"); }
                }
             }
             else

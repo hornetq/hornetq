@@ -111,14 +111,14 @@ public class MessagingXAResource implements XAResource
    
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
-      if (trace) { log.trace(this + " commit " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
+      if (trace) { log.trace(this + " committing " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
       
       rm.commit(xid, onePhase, connection);
    }
 
    public void end(Xid xid, int flags) throws XAException
    {
-      if (trace) { log.trace(this + " end " + xid + ", flags: " + flags); }
+      if (trace) { log.trace(this + " ending " + xid + ", flags: " + flags); }
 
       synchronized (this)
       {
@@ -142,32 +142,32 @@ public class MessagingXAResource implements XAResource
    
    public void forget(Xid xid) throws XAException
    {
-      if (trace) { log.trace(this + " forget " + xid + " (currently an NOOP)"); }
+      if (trace) { log.trace(this + " forgetting " + xid + " (currently an NOOP)"); }
    }
 
    public int prepare(Xid xid) throws XAException
    {
-      if (trace) { log.trace(this + " prepare " + xid); }
+      if (trace) { log.trace(this + " preparing " + xid); }
       return rm.prepare(xid, connection);
    }
 
    public Xid[] recover(int flags) throws XAException
    {
-      if (trace) { log.trace(this + " recover, flags: " + flags); }
+      if (trace) { log.trace(this + " recovering, flags: " + flags); }
 
       return rm.recover(flags, connection);
    }
 
    public void rollback(Xid xid) throws XAException
    {
-      if (trace) { log.trace(this + " rollback " + xid); }
+      if (trace) { log.trace(this + " rolling back " + xid); }
 
       rm.rollback(xid, connection);
    }
 
    public void start(Xid xid, int flags) throws XAException
    {
-      if (trace) { log.trace(this + " start " + xid + ", flags: " + flags); }
+      if (trace) { log.trace(this + " starting " + xid + ", flags: " + flags); }
       
       boolean convertTx = false;
       
@@ -212,7 +212,7 @@ public class MessagingXAResource implements XAResource
 
    public String toString()
    {
-      return "JBossXAResource[" + sessionState.getDelegate().getID()+ "]";      
+      return "MessagingXAResource[" + sessionState.getDelegate().getID()+ "]";
    }
    
    /*
