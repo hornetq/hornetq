@@ -48,6 +48,8 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
 
+import EDU.oswego.cs.dl.util.concurrent.Slot;
+
 /**
  * Safeguards for previously detected TCK failures.
  *
@@ -61,7 +63,7 @@ public class CTSMiscellaneousTest extends MessagingTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected InitialContext ic;
@@ -174,10 +176,7 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       }
       finally
       {
-         if (c != null)
-         {
-            c.close();
-         }
+         c.close();
       }
    }
 
@@ -203,15 +202,93 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       }
       finally
       {
-         if (c != null)
-         {
-            c.close();
-         }
+         c.close();
       }
    }
 
+   public void testContestedQueueOnRollback() throws Exception
+   {
+      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+      Queue queue = (Queue)ic.lookup("/queue/Queue");
+
+      Connection c =  cf.createConnection();
+      try
+      {
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         TextMessage tm = s.createTextMessage("blah");
+         s.createProducer(queue).send(tm);
+      }
+      finally
+      {
+         c.close();
+      }
+
+      // message is in the queue
+      log.debug("message is in the queue");
+
+      c = cf.createConnection();
+      c.start();
+
+      try
+      {
+         Session s = c.createSession(true, Session.SESSION_TRANSACTED);
+         MessageConsumer cons = s.createConsumer(queue);
+
+         Session s2 = c.createSession(true, Session.SESSION_TRANSACTED);
+         final MessageConsumer cons2 = s2.createConsumer(queue);
+
+         TextMessage rm = (TextMessage)cons.receive();
+
+         assertEquals("blah", rm.getText());
+
+         final Slot slot = new Slot();
+
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  log.debug("contester blocking to receive");
+                  Message m = cons2.receive(8000);
+                  log.debug("contester received " + m);
+
+                  if (m != null)
+                  {
+                     // if I receive a message, unlock the slot
+                     slot.put(m);
+                  }
+               }
+               catch(Exception e)
+               {
+                  log.error("contested receive failed", e);
+               }
+            }
+         }, "Contester Thread").start();
+
+         // wait for the contested thread to start receiving
+         Thread.sleep(2000);
+
+         // send the message back to the queue
+         log.debug("rolling back");
+         s.rollback();
+         log.debug("rolled back");
+
+         // wait for the contester to receive
+         TextMessage rm2 = (TextMessage)slot.poll(5000);
+
+         assertEquals("blah", rm2.getText());
+      }
+      finally
+      {
+         c.close();
+      }
+
+
+   }
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    protected void setUp() throws Exception
@@ -226,6 +303,8 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployQueue("Queue");
       ServerManagement.deployTopic("Topic");
+
+      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
@@ -234,11 +313,11 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
 
       ic.close();
-      
+
       super.tearDown();
    }
 
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------   
 }
