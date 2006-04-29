@@ -965,6 +965,9 @@ public class ChannelState implements State
             
             ref.releaseMemoryReference();
          }
+
+         // TODO not sure it's the best solution, but makes CTSMiscellaneousTest.testContestedQueueOnRollback() pass
+         channel.deliver(null);
       }          
    }
 }
