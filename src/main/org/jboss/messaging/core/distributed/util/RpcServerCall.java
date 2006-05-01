@@ -171,13 +171,13 @@ public class RpcServerCall extends MethodCall
     *         instance, unless the remote method chooses to return an exception as the result of
     *         the invocation.
     *
-    * @throws Exception - the exception that was thrown by the remote invocation.
+    * @throws Throwable - the throwable that was thrown by the remote invocation.
     * @throws ClassCastException - for unexpected result types
     * @throws IllegalStateException - when receiving 0 or more than 1 replies. This usually happens
     *         when there is more than one server delegate listening on the category.
     */
    public Object remoteInvoke(RpcDispatcher dispatcher, Address destination, long timeout)
-         throws Exception
+         throws Throwable
    {
       int mode = GroupRequest.GET_ALL;
 
