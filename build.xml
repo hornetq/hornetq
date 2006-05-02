@@ -715,6 +715,11 @@
             <exclude name="**/do-not-distribute*"/>
          </fileset>
       </copy>
+      <copy todir="${release.output}/examples/config">
+         <fileset dir="./src/etc/server/default/deploy">
+            <include name="*-persistence-service.xml"/>
+         </fileset>
+      </copy>
    </target>
 
    <target name="javadoc" depends="compile">
