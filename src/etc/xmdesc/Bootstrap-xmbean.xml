@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+<mbean>
+   <description>A bootstrap for a Messaging scoped deployment</description>
+   <class>org.jboss.jms.server.Bootstrap</class>
+</mbean>

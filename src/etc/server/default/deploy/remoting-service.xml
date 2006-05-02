@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Messaging Remoting service deployment descriptor.
+
+     $Id$
+ -->
+
+<server>
+
+   <mbean code="org.jboss.remoting.transport.Connector"
+          xmbean-dd="org/jboss/remoting/transport/Connector.xml"
+          name="jboss.messaging:service=Connector,transport=socket"
+          display-name="Socket transport Connector">
+      <attribute name="Configuration">
+         <config>
+            <invoker transport="socket">
+               <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <attribute name="serializationtype" isParam="true">jboss</attribute>
+               <attribute name="dataType" isParam="true">jms</attribute>
+               <attribute name="socket.check_connection" isParam="true">false</attribute>
+               <attribute name="socketTimeout">0</attribute>
+               <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
+               <attribute name="serverBindPort">4457</attribute>
+               <attribute name="leasePeriod">20000</attribute>
+            </invoker>
+            <handlers>
+               <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
+            </handlers>
+         </config>
+      </attribute>
+      <depends>jboss.messaging:service=NetworkRegistry</depends>
+   </mbean>
+
+   <!-- TODO: Do I need this> -->
+   <mbean code="org.jboss.remoting.network.NetworkRegistry"
+          name="jboss.messaging:service=NetworkRegistry"/>
+
+</server>

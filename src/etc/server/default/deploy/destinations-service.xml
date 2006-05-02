@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Messaging Destinations deployment descriptor.
+
+     $Id$
+ -->
+
+<server>
+
+   <!-- The Dead Letter Queue. This destination is a dependency of an EJB MDB container -->
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=DLQ"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+   <!-- Example queues -->
+
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Topic,name=testTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="SecurityConfig">
+         <security>
+            <role name="guest" read="true" write="true"/>
+            <role name="publisher" read="true" write="true" create="false"/>
+            <role name="durpublisher" read="true" write="true" create="true"/>
+         </security>
+      </attribute>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Topic,name=securedTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="SecurityConfig">
+         <security>
+            <role name="publisher" read="true" write="true" create="false"/>
+         </security>
+      </attribute>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Topic,name=testDurableTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="SecurityConfig">
+         <security>
+            <role name="guest" read="true" write="true"/>
+            <role name="publisher" read="true" write="true" create="false"/>
+            <role name="durpublisher" read="true" write="true" create="true"/>
+         </security>
+      </attribute>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=testQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="SecurityConfig">
+         <security>
+            <role name="guest" read="true" write="true"/>
+            <role name="publisher" read="true" write="true" create="false"/>
+            <role name="noacc" read="false" write="false" create="false"/>
+         </security>
+      </attribute>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=A"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=B"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=C"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=D"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+   <mbean code="org.jboss.jms.server.destination.Queue"
+      name="jboss.messaging.destination:service=Queue,name=ex"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.destination.Topic"
+      name="jboss.messaging.destination:service=Queue,name=openTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="SecurityConfig">
+         <security>
+            <role name="guest" read="true" write="true" create="true"/>
+         </security>
+      </attribute>
+   </mbean>
+
+</server>

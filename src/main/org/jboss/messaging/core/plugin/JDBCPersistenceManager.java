@@ -247,6 +247,15 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     * Only used for testing. In a real deployment, the data source and the transaction manager are
     * injected as dependencies.
     */
+   public JDBCPersistenceManager(DataSource ds, TransactionManager tm) throws Exception
+   {
+      this(ds, tm, null, false);
+   }
+
+   /**
+    * Only used for testing. In a real deployment, the data source and the transaction manager are
+    * injected as dependencies.
+    */
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm,
                                  ChannelMapper cm, boolean deleteSubs) throws Exception
    {
@@ -254,19 +263,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       this.tm = tm;
       this.cm = cm;
       sqlProperties = new Properties();
-      channelMultipliers = new ConcurrentReaderHashMap();      
+      channelMultipliers = new ConcurrentReaderHashMap();
       this.deleteSubs = deleteSubs;
    }
-   
-   /**
-    * Only used for testing. In a real deployment, the data source and the transaction manager are
-    * injected as dependencies.
-    */
-   public JDBCPersistenceManager(DataSource ds, TransactionManager tm) throws Exception
-   {
-      this(ds, tm, null, false);
-   }
-   
+
    // ServiceMBeanSupport overrides ---------------------------------
    
    protected void startService() throws Exception

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Messaging Connection Factories deployment descriptor.
+
+     $Id$
+ -->
+
+<server>
+
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.destination:service=ConnectionFactory"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
+      <attribute name="JNDIBindings">
+         <bindings>
+            <binding>/ConnectionFactory</binding>
+            <binding>/XAConnectionFactory</binding>
+            <binding>java:/ConnectionFactory</binding>
+            <binding>java:/XAConnectionFactory</binding>
+         </bindings>
+      </attribute>
+   </mbean>
+
+</server>

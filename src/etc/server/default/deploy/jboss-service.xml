@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Scoped Messaging SAR deployment descriptor. This deployment descriptor is used only for scoped
+     deployments.
+
+     $Id$
+ -->
+
+<server>
+
+   <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
+       <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
+   </loader-repository>
+
+   <mbean code="org.jboss.jms.server.Bootstrap"
+      name="jboss.messaging:service=Bootstrap"
+      xmbean-dd="xmdesc/Bootstrap-xmbean.xml">
+      <depends>jboss.messaging:service=ServerPeer</depends>
+   </mbean>
+
+</server>

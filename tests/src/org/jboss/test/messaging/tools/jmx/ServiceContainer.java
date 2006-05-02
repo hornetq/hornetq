@@ -24,9 +24,9 @@ package org.jboss.test.messaging.tools.jmx;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.io.InputStream;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
@@ -53,13 +54,11 @@ import javax.transaction.UserTransaction;
 import org.hsqldb.Server;
 import org.hsqldb.persist.HsqlProperties;
 import org.jboss.jms.jndi.JNDIProviderAdapter;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.util.XMLUtil;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService;
 import org.jboss.resource.adapter.jms.JmsManagedConnectionFactory;
@@ -77,8 +76,9 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TransactionManagerService;
-import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
+import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.ServerInvocationHandler;
 
 
 /**
@@ -96,16 +96,10 @@ public class ServiceContainer
 
    private static final Logger log = Logger.getLogger(ServiceContainer.class);
 
+   private static final String CONFIGURATION_FILE_NAME = "container.xml";
+
    // Static --------------------------------------------------------
-   
-   private static final int HSQL = 1;
-   private static final int MYSQL = 2;
-   private static final int ORACLE = 3;
-   private static final int POSTGRESQL = 4;
-   
-   //FIXME - Configure this properly
-   private static final int DB = HSQL;
-   
+
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
    public static ObjectName CLASS_LOADER_OBJECT_NAME;
    public static ObjectName TRANSACTION_MANAGER_OBJECT_NAME;
@@ -169,6 +163,8 @@ public class ServiceContainer
    }
 
    // Attributes ----------------------------------------------------
+
+   private ServiceContainerConfiguration config;
 
    private TransactionManager tm;
 
@@ -246,23 +242,23 @@ public class ServiceContainer
 
    // Constructors --------------------------------------------------
 
-   public ServiceContainer(String config) throws Exception
+   public ServiceContainer(String sevicesToStart) throws Exception
    {
-      this(config, null);
+      this(sevicesToStart, null);
    }
 
    /**
-    * @param config - A comma separated list of services to be started. Available services:
+    * @param sevicesToStart - A comma separated list of services to be started. Available services:
     *        transaction, jca, database, remoting.  Example: "transaction, database, remoting".
     *        "all" will start every service available. A dash in front of a service name will
     *        disable that service. Example "all,-database".
     * @param tm - specifies a specific TransactionManager instance to bind into the mbeanServer.
     *        If null, the default JBoss TransactionManager implementation will be used.
     */
-   public ServiceContainer(String config, TransactionManager tm) throws Exception
+   public ServiceContainer(String sevicesToStart, TransactionManager tm) throws Exception
    {
       this.tm = tm;
-      parseConfig(config);
+      parseConfig(sevicesToStart);
       toUnbindAtExit = new ArrayList();
    }
 
@@ -272,6 +268,8 @@ public class ServiceContainer
    {
       try
       {
+         readConfigurationFile();
+
          configureAddress();
 
          toUnbindAtExit.clear();
@@ -374,6 +372,9 @@ public class ServiceContainer
 
          loadJNDIContexts();
 
+         log.info("remoting = \"" +
+            (remotingSocket ? "socket" : (remotingMultiplex ? "multiplex" : "disabled")) + "\", " +
+            "database = \"" + getDatabaseType() + "\"");
          log.debug(this + " started");
       }
       catch(Throwable e)
@@ -629,6 +630,11 @@ public class ServiceContainer
       undeployJBossJMSRA(JMS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
    }
 
+   public String getDatabaseType()
+   {
+      return config.getDatabaseType();
+   }
+
    public String toString()
    {
       return "ServiceContainer[" + Integer.toHexString(hashCode()) + "]";
@@ -639,6 +645,25 @@ public class ServiceContainer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void readConfigurationFile() throws Exception
+   {
+      InputStream cs = getClass().getClassLoader().getResourceAsStream(CONFIGURATION_FILE_NAME);
+      if (cs == null)
+      {
+         throw new Exception("Cannot file container's configuration file " +
+                             CONFIGURATION_FILE_NAME + ". Make sure it is in the classpath.");
+      }
+
+      try
+      {
+         config = new ServiceContainerConfiguration(cs);
+      }
+      finally
+      {
+         cs.close();
+      }
+   }
 
    private void configureAddress() throws Exception
    {
@@ -708,7 +733,6 @@ public class ServiceContainer
       mbeanServer.unregisterMBean(SERVICE_CONTROLLER_OBJECT_NAME);
    }
 
-
    /**
     * Register a class loader used to instantiate other services.
     */
@@ -723,46 +747,57 @@ public class ServiceContainer
       mbeanServer.unregisterMBean(CLASS_LOADER_OBJECT_NAME);
    }
 
-
    private void startInVMDatabase() throws Exception
    {
-      if (DB == HSQL)
+      if (!"hsqldb".equals(config.getDatabaseType()))
       {
-         HsqlProperties props = new HsqlProperties();
-         props.setProperty("server.database.0", "mem:test");
-         props.setProperty("server.dbname.0", "memtest");
-         props.setProperty("server.trace", "false");
-         props.setProperty("server.silent", "true");
-         props.setProperty("server.no_system_exit", "true");
-         props.setProperty("server.port", 27862);
-         props.setProperty("server.address", ipAddressOrHostName);
-   
-         hsqldbServer = new Server();
-         hsqldbServer.setLogWriter(null);
-         hsqldbServer.setProperties(props);
-         hsqldbServer.start();
-   
-   
-         log.debug("started the database");
+         // is an out-of-process DB, and it must be stared externally
+         return;
       }
 
+      log.debug("starting " + config.getDatabaseType() + " in-VM");
+
+      String url = config.getDatabaseConnectionURL();
+      HsqlProperties props = new HsqlProperties();
+      props.setProperty("server.database.0", ServiceContainerConfiguration.getHypersonicDatabase(url));
+      props.setProperty("server.dbname.0", ServiceContainerConfiguration.getHypersonicDbname(url));
+      props.setProperty("server.trace", "false");
+      props.setProperty("server.silent", "true");
+      props.setProperty("server.no_system_exit", "true");
+      props.setProperty("server.port", 27862);
+      props.setProperty("server.address", ipAddressOrHostName);
+
+      hsqldbServer = new Server();
+      hsqldbServer.setLogWriter(null);
+      hsqldbServer.setProperties(props);
+      hsqldbServer.start();
+
+      log.debug("started " + config.getDatabaseType() + " in-VM");
    }
 
    private void stopInVMDatabase() throws Exception
    {
-      if (DB == HSQL)
+      if (!"hsqldb".equals(config.getDatabaseType()))
       {
-         log.debug("stop " + hsqldbServer);
-
-         Class.forName("org.hsqldb.jdbcDriver" );
-         Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", "");
-         Statement stat = conn.createStatement();
-         stat.executeUpdate("SHUTDOWN");
-         conn.close();
-   
-         // faster stop
-   //      hsqldbServer.stop();
+         // is an out-of-process DB, and it must be stopped externally
+         return;
       }
+
+      log.debug("stop " + hsqldbServer);
+
+      Class.forName(config.getDatabaseDriverClass());
+
+      Connection conn =
+         DriverManager.getConnection(config.getDatabaseConnectionURL(),
+                                     config.getDatabaseUserName(),
+                                     config.getDatabasePassword());
+
+      Statement stat = conn.createStatement();
+      stat.executeUpdate("SHUTDOWN");
+      conn.close();
+
+      // faster stop
+      // hsqldbServer.stop();
    }
 
    private void startTransactionManager() throws Exception
@@ -806,47 +841,15 @@ public class ServiceContainer
    private void startManagedConnectionFactory(ObjectName on) throws Exception
    {
       LocalManagedConnectionFactory mcf = new LocalManagedConnectionFactory();
-         
-      switch (DB)
+
+      mcf.setConnectionURL(config.getDatabaseConnectionURL());
+      mcf.setDriverClass(config.getDatabaseDriverClass());
+      mcf.setUserName(config.getDatabaseUserName());
+      mcf.setPassword(config.getDatabasePassword());
+      String isolation = config.getDatabaseTransactionIsolation();
+      if (isolation != null)
       {
-         case (HSQL) :
-         {
-            mcf.setConnectionURL("jdbc:hsqldb:mem:test");
-            mcf.setDriverClass("org.hsqldb.jdbcDriver");
-            mcf.setUserName("sa");
-            break;
-         }
-         case (MYSQL) :
-         {
-            //mysql
-            mcf.setConnectionURL("jdbc:mysql://localhost:3306/messaging");
-            mcf.setDriverClass("com.mysql.jdbc.Driver");
-            mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
-            mcf.setUserName("root");
-            break;
-         }
-         case (ORACLE) :
-         {
-            mcf.setConnectionURL("jdbc:oracle:thin:@localhost:1521/XE");
-            mcf.setDriverClass("oracle.jdbc.driver.OracleDriver");
-            mcf.setUserName("messaging");
-            mcf.setPassword("messaging");
-            mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
-            break;
-         }
-         case (POSTGRESQL) :
-         {
-            mcf.setConnectionURL("jdbc:postgresql://localhost:5432/jboss");
-            mcf.setDriverClass("org.postgresql.Driver");
-            mcf.setUserName("jboss");
-            mcf.setPassword("jboss");
-            mcf.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
-            break;
-         }
-         default :
-         {
-            throw new IllegalStateException("No such DB " + DB);
-         }
+         mcf.setTransactionIsolation(isolation);
       }
 
       ManagedConnectionFactoryJMXWrapper mbean = new ManagedConnectionFactoryJMXWrapper(mcf);
@@ -980,13 +983,11 @@ public class ServiceContainer
 
       String locatorURI;
       if (multiplex)
-      {         
-         log.info("********* STARTING MULTIPLEX");
+      {
          locatorURI = "multiplex://" + ipAddressOrHostName + ":9111" + params;
       }
       else
       {
-         log.info("********** STARTING SOCKET");
          locatorURI = "socket://" + ipAddressOrHostName + ":9111" + params;
       }
 
@@ -999,14 +1000,14 @@ public class ServiceContainer
       mbean = new RemotingJMXWrapper(locator);
       mbeanServer.registerMBean(mbean, REMOTING_OBJECT_NAME);
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
-      
+
       ServerInvocationHandler handler = new JMSServerInvocationHandler();
-      
+
       mbeanServer.invoke(REMOTING_OBJECT_NAME, "addInvocationHandler",
-          new Object[] { ServerPeer.REMOTING_JMS_SUBSYSTEM, handler},
-          new String[] { "java.lang.String",
-                         "org.jboss.remoting.ServerInvocationHandler"});
-                 
+                         new Object[] { ServerPeer.REMOTING_JMS_SUBSYSTEM, handler},
+                         new String[] { "java.lang.String",
+                                        "org.jboss.remoting.ServerInvocationHandler"});
+
       log.debug("started " + REMOTING_OBJECT_NAME);
    }
 
@@ -1040,76 +1041,76 @@ public class ServiceContainer
       }
       ic.close();
    }
-   
+
    protected void deleteAllData() throws Exception
    {
       try
       {
          InitialContext ctx = new InitialContext();
-   
+
          TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
          DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-         
+
          javax.transaction.Transaction txOld = mgr.suspend();
          mgr.begin();
-   
+
          Connection conn = ds.getConnection();
-         
+
          String sql = "DELETE FROM JMS_CHANNEL_MAPPING";
          PreparedStatement ps = conn.prepareStatement(sql);
-         
+
          int rows = ps.executeUpdate();
-            
+
          ps.close();
-         
+
          sql = "DELETE FROM JMS_MESSAGE_REFERENCE";
          ps = conn.prepareStatement(sql);
-         
+
          rows = ps.executeUpdate();
 
          log.debug("deleted " + rows);
-         
+
          ps.close();
-         
+
          sql = "DELETE FROM JMS_MESSAGE";
          ps = conn.prepareStatement(sql);
-         
+
          rows = ps.executeUpdate();
 
          log.debug("deleted " + rows);
-            
+
          ps.close();
-         
+
          sql = "DELETE FROM JMS_TRANSACTION";
          ps = conn.prepareStatement(sql);
-         
+
          rows = ps.executeUpdate();
 
          log.debug("deleted " + rows);
-                
+
          ps.close();
-         
+
          sql = "DELETE FROM JMS_COUNTER";
          ps = conn.prepareStatement(sql);
-         
+
          rows = ps.executeUpdate();
 
          log.debug("deleted " + rows);
-         
+
          ps.close();
-         
+
          sql = "DELETE FROM JMS_USER";
          ps = conn.prepareStatement(sql);
-         
+
          rows = ps.executeUpdate();
 
          log.debug("deleted " + rows);
-         
+
          ps.close();
          conn.close();
-   
+
          mgr.commit();
-   
+
          if (txOld != null)
          {
             mgr.resume(txOld);

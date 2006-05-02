@@ -164,12 +164,12 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    public JDBCChannelMapper(DataSource ds, TransactionManager tm)
    {
       this();
-      
+
       this.ds = ds;
-      
+
       this.tm = tm;
    }
-   
+
    //Injection
    
    //TODO

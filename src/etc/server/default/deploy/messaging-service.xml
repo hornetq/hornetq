@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     The JBoss Messaging service deployment descriptor.
+
+     $Id$
+ -->
+
+<server>
+
+   <mbean code="org.jboss.jms.server.ServerPeer"
+      name="jboss.messaging:service=ServerPeer"
+      xmbean-dd="xmdesc/ServerPeer-xmbean.xml">
+
+      <constructor>
+         <!-- ServerPeerID -->
+         <arg type="java.lang.String" value="server.0" />
+         <!-- DefaultQueueJNDIContext -->
+         <arg type="java.lang.String" value="/queue" />
+         <!-- DefaultTopicJNDIContext -->
+         <arg type="java.lang.String" value="/topic" />
+      </constructor>
+
+      <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
+      <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
+      <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
+      <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
+
+      <!-- Set to -1 to completely disable client leasing -->
+      <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
+      <attribute name="DefaultSecurityConfig">
+        <security>
+            <role name="guest" read="true" write="true" create="true"/>
+        </security>
+      </attribute>
+   </mbean>
+
+   <!-- Plug-ins -->
+
+   <mbean code="org.jboss.jms.server.plugin.DefaultThreadPool"
+      name="jboss.messaging:service=ThreadPool"
+      xmbean-dd="xmdesc/DefaultThreadPool-xmbean.xml">
+      <constructor>
+         <!-- the default pool size -->
+         <arg type="int" value="40" />
+      </constructor>
+   </mbean>
+
+   <mbean code="org.jboss.messaging.core.plugin.SimpleMessageStore"
+      name="jboss.messaging:service=MessageStore"
+      xmbean-dd="xmdesc/SimpleMessageStore-xmbean.xml">
+      <constructor>
+         <!-- StoreID -->
+         <arg type="java.lang.String" value="store.0" />
+      </constructor>      
+   </mbean>
+
+</server>

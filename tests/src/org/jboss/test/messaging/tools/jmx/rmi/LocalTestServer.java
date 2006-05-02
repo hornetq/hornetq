@@ -133,7 +133,6 @@ public class LocalTestServer implements Server
    public synchronized void destroy() throws Exception
    {
       stop();
-
    }
 
    public ObjectName deploy(String mbeanConfiguration) throws Exception
@@ -167,6 +166,11 @@ public class LocalTestServer implements Server
    public Set query(ObjectName pattern) throws Exception
    {
       return sc.query(pattern);
+   }
+
+   public String getDatabaseType()
+   {
+      return sc.getDatabaseType();
    }
 
    public void log(int level, String text)
@@ -213,48 +217,63 @@ public class LocalTestServer implements Server
    {
       log.debug("creating ServerPeer instance");
 
-      log.debug("starting ServerPeer's plug-in dependencies");
-
       // we are using the "default" service deployment descriptors available in
-      // src/etc/server/default/deploy/jboss-messaging-service.xml. This will allow to test the
-      // default parameters we are recommending.
+      // src/etc/server/default/deploy. This will allow to test the default parameters we ship.
 
-      String filename = "server/default/deploy/jboss-messaging-service.xml";
-      URL sddURL = getClass().getClassLoader().getResource(filename);
-      if (sddURL == null)
+      String mainConfigFile = "server/default/deploy/messaging-service.xml";
+      URL mainConfigFileURL = getClass().getClassLoader().getResource(mainConfigFile);
+      if (mainConfigFileURL == null)
       {
-         throw new Exception("Cannot find " + filename + " in the classpath");
+         throw new Exception("Cannot find " + mainConfigFile + " in the classpath");
       }
 
-      ServiceDeploymentDescriptor sdd = new ServiceDeploymentDescriptor(sddURL);
+      String databaseType = sc.getDatabaseType();
+      String persistenceConfigFile =
+         "server/default/deploy/" + databaseType + "-persistence-service.xml";
+      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
+      if (persistenceConfigFileURL == null)
+      {
+         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
+      }
 
-      MBeanConfigurationElement threadPoolConfig =
-         (MBeanConfigurationElement)sdd.query("service", "ThreadPool").iterator().next();
-      threadPoolObjectName = sc.registerAndConfigureService(threadPoolConfig);
-      sc.invoke(threadPoolObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(threadPoolObjectName, "start", new Object[0], new String[0]);
-      
+      String connFactoryConfigFile = "server/default/deploy/connection-factories-service.xml";
+      URL connFactoryConfigFileURL = getClass().getClassLoader().getResource(connFactoryConfigFile);
+      if (connFactoryConfigFileURL == null)
+      {
+         throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
+      }
+
+      ServiceDeploymentDescriptor mdd = new ServiceDeploymentDescriptor(mainConfigFileURL);
+      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
+      ServiceDeploymentDescriptor cfdd = new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
+
       MBeanConfigurationElement channelMapperConfig =
-         (MBeanConfigurationElement)sdd.query("service", "ChannelMapper").iterator().next();
+         (MBeanConfigurationElement)pdd.query("service", "ChannelMapper").iterator().next();
       channelMapperObjectName = sc.registerAndConfigureService(channelMapperConfig);
       sc.invoke(channelMapperObjectName, "create", new Object[0], new String[0]);
       sc.invoke(channelMapperObjectName, "start", new Object[0], new String[0]);
 
       MBeanConfigurationElement persistenceManagerConfig =
-         (MBeanConfigurationElement)sdd.query("service", "PersistenceManager").iterator().next();
+         (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
       persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
       sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);
 
+      MBeanConfigurationElement threadPoolConfig =
+         (MBeanConfigurationElement)mdd.query("service", "ThreadPool").iterator().next();
+      threadPoolObjectName = sc.registerAndConfigureService(threadPoolConfig);
+      sc.invoke(threadPoolObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(threadPoolObjectName, "start", new Object[0], new String[0]);
+
       MBeanConfigurationElement messageStoreConfig =
-         (MBeanConfigurationElement)sdd.query("service", "MessageStore").iterator().next();
+         (MBeanConfigurationElement)mdd.query("service", "MessageStore").iterator().next();
       messageStoreObjectName = sc.registerAndConfigureService(messageStoreConfig);
       sc.invoke(messageStoreObjectName, "create", new Object[0], new String[0]);
       sc.invoke(messageStoreObjectName, "start", new Object[0], new String[0]);
 
       // register server peer as a service, dependencies are injected automatically
       MBeanConfigurationElement serverPeerConfig =
-         (MBeanConfigurationElement)sdd.query("service", "ServerPeer").iterator().next();
+         (MBeanConfigurationElement)mdd.query("service", "ServerPeer").iterator().next();
 
       // overwrite the file configuration, if needed
       if (serverPeerID != null)
@@ -281,9 +300,9 @@ public class LocalTestServer implements Server
       sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
 
-       log.debug("deploying connection factories");
+      log.debug("deploying connection factories");
 
-      List connFactoryElements = sdd.query("service", "ConnectionFactory");
+      List connFactoryElements = cfdd.query("service", "ConnectionFactory");
       connFactoryObjectNames.clear();
       for(Iterator i = connFactoryElements.iterator(); i.hasNext(); )
       {
@@ -299,7 +318,6 @@ public class LocalTestServer implements Server
       sc.bindDefaultJMSProvider();
       // bind the JCA ConnectionFactory
       sc.bindJCAJMSConnectionFactory();
-
    }
 
    public void stopServerPeer() throws Exception

@@ -156,7 +156,7 @@
     <property name="build.parsers" value="${module.output}/parsers"/>
 
      <!-- Messaging specific structure properties -->
-     <property name="build.sar" value="${module.output}/sar"/>
+     <property name="build.jar" value="${module.output}/jar"/>
      <property name="build.scoped-sar" value="${module.output}/scoped-sar"/>
 
     <!-- Install/Release structure -->
@@ -376,7 +376,7 @@
       depends="_buildmagic:build-bypass-check"
       unless="build-bypass.on">
 
-      <call target="sar"/>
+      <call target="jar"/>
 
       <!-- Update the build marker to allow bypassing -->
       <touch file="${build-bypass.marker}"/>
@@ -498,16 +498,10 @@
       <mkdir dir="${build.lib}"/>
    </target>
 
-   <target name="jar" depends="compile, create-lib-dir">
+   <target name="jar" depends="compile, create-lib-dir, jar-structure">
       <jar jarfile="${build.lib}/jboss-${module.name}.jar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
-      </jar>
-   </target>
-
-   <target name="sar" depends="compile, create-lib-dir, jar, sar-structure">
-      <jar jarfile="${build.lib}/jboss-${module.name}.sar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}" includes="**"/>
-         <fileset dir="${build.sar}" includes="**"/>
+         <fileset dir="${build.jar}" includes="**"/>
       </jar>
    </target>
 
@@ -515,44 +509,37 @@
       <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
          <fileset dir="${build.scoped-sar}" includes="**"/>
-         <fileset dir="${build.sar}" includes="**" excludes="META-INF/jboss-service.xml"/>
+         <fileset dir="${build.jar}" includes="**"/>
       </jar>
    </target>
 
-   <target name="artifacts" depends="sar, scoped-sar, client-jar"/>
+   <target name="artifacts" depends="jar, scoped-sar, client-jar"/>
 
-   <target name="sar-structure">
-      <mkdir dir="${build.sar}/META-INF"/>
-      <mkdir dir="${build.sar}/xmdesc"/>
-      <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
-            tofile="${build.sar}/META-INF/jboss-service.xml"/>
-      <copy file="${build.etc}/VERSION" toFile="${build.sar}/VERSION"/>
-      <!--
-           copy all other deployment descriptors from ${source.etc}/server/default/deploy,
-           for example jms-ds.xml, etc.
-      -->
-      <copy todir="${build.sar}">
-         <fileset dir="${source.etc}/server/default/deploy/"
-                  includes="*.xml"
-                  excludes="jboss-messaging-service.xml"/>
-      </copy>
-      <copy todir="${build.sar}/xmdesc">
+   <target name="jar-structure">
+      <mkdir dir="${build.jar}/META-INF"/>
+      <mkdir dir="${build.jar}/xmdesc"/>
+
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/messaging-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/connection-factories-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/destinations-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/hsqldb-persistence-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/remoting-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/jms-ds.xml"/>
+      <copy file="${build.etc}/VERSION" toFile="${build.jar}/VERSION"/>
+
+      <copy todir="${build.jar}/xmdesc">
          <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
       </copy>
-      <copy todir="${build.sar}" file="${source.etc}/aop-messaging-server.xml"/>
-      <copy todir="${build.sar}" file="${source.etc}/aop-messaging-client.xml"/>
-      <copy todir="${build.sar}" file="${source.etc}/server/default/config/messaging-users.properties"/>
-      <copy todir="${build.sar}" file="${source.etc}/server/default/config/messaging-roles.properties"/>
+      <copy todir="${build.jar}" file="${source.etc}/aop-messaging-server.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/aop-messaging-client.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/config/messaging-users.properties"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/config/messaging-roles.properties"/>
    </target>
 
-   <target name="scoped-sar-structure" depends="sar-structure, extract-server-dependencies">
-      <!-- enable scoping -->
-      <copy file="${source.etc}/server/default/deploy/jboss-messaging-service.xml"
-            tofile="${build.scoped-sar}/META-INF/jboss-service.xml"/>
-      <replaceregexp file="${build.scoped-sar}/META-INF/jboss-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
+   <target name="scoped-sar-structure" depends="jar-structure, extract-server-dependencies">
+
+      <copy todir="${build.scoped-sar}/META-INF" file="${source.etc}/server/default/deploy/jboss-service.xml"/>
+
    </target>
 
    <target name="extract-server-dependencies">
@@ -773,7 +760,7 @@
             todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
    </target>
 
-   <target name="deploydefault" depends="sar">
+   <target name="deploydefault" depends="jar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
             todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
    </target>
@@ -786,7 +773,7 @@
    <!-- TCK tasks                                                          -->
    <!-- ================================================================== -->
 
-   <target name="cts-deploy" depends="sar">
+   <target name="cts-deploy" depends="jar">
       <copy file="${build.lib}/jboss-${module.name}.sar"
          todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
    </target>

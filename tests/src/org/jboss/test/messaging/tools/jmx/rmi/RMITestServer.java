@@ -251,6 +251,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.query(pattern);
    }
 
+   public String getDatabaseType()
+   {
+      return server.getDatabaseType();
+   }
+
    public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
    {
       server.setAttribute(on, name, valueAsString);
