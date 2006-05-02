@@ -91,7 +91,6 @@ public class StressTestBase extends MessagingTestCase
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
-      
       queue1 = (Destination)ic.lookup("/queue/Queue1");
       queue2 = (Destination)ic.lookup("/queue/Queue2");
       queue3 = (Destination)ic.lookup("/queue/Queue3");
