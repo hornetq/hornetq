@@ -8,7 +8,7 @@
    <property file="./output/last-run.properties"/>
    <property file="./smoke.properties"/>
    <property name="sleep.interval" value="60"/>
-   <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+   <property name="messaging.artifact.name" value="jboss-messaging-scoped.sar"/>
    <property name="relative.client.jar.location" value="../../util"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="release.admin.target" value="install"/>
@@ -54,14 +54,14 @@
    </target>
 
    <target name="create-messaging-config">
-      <available file="../../output/lib/${messaging.sar.name}" property="archive.present"/>
-      <fail unless="archive.present">Cannot find deployment archive ../../output/lib/${messaging.sar.name}</fail>
+      <available file="../../output/lib/${messaging.artifact.name}" property="archive.present"/>
+      <fail unless="archive.present">Cannot find deployment archive ../../output/lib/${messaging.artifact.name}</fail>
       <ant antfile="../../util/release-admin.xml" target="${release.admin.target}">
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="messaging.config.name" value="messaging-smoke-test"/>
          <property name="standalone.messaging.config.name" value="messaging-smoke-test"/>
-         <property name="relative.sar.location" value="../../output/lib"/>
-         <property name="messaging.sar.name" value="${messaging.sar.name}"/>
+         <property name="relative.artifact.location" value="../../output/lib"/>
+         <property name="messaging.artifact.name" value="${messaging.artifact.name}"/>
       </ant>
       <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
       <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
@@ -214,7 +214,7 @@
       </ant>
       <antcall target="display-warnings-and-errors"/>
       <!-- record successful run -->
-      <echo message="JBOSS_HOME=${jboss.home} INSTALLATION_TYPE=${release.admin.target} SAR_NAME=${messaging.sar.name} EXAMPLE_NAME=${example.name}${line.separator}"
+      <echo message="JBOSS_HOME=${jboss.home} INSTALLATION_TYPE=${release.admin.target} SAR_NAME=${messaging.artifact.name} EXAMPLE_NAME=${example.name}${line.separator}"
             file="./output/smoke.log" append="yes"/>
    </target>
 
@@ -367,17 +367,7 @@
       <antcall target="build-deployment-archives-from-scratch"/>
 
       <!--
-      4.0.0 NOT SUPPORTED
-      <antcall target="smoke">
-         <param name="jboss.home" value="${jboss400.home}"/>
-      </antcall>
-      -->
-
-      <!--
-      4.0.1 NOT SUPPORTED
-      <antcall target="smoke">
-         <param name="jboss.home" value="${jboss401.home}"/>
-      </antcall>
+           4.0.0, 4.0.1 NOT SUPPORTED
       -->
 
       <antcall target="smoke">
@@ -398,7 +388,6 @@
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
-         <!-- <param name="run.ejb3mdb.example" value="true"/> -->
       </antcall>
 
       <antcall target="smoke">
@@ -423,7 +412,7 @@
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404CR2-installer.home}"/>
       </antcall>
-
+                                                                
       <!--
          Stateless Session Bean smoke test will fail on this because the client talks to
          Messaging's remoting and to Unified Invoker's remoting and runs into compatibility
@@ -441,7 +430,7 @@
       -->
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
-         <param name="messaging.sar.name" value="jboss-messaging.sar"/>
+         <param name="messaging.artifact.name" value="jboss-messaging.jar"/>
          <param name="replace.remoting" value="true"/>
       </antcall>
 

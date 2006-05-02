@@ -21,8 +21,8 @@
    <!-- DO NOT change this value here, otherwise the installation script won't work. Change it in
         do-not-distribute.properties.
    -->
-   <property name="relative.sar.location" value=".."/>
-   <property name="messaging.sar.name" value="jboss-messaging-scoped.sar"/>
+   <property name="relative.artifact.location" value=".."/>
+   <property name="messaging.artifact.name" value="jboss-messaging-scoped.sar"/>
 
    <target name="validate-jboss">
       <fail unless="jboss.home" message="JBOSS_HOME environment variable not set! Set it and try again."/>
@@ -35,16 +35,16 @@
       <fail if="messaging-config" message="'${messaging.config.name}' configuration already exists! Delete it manually and try again."/>
    </target>
 
-   <target name="validate-messaging-sar">
-      <available property="messaging-sar-exists" type="file" file="${relative.sar.location}/${messaging.sar.name}"/>
-      <fail unless="messaging-sar-exists" message="${relative.sar.location}/${messaging.sar.name} does not exist! Build it and try again."/>
+   <target name="validate-messaging-artifact">
+      <available property="messaging-artifact-exists" type="file" file="${relative.artifact.location}/${messaging.artifact.name}"/>
+      <fail unless="messaging-artifact-exists" message="${relative.artifact.location}/${messaging.artifact.name} does not exist! Build it and try again."/>
    </target>
 
    <target name="install" depends="create-server-config"/>
 
-   <target name="create-server-config" depends="validate-jboss, prevent-messaging-overwrite, validate-messaging-sar">
+   <target name="create-server-config" depends="validate-jboss, prevent-messaging-overwrite, validate-messaging-artifact">
 
-      <echo message="Creating JBoss Messaging configuration '${messaging.config.name}' for ${jboss.home} based on ${messaging.sar.name}"/>
+      <echo message="Creating JBoss Messaging configuration '${messaging.config.name}' for ${jboss.home} based on ${messaging.artifact.name}"/>
 
       <mkdir dir="${jboss.home}/server/${messaging.config.name}"/>
       <copy todir="${jboss.home}/server/${messaging.config.name}">
@@ -83,10 +83,51 @@
       -->
       
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
-      <unjar src="${relative.sar.location}/${messaging.sar.name}"
+      <condition property="is.sar" value="true">
+         <contains substring=".sar" string="${messaging.artifact.name}"/>
+      </condition>
+      <antcall target="expand-jar"/>
+      <antcall target="expand-sar"/>
+   </target>
+
+   <target name="expand-sar" if="is.sar">
+      <unjar src="${relative.artifact.location}/${messaging.artifact.name}"
              dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging.sar">
       </unjar>
    </target>
+
+   <target name="expand-jar" unless="is.sar">
+      <unjar src="${relative.artifact.location}/${messaging.artifact.name}"
+             dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging">
+      </unjar>
+      <jar jarfile="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging/jboss-messaging.jar"
+           manifest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging/META-INF/MANIFEST.MF">
+         <fileset dir="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging" includes="org/**,VERSION,aop-messaging*.xml"/>
+      </jar>
+      <delete>
+         <fileset dir="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging">
+            <include name="VERSION"/>
+            <include name="aop-messaging*.xml"/>
+         </fileset>
+      </delete>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging/org"/>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging/META-INF"/>
+
+      <move file="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging/jboss-messaging.jar"
+            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+      <move todir="${jboss.home}/server/${messaging.config.name}/conf/xmdesc">
+         <fileset dir="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging/xmdesc">
+            <include name="*.xml"/>
+         </fileset>
+      </move>
+      <move todir="${jboss.home}/server/${messaging.config.name}/conf">
+         <fileset dir="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging">
+            <include name="messaging-*.properties"/>
+         </fileset>
+      </move>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging/xmdesc"/>
+   </target>
+
 
    <target name="enable-jndi-call-by-reference" if="naming.service.config.present">
       <replaceregexp file="${naming.config.file}" flags="s">
@@ -96,10 +137,10 @@
    </target>
 
 
-   <target name="standalone" depends="validate-jboss, validate-messaging-sar"
+   <target name="standalone" depends="validate-jboss, validate-messaging-artifact"
            description="Creates a standalone Messaging server configuration based on a default JBoss instance">
 
-      <echo message="Creating Standalone Messaging configuration '${standalone.messaging.config.name}' for ${jboss.home} based on ${messaging.sar.name}"/>
+      <echo message="Creating Standalone Messaging configuration '${standalone.messaging.config.name}' for ${jboss.home} based on ${messaging.artifact.name}"/>
 
       <mkdir dir="${jboss.home}/server/${standalone.messaging.config.name}/conf"/>
       <mkdir dir="${jboss.home}/server/${standalone.messaging.config.name}/lib"/>
@@ -236,14 +277,14 @@
 
       <!-- deploy exploded messaging -->
 
-      <unjar src="${relative.sar.location}/${messaging.sar.name}"
-             dest="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar">
+      <unjar src="${relative.artifact.location}/${messaging.artifact.name}"
+             dest="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging">
       </unjar>
 
       <!-- un-scope the deployment -->
 
       <move todir="${jboss.home}/server/${standalone.messaging.config.name}/lib">
-         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar">
+         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging">
             <include name="javassist.jar"/>
             <include name="jboss-aop.jar"/>
             <include name="jboss-aspect-library.jar"/>
@@ -256,19 +297,39 @@
          </fileset>
       </move>
 
-      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar/META-INF/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <delete file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging.sar/jms-ds.xml"/>
+      <jar jarfile="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/jboss-messaging.jar"
+           manifest="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/META-INF/MANIFEST.MF">
+         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging" includes="org/**,VERSION,aop-messaging*.xml"/>
+      </jar>
+      <delete>
+         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging">
+            <include name="VERSION"/>
+            <include name="aop-messaging*.xml"/>
+         </fileset>
+      </delete>
+      <delete dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/org"/>
+      <delete dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/META-INF"/>
+      <move file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/jboss-messaging.jar"
+            todir="${jboss.home}/server/${standalone.messaging.config.name}/lib"/>
+      <move todir="${jboss.home}/server/${standalone.messaging.config.name}/conf/xmdesc">
+         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/xmdesc">
+            <include name="*.xml"/>
+         </fileset>
+      </move>
+      <move todir="${jboss.home}/server/${standalone.messaging.config.name}/conf">
+         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging">
+            <include name="messaging-*.properties"/>
+         </fileset>
+      </move>
+      <delete dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/xmdesc"/>
+      <delete file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/jms-ds.xml"/>
 
    </target>
 
    <target name="dump">
       <echo message="jboss.home=${jboss.home}"/>
       <echo message="messaging.config.name=${messaging.config.name}"/>
-      <echo message="relative.sar.location=${relative.sar.location}"/>
+      <echo message="relative.artifact.location=${relative.artifact.location}"/>
    </target>
 
 
