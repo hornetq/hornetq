@@ -1,0 +1,55 @@
+<!--
+     Service Container persistence configuration file
+
+     $Id$
+-->
+
+<container>
+
+   <!--
+        The value of "test.database" system property, if set, takes precedence.
+   -->
+   <database>hsqldb</database>
+
+   <database-configurations>
+
+      <database-configuration name="hsqldb">
+         <url>jdbc:hsqldb:mem:test</url>
+         <driver>org.hsqldb.jdbcDriver</driver>
+         <username>sa</username>
+      </database-configuration>
+
+      <database-configuration name="hsqldb2">
+         <url>jdbc:hsqldb:mem:test2</url>
+         <driver>org.hsqldb.jdbcDriver</driver>
+         <username>sa</username>
+      </database-configuration>
+
+      <database-configuration name="mysql">
+         <url>jdbc:mysql://localhost:3306/messaging</url>
+         <driver>com.mysql.jdbc.Driver</driver>
+         <isolation>TRANSACTION_READ_COMMITTED</isolation>
+         <username>sa</username>
+      </database-configuration>
+
+      <database-configuration name="oracle">
+         <url>jdbc:oracle:thin:@localhost:1521/XE</url>
+         <driver>oracle.jdbc.driver.OracleDriver</driver>
+         <isolation>TRANSACTION_READ_COMMITTED</isolation>
+         <username>messaging</username>
+         <password>messaging</password>
+      </database-configuration>
+
+      <database-configuration name="postgres">
+         <url>jdbc:postgresql://localhost:5432/jboss</url>
+         <driver>org.postgresql.Driver</driver>
+         <isolation>TRANSACTION_READ_COMMITTED</isolation>
+         <username>jboss</username>
+         <password>jboss</password>
+      </database-configuration>
+
+   </database-configurations>
+
+</container>
+
+
