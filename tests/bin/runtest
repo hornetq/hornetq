@@ -75,7 +75,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST"
+JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE"
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
@@ -86,23 +86,21 @@ JGROUPS_LIB=$reldir/../../../thirdparty/jgroups/lib/jgroups.jar
 #SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
 SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
 
-
-
 if [ "$TARGET_TEST" != "" ]; then
    TARGET_TEST="-t $TARGET_TEST"
 fi
 
 if [ "$isRemote" = "true" ]; then
+  export TEST_DATABASE
   $reldir/start-rmi-server $REMOTE_DEBUG_FLAG
 fi
-
 
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
 $reldir/../../src/etc${SEP}\
 $reldir/../../output/etc${SEP}\
 $reldir/../output/classes${SEP}\
-$reldir/../../output/classes${SEP}\
+$reldir/../../output/lib/jboss-messaging.jar${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
@@ -113,7 +111,7 @@ $reldir/../../../thirdparty/apache-httpclient/lib/commons-httpclient.jar${SEP}\
 $reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
 $reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
 $reldir/../../src/resources/hsqldb.jar${SEP}\
-$reldir/../../src/resources/mysql-connector-java-3.1.12-bin.jar${SEP}\
+$reldir/../../src/resources/mysql-connector-java-3.0.17-ga-bin.jar${SEP}\
 $reldir/../../src/resources/ojdbc14.jar${SEP}\
 $reldir/../../src/resources/postgresql-8.1-405.jdbc3.jar${SEP}\
 ${REMOTING_LIB}${SEP}\

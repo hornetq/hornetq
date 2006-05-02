@@ -35,12 +35,16 @@ mkdir -p $reldir/../output/logs
 
 JAVA_OPTS="$JAVA_OPTS -Xmx768M -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote"
 
+if [ "$TEST_DATABASE" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dtest.database=$TEST_DATABASE"
+fi
+
+
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
 
 #SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
 SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
-
 
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
@@ -52,7 +56,7 @@ $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
 $reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
-$reldir/../../src/resources/mysql-connector-java-3.1.12-bin.jar${SEP}\
+$reldir/../../src/resources/mysql-connector-java-3.0.17-ga-bin.jar${SEP}\
 $reldir/../../src/resources/ojdbc14.jar${SEP}\
 $reldir/../../src/resources/postgresql-8.1-405.jdbc3.jar${SEP}\
 ${REMOTING_LIB}${SEP}\

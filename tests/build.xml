@@ -72,7 +72,7 @@
       <path location="../src/resources/jboss-remoting.jar"/>
       <path location="../src/resources/jboss-serialization.jar"/>
       <!-- MySQl JDBC driver -->
-      <path location="../src/resources/mysql-connector-java-3.1.12-bin.jar"/>
+      <path location="../src/resources/mysql-connector-java-3.0.17-ga-bin.jar"/>
       <!-- Oracle JDBC driver -->
       <path location="../src/resources/ojdbc14.jar"/>
       <!-- PostgreSQL JDBC driver -->
@@ -93,8 +93,8 @@
 
    <!-- The combined dependent module classpath -->
    <path id="dependentmodule.classpath">
-      <path refid="jboss.common.classpath"/>
       <path refid="jboss.jms.classpath"/>
+      <path refid="jboss.common.classpath"/>
       <path refid="jboss.j2ee.classpath"/>
       <path refid="jboss.j2se.classpath"/>
       <path refid="jboss.jmx.classpath"/>
@@ -131,6 +131,8 @@
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
    <property name="build.tests.remote" value="false"/>
    <property name="test.bind.address" value="localhost"/>
+   <property name="functional.tests.database" value="hsqldb"/>
+   <property name="stress.tests.database" value="mysql"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -144,6 +146,7 @@
       <path refid="library.classpath"/>
       <path refid="dependentmodule.classpath"/>
       <pathelement path="${module.root}/etc/stress"/>
+      <pathelement path="${module.root}/etc"/>
       <pathelement path="${module.root}/../src/etc"/>
       <pathelement path="${module.root}/../output/etc"/>
    </path>
@@ -237,6 +240,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="remote.test.suffix" value="-remote"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -255,6 +259,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="remote.test.suffix" value="-remote"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${stress.tests.database}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -310,6 +315,7 @@
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="jboss.jms.lib" value="${jboss.jms.lib}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
@@ -355,6 +361,7 @@
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${stress.tests.database}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -397,6 +404,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -468,6 +476,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${stress.tests.database}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -559,6 +568,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -617,6 +627,7 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <path refid="test.classpath"/>
@@ -658,6 +669,7 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <path refid="test.classpath"/>
@@ -695,6 +707,7 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <path refid="test.classpath"/>
@@ -738,9 +751,10 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
-<!--
-         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
--->
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <!--
+            <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
+         -->
          <jvmarg value="-Xmx1024M"/>
          <classpath>
             <path refid="test.classpath"/>
@@ -788,6 +802,8 @@
    <target name="messagereport" depends="messagetests, copy-stylesheets, compile-report"/>
 
    <target name="corereport" depends="coretests, copy-stylesheets, compile-report"/>
+
+   <target name="stressreport" depends="stress-tests, copy-stylesheets, compile-report"/>
 
    <target name="functional-tests" depends="tests"/>
 
