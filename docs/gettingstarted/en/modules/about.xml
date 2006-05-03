@@ -1,9 +1,24 @@
 <chapter id="about">
 
-  <title>About this guide</title>
-  <para>The purpose of this guide is to get you up and running quickly with JBoss Messaging 1.0 - the new module in the JEMS stack</para>
+   <title>About This Guide</title>
 
    <para>  </para>
+   <para>  </para>
+
+   <para>
+      The purpose of this guide is to get you up and running quickly with JBoss Messaging 1.0.1.
+      JBoss Messaging is a complete rewrite of JBossMQ and the future JEMS JMS provider, as well as
+      the JBoss ESB backbone.
+   </para>
+
+   <para>  </para>
+   <para>  </para>
+   
+   <para>
+      This guide is work in progress. Please send your suggestions or comments to the
+      <ulink url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">JBoss Messaging user forum</ulink>.
+   </para>
+
    <para>  </para>
    <para>  </para>
    <para>  </para>
@@ -20,23 +35,23 @@
    <para>  </para>
 
    <para>
-   <emphasis role="bold">Team:</emphasis>
+      <emphasis role="bold">Team:</emphasis>
    </para>
 
    <para>
-    Ovidiu Feodorov, Project Lead
+      Ovidiu Feodorov, Project Lead
    </para>
 
    <para>
-    Tim Fox, Core Messaging Developer
+      Tim Fox, Core Messaging Developer
    </para>
 
    <para>
-    Luc Texier, Lead Support EMEA
+      Luc Texier, Lead Support EMEA
    </para>
 
    <para>
-    Other contributions by: Bela Ban, Adrian Brock, Alex Fu, Aaron Walker
+      Other contributions by: Adrian Brock, Bela Ban, Alex Fu, Aaron Walker
    </para>
 
 

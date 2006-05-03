@@ -375,8 +375,8 @@ public class StatelessSessionExampleBean implements SessionBean
 
   </section>
 
-  <section id="examples.mdb">
-    <title>Using Message-driven beans</title>
+  <section id="examples.mdb.ejb21">
+    <title>Using EJB2.1 Message Driven Beans</title>
     <para>This example deploys a simple Message Driven Bean that processes messages sent to a test queue.  Once it receives a message and "processes" it, the MDB sends an acknowledgment message to a temporary destination created by the sender for this purpose. The example is considered successful if the sender receives the acknowledgment message.
     </para>
 
@@ -504,6 +504,137 @@ public class MDBExample implements MessageDrivenBean, MessageListener
 	
 
   </section>
+
+
+   <section id="examples.mdb.ejb3">
+     <title>Using EJB3 Message Driven Beans</title>
+
+      <para>
+         This example deploys a simple EJB3 Message Driven Bean that processes messages sent to a
+         test queue.  Once it receives a message and "processes" it, the MDB sends an
+         acknowledgment message to a temporary destination created by the sender for this purpose.
+         The example is considered successful if the sender receives the acknowledgment message.
+      </para>
+
+      <para>
+         This example relies on having access to a running JBoss Messaging instance.
+         The JBoss Messaging instance must be installed and started according to the
+         "Installation" chapter of this document. The example will automatically deploy
+         its own queue, unless a queue with the same name is already deployed.
+      </para>
+
+      <para>
+         This example also relies on having access to the
+         <filename>jboss-messaging-client.jar</filename> archive that comes with the release bundle.
+         If you run this example from an unzipped installation bundle, the example run script
+         is correctly configured to find the client jar. Otherwise, you must modify example's
+         <filename>build.xml</filename> accordingly.
+      </para>
+
+      <para>
+         The example was designed to deploy its server-side artifacts under a JBoss'
+         <literal>messaging</literal> configuration. If you intend to use the script with
+         a JBoss configuration that is named differently, please modify the example's
+         <filename>build.xml</filename> accordingly.
+      </para>
+
+      <important>
+         The JBoss instance that runs the Messaging server must also have EJB3 support
+         previously installed. If the EJB3 support is not installed, the example will fail
+         with an error message similar to:
+
+         <programlisting>
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not seem to be installed in C:\work\src\jboss-4.0.3-src\build\output\jboss-4.0.3/server/messaging! Install it and try again.
+         </programlisting>
+
+         <para>
+            For instructions on how to install EJB3 support,
+            please go to <ulink url="http://docs.jboss.org/ejb3">JBoss EJB3 documentation page</ulink>
+            or use the JBoss Installer.
+         </para>
+      </important>
+
+      <para> </para>
+      <para> </para>
+      <para>
+         The EJB3 Message Driven Bean source code:
+      </para>
+     <programlisting>
+        @MessageDriven(activateConfig =
+        {
+              @ActivationConfigProperty(propertyName="destinationType", propertyValue="javax.jms.Queue"),
+              @ActivationConfigProperty(propertyName="destination", propertyValue="queue/testQueue")
+        })
+        public class EJB3MDBExample implements MessageListener
+        {
+           public void onMessage(Message m)
+           {
+              businessLogic(m);
+           }
+
+
+           private void businessLogic(Message m)
+           {
+              Connection conn = null;
+              Session session = null;
+
+              try
+              {
+                 TextMessage tm = (TextMessage)m;
+
+                 String text = tm.getText();
+                 System.out.println("message " + text + " received");
+
+                 // flip the string
+                 String result = "";
+                 for(int i = 0; i &lt; text.length(); i++)
+                 {
+                    result = text.charAt(i) + result;
+                 }
+
+                 System.out.println("message processed, result: " + result);
+
+
+                 InitialContext ic = new InitialContext();
+                 ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
+                 ic.close();
+
+                 conn = cf.createConnection();
+                 conn.start();
+                 session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+                 Destination replyTo = m.getJMSReplyTo();
+                 MessageProducer producer = session.createProducer(replyTo);
+                 TextMessage reply = session.createTextMessage(result);
+
+                 producer.send(reply);
+                 producer.close();
+
+              }
+              catch(Exception e)
+              {
+                 e.printStackTrace();
+                 System.out.println("The Message Driven Bean failed!");
+              }
+              finally
+              {
+                 if (conn != null)
+                 {
+                    try
+                    {
+                       conn.close();
+                    }
+                    catch(Exception e)
+                    {
+                       System.out.println("Could not close the connection!" +e);
+                    }
+                 }
+              }
+           }
+        }
+     </programlisting>
+   </section>
+
 
 
 </chapter>

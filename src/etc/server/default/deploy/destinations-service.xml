@@ -8,7 +8,9 @@
 
 <server>
 
-   <!-- The Dead Letter Queue. This destination is a dependency of an EJB MDB container -->
+   <!--
+      The Dead Letter Queue. This destination is a dependency of an EJB MDB container.
+   -->
 
    <mbean code="org.jboss.jms.server.destination.Queue"
       name="jboss.messaging.destination:service=Queue,name=DLQ"
@@ -16,7 +18,9 @@
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 
-   <!-- Example queues -->
+   <!--
+      Example destinations.
+   -->
 
    <mbean code="org.jboss.jms.server.destination.Topic"
       name="jboss.messaging.destination:service=Topic,name=testTopic"

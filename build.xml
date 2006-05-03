@@ -658,53 +658,50 @@
    <!-- Release tasks                                                      -->
    <!-- ================================================================== -->
 
+   <target name="archive-functional" depends="release-structure">
+      <zip destfile="${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip"
+           basedir="./tests/output/reports" includes="**"/>
+   </target>
+
+   <target name="archive-stress" depends="release-structure">
+      <zip destfile="${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip"
+           basedir="./tests/output/reports" includes="**"/>
+   </target>
+
+   <target name="archive-smoke" depends="release-structure">
+      <copy todir="${release.output}/test-results">
+         <fileset dir="./tests/smoke/output">
+            <include name="*.html"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="release-bundle" depends="artifacts, release-structure, examples, userdoc, bundle-source, bundle-test-results, javadoc">
+
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client.jar"/>
+      <copy todir="${release.output}" file="./docs/README.html"/>
+      <copy todir="${release.output}/api">
+         <fileset dir="${build.api}" includes="**"/>
+      </copy>
+      <copy todir="${release.output}/util">
+         <fileset dir="./util">
+            <include name="*.xml"/>
+            <exclude name="do-not-distribute*"/>
+         </fileset>
+      </copy>
+      <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
+           basedir="${module.output}/release"/>
+      <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
+   </target>
+
    <target name="release-structure" depends="init">
       <property name="release.output" value="${module.output}/release/jboss-messaging-${module.version}"/>
-      <mkdir dir="${release.output}/src"/>
-      <mkdir dir="${release.output}/tests"/>
-      <mkdir dir="${release.output}/examples"/>
       <mkdir dir="${release.output}/util"/>
-   </target>
-
-   <target name="source" depends="release-structure">
-      <copy todir="${release.output}/src">
-         <fileset dir="${source.java}">
-            <exclude name="**/CVS"/>
-         </fileset>
-      </copy>
-      <copy todir="${release.output}/tests">
-         <fileset dir="${module.root}/tests/src">
-            <include name="org/jboss/test/**"/>
-            <exclude name="**/CVS"/>
-         </fileset>
-      </copy>
-   </target>
-
-   <target name="source-zip" depends="source">
-      <zip destfile="${release.output}/jboss-messaging-${module.version}-src.zip"
-         basedir="${release.output}/src"/>
-   </target>
-
-   <target name="zip-test-results" depends="release-structure">
-      <copy todir="./tests/output/jboss-messaging-test-reports-${module.version}">
-         <fileset dir="./tests/output/reports">
-            <include name="**"/>
-         </fileset>
-      </copy>
-      <zip basedir="./tests/output/"
-           destfile="${release.output}/jboss-messaging-test-reports-${module.version}.zip"
-           includes="jboss-messaging-test-reports-${module.version}/**"/>
-   </target>
-
-   <target name="zip-stress-test-results" depends="release-structure">
-      <copy todir="./tests/output/jboss-messaging-stress-test-reports-${module.version}">
-         <fileset dir="./tests/output/reports">
-            <include name="**"/>
-         </fileset>
-      </copy>
-      <zip basedir="./tests/output/"
-           destfile="${release.output}/jboss-messaging-stress-test-reports-${module.version}.zip"
-           includes="jboss-messaging-stress-test-reports-${module.version}/**"/>
+      <mkdir dir="${release.output}/examples"/>
+      <mkdir dir="${release.output}/docs"/>
+      <mkdir dir="${release.output}/src"/>
+      <mkdir dir="${release.output}/test-results"/>
    </target>
 
    <!-- Note: This target must be ran after the smoke test -->
@@ -720,6 +717,41 @@
             <include name="*-persistence-service.xml"/>
          </fileset>
       </copy>
+   </target>
+
+   <target name="userdoc" depends="release-structure">
+      <ant dir="./docs/gettingstarted" antfile="build.xml" target="all"/>
+      <copy todir="${release.output}/docs">
+         <fileset dir="${module.output}/docs/gettingstarted/en">
+            <include name="**"/>
+            <exclude name="**/do-not-distribute*"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="bundle-source" depends="release-structure">
+      <zip destfile="${release.output}/src/jboss-messaging-${module.version}-src.zip"
+           basedir="${source.java}" excludes="**/CVS,*.iml"/>
+      <zip destfile="${release.output}/src/jboss-messaging-tests-${module.version}-src.zip"
+           basedir="${module.root}/tests/src" includes="org/jboss/test/**" excludes="**/CVS,*.iml"/>
+   </target>
+
+   <target name="bundle-test-results" depends="release-structure">
+      <available file="${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip"
+                 property="functional.test.results.present" value="true"/>
+      <fail message="Functional test results ${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip not available!"
+            unless="functional.test.results.present"/>
+      <available file="${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip"
+                 property="stress.test.results.present" value="true"/>
+      <fail message="Stress test results ${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip not available!"
+            unless="stress.test.results.present"/>
+
+      <!-- TODO
+      <available file="${release.output}/test-results/jboss-messaging-smoke-test-results-${module.version}.zip"
+                 property="smoke.test.results.present" value="true"/>
+      <fail message="Smoke test results ${release.output}/test-results/jboss-messaging-functional-smoke-results-${module.version}.zip not available!"
+            unless="smoke.test.results.present"/>
+      -->
    </target>
 
    <target name="javadoc" depends="compile">
@@ -741,24 +773,6 @@
       </javadoc>
    </target>
 
-   <target name="release-bundle" depends="release-structure, scoped-sar, source, source-zip, examples, javadoc">
-
-      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
-      <copy todir="${release.output}" file="./docs/README.html"/>
-      <copy todir="${release.output}/api">
-         <fileset dir="${build.api}" includes="**"/>
-      </copy>
-      <copy todir="${release.output}/util">
-         <fileset dir="./util">
-            <include name="*.xml"/>
-            <exclude name="do-not-distribute*"/>
-         </fileset>
-      </copy>
-
-      <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
-           basedir="${module.output}/release"/>
-      <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
-   </target>
 
    <target name="deployscoped" depends="scoped-sar">
       <copy file="${build.lib}/jboss-${module.name}-scoped.sar"

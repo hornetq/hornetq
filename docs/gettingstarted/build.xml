@@ -1,10 +1,10 @@
-<project name="jbmessaging.documentation" default="all.doc" basedir=".">
+<project name="jbmessaging.documentation" default="all" basedir=".">
 
   <property name="build.dir" value="${basedir}/../../output/docs/gettingstarted"/>
   <property name="pdf.name"  value="JBoss Messaging - Getting Started.pdf" />
   <import file="${basedir}/../../../docbook-support/support.xml" />
 
-  <target name="all.doc" depends="clean">
+  <target name="all" depends="clean">
     <mkdir dir="en/images" /> 
     <antcall target="lang.all"><param name="lang" value="en"/></antcall>
   </target>

@@ -1,45 +1,100 @@
 <chapter id="gettingstarted">
-
-  <title>Getting started</title>
-  <para>
-    The official release of JBoss Messaging is available as a free download from <ulink url="http://labs.jboss.com/portal/index.html?ctrl:id=page.default.info&amp;project=jbossmessaging">the JBoss Messaging project landing page.</ulink>
-  </para>
-
-  <section id="releasebundle">
-    <title>The JBoss Messaging release bundle</title>
-
-    <itemizedlist>
-    <listitem><emphasis role="bold">jboss-messaging-scoped.sar: </emphasis> the deployable JBoss service archive that contains JBoss Messaging and its dependencies.</listitem>
-<listitem><emphasis role="bold">jboss-messaging-client-scoped.sar: </emphasis> the client-side library that need to be in the classpath of the client that opens a remote connection to the Messaging server.</listitem>
-<listitem><emphasis role="bold">examples: </emphasis> a collection of examples that should run out of the box and help you validate the installation. Detailed instructions are provided with each example, which range from very simple JMS queue and topic examples to relatively sophisticated use cases in which EJBs and JCA JMS ConnectionFactories are involved.</listitem>
-<listitem><emphasis role="bold">util: </emphasis> a collection of scripts and ant configuration files that will help you with installation, JBossMQ replacement and various other tasks.</listitem>
-<listitem><emphasis role="bold">src: </emphasis> the expanded JBoss Messaging source code. Note that JBoss Messaging cannot be built using exclusively this source snapshot, which is provided here for reference only.</listitem>
-<listitem><emphasis role="bold">jboss-messaging-1.0.0-src.zip: </emphasis> the zipped src directory. The file can be directly installed into and use with a debugger.</listitem>
-<listitem><emphasis role="bold">jboss-messaging-test-results-1.0.0.zip: </emphasis> the results of the release functional testuite run, in XML, text and HTML format.</listitem>
-    </itemizedlist>
-
-  </section>
-
-
-  <section id="CVS">
-    <title>CVS Access</title>
+   <title>Getting Started</title>
 
    <para>
-   If you want to experiment with the latest developments you may checkout the latest code from the 5.0 head branch. Be aware that the information provided in this manual might then not be accurate. Check out the following wiki for the latest instructions http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingBuildInstructions
+      The official releases of JBoss Messaging are available as a free download from
+      <ulink url="http://www.jboss.com/products/messaging">the JBoss Messaging project landing page</ulink>.
    </para>
 
-  </section>
+   <section id="releasebundle">
+      <title>The JBoss Messaging Release Bundle</title>
 
-  <section id="projectdirectory">
-    <title>The JBoss Messaging project directory</title>
-    <itemizedlist>
-      <listitem><emphasis role="bold"><ulink url="mailto:sales@jboss.com?subject=JBossMessaging">Professional Support</ulink></emphasis>: JBoss is the company that backs this project with professional support, training and consultancy services.</listitem>
-      <listitem><emphasis role="bold">Getting Started Guide</emphasis>: is the document you're reading and serves as the main entry point into the project.</listitem>
-      <listitem><emphasis role="bold"><ulink url="http://www.jboss.com/index.htmlmodule=bbop=viewforumf=153">forums</ulink></emphasis>: get in contact with the community, ask questions and discuss JBoss Messaging issues</listitem>
-      <listitem><emphasis role="bold"><ulink url="http://www.jboss.com/wiki/Wiki.jsp?page=JBossMessaging">wiki</ulink></emphasis>: extra information, mostly provided by the community</listitem>
-      <listitem><emphasis role="bold"><ulink url="http://jira.jboss.com/jira/browse/JBMESSAGING">issue tracker</ulink></emphasis>: for submitting bugs and feature requests</listitem>
-      <listitem><emphasis role="bold"><ulink url="http://sourceforge.net/project/showfiles.php?group_id=70542">downloads</ulink></emphasis>: sourceforge download page for jBPM</listitem>
-    </itemizedlist>
-  </section>
+      <para>
+         The JBoss Messaging release bundle (<filename>jboss-messaging-1.0.x.zip</filename>)
+         will expand in a <filename>jboss-messaging-1.0.x</filename> directory that contains:
+      </para>
+
+      <itemizedlist>
+         <listitem>
+            <filename>jboss-messaging-scoped.sar</filename>
+            - the scoped JBoss service archive that contains JBoss Messaging and its
+            dependencies.
+            <warning>
+               Do not simply attempt to copy the archive under a JBoss instance <filename>deploy</filename> directory,
+               since additional steps (such as un-installing JBossMQ and various other configurations
+               tasks) are required for a successful installation. See the Installation chapter for
+               more details.
+            </warning>
+         </listitem>
+         <listitem>
+            <filename>jboss-messaging-client.jar</filename>
+            - the client-side library that need to be in the classpath of the client that opens
+            a remote connection to the Messaging server.
+         </listitem>
+         <listitem>
+            <filename>util</filename>
+            - a collection of <literal>ant</literal> configuration files used to automate
+            installation and release
+            management procedures. See the Installation chapter for more details.
+         </listitem>
+         <listitem>
+            <filename>examples</filename>
+            - a collection of examples that should run out of the box and help you validate the
+            installation. Detailed instructions are provided with each example, which range from
+            very simple JMS queue and topic examples to relatively sophisticated use cases in which
+            EJBs and JCA JMS ConnectionFactories are involved.
+            The <filename>examples/config</filename> sub-directory contains various configuration
+            file examples.
+         </listitem>
+         <listitem>
+           <filename>docs</filename>
+            - this "Getting Started" guide.
+         </listitem>
+         <listitem>
+           <filename>src/jboss-messaging-1.0.x-src.zip</filename>
+            - the zipped source directory. The file can be directly installed into and used
+            with a debugger.
+            <note>
+               JBoss Messaging cannot be built using exclusively this source snapshot, which is
+               provided for reference only.
+            </note>
+         </listitem>
+         <listitem>
+            <filename>src/jboss-messaging-tests-1.0.x-src.zip</filename>
+            - the functional testsuite source archive.
+         </listitem>
+         <listitem>
+            <filename>test-results</filename>
+            - the output of the functional testsuite, stress and smoke test runs for this release.
+            All these files have been generated during the release procedure.
+         </listitem>
+         <listitem>
+            <filename>api</filename>
+            - the Messaging API javadoc.
+         </listitem>
+         <listitem>
+            <filename>README.html</filename>
+            - The release intro document that contains pointers to various other resources,
+            including this Guide.
+         </listitem>
+      </itemizedlist>
+
+   </section>
+
+
+   <section id="CVS">
+      <title>CVS Access</title>
+
+      <para>
+         If you want to experiment with the latest developments you may checkout the latest code
+         from the 5.0 head branch. Be aware that the information provided in this manual might then
+         not be accurate.
+         For the latest instructions, check out the
+         <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingDevelopment">
+            Messaging Development wiki page
+         </ulink>.
+      </para>
+
+   </section>
 
 </chapter>

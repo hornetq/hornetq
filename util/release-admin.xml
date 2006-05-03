@@ -18,6 +18,8 @@
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="messaging.config.name" value="messaging"/>
    <property name="standalone.messaging.config.name" value="standalone-messaging"/>
+
+
    <!-- DO NOT change this value here, otherwise the installation script won't work. Change it in
         do-not-distribute.properties.
    -->
