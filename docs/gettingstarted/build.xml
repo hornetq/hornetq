@@ -1,8 +1,8 @@
 <project name="jbmessaging.documentation" default="all" basedir=".">
 
   <property name="build.dir" value="${basedir}/../../output/docs/gettingstarted"/>
-  <property name="pdf.name"  value="JBoss Messaging - Getting Started.pdf" />
-  <import file="${basedir}/../../../docbook-support/support.xml" />
+  <property name="pdf.name"  value="JBossMessagingGettingStarted.pdf"/>
+  <import file="${basedir}/../../../docbook-support/support.xml"/>
 
   <target name="all" depends="clean">
     <mkdir dir="en/images" /> 
