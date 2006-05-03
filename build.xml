@@ -659,13 +659,27 @@
    <!-- ================================================================== -->
 
    <target name="archive-functional" depends="release-structure">
+      <mkdir dir="./tests/output/jboss-messaging-functional-test-results-${module.version}"/>
+      <copy todir="./tests/output/jboss-messaging-functional-test-results-${module.version}">
+         <fileset dir="./tests/output/reports/html">
+            <include name="**"/>
+         </fileset>
+      </copy>
       <zip destfile="${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip"
-           basedir="./tests/output/reports" includes="**"/>
+           basedir="./tests/output" includes="jboss-messaging-functional-test-results-${module.version}/**"/>
+      <delete dir="./tests/output/jboss-messaging-functional-test-results-${module.version}"/>
    </target>
 
    <target name="archive-stress" depends="release-structure">
+      <mkdir dir="./tests/output/jboss-messaging-stress-test-results-${module.version}"/>
+      <copy todir="./tests/output/jboss-messaging-stress-test-results-${module.version}">
+         <fileset dir="./tests/output/reports/html">
+            <include name="**"/>
+         </fileset>
+      </copy>
       <zip destfile="${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip"
-           basedir="./tests/output/reports" includes="**"/>
+           basedir="./tests/output" includes="jboss-messaging-stress-test-results-${module.version}/**"/>
+      <delete dir="./tests/output/jboss-messaging-stress-test-results-${module.version}"/>
    </target>
 
    <target name="archive-smoke" depends="release-structure">
@@ -691,15 +705,15 @@
          </fileset>
       </copy>
       <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
-           basedir="${module.output}/release"/>
+           basedir="${module.root}/release"/>
       <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
    </target>
 
    <target name="release-structure" depends="init">
-      <property name="release.output" value="${module.output}/release/jboss-messaging-${module.version}"/>
+      <property name="release.output" value="${module.root}/release/jboss-messaging-${module.version}"/>
       <mkdir dir="${release.output}/util"/>
       <mkdir dir="${release.output}/examples"/>
-      <mkdir dir="${release.output}/docs"/>
+      <mkdir dir="${release.output}/docs/gettingstarted"/>
       <mkdir dir="${release.output}/src"/>
       <mkdir dir="${release.output}/test-results"/>
    </target>
@@ -721,7 +735,7 @@
 
    <target name="userdoc" depends="release-structure">
       <ant dir="./docs/gettingstarted" antfile="build.xml" target="all"/>
-      <copy todir="${release.output}/docs">
+      <copy todir="${release.output}/docs/gettingstarted">
          <fileset dir="${module.output}/docs/gettingstarted/en">
             <include name="**"/>
             <exclude name="**/do-not-distribute*"/>
