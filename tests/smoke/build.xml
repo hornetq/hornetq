@@ -252,7 +252,7 @@
       </java>
    </target>
 
-   <target name="generate-smoke-report">
+   <target name="report">
       <java classname="org.jboss.test.messaging.tools.ant.GenerateSmokeReport">
          <arg value="-inputfile"/>
          <arg value="./output/smoke.log"/>
@@ -412,7 +412,7 @@
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404CR2-installer.home}"/>
       </antcall>
-                                                                
+
       <!--
          Stateless Session Bean smoke test will fail on this because the client talks to
          Messaging's remoting and to Unified Invoker's remoting and runs into compatibility
@@ -434,7 +434,7 @@
          <param name="replace.remoting" value="true"/>
       </antcall>
 
-      <antcall target="generate-smoke-report"/>
+      <antcall target="report"/>
 
    </target>
 
