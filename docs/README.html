@@ -7,486 +7,122 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.0.0.GA Release Notes</h1>
-Mar 31, 2006<br>
+JBoss Messaging 1.0.1.CR1 Release Notes</h1>
 <br>
-$Revision$<br>
-<span style="font-weight: bold;"><br>
-</span>
-<h2>Overview</h2>
+May 02, 2006<br>
+<br>
+<br>
+<h2>Installation</h2>
+<br>
 JBoss
-Messaging is a JMS 1.1 compliant JMS provider, based on a
-completely
-new design, which recycles a
-limited number of JBossMQ well-designed sub-systems and replaces
-everything else. The production release will show improvements in three
-areas:<br>
-<ul>
-  <li>&nbsp;Increased performance under high load. The JBoss Messaging
-internals are based on an asynchronous channel
-architecture, which reduces the number of synchronization bottlenecks
-and maximize the throughput of the system. The threading and the
-persistence mechanism have been completely re-thought and
-re-implemented. <br>
-  </li>
-  <li>Better high availability/load balancing features. JBossMQ is
-essentially a singleton (hub and spoke server architecture).
-Some HA features have been later bolted on it, but it lacks in-memory
-replication of NON_PERSISTENT messages, distributed/replicated
-destinations and transparent fail-over. JBoss Messaging will add these
-features. However, production quality clustering will be only available
-in the Messaging 1.2 release.<br>
-  </li>
-  <li>Better modular architecture. There is a clear distinction between
-the reliable distributed messaging
-core and the JMS facade. The implementation uses JBoss AOP and an
-interceptor architecture to implement the JMS Facade. This architecture
-permits advanced configurations, where behavior can be shifted back and
-forth
-from client to server, allowing deployment time configurable thinner or
-thicker
-clients and serverless JMS. <br>
-  </li>
-</ul>
-<span style="font-style: italic;"></span><br>
-The current release has been tested with
-JBoss 4.x series and JBoss 5.0.0.Alpha.<br>
-<br>
-<h2>Contents</h2>
-The JBoss Messaging release bundle includes the following files and
-directories:<br>
-<ul>
-  <li><span style="font-family: monospace;">jboss-messaging-scoped.sar</span>
-- the deployable JBoss service archive that contains JBoss Messaging
-and its dependencies. For instructions on how to deploy the service, go
-to the "Installation" section.</li>
-  <li><span style="font-family: monospace;">jboss-messaging-client-scoped.sar</span>
-- the client-side library that need to be in the classpath of the
-client that opens a remote connection to the Messaging server. <br>
-  </li>
-  <li><span style="font-family: monospace;">examples</span><span
- style="font-family: times new roman,times,serif;"> </span>- a
-collection of examples that should run out of the box and
-help you validate the installation. Detailed instructions are provided
-with each example, which range from very simple JMS queue and topic
-examples to relatively sophisticated use cases in which EJBs and JCA
-JMS ConnectionFactories are involved.</li>
-  <li><span style="font-family: monospace;">api</span><span
- style="font-family: times new roman,times,serif;"> - the Javadoc.</span></li>
-  <li><small><span style="font-family: courier new,courier,monospace;">util<span
- style="font-family: times new roman,times,serif;"> </span></span></small>-
-a collection of scripts and <small><span
- style="font-family: courier new,courier,monospace;">ant </span></small>configuration
-files that will help you
-with installation, JBossMQ replacement and various other tasks.<br>
-  </li>
-  <li><span style="font-family: monospace;">src</span> - the expanded
-JBoss Messaging source code. Note that JBoss Messaging cannot be built
-using exclusively this source snapshot, which is provided here for
-reference only. If you want to build JBoss Messaging from source,
-follow
-the instructions from the "Building JBoss Messaging from Sources"
-section.</li>
-  <li><span style="font-family: monospace;">jboss-messaging-1.0.0.GA-src.zip</span>
-- the zipped <span style="font-family: monospace;">src</span>
-directory. The file can be directly installed into and use with a
-debugger.<br>
-  </li>
-  <li><small><span style="font-family: courier new,courier,monospace;">jboss-messaging-test-results-1.0.0.GA.zip</span></small>
-- the results of the release functional testuite run, in XML, text and
-HTML format.</li>
-  <li><small><span style="font-family: courier new,courier,monospace;">jboss-messaging-stress-test-results-1.0.0.GA.zip</span></small>
-- the results of the release functional testuite in HTML format.</li>
-  <li><span style="font-family: monospace;">tests</span> - the source
-code of the functional tests whose results are available in the
-previously mentioned zip files.<br>
-  </li>
-  <li>This <span style="font-family: monospace;">README </span>file.<br>
-  </li>
-</ul>
-<br>
-<h2>Building JBoss Messaging from source</h2>
-Building JBoss Messaging from source is optional. You don't need to do
-it if you only want to use the binary distribution. <br>
-<br>
-In order to build this version of JBoss Messaging from source, you will
-need to check out the whole JBoss AS source tree from the anonymous
-JBoss CVS. Instructions on how to do this are available at <a
- href="http://wiki.jboss.org/wiki/Wiki.jsp?page=CVSRepository">http://wiki.jboss.org/wiki/Wiki.jsp?page=CVSRepository</a>.
-The essential steps of the procedure are provided below:<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-family: monospace;">cvs
-co -r JBossMessaging_1_0_0 jboss-head</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">cd jboss-head</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">./build/build.sh</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">cd jms</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">./build scoped-sar</span><br>
-</div>
-<br>
-This will generate a <span style="font-family: monospace;">jboss-messaging-scoped.sar</span>
-service archive and its corresponding <span
- style="font-family: monospace;">jboss-messaging-client-scoped.jar</span>
-in <span style="font-family: monospace;">output/lib</span>.<br>
+Messaging is a new JBoss JMS 1.1-compliant JMS provider, aimed to
+replace JBossMQ.&nbsp; An overview of its features, installation and
+configuration instructions are available in the "JBoss Messaging
+Getting Started Guide". The guide is bundled with this release and is
+provided in <a href="./docs/gettingstarted/html/index.html">HTML</a>, <a
+ href="./docs/gettingstarted/html_single/index.html">HTML-single</a>
+and <a
+ href="./docs/gettingstarted/pdf/JBossMessagingGettingStarted.pdf">PDF</a>
+formats.&nbsp; The guide is also available on-line at&nbsp; <a
+ href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a><br>
 <br>
 <br>
-<h2>Messaging Installation with JBoss 4.x<br>
+<h2>Summary of Changes</h2>
+This is just a candidate release, the summary will be compiled for the
+General Availability release. For the raw change list, see "Release
+Notes" below.<br>
+<h2>Release Notes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </h2>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="0" cellpadding="20" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 255);"><small><br>
-      </small>
-      <div style="text-align: justify;"><span
- style="font-family: monospace;"></span><span
- style="color: rgb(255, 0, 0); font-weight: bold;">A JBoss Messaging
-1.0.0.GA installation conflicts with the existing JBossMQ
-instance that comes part of the standard JBoss 4.x distribution. In
-order to install JBoss Messaging you will need to create a new JBoss
-configuration, following one of the alternative procedures described
-below.<br>
-      </span></div>
-      <span style="font-family: monospace;"><br
- style="font-family: monospace;">
-      </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<br>
-<br>
-<h3>1. JBoss 4.x Messaging Installation - Automated Procedure</h3>
-<span style="font-weight: bold;">1.1</span>. Set up the JBOSS_HOME
-environment variable to point towards the JBoss 4.x installation you
-want to use JBoss Messaging with.<br>
-<br style="font-weight: bold;">
-<span style="font-weight: bold;">1.2</span> Run the installation
-script, available in the <small><span
- style="font-family: courier new,courier,monospace;">util </span></small>directory
-of the release bundle. Note that you need <small><span
- style="font-family: courier new,courier,monospace;">ant </span></small>installed
-and accessible from your current directory.<br>
-<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 255);"><span
- style="font-family: monospace;"></span><span
- style="font-family: monospace;"> <span style="font-family: monospace;"><br>
-&nbsp;cd util<br>
-&nbsp;ant -f create-messaging-config.xml<br>
-      <br style="font-family: monospace;">
-      </span> </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<br>
-The installation script will create a <small><span
- style="font-family: courier new,courier,monospace;">$JBOSS_HOME/server/messaging</span></small>
-configuration.<br>
-<br>
-<br>
-<br>
-<h3>2. JBoss 4.x Messaging Installation - Alternative Manual Procedure</h3>
-<span style="font-weight: bold;">1.</span> Create a new JBoss
-configuration named <span style="font-family: monospace;">messaging. </span>
-<h1><span style="font-family: monospace;"></span></h1>
-<span style="font-family: monospace;"></span>The easiest way to create
-the new configuration is to use the existing <span
- style="font-family: monospace;">default</span> configuration as a
-template. Copy the directory <span style="font-family: monospace;">$JBOSS_HOME/server/default</span>
-recursively, creating a new <span style="font-family: monospace;">messaging</span>
-directory.<br>
-<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 255);"><span
- style="font-family: monospace;"></span><span
- style="font-family: monospace;"> <span style="font-family: monospace;"><br>
-&nbsp;cd $JBOSS_HOME/server<br>
-&nbsp;cp -r default messaging<br>
-      <br style="font-family: monospace;">
-      </span> </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<span style="font-weight: bold;">2.</span> Save the existing <span
- style="font-family: monospace;">messaging/deploy/jms/jms-ra.rar </span>resource
-adapter to the parent directory.<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 255);"><span
- style="font-family: monospace;"></span><span
- style="font-family: monospace;"> <span style="font-family: monospace;"><br>
-&nbsp;cd $JBOSS_HOME/server/messaging/deploy/jms<br>
-&nbsp;cp jms-ra.rar ..<br>
-      <br style="font-family: monospace;">
-      </span> </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<span style="font-weight: bold;">3.</span> Remove JBossMQ <span
- style="font-family: monospace;">jms</span> deployment directory from
-the <span style="font-family: monospace;">messaging </span>configuration.<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 255);"><span
- style="font-family: monospace;"></span><span
- style="font-family: monospace;"> <span style="font-family: monospace;"><br>
-&nbsp;cd $JBOSS_HOME/server/messaging/deploy<br>
-&nbsp;rm -r jms<br>
-      <br style="font-family: monospace;">
-      </span> </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<span style="font-weight: bold;"><br>
-4. </span>Add a <span style="font-family: monospace;">"messaging"</span>
-security domain to the <span style="font-family: monospace;">$JBOSS_HOME/server/messaging/conf/login-config.xml
-</span>security configuration file:<br>
-<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(204, 204, 204);"><span
- style="font-family: monospace;"><br>
-&nbsp;.......<br>
-      <br>
-&nbsp;&lt;application-policy name = "messaging"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;authentication&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;login-module
-code = "org.jboss.security.auth.spi.UsersRolesLoginModule" flag =
-"required"&gt;<br>
-&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&lt;module-option
-name="unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;<br>
-&nbsp; &nbsp; &nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;module-option
-name="usersProperties"&gt;messaging-users.properties&lt;/module-option&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp; &lt;module-option
-name="rolesProperties"&gt;messaging-roles.properties&lt;/module-option&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/login-module&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/authentication&gt;<br>
-&nbsp;&lt;/application-policy&gt;<br>
-      </span><span style="font-family: monospace;"><br>
-&nbsp;......<br>
-      <br>
-      </span></td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<br>
-<span style="font-weight: bold;">5.</span> Copy the service
-archive that comes as part of the
-current Messaging distribution to the <span
- style="font-family: monospace;">messaging </span>configuration's
-deployment directory.<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 255);"><span
- style="font-family: monospace;"></span><span
- style="font-family: monospace;"> <span style="font-family: monospace;"><br>
-&nbsp;cp jboss-messaging-scoped.sar $JBOSS_HOME/server/messaging/deploy<br>
-      <br style="font-family: monospace;">
-      </span> </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<span style="font-weight: bold;"><br>
-6.</span> Shut down any JBoss instance that may be running on your test
-machine. In case you want to start the JBoss instance configured to run
-Messaging in parallel with another running JBoss instance on the same
-physical machine, you need to enable the ServiceBindingManager in your <small><span
- style="font-family: courier new,courier,monospace;">messaging<span
- style="font-family: times new roman,times,serif;"> </span></span></small>configuration.<br>
-<br>
-<span style="font-weight: bold;">7.</span> Start the JBoss instance
-with the <span style="font-family: monospace;">messaging</span><span
- style="font-family: times new roman,times,serif;"> </span>configuration.<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 255);"><span
- style="font-family: monospace;"></span><span
- style="font-family: monospace;"> <span style="font-family: monospace;"><br>
-&nbsp;cd $JBOSS_HOME/bin<br>
-&nbsp;./run.sh -c messaging<br>
-      <br style="font-family: monospace;">
-      </span> </span><span style="color: rgb(255, 0, 0);"></span></td>
-    </tr>
-  </tbody>
-</table>
-<span style="font-weight: bold;"><br>
-</span><span style="font-family: monospace;"></span>A successful JBoss
-Messaging deployment generates logging output similar to:<br>
-<br>
-<table style="width: 90%; text-align: left; margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(204, 204, 204);"><span
- style="font-family: monospace;"><br>
-.......<br>
-      <br>
-      </span><span style="font-family: monospace;">18:25:42,530
-INFO&nbsp; [ServerPeer] JMS ServerPeer [server.0] started, connection
-failure checking active, lease period 20000 ms<br>
-18:25:42,540 INFO&nbsp; [ConnectionFactory] [/ConnectionFactory,
-/XAConnectionFactory, java:/ConnectionFactory,
-java:/XAConnectionFactory] deployed<br>
-18:25:42,560 INFO&nbsp; [Topic] Topic[/topic/testTopic] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,820 INFO&nbsp; [Topic] Topic[/topic/securedTopic] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,830 INFO&nbsp; [Topic] Topic[/topic/testDurableTopic] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,850 INFO&nbsp; [Queue] Queue[/queue/testQueue] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,850 INFO&nbsp; [Queue] Queue[/queue/DLQ] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/A] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/B] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/C] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,860 INFO&nbsp; [Queue] Queue[/queue/D] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,870 INFO&nbsp; [Queue] Queue[/queue/ex] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-18:25:42,880 INFO&nbsp; [Topic] Topic[/topic/openTopic] started,
-fullSize=75000, pageSize=2000, downCacheSize=1000<br>
-      <br>
-......<br>
-      <br>
-      </span></td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<br>
-<span style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);"></span></span>You
-can use a number of simple JMS examples that are
-provided
-with the release to validate the deployment. Each example comes with
-its own <span style="font-family: monospace;">README.html</span> file
-that
-contains instructions on how to run it. The
-<span style="font-family: monospace;">README.html </span>files and the
-source code are available under the <span
- style="font-family: monospace;">examples</span> directory.<br>
-<br>
-<h2>Changes introduced by this release </h2>
-<br>
-<h2 style="margin-left: 40px;"><small>Feature Requests</small></h2>
+<h2 style="margin-left: 40px;">Feature Request</h2>
 <ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-183">JBMESSAGING-183</a>]
-- Crash and recovery tests</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-294">JBMESSAGING-294</a>]
+- Multiple Connectors (transports) per Server instance</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-296">JBMESSAGING-296</a>]
+- Oracle PersistenceManager MBean configuration</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-345">JBMESSAGING-345</a>]
+- Messaging should report it version in an INFO statement at boot</li>
 </ul>
-<h2 style="margin-left: 40px;"><small>Bugs</small></h2>
+<h2 style="margin-left: 40px;">Bug</h2>
 <ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-214">JBMESSAGING-214</a>]
-- SecurityAspect performs unnecessary checks</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-256">JBMESSAGING-256</a>]
-- MessageReference.acquire not called from copy constructor</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-270">JBMESSAGING-270</a>]
-- ConnectionManager detects "broken client connection" and closes the
-connection when it shouldn't</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-272">JBMESSAGING-272</a>]
-- JBossStreamMessage.readBytes(byte[]) under certain conditions doesn't
-increment the stream position correctly causing next read to fail</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-276">JBMESSAGING-276</a>]
-- Connection checking using Remoting lease mechanism broken</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-285">JBMESSAGING-285</a>]
-- Non-durable subscriptions survive reboot</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-291">JBMESSAGING-291</a>]
-- Remoting too many threads</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-293">JBMESSAGING-293</a>]
-- Remoting version socket read</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-298">JBMESSAGING-298</a>]
-- Fix ConnectionConsumer (timeout)</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-299">JBMESSAGING-299</a>]
-- Simple remote send dies with java.lang.NoClassDefFoundError</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-274">JBMESSAGING-274</a>]
+- server redeployment fails under unclear circumstances</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-305">JBMESSAGING-305</a>]
+- The release script includes unnecessary libraries in the scoped
+messaging sar</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-308">JBMESSAGING-308</a>]
+- Transaction mem leak</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-323">JBMESSAGING-323</a>]
+- At undeployment, JBossManagedConnectionPool is stopped after
+ServerPeer, causing org.jboss.remoting.InvalidConfigurationException</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-325">JBMESSAGING-325</a>]
+- Message selectors and subscriptions</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-333">JBMESSAGING-333</a>]
+- ConnectionFactory deployment fails with "Exception setting attribute
+JNDIBindings / NullPointerException" on JBoss 4.0.2 and lower</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-334">JBMESSAGING-334</a>]
+- The Connector fails to deploy in JBoss 4.0.1SP1 and lower due to
+obsolete org.jboss.util.propertyeditor.PropertyEditors dependency</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-335">JBMESSAGING-335</a>]
+- Remoting deployment fails on JBoss 4.0.1 and lower because of
+SecurityAssociation obsolete dependency</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-336">JBMESSAGING-336</a>]
+- The automated installation procedure fails for an installer-created
+JBoss 4.x instance.</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-337">JBMESSAGING-337</a>]
+- PersistenceManager and ChannelMapper try to create the proxy to their
+TransactionManager dependency too early.</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-339">JBMESSAGING-339</a>]
+- The MDB example fails with classloading problems on an
+installer-created 4.0.3SP1</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-346">JBMESSAGING-346</a>]
+- Spurious ConcurrentModificationException on connection failure</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-359">JBMESSAGING-359</a>]
+- Using jboss-serialization 1.0.0.CR7 breaks functional testsuite</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-363">JBMESSAGING-363</a>]
+- TCK tests fail on account of wrong exception being thrown</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-364">JBMESSAGING-364</a>]
+- TCK ee.mdb.xa.MDBClient tests fail</li>
 </ul>
-<h2 style="margin-left: 40px;"><small>Tasks</small></h2>
+<h2 style="margin-left: 40px;">Task</h2>
 <ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-8">JBMESSAGING-8</a>]
-- Documentation</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-42">JBMESSAGING-42</a>]
-- Javadocs</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-94">JBMESSAGING-94</a>]
-- Automate CTS runs</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-114">JBMESSAGING-114</a>]
-- Connection resources need to be garbage collected on connection
-failure</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-223">JBMESSAGING-223</a>]
-- peformance framework destinations don't belong in
-jboss-messaging-service.xml</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-243">JBMESSAGING-243</a>]
-- Add seurity checks on activate, deactivate and getmessagenow</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-245">JBMESSAGING-245</a>]
-- Optimise createProducer</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-249">JBMESSAGING-249</a>]
-- Add foreign message persistence manager test</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-251">JBMESSAGING-251</a>]
-- Rename message delegates to messag proxies</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-252">JBMESSAGING-252</a>]
-- Commit and rollback should use custom wire format</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-253">JBMESSAGING-253</a>]
-- Test for memory leaks</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-258">JBMESSAGING-258</a>]
-- Check behaviour of failure handling</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-260">JBMESSAGING-260</a>]
-- Create jboss-messaging-client.jar</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-261">JBMESSAGING-261</a>]
-- Apply the new product versioning scheme to Messaging</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-278">JBMESSAGING-278</a>]
-- JMSXDeliveryCount support</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-297">JBMESSAGING-297</a>]
-- Manually test the management interface</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-187">JBMESSAGING-187</a>]
+- Certify JBoss Messaging Content on JBoss Labs</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-280">JBMESSAGING-280</a>]
+- Allow datasource to be configurable in servicecontainer</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-289">JBMESSAGING-289</a>]
+- Make service container configurable wrt datasource and persistence
+manager config</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-303">JBMESSAGING-303</a>]
+- Describe how jboss-messaging and ejb3 need to be configured to work
+together</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-311">JBMESSAGING-311</a>]
+- Add destination deployment params test</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-316">JBMESSAGING-316</a>]
+- Extend the smoke matrix to test all JBoss 4.X released versions</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-318">JBMESSAGING-318</a>]
+- Review the user guide and send it to the documentation team for
+processing</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-320">JBMESSAGING-320</a>]
+- Validate Messaging with *ALL* released JBoss 4.0.X versions</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-338">JBMESSAGING-338</a>]
+- Include all "installer" installation in the smoke test matrix</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-341">JBMESSAGING-341</a>]
+- Modify the ant release task to bundle the test source code with the
+release</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-347">JBMESSAGING-347</a>]
+- Use Serialization release that fixed the bug described in JBSER-59</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-350">JBMESSAGING-350</a>]
+- Test and bundle the Postgres configuration example</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-356">JBMESSAGING-356</a>]
+- Split jboss-service.xml into their own files</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-358">JBMESSAGING-358</a>]
+- Provide a docs/example EJB3 MDB example</li>
 </ul>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <h2>JBoss Messaging Links</h2>
-JBoss Messaging home page: <a
- href="http://www.jboss.com/products/messaging">http://www.jboss.com/products/messaging</a><a
- href="http://www.jboss.org/wiki/Wiki.jsp?page=JBossMessaging"></a><br>
+<div style="margin-left: 40px;">JBoss Messaging home page: <a
+ href="http://www.jboss.com/products/messaging">http://www.jboss.com/products/messaging</a><br>
+JBoss Messaging on-line documentation: <a
+ href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a><br>
 JBoss Messaging project roadmap: <a
  href="http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel">http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel</a><br>
 JBoss Messaging user forum: <a
@@ -494,8 +130,8 @@ JBoss Messaging user forum: <a
 JBoss Messaging design forum: <a
  href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153">http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153</a><br>
 JBoss Messaging repository: <a
- href="http://fisheye.jboss.com/viewrep/JBoss/jboss-jms">http://fisheye.jboss.com/viewrep/JBoss/jboss-jms</a><a
- href="http://anoncvs.forge.jboss.com:8080/viewrep/JBoss/jboss-jms"></a><br>
+ href="http://fisheye.jboss.com/viewrep/JBoss/jboss-jms">http://fisheye.jboss.com/viewrep/JBoss/jboss-jms</a><br>
+</div>
 <br>
 <hr style="width: 100%; height: 2px;">
 </body>
