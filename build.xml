@@ -70,10 +70,10 @@
      <property name="messaging.version.minor" value="0"/>
      <property name="messaging.version.revision" value="1"/>
      <property name="messaging.version.incrementing" value="1"/>
-     <property name="messaging.version.tag" value="CR1"/>
+     <property name="messaging.version.tag" value="CR2"/>
      <property name="messaging.version.name" value=""/>
      <!-- This must be set to the CVS tag for any release -->
-     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_1_CR1"/>
+     <property name="messaging.version.cvstag" value="JBossMessaging_1_0_1_CR2"/>
 
      <!-- Module name(s) & version -->
      <property name="module.name" value="messaging"/>
