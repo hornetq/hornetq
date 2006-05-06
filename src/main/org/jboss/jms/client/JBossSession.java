@@ -251,8 +251,9 @@ public class JBossSession implements
       {
          tccc.set(getClass().getClassLoader());
 
-         ConsumerDelegate consumerDelegate
-            = delegate.createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false);
+         ConsumerDelegate consumerDelegate = delegate.
+            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false);
+         
          return new JBossMessageConsumer(consumerDelegate);
       }
       finally

@@ -178,7 +178,6 @@ public class AsfAspect
    {
       return (SessionState)((DelegateSupport)inv.getTargetObject()).getState();
    }
-   
 
    // Inner Classes --------------------------------------------------
    

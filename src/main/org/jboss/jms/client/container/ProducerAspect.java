@@ -93,13 +93,12 @@ public class ProducerAspect
 
       // configure the message for sending, using attributes stored as metadata
 
-      ProducerState theState = getProducerState(mi);
+      ProducerState producerState = getProducerState(mi);
 
       if (deliveryMode == -1)
       {
          //Use the delivery mode of the producer
-         deliveryMode = theState.getDeliveryMode();
-
+         deliveryMode = producerState.getDeliveryMode();
          if (trace) { log.trace("Using producer's default delivery mode: " + deliveryMode); }
       }
       m.setJMSDeliveryMode(deliveryMode);
@@ -107,13 +106,12 @@ public class ProducerAspect
       if (priority == -1)
       {
          //Use the priority of the producer
-         priority = theState.getPriority();
-
+         priority = producerState.getPriority();
          if (trace) { log.trace("Using producer's default priority: " + priority); }
       }
       m.setJMSPriority(priority);
 
-      if (theState.isDisableMessageTimestamp())
+      if (producerState.isDisableMessageTimestamp())
       {
          m.setJMSTimestamp(0l);
       }
@@ -124,15 +122,14 @@ public class ProducerAspect
 
       if (timeToLive == Long.MIN_VALUE)
       {
-         //Use time to live value from producer
-         timeToLive = theState.getTimeToLive();
-
+         // Use time to live value from producer
+         timeToLive = producerState.getTimeToLive();
          if (trace) { log.trace("Using producer's default timeToLive: " + timeToLive); }
       }
 
       if (timeToLive == 0)
       {
-         //Zero implies never expires
+         // Zero implies never expires
          m.setJMSExpiration(0);
       }
       else
@@ -143,7 +140,7 @@ public class ProducerAspect
       if (destination == null)
       {
          // use destination from producer
-         destination = theState.getDestination();
+         destination = producerState.getDestination();
          
          if (destination == null)
          {
@@ -157,7 +154,8 @@ public class ProducerAspect
          // if a default destination was already specified then this must be same destination as
          // that specified in the arguments
 
-         if (theState.getDestination() != null && !theState.getDestination().equals(destination))
+         if (producerState.getDestination() != null &&
+             !producerState.getDestination().equals(destination))
          {
             throw new UnsupportedOperationException("Where a default destination is specified " +
                                                     "for the sender and a destination is " +
@@ -219,9 +217,9 @@ public class ProducerAspect
       
       // set the message ID
       
-      ConnectionState cState = getConnectionState(invocation);
+      ConnectionState connectionState = getConnectionState(invocation);
       
-      long id = cState.getIdGenerator().getId();
+      long id = connectionState.getIdGenerator().getId();
       
       messageToSend.setJMSMessageID(null);
       messageToSend.setMessageId(id);
@@ -232,11 +230,11 @@ public class ProducerAspect
          m.setJMSMessageID(messageToSend.getJMSMessageID());
       }
       
-      SessionState sState = getSessionState(invocation);
+      SessionState sessionState = getSessionState(invocation);
               
       // we now invoke the send(Message) method on the session, which will eventually be fielded
       // by connection endpoint
-      ((SessionDelegate)sState.getDelegate()).send(messageToSend);
+      ((SessionDelegate)sessionState.getDelegate()).send(messageToSend);
       
       return null;
    }

@@ -54,7 +54,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Attributes ----------------------------------------------------
 
-   private transient JMSRemotingConnection connection;
+   private transient JMSRemotingConnection remotingConnection;
 
    // Static --------------------------------------------------------
 
@@ -201,14 +201,14 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       return "ConnectionDelegate[" + id + "]";
    }
    
-   public void setConnnectionState(JMSRemotingConnection conn)
+   public void setRemotingConnection(JMSRemotingConnection conn)
    {
-      this.connection = conn;
+      this.remotingConnection = conn;
    }
    
    public JMSRemotingConnection getRemotingConnection()
    {
-      return connection;
+      return remotingConnection;
    }
 
    // Protected -----------------------------------------------------

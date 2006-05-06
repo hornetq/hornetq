@@ -25,6 +25,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
@@ -58,42 +59,42 @@ public class ConsumerAspect
    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation)invocation;
-      
+
+      ConsumerDelegate consumerDelegate = (ConsumerDelegate)invocation.invokeNext();
+
       boolean isCC = ((Boolean)mi.getArguments()[4]).booleanValue();
 
-      //Create the message handler
-      SessionState sessState =
+      // Create the message handler
+      SessionState sessionState =
          (SessionState)((DelegateSupport)invocation.getTargetObject()).getState();
-      
-      ConnectionState connState = (ConnectionState)sessState.getParent();
-                  
-      ConsumerDelegate consumerDelegate = (ConsumerDelegate)invocation.invokeNext();
-      
-      SessionDelegate del = (SessionDelegate)invocation.getTargetObject();
-
-      ConsumerState theState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
+      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
+      SessionDelegate sessionDelegate = (SessionDelegate)invocation.getTargetObject();
+      ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
+      int consumerID = consumerState.getConsumerID();
       
       MessageCallbackHandler messageHandler =
-         new MessageCallbackHandler(isCC, sessState.getAcknowledgeMode(),
-                                    sessState.getExecutor(), connState.getPooledExecutor(),
-                                    del, consumerDelegate, theState.getConsumerID());
+         new MessageCallbackHandler(isCC, sessionState.getAcknowledgeMode(),
+                                    sessionState.getExecutor(), connectionState.getPooledExecutor(),
+                                    sessionDelegate, consumerDelegate, consumerID);
       
-      connState.getRemotingConnection().getCallbackManager().registerHandler(theState.getConsumerID(), messageHandler);
+      CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
+      cm.registerHandler(consumerID, messageHandler);
          
-      theState.setMessageCallbackHandler(messageHandler);
+      consumerState.setMessageCallbackHandler(messageHandler);
 
       return consumerDelegate;
    }
    
    public Object handleClosing(Invocation invocation) throws Throwable
    {      
-      ConsumerState state = getState(invocation);
+      ConsumerState consumerState = getState(invocation);
       
-      ConnectionState cState = (ConnectionState)state.getParent().getParent();
+      ConnectionState connectionState = (ConnectionState)consumerState.getParent().getParent();
             
-      state.getMessageCallbackHandler().close();  
-      
-      cState.getRemotingConnection().getCallbackManager().unregisterHandler(state.getConsumerID());
+      consumerState.getMessageCallbackHandler().close();
+
+      CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
+      cm.unregisterHandler(consumerState.getConsumerID());
             
       return invocation.invokeNext();
    }

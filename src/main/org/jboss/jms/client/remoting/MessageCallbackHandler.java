@@ -87,11 +87,11 @@ public class MessageCallbackHandler
 
          log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
          
-         //See JMS 1.1 spec 4.5.2
+         // See JMS 1.1 spec 4.5.2
 
          if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            //Cancel the delivery - this means it will be immediately redelivered
+            // cancel the delivery - this means it will be immediately redelivered
             if (trace) { log.trace("cancelling " + id); }
             cons.cancelDelivery(id);
          }
@@ -301,7 +301,7 @@ public class MessageCallbackHandler
             this.listener = listener;
          }
    
-         if (trace) { log.trace("installed listener " + listener); }
+         log.debug("installed listener " + listener);
    
          activateConsumer();
       }
@@ -313,7 +313,7 @@ public class MessageCallbackHandler
       {
          synchronized (mainLock)
          {
-            if (trace) { log.trace(this + " closing"); }
+            log.debug(this + " closing");
             
             if (closed)
             {
@@ -587,7 +587,7 @@ public class MessageCallbackHandler
    {
       // We execute this on a separate thread to avoid the case where the asynchronous delivery
       // arrives before we have returned from the synchronus call, which would cause us to lose
-      // the message
+      // the message.
         
       try
       {
@@ -597,7 +597,7 @@ public class MessageCallbackHandler
       }
       catch (InterruptedException e)
       {
-         //This should never happen
+         // This should never happen
          throw new IllegalStateException("Activation executor thread interrupted");
       }
    }
@@ -727,16 +727,15 @@ public class MessageCallbackHandler
       
       public void run()
       {
-         //We synchronize here to prevent the message listener being set with a different one
-         //between callOnMessage and activate being called
+         // We synchronize here to prevent the message listener being set with a different one
+         // between callOnMessage and activate being called
          synchronized (onMessageLock)
          { 
             if (closed)
             {
-               //Sanity check. This should never happen     
-               //Part of the close procedure is to ensure there are no messages in the executor queue
-               //for delivery to the MessageListener
-               //If this happens it implies the close() procedure is not working properly
+               // Sanity check. This should never happen. Part of the close procedure is to ensure
+               // there are no messages in the executor queue for delivery to the MessageListener.
+               // If this happens it implies the close() procedure is not working properly.
                throw new IllegalStateException("Calling onMessage() but the consumer is closed!");
             }
             else
@@ -775,20 +774,21 @@ public class MessageCallbackHandler
             // the consumer will stay active and the message will delivered asynchronously (pushed)
             // (that is what the boolean param is for)
             
-            if (trace) { log.trace("Activation runnable running, getting message now"); }
+            if (trace) { log.trace("activation runnable running, getting message now"); }
             
             try
             {
                MessageProxy m = (MessageProxy)consumerDelegate.getMessageNow(true);
                
-               if (trace) { log.trace("Got message:" + m); }
+               if (trace) { log.trace("got message " + m); }
                
                if (m != null)
                {
-                  if (trace) { log.trace("Handling:" + m); }
+                  if (trace) { log.trace("handling " + m); }
                   handleMessage(m);
-               }                                 
-               if (trace) { log.trace("Activation runnable done"); }
+               }
+
+               if (trace) { log.trace("activation runnable done"); }
             }
             finally
             {

@@ -85,6 +85,11 @@ public class ClosedInterceptor  implements Interceptor
 
    // Public --------------------------------------------------------
 
+   public String toString()
+   {
+      return "ClosedInterceptor[" + Integer.toHexString(hashCode()) + "]";
+   }
+
    // Interceptor implementation -----------------------------------
 
    public String getName()
@@ -98,8 +103,7 @@ public class ClosedInterceptor  implements Interceptor
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
       
-      if (trace) { log.trace(this + " invoking " + methodName); }
-      
+//      if (trace) { log.trace(this + " invoking " + methodName + "()"); }
 
       if (isClosing)
       {         

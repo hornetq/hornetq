@@ -497,7 +497,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
    public Object read(InputStream in, Map map) throws IOException, ClassNotFoundException
    {
-      //Sanity check
+      // Sanity check
       if (!(in instanceof JBossObjectInputStream))
       {
          throw new IllegalStateException("InputStream must be an JBossObjectInputStream");
@@ -505,7 +505,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       
       JBossObjectInputStream ois = (JBossObjectInputStream)in;
       
-      //First byte read is always version
+      // First byte read is always version
       
       byte version = ois.readByte();
 
@@ -517,7 +517,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       {
          case SERIALIZED:            
          {            
-            //Delegate to serialization
+            // Delegate to serialization
             Object ret = serializableUnMarshaller.read(ois, map);            
             
             if (trace) { log.trace("read using standard serialization"); }

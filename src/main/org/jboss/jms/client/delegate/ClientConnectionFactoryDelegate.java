@@ -59,17 +59,13 @@ public class ClientConnectionFactoryDelegate
 
    
    // Attributes ----------------------------------------------------
-    
+
+   private JMSRemotingConnection nextConnection;
+
    protected String serverLocatorURI;
-   
    protected Version serverVersion;
-   
    protected String serverID;
-   
    protected transient Client client;
-   
-   protected JMSRemotingConnection nextConnection;
-   
    protected boolean clientPing;
 
    // Static --------------------------------------------------------
@@ -83,11 +79,8 @@ public class ClientConnectionFactoryDelegate
       super(objectID);
       
       this.serverLocatorURI = serverLocatorURI;
-      
       this.serverVersion = serverVersion;
-      
       this.serverID = serverID;
-      
       this.clientPing = clientPing;
    }
    
@@ -125,50 +118,48 @@ public class ClientConnectionFactoryDelegate
     
    public synchronized Object invoke(Invocation invocation) throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
-      
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
-      
-      Object ret = null;
+      if (log.isTraceEnabled()) { log.trace("invoking " + methodName + " on server"); }
       
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
-                                           new Integer(id), PayloadKey.AS_IS);
-            
+                                           new Integer(id),
+                                           PayloadKey.AS_IS);
+
+      Object ret = null;
+
       if ("createConnectionDelegate".equals(methodName))
       {         
          // this must be invoked on the same connection subsequently used by the created JMS
          // connection
-         JMSRemotingConnection connection = getRemotingConnection();
+         JMSRemotingConnection remotingConnection = getRemotingConnection();
+         Client client = remotingConnection.getInvokingClient();
          nextConnection = null;
-         
+
          MethodInvocation mi = (MethodInvocation)invocation;
-         
-         Client client = connection.getInvokingClient();
-            
+
          mi.getMetaData().addMetaData(MetaDataConstants.JMS,
                                       MetaDataConstants.REMOTING_SESSION_ID,
-                                      client.getSessionId(), PayloadKey.AS_IS);
+                                      client.getSessionId(),
+                                      PayloadKey.AS_IS);
          
          mi.getMetaData().addMetaData(MetaDataConstants.JMS,
                                       MetaDataConstants.JMS_CLIENT_VM_ID,
-                                      JMSClientVMIdentifier.instance, PayloadKey.AS_IS);
-             
+                                      JMSClientVMIdentifier.instance,
+                                      PayloadKey.AS_IS);
          try
-         {            
-            MessagingMarshallable mm =
-               (MessagingMarshallable)client.invoke(new MessagingMarshallable(getVersionToUse().getProviderIncrementingVersion(), mi), null);
-             
-            ret = mm.getLoad();
-            
+         {
+            MessagingMarshallable request =
+               new MessagingMarshallable(getVersionToUse().getProviderIncrementingVersion(), mi);
+            MessagingMarshallable response = (MessagingMarshallable)client.invoke(request, null);
+
+            ret = response.getLoad();
             ClientConnectionDelegate delegate = (ClientConnectionDelegate)ret;
-            
-            delegate.setConnnectionState(connection);
+            delegate.setRemotingConnection(remotingConnection);
          }
          catch (Throwable t)
          {
-            connection.close();
-            
+            remotingConnection.close();
             throw t;
          } 
       }
@@ -177,11 +168,10 @@ public class ClientConnectionFactoryDelegate
          byte v = getVersionToUse().getProviderIncrementingVersion();
             
          Client cl = getRemotingConnection().getInvokingClient();
-         
-         MessagingMarshallable mm = (MessagingMarshallable)
-            cl.invoke(new MessagingMarshallable(v, invocation), null);
-         
-         ret = mm.getLoad();                           
+
+         MessagingMarshallable request = new MessagingMarshallable(v, invocation);
+         MessagingMarshallable response = (MessagingMarshallable)cl.invoke(request, null);
+         ret = response.getLoad();
       }
 
       if (log.isTraceEnabled()) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }

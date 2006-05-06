@@ -161,7 +161,6 @@ public class ConnectionAspect implements ConnectionListener
    public Object handleCreateSessionDelegate(Invocation invocation) throws Throwable
    {
       justCreated = false;
-      
       return invocation.invokeNext();
    }
    

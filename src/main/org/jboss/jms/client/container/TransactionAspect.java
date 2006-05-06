@@ -141,20 +141,20 @@ public class TransactionAspect
    
    public Object handleSend(Invocation invocation) throws Throwable
    {
-      SessionState sessState = (SessionState)getState(invocation);
+      SessionState sessionState = (SessionState)getState(invocation);
                         
-      if (sessState.isTransacted())
+      if (sessionState.isTransacted())
       {
          //Session is transacted - so we add message to tx instead of sending now
          
-         Object txID = sessState.getCurrentTxId();
+         Object txID = sessionState.getCurrentTxId();
          
          if (txID == null)
          {            
-            throw new IllegalStateException("Attempt to send message in tx, but txId is null, XA?" + sessState.isXA());
+            throw new IllegalStateException("Attempt to send message in tx, but txId is null, XA?" + sessionState.isXA());
          }
          
-         ConnectionState connState = (ConnectionState)sessState.getParent();
+         ConnectionState connState = (ConnectionState)sessionState.getParent();
          
          MethodInvocation mi = (MethodInvocation)invocation;
          

@@ -36,6 +36,7 @@ import org.jboss.remoting.transport.Connector;
 import org.jboss.remoting.transport.PortUtil;
 import org.jboss.remoting.transport.multiplex.MultiplexServerInvoker;
 import org.jboss.util.id.GUID;
+import org.jboss.messaging.util.Util;
 
 
 /**
@@ -78,22 +79,17 @@ public class JMSRemotingConnection
 
    public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Throwable
    {
-      callbackManager = new CallbackManager();
+      this.clientPing = clientPing;
 
       id = new GUID().toString();
 
-      thisAddress = InetAddress.getLocalHost().getHostAddress();
-
+      callbackManager = new CallbackManager();
       serverLocator = new InvokerLocator(serverLocatorURI);
-
+      thisAddress = InetAddress.getLocalHost().getHostAddress();
       isMultiplex = serverLocator.getProtocol().equals("multiplex");
-      
-      this.clientPing = clientPing;
 
       final int MAX_RETRIES = 50;
-
       boolean completed = false;
-
       int count = 0;
 
       while (!completed && count < MAX_RETRIES)
@@ -101,7 +97,6 @@ public class JMSRemotingConnection
          try
          {
             setUpConnection();
-
             completed = true;
          }
          catch (Exception e)
@@ -119,27 +114,24 @@ public class JMSRemotingConnection
             if (client != null)
             {
                client.disconnect();
-
-               log.trace("Disconnected client");
+               log.trace("disconnected client");
             }
             if (callbackServer != null)
             {
-               //Probably not necessary and may fail since it didn't get properly started
+               // Probably not necessary and may fail since it didn't get properly started
                try
                {
                   callbackServer.stop();
-
-                  log.trace("Stopped callback server");
+                  log.trace("stopped callback server");
 
                   callbackServer.destroy();
-
-                  log.trace("Destroyed callback server");
+                  log.trace("destroyed callback server");
 
                   callbackServer = null;
                }
                catch (Exception ignore)
                {
-                  //Ignore - it may well fail - this is to be expected
+                  // Ignore - it may well fail - this is to be expected
                   log.warn("Failed to shutdown callback server", ignore);
                }
             }
@@ -151,6 +143,8 @@ public class JMSRemotingConnection
             }
          }
       }
+
+      log.debug(this + " created");
    }
 
    // Public --------------------------------------------------------
@@ -158,10 +152,9 @@ public class JMSRemotingConnection
    public void close() throws Throwable
    {
       callbackServer.stop();
-
       callbackServer.destroy();
-
       client.disconnect();
+      log.debug(this + " closed");
    }
 
    public Client getInvokingClient()
@@ -179,6 +172,11 @@ public class JMSRemotingConnection
       return id;
    }
 
+   public String toString()
+   {
+      return "JMSRemotingConnection[" + Util.guidToString(id)+ "]";
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -186,7 +184,7 @@ public class JMSRemotingConnection
    protected Map getConfig()
    {
       Map configuration = new HashMap();
-      
+
       //Enable client pinging
       //Server leasing is enabled separately on the server side
       configuration.put(Client.ENABLE_LEASE, String.valueOf(clientPing));
@@ -203,7 +201,7 @@ public class JMSRemotingConnection
 
    protected void setUpConnection() throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace("connecting to " + serverLocator); }
+      if (log.isTraceEnabled()) { log.trace(this + " connecting to " + serverLocator); }
 
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
@@ -245,7 +243,7 @@ public class JMSRemotingConnection
 
       InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);
 
-      if (log.isTraceEnabled()) { log.trace("starting callback server " + callbackServerLocator.getLocatorURI()); }
+      if (log.isTraceEnabled()) { log.trace(this + " starting callback server " + callbackServerLocator.getLocatorURI()); }
 
       callbackServer = new Connector();
 
@@ -262,7 +260,7 @@ public class JMSRemotingConnection
       client.connect();
 
       dummy = new DummyCallbackHandler();
-      
+
       client.addListener(dummy, callbackServerLocator);
    }
 

@@ -103,17 +103,17 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
-                                           new Integer(id), PayloadKey.AS_IS);
+                                           new Integer(id),
+                                           PayloadKey.AS_IS);
       
       byte version = getState().getVersionToUse().getProviderIncrementingVersion();
       
-      MessagingMarshallable mm = new MessagingMarshallable(version, invocation);
-
-      mm = (MessagingMarshallable)getClient().invoke(mm, null);            
+      MessagingMarshallable request = new MessagingMarshallable(version, invocation);
+      MessagingMarshallable response = (MessagingMarshallable)getClient().invoke(request, null);
 
       if (trace) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
 
-      return mm.getLoad();
+      return response.getLoad();
    }
 
    // Public --------------------------------------------------------
