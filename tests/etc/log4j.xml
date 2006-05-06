@@ -101,7 +101,9 @@
          <!-- <priority value="INFO"/> -->
    </category>
 
-
+   <category name="org.jboss.serial">
+      <priority value="INFO"/>
+   </category>
 
    <category name="org.jboss.jms.server.remoting.JMSWireFormat">
       <priority value="DEBUG"/>
