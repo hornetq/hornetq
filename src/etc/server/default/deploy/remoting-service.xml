@@ -9,7 +9,6 @@
 <server>
 
    <mbean code="org.jboss.remoting.transport.Connector"
-          xmbean-dd="org/jboss/remoting/transport/Connector.xml"
           name="jboss.messaging:service=Connector,transport=socket"
           display-name="Socket transport Connector">
       <attribute name="Configuration">
@@ -20,7 +19,7 @@
                <attribute name="serializationtype" isParam="true">jboss</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
                <attribute name="socket.check_connection" isParam="true">false</attribute>
-               <attribute name="socketTimeout">0</attribute>
+               <attribute name="timeout">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
                <attribute name="serverBindPort">4457</attribute>
                <attribute name="leasePeriod">20000</attribute>

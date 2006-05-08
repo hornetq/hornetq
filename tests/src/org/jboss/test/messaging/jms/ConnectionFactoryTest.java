@@ -246,7 +246,6 @@ public class ConnectionFactoryTest extends MessagingTestCase
    {
       String mbeanConfig =
          "<mbean code=\"org.jboss.remoting.transport.Connector\"\n" +
-         " xmbean-dd=\"org/jboss/remoting/transport/Connector.xml\"\n" +
          " name=\"" +name + "\"\n" +
          " display-name=\"Socket transport Connector\">\n"  +        
         "<depends>jboss.messaging:service=NetworkRegistry</depends>\n" +
@@ -262,7 +261,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
                "<attribute name=\"dataType\" isParam=\"true\">jms</attribute>\n" +
                "<attribute name=\"serverBindPort\">" + port +"</attribute>\n" +
                "<attribute name=\"socket.check_connection\" isParam=\"true\">false</attribute>\n" +
-               "<attribute name=\"socketTimeout\">0</attribute>\n" +
+               "<attribute name=\"timeout\">0</attribute>\n" +
                "<attribute name=\"serverBindAddress\">localhost</attribute>\n" +
                "<attribute name=\"leasePeriod\">20000</attribute>\n" +  
             "</invoker>\n" +

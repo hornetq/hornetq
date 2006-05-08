@@ -56,9 +56,17 @@ public class JMSRemotingConnection
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
+
    public static final String JMS_CALLBACK_SUBSYSTEM = "CALLBACK";
 
-   private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
+   public static final String CALLBACK_SERVER_PARAMS =
+      "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+      "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+      "serializationtype=jboss&" +
+      "dataType=jms&" +
+      "timeout=0&" +
+      "socket.check_connection=false";
 
    // Static --------------------------------------------------------
 
@@ -203,13 +211,6 @@ public class JMSRemotingConnection
    {
       if (log.isTraceEnabled()) { log.trace(this + " connecting to " + serverLocator); }
 
-      String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-                      "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-                      "serializationtype=jboss&" +
-                      "dataType=jms&" +
-                      "socketTimeout=0&" +
-                      "socket.check_connection=false";
-
       Map config = getConfig();
       client = new Client(serverLocator, config);
 
@@ -232,13 +233,13 @@ public class JMSRemotingConnection
 
       if (isMultiplex)
       {
-         callbackServerURI = "multiplex://" + thisAddress + ":" + bindPort + params +
-                             "&serverMultiplexId=" + id;
+         callbackServerURI = "multiplex://" + thisAddress + ":" + bindPort +
+                             CALLBACK_SERVER_PARAMS + "&serverMultiplexId=" + id;
       }
       else
       {
          callbackServerURI = serverLocator.getProtocol() + "://" + thisAddress +
-                             ":" + bindPort + params;
+                             ":" + bindPort + CALLBACK_SERVER_PARAMS;
       }
 
       InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);

@@ -22,6 +22,16 @@
 package org.jboss.test.messaging.util;
 
 import javax.management.MBeanServer;
+import javax.naming.InitialContext;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Connection;
+import javax.jms.Session;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.jms.MessageListener;
 
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
@@ -30,12 +40,17 @@ import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.InvokerRegistry;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version 1.1
  *
  * RemotingTest.java,v 1.1 2006/03/28 14:26:20 timfox Exp
@@ -50,6 +65,7 @@ public class RemotingTest extends MessagingTestCase
 
    // Attributes ----------------------------------------------------
 
+   InitialContext ic;
    private boolean connListenerCalled;
 
    // Constructors --------------------------------------------------
@@ -59,18 +75,8 @@ public class RemotingTest extends MessagingTestCase
       super(name);
    }
 
-   // TestCase overrides -------------------------------------------
+   // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-   
    public void testInvokerThreadSafety() throws Exception
    {
       Connector serverConnector = new Connector();
@@ -192,6 +198,90 @@ public class RemotingTest extends MessagingTestCase
 //
 //   }
 
+   /**
+    * JIRA issue: http://jira.jboss.org/jira/browse/JBMESSAGING-371
+    */
+   public void testMessageListenerTimeout() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      Destination topic = (Destination)ic.lookup("/topic/ATopic");
+
+      Connection conn = cf.createConnection();
+      Slot slot = new Slot();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer consumer = session.createConsumer(topic);
+      consumer.setMessageListener(new SimpleMessageListener(slot));
+
+      conn.start();
+
+      Connection conn2 = cf.createConnection();
+      Session session2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = session2.createProducer(topic);
+      Message m = session.createTextMessage("blah");
+
+      prod.send(m);
+
+      TextMessage rm = (TextMessage)slot.poll(5000);
+
+      assertEquals("blah", rm.getText());
+
+      // Only for JBoss Remoting > 2.0.0.Beta1
+      long sleepTime = ServerInvoker.DEFAULT_TIMEOUT_PERIOD + 60000;
+      log.info("sleeping " + (sleepTime / 60000) + " minutes");
+
+      Thread.sleep(sleepTime);
+
+      log.info("after sleep");
+
+      // send the second message. In case of remoting timeout, the callback server won't forward
+      // this message to the MessageCallbackHandler, and the test will fail
+
+      Message m2 = session.createTextMessage("blah2");
+      prod.send(m2);
+
+      TextMessage rm2 = (TextMessage)slot.poll(5000);
+
+      assertEquals("blah2", rm2.getText());
+
+      conn.close();
+      conn2.close();
+   }
+
+
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      ServerManagement.start("all");
+
+      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      ServerManagement.deployTopic("ATopic");
+
+      log.debug("setup done");
+
+   }
+
+   protected void tearDown() throws Exception
+   {
+      ServerManagement.undeployTopic("ATopic");
+
+      ic.close();
+
+      super.tearDown();
+   }
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+
    class Invoker implements Runnable
    {
       boolean failed;
@@ -273,7 +363,38 @@ public class RemotingTest extends MessagingTestCase
          // FIXME setMBeanServer
 
       }
+   }
 
+
+   private class SimpleMessageListener implements MessageListener
+   {
+      private Slot slot;
+      private boolean failure;
+
+      public SimpleMessageListener(Slot slot)
+      {
+         this.slot = slot;
+         failure = false;
+     }
+
+      public void onMessage(Message m)
+      {
+         log.info("received " + m);
+         try
+         {
+            slot.put(m);
+         }
+         catch(Exception e)
+         {
+            log.error("failed to put message in slot", e);
+            failure = true;
+         }
+      }
+
+      public boolean isFailure()
+      {
+         return failure;
+      }
    }
 
 }

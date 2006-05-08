@@ -133,11 +133,11 @@ public class JBossRemotingExecutor implements Context
       connector = new Connector();
       if (address == null)
       {
-         locator =  new InvokerLocator("socket://0.0.0.0:" + port + "/?socketTimeout=0");
+         locator =  new InvokerLocator("socket://0.0.0.0:" + port + "/?timeout=0");
       }
       else
       {
-         locator =  new InvokerLocator("socket://" + address + ":" + port + "/?socketTimeout=0");
+         locator =  new InvokerLocator("socket://" + address + ":" + port + "/?timeout=0");
       }
 
       connector.setInvokerLocator(locator.getLocatorURI());

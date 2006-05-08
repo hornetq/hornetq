@@ -977,7 +977,7 @@ public class ServiceContainer
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=jboss&" +
                       "dataType=jms&" +
-                      "socketTimeout=0&" +
+                      "timeout=0&" +
                       "socket.check_connection=false&" +
                       "leasePeriod=20000";
 
