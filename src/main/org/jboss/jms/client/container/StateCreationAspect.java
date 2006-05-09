@@ -83,7 +83,8 @@ public class StateCreationAspect
       String serverID = cfd.getServerID();
 
       ResourceManager rm = ResourceManagerFactory.instance.getResourceManager(serverID);
-      MessageIdGenerator gen = MessageIdGeneratorFactory.instance.getGenerator(serverID, cfd);
+      MessageIdGenerator gen =
+         MessageIdGeneratorFactory.instance.getGenerator(serverID, connectionDelegate);
 
       ConnectionState connectionState =
          new ConnectionState(serverID, connectionDelegate,

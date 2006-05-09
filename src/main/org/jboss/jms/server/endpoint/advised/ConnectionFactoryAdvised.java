@@ -28,25 +28,35 @@ import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>1.5</tt>
+ *
  * ConnectionFactoryAdvised.java,v 1.3 2006/03/01 22:56:51 ovidiu Exp
  */
 public class ConnectionFactoryAdvised extends AdvisedSupport implements ConnectionFactoryEndpoint
 {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    protected ConnectionFactoryEndpoint endpoint;
-   
+
+   // Constructors --------------------------------------------------
+
    public ConnectionFactoryAdvised()
-   {      
+   {
    }
-   
+
    public ConnectionFactoryAdvised(ConnectionFactoryEndpoint endpoint)
    {
       this.endpoint = endpoint;
    }
-   
-   public Object getEndpoint()
-   {
-      return endpoint;
-   }
+
+   // ConnectionFactoryEndpoint implementation -----------------------
 
    public ConnectionDelegate createConnectionDelegate(String username, String password)
       throws JMSException
@@ -58,15 +68,39 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
    {
       return endpoint.getClientAOPConfig();
    }
-   
+
+   /**
+    * @deprecated since 1.0.1
+    */
    public IdBlock getIdBlock(int size) throws JMSException
    {
-      return endpoint.getIdBlock(size);
+      throw new IllegalStateException("This method has been deprecated and shouldn't be used");
    }
-   
+
+   // AdvisedSupport override ---------------------------------------
+
+   public Object getEndpoint()
+   {
+      return endpoint;
+   }
+
+   // Public --------------------------------------------------------
+
    public String toString()
    {
       return "ConnectionFactoryAdvised->" + endpoint;
    }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+
+
+
 
 }

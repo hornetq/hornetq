@@ -209,6 +209,7 @@ public class AcknowledgmentTest extends MessagingTestCase
          assertEquals("testing123", m2.getText());
          
          conn.close();
+         
          conn = cf.createTopicConnection();
          conn.start();
          

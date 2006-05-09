@@ -159,6 +159,7 @@ public class JMSRemotingConnection
 
    public void close() throws Throwable
    {
+      log.debug(this + " closing");
       callbackServer.stop();
       callbackServer.destroy();
       client.disconnect();
@@ -209,7 +210,7 @@ public class JMSRemotingConnection
 
    protected void setUpConnection() throws Throwable
    {
-      if (log.isTraceEnabled()) { log.trace(this + " connecting to " + serverLocator); }
+      if (log.isTraceEnabled()) { log.trace(this + " setting up connection to " + serverLocator); }
 
       Map config = getConfig();
       client = new Client(serverLocator, config);

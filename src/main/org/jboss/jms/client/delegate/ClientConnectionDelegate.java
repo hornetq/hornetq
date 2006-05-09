@@ -35,6 +35,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.remoting.Client;
+import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
  * The client-side Connection delegate class.
@@ -62,11 +63,11 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public ClientConnectionDelegate(int objectID)
    {
-      super(objectID);      
+      super(objectID);
    }
-   
+
    public ClientConnectionDelegate()
-   {      
+   {
    }
 
    // ConnectionDelegate implementation -----------------------------
@@ -148,7 +149,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -184,12 +185,21 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
    public Xid[] getPreparedTransactions()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public IdBlock getIDBlock(int size) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -200,19 +210,19 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       return "ConnectionDelegate[" + id + "]";
    }
-   
+
    public void setRemotingConnection(JMSRemotingConnection conn)
    {
       this.remotingConnection = conn;
    }
-   
+
    public JMSRemotingConnection getRemotingConnection()
    {
       return remotingConnection;
    }
 
    // Protected -----------------------------------------------------
-   
+
    protected Client getClient()
    {
       return ((ConnectionState)state).getRemotingConnection().getInvokingClient();

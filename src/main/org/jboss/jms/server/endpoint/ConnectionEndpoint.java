@@ -27,6 +27,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
  * 
@@ -45,15 +46,20 @@ public interface ConnectionEndpoint extends Closeable
                                          boolean isXA) throws JMSException;
 
    String getClientID() throws JMSException;
-   
+
    void setClientID(String id) throws JMSException;
 
    void start() throws JMSException;
-   
-   void stop() throws JMSException;   
-       
-   void sendTransaction(TransactionRequest request) throws JMSException;   
-      
+
+   void stop() throws JMSException;
+
+   void sendTransaction(TransactionRequest request) throws JMSException;
+
    Xid[] getPreparedTransactions();
+
+   /**
+    * @since 1.0.1
+    */
+   IdBlock getIDBlock(int size) throws JMSException;
 }
 

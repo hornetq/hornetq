@@ -27,6 +27,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
  * The server-side advised instance corresponding to a Connection. It is bound to the AOP
@@ -98,10 +99,15 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
    {
       endpoint.sendTransaction(request);
    }
-   
+
    public Xid[] getPreparedTransactions()
    {
       return endpoint.getPreparedTransactions();
+   }
+
+   public IdBlock getIDBlock(int size) throws JMSException
+   {
+      return endpoint.getIDBlock(size);
    }
 
    // Public --------------------------------------------------------

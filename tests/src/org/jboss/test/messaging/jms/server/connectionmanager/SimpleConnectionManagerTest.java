@@ -31,6 +31,7 @@ import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
  * 
@@ -69,7 +70,7 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
 
       super.setUp();
       ServerManagement.start("all");
-      
+
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       log.debug("setup done");
@@ -85,71 +86,71 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
    public void testSimpleConnectionManager() throws Exception
    {
       SimpleConnectionManager cm = new SimpleConnectionManager();
-      
+
       SimpleConnectionEndpoint e1 = new SimpleConnectionEndpoint();
       SimpleConnectionEndpoint e2 = new SimpleConnectionEndpoint();
       SimpleConnectionEndpoint e3 = new SimpleConnectionEndpoint();
       SimpleConnectionEndpoint e4 = new SimpleConnectionEndpoint();
       SimpleConnectionEndpoint e5 = new SimpleConnectionEndpoint();
       SimpleConnectionEndpoint e6 = new SimpleConnectionEndpoint();
-      
+
       assertFalse(e1.isClosed());
       assertFalse(e2.isClosed());
       assertFalse(e3.isClosed());
       assertFalse(e4.isClosed());
       assertFalse(e5.isClosed());
       assertFalse(e6.isClosed());
-      
+
       cm.registerConnection("jvm1", "sessionid1", e1);
       cm.registerConnection("jvm1", "sessionid2", e2);
       cm.registerConnection("jvm2", "sessionid3", e3);
       cm.registerConnection("jvm2", "sessionid4", e4);
       cm.registerConnection("jvm3", "sessionid5", e5);
       cm.registerConnection("jvm3", "sessionid6", e6);
-      
+
       assertTrue(cm.containsSession("sessionid1"));
       assertTrue(cm.containsSession("sessionid2"));
       assertTrue(cm.containsSession("sessionid3"));
       assertTrue(cm.containsSession("sessionid4"));
       assertTrue(cm.containsSession("sessionid5"));
       assertTrue(cm.containsSession("sessionid6"));
-      
+
       ConnectionEndpoint r1 = cm.unregisterConnection("jvm3", "sessionid6");
       assertEquals(e6, r1);
       assertFalse(e6.isClosed());
-      
+
       assertNull(cm.unregisterConnection("blah", "blah"));
-      
+
       assertFalse(cm.containsSession("sessionid6"));
-      
+
       ConnectionEndpoint r2 = cm.unregisterConnection("jvm3", "sessionid5");
       assertEquals(e5, r2);
       assertFalse(e5.isClosed());
-      
+
       assertFalse(cm.containsSession("sessionid5"));
-      
+
       cm.handleClientFailure("sessionid4");
-      
+
       assertNull(cm.unregisterConnection("jvm2", "sessionid4"));
       assertNull(cm.unregisterConnection("jvm2", "sessionid3"));
-      
+
       assertFalse(cm.containsSession("sessionid4"));
       assertFalse(cm.containsSession("sessionid3"));
-      
+
       assertTrue(e3.isClosed());
       assertTrue(e4.isClosed());
-      
+
       ConnectionEndpoint r3 = cm.unregisterConnection("jvm1", "sessionid1");
       assertEquals(e1, r3);
       assertFalse(e1.isClosed());
-      
+
       ConnectionEndpoint r4 = cm.unregisterConnection("jvm1", "sessionid2");
       assertEquals(e2, r4);
       assertFalse(e2.isClosed());
-      
+
       assertFalse(cm.containsSession("sessionid2"));
       assertFalse(cm.containsSession("sessionid1"));
-      
+
    }
 
    // Package protected ---------------------------------------------
@@ -159,16 +160,16 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
+
    class SimpleConnectionEndpoint implements ConnectionEndpoint
    {
       public boolean closed;
-      
+
       SimpleConnectionEndpoint()
       {
          closed = false;
       }
-      
+
       public boolean isClosed()
       {
          return closed;
@@ -195,12 +196,10 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
 
       public void setClientID(String id) throws JMSException
       {
-    
       }
 
       public void start() throws JMSException
       {
-   
       }
 
       public void stop() throws JMSException
@@ -208,13 +207,18 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       }
 
       public void close() throws JMSException
-      {  
+      {
          closed = true;
       }
 
       public void closing() throws JMSException
       {
-      }    
+      }
+
+      public IdBlock getIDBlock(int size) throws JMSException
+      {
+         return null;
+      }
    }
 }
 

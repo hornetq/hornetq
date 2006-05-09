@@ -26,7 +26,7 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 
 /**
  * This class manages instances of MessageIdGenerator. It ensures there is one instance per instance
@@ -40,30 +40,31 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 public class MessageIdGeneratorFactory
 {
    public static MessageIdGeneratorFactory instance = new MessageIdGeneratorFactory();
-   
+
    //TODO Make configurable
    private static final int BLOCK_SIZE = 256;
-   
+
    private Map holders;
-      
+
    private MessageIdGeneratorFactory()
-   {      
+   {
       holders = new HashMap();
    }
-   
+
    public synchronized boolean containsMessageIdGenerator(String serverId)
    {
       return holders.containsKey(serverId);
    }
-      
-   public synchronized MessageIdGenerator getGenerator(String serverId, ConnectionFactoryDelegate cf) throws JMSException
+
+   public synchronized MessageIdGenerator getGenerator(String serverId, ConnectionDelegate cd)
+      throws JMSException
    {
       Holder h = (Holder)holders.get(serverId);
-      
+
       if (h == null)
       {
-         h = new Holder(new MessageIdGenerator(cf, BLOCK_SIZE));
-         
+         h = new Holder(new MessageIdGenerator(cd, BLOCK_SIZE));
+
          holders.put(serverId, h);
       }
       else
@@ -72,39 +73,39 @@ public class MessageIdGeneratorFactory
       }
       return h.generator;
    }
-   
+
    public synchronized void returnGenerator(String serverId)
    {
       Holder h = (Holder)holders.get(serverId);
-      
+
       if (h == null)
       {
          throw new IllegalArgumentException("Cannot find generator for serverid:" + serverId);
       }
-      
+
       h.refCount--;
-      
+
       if (h.refCount == 0)
       {
          holders.remove(serverId);
       }
    }
-   
+
    public synchronized void clear()
    {
       holders.clear();
    }
-   
+
    private class Holder
    {
       private Holder(MessageIdGenerator gen)
       {
          this.generator = gen;
       }
-      
+
       MessageIdGenerator generator;
-      
+
       int refCount = 1;
    }
-   
+
 }

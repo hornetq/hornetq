@@ -54,6 +54,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.messaging.core.local.CoreDestination;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -127,8 +128,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // Constructors --------------------------------------------------
    
-   protected ServerConnectionEndpoint(ServerPeer serverPeer, String clientID, String username,
-                            String password)
+   protected ServerConnectionEndpoint(ServerPeer serverPeer, String clientID,
+                                      String username, String password)
    {
       this.serverPeer = serverPeer;
 
@@ -542,7 +543,19 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       return (Xid[])xids.toArray(new Xid[xids.size()]);
    }
-   
+
+   public IdBlock getIDBlock(int size) throws JMSException
+   {
+      try
+      {
+         return serverPeer.getMessageIdManager().getIdBlock(size);
+      }
+      catch (Exception e)
+      {
+         throw new MessagingJMSException("Failed to get id block", e);
+      }
+   }
+
    // Public --------------------------------------------------------
    
    public String getUsername()

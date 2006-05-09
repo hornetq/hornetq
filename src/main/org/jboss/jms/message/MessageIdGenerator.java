@@ -23,7 +23,7 @@ package org.jboss.jms.message;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdBlock;
 
@@ -32,55 +32,71 @@ import org.jboss.messaging.core.plugin.IdBlock;
  * A MessageIdGenerator.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
  *
  * MessageIdGenerator.java,v 1.1 2006/03/07 17:11:14 timfox Exp
  */
 public class MessageIdGenerator
 {
+   // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(MessageIdGenerator.class);
-   
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private boolean trace = log.isTraceEnabled();
-   
+
    protected long high;
-   
-   protected long nextId;
-   
-   protected ConnectionFactoryDelegate cf;
-   
+   protected long nextID;
    protected int blockSize;
-   
-   public MessageIdGenerator(ConnectionFactoryDelegate cf, int blockSize) throws JMSException
+
+   protected ConnectionDelegate cd;
+
+   // Constructors --------------------------------------------------
+
+   public MessageIdGenerator(ConnectionDelegate cd, int blockSize)
    {
-      this.cf = cf;
-      
+      this.cd = cd;
       this.blockSize = blockSize;
-      
-      getNextBlock();
+      nextID = Long.MIN_VALUE;
+      high = Long.MIN_VALUE;
    }
-   
+
+   // Public --------------------------------------------------------
+
    protected void getNextBlock() throws JMSException
    {
-      IdBlock block = cf.getIdBlock(blockSize);
-      
-      nextId = block.getLow();
-      
+      IdBlock block = cd.getIDBlock(blockSize);
+
+      nextID = block.getLow();
       high = block.getHigh();
-      
-      if (trace) { log.trace("Got block of ids from server, low=" + nextId + " high=" + high); }
+
+      if (trace) { log.trace("Got block of IDs from server, low=" + nextID + " high=" + high); }
    }
-   
+
    public synchronized long getId() throws JMSException
    {
-      long id = nextId++;
-      
-      if (nextId == high)
+      if (nextID == high)
       {
          getNextBlock();
       }
-      
+
+      long id = nextID++;
+
       if (log.isTraceEnabled()) { log.trace("Getting next message id=" + id); }
-      
+
       return id;
-   }   
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+   
 }
