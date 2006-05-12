@@ -505,6 +505,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       
       JBossObjectInputStream ois = (JBossObjectInputStream)in;
       
+      //Need to explicitly set the classloader
+      ois.setClassLoader(Thread.currentThread().getContextClassLoader());
+      
       // First byte read is always version
       
       byte version = ois.readByte();
