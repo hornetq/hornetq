@@ -44,9 +44,9 @@
    </path>
 
    <target name="identify">
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="X                        Running the MDB example                          X"/>
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
+      <echo message="###########################################################################"/>
+      <echo message="#                        Running the MDB example                          #"/>
+      <echo message="###########################################################################"/>
       <echo message="The queue: ${example.queue.name}"/>
    </target>
 
