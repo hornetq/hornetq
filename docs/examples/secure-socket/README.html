@@ -1,0 +1,469 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>JBoss Messaging Example - JMS Queue</title>
+</head>
+<body>
+<br>
+<h1>JBoss Messaging Secure Socket Connection Example</h1>
+$Revision$
+<h2>Overview</h2>
+<br>
+This example shows how to use a secure ConnectionFactory, which creates
+a SSL socket connection between client and server. The example will use
+such a ConnectionFactory to create two JMS connections: the first one
+to send a message to the queue and the second one to read the message
+from the queue. In both cases, the message will be securely sent over
+an encrypted connection. The example is considered successful
+if the client receives without any error the message that was
+previously sent to the queue.<br>
+<br>
+This example needs to have access to a running JBoss Messaging
+instance.
+The JBoss Messaging instance must be installed and started according to
+the
+"Installation" paragraph from the release documentation. However, the
+example will automatically deploy its own queue, unless a queue with
+the same name is already deployed. <br>
+<h3 style="margin-left: 40px;">Warning</h3>
+<div style="margin-left: 40px;">A service configuration bug that exists
+in all JBoss versions prior to 4.0.4.RC1 prevents this example from
+working correctly. You shouldn't attempt to run this example with JBoss
+4.0.3.SP1 or lower, unless the patch corresponding to the JIRA issue
+http://jira.jboss.org/jira/browse/JBAS-1709 was applied to your
+installation. The bug has been fixed since JBoss 4.0.4.RC1.<br>
+<span style="font-style: italic;"></span></div>
+<br>
+This example also needs to have access to <span
+ style="font-family: monospace;">jboss-messaging-client.jar</span>
+archive that comes with the release bundle. If you run this example
+from an unzipped installation bundle, the example run script is
+correctly configured to find the client jar. Otherwise, you must modify
+example's <span style="font-family: monospace;">build.xml</span>
+accordingly.<br>
+<br>
+<br>
+<h2>Running the example</h2>
+1. Set up the JBOSS_HOME environment variable to point to the JBoss
+instance you deployed JBoss Messaging into. For example, if you
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.4.GA\server\messaging\deploy,</span>
+then your JBOSS_HOME value should be <span
+ style="font-family: monospace;">C:\jboss-4.0.4.GA</span><br>
+<br>
+2. Go to the example's home directory<br>
+<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; margin-left: 40px; background-color: rgb(255, 255, 255);"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><br>
+&nbsp;&nbsp; <span style="font-family: monospace;">cd
+...\examples\secure-socket</span><br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<span style="font-family: monospace;"></span><br>
+3. Run the example:<br>
+<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; margin-left: 40px; background-color: rgb(255, 255, 255);"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><br>
+&nbsp;&nbsp; <span style="font-family: monospace;">ant</span><br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+The output of a successful run should be similar to:<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><br>
+$ ant<br>
+Buildfile: build.xml<br>
+      <br>
+identify:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+############################################################################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Running the SECURE SOCKET
+example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+############################################################################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] The queue: testQueue<br>
+      <br>
+sanity-check:<br>
+      <br>
+init:<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\secure-socket\output<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
+      <br>
+compile:<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 1 source file to
+C:\work\src\cvs\jboss-head\jms\docs\examples\secure-socket\output<br>
+      <br>
+deploy:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
+C:\jboss-4.0.4.GA\server\messaging\deploy\jboss-messaging.sar<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
+C:\jboss-4.0.4.GA\server\messaging\deploy<br>
+      <br>
+sleep:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] Sleeping for 10 seconds ...<br>
+      <br>
+run:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Queue /queue/testQueue exists<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully sent to
+the testQueue queue<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello!<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
+Messaging version 1.0.1.CR2 (1.0)<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
+SUCCESS!&nbsp;&nbsp; ###<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+      <br>
+BUILD SUCCESSFUL<br>
+Total time: 15 seconds<br>
+      <br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+<h2>Configuration details</h2>
+<br>
+The example client looks up a specially-configured connection factory (<span
+ style="font-family: monospace;">"/SecureConnectionFactory"</span>)
+that is deployed by the example run script. The secure
+ConnectionFactory relies on a "secured" Remoting Connector to provide
+the SSL connection. The definition of the required services is
+specified in the <span style="font-family: monospace;">etc/messaging-secure-socket-service.xml
+</span>deployment descriptor. The deployment descriptor, as used by the
+example, is listed below. Note that all services (the Connector, the
+secure ConnectionFactory, the SSLServerSocketFactoryService and the
+SSLSocketBuilder) are deployed in the same class loading domain as the
+messaging server:<br>
+<br>
+<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><br>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br>
+      <br>
+&lt;!--<br>
+&nbsp;&nbsp;&nbsp;&nbsp; Secure Socket Transport Example: the
+deployment descriptor for the secure socket factory<br>
+&nbsp;&nbsp;&nbsp;&nbsp; service, secure connector and secure
+connection factory.<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; $Id: remoting-service.xml,v 1.2 2006/05/08
+21:35:35 ovidiu Exp $<br>
+&nbsp;--&gt;<br>
+      <br>
+&lt;server&gt;<br>
+      <br>
+&nbsp;&nbsp;
+&lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;<br>
+&nbsp;&nbsp; &lt;/loader-repository&gt;<br>
+      <br>
+&nbsp;&nbsp; &lt;mbean code="org.jboss.remoting.transport.Connector"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+name="jboss.messaging:service=Connector,transport=SSLSocket"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+display-name="SSL Socket Transport Connector"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute name="Configuration"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;config&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;invoker transport="sslsocket"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="marshaller"<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;
+isParam="true"&gt;org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="unmarshaller"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+isParam="true"&gt;org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="serializationtype"
+isParam="true"&gt;jboss&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="socket.check_connection"
+isParam="true"&gt;false&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="timeout"&gt;0&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute
+name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="serverBindPort"&gt;5457&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="leasePeriod"&gt;20000&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;attribute name="serverSocketFactory"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+jboss.messaging:service=ServerSocketFactory,type=SSL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/invoker&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;handlers&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;handler subsystem="JMS"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/handlers&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/config&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;depends&gt;jboss.messaging:service=ServerSocketFactory,type=SSL&lt;/depends&gt;<br>
+&nbsp;&nbsp; &lt;/mbean&gt;<br>
+      <br>
+&nbsp;&nbsp; &lt;mbean
+code="org.jboss.jms.server.connectionfactory.ConnectionFactory"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+name="jboss.messaging.destination:service=SecureConnectionFactory"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;depends
+optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;depends
+optional-attribute-name="Connector"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+jboss.messaging:service=Connector,transport=SSLSocket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/depends&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute name="JNDIBindings"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;bindings&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;binding&gt;/SecureConnectionFactory&lt;/binding&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/bindings&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/attribute&gt;<br>
+&nbsp;&nbsp; &lt;/mbean&gt;<br>
+      <br>
+&nbsp;&nbsp; &lt;!-- This section is for custom (SSL) server socket
+factory&nbsp; --&gt;<br>
+      <br>
+&nbsp;&nbsp; &lt;!--<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The server socket factory
+mbean to be used as attribute to socket invoker (see<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; serverSocketFactory
+attribute above for where it is used). This service provides the exact<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; same API as the
+ServerSocketFactory, so can be set as an attribute of that type on any<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MBean requiring an
+ServerSocketFactory.<br>
+&nbsp;&nbsp; --&gt;<br>
+&nbsp;&nbsp; &lt;mbean
+code="org.jboss.remoting.security.SSLServerSocketFactoryService"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+name="jboss.messaging:service=ServerSocketFactory,type=SSL"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+display-name="SSL Server Socket Factory"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;depends
+optional-attribute-name="SSLSocketBuilder"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+proxy-type="attribute"&gt;jboss.messaging:service=SocketBuilder,type=SSL&lt;/depends&gt;<br>
+&nbsp;&nbsp; &lt;/mbean&gt;<br>
+      <br>
+&nbsp;&nbsp; &lt;!--<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This service is used to build the
+SSL Server socket factory. This will be where all the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; store/trust information will be
+set. If do not need to make any custom configurations,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; no extra attributes need to be set
+for the SSLSocketBuilder and just need to set the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; javax.net.ssl.keyStore and
+javax.net.ssl.keyStorePassword system properties.<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This can be done by just adding
+something like the following to the run script for JBoss<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (this one is for run.bat):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; set
+JAVA_OPTS=-Djavax.net.ssl.keyStore=.keystore <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-Djavax.net.ssl.keyStorePassword=opensource %JAVA_OPTS%<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Otherwise, if want to customize
+the attributes for SSLSocketBuilder, will need to uncomment<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; them below.<br>
+&nbsp;&nbsp; --&gt;<br>
+&nbsp;&nbsp; &lt;mbean
+code="org.jboss.remoting.security.SSLSocketBuilder"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+name="jboss.messaging:service=SocketBuilder,type=SSL"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+display-name="SSL Server Socket Factory Builder"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!--<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IMPORTANT
+- If making ANY customizations, this MUST be set to false.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Otherwise,
+will used default settings and the following attributes will be ignored.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
+name="UseSSLServerSocketFactory"&gt;false&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- This is the url string to the
+key store to use --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
+name="KeyStoreURL"&gt;messaging.keystore&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The password for the key store
+--&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
+name="KeyStorePassword"&gt;secureexample&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The password for the keys (will
+use KeystorePassword if this is not set explicitly. --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
+name="KeyPassword"&gt;secureexample&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The protocol for the SSLContext.
+Default is TLS. --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
+name="SecureSocketProtocol"&gt;TLS&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The algorithm for the key
+manager factory.&nbsp; Default is SunX509. --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
+name="KeyManagementAlgorithm"&gt;SunX509&lt;/attribute&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!--<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The type
+to be used for the key store.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Defaults
+to JKS. Some acceptable values are JKS (Java Keystore - Sun's keystore
+format),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; JCEKS
+(Java Cryptography Extension keystore - More secure version of JKS), and<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PKCS12
+(Public-Key Cryptography Standards #12 keystore - RSA's Personal
+Information<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Exchange
+Syntax Standard). These are not case sensitive.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
+name="KeyStoreType"&gt;JKS&lt;/attribute&gt;<br>
+&nbsp;&nbsp; &lt;/mbean&gt;<br>
+      <br>
+&lt;/server&gt;<br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+The SSLSocketBuilder needs a keystore with a public/private key pair.
+The example provides one (<span style="font-family: monospace;">etc/messaging.keystore</span>)
+which is deployed with the rest of the artifacts. In case you need to
+create your own keystore, this is how you do it:<br>
+<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; margin-left: 40px; background-color: rgb(255, 255, 255);"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      <pre> keytool -genkey -alias messaging.keypair -keyalg RSA -keystore messaging.keystore -validity 3650</pre>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+<p>By default, the client will try to contact a Certificate Authority
+to
+insure the authenticity of the public key it uses to encrypt the
+communication. However, the example's certificate is self-signed, so no
+Certificate Authority will
+recognize it. In order to get the SSL client to trust it and the
+example to complete successfully, we use a client truststore (<span
+ style="font-family: monospace;">/etc/messaging.truststore</span>). In
+case you need to create your own truststore, this is how you do it:<br>
+</p>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; margin-left: 40px; background-color: rgb(255, 255, 255);"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      <pre> keytool -export -alias messaging.keypair -keystore messaging.keystore -rfc -file messaging.cer<br> keytool -import -alias messaging.keypair -file messaging.cer -keystore messaging.truststore</pre>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<p> </p>
+<p>In order for the truststore to be recognized, the client's
+environment must contain the <tt>javax.net.ssl.trustStore</tt> and <tt>javax.net.ssl.trustStorePassword</tt>
+properties.<br>
+</p>
+<br>
+<h2>Troubleshooting</h2>
+<h3>1. I get <span style="font-family: monospace;">"javax.jms.JMSSecurityException:
+User null is NOT authenticated" <br>
+</span></h3>
+You probably didn't install JBoss Messaging correctly. A fresh JBoss
+Messaging installation requires changes in the security configuration
+of a <span style="font-family: monospace;">default </span>JBoss
+instance, specifically a properly configured "<small><span
+ style="font-family: courier new,courier,monospace;">messaging</span></small>"
+security domain.&nbsp; Follow the instructions from the "Installation"
+paragraph of the release documentation. <br>
+<br>
+<br>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>
