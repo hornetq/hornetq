@@ -16,7 +16,7 @@
         If you don't find this file in the current directory, it's ok, it's intended to provide
         defaults for in-workarea testing and it's not meant for distribution with the example bundle.
    -->
-   <property file="../secure-socket/do-not-distribute.properties"/>
+   <property file="./do-not-distribute.properties"/>
 
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
    <property name="messaging.client.jar.path" value="../.."/>
