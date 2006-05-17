@@ -36,12 +36,16 @@ import javax.jms.XAQueueConnection;
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicConnectionFactory;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.Referenceable;
 
 import org.jboss.aop.Advised;
 import org.jboss.jms.client.container.JmsClientAspectXMLLoader;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
@@ -55,7 +59,7 @@ import org.jboss.logging.Logger;
 public class JBossConnectionFactory implements
     ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
     XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory,
-    Serializable
+    Serializable, Referenceable
 {
    // Constants -----------------------------------------------------
 
@@ -151,6 +155,16 @@ public class JBossConnectionFactory implements
    public XATopicConnection createXATopicConnection(String username, String password) throws JMSException
    {
       return createConnectionInternal(username, password, true, JBossConnection.TYPE_TOPIC_CONNECTION);   
+   }
+   
+   // Referenceable implementation ---------------------------------------
+   
+   public Reference getReference() throws NamingException
+   {
+      return new Reference("org.jboss.jms.client.JBossConnectionFactory",
+                           new SerializableObjectRefAddr("JBM-CF", this),
+                           "org.jboss.jms.referenceable.ConnectionFactoryObjectFactory",
+                           null);
    }
 
    // Public --------------------------------------------------------

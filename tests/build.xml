@@ -345,6 +345,51 @@
       </junit>
    </target>
 
+<target name="ref-test" depends="tests-jar, prepare-testdirs, clear-test-logs"
+      description="Runs all available tests an in-VM configuration">
+
+      <antcall target="print-testclasspath"/>
+
+      <junit printsummary="${junit.printsummary}"
+         fork="${junit.fork}"
+         includeantruntime="${junit.includeantruntime}"
+         haltonerror="${junit.haltonerror}"
+         haltonfailure="${junit.haltonfailure}"
+         showoutput="${junit.showoutput}"
+         timeout="${junit.timeout2}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${module.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="jboss.jms.lib" value="${jboss.jms.lib}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath>
+            <path refid="test.classpath"/>
+            <pathelement location="${build.tests.lib}/${build.tests.archive}"/>
+         </classpath>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+            todir="${junit.batchtest.todir}"
+            haltonfailure="${junit.batchtest.haltonfailure}"
+            haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <!-- <include name="org/jboss/test/messaging/jms/JMSTest.class"/> -->
+               <include name="**/messaging/jms/ReferenceableTest.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/crash/*Test.class"/>
+               <exclude name="**/jms/MemLeakTest.class"/>
+               <!-- TODO Exclude all distributed tests until after 1.0 release -->
+               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
   <target name="invm-stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
       description="Runs all stress tests in an in-VM configuration">
 

@@ -22,6 +22,12 @@
 package org.jboss.jms.destination;
 
 import javax.jms.Destination;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.Referenceable;
+
+import org.jboss.jms.referenceable.SerializableObjectRefAddr;
+
 import java.io.Serializable;
 
 /**
@@ -30,7 +36,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public abstract class JBossDestination implements Destination, Serializable
+public abstract class JBossDestination implements Destination, Serializable, Referenceable
 {
    // Constants -----------------------------------------------------
 
@@ -47,6 +53,16 @@ public abstract class JBossDestination implements Destination, Serializable
    public JBossDestination(String name)
    {
       this.name = name;
+   }
+   
+   // Referenceable implementation ---------------------------------------
+   
+   public Reference getReference() throws NamingException
+   {
+      return new Reference("org.jboss.jms.destination.JBossDestination",
+                           new SerializableObjectRefAddr("JBM-DEST", this),
+                           "org.jboss.jms.referenceable.DestinationObjectFactory",
+                           null);
    }
 
    // Public --------------------------------------------------------
