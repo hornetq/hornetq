@@ -23,6 +23,7 @@
    <property name="run.mdb.example" value="true"/>
    <property name="run.stateless.example" value="true"/>
    <property name="run.ejb3mdb.example" value="false"/>
+   <property name="run.secure-socket.example" value="true"/>
 
    <path id="twiddle.classpath">
       <pathelement location="${jboss.home}/bin/twiddle.jar"/>
@@ -188,6 +189,10 @@
                <equals arg1="${example.name}" arg2="ejb3mdb"/>
                <istrue value="${run.ejb3mdb.example}"/>
             </and>
+            <and>
+               <equals arg1="${example.name}" arg2="secure-socket"/>
+               <istrue value="${run.secure-socket.example}"/>
+            </and>
          </or>
       </condition>
       <antcall target="run-example-internal"/>
@@ -346,6 +351,13 @@
          <param name="jboss.configuration.name" value="messaging-smoke-test"/>
       </antcall>
 
+      <antcall target="run-example">
+         <param name="example.name" value="secure-socket"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.home" value="${jboss.home}"/>
+         <param name="jboss.configuration.name" value="messaging-smoke-test"/>
+      </antcall>
+
       <!-- ====================================================  -->
       <!--                                                       -->
       <!--  End of example list                                  -->
@@ -372,26 +384,32 @@
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss402.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403-installer.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
@@ -399,18 +417,15 @@
          <param name="release.admin.target" value="standalone"/>
          <param name="run.mdb.example" value="false"/>
          <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
-         <param name="jboss.home" value="${jboss404RC1.home}"/>
+         <param name="jboss.home" value="${jboss404GA.home}"/>
       </antcall>
 
       <antcall target="smoke">
-         <param name="jboss.home" value="${jboss404CR2.home}"/>
-      </antcall>
-
-      <antcall target="smoke">
-         <param name="jboss.home" value="${jboss404CR2-installer.home}"/>
+         <param name="jboss.home" value="${jboss404GA-installer.home}"/>
       </antcall>
 
       <!--
@@ -433,7 +448,7 @@
          <param name="messaging.artifact.name" value="jboss-messaging.jar"/>
          <param name="replace.remoting" value="true"/>
       </antcall>
-
+                                                                                             
       <antcall target="report"/>
 
    </target>
