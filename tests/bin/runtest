@@ -18,6 +18,9 @@
 
 reldir=`dirname $0`
 
+
+ENV_TEST_DATABASE=$TEST_DATABASE
+
 if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
    . $reldir/.testrc
 fi
@@ -25,6 +28,10 @@ fi
 if [ -z "$TARGET_CLASS" ]; then
    echo "No TARGET_CLASS found! Set the TARGET_CLASS environment variable and try again." 1>&2
    exit 1
+fi
+
+if [ "$ENV_TEST_DATABASE" != "" ]; then
+   TEST_DATABASE=$ENV_TEST_DATABASE
 fi
 
 outputdir="$reldir/../output"
