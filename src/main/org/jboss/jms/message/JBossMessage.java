@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Iterator;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -49,6 +50,7 @@ import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.util.Util;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 
@@ -134,20 +136,96 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       return del;
    }
 
+   public static String dump(JBossMessage m)
+   {
+      String type = null;
+      if (m instanceof BytesMessage)
+      {
+         type = "Bytes";
+      }
+      else if (m instanceof MapMessage)
+      {
+         type = "Map";
+      }
+      else if (m instanceof ObjectMessage)
+      {
+         type = "Object";
+      }
+      else if (m instanceof StreamMessage)
+      {
+         type = "Stream";
+      }
+      else if (m instanceof TextMessage)
+      {
+         type = "Text";
+      }
+      else
+      {
+         type = "Generic";
+      }
+
+      StringBuffer sb = new StringBuffer();
+
+      sb.append("\n");
+      sb.append("         MESSAGE DUMP\n");
+      sb.append("              Core ID:       ").append(m.messageID).append('\n');
+      sb.append("              reliable:      ").append(m.reliable).append('\n');
+      sb.append("              expiration:    ").append(m.expiration).append('\n');
+      sb.append("              timestamp:     ").append(m.timestamp).append('\n');
+      sb.append("              headers:       ");
+
+      if (m.headers.size() == 0)
+      {
+         sb.append("NO HEADERS").append('\n');
+      }
+      else
+      {
+         sb.append('\n');
+         for(Iterator i = m.headers.keySet().iterator(); i.hasNext(); )
+         {
+            String name = (String)i.next();
+            sb.append("                             ");
+            sb.append(name).append(" - ").append(m.headers.get(name)).append('\n');
+         }
+      }
+      sb.append("              redelivered:   ").append(m.redelivered).append('\n');
+      sb.append("              priority:      ").append(m.priority).append('\n');
+      sb.append("              deliveryCount: ").append(m.deliveryCount).append('\n');
+
+      sb.append("              JMS ID:        ").append(m.getJMSMessageID()).append('\n');
+      sb.append("              type:          ").append(type).append('\n');
+      sb.append("              destination:   ").append(m.destination).append('\n');
+      sb.append("              replyTo:       ").append(m.replyToDestination).append('\n');
+      sb.append("              jmsType:       ").append(m.jmsType).append('\n');
+      sb.append("              properties:    ");
+
+      if (m.properties.size() == 0)
+      {
+         sb.append("NO PROPERTIES").append('\n');
+      }
+      else
+      {
+         sb.append('\n');
+         for(Iterator i = m.properties.keySet().iterator(); i.hasNext(); )
+         {
+            String name = (String)i.next();
+            sb.append("                             ");
+            sb.append(name).append(" - ").append(m.properties.get(name)).append('\n');
+         }
+      }
+      sb.append("\n");
+
+      return sb.toString();
+   }
+
    // Attributes ----------------------------------------------------
 
    protected JBossDestination destination;
-   
    protected JBossDestination replyToDestination;
-
    protected String jmsType;
-
    protected Map properties;
-   
    protected String correlationID;
-   
    protected byte[] correlationIDBytes;
-   
    protected transient int connectionID;
    
    // Constructors --------------------------------------------------
@@ -186,18 +264,21 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        JBossDestination replyTo,
                        HashMap jmsProperties)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, coreHeaders, payloadAsByteArray, persistentChannelCount);
+      super(messageID,
+            reliable,
+            expiration,
+            timestamp,
+            priority,
+            0,
+            coreHeaders,
+            payloadAsByteArray,
+            persistentChannelCount);
 
       this.jmsType = jmsType;      
-
       this.correlationID = correlationID;
-      
       this.correlationIDBytes = correlationIDBytes;
-      
       this.connectionID = Integer.MIN_VALUE;
-
       this.destination = destination;
-      
       this.replyToDestination = replyTo;
 
       if (jmsProperties == null)
@@ -298,7 +379,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    
    protected transient String jmsMessageID;
 
-   public String getJMSMessageID() throws JMSException
+   public String getJMSMessageID()
    {
       if (jmsMessageID == null)
       {       
@@ -905,27 +986,27 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          properties = (HashMap)m;
       }
 
-      //correlation id
+      // correlation id
       
       byte b = in.readByte();
       
       if (b == NULL)
       {
-         //No correlation id
+         // No correlation id
          correlationID = null;
          
          correlationIDBytes = null;
       }
       else if (b == STRING)
       {
-         //String correlation id
+         // String correlation id
          correlationID = in.readUTF();
          
          correlationIDBytes = null;
       }
       else
       {
-         //Bytes correlation id
+         // Bytes correlation id
          correlationID = null;
          
          int len = in.readInt();
@@ -1025,12 +1106,12 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       else
       {
          String name = in.readUTF();
-         
+
          JBossDestination dest;
          
          if (b == QUEUE)
          {
-            dest=  new JBossQueue(name);
+            dest = new JBossQueue(name);
          }
          else if (b == TOPIC)
          {
@@ -1038,7 +1119,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          }
          else if (b == TEMP_QUEUE)
          {
-            dest=  new JBossTemporaryQueue(name);
+            dest = new JBossTemporaryQueue(name);
          }
          else if (b == TEMP_TOPIC)
          {
