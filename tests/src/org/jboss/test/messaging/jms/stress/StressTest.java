@@ -149,8 +149,8 @@ public class StressTest extends StressTestBase
       prod23.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       MessageProducer prod24 = sess24.createProducer(queue1);
       prod24.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-            
+
+
       Connection conn2 = cf.createConnection();
       conn2.start();
       Session sessReceive = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);      
@@ -182,7 +182,8 @@ public class StressTest extends StressTestBase
       new Transactional2PCSender("prod22", xaSess6, prod22, NUM_PERSISTENT_MESSAGES, 50, 21),
       new Transactional2PCSender("prod23", xaSess7, prod23, NUM_NON_PERSISTENT_MESSAGES, 100, 67),
       new Transactional2PCSender("prod24", xaSess8, prod24, NUM_PERSISTENT_MESSAGES, 100, 67), 
-      new Receiver(sessReceive, cons, 12 * NUM_NON_PERSISTENT_MESSAGES + 12 * NUM_PERSISTENT_MESSAGES, false) };
+      new Receiver(sessReceive, cons,
+                   12 * NUM_NON_PERSISTENT_MESSAGES + 12 * NUM_PERSISTENT_MESSAGES, false) };
       
       runRunners(runners);
       

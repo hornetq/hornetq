@@ -560,7 +560,9 @@ public abstract class RoutableSupport implements Routable, Externalizable
    protected void writeString(ObjectOutput out, String s) throws IOException
    {
       if (s == null)
+      {
          out.writeByte(NULL);
+      }
       else
       {
          out.writeByte(STRING);
@@ -572,9 +574,13 @@ public abstract class RoutableSupport implements Routable, Externalizable
    {
       byte b = in.readByte();
       if (b == NULL)
+      {
          return null;
+      }
       else
+      {
          return in.readUTF();
+      }
    }
     
 }

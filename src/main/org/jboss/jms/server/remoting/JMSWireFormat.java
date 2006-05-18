@@ -505,7 +505,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       
       JBossObjectInputStream ois = (JBossObjectInputStream)in;
       
-      //Need to explicitly set the classloader
+      // Need to explicitly set the classloader
       ois.setClassLoader(Thread.currentThread().getContextClassLoader());
       
       // First byte read is always version
@@ -546,7 +546,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                                      new MessagingMarshallable(version, mi), null, null, null);
             
             if (trace) { log.trace("read send()"); }
-            
+
             return request;
          }            
          case ACTIVATE:            
@@ -607,7 +607,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             InvocationRequest request =
                new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
                                      new MessagingMarshallable(version, mi), null, null, null);
-            
+
             if (trace) { log.trace("read sendTransaction()"); }
             
             return request;

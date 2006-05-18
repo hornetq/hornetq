@@ -50,11 +50,8 @@ public class ConnectionFactoryObjectFactory implements ObjectFactory
       
       byte[] bytes = (byte[])r.get("JBM-CF").getContent();
       
-      //Deserialize
-      
-      JBossConnectionFactory cf = (JBossConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);
-      
-      return cf;
+      // Deserialize
+      return (JBossConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);
    }
 }
 

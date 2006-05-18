@@ -50,11 +50,8 @@ public class DestinationObjectFactory implements ObjectFactory
       
       byte[] bytes = (byte[])r.get("JBM-DEST").getContent();
       
-      //Deserialize
-      
-      JBossDestination dest = (JBossDestination)SerializableObjectRefAddr.deserialize(bytes);
-      
-      return dest;
+      // Deserialize
+      return (JBossDestination)SerializableObjectRefAddr.deserialize(bytes);
    }
 }
 
