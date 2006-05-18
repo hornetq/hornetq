@@ -24,6 +24,7 @@ package org.jboss.messaging.util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
+import org.jboss.logging.Logger;
 
 import javax.jms.Session;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,6 +41,8 @@ import java.sql.Connection;
 public class Util
  {
    // Constants -----------------------------------------------------
+
+    public static Logger log = Logger.getLogger(Util.class);
 
    // Static --------------------------------------------------------
 
