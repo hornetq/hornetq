@@ -74,18 +74,15 @@ public class ConnectionFactory extends ServiceMBeanSupport
       }
 
       String locatorURI = (String)server.getAttribute(connectorObjectName, "InvokerLocator");
-            
       ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
       
       connectionFactoryManager = serverPeer.getConnectionFactoryManager();
-      
       connectorManager = serverPeer.getConnectorManager();
-      
       connectionManager = serverPeer.getConnectionManager();
       
       long leasePeriod = ((Long)server.getAttribute(connectorObjectName, "LeasePeriod")).longValue();
       
-      //If leasePeriod <= 0, disable pinging altogether
+      // if leasePeriod <= 0, disable pinging altogether
       
       int refCount = connectorManager.registerConnector(connectorObjectName.getCanonicalName());
       
