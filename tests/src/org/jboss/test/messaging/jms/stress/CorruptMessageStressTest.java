@@ -33,7 +33,7 @@ public class CorruptMessageStressTest extends MessagingTestCase
    private static Logger log = Logger.getLogger(CorruptMessageStressTest.class);
 
    public static int PRODUCER_COUNT = 30;
-   public static int MESSAGE_COUNT = 5000;
+   public static int MESSAGE_COUNT = 10000;
 
    // Static --------------------------------------------------------
 

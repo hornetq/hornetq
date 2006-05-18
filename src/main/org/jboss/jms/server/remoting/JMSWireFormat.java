@@ -50,7 +50,6 @@ import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.remoting.marshal.serializable.SerializableMarshaller;
 import org.jboss.remoting.marshal.serializable.SerializableUnMarshaller;
 import org.jboss.serial.io.JBossObjectInputStream;
-import org.jboss.serial.io.JBossObjectOutputStream;
 
 /**
  * 
@@ -123,13 +122,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    public void write(Object obj, OutputStream out) throws IOException
    {
       // sanity check
-      if (!(out instanceof JBossObjectOutputStream))
+      if (!(out instanceof ObjectOutputStream))
       {
          log.error("out is a " + out.getClass());
-         throw new IllegalStateException("OutputStream must be a JBossObjectOutputStream");
+         throw new IllegalStateException("OutputStream must be an ObjectOutputStream");
       }
 
-      JBossObjectOutputStream oos = (JBossObjectOutputStream)out;
+      ObjectOutputStream oos = (ObjectOutputStream)out;
 
       handleVersion(obj, oos);
 
@@ -428,15 +427,20 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    public Object read(InputStream in, Map map) throws IOException, ClassNotFoundException
    {
       // Sanity check
-      if (!(in instanceof JBossObjectInputStream))
+      if (!(in instanceof ObjectInputStream))
       {
-         throw new IllegalStateException("InputStream must be an JBossObjectInputStream");
+         log.error("in is a " + in.getClass());
+         throw new IllegalStateException("InputStream must be an ObjectInputStream");
       }
 
-      JBossObjectInputStream ois = (JBossObjectInputStream)in;
+      ObjectInputStream ois = (ObjectInputStream)in;
 
-      // Need to explicitly set the classloader
-      ois.setClassLoader(Thread.currentThread().getContextClassLoader());
+      if (ois instanceof JBossObjectInputStream)
+      {
+         // Need to explicitly set the classloader
+         ((JBossObjectInputStream)ois).
+            setClassLoader(Thread.currentThread().getContextClassLoader());
+      }
 
       // First byte read is always version
 
@@ -705,7 +709,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    public void setClassLoader(ClassLoader classloader)
    {
-      log.warn("Ingnoring setClassLoader(" + classloader + ")");
+      //log.warn("ignoring setClassLoader(" + classloader + ")");
    }
 
    // Public --------------------------------------------------------
@@ -714,7 +718,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    // Protected -----------------------------------------------------
 
-   protected void handleVersion(Object obj, JBossObjectOutputStream oos) throws IOException
+   protected void handleVersion(Object obj, ObjectOutputStream oos) throws IOException
    {
       Object load = null;
 

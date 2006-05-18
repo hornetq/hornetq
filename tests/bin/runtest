@@ -20,6 +20,7 @@ reldir=`dirname $0`
 
 
 ENV_TEST_DATABASE=$TEST_DATABASE
+ENV_TEST_SERIALIZATION=$TEST_SERIALIZATION
 
 if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
    . $reldir/.testrc
@@ -32,6 +33,9 @@ fi
 
 if [ "$ENV_TEST_DATABASE" != "" ]; then
    TEST_DATABASE=$ENV_TEST_DATABASE
+fi
+if [ "$ENV_TEST_SERIALIZATION" != "" ]; then
+   TEST_SERIALIZATION=$ENV_TEST_SERIALIZATION
 fi
 
 outputdir="$reldir/../output"
@@ -82,7 +86,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE"
+JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE -Dtest.serialization=$TEST_SERIALIZATION"
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
@@ -98,7 +102,7 @@ if [ "$TARGET_TEST" != "" ]; then
 fi
 
 if [ "$isRemote" = "true" ]; then
-  export TEST_DATABASE
+  export TEST_DATABASE TEST_SERIALIZATION
   $reldir/start-rmi-server $REMOTE_DEBUG_FLAG
 fi
 

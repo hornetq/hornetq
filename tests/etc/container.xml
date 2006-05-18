@@ -50,6 +50,13 @@
 
    </database-configurations>
 
+   <!--
+      The serialization type to start the container with. If "test.serialization" is set, it takes
+      precedence. Supported values: "jboss" and "java".
+   -->
+
+   <serialization-type>jboss</serialization-type>
+
 </container>
 
 

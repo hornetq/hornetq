@@ -38,6 +38,10 @@ JAVA_OPTS="$JAVA_OPTS -Xmx768M -Dmodule.output=$reldir/../output -Dremote.test.s
 if [ "$TEST_DATABASE" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.database=$TEST_DATABASE"
 fi
+if [ "$TEST_SERIALIZATION" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dtest.serialization=$TEST_SERIALIZATION"
+fi
+
 
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar

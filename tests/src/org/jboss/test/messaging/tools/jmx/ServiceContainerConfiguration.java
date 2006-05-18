@@ -68,13 +68,13 @@ class ServiceContainerConfiguration
       {
          throw new IllegalArgumentException("Invalid transaction isolation: " + s);
       }
-
    }
 
    // Attributes ----------------------------------------------------
 
    private String database;
    private Map dbConfigurations;
+   private String serializationType;
 
    // Constructors --------------------------------------------------
 
@@ -128,6 +128,14 @@ class ServiceContainerConfiguration
       return dbc.getDatabasePassword();
    }
 
+   /**
+    * @return the serialization type the container wants the Remoting Connector be configured with.
+    */
+   public String getSerializationType()
+   {
+      return serializationType;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -138,6 +146,7 @@ class ServiceContainerConfiguration
    {
       Reader reader = new InputStreamReader(is);
       String currentDatabase = null;
+      String currentSerializationType = null;
 
       try
       {
@@ -172,6 +181,10 @@ class ServiceContainerConfiguration
                {
                   currentDatabase = XMLUtil.getTextContent(n);
                }
+               else if ("serialization-type".equals(name))
+               {
+                  currentSerializationType = XMLUtil.getTextContent(n);
+               }
                else
                {
                   throw new Exception("Unexpected child <" + name + "> of node " +
@@ -181,6 +194,7 @@ class ServiceContainerConfiguration
          }
 
          setCurrentDatabase(currentDatabase);
+         setCurrentSerializationType(currentSerializationType);
       }
       finally
       {
@@ -198,6 +212,19 @@ class ServiceContainerConfiguration
       if (database == null)
       {
          database = xmlConfigDatabase;
+      }
+   }
+
+   /**
+    * Always the value of "test.serialization" system property takes precedence over the c
+    * onfiguration file value.
+    */
+   private void setCurrentSerializationType(String xmlConfigSerializationType)
+   {
+      serializationType = System.getProperty("test.serialization");
+      if (serializationType == null)
+      {
+         serializationType = xmlConfigSerializationType;
       }
    }
 

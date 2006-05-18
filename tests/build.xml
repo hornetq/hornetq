@@ -131,8 +131,11 @@
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
    <property name="build.tests.remote" value="false"/>
    <property name="test.bind.address" value="localhost"/>
+
    <property name="functional.tests.database" value="hsqldb"/>
+   <property name="functional.tests.serialization" value="jboss"/>
    <property name="stress.tests.database" value="mysql"/>
+   <property name="stress.tests.serialization" value="java"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
@@ -241,6 +244,7 @@
          <sysproperty key="remote.test.suffix" value="-remote"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -260,6 +264,7 @@
          <sysproperty key="remote.test.suffix" value="-remote"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
+         <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/> -->
          <classpath>
             <path refid="stress.test.classpath"/>
@@ -314,6 +319,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="jboss.jms.lib" value="${jboss.jms.lib}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
@@ -360,6 +366,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="jboss.jms.lib" value="${jboss.jms.lib}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
@@ -405,6 +412,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
+         <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -448,6 +456,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -520,6 +529,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
+         <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
          <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"/> -->
          <classpath>
@@ -610,6 +620,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -669,6 +680,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <path refid="test.classpath"/>
@@ -711,6 +723,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <path refid="test.classpath"/>
@@ -749,6 +762,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath>
             <path refid="test.classpath"/>
@@ -793,6 +807,7 @@
          <sysproperty key="module.output" value="${module.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <!--
             <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
          -->
