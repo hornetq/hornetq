@@ -46,6 +46,9 @@ REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
 #SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
 SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
 
+# for stress testing
+JAVA_OPTS="$JAVA_OPTS -Xmx768M"
+
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\
 $reldir/../../src/etc${SEP}\
