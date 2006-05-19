@@ -63,7 +63,6 @@ public class JMSRemotingConnection
    public static final String CALLBACK_SERVER_PARAMS =
       "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-      "serializationtype=jboss&" +
       "dataType=jms&" +
       "timeout=0&" +
       "socket.check_connection=false";
@@ -79,6 +78,7 @@ public class JMSRemotingConnection
    protected String thisAddress;
    protected int bindPort;
    protected boolean isMultiplex;
+   protected String serializationType;
    protected CallbackManager callbackManager;
    protected InvokerCallbackHandler dummy;
    protected boolean clientPing;
@@ -95,6 +95,7 @@ public class JMSRemotingConnection
       serverLocator = new InvokerLocator(serverLocatorURI);
       thisAddress = InetAddress.getLocalHost().getHostAddress();
       isMultiplex = serverLocator.getProtocol().equals("multiplex");
+      serializationType = (String)serverLocator.getParameters().get("serializationtype");
 
       final int MAX_RETRIES = 50;
       boolean completed = false;
@@ -243,9 +244,14 @@ public class JMSRemotingConnection
                              ":" + bindPort + CALLBACK_SERVER_PARAMS;
       }
 
+      if (serializationType != null)
+      {
+         callbackServerURI += "&serializationType=" + serializationType;
+      }
+
       InvokerLocator callbackServerLocator = new InvokerLocator(callbackServerURI);
 
-      if (log.isTraceEnabled()) { log.trace(this + " starting callback server " + callbackServerLocator.getLocatorURI()); }
+      log.debug(this + " starting callback server " + callbackServerLocator.getLocatorURI());
 
       callbackServer = new Connector();
 
