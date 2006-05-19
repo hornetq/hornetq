@@ -70,7 +70,9 @@
    <!-- Limit categories -->
    <!-- ================ -->
 
-
+   <category name="org.jboss.serial">
+      <priority value="INFO"/>
+   </category>
 
    <!-- ======================= -->
    <!-- Setup the Root category -->
