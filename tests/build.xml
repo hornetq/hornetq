@@ -135,7 +135,7 @@
    <property name="functional.tests.database" value="hsqldb"/>
    <property name="functional.tests.serialization" value="jboss"/>
    <property name="stress.tests.database" value="mysql"/>
-   <property name="stress.tests.serialization" value="java"/>
+   <property name="stress.tests.serialization" value="jboss"/>
 
    <path id="test.classpath">
       <path refid="library.classpath"/>
