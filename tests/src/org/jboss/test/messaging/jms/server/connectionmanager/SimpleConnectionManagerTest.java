@@ -21,17 +21,26 @@
   */
 package org.jboss.test.messaging.jms.server.connectionmanager;
 
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.ConnectionManager;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
  * 
@@ -82,17 +91,102 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
 
       initialContext.close();
    }
+   
+   
+   public void testWithRealServer() throws Exception
+   {
+      ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      
+      JBossConnection conn1 = (JBossConnection)cf.createConnection();
+      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      JBossConnection conn2 = (JBossConnection)cf.createConnection();
+      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      ServerPeer peer = ServerManagement.getServer().getServerPeer();
+      
+      SimpleConnectionManager cm = (SimpleConnectionManager)peer.getConnectionManager();
+      
+      //Simulate failure on connection
+      
+      Map jmsClients = cm.getClients();
+      assertEquals(1, jmsClients.size());
+      
+      //String jvmId = (String)jmsClients.keySet().iterator().next();
+      
+      Map endpoints = (Map)jmsClients.values().iterator().next();
+      
+      assertEquals(2, endpoints.size());
+      
+      Iterator iter = endpoints.entrySet().iterator();
+            
+      Map.Entry entry = (Map.Entry)iter.next();
+      
+      String sessId1 = (String)entry.getKey();
+      
+      //ConnectionEndpoint endpoint1 = (ConnectionEndpoint)entry.getValue();
+      
+      entry = (Map.Entry)iter.next();
+      
+      //String sessId2 = (String)entry.getKey();
+      
+      //ConnectionEndpoint endpoint2 = (ConnectionEndpoint)entry.getValue();
+      
+      //Simulate failure of connection
+      
+      cm.handleClientFailure(sessId1);
+      
+      //both connections should be shut
+      
+      jmsClients = cm.getClients();
+      assertEquals(0, jmsClients.size());
+      
+      try
+      {
+         sess1.close();
+         fail();
+      }
+      catch (Exception expected)
+      {}
+      
+      try
+      {
+         sess2.close();
+         fail();
+      }
+      catch (Exception expected)
+      {}
+      
+      try
+      {
+         conn2.close();
+         fail();
+      }
+      catch (Exception expected)
+      {}
+      
+      try
+      {
+         conn1.close();
+         fail();
+      }
+      catch (Exception expected)
+      {}
+      
+      
+   }
+   
 
-   public void testSimpleConnectionManager() throws Exception
+   public void testWithMock() throws Exception
    {
       SimpleConnectionManager cm = new SimpleConnectionManager();
 
-      SimpleConnectionEndpoint e1 = new SimpleConnectionEndpoint();
-      SimpleConnectionEndpoint e2 = new SimpleConnectionEndpoint();
-      SimpleConnectionEndpoint e3 = new SimpleConnectionEndpoint();
-      SimpleConnectionEndpoint e4 = new SimpleConnectionEndpoint();
-      SimpleConnectionEndpoint e5 = new SimpleConnectionEndpoint();
-      SimpleConnectionEndpoint e6 = new SimpleConnectionEndpoint();
+      SimpleConnectionEndpoint e1 = new SimpleConnectionEndpoint(cm, "jvm1", "sessionid1");
+      SimpleConnectionEndpoint e2 = new SimpleConnectionEndpoint(cm, "jvm1", "sessionid2");
+      SimpleConnectionEndpoint e3 = new SimpleConnectionEndpoint(cm, "jvm2", "sessionid3");
+      SimpleConnectionEndpoint e4 = new SimpleConnectionEndpoint(cm, "jvm2", "sessionid4");
+      SimpleConnectionEndpoint e5 = new SimpleConnectionEndpoint(cm, "jvm3", "sessionid5");
+      SimpleConnectionEndpoint e6 = new SimpleConnectionEndpoint(cm, "jvm3", "sessionid6");
 
       assertFalse(e1.isClosed());
       assertFalse(e2.isClosed());
@@ -164,10 +258,22 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
    class SimpleConnectionEndpoint implements ConnectionEndpoint
    {
       public boolean closed;
+      
+      private ConnectionManager cm;
+      
+      private String jvmId;
+      
+      private String sessionID;
 
-      SimpleConnectionEndpoint()
+      SimpleConnectionEndpoint(ConnectionManager cm, String jvmId, String sessionID)
       {
          closed = false;
+         
+         this.cm = cm;
+         
+         this.jvmId = jvmId;
+         
+         this.sessionID = sessionID;
       }
 
       public boolean isClosed()
@@ -207,12 +313,15 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       }
 
       public void close() throws JMSException
-      {
+      {         
+         cm.unregisterConnection(jvmId, sessionID);
+         
          closed = true;
       }
 
       public void closing() throws JMSException
       {
+         
       }
 
       public IdBlock getIDBlock(int size) throws JMSException

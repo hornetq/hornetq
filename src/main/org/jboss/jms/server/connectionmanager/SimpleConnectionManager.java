@@ -21,8 +21,11 @@
   */
 package org.jboss.jms.server.connectionmanager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -108,9 +111,20 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       return null;
    }
    
-   public boolean containsSession(String remotingClientSessionID)
+   /*
+    * Used in testing only
+    */
+   public synchronized boolean containsSession(String remotingClientSessionID)
    {
       return sessions.containsKey(remotingClientSessionID);
+   }
+   
+   /*
+    * Used in testing only
+    */
+   public synchronized Map getClients()
+   {
+      return Collections.unmodifiableMap(jmsClients);
    }
 
    // ConnectionListener --------------------------------------------
@@ -145,19 +159,32 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
                     
          //Remoting only provides one pinger per invoker, not per connection therefore when the pinger dies
          //we must close ALL the connections corresponding to that jms client id
-         Map endpoints = (Map)jmsClients.get(jmsClientId);
+         Map endpoints = (Map)jmsClients.get(jmsClientId);                  
          
          if (endpoints != null)
          {
+            List sces = new ArrayList();
+            
             Iterator iter = endpoints.entrySet().iterator();
             
             while (iter.hasNext())
             {
                Map.Entry entry = (Map.Entry)iter.next();
                
-               String sessionId = (String)entry.getKey();
-               
                ConnectionEndpoint sce = (ConnectionEndpoint)entry.getValue();
+               
+               sces.add(sce);                             
+            }
+            
+            //Now close the end points - this will result in a callback into unregisterConnection
+            //to remove the data from the jmsClients and sessions maps.
+            //Note we do this outside the loop to prevent ConcurrentModificationException
+            
+            iter = sces.iterator();
+            
+            while (iter.hasNext())
+            {
+               ConnectionEndpoint sce = (ConnectionEndpoint)iter.next();
                
                try
                {
@@ -169,11 +196,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
                {
                   log.error("Failed to close connection", e);
                }
-               
-               sessions.remove(sessionId);
             }
-            
-            jmsClients.remove(jmsClientId);
          }
       } 
    }
