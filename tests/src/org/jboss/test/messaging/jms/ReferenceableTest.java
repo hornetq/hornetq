@@ -114,7 +114,9 @@ public class ReferenceableTest extends MessagingTestCase
       
       assertTrue(topic instanceof Serializable);            
    }
-   
+
+   /* http://jira.jboss.org/jira/browse/JBMESSAGING-395
+
    public void testReferenceable() throws Exception
    {
       assertTrue(cf instanceof Referenceable);
@@ -185,6 +187,8 @@ public class ReferenceableTest extends MessagingTestCase
       
       simpleSendReceive(cf, topic2);
    }
+
+   */
    
    
    protected void simpleSendReceive(ConnectionFactory cf, Destination dest) throws Exception
