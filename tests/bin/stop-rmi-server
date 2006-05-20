@@ -29,13 +29,15 @@ while [ "$1" != "" ]; do
     shift
 done
 
+#
+# Local path overrides
+#
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
 
 #SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
 SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
-
 
 java $JAVA_OPTS -cp \
 $reldir/../etc${SEP}\

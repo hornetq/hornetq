@@ -225,12 +225,9 @@
          propery and comment out the localized definitions below.
       -->
 
-     <!-- JBoss Remoting -->
-
-<!--
+     <!--
      <property name="current.jboss.remoting.lib" value="${jboss.remoting.lib}"/>
--->
-
+      -->
      <property name="current.jboss.remoting.lib" value="${module.root}/src/resources"/>
      <path id="jboss.remoting.classpath">
         <pathelement path="${module.root}/src/resources/jboss-remoting.jar"/>
@@ -241,13 +238,19 @@
          <pathelement path="${module.root}/src/resources/jboss-serialization.jar"/>
      </path>
 
+     <property name="current.jboss.aop.lib" value="${module.root}/src/resources"/>
+     <path id="jboss.aop.classpath">
+         <pathelement path="${module.root}/src/resources/jboss-aop.jar"/>
+     </path>
 
-
-     <!-- JGroups -->
+     <property name="current.jboss.aspects.lib" value="${module.root}/src/resources"/>
+     <path id="jboss.aspects.classpath">
+         <pathelement path="${module.root}/src/resources/jboss-aspects.jar"/>
+     </path>
 
      <!--
      <path id="jgroups.jgroups.classpath">
-     <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
+          <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
      </path>
      -->
 
@@ -546,13 +549,15 @@
 
       <fail message="Fix the build script to correctly define 'current.jboss.remoting.lib'!" unless="current.jboss.remoting.lib"/>
       <fail message="Fix the build script to correctly define 'current.jboss.serialization.lib'!" unless="current.jboss.serialization.lib"/>
+      <fail message="Fix the build script to correctly define 'current.jboss.aop.lib'!" unless="current.jboss.aop.lib"/>
+      <fail message="Fix the build script to correctly define 'current.jboss.aspects.lib'!" unless="current.jboss.aspects.lib"/>
 
       <mkdir dir="${build.scoped-sar}"/>
 
       <copy todir="${build.scoped-sar}" file="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
       <copy todir="${build.scoped-sar}" file="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
-      <copy todir="${build.scoped-sar}" file="${jboss.aop.lib}/jboss-aop.jar"/>
-      <copy todir="${build.scoped-sar}" file="${jboss.aspects.lib}/jboss-aspect-library.jar"/>
+      <copy todir="${build.scoped-sar}" file="${current.jboss.aop.lib}/jboss-aop.jar"/>
+      <copy todir="${build.scoped-sar}" file="${current.jboss.aspects.lib}/jboss-aspect-library.jar"/>
       <copy todir="${build.scoped-sar}" file="${javassist.javassist.lib}/javassist.jar"/>
       <copy todir="${build.scoped-sar}" file="${trove.trove.lib}/trove.jar"/>
 
@@ -625,7 +630,7 @@
    <target name="client-jar" depends="compile, scoped-sar">
       <mkdir dir="${module.output}/jboss-messaging-client"/>
 
-      <unjar dest="${module.output}/jboss-messaging-client" src="${jboss.aop.lib}/jboss-aop.jar"/>
+      <unjar dest="${module.output}/jboss-messaging-client" src="${current.jboss.aop.lib}/jboss-aop.jar"/>
       <unjar dest="${module.output}/jboss-messaging-client" src="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
       <unjar dest="${module.output}/jboss-messaging-client" src="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
       <unjar dest="${module.output}/jboss-messaging-client" src="${javassist.javassist.lib}/javassist.jar"/>

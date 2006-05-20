@@ -70,7 +70,6 @@
       <path location="../src/resources/jcommon-1.0.0-rc1.jar"/>
       <path location="../src/resources/jfreechart-1.0.0-rc1.jar"/>
       <path location="../src/resources/jboss-remoting.jar"/>
-      <path location="../src/resources/jboss-serialization.jar"/>
       <!-- MySQl JDBC driver -->
       <path location="../src/resources/mysql-connector-java-3.0.17-ga-bin.jar"/>
       <!-- Oracle JDBC driver -->
@@ -99,14 +98,14 @@
       <path refid="jboss.j2se.classpath"/>
       <path refid="jboss.jmx.classpath"/>
       <path refid="jboss.mbeans.classpath"/>
-      <!-- <path refid="jboss.serialization.classpath"/> -->
+      <path refid="jboss.serialization.classpath"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.aspects.classpath"/>
       <path refid="jboss.system.classpath"/>
       <path refid="jboss.transaction.classpath"/>
       <path refid="jboss.naming.classpath"/>
       <path refid="jboss.server.classpath"/>
-      <!-- <path refid="jboss.remoting.classpath"/> -->
+      <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.security.classpath"/>
 
       <!-- these are only required to compile test support -->
@@ -116,6 +115,35 @@
       <path location="${jboss.jca.lib}/jms-ra.jar"/>
 
    </path>
+
+   <!-- ==================== -->
+   <!-- Local path overrides -->
+   <!-- ==================== -->
+
+   <path id="jboss.remoting.classpath">
+      <pathelement path="${module.root}/../src/resources/jboss-remoting.jar"/>
+   </path>
+
+   <path id="jboss.serialization.classpath">
+       <pathelement path="${module.root}/../src/resources/jboss-serialization.jar"/>
+   </path>
+
+   <path id="jboss.aop.classpath">
+       <pathelement path="${module.root}/../src/resources/jboss-aop.jar"/>
+   </path>
+
+   <path id="jboss.aspects.classpath">
+       <pathelement path="${module.root}/../src/resources/jboss-aspects.jar"/>
+   </path>
+
+   <!--
+   <path id="jgroups.jgroups.classpath">
+        <pathelement path="${module.root}/src/resources/jgroups-core.jar"/>
+   </path>
+   -->
+
+
+
 
    <!-- ===== -->
    <!-- Tasks -->
@@ -279,8 +307,7 @@
          <classpath>
             <path refid="jboss.common.classpath"/>
             <path refid="jboss.j2ee.classpath"/>
-            <path location="../src/resources/jboss-remoting.jar"/>
-            <!-- <path refid="jboss.remoting.classpath"/> -->
+            <path refid="jboss.remoting.classpath"/>
             <path refid="jboss.j2se.classpath"/>
             <path refid="jboss.system.classpath"/>
             <pathelement location="${module.root}/etc"/>

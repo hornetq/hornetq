@@ -42,13 +42,18 @@ if [ "$TEST_SERIALIZATION" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.serialization=$TEST_SERIALIZATION"
 fi
 
-
+#
+# Local path overrides
+#
 
 #REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
 REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
 
 #SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
 SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
+
+#AOP_LIB=$reldir/../../../aop/output/lib/jboss-aop.jar
+AOP_LIB=$reldir/../../src/resources/jboss-aop.jar
 
 # for stress testing
 JAVA_OPTS="$JAVA_OPTS -Xmx768M"
@@ -62,12 +67,12 @@ $reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
 $reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
 $reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
 $reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
-$reldir/../../../aop/output/lib/jboss-aop.jar${SEP}\
 $reldir/../../src/resources/mysql-connector-java-3.0.17-ga-bin.jar${SEP}\
 $reldir/../../src/resources/ojdbc14.jar${SEP}\
 $reldir/../../src/resources/postgresql-8.1-405.jdbc3.jar${SEP}\
 ${REMOTING_LIB}${SEP}\
 ${SERIALIZATION_LIB}${SEP}\
+${AOP_LIB}${SEP}\
 $reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
 $reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
 $reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\

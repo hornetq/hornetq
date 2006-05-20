@@ -66,17 +66,19 @@
       </ant>
       <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
       <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
-      <antcall target="replace-remoting"/>
+      <antcall target="replace-jboss-dependencies"/>
    </target>
 
-   <target name="replace-remoting" if="replace.remoting">
+   <target name="replace-jboss-dependencies" if="replace.jboss.dependencies">
       <echo message="###"/>
       <echo message="###"/>
-      <echo message="### WARNING! Substituting jboss-remoting.jar, jboss-serialization.jar"/>
+      <echo message="### WARNING! Substituting jboss-remoting.jar, jboss-serialization.jar, jboss-aop.jar, jboss-aspect-library.jar"/>
       <echo message="###"/>
       <echo message="###"/>
       <copy file="../../src/resources/jboss-remoting.jar" todir="${jboss.home}/server/messaging-smoke-test/lib" overwrite="true"/>
       <copy file="../../src/resources/jboss-serialization.jar" todir="${jboss.home}/server/messaging-smoke-test/lib"  overwrite="true"/>
+      <copy file="../../src/resources/jboss-aop.jar" todir="${jboss.home}/server/messaging-smoke-test/lib"  overwrite="true"/>
+      <copy file="../../src/resources/jboss-aspect-library.jar" todir="${jboss.home}/server/messaging-smoke-test/lib"  overwrite="true"/>
    </target>
 
    <target name="start" description="Starts the jboss instance">
@@ -417,7 +419,6 @@
          <param name="release.admin.target" value="standalone"/>
          <param name="run.mdb.example" value="false"/>
          <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
@@ -426,6 +427,13 @@
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404GA-installer.home}"/>
+      </antcall>
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${jboss404GA.home}"/>
+         <param name="release.admin.target" value="standalone"/>
+         <param name="run.mdb.example" value="false"/>
+         <param name="run.stateless.example" value="false"/>
       </antcall>
 
       <!--
@@ -441,12 +449,12 @@
       <!--
            Unscoped deployment in JBoss 5. Special precautions need to be taken to replace the
            jboss-remoting.jar and jboss-serialization.jar with Messaging's versions.
-           TODO the 'replace.remoting' flag and task should go away when http://jira.jboss.org/jira/browse/JBMESSAGING-319 is done.
+           TODO the 'replace.jboss.dependencies' flag and task should go away when http://jira.jboss.org/jira/browse/JBMESSAGING-319 is done.
       -->
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
          <param name="messaging.artifact.name" value="jboss-messaging.jar"/>
-         <param name="replace.remoting" value="true"/>
+         <param name="replace.jboss.dependencies" value="true"/>
       </antcall>
                                                                                              
       <antcall target="report"/>
