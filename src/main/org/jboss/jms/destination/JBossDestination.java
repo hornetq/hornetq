@@ -36,7 +36,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public abstract class JBossDestination implements Destination, Serializable, Referenceable
+public abstract class JBossDestination implements Destination, Serializable /*, Referenceable http://jira.jboss.org/jira/browse/JBMESSAGING-395*/
 {
    // Constants -----------------------------------------------------
 

@@ -59,7 +59,7 @@ import org.jboss.logging.Logger;
 public class JBossConnectionFactory implements
     ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
     XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory,
-    Serializable, Referenceable
+    Serializable/*, Referenceable http://jira.jboss.org/jira/browse/JBMESSAGING-395*/
 {
    // Constants -----------------------------------------------------
 
