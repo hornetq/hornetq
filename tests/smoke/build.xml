@@ -382,7 +382,7 @@
 
       <!--
            4.0.0, 4.0.1 NOT SUPPORTED
-      -->
+      --> 
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
@@ -412,13 +412,14 @@
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
          <param name="run.secure-socket.example" value="false"/>
-      </antcall>
+ </antcall>                                                     
 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="release.admin.target" value="standalone"/>
          <param name="run.mdb.example" value="false"/>
          <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <antcall target="smoke">
@@ -428,12 +429,13 @@
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404GA-installer.home}"/>
       </antcall>
-
+ 
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss404GA.home}"/>
          <param name="release.admin.target" value="standalone"/>
          <param name="run.mdb.example" value="false"/>
          <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
       <!--
@@ -451,13 +453,33 @@
            jboss-remoting.jar and jboss-serialization.jar with Messaging's versions.
            TODO the 'replace.jboss.dependencies' flag and task should go away when http://jira.jboss.org/jira/browse/JBMESSAGING-319 is done.
       -->
+      <!-- DISABLED
       <antcall target="smoke">
          <param name="jboss.home" value="${jboss500Alpha.home}"/>
          <param name="messaging.artifact.name" value="jboss-messaging.jar"/>
          <param name="replace.jboss.dependencies" value="true"/>
       </antcall>
+      -->
                                                                                              
       <antcall target="report"/>
+
+   </target>
+
+   <!-- GET RID OF THIS WHEN http://jira.jboss.org/jira/browse/JBMESSAGING-391 IS FIXED! -->
+   <target name="ssh">
+
+      <mkdir dir="./output"/>
+      <delete file="./output/smoke.log" quiet="true"/>
+      <antcall target="build-deployment-archives-from-scratch"/>
+
+      <antcall target="smoke">
+         <param name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+         <param name="run.queue.example" value="false"/>
+         <param name="run.topic.example" value="false"/>
+         <param name="run.mdb.example" value="false"/>
+         <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="true"/>
+      </antcall>
 
    </target>
 
