@@ -70,8 +70,7 @@ public class ConnectionState extends HierarchicalStateSupport
     
    public ConnectionState(String serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection, Version versionToUse,
-                          ResourceManager rm,
-                          MessageIdGenerator gen)
+                          ResourceManager rm, MessageIdGenerator gen)
       throws Exception
    {
       super(null, delegate);
