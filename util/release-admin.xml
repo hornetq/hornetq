@@ -83,7 +83,7 @@
       <replaceregexp file="${jboss.home}/server/${messaging.config.name}/conf/log4j.xml" flags="s">
          <regexp pattern="(\x3croot\x3e)"/>
          <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
-      </replaceregexp>                        
+      </replaceregexp>
 
       <!-- copy the scoped sar
       <copy todir="${jboss.home}/server/${messaging.config.name}/deploy"
@@ -267,6 +267,12 @@
       <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/login-config.xml" flags="s">
          <regexp pattern="(\x3capplication-policy name=\x22JBossWS\x22\x3e.*\x3cmodule-option name=\x22unauthenticatedIdentity\x22\x3eanonymous\x3c/module-option\x3e[ \t\n\r]*\x3c/login-module\x3e[ \t\n\r]*\x3c/authentication\x3e[ \t\n\r]*\x3c/application-policy\x3e)"/>
          <substitution expression=""/>
+      </replaceregexp>
+
+      <!-- mute org.jboss.serial DEBUG -->
+      <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/log4j.xml" flags="s">
+         <regexp pattern="(\x3croot\x3e)"/>
+         <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
       </replaceregexp>
 
       <!-- customize hsqldb-ds.xml -->
