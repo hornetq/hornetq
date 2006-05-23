@@ -57,9 +57,5 @@ public interface ConnectionEndpoint extends Closeable
 
    Xid[] getPreparedTransactions();
 
-   /**
-    * @since 1.0.1
-    */
-   IdBlock getIDBlock(int size) throws JMSException;
 }
 

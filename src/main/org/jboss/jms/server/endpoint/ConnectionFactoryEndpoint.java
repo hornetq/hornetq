@@ -43,10 +43,6 @@ public interface ConnectionFactoryEndpoint
    
    byte[] getClientAOPConfig();
 
-   /**
-    * @deprecated since 1.0.1. Use ConnectionDelegate.getIDBlock()
-    */
    IdBlock getIdBlock(int size) throws JMSException;
-
 }
 

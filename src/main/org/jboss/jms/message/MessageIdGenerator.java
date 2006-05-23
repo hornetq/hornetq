@@ -23,7 +23,7 @@ package org.jboss.jms.message;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdBlock;
 
@@ -53,23 +53,23 @@ public class MessageIdGenerator
    protected long nextID;
    protected int blockSize;
 
-   protected ConnectionDelegate cd;
+   protected ConnectionFactoryDelegate cfd;
 
    // Constructors --------------------------------------------------
 
-   public MessageIdGenerator(ConnectionDelegate cd, int blockSize)
+   public MessageIdGenerator(ConnectionFactoryDelegate cfd, int blockSize)  throws JMSException
    {
-      this.cd = cd;
+      this.cfd = cfd;
       this.blockSize = blockSize;
-      nextID = Long.MIN_VALUE;
-      high = Long.MIN_VALUE;
+
+      getNextBlock();
    }
 
    // Public --------------------------------------------------------
 
    protected void getNextBlock() throws JMSException
    {
-      IdBlock block = cd.getIDBlock(blockSize);
+      IdBlock block = cfd.getIdBlock(blockSize);
 
       nextID = block.getLow();
       high = block.getHigh();
@@ -79,12 +79,12 @@ public class MessageIdGenerator
 
    public synchronized long getId() throws JMSException
    {
+      long id = nextID++;
+
       if (nextID == high)
       {
          getNextBlock();
       }
-
-      long id = nextID++;
 
       if (log.isTraceEnabled()) { log.trace("Getting next message id=" + id); }
 

@@ -128,13 +128,18 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return serverPeer.getClientAOPConfig();
    }
 
-   /**
-    * @deprecated since 1.0.1
-    */
    public IdBlock getIdBlock(int size) throws JMSException
    {
-      throw new IllegalStateException("This method has been deprecated and shouldn't be used");
+      try
+      {
+         return serverPeer.getMessageIdManager().getIdBlock(size);
+      }
+      catch (Exception e)
+      {
+         throw new MessagingJMSException("Failed to get id block", e);
+      }
    }
+
 
    // Public --------------------------------------------------------
    

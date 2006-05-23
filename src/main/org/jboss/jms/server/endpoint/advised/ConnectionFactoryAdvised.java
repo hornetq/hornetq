@@ -69,12 +69,9 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
       return endpoint.getClientAOPConfig();
    }
 
-   /**
-    * @deprecated since 1.0.1
-    */
    public IdBlock getIdBlock(int size) throws JMSException
    {
-      throw new IllegalStateException("This method has been deprecated and shouldn't be used");
+      return endpoint.getIdBlock(size);
    }
 
    // AdvisedSupport override ---------------------------------------

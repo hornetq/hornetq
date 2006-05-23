@@ -26,7 +26,7 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 
 /**
  * This class manages instances of MessageIdGenerator. It ensures there is one instance per instance
@@ -56,14 +56,15 @@ public class MessageIdGeneratorFactory
       return holders.containsKey(serverId);
    }
 
-   public synchronized MessageIdGenerator getGenerator(String serverId, ConnectionDelegate cd)
+   public synchronized MessageIdGenerator getGenerator(String serverId,
+                                                       ConnectionFactoryDelegate cfd)
       throws JMSException
    {
       Holder h = (Holder)holders.get(serverId);
 
       if (h == null)
       {
-         h = new Holder(new MessageIdGenerator(cd, BLOCK_SIZE));
+         h = new Holder(new MessageIdGenerator(cfd, BLOCK_SIZE));
 
          holders.put(serverId, h);
       }

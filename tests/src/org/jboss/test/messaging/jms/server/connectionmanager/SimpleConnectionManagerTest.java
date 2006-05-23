@@ -38,7 +38,6 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -322,11 +321,6 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       public void closing() throws JMSException
       {
          
-      }
-
-      public IdBlock getIDBlock(int size) throws JMSException
-      {
-         return null;
       }
    }
 }
