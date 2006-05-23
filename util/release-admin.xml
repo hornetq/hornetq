@@ -65,19 +65,25 @@
       <!-- add a "messaging" security domain -->
       <replaceregexp file="${jboss.home}/server/${messaging.config.name}/conf/login-config.xml" flags="s">
          <regexp pattern="(\x3cpolicy\x3e)"/>
-         <substitution expression="\1 &lt;application-policy name = &quot;messaging&quot;&gt;
-         &lt;authentication&gt;&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
-            flag = &quot;required&quot; &gt;
-         &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
-         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;
-         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;
-         &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
+         <substitution expression="\1&#013;&#010;&#013;&#010;    &lt;application-policy name = &quot;messaging&quot;&gt;&#013;&#010;        &lt;authentication&gt;&#013;&#010;
+            &lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;&#013;&#010;
+            flag = &quot;required&quot; &gt;&#013;&#010;
+         &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;&#013;&#010;
+         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;&#013;&#010;
+         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;&#013;&#010;
+         &lt;/login-module&gt;&#013;&#010;        &lt;/authentication&gt;&#013;&#010;    &lt;/application-policy&gt;&#013;&#010;"/>
       </replaceregexp>
 
       <!-- Make sure JNDI CallByValue is disabled, otherwise MDB deployments will fail -->
       <property name="naming.config.file" value="${jboss.home}/server/${messaging.config.name}/deploy/naming-service.xml"/>
       <available property="naming.service.config.present" file="${naming.config.file}"/>
       <antcall target="enable-jndi-call-by-reference"/>
+
+      <!-- mute org.jboss.serial DEBUG -->
+      <replaceregexp file="${jboss.home}/server/${messaging.config.name}/conf/log4j.xml" flags="s">
+         <regexp pattern="(\x3croot\x3e)"/>
+         <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
+      </replaceregexp>                        
 
       <!-- copy the scoped sar
       <copy todir="${jboss.home}/server/${messaging.config.name}/deploy"
@@ -333,7 +339,6 @@
       <echo message="messaging.config.name=${messaging.config.name}"/>
       <echo message="relative.artifact.location=${relative.artifact.location}"/>
    </target>
-
 
 </project>
 

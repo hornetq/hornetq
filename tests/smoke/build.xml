@@ -46,14 +46,14 @@
 
       <mkdir dir="./output"/>
       <delete file="./output/smoke.log" quiet="true"/>
-      <antcall target="build-deployment-archives-from-scratch"/>   <!--
+      <antcall target="build-deployment-archives-from-scratch"/>
       <antcall target="installation-tests"/>
       <antcall target="old-server-compatibility-tests">
          <param name="smoke.test.type" value="client.compatibility"/>
-      </antcall>                                                      -->
+      </antcall>                                            
       <antcall target="old-client-compatibility-tests">
          <param name="smoke.test.type" value="server.compatibility"/>
-      </antcall>                                                     
+      </antcall>                                                   
       <antcall target="report"/>
 
    </target>
@@ -396,6 +396,8 @@
          <property name="jboss.configuration" value="${jboss.configuration}"/>
       </ant>
       <antcall target="display-warnings-and-errors"/>
+      <antcall target="fail-on-serialization-debug-output"/>
+
       <!-- record successful run -->
       <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration} CLIENT_VERSION=${jboss.messaging.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name}${line.separator}"
             file="./output/smoke.log" append="yes"/>
@@ -553,6 +555,17 @@
          <arg value="restart will delete it"/>
          <arg value="web-console.war/"/> <!-- Only on JBoss 5 -->
          <arg value="jmx-console.war/"/> <!-- Only on JBoss 5 -->
+         <classpath>
+            <pathelement location="../output/classes"/>
+         </classpath>
+      </java>
+
+   </target>
+
+   <target name="fail-on-serialization-debug-output">
+
+      <java classname="org.jboss.test.messaging.tools.ant.FailOnSerializationDebugOutput">
+         <arg value="${jboss.home}/server/${jboss.configuration}/log/server.log"/>
          <classpath>
             <pathelement location="../output/classes"/>
          </classpath>

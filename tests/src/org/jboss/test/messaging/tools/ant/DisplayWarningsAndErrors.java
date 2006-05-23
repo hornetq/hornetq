@@ -22,9 +22,6 @@
 package org.jboss.test.messaging.tools.ant;
 
 
-import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
-import org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter;
-
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
