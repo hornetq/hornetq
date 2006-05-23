@@ -22,7 +22,7 @@
    <property name="messaging.client.jar.path" value="../.."/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
-   <property name="jboss.configuration.name" value="messaging"/>
+   <property name="jboss.configuration" value="messaging"/>
    <property name="example.queue.name" value="testQueue"/>
 
    <path id="common.compilation.classpath">
@@ -45,10 +45,11 @@
    </path>
 
    <target name="identify">
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="X              Running the STATELESS SESSION BEAN example                 X"/>
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="The queue: ${example.queue.name}"/>
+      <echo message="###########################################################################"/>
+      <echo message="#              Running the STATELESS SESSION BEAN example                 #"/>
+      <echo message="###########################################################################"/>
+      <echo message="The queue:      ${example.queue.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">
@@ -85,7 +86,7 @@
 
    <target name="deploy" depends="jar">
       <copy file="./output/lib/stateless-example.jar"
-            todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
    </target>
 
@@ -108,7 +109,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/stateless-example.jar"
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/stateless-example.jar"
               quiet="true"/>
    </target>
 

@@ -22,7 +22,7 @@
    <property name="messaging.client.jar.path" value="../.."/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
-   <property name="jboss.configuration.name" value="messaging"/>
+   <property name="jboss.configuration" value="messaging"/>
    <property name="example.queue.name" value="testQueue"/>
 
    <path id="common.compilation.classpath">
@@ -47,7 +47,8 @@
       <echo message="###########################################################################"/>
       <echo message="#                        Running the MDB example                          #"/>
       <echo message="###########################################################################"/>
-      <echo message="The queue: ${example.queue.name}"/>
+      <echo message="The queue:      ${example.queue.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">
@@ -87,7 +88,7 @@
 
    <target name="deploy" depends="jar">
       <copy file="./output/lib/mdb-example.jar"
-            todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
    </target>
 
@@ -110,7 +111,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/mdb-example.jar" quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/mdb-example.jar" quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">

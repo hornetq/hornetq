@@ -42,10 +42,11 @@
    </path>
 
    <target name="identify">
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="X                       Running the QUEUE example                         X"/>
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="The queue: ${example.queue.name}"/>
+      <echo message="###########################################################################"/>
+      <echo message="#                       Running the QUEUE example                         #"/>
+      <echo message="###########################################################################"/>
+      <echo message="The queue:      ${example.queue.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">

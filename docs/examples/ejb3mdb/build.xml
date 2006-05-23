@@ -22,13 +22,13 @@
    <property name="messaging.client.jar.path" value="../.."/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
-   <property name="jboss.configuration.name" value="messaging"/>
+   <property name="jboss.configuration" value="messaging"/>
    <property name="example.queue.name" value="testQueue"/>
 
    <path id="common.compilation.classpath">
       <fileset file="${jboss.home}/client/jboss-j2ee.jar"/>
       <fileset file="${jboss.home}/client/jboss-j2se.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration.name}/deploy/ejb3.deployer/jboss-ejb3x.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/ejb3.deployer/jboss-ejb3x.jar"/>
    </path>
 
    <path id="example.compilation.classpath">
@@ -45,18 +45,19 @@
    </path>
 
    <target name="identify">
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="X                     Running the EJB3 MDB example                        X"/>
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="The queue: ${example.queue.name}"/>
+      <echo message="###########################################################################"/>
+      <echo message="#                     Running the EJB3 MDB example                        #"/>
+      <echo message="###########################################################################"/>
+      <echo message="The queue:      ${example.queue.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">
       <available property="client.jar.present" file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <fail message="Could not find client jar ${messaging.client.jar.path}/${messaging.client.jar.name}"
             unless="client.jar.present"/>
-      <available property="ejb3.support.installed" file="${jboss.home}/server/${jboss.configuration.name}/deploy/ejb3.deployer"/>
-      <fail message="EJB3 does not seem to be installed in ${jboss.home}/server/${jboss.configuration.name}! Install it and try again."
+      <available property="ejb3.support.installed" file="${jboss.home}/server/${jboss.configuration}/deploy/ejb3.deployer"/>
+      <fail message="EJB3 does not seem to be installed in ${jboss.home}/server/${jboss.configuration}! Install it and try again."
             unless="ejb3.support.installed"/>
    </target>
 
@@ -94,7 +95,7 @@
 
    <target name="deploy" depends="jar">
       <copy file="./output/lib/mdb-example.ejb3"
-            todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
    </target>
 
@@ -117,7 +118,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/mdb-example.ejb3" quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/mdb-example.ejb3" quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">

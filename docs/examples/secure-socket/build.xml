@@ -45,15 +45,16 @@
       <echo message="############################################################################"/>
       <echo message="#                   Running the SECURE SOCKET example                      #"/>
       <echo message="############################################################################"/>
-      <echo message="The queue: ${example.queue.name}"/>
+      <echo message="The queue:      ${example.queue.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">
       <available property="client.jar.present" file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <fail message="Could not find client jar ${messaging.client.jar.path}/${messaging.client.jar.name}"
             unless="client.jar.present"/>
-      <available property="messaging.deployment.dir.present" file="${jboss.home}/server/${jboss.configuration.name}/deploy/jboss-messaging.sar"/>
-      <fail message="Could not find the Messaging deployment directory ${jboss.home}/server/${jboss.configuration.name}/deploy/jboss-messaging.sar"
+      <available property="messaging.deployment.dir.present" file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-messaging.sar"/>
+      <fail message="Could not find the Messaging deployment directory ${jboss.home}/server/${jboss.configuration}/deploy/jboss-messaging.sar"
             unless="messaging.deployment.dir.present"/>
    </target>
 
@@ -75,9 +76,9 @@
 
    <target name="deploy">
       <copy file="./etc/messaging.keystore"
-            todir="${jboss.home}/server/${jboss.configuration.name}/deploy/jboss-messaging.sar"/>
+            todir="${jboss.home}/server/${jboss.configuration}/deploy/jboss-messaging.sar"/>
       <copy file="./etc/messaging-secure-socket-service.xml"
-            todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
    </target>
 
@@ -98,8 +99,8 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/messaging-secure-socket-service.xml" quiet="true"/>
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/jboss-messaging.sar/messaging.keystore" quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/messaging-secure-socket-service.xml" quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-messaging.sar/messaging.keystore" quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">

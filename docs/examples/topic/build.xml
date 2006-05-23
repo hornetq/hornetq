@@ -42,10 +42,11 @@
    </path>
 
    <target name="identify">
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="X                       Running the TOPIC example                         X"/>
-      <echo message="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"/>
-      <echo message="The topic: ${example.topic.name}"/>
+      <echo message="###########################################################################"/>
+      <echo message="#                       Running the TOPIC example                         #"/>
+      <echo message="###########################################################################"/>
+      <echo message="The topic:      ${example.topic.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">

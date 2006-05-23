@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Collection;
 
 
 /**
@@ -48,7 +49,11 @@ public class GenerateSmokeReport
 {
    // Constants -----------------------------------------------------
 
-   public static final String DEFAULT_OUTPUT_BASENAME="smoke-test-report";
+   public static final String DEFAULT_OUTPUT_BASENAME="smoke-tes-report";
+
+   private static final byte INSTALLATION_TEST = 0;
+   private static final byte CLIENT_COMPATIBILITY_TEST = 1;
+   private static final byte SERVER_COMPATIBILITY_TEST = 2;
 
    // Static --------------------------------------------------------
 
@@ -163,17 +168,53 @@ public class GenerateSmokeReport
          String line;
          while((line = br.readLine()) != null)
          {
-            int bi = line.indexOf("JBOSS_HOME=");
+            int bi = line.indexOf("TEST_TYPE=");
             if (bi == -1)
             {
-               throw new Exception("JBOSS_HOME= not found in \"" + line + "\"");
+               throw new Exception("TEST_TYPE= not found in \"" + line + "\"");
             }
             int ei = line.indexOf(' ', bi);
             if (ei == -1)
             {
                ei = line.length();
             }
+            String testType = line.substring(bi + 10, ei);
+
+            bi = line.indexOf("JBOSS_HOME=");
+            if (bi == -1)
+            {
+               throw new Exception("JBOSS_HOME= not found in \"" + line + "\"");
+            }
+            ei = line.indexOf(' ', bi);
+            if (ei == -1)
+            {
+               ei = line.length();
+            }
             String jbossHome = line.substring(bi + 11, ei);
+
+            bi = line.indexOf("JBOSS_CONFIGURATION=");
+            if (bi == -1)
+            {
+               throw new Exception("JBOSS_CONFIGURATION= not found in \"" + line + "\"");
+            }
+            ei = line.indexOf(' ', bi);
+            if (ei == -1)
+            {
+               ei = line.length();
+            }
+            String jbossConfiguration = line.substring(bi + 20, ei);
+
+            bi = line.indexOf("CLIENT_VERSION=");
+            if (bi == -1)
+            {
+               throw new Exception("CLIENT_VERSION= not found in \"" + line + "\"");
+            }
+            ei = line.indexOf(' ', bi);
+            if (ei == -1)
+            {
+               ei = line.length();
+            }
+            String clientVersion = line.substring(bi + 15, ei);
 
             bi = line.indexOf("INSTALLATION_TYPE=");
             if (bi == -1)
@@ -187,17 +228,17 @@ public class GenerateSmokeReport
             }
             String installationType = line.substring(bi + 18, ei);
 
-            bi = line.indexOf("SAR_NAME=");
+            bi = line.indexOf("SERVER_ARTIFACT_NAME=");
             if (bi == -1)
             {
-               throw new Exception("SAR_NAME= not found in \"" + line + "\"");
+               throw new Exception("SERVER_ARTIFACT_NAME= not found in \"" + line + "\"");
             }
             ei = line.indexOf(' ', bi);
             if (ei == -1)
             {
                ei = line.length();
             }
-            String sarName = line.substring(bi + 9, ei);
+            String serverArtifactName = line.substring(bi + 21, ei);
 
             bi = line.indexOf("EXAMPLE_NAME=");
             if (bi == -1)
@@ -211,7 +252,8 @@ public class GenerateSmokeReport
             }
             String exampleName = line.substring(bi + 13, ei);
 
-            result.addTestRun(jbossHome, installationType, sarName, exampleName);
+            result.addTestRun(testType, jbossHome, jbossConfiguration, clientVersion,
+                              installationType, serverArtifactName, exampleName);
          }
       }
       finally
@@ -228,27 +270,26 @@ public class GenerateSmokeReport
    {
       PrintWriter pw = new PrintWriter(new FileWriter(new File(outputDir, outputFileName)));
 
-      List installations = new ArrayList(data.getInstallations());
-      Collections.sort(installations);
-      List examples = new ArrayList(data.getExamples());
-      Collections.sort(examples);
-
       try
       {
          pw.println("<html>");
          pw.println("<head><title>JBoss Messaging Smoke Test Results</title></head>");
          pw.println("<body>");
 
-         pw.println("<h2>JBoss Messaging Smoke Test Results</h2>");
+         pw.println("<h1>JBoss Messaging Smoke Test Results</h1>");
 
          pw.print("Java version: ");
          pw.print(System.getProperty("java.version"));
          pw.println("<br>");
          pw.print("Run on: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
          pw.print(new Date());
-         pw.println("<br>");
-         pw.println("<br>");
 
+         List installations = new ArrayList(data.getInstallations());
+         Collections.sort(installations);
+         List examples = new ArrayList(data.getExamples(INSTALLATION_TEST));
+         Collections.sort(examples);
+
+         pw.println("<h2>Installation Test Results</h2>");
 
          pw.println("<table border=\"1\" cellpadding=\"2\" cellspacing=\"2\">");
 
@@ -296,6 +337,113 @@ public class GenerateSmokeReport
          }
 
          pw.println("</table>");
+
+         List serverVersions = new ArrayList(data.getServerVersions());
+         Collections.sort(serverVersions);
+         examples = new ArrayList(data.getExamples(CLIENT_COMPATIBILITY_TEST));
+         Collections.sort(examples);
+
+         pw.println("<h2>Client Compatibility Test Results</h2>");
+
+         pw.println("<table border=\"1\" cellpadding=\"2\" cellspacing=\"2\">");
+
+         // header
+
+         pw.print("<tr>");
+         pw.print("<td></td>");
+         for(Iterator j = examples.iterator(); j.hasNext(); )
+         {
+            pw.print("<td align=\"center\"><b>");
+            pw.print((String)j.next());
+            pw.print("</b></td>");
+         }
+         pw.println("</tr>");
+
+         for(Iterator i = serverVersions.iterator(); i.hasNext();)
+         {
+            String serverVersion = (String)i.next();
+            Set thisExamples = data.getExamples(true, serverVersion);
+
+            pw.println("<tr>");
+            pw.print("<td>");
+            pw.print(serverVersion);
+            pw.println("</td>");
+
+            for(Iterator j = examples.iterator(); j.hasNext(); )
+            {
+               String exampleName = (String)j.next();
+               if (thisExamples.contains(exampleName))
+               {
+                  pw.print("<td bgcolor=\"#00FF00\">");
+                  pw.print("&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp; ");
+                  pw.println("</td>");
+               }
+               else
+               {
+                  pw.print("<td bgcolor=\"#C0C0C0\">");
+                  pw.print(" ");
+                  pw.println("</td>");
+               }
+            }
+
+            pw.println("</tr>");
+         }
+
+         pw.println("</table>");
+
+         List clientVersions = new ArrayList(data.getClientVersions());
+         Collections.sort(clientVersions);
+         examples = new ArrayList(data.getExamples(SERVER_COMPATIBILITY_TEST));
+         Collections.sort(examples);
+
+         pw.println("<h2>Server Compatibility Test Results</h2>");
+
+         pw.println("<table border=\"1\" cellpadding=\"2\" cellspacing=\"2\">");
+
+         // header
+
+         pw.print("<tr>");
+         pw.print("<td></td>");
+         for(Iterator j = examples.iterator(); j.hasNext(); )
+         {
+            pw.print("<td align=\"center\"><b>");
+            pw.print((String)j.next());
+            pw.print("</b></td>");
+         }
+         pw.println("</tr>");
+
+         for(Iterator i = clientVersions.iterator(); i.hasNext();)
+         {
+            String clientVersion = (String)i.next();
+            Set thisExamples = data.getExamples(false, clientVersion);
+
+            pw.println("<tr>");
+            pw.print("<td>");
+            pw.print(clientVersion);
+            pw.println("</td>");
+
+            for(Iterator j = examples.iterator(); j.hasNext(); )
+            {
+               String exampleName = (String)j.next();
+               if (thisExamples.contains(exampleName))
+               {
+                  pw.print("<td bgcolor=\"#00FF00\">");
+                  pw.print("&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp; ");
+                  pw.println("</td>");
+               }
+               else
+               {
+                  pw.print("<td bgcolor=\"#C0C0C0\">");
+                  pw.print(" ");
+                  pw.println("</td>");
+               }
+            }
+
+            pw.println("</tr>");
+         }
+
+         pw.println("</table>");
+
          pw.println("</body>");
          pw.println("</html>");
       }
@@ -313,17 +461,94 @@ public class GenerateSmokeReport
    private class ReportData
    {
       // <jbossInstallation - Set<examples>>
-      private Map tests;
+      private Map installationTests;
+
+      // <serverVersion - Set<example>>
+      private Map clientCompatibilityTests;
+
+      // <clientVersion - Set<example>>
+      private Map serverCompatibilityTests;
 
       private ReportData()
       {
-         tests = new HashMap();
+         installationTests = new HashMap();
+         clientCompatibilityTests = new HashMap();
+         serverCompatibilityTests = new HashMap();
       }
 
-      public void addTestRun(String jbossHome, String installationType,
-                             String sarName, String exampleName) throws Exception
+      public void addTestRun(String testType, String jbossHome, String jbossConfiguration,
+                             String clientVersion, String installationType,
+                             String serverArtifactName, String exampleName) throws Exception
       {
+         if ("installation".equals(testType))
+         {
+            addInstallationTestRun(jbossHome, installationType, serverArtifactName, exampleName);
+         }
+         else if ("client.compatibility".equals(testType))
+         {
+            addClientCompatibilityTestRun(jbossConfiguration, exampleName);
+         }
+         else if ("server.compatibility".equals(testType))
+         {
+            addServerCompatibilityTestRun(clientVersion, exampleName);
+         }
+         else
+         {
+            throw new Exception("Unknown test type: " + testType);
+         }
+      }
 
+      public Set getInstallations()
+      {
+         return installationTests.keySet();
+      }
+
+      public Set getServerVersions()
+      {
+         return clientCompatibilityTests.keySet();
+      }
+
+      public Set getClientVersions()
+      {
+         return serverCompatibilityTests.keySet();
+      }
+
+      public Set getExamples(JBossInstallation jbi)
+      {
+         return (Set)installationTests.get(jbi);
+      }
+
+      public Set getExamples(boolean clientTest, String version)
+      {
+         if (clientTest)
+         {
+            return (Set)clientCompatibilityTests.get(version);
+         }
+         return (Set)serverCompatibilityTests.get(version);
+      }
+
+      /**
+       * @return all examples for which at least a test was recorded
+       */
+      public Set getExamples(byte testType)
+      {
+         Set examples = new HashSet();
+         Collection values =
+            testType == INSTALLATION_TEST ? installationTests.values() :
+               testType == CLIENT_COMPATIBILITY_TEST ? clientCompatibilityTests.values() :
+                  serverCompatibilityTests.values();
+         for(Iterator i = values.iterator(); i.hasNext();)
+         {
+            Set s = (Set)i.next();
+            examples.addAll(s);
+         }
+         return examples;
+      }
+
+      private void addInstallationTestRun(String jbossHome, String installationType,
+                                          String serverArtifactName, String exampleName)
+         throws Exception
+      {
          String jbossVersion;
          boolean installerGenerated = false;
          boolean standalone = false;
@@ -358,49 +583,68 @@ public class GenerateSmokeReport
          }
 
          // determine if it's scoped or not
-         scoped = sarName.indexOf("-scoped") != -1;
+         scoped = serverArtifactName.indexOf("-scoped") != -1;
 
          JBossInstallation jbi =
             new JBossInstallation(jbossVersion, installerGenerated, standalone, scoped);
 
-         Set examples = (Set)tests.get(jbi);
+         Set examples = (Set)installationTests.get(jbi);
 
          if (examples == null)
          {
             examples = new HashSet();
-            tests.put(jbi, examples);
+            installationTests.put(jbi, examples);
          }
 
          if (examples.contains(exampleName))
          {
-            throw new Exception("Duplicate run: " + jbi + ", " + exampleName);
+            throw new Exception("Duplicate installation run: " + jbi + ", " + exampleName);
          }
          examples.add(exampleName);
       }
 
-
-      public Set getInstallations()
+      private void addClientCompatibilityTestRun(String jbossConfiguration, String exampleName)
+         throws Exception
       {
-         return tests.keySet();
-      }
-
-      public Set getExamples(JBossInstallation jbi)
-      {
-         return (Set)tests.get(jbi);
-      }
-
-      /**
-       * @return all examples for which at least a test was recorded
-       */
-      public Set getExamples()
-      {
-         Set examples = new HashSet();
-         for(Iterator i = tests.values().iterator(); i.hasNext();)
+         if (!jbossConfiguration.startsWith("messaging-"))
          {
-            Set s = (Set)i.next();
-            examples.addAll(s);
+            throw new Exception("Invalid JBoss configuration name for a " +
+                                "client compatibility test: " + jbossConfiguration);
          }
-         return examples;
+
+         String serverVersion = jbossConfiguration.substring(10);
+
+         Set examples = (Set)clientCompatibilityTests.get(serverVersion);
+         if (examples == null)
+         {
+            examples = new HashSet();
+            clientCompatibilityTests.put(serverVersion, examples);
+         }
+
+         if (examples.contains(exampleName))
+         {
+            throw new Exception("Duplicate client compatibility run: " + exampleName +
+                                " on " + serverVersion + " server");
+         }
+         examples.add(exampleName);
+      }
+
+      private void addServerCompatibilityTestRun(String clientVersion, String exampleName)
+         throws Exception
+      {
+         Set examples = (Set)serverCompatibilityTests.get(clientVersion);
+         if (examples == null)
+         {
+            examples = new HashSet();
+            serverCompatibilityTests.put(clientVersion, examples);
+         }
+
+         if (examples.contains(exampleName))
+         {
+            throw new Exception("Duplicate server compatibility run: " + exampleName +
+                                " with " + clientVersion + " client");
+         }
+         examples.add(exampleName);
       }
    }
 
@@ -527,5 +771,6 @@ public class GenerateSmokeReport
 
          return sb.toString();
       }
+
    }
 }

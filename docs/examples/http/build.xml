@@ -45,7 +45,8 @@
       <echo message="############################################################################"/>
       <echo message="#                         Running the HTTP example                         #"/>
       <echo message="############################################################################"/>
-      <echo message="The queue: ${example.queue.name}"/>
+      <echo message="The queue:      ${example.queue.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </target>
 
    <target name="sanity-check" depends="identify">
@@ -72,7 +73,7 @@
 
    <target name="deploy">
       <copy file="./etc/messaging-http-service.xml"
-            todir="${jboss.home}/server/${jboss.configuration.name}/deploy"/>
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
    </target>
 
@@ -91,7 +92,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration.name}/deploy/messaging-http-service.xml" quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/messaging-http-service.xml" quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">
