@@ -21,11 +21,17 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.ConnectionFactory;
+import java.io.Serializable;
+
 import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
@@ -122,6 +128,62 @@ public class TopicTest extends MessagingTestCase
       Topic topic = (Topic)ic.lookup("/topic/TestTopic");
       assertEquals("TestTopic", topic.getTopicName());
    }
+   
+   /*
+    * See http://jira.jboss.com/jira/browse/JBMESSAGING-399
+    */
+   public void testRace() throws Exception
+   {
+      Topic topic = (Topic)ic.lookup("/topic/TestTopic");
+
+      Connection conn = cf.createConnection();
+      
+      Session sSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sSend.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer c1 = s1.createConsumer(topic);
+      MessageConsumer c2 = s2.createConsumer(topic);
+      MessageConsumer c3 = s3.createConsumer(topic);            
+      
+      TestListener l1 = new TestListener();
+      TestListener l2 = new TestListener();
+      TestListener l3 = new TestListener();
+      
+      c1.setMessageListener(new TestListener());
+      c2.setMessageListener(new TestListener());
+      c3.setMessageListener(new TestListener());
+            
+      conn.start();
+            
+      
+      for (int i = 0; i < 5000; i++)
+      {
+         byte[] blah = new byte[10000];
+         String str = new String(blah);
+           
+         Wibble2 w = new Wibble2();
+         w.s = str;
+         ObjectMessage om = sSend.createObjectMessage(w);
+         
+         prod.send(om);
+ 
+      }          
+      
+      Thread.sleep(30000);
+      
+      assertFalse(l1.failed);
+      assertFalse(l2.failed);
+      assertFalse(l3.failed);
+      
+      conn.close();
+            
+   }
 
    // Package protected ---------------------------------------------
    
@@ -130,6 +192,30 @@ public class TopicTest extends MessagingTestCase
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+   
+   static class Wibble2 implements Serializable
+   {
+      String s;
+   }
+   
+   static class TestListener implements MessageListener
+   {
+      boolean failed;
+      
+      public void onMessage(Message m)
+      {
+         ObjectMessage om = (ObjectMessage)m;
+         
+         try
+         {         
+            Wibble2 w = (Wibble2)om.getObject();
+         }
+         catch (Exception e)
+         {
+            failed = true;
+         }
+      }
+   }
    
 }
 

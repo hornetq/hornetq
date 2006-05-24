@@ -154,7 +154,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       return false;
    }
 
-   public byte[] getPayloadAsByteArray()
+   public synchronized byte[] getPayloadAsByteArray()
    {            
       if (payloadAsByteArray == null && payload != null)
       {
@@ -192,7 +192,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
     * Warning! Calling getPayload will cause the payload to be deserialized so should not be called
     *          on the server.
     */
-   public Serializable getPayload()
+   public synchronized Serializable getPayload()
    {
       if (payload != null)
       {
