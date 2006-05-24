@@ -216,6 +216,15 @@ public class ClientConnectionFactoryDelegate
          
          throw t;
       }
+      finally
+      {
+         if (remotingConnection == null)
+         {
+            //Not a call to createConnectionDelegate - disconnect the client
+            
+            client.disconnect();
+         }
+      }
 
       Object ret = response.getLoad();
       
@@ -225,12 +234,6 @@ public class ClientConnectionFactoryDelegate
          ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)ret;
          
          connectionDelegate.setRemotingConnection(remotingConnection);
-      }
-      else
-      {
-         //Not a call to createConnectionDelegate - disconnect the client
-         
-         client.disconnect();         
       }
 
       return ret;
