@@ -287,7 +287,7 @@ public class WireFormatTest extends MessagingTestCase
          //First byte should be version
          byte version = ois.readByte();
          
-         assertEquals(1, version);
+         assertEquals(2, version);
          
          bis.reset();
          
@@ -346,7 +346,7 @@ public class WireFormatTest extends MessagingTestCase
          //First byte should be version
          byte version = ois.readByte();
          
-         assertEquals(1, version);
+         assertEquals(2, version);
          
          bis.reset();
          
@@ -390,7 +390,7 @@ public class WireFormatTest extends MessagingTestCase
          //First byte should be version
          byte version = ois.readByte();
          
-         assertEquals(1, version);
+         assertEquals(2, version);
          
          bis.reset();
          
@@ -1386,7 +1386,7 @@ public class WireFormatTest extends MessagingTestCase
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
                    
          //First byte should be version
-         assertEquals(1, ois.readByte());         
+         assertEquals(2, ois.readByte());         
          
          int b = ois.readByte();
          
@@ -1418,7 +1418,7 @@ public class WireFormatTest extends MessagingTestCase
          
          mm = (MessagingMarshallable)ir2.getResult();
          
-         assertEquals(1, mm.getVersion());
+         assertEquals(2, mm.getVersion());
          
          IdBlock block3 = (IdBlock)mm.getLoad();
          
