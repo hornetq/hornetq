@@ -25,18 +25,18 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.remoting.transport.PortUtil;
-import org.jboss.remoting.transport.multiplex.MultiplexServerInvoker;
+import org.jboss.remoting.transport.multiplex.Multiplex;
 import org.jboss.util.id.GUID;
-import org.jboss.messaging.util.Util;
 
 
 /**
@@ -78,6 +78,7 @@ public class JMSRemotingConnection
    protected String thisAddress;
    protected int bindPort;
    protected boolean isMultiplex;
+   protected boolean isSSL;
    protected String serializationType;
    protected CallbackManager callbackManager;
    protected InvokerCallbackHandler dummy;
@@ -95,6 +96,7 @@ public class JMSRemotingConnection
       serverLocator = new InvokerLocator(serverLocatorURI);
       thisAddress = InetAddress.getLocalHost().getHostAddress();
       isMultiplex = serverLocator.getProtocol().equals("multiplex");
+      isSSL = serverLocator.getProtocol().equals("sslsocket");
       serializationType = (String)serverLocator.getParameters().get("serializationtype");
 
       final int MAX_RETRIES = 50;
@@ -113,8 +115,8 @@ public class JMSRemotingConnection
             log.warn("Failed to start connection", e);
 
             // Intermittently we can fail to open a socket on the address since it's already in use
-            // This is despite remoting having checked the port is free. This is either because the
-            // remoting implementation is buggy or because of the small window between getting the
+            // This is despite remoting having checked the port is free. This is probably because
+            // of the small window between remoting checking the port is free and getting the
             // port number and actually opening the connection during which some one else can use
             // that port. Therefore we catch this and retry.
 
@@ -201,10 +203,10 @@ public class JMSRemotingConnection
 
       if (isMultiplex)
       {
-         configuration.put(MultiplexServerInvoker.CLIENT_MULTIPLEX_ID_KEY, id);
-         configuration.put(MultiplexServerInvoker.MULTIPLEX_BIND_HOST_KEY, thisAddress);
-         configuration.put(MultiplexServerInvoker.MULTIPLEX_BIND_PORT_KEY, String.valueOf(bindPort));
-      }
+         configuration.put(Multiplex.CLIENT_MULTIPLEX_ID, id);
+         configuration.put(Multiplex.MULTIPLEX_BIND_HOST, thisAddress);
+         configuration.put(Multiplex.MULTIPLEX_BIND_PORT, String.valueOf(bindPort));
+      }     
 
       return configuration;
    }
@@ -215,14 +217,7 @@ public class JMSRemotingConnection
 
       Map config = getConfig();
       client = new Client(serverLocator, config);
-
-      // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
-      // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
-      // This can make a massive difference on performance. We also do this in
-      // ServerConnectionEndpoint.setCallbackClient.
-
-      client.setMarshaller(new JMSWireFormat());
-      client.setUnMarshaller(new JMSWireFormat());
+      
       client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
 
       if (log.isTraceEnabled()) { log.trace("created client"); }
@@ -238,11 +233,17 @@ public class JMSRemotingConnection
          callbackServerURI = "multiplex://" + thisAddress + ":" + bindPort +
                              CALLBACK_SERVER_PARAMS + "&serverMultiplexId=" + id;
       }
+      else if (isSSL)
+      {
+         // See http://jira.jboss.com/jira/browse/JBREM-470
+         callbackServerURI = "sslsocket://" + thisAddress + ":" + bindPort +
+                             CALLBACK_SERVER_PARAMS + "&useClientMode=true";
+      }      
       else
       {
          callbackServerURI = serverLocator.getProtocol() + "://" + thisAddress +
                              ":" + bindPort + CALLBACK_SERVER_PARAMS;
-      }
+      }           
 
       if (serializationType != null)
       {
@@ -266,7 +267,15 @@ public class JMSRemotingConnection
       if (log.isTraceEnabled()) { log.trace("callback server started"); }
 
       client.connect();
+      
+      // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
+      // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
+      // This can make a massive difference on performance. We also do this in
+      // ServerConnectionEndpoint.setCallbackClient.
 
+      client.setMarshaller(new JMSWireFormat());
+      client.setUnMarshaller(new JMSWireFormat());
+      
       dummy = new DummyCallbackHandler();
 
       client.addListener(dummy, callbackServerLocator);

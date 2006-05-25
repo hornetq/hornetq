@@ -177,13 +177,14 @@ public class ClientConnectionFactoryDelegate
 
          configuration.put(Client.ENABLE_LEASE, String.valueOf(false));
 
-         client = new Client(new InvokerLocator(serverLocatorURI), configuration);
+         client = new Client(new InvokerLocator(serverLocatorURI), configuration);     
          
-         client.setMarshaller(new JMSWireFormat());
-         client.setUnMarshaller(new JMSWireFormat());
          client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
          
          client.connect();         
+         
+         client.setMarshaller(new JMSWireFormat());
+         client.setUnMarshaller(new JMSWireFormat());         
       }
 
       byte v = getVersionToUse().getProviderIncrementingVersion();

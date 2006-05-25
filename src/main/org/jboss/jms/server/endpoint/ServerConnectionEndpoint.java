@@ -573,7 +573,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
       // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
       // This can make a massive difference on performance. We also do this in
-      //  JMSRemotingConnection.setupConnection
+      // JMSRemotingConnection.setupConnection
       callbackClient.setMarshaller(new JMSWireFormat());
       callbackClient.setUnMarshaller(new JMSWireFormat());
    }
