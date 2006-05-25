@@ -50,7 +50,6 @@ import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.util.Util;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 
