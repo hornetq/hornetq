@@ -21,9 +21,28 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.management.MBeanServer;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Map;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.management.MBeanServer;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.logging.Logger;
+import org.jboss.profiler.jvmti.InventoryDataPoint;
+import org.jboss.profiler.jvmti.JVMTIInterface;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvocationRequest;
@@ -100,75 +119,192 @@ public class MemLeakTest extends MessagingTestCase
       super.tearDown();
    }
    
-//   
-//   public void testNonTxSendReceiveNP() throws Exception
-//   {
-//      log.info("Pausing");
-//      Thread.sleep(10000);
-//      
-//      InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-//      ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-//
-//      ServerManagement.deployQueue("Queue", 10000, 1000, 1000);
-//      
-//      Queue queue = (Queue)initialContext.lookup("/queue/Queue");
-//      
-//      Connection conn = cf.createConnection();
-//
-//      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//      MessageProducer prod = sess.createProducer(queue);
-//
-//      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-//
-//      final int NUM_MESSAGES = 100;
-//      
-//      //send some messages
-//      
-//      for (int i = 0; i < NUM_MESSAGES; i++)
-//      {
-//
-//         TextMessage m = sess.createTextMessage("hello" + i);
-//
-//         prod.send(m);
-//         
-//         log.info("Sent " + i);
-//
-//      }
-//      
-//      conn.start();
-//      
-//      MessageConsumer cons = sess.createConsumer(queue);
-//      
-//      //receive
-//      
-//      for (int i = 0; i < NUM_MESSAGES; i++)
-//      {
-//
-//         Message m = cons.receive();
-//         
-//         log.info("Received " + i);
-//
-//      }
-//            
-//      conn.close();
-//      
-//      conn = null;
-//      
-//      sess = null;
-//      
-//      prod = null;
-//      
-//      cons = null;
-//      
-//      queue = null;
-//      
-//      cf = null;
-//      
-//      Thread.sleep(20 * 60 * 1000);
-//   }
-//   
-//   public void testManyConns() throws Exception
+   /** @todo I can't execute this test if executed with testExpressionParginMessages. That's why I renamed it. */
+   public void renamedtestNonTxSendReceiveNP() throws Exception
+   {
+      log.info("testNonTxSendReceiveNP");
+      //Thread.sleep(10000);
+      
+      InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
+      ServerManagement.deployQueue("Queue", 10000, 1000, 1000);
+      
+      Queue queue = (Queue)initialContext.lookup("/queue/Queue");
+      
+      Connection conn = cf.createConnection();
+
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageProducer prod = sess.createProducer(queue);
+
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      final int NUM_MESSAGES = 1000;
+      
+      //send some messages
+      
+      conn.start();
+      MessageConsumer cons = sess.createConsumer(queue);
+
+      produceMessages(sess, prod, 100, cons);
+      
+      JVMTIInterface jvmti = new JVMTIInterface();
+      Map inventory1=jvmti.produceInventory();
+      log.info("Producing first snapshot");
+      produceMessages(sess, prod, NUM_MESSAGES, cons);
+      log.info("Producing second snapshot");
+      Map inventory2 = jvmti.produceInventory();
+      
+      log.info("inventory1.size=" + inventory1.size());
+      log.info("inventory2.size=" + inventory2.size());
+      
+      assertTrue("Test produced unexpected objects",jvmti.compareInventories(System.out, inventory1,inventory2,null, null, new InventoryDataPoint[] {new InventoryDataPoint(Object.class,10)}));
+            
+      conn.close();
+      
+      conn = null;
+      
+      sess = null;
+      
+      prod = null;
+      
+      cons = null;
+      
+      queue = null;
+      
+      cf = null;
+   }
+
+   private void produceMessages(Session sess, MessageProducer prod, final int NUM_MESSAGES, MessageConsumer cons) throws JMSException
+   {
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+
+         TextMessage m = sess.createTextMessage("hello" + i);
+         
+         prod.send(m);
+         
+         log.info("Sent " + i);
+
+      }
+      //receive
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Message m = cons.receive();
+         log.info("Received " + i);
+      }
+   }
+   
+   public void testExpressionParsingMessages() throws Exception
+   {
+      log.info("testExpressionParsingMessages");
+      //Thread.sleep(10000);
+      
+      InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
+      ServerManagement.deployQueue("Queue", 10000, 1000, 1000);
+      
+      Queue queue = (Queue)initialContext.lookup("/queue/Queue");
+      
+      Connection conn = cf.createConnection();
+
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageProducer prod = sess.createProducer(queue);
+
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      final int NUM_MESSAGES = 100;
+      
+      //send some messages
+      ArrayList payLoad = new ArrayList();
+      for (int i=0;i<100;i++)
+      {
+         payLoad.add("" + i);
+      }
+      conn.start();
+      MessageConsumer cons1 = sess.createConsumer(queue,"target='1'");
+      MessageConsumer cons2 = sess.createConsumer(queue,"target='2'");
+
+      produceMessages(sess, prod, 30, cons1,cons2,payLoad);
+      
+      JVMTIInterface jvmti = new JVMTIInterface();
+      Map inventory1=jvmti.produceInventory();
+      log.info("Producing first snapshot");
+      produceMessages(sess, prod, 10, cons1,cons2,payLoad);
+      produceMessages(sess, prod, 10, cons1,cons2,payLoad);
+      produceMessages(sess, prod, 10, cons1,cons2,payLoad);
+      produceMessages(sess, prod, 10, cons1,cons2,payLoad);
+      produceMessages(sess, prod, 10, cons1,cons2,payLoad);
+      produceMessages(sess, prod, 10, cons1,cons2,payLoad);
+      log.info("Producing second snapshot");
+      Map inventory2 = jvmti.produceInventory();
+      
+      log.info("inventory1.size=" + inventory1.size());
+      log.info("inventory2.size=" + inventory2.size());
+      
+      assertTrue("Test produced unexpected objects",jvmti.compareInventories(System.out, inventory1,inventory2,null, null, new InventoryDataPoint[] {new InventoryDataPoint(Object.class,10)}));
+      
+      conn.close();
+      
+      conn = null;
+      
+      sess = null;
+      
+      prod = null;
+      
+      cons1 = null;
+      cons2 = null;
+      
+      queue = null;
+      
+      cf = null;
+   }
+
+   
+   private void produceMessages(Session sess, MessageProducer prod, final int NUM_MESSAGES, MessageConsumer cons1, MessageConsumer cons2, Object payload) throws Exception
+   {
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+
+         ObjectMessage  m = sess.createObjectMessage();
+         m.setObject((Serializable)payload);
+         if (i%2==0)
+         {
+            m.setStringProperty("target","1");
+         }
+         else
+         {
+            m.setStringProperty("target","2");
+         }
+         
+         
+         prod.send(m);
+         
+         log.info("Sent " + i);
+
+      }
+      //receive
+      
+      for (int i = 0; i < NUM_MESSAGES/2; i++)
+      {
+         Message m = cons1.receive();
+         log.info("Received " + i);
+      }
+      log.info("Starting second queue");
+      for (int i = 0; i < NUM_MESSAGES/2; i++)
+      {
+         Message m = cons2.receive();
+         log.info("Received " + i);
+      }
+   }
+   
+
+
+   //   public void testManyConns() throws Exception
 //   {
 //      log.info("Pausing");
 //      Thread.sleep(10000);
@@ -639,8 +775,6 @@ public class MemLeakTest extends MessagingTestCase
       serverConnector.destroy();      
       
       log.info("done");
-      
-      Thread.sleep(20 * 60 * 1000);
    }
 
    // Public --------------------------------------------------------
