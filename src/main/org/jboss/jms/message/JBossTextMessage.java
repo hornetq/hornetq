@@ -32,6 +32,7 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.util.SafeUTF;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
@@ -157,15 +158,14 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      out.writeUTF((String)thePayload);
+      SafeUTF.instance.safeWriteUTF(out, (String)thePayload);
    }
 
    protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      return in.readUTF();
+      return SafeUTF.instance.safeReadUTF(in);
    }
-
 
    // Private -------------------------------------------------------
 

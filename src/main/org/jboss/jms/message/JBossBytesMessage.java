@@ -39,6 +39,7 @@ import javax.jms.MessageFormatException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.util.SafeUTF;
 import org.jboss.logging.Logger;
 
 /**
@@ -477,7 +478,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
    {
       try
       {
-         dos.writeUTF(value);
+         dos.writeUTF((String)value);
       }
       catch (IOException e)
       {
@@ -519,8 +520,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          }
          if (value instanceof String)
          {
-            //p.writeChars((String) value);
-            dos.writeUTF((String) value);
+            dos.writeUTF((String)value);
          }
          else if (value instanceof Boolean)
          {

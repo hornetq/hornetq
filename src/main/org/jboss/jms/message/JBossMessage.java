@@ -939,8 +939,16 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
       writeDestination(out, replyToDestination);
       
-      writeString(out, jmsType);
-      
+      if (jmsType == null)
+      {
+         out.writeByte(NULL);
+      }
+      else
+      {
+         out.writeByte(STRING);
+         out.writeUTF(jmsType);
+      }
+            
       writeMap(out, properties, true);
       
       if (correlationID == null && correlationIDBytes == null)
@@ -973,7 +981,15 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
       replyToDestination = readDestination(in);
  
-      jmsType = readString(in);     
+      byte b = in.readByte();
+      if (b == NULL)
+      {
+         jmsType =  null;
+      }
+      else
+      {
+         jmsType = in.readUTF();
+      }
       
       Map m = readMap(in, true);
       if (!(m instanceof HashMap))
@@ -987,7 +1003,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
       // correlation id
       
-      byte b = in.readByte();
+      b = in.readByte();
       
       if (b == NULL)
       {

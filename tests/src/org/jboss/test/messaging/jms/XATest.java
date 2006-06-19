@@ -283,6 +283,72 @@ public class XATest extends MessagingTestCase
       }
    }
    
+   
+   public void test2PCSendFailOnPrepare() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      XAConnection conn = null;
+      Connection conn2 = null;
+      try
+      {
+         conn = cf.createXAConnection();
+         
+         tm.begin();
+         
+         XASession sess = conn.createXASession();
+         MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
+         
+         //prevent 1Pc optimisation
+         res.setPreventJoining(true);
+         
+         XAResource res2 = new DummyXAResource(true);
+         XAResource res3 = new DummyXAResource();
+         XAResource res4 = new DummyXAResource();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         tx.enlistResource(res2);
+         tx.enlistResource(res3);
+         tx.enlistResource(res4);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         Message m = sess.createTextMessage("XATest1");
+         prod.send(queue, m);   
+         m = sess.createTextMessage("XATest2");
+         prod.send(queue, m);
+         
+         try
+         {
+            tx.commit();         
+         }
+         catch (Exception e)
+         {
+            //We should expect this
+         }
+         
+         conn2 = cf.createConnection();
+         conn2.start();
+         Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         Message m2 = cons.receive(1000);
+         assertNull(m2);
+   
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
+   
    public void test2PCSendRollback() throws Exception
    {
       if (ServerManagement.isRemote()) return;

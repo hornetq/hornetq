@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.jms.util.SafeUTF;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Routable;
 import org.jboss.util.Primitives;
@@ -91,7 +92,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
          {
             throw new IOException("Object in List must be serializable: " + value);
          }
-         internalWriteObject(out, (Serializable)value, false);
+         internalWriteObject(out, (Serializable)value, false, false);
       }
    }
    
@@ -101,13 +102,13 @@ public abstract class RoutableSupport implements Routable, Externalizable
       ArrayList list = new ArrayList(size);
       for (int i = 0; i < size; i++)
       {
-         Object obj = internalReadObject(in);
+         Object obj = internalReadObject(in, false);
          list.add(obj);
       }
       return list;
    }
    
-   protected static Serializable internalReadObject(ObjectInput in) throws IOException, ClassNotFoundException
+   protected static Serializable internalReadObject(ObjectInput in, boolean longStrings) throws IOException, ClassNotFoundException
    {
       byte type = in.readByte();
       Serializable value = null;
@@ -135,7 +136,16 @@ public abstract class RoutableSupport implements Routable, Externalizable
             value = Primitives.valueOf(in.readBoolean());
             break;
          case STRING :
-            value = in.readUTF();
+            if (longStrings)
+            {
+               //We cope with >= 64K Strings
+               value = SafeUTF.instance.safeReadUTF(in);
+            }
+            else
+            {
+               //Limited to < 64K Strings
+               value = in.readUTF();
+            }
             break;
          case BYTES :
             int size = in.readInt();
@@ -175,7 +185,8 @@ public abstract class RoutableSupport implements Routable, Externalizable
       return value;
    }
    
-   protected static void internalWriteObject(ObjectOutput out, Serializable value, boolean containerTypes) throws IOException
+   protected static void internalWriteObject(ObjectOutput out, Serializable value,
+                                             boolean containerTypes, boolean longStrings) throws IOException
    {
       // We cheat with some often used types - more efficient than using object serialization
       if (value == null)
@@ -185,7 +196,16 @@ public abstract class RoutableSupport implements Routable, Externalizable
       else if (value instanceof String)
       {
          out.writeByte(STRING);
-         out.writeUTF((String) value);
+         if (longStrings)
+         {
+            //We can cope with >=64K Strings
+            SafeUTF.instance.safeWriteUTF(out, (String)value);
+         }
+         else
+         {
+            //Limited to < 64K Strings
+            out.writeUTF((String)value);
+         }
       }
       else if (value instanceof Integer)
       {
@@ -273,7 +293,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
                {
                   throw new IOException("Key in map must be Serializable: " + me.getKey());
                }
-               internalWriteObject(out, (Serializable)me.getKey(), false);
+               internalWriteObject(out, (Serializable)me.getKey(), false, false);
             }
 
             Object value = me.getValue();
@@ -283,7 +303,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
             }
             
             // write the value
-            internalWriteObject(out, (Serializable)value, false);
+            internalWriteObject(out, (Serializable)value, false, false);
          }
       }
    }
@@ -308,10 +328,10 @@ public abstract class RoutableSupport implements Routable, Externalizable
             }
             else
             {
-               key = internalReadObject(in);
+               key = internalReadObject(in, false);
             }
             
-            Object value = internalReadObject(in);
+            Object value = internalReadObject(in, false);
             
             m.put(key, value);
          }
@@ -556,31 +576,5 @@ public abstract class RoutableSupport implements Routable, Externalizable
    }
 
    // Protected -------------------------------------------------------
-   
-   protected void writeString(ObjectOutput out, String s) throws IOException
-   {
-      if (s == null)
-      {
-         out.writeByte(NULL);
-      }
-      else
-      {
-         out.writeByte(STRING);
-         out.writeUTF(s);
-      }
-   }
-   
-   protected String readString(ObjectInput in) throws IOException
-   {
-      byte b = in.readByte();
-      if (b == NULL)
-      {
-         return null;
-      }
-      else
-      {
-         return in.readUTF();
-      }
-   }
-    
+ 
 }
