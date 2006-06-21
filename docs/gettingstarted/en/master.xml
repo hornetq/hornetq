@@ -5,14 +5,15 @@
 <!ENTITY introduction SYSTEM "modules/introduction.xml">
 <!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">
 <!ENTITY installation SYSTEM "modules/installation.xml">
-<!ENTITY configuration SYSTEM "modules/configuration.xml">
 <!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
+<!ENTITY configuration SYSTEM "modules/configuration.xml">
+<!ENTITY performance SYSTEM "modules/performance.xml">
 ]>
 <book lang="en">
   <bookinfo>
-    <title>Getting Started with JBoss Messaging 1.0.1</title>
+    <title>JBoss Messaging User's Guide</title>
 
-    <subtitle>JBoss Messaging in a Nutshell</subtitle>
+    <subtitle>A high performance JMS server for JBoss</subtitle>
   </bookinfo>
 
   <toc></toc>
@@ -23,11 +24,12 @@
 
   &gettingstarted;
 
+  &runningexamples;
+
   &installation;
 
   &configuration;
-
-  &runningexamples;
-
+  
+  &performance;
 
 </book>

@@ -1,5 +1,5 @@
 <chapter id="gettingstarted">
-   <title>Getting Started</title>
+   <title>Download Software</title>
 
    <para>
       The official releases of JBoss Messaging are available as a free download from
@@ -22,7 +22,7 @@
             <warning>
                Do not simply attempt to copy the archive under a JBoss instance <filename>deploy</filename> directory,
                since additional steps (such as un-installing JBossMQ and various other configurations
-               tasks) are required for a successful installation. See the Installation chapter for
+               tasks) are required for a successful installation. See <xref linkend="installation"/> for
                more details.
             </warning>
          </listitem>
@@ -48,7 +48,7 @@
          </listitem>
          <listitem>
            <filename>docs</filename>
-            - this "Getting Started" guide.
+            - this user's guide.
          </listitem>
          <listitem>
            <filename>src/jboss-messaging-1.0.x-src.zip</filename>

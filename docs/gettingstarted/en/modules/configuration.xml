@@ -1,14 +1,13 @@
 <chapter id="configuration">
   <title>Configuration</title>
 
-  <para>
-     A JBoss Messaging instance is composed of several services working together to provide JMS API level
-     services to client applications. Some of the services that make up Messaging are introduced
-     in this section.
-  </para>
+  <para>The JMS API specifies how a messaging client interacts with a messaging server. The exact definition and implementation of messaging services, such as message destinations and connection factories, are specific to JMS providers. JBoss Messaging has its own configuration files to configure services. If you are migrating services from JBossMQ (or other JMS provider) to JBoss Messaging, you will need to understand those configuration files.</para>
+  
+  <para>In this chapter, we discuss how to configure various services inside JBoss Messaging, which work together to provide JMS API level
+     services to client applications.</para>
 
    <para>
-      Starting with 1.0.1, the service configuration is spread among several configuration files.
+      Starting with JBoss Messaging 1.0.1 release, the service configuration is spread among several configuration files.
       (The 1.0.0 release used to have all configuration information lumped together in the SAR's deployment
       descriptor <filename>jboss-messaging.sar/META-INF/jboss-service.xml</filename>). Depending
       on the functionality provided by the services it configures, the configuration data is

@@ -2,8 +2,8 @@
   <title>Installation</title>
 
    <para>
-      By default, a JBossAS 4.0.x instance ships with JBossMQ as default JMS provider.
-      In order to use the JBossAS instance with JBoss Messaging, you need to perform the installation
+      By default, a JBoss AS 4.0.x instance ships with JBossMQ as default JMS provider.
+      In order to use the JBoss AS instance with JBoss Messaging, you need to perform the installation
       procedure described below.
    </para>
 
@@ -20,7 +20,7 @@
 
 
   <section id="install4">
-     <title>Installing JBoss Messaging with JBossAS 4.x</title>
+     <title>Installing JBoss Messaging with JBoss AS 4.x</title>
 
 
     <section id="install4.automated">
@@ -73,7 +73,7 @@
          <note>
             The <literal>all</literal> configuration can be also used as a template. If you choose
             to base your configuration on <literal>all</literal>, you will need to adjust the
-            steps 4.1.2.2, 4.1.2.3 and 4.1.2.4 accordingly, given the fact that in a clustered
+            instructions accordingly, given the fact that in a clustered
             configuration, JBossMQ is deployed as a HASingleton under
             <filename>server/all/deploy-hasingleton/jms</filename>.
          </note>
@@ -87,7 +87,7 @@
          <para>
             In <filename>jms-ds.xml</filename>, JBoss Messaging defines a connection factory
             bound by the JMS Resource adapter as <literal>java:/JmsXA</literal>. Before deleting
-            the whole <filename>jms</filename> folder (see 4.1.2.3), it is necessary to copy
+            the whole <filename>jms</filename> folder (see <xref linkend="removingjbossmq"/>), it is necessary to copy
             <filename>jms-ra.rar</filename> up one directory to <filename>deploy</filename>.
          </para>
 
@@ -219,7 +219,7 @@ JBoss Messaging Warning: DataSource connection transaction isolation should be R
         Before using Messaging in production, you <emphasis>must</emphasis> configure
         the Messaging instance to use an enterprise-class database backend such as MySQL or Oracle,
         otherwise you risk losing your data.
-        See Section 5.2.1 for details about replacing Hypersonic.
+        See <xref linkend="conf.changingds"/> for details about replacing Hypersonic.
      </warning>
 
 
@@ -241,7 +241,7 @@ JBoss Messaging Warning: DataSource connection transaction isolation should be R
     <para>
        To run the example and validate the installation,
        open an new command line window and set the <literal>JBOSS_HOME</literal>
-       environment variable to point to the JBossAS 4.x installation you've just installed
+       environment variable to point to the JBoss AS 4.x installation you've just installed
        Messaging on. Navigate to the folder where
        you extracted the release bundle and drill down to <filename>/examples/queue</filename>.
        Apache Ant must pe present in your path in order to be able to run the example.
@@ -280,9 +280,9 @@ run:
 
 
      <para>
-        It is recommended to run <emphasize>all</emphasize> validation examples available in the
+        It is recommended to run <literal>all</literal> validation examples available in the
         <filename>example</filename> directory (<filename>queue</filename>, <filename>topic</filename>,
-        <filename>mdb</filename>, <filename>stateless</filename>, etc.)
+        <filename>mdb</filename>, <filename>stateless</filename>, etc.). In <xref linkend="examples"/>, we will have a look at each of those examples.
      </para>
 
 

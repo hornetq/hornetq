@@ -1,9 +1,11 @@
 <chapter id="examples">
 
-  <title>Running the examples</title>
+  <title>Running the Examples</title>
 
-  <para>
-  In the following sections, we will look at examples of the various JMS messaging models and message-driven beans. The example source is located in the distribution under <literal>/docs/examples</literal>. 
+  <para>Since JBoss Messaging is a full JMS provider, it supports all JMS APIs. So, all JMS applications should work without modification. Integrated inside a JBoss AS, we should also access the JMS system from EJBs and write message-driven beans against JMS destinations.</para>
+  
+  
+  <para>In the following sections, we will look at examples of the various JMS messaging models and message-driven beans. They make use of pre-configured JMS destinations and connection factories that come default with the server. So, no extra configuration is needed to run those examples. Just set JBOSS_HOME and run ANT in each example directory, as we described in <xref linkend="inst.validation"/>. The example source directories are located in the distribution under <literal>docs/examples</literal>. 
   </para>
 	
   <section id="examples.queue">
@@ -554,8 +556,6 @@ C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not
          </para>
       </important>
 
-      <para> </para>
-      <para> </para>
       <para>
          The EJB3 Message Driven Bean source code:
       </para>
@@ -633,6 +633,9 @@ C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not
            }
         }
      </programlisting>
+     
+     <para>The basic test examples in this chapter serve as the sanity check for your JBoss Messaging installation. They also provide basic programming examples. To develop your own JMS services, you probably need to configure JBoss Messaging to setup your own destinations and connection factories etc. In <xref linkend="configuration"/>, we will discuss JBoss Messaging configuration files and options.</para>
+     
    </section>
 
 

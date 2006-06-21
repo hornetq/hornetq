@@ -1,0 +1,160 @@
+<chapter id="performance">
+
+  <title>Generating Performance Benckmark Results</title>
+
+  <para>As we discussed in <xref linkend="about"/>, the key advantage of JBoss Messaging is its superior performance. In fact, the JBoss Messaging comes with a set of standard performance test. You can run them on your server and generate your own performance benchmark results. In this chapter, we will show you how to run a JBoss Messaging server and a JBossMQ server side-by-side on a single machine, and compare their performance. To get the performance tests, you have to obtain the JBoss Messaging source code from CVS as described in <xref linkend="gettingstarted"/>.</para>
+  
+  <para>The test consists in sending bursts of 1000 0 Kilobytes non-persistent messages to both JBoss Messaging and JBossMQ instances while gradually increasing the send rate (200 messages/sec, 400 messages/sec, etc) and measuring the receive rate. At the end, the framework generates the graph representing the receive rate as function of the send rate for two executions (JBoss Messaging and JBossMQ).</para>
+  
+  <section>
+    <title>Run JBoss Messaging and JBossMQ Side-by-side</title>
+  
+    <para>To run performance tests side-by-side on the same machine, we assume that you create two JBoss AS configurations with the JBoss Messaging and JBossMQ modules respectively. We assume that the JBoss Messaging module is installed in the <literal>server/messaging</literal> directory (see <xref linkend="installation"/>), and the default JBossMQ module is installed in <literal>server/jbossmq</literal> directory (just copy the original <literal>default</literal> directory that comes with the server).</para>
+    
+    <para>Now, if you run the two configurations on the same server, there will be port conflicts. To avoid that, we use the JBoss <literal>ServiceBindingManager</literal> to increase the port numbers in the <literal>jbossmq</literal> configuration by 100 (i.e., the JNDI service will be available at port 1199 instead of 1099). To do that, un-comment the following line in <literal>server/jbossmq/conf/jboss-service.xml</literal></para>
+    
+    <programlisting>
+&lt;mbean code="org.jboss.services.binding.ServiceBindingManager"
+       name="jboss.system:service=ServiceBindingManager">
+       
+  &lt;attribute name="ServerName">ports-01&lt;/attribute>
+  &lt;attribute name="StoreURL">
+    ../docs/examples/binding-manager/sample-bindings.xml
+  &lt;/attribute>
+  &lt;attribute name="StoreFactoryClassName">
+    org.jboss.services.binding.XMLServicesStoreFactory
+  &lt;/attribute>
+&lt;/mbean>    
+    </programlisting>
+    
+    <para>Now, you can start the <literal>messaging</literal> and <literal>jbossmq</literal> configurations side-by-side for testing.</para>
+    
+    <programlisting>
+run -c messaging
+run -c jbossmq
+    </programlisting>
+    
+  </section>
+  
+  <section>
+    <title>Setup the Tests</title>
+
+    <para>The performance framework relies on distributed executors to send messages into the providers being tested. The executors can run standalone in their own VM and act as "remote" JMS connections, or colocated, in which case they are deployed as JBoss services and simulate "colocated" JMS connections.</para>
+    
+    <para>In order to correctly deploy the colocated executors, the framework relies on the <literal>JBOSS_HOME</literal> environment variable. It assumes directories <literal>$JBOSS_HOME/server/messaging</literal> and <literal>$JBOSS_HOME/server/jbossmq</literal> exist.</para>
+    
+    <programlisting>
+cd perf
+ant sar
+ant start-executors
+    </programlisting>
+    
+    <para>Next, we need to deploy test message destinations. They are in the <literal>messaging-destinations-service.xml</literal>, <literal>jbossmq-destinations-service.xml</literal> files. Feel free to add your own destinations (must add equivalent ones in both files) and then deploy them via the following command.</para>
+    
+    <programlisting>
+ant deploy-destinations
+    </programlisting>
+    
+  </section>
+  
+  <section>
+    <title>Configure Test Runs</title>
+
+    <para>The <literal>perf/perf.xml</literal> file is used to configure tests. In our setting (i.e., <literal>jbossmq</literal> runs in +100 port range from default), the <literal>&lt;providers></literal> section should look like the following. We can easily run the two JMS server configurations on different machines or in other port ranges. You just need to change the host and port numbers here for tests.</para>
+    
+    <programlisting>
+&lt;provider name="JBossMessaging">
+  &lt;factory>org.jnp.interfaces.NamingContextFactory&lt;/factory>
+  &lt;url>jnp://localhost:1099&lt;/url>
+  &lt;pkg>org.jboss.naming:org.jnp.interfaces&lt;/pkg>
+  &lt;executor name="REMOTE" url="rmi://localhost:7777/standalone"/>
+  &lt;executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
+  &lt;executor name="COLOCATED" url="rmi://localhost:7777/colocated-messaging"/>
+  &lt;executor name="COLOCATED2" url="rmi://localhost:7777/colocated-messaging2"/>
+&lt;/provider>
+
+&lt;provider name="JBossMQ">
+  &lt;factory>org.jnp.interfaces.NamingContextFactory&lt;/factory>
+  &lt;url>jnp://localhost:1199&lt;/url>
+  &lt;pkg>org.jboss.naming:org.jnp.interfaces&lt;/pkg>
+  &lt;executor name="REMOTE" url="rmi://localhost:7777/standalone"/>
+  &lt;executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
+  &lt;executor name="COLOCATED" url="rmi://localhost:7777/colocated-jbossmq"/>
+  &lt;executor name="COLOCATED2" url="rmi://localhost:7777/colocated-jbossmq2"/>
+&lt;/provider>
+    </programlisting>
+    
+    <para>The performance configuration section configures how to ramp up the load from 200 messages / sec to 3000 message / sec. We will gather statistics on the number of processed messages versus the number of sent messages.</para>
+    
+    <programlisting>
+&lt;performance-test name="Throughput O KB Message 
+   Non-Persistent Non-Transactional, 1 sender, 1 receiver">
+
+  &lt;message-size>0&lt;/message-size>
+  &lt;messages>10000&lt;/messages>
+
+  &lt;drain/>
+
+  &lt;parallel>
+    &lt;send rate="200" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;parallel>
+    &lt;send rate="400" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;parallel>
+    &lt;send rate="800" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;parallel>
+    &lt;send rate="1000" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;parallel>
+    &lt;send rate="1500" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;parallel>
+    &lt;send rate="2000" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;parallel>
+    &lt;send rate="2500" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;parallel>
+    &lt;send rate="3000" executor="COLOCATED"/>
+    &lt;receive executor="COLOCATED2"/>
+  &lt;/parallel>
+
+  &lt;execution provider="JBossMessaging"/>
+  &lt;execution provider="JBossMQ"/>
+
+&lt;/performance-test>
+    </programlisting>
+    
+  </section>
+  
+  <section>
+    <title>Run the Tests</title>
+
+    <para>To run the tests, simply executes <literal>ant</literal> from the command line. You can access the benchmark result graphs from <literal>output/results/benchmark-results.html</literal>.</para>
+    
+    <para>After running the test, you can clean up the executors and test destinations using the following commands.</para>
+    
+    <programlisting>
+ant kill-executors
+ant undeploy-destinations
+    </programlisting>
+    
+  </section>
+
+</chapter>
