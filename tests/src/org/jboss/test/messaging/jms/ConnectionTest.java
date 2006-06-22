@@ -114,6 +114,15 @@ public class ConnectionTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
    
+   public void testManyConnections() throws Exception
+   {
+      for (int i = 0; i < 1000; i++)
+      {
+         Connection conn = cf.createConnection();
+         conn.close();        
+      }
+   }
+   
    public void testResourceManagersForSameServer() throws Exception
    {
       Connection conn1 = cf.createConnection();      

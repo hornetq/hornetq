@@ -134,13 +134,15 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       // deals with the race condition when acknowledgment arrives before the delivery
       // is returned back to the sending delivery observer      
       observer.acknowledge(this, tx);
-      if (tx == null)
-      {
-         if (trace) { log.trace(this + " setting done to true"); }
-         //TODO Why don't we set done to true if the ack is transactional???
-         //     http://jira.jboss.org/jira/browse/JBMESSAGING-173
-         done = true;
-      }
+
+      //Important note! We must ALWAYS set done true irrespective of whether we are in a tx or not.
+      //Previously we were only setting done to true if there was no transaction.
+      //This caused a memory leak when using with JBoss EJB3, since JBoss EJB3 always
+      //seems to ack in a tx.
+      //This meant that if the acknowledgement (in the tx) came in before the call to handle()
+      //had returned the delivery would end up in the delivery set in the channel and never
+      //get removed - causing a leak
+      done = true;
    }
 
    public synchronized void cancel() throws Throwable

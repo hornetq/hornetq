@@ -198,7 +198,7 @@ public class ChannelState implements State
    public boolean addReference(MessageReference ref) throws Throwable
    {
       boolean first;
-             
+                 
       ref.setOrdering(getNextReferenceOrdering());      
                
       if (ref.isReliable() && recoverable)
@@ -640,9 +640,12 @@ public class ChannelState implements State
       {
          throw new IllegalArgumentException("Can't acknowledge a null delivery");
       }
-             
+                
       boolean removed = deliveries.remove(d);
       
+      //It's ok if the delivery couldn't be found - this might happen
+      //if the delivery is acked before the call to handle() has returned
+
       if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); }       
    }
          

@@ -22,8 +22,13 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.test.messaging.core.base.SingleReceiverDeliveryTestBase;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -68,6 +73,43 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
    }
 
    // Public --------------------------------------------------------
+   
+   public void testDoneIsSetWithTransaction() throws Throwable
+   {
+      //Calling acknowledge on a SimpleDelivery
+      //Should always result in done being set to true,
+      //even if there is a transaction present.
+      //Otherwise we can end up with a race condition where
+      //the message is acked when still in flight then added
+      //when handle is returned.
+      
+      assertFalse(delivery.isDone());
+      
+      ServiceContainer sc = new ServiceContainer("all,-remoting,-security");
+      sc.start();
+      
+      PersistenceManager pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      
+      ((JDBCPersistenceManager)pm).start();
+      
+      TransactionRepository tr = new TransactionRepository();
+      
+      tr.start(pm);
+      
+      Transaction tx = tr.createTransaction();
+      
+      ((SimpleDelivery)delivery).acknowledge(tx);
+      
+      assertTrue(delivery.isDone());
+      
+      pm.stop();
+      
+      tr.stop();
+      
+      sc.stop();
+
+   }
 
    // Package protected ---------------------------------------------
    
