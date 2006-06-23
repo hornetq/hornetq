@@ -5,7 +5,7 @@
 	<classpathentry kind="src" path="output/parsers"/>
 	<classpathentry kind="src" path="tests/src"/>
 	<classpathentry kind="src" path="/j2ee"/>
-	<classpathentry kind="src" path="/common"/>
+	<classpathentry kind="lib" path="/thirdparty/jboss/common/lib/jboss-common.jar"/>
 	<classpathentry kind="src" path="/system"/>
 	<classpathentry kind="src" path="/aop"/>
 	<classpathentry kind="lib" path="/thirdparty/junit/lib/junit.jar"/>
