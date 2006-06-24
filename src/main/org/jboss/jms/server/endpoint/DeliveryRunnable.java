@@ -90,7 +90,7 @@ public class DeliveryRunnable implements Runnable, Serializable
          
          ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
          
-         mgr.unregisterConnection(connection.getJmsClientVMId(), connection.getRemotingClientSessionId());
+         mgr.handleClientFailure(connection.getRemotingClientSessionId());
       }
    }
 

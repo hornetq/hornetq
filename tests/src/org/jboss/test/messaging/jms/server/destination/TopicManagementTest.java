@@ -23,8 +23,12 @@ package org.jboss.test.messaging.jms.server.destination;
 
 import java.util.List;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
@@ -76,6 +80,111 @@ public class TopicManagementTest extends DestinationManagementTestBase
       super.tearDown();
    }
 
+   public void testReloadTopic() throws Exception
+   {      
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.Topic\" " +
+         "       name=\"somedomain:service=Topic,name=ReloadTopic\"" +
+         "       xmbean-dd=\"xmdesc/Topic-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "</mbean>";
+      
+      ObjectName destObjectName = deploy(config);
+
+      assertEquals("ReloadTopic", ServerManagement.getAttribute(destObjectName, "Name"));
+
+      String jndiName = "/topic/ReloadTopic";
+      String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
+      assertEquals(jndiName, s);
+      
+      //Send some messages to durable sub
+      
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      Topic topic = (Topic)ic.lookup("/topic/ReloadTopic");
+
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      conn.setClientID("wibble765");
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sess.createDurableSubscriber(topic, "subxyz");
+      
+      MessageProducer prod = sess.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+  
+      for (int i = 0; i < 10; i++)
+      {
+         TextMessage tm = sess.createTextMessage();
+         
+         tm.setText("message:" + i);
+         
+         prod.send(tm);
+      }
+      
+      conn.close();
+      
+      //Receive half of them
+      
+      conn = cf.createConnection();
+      
+      conn.setClientID("wibble765");
+      
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      cons = sess.createDurableSubscriber(topic, "subxyz");
+      
+      conn.start();
+      
+      for (int i = 0; i < 5; i++)
+      {
+         TextMessage tm = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("message:" + i, tm.getText());
+      }
+      
+      conn.close();
+      
+      //Undeploy and redeploy the queue
+      //The last 5 persistent messages should still be there
+      
+      undeployDestination("ReloadTopic");
+      
+      deploy(config);
+      
+      topic = (Topic)ic.lookup("/topic/ReloadTopic");
+      
+      conn = cf.createConnection();
+      
+      conn.setClientID("wibble765");      
+      
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      cons = sess.createDurableSubscriber(topic, "subxyz");
+      
+      conn.start();
+      
+      for (int i = 5; i < 10; i++)
+      {
+         TextMessage tm = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("message:" + i, tm.getText());
+      }
+      
+      conn.close();      
+      
+      undeployDestination("ReloadTopic");
+   }
+   
    /**
     * Test subscriptionCount() and subscriptionCount(boolean durable).
     * @throws Exception
@@ -296,6 +405,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
     */
    public void testListSubscriptionsAsText() throws Exception
    {
+      ServerManagement.deployTopic("TopicSubscription");
+      
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
  
@@ -391,6 +502,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
       assertTrue(-1 == nonDurableStart);
       
       ServerManagement.undeployTopic("TopicSubscriptionListAsText");
+      ServerManagement.undeployTopic("TopicSubscription");
    }
 
    /**
@@ -462,6 +574,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
   
    public void testListMessages() throws Exception
    {
+      ServerManagement.deployTopic("TopicSubscriptionListAsText");
+      
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
  
@@ -549,6 +663,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
       // Clean-up
       conn.close();
       ServerManagement.undeployTopic("TopicMessageList");
+      
+      ServerManagement.undeployTopic("TopicSubscriptionListAsText");
    }
 
    /*
@@ -634,6 +750,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
     */
    public void testListMessagesEmptySelector() throws Exception
    {
+      ServerManagement.deployTopic("TopicMessageList");
+      
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
 
@@ -664,6 +782,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
       // Clean-up
       conn.close();
       ServerManagement.undeployTopic("TopicMessageList2");
+      ServerManagement.undeployTopic("TopicMessageList");
    }
 
    // Package protected ---------------------------------------------

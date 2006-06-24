@@ -97,6 +97,8 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
     *         exchange, or false otherwise. 
     */
    boolean deliver(Receiver receiver);
+   
+   boolean deliver();
 
    void close();
 

@@ -66,19 +66,19 @@ public class PointToPointRouter implements Router
    public Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       Set deliveries = new HashSet();
-
+      
       synchronized(receivers)
       {
          for(Iterator i = receivers.iterator(); i.hasNext(); )
          {
             Receiver receiver = (Receiver)i.next();
-
+            
             try
             {
                Delivery d = receiver.handle(observer, routable, tx);
 
                if (trace) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
-
+     
                if (d != null && !d.isCancelled())
                {
                   // deliver to the first receiver that acknowledges

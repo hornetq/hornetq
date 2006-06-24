@@ -42,6 +42,7 @@ import org.jboss.jms.server.subscription.Subscription;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.CoreDestination;
+import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.persistence.JDBCUtil;
@@ -344,15 +345,41 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    }
    
    public CoreDestination undeployCoreDestination(boolean isQueue, String destName)
+      throws JMSException
    {
       Map m = isQueue ? queues : topics;
       
       CoreDestination dest = (CoreDestination)m.remove(destName);
       
       if (dest != null)
-      {
-      
+      {      
          idMap.remove(new Long(dest.getId()));
+         
+         //If topic need to remove durable subs from map too
+         
+         if (!isQueue)
+         {
+            Topic topic = (Topic)dest;
+            
+            Iterator iter = topic.iterator();
+            
+            while (iter.hasNext())
+            {
+               CoreSubscription sub = (CoreSubscription)iter.next();
+               
+               if (sub.isRecoverable())
+               {
+                  DurableSubscription dursub = (DurableSubscription)sub;
+                  
+                  String clientID = dursub.getClientID();
+                  
+                  String name = dursub.getName();
+                  
+                  removeDurableSubscriptionInMemory(clientID, name);
+               }
+            }
+         }
+         
       }
       
       return dest;
@@ -422,6 +449,21 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                   subscriptions.put(clientID, subs);
                }
                
+               //The subscription might be in the database, but the Topic which owns the subscription
+               //might not be deployed.
+               //In this case the user needs to make sure the Topic is deployed
+               
+               Topic topic = (Topic)getCoreDestinationInternal(false, topicName);
+               
+               if (topic == null)
+               {
+                  throw new MessagingJMSException("Unable to get subscription: " + subscriptionName
+                        + " for client-id: "
+                        + clientID + " which belongs to topic: " + topicName
+                        + " since this topic is not currently deployed. Please deploy the topic and try again");
+               }
+               
+               
                // create in memory
                sub = createDurableSubscriptionInternal(id, topicName, clientID, subscriptionName, sel,
                                                        noLocal, ms, pm);
@@ -448,6 +490,10 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             }
             wrap.end();
          }
+      }
+      catch (JMSException e)
+      {
+         throw e;
       }
       catch (Exception e)
       {
@@ -513,43 +559,26 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
    }
    
+   
+   
    public boolean removeDurableSubscription(String clientID, String subscriptionName)
       throws JMSException
    {
       try
       {
-         if (log.isTraceEnabled()) { log.trace("removing durable subscription " + subscriptionName); }
+         DurableSubscription removed = removeDurableSubscriptionInMemory(clientID, subscriptionName);
          
-         if (clientID == null)
+         if (removed != null)
          {
-            throw new JMSException("Client ID must be set for connection!");
+            //Now remove from db
+            deleteMappingRow(removed.getChannelID());
+            
+            return true;
          }
-   
-         Map subs = (Map)subscriptions.get(clientID);
-   
-         if (subs == null)
-         {
-            return false;
-         }
-   
-         if (log.isTraceEnabled()) { log.trace("removing durable subscription " + subscriptionName); }
-   
-         DurableSubscription removed = (DurableSubscription)subs.remove(subscriptionName);
-   
-         if (subs.size() == 0)
-         {
-            subscriptions.remove(clientID);
-         }
-         
-         if (removed == null)
+         else
          {
             return false;
          }
-         
-         //Now remove from db
-         deleteMappingRow(removed.getChannelID());
-         
-         return true;
       }
       catch (Exception e)
       {
@@ -710,6 +739,40 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+   
+   protected DurableSubscription removeDurableSubscriptionInMemory(String clientID, String subscriptionName)
+      throws JMSException
+   {
+      if (log.isTraceEnabled()) { log.trace("removing durable subscription " + subscriptionName); }
+      
+      if (clientID == null)
+      {
+         throw new JMSException("Client ID must be set for connection!");
+      }
+   
+      Map subs = (Map)subscriptions.get(clientID);
+   
+      if (subs == null)
+      {
+         return null;
+      }
+   
+      if (log.isTraceEnabled()) { log.trace("removing durable subscription " + subscriptionName); }
+   
+      DurableSubscription removed = (DurableSubscription)subs.remove(subscriptionName);
+      
+      if (removed == null)
+      {
+         return null;
+      }
+   
+      if (subs.size() == 0)
+      {
+         subscriptions.remove(clientID);
+      }
+                  
+      return removed;
+   }
    
    protected List loadDurableSubscriptionsForTopic(String topicName,                                               
                                                    MessageStore ms,

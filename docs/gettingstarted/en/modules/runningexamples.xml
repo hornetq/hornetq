@@ -3,18 +3,18 @@
   <title>Running the Examples</title>
 
   <para>Since JBoss Messaging is a full JMS provider, it supports all JMS APIs. So, all JMS applications should work without modification. Integrated inside a JBoss AS, we should also access the JMS system from EJBs and write message-driven beans against JMS destinations.</para>
-  
-  
-  <para>In the following sections, we will look at examples of the various JMS messaging models and message-driven beans. They make use of pre-configured JMS destinations and connection factories that come default with the server. So, no extra configuration is needed to run those examples. Just set JBOSS_HOME and run ANT in each example directory, as we described in <xref linkend="inst.validation"/>. The example source directories are located in the distribution under <literal>docs/examples</literal>. 
+
+
+  <para>In the following sections, we will look at examples of the various JMS messaging models and message-driven beans. They make use of pre-configured JMS destinations and connection factories that come default with the server. So, no extra configuration is needed to run those examples. Just set JBOSS_HOME and run ANT in each example directory, as we described in <xref linkend="inst.validation"/>. The example source directories are located in the distribution under <literal>docs/examples</literal>.
   </para>
-	
+
   <section id="examples.queue">
     <title>Sending messages to a queue</title>
 
-	 <para>
-	 Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file	
-	</para>
-		
+    <para>
+    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file
+   </para>
+
     <programlisting>
 public class QueueExample extends ExampleSupport
 {
@@ -83,7 +83,9 @@ public class QueueExample extends ExampleSupport
    private void closeConnection(Connection con){
 
        try {
-           con.close();
+           if (con != null) {
+              con.close();
+           }
 
        }catch(JMSException jmse) {
            log("Could not close connection " + con +" exception was " +jmse);
@@ -105,18 +107,18 @@ public class QueueExample extends ExampleSupport
     </programlisting>
 
   </section>
-  
-  
+
+
   <section id="examples.topic">
     <title>Sending messages to a topic</title>
     <para>In this example, a standalone Java client publishes a text-based JMS message to a topic and a single subscriber pulls the message off the queue.
     </para>
-		
-	 <para>
-	 Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file	
-	</para>
-	
-	<programlisting>
+
+    <para>
+    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file
+   </para>
+
+   <programlisting>
 public class TopicExample extends ExampleSupport
 {
    public void example() throws Exception
@@ -174,7 +176,9 @@ public class TopicExample extends ExampleSupport
    private void closeConnection(Connection con) throws JMSException {
 
        try {
-           con.close();
+           if (con != null) {
+              con.close();
+           }
 
        }catch(JMSException jmse) {
            log("Could not close connection " + con +" exception was " +jmse);
@@ -194,15 +198,15 @@ public class TopicExample extends ExampleSupport
    }
 
 }
-	</programlisting>
-	
+   </programlisting>
+
   </section>
 
   <section id="examples.stateless">
     <title>Using JMS from an EJB</title>
     <para>This example deploys a simple Stateless Session Bean that is used as a proxy to send and receive JMS messages in a managed environment.
     </para>
-		
+
     <programlisting>
 public class StatelessSessionExampleBean implements SessionBean
 {
@@ -234,10 +238,7 @@ public class StatelessSessionExampleBean implements SessionBean
       }
       finally
       {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
+         closeConnection(conn);
       }
    }
 
@@ -265,10 +266,7 @@ public class StatelessSessionExampleBean implements SessionBean
       }
       finally
       {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
+         closeConnection(conn);
       }
    }
 
@@ -297,10 +295,7 @@ public class StatelessSessionExampleBean implements SessionBean
       }
       finally
       {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
+         closeConnection(conn);
       }
    }
 
@@ -335,10 +330,7 @@ public class StatelessSessionExampleBean implements SessionBean
       }
       finally
       {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
+         closeConnection(conn);
       }
    }
 
@@ -363,7 +355,9 @@ public class StatelessSessionExampleBean implements SessionBean
     public void closeConnection(Connection con) throws Exception {
 
        try {
-           con.close();
+           if (con != null) {
+               con.close();
+           }
 
        }catch(JMSException jmse) {
            System.out.println("Could not close connection " + con +" exception was " +jmse);
@@ -371,8 +365,8 @@ public class StatelessSessionExampleBean implements SessionBean
 
        }
     }
-     
-	.......
+
+   .......
     </programlisting>
 
   </section>
@@ -382,8 +376,8 @@ public class StatelessSessionExampleBean implements SessionBean
     <para>This example deploys a simple Message Driven Bean that processes messages sent to a test queue.  Once it receives a message and "processes" it, the MDB sends an acknowledgment message to a temporary destination created by the sender for this purpose. The example is considered successful if the sender receives the acknowledgment message.
     </para>
 
-	<para>The MDB ejb-jar.xml descriptor
-    </para>	
+   <para>The MDB ejb-jar.xml descriptor
+    </para>
     <programlisting>
 &lt;ejb-jar&gt;
   &lt;enterprise-beans&gt;
@@ -396,8 +390,8 @@ public class StatelessSessionExampleBean implements SessionBean
 &lt;/ejb-jar&gt;
     </programlisting>
 
-	<para>The MDB jboss.xml descriptor
-	</para>
+   <para>The MDB jboss.xml descriptor
+   </para>
     <programlisting>
 &lt;enterprise-beans&gt;
   &lt;message-driven&gt;
@@ -406,8 +400,8 @@ public class StatelessSessionExampleBean implements SessionBean
   &lt;/message-driven&gt;
 &lt;/enterprise-beans&gt;
     </programlisting>
-	
-	<programlisting>
+
+   <programlisting>
 public class MDBExample implements MessageDrivenBean, MessageListener
 {
 
@@ -493,17 +487,19 @@ public class MDBExample implements MessageDrivenBean, MessageListener
     public void closeConnection(Connection con) throws Exception {
 
        try {
-           con.close();
+           if (con = null) {
+               con.close();
+           }
 
        }catch(JMSException jmse) {
            System.out.println("Could not close connection " + con +" exception was " +jmse);
            throw jmse;
        }
     }
-	
-	......
-	</programlisting>
-	
+
+   ......
+   </programlisting>
+
 
   </section>
 
@@ -633,9 +629,9 @@ C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not
            }
         }
      </programlisting>
-     
+
      <para>The basic test examples in this chapter serve as the sanity check for your JBoss Messaging installation. They also provide basic programming examples. To develop your own JMS services, you probably need to configure JBoss Messaging to setup your own destinations and connection factories etc. In <xref linkend="configuration"/>, we will discuss JBoss Messaging configuration files and options.</para>
-     
+
    </section>
 
 

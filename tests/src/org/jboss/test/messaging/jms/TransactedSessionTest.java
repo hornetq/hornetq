@@ -79,6 +79,8 @@ public class TransactedSessionTest extends MessagingTestCase
       queue = (Destination)initialContext.lookup("/queue/Queue");
       topic = (Destination)initialContext.lookup("/topic/Topic");
       
+      this.drainDestination(cf, queue);
+      
       log.debug("setup done");
    }
    

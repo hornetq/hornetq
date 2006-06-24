@@ -26,6 +26,7 @@ import org.jboss.messaging.util.NotYetImplementedException;
  * A test Channel implementation.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -89,6 +90,11 @@ public class SimpleChannel implements Channel
       log.debug("redeliver(" + receiver + ")");
       deliveryNotification = true;
       return false;
+   }
+   
+   public boolean deliver()
+   {
+      throw new NotYetImplementedException();
    }
 
    public void close()

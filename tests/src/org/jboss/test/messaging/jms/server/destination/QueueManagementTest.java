@@ -31,9 +31,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.jms.server.destination.base.DestinationManagementTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -74,6 +73,101 @@ public class QueueManagementTest extends DestinationManagementTestBase
    public void tearDown() throws Exception
    {
       super.tearDown();
+   }
+   
+   public void testReloadQueue() throws Exception
+   {      
+      String config =
+         "<mbean code=\"org.jboss.jms.server.destination.Queue\" " +
+         "       name=\"somedomain:service=Queue,name=ReloadQueue\"" +
+         "       xmbean-dd=\"xmdesc/Queue-xmbean.xml\">" +
+         "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "</mbean>";
+      
+      ObjectName destObjectName = deploy(config);
+
+      assertEquals("ReloadQueue", ServerManagement.getAttribute(destObjectName, "Name"));
+
+      String jndiName = "/queue/ReloadQueue";
+      String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
+      assertEquals(jndiName, s);
+      
+      //Send some messages
+      
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      Queue queue = (Queue)ic.lookup("/queue/ReloadQueue");
+
+      Connection conn = cf.createConnection();
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sess.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+  
+      for (int i = 0; i < 10; i++)
+      {
+         TextMessage tm = sess.createTextMessage();
+         
+         tm.setText("message:" + i);
+         
+         prod.send(tm);
+      }
+      
+      conn.close();
+      
+      //Receive half of them
+      
+      conn = cf.createConnection();
+      
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      conn.start();
+      
+      for (int i = 0; i < 5; i++)
+      {
+         TextMessage tm = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("message:" + i, tm.getText());
+      }
+      
+      conn.close();
+      
+      //Undeploy and redeploy the queue
+      //The last 5 persistent messages should still be there
+      
+      undeployDestination("ReloadQueue");
+      
+      deploy(config);
+      
+      queue = (Queue)ic.lookup("/queue/ReloadQueue");
+      
+      conn = cf.createConnection();
+      
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      cons = sess.createConsumer(queue);
+      
+      conn.start();
+      
+      for (int i = 5; i < 10; i++)
+      {
+         TextMessage tm = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("message:" + i, tm.getText());
+      }
+      
+      conn.close();      
+      
+      undeployDestination("ReloadQueue");
    }
 
    public void testMessageCount() throws Exception

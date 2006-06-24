@@ -24,7 +24,7 @@
 
 
     <section id="install4.automated">
-     <title>Automated installation procedure (preferred)</title>
+     <title>Installation procedure</title>
 
       <para>
          Set up the <literal>JBOSS_HOME</literal> environment variable to point to
@@ -52,113 +52,7 @@
        </note>
     </section>
 
-
-    <section id="install4.manual">
-       <title>Manual installation procedure</title>
-
-        <section id="creatingserverconf">
-           <title>Create the server configuration</title>
-
-
-         <para>
-            Create a Messaging configuration based on the <filename>default</filename> JBoss
-            configuration.
-         </para>
-
-         <programlisting>
-    cd $JBOSS_HOME/server
-    cp -r default messaging
-         </programlisting>
-
-         <note>
-            The <literal>all</literal> configuration can be also used as a template. If you choose
-            to base your configuration on <literal>all</literal>, you will need to adjust the
-            instructions accordingly, given the fact that in a clustered
-            configuration, JBossMQ is deployed as a HASingleton under
-            <filename>server/all/deploy-hasingleton/jms</filename>.
-         </note>
-
-        </section>
-
-
-        <section id="configuringjmsra">
-           <title>Configure the JMS Resource adapter</title>
-
-         <para>
-            In <filename>jms-ds.xml</filename>, JBoss Messaging defines a connection factory
-            bound by the JMS Resource adapter as <literal>java:/JmsXA</literal>. Before deleting
-            the whole <filename>jms</filename> folder (see <xref linkend="removingjbossmq"/>), it is necessary to copy
-            <filename>jms-ra.rar</filename> up one directory to <filename>deploy</filename>.
-         </para>
-
-         <programlisting>
-    cd $JBOSS_HOME/server/messaging/deploy/jms
-    cp jms-ra.rar ..
-         </programlisting>
-
-        </section>
-
-        <section id="removingjbossmq">
-           <title>Remove JBossMQ</title>
-
-         <para>
-            As aforementioned, JBossMQ should be completely removed.
-         </para>
-
-         <programlisting>
-    cd $JBOSS_HOME/server/messaging/deploy
-    rm -r jms
-         </programlisting>
-
-        </section>
-
-        <section id="configuringsecuritydomain">
-           <title>Configure the security domain</title>
-
-         <para>
-            Modify <filename>$JBOSS_HOME/server/messaging/conf/login-config.xml</filename>
-            security configuration file and add <literal>&lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;</literal>
-            to the configuration of the UsersRolesLoginModule that is part of the JAAS stack of
-            the <literal>other</literal> security domain. The correct configuration of the
-            <literal>other</literal> security domain should be similar to:
-         </para>
-
-         <programlisting>
-
-&lt;application-policy name = &quot;other&quot;&gt;
-  &lt;authentication&gt;
-     &lt;login-module
-            code=&quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
-            flag=&quot;required&quot;&gt;
-       &lt;module-option name=&quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
-     &lt;/login-module&gt;
-   &lt;/authentication&gt;
-&lt;/application-policy&gt;
-
-         </programlisting>
-
-        </section>
-
-        <section id="deployingtheservice">
-         <title>Expand the service archive</title>
-
-         <para>
-            At this stage, you are now ready to deploy JBoss Messaging. Create a
-            <filename>messaging/deploy/jboss-messaging.sar</filename> directory and expand
-            the content of the release artifact into it:
-         </para>
-
-         <programlisting>
-    cd $JBOSS_HOME/server/messaging/deploy
-    mkdir jboss-messaging.sar
-    cd jboss-messaging.sar
-    jar xfv .../jboss-messaging-scoped.sar
-         </programlisting>
-
-        </section>
-    </section>
   </section>
-
 
   <section id="startingtheservice">
      <title>Starting the Server</title>

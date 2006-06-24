@@ -50,7 +50,8 @@ public interface ChannelMapper extends ServerPlugin
                               int pageSize, 
                               int downCacheSize) throws JMSException;
 
-   CoreDestination undeployCoreDestination(boolean isQueue, String destName);
+   CoreDestination undeployCoreDestination(boolean isQueue, String destName)
+      throws JMSException;
    
    DurableSubscription createDurableSubscription(String topicName,
                                                   String clientID,

@@ -183,6 +183,38 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
 
    // Channel tests -------------------------------------------------
+   
+   /*
+    * If a channel has a set a receiver and remove is called with a different receiver
+    * need to ensure the receiver is not removed (since it doesn't match)
+    */
+   public void testRemoveDifferentReceiver() throws Exception
+   {
+      Receiver receiver1 = new SimpleReceiver();
+      
+      Receiver receiver2 = new SimpleReceiver();
+      
+      assertFalse(channel.iterator().hasNext());
+      
+      channel.add(receiver1);
+      
+      assertTrue(channel.contains(receiver1));
+      
+      channel.remove(receiver1);
+      
+      assertFalse(channel.iterator().hasNext());
+      
+      assertFalse(channel.contains(receiver1));
+      
+      channel.add(receiver1);
+      
+      assertTrue(channel.contains(receiver1));
+      
+      channel.remove(receiver2);
+      
+      assertTrue(channel.contains(receiver1));
+                 
+   }
 
    public void testClosedChannel() throws Exception
    {

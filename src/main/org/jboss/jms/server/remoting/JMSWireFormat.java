@@ -33,13 +33,13 @@ import java.util.Map;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.remoting.CallbackServerFactory;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.server.Version;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.DeliveryRunnable;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdBlock;
@@ -687,7 +687,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             DeliveryRunnable dr = new DeliveryRunnable(md, consumerID, null, trace);
 
             InvocationRequest request =
-               new InvocationRequest(null, JMSRemotingConnection.JMS_CALLBACK_SUBSYSTEM,
+               new InvocationRequest(null, CallbackServerFactory.JMS_CALLBACK_SUBSYSTEM,
                                      new MessagingMarshallable(version, dr), null, null, null);
 
             if (trace) { log.trace("read callback()"); }

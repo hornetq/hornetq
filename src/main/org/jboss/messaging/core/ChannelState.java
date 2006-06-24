@@ -410,6 +410,9 @@ public class ChannelState implements State
       if (trace) { log.trace(this + " loading channel state"); }
       synchronized (refLock)
       {         
+         //First we need to reset the loaded flag in the db to "N"
+         pm.resetLoadedStatus(channel.getChannelID());
+         
          refsInStorage = pm.getNumberOfUnloadedReferences(channel.getChannelID()); 
          
          loadFromOrderingValue = pm.getMinOrdering(channel.getChannelID());

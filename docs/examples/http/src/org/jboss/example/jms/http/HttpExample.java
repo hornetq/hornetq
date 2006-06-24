@@ -43,6 +43,7 @@ import javax.jms.JMSException;
  * code 0 in case of successful execution and a non-zero value on failure.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -114,7 +115,10 @@ public class HttpExample extends ExampleSupport
    {
        try
        {
-           con.close();
+		   if (con != null)
+		   {
+               con.close();
+	       }
 
        }
        catch(JMSException jmse)

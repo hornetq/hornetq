@@ -277,6 +277,19 @@ public abstract class ChannelSupport implements Channel
       return ms;
    }
 
+   
+   public synchronized boolean deliver()
+   {
+      try
+      {
+         return deliver(this, null);
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to deliver message", t);
+         return false;
+      }
+   }
 
    public boolean deliver(Receiver r)
    {
@@ -359,6 +372,8 @@ public abstract class ChannelSupport implements Channel
    {
       // by default a noop
    }
+   
+   
         
    /**
     * Delivery for the channel must be synchronized. Otherwise we can end up with the same message

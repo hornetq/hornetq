@@ -40,5 +40,7 @@ public interface ConnectionManager
     */
    ConnectionEndpoint unregisterConnection(String jmsClientVMId, String remotingClientSessionID);
    
+   void handleClientFailure(String remotingSessionID);
+   
    boolean containsSession(String remotingClientSessionID);
 }

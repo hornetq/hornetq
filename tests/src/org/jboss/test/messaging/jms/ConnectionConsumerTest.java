@@ -81,6 +81,8 @@ public class ConnectionConsumerTest extends MessagingTestCase
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       queue = (Destination)ic.lookup("/queue/Queue");
+      
+      this.drainDestination(cf, queue);
 
       log.debug("setup done");
    }

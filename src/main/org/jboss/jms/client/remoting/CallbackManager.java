@@ -39,6 +39,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * 
  * A CallbackManager.
  * 
+ * The CallbackManager is an InvocationHandler used for handling callbacks to message consumers
+ * The callback is received and dispatched off to the relevant consumer
+ * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *

@@ -2,7 +2,7 @@
   <title>Configuration</title>
 
   <para>The JMS API specifies how a messaging client interacts with a messaging server. The exact definition and implementation of messaging services, such as message destinations and connection factories, are specific to JMS providers. JBoss Messaging has its own configuration files to configure services. If you are migrating services from JBossMQ (or other JMS provider) to JBoss Messaging, you will need to understand those configuration files.</para>
-  
+
   <para>In this chapter, we discuss how to configure various services inside JBoss Messaging, which work together to provide JMS API level
      services to client applications.</para>
 
@@ -161,9 +161,10 @@
 
      <para>
         JBoss Messaging also ships with pre-made Persistence Manager configurations for MySQL,
-        Oracle and PostgreSQL. The example <filename>mysql-persistence-service.xml</filename>,
-        <filename>oracle-persistence-service.xml</filename> and
-        <filename>postgres-persistence-service.xml</filename> configuration files are available
+        Oracle, PostgreSQL and Sybase. The example <filename>mysql-persistence-service.xml</filename>,
+        <filename>oracle-persistence-service.xml</filename>,
+        <filename>postgres-persistence-service.xml</filename> and
+        <filename>sybase-persistence-service.xml</filename> configuration files are available
         in the <filename>examples/config</filename> directory of the release bundle.
      </para>
 

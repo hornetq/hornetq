@@ -35,6 +35,7 @@ import javax.jms.*;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:luc.texier@jboss.org">Luc Texier</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -96,7 +97,9 @@ public class TopicExample extends ExampleSupport
    private void closeConnection(Connection con) throws JMSException {
 
        try {
-           con.close();
+		   if (con != null) {
+               con.close();
+	       }
 
        }catch(JMSException jmse) {
            log("Could not close connection " + con +" exception was " +jmse);

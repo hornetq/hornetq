@@ -60,6 +60,8 @@ public class SingleDestinationRouter implements Router
 
    public synchronized Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
+      
+      
       if (receiver == null)
       {
          return Collections.EMPTY_SET;
@@ -69,7 +71,7 @@ public class SingleDestinationRouter implements Router
       try
       {
          Delivery d = receiver.handle(observer, routable, tx);
-
+         
          if (d != null && !d.isCancelled())
          {
             deliveries.add(d);
@@ -100,8 +102,12 @@ public class SingleDestinationRouter implements Router
       if (receiver == r)
       {
          result = true;
+         
+         //Only remove receiver if it is the same one
+         receiver = null;
       }
-      receiver = null;
+      
+      
       return result;
    }
 

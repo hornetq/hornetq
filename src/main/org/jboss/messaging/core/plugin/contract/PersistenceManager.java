@@ -47,7 +47,8 @@ public interface PersistenceManager extends ServerPlugin
     */
    void removeAllChannelData(long channelID) throws Exception;
    
-   
+   void resetLoadedStatus(long channelID) throws Exception;
+      
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
    void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
@@ -72,13 +73,6 @@ public interface PersistenceManager extends ServerPlugin
    
    long reserveIDBlock(String counterName, int size) throws Exception;
    
- 
-   /*
-    * FIXME
-    * Only used in testing - remove this
-    * Commented out until 1.2
-    */
-   //int getMessageReferenceCount(Serializable messageID) throws Exception;
    
    
    // Interface value classes

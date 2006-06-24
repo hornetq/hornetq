@@ -150,6 +150,121 @@ public class MessageConsumerTest extends MessagingTestCase
       
       super.tearDown();
    }
+   
+   /*
+    * If there are two competing consumers on a queue/subscription then if one closes
+    * and has unacknowledged deliveries these should be cancelled but also
+    * delivery should be prompted on the channel, so the other consumer gets the message since
+    * it may be waiting
+    * A real use case for this if there is a consumer on a queue/durable sub, which then crashes
+    * and before the connection resources are cleaned up, a message is sent
+    * The client is quickly brought back.
+    * Eventually the first client will have it's resources cleared up so the delivery gets
+    * cancelled but we need to prompt deliver() so the reconnected client gets it
+    */
+   public void testRedeliveryToCompetingConsumerOnQueue() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sessSend.createProducer(queue);
+      
+      conn.start();
+      
+      Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons1 = sessConsume1.createConsumer(queue);
+      
+      TextMessage tm = sessSend.createTextMessage();
+      
+      tm.setText("Your mum");
+      
+      prod.send(tm);
+      
+      TextMessage tm2 = (TextMessage)cons1.receive();
+      
+      assertNotNull(tm2);
+      
+      assertEquals("Your mum", tm2.getText());
+      
+      //Don't ack
+      
+      //Create another consumer
+      
+      Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons2 = sessConsume2.createConsumer(queue);
+      
+      //this should cancel message and cause delivery to other consumer
+      
+      sessConsume1.close();
+      
+      TextMessage tm3 = (TextMessage)cons2.receive(1000);
+      
+      assertNotNull(tm3);
+      
+      assertEquals("Your mum", tm3.getText());
+      
+      tm3.acknowledge();
+      
+      conn.close();
+      
+      
+   }
+  
+   
+   public void testRedeliveryToCompetingConsumerOnSubscription() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.setClientID("wibble");
+      
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sessSend.createProducer(topic);
+      
+      conn.start();
+      
+      Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      
+      MessageConsumer cons1 = sessConsume1.createDurableSubscriber(topic, "sub1");
+      
+      TextMessage tm = sessSend.createTextMessage();
+      
+      tm.setText("Your mum");
+      
+      prod.send(tm);
+      
+      TextMessage tm2 = (TextMessage)cons1.receive();
+      
+      assertNotNull(tm2);
+      
+      assertEquals("Your mum", tm2.getText());
+      
+      //Don't ack
+      
+      //Create another consumer
+                 
+      Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+       
+      MessageConsumer cons2 = sessConsume2.createDurableSubscriber(topic, "sub1");
+          
+      //this should cancel message and cause delivery to other consumer
+      
+      sessConsume1.close();
+               
+      TextMessage tm3 = (TextMessage)cons2.receive(1000);
+      
+      assertNotNull(tm3);
+      
+      assertEquals("Your mum", tm3.getText());
+      
+      tm3.acknowledge();            
+      
+      conn.close();
+      
+   }
 
    /**
     * The simplest possible receive() test for a non-persistent message.

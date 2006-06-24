@@ -84,6 +84,8 @@ public class JMSTestBase extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Queue)ic.lookup("/queue/Queue");
+      
+      this.drainDestination(connFactory, queue);
 
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");

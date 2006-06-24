@@ -116,13 +116,17 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          dm = serverPeer.getDestinationManager();
          sm = serverPeer.getSecurityManager();
          cm = serverPeer.getChannelMapperDelegate();
+         
+         //Core destination MUST be deployed before destination is registered in JNDI
+         //otherwise the user could get a reference to the destination and use it
+         //while it is still being loaded
+         
+         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(),
+               serverPeer.getPersistenceManagerDelegate(), fullSize,
+               pageSize, downCacheSize);
    
          jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
-
-         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(),
-                                  serverPeer.getPersistenceManagerDelegate(), fullSize,
-                                  pageSize, downCacheSize);
-
+        
          log.debug(this + " security configuration: " + (securityConfig == null ?
             "null" : "\n" + XMLUtil.elementToString(securityConfig)));
 

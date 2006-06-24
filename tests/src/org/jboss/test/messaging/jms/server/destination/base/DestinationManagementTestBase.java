@@ -82,7 +82,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    {
       super.tearDown();
    }
-
+   
+   
    public void testDeployDestinationAdministratively() throws Exception
    {
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
@@ -536,10 +537,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    // Protected -----------------------------------------------------
 
    protected abstract boolean isQueue();
-
-   // Private -------------------------------------------------------
-
-   private ObjectName deploy(String destConfig) throws Exception
+   
+   protected ObjectName deploy(String destConfig) throws Exception
    {
       ObjectName on = ServerManagement.deploy(destConfig);
 
@@ -548,13 +547,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       return on;
    }
-
-   private String adjustConfiguration(String config)
-   {
-      return config.replaceAll("@TOREPLACE@", isQueue() ? "Queue" : "Topic");
-   }
-
-   private void undeployDestination(String name) throws Exception
+   
+   protected void undeployDestination(String name) throws Exception
    {
       if (isQueue())
       {
@@ -565,6 +559,17 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
          ServerManagement.undeployTopic(name);
       }
    }
+
+   // Private -------------------------------------------------------
+
+   
+
+   private String adjustConfiguration(String config)
+   {
+      return config.replaceAll("@TOREPLACE@", isQueue() ? "Queue" : "Topic");
+   }
+
+   
 
    // Inner classes -------------------------------------------------
 }

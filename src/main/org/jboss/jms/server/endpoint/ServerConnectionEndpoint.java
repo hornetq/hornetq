@@ -33,7 +33,7 @@ import javax.jms.JMSException;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.remoting.CallbackServerFactory;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
@@ -301,7 +301,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
    
    public void close() throws JMSException
-   {
+   {      
       try
       {
          closeLock.writeLock().acquire();
@@ -568,7 +568,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // TODO not sure if this is the best way to do this, but the callbackClient needs to have
       //      its "subsystem" set, otherwise remoting cannot find the associated
       //      ServerInvocationHandler on the callback server
-      callbackClient.setSubsystem(JMSRemotingConnection.JMS_CALLBACK_SUBSYSTEM);
+      callbackClient.setSubsystem(CallbackServerFactory.JMS_CALLBACK_SUBSYSTEM);
 
       // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
       // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation

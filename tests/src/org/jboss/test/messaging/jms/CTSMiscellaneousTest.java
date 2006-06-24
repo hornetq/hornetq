@@ -84,6 +84,9 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       Connection c =  cf.createConnection();
       Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Queue queue = (Queue)ic.lookup("/queue/Queue");
+      
+      drainDestination(cf, queue);
+      
       MessageProducer p = s.createProducer(queue);
 
       // create a Bytes foreign message
@@ -303,6 +306,11 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployQueue("Queue");
       ServerManagement.deployTopic("Topic");
+      
+      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+      Queue queue = (Queue)ic.lookup("/queue/Queue");
+
+      drainDestination(cf, queue);
 
       log.debug("setup done");
    }

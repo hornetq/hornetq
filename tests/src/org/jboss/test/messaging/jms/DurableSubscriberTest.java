@@ -201,6 +201,8 @@ public class DurableSubscriberTest extends MessagingTestCase
     */
    public void testDurableSubscriptionDifferentSelector() throws Exception
    {
+      ServerManagement.deployTopic("CompletelyNewTopic2");
+      
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
       Topic topic = (Topic)ic.lookup("/topic/Topic");
       Connection conn = cf.createConnection();
@@ -211,6 +213,8 @@ public class DurableSubscriberTest extends MessagingTestCase
       MessageProducer prod = s.createProducer(topic);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
+      
+      //fails here
       MessageConsumer durable =
          s.createDurableSubscriber(topic,
                                    "monicabelucci",
@@ -258,6 +262,8 @@ public class DurableSubscriberTest extends MessagingTestCase
       // the durable subscription is destroyed and re-created. The red square message stored by
       // the previous durable subscription is lost and (hopefully) garbage collected.
       assertNull(m);
+      
+      ServerManagement.undeployTopic("CompletelyNewTopic2");
    }
 
    /**

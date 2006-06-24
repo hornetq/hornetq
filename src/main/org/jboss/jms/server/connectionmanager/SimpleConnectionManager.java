@@ -111,44 +111,6 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       return null;
    }
    
-   /*
-    * Used in testing only
-    */
-   public synchronized boolean containsSession(String remotingClientSessionID)
-   {
-      return sessions.containsKey(remotingClientSessionID);
-   }
-   
-   /*
-    * Used in testing only
-    */
-   public synchronized Map getClients()
-   {
-      return Collections.unmodifiableMap(jmsClients);
-   }
-
-   // ConnectionListener --------------------------------------------
-
-   /**
-    * Be aware that ConnectionNotifier uses to call this method with null Throwables.
-    * @param t - expect it to be null!
-    */
-   public void handleConnectionException(Throwable t, Client client)
-   {  
-      if (t instanceof ClientDisconnectedException)
-      {
-         // This is OK
-         if (log.isTraceEnabled()) { log.trace(this + " notified that client " + client + " has disconnected"); }
-         return;
-      }
-      String remotingSessionID = client.getSessionId();
-      
-      if (remotingSessionID != null)
-      {
-         handleClientFailure(remotingSessionID);
-      }
-   }
-   
    public synchronized void handleClientFailure(String remotingSessionID)
    {
       String jmsClientId = (String)sessions.get(remotingSessionID);
@@ -200,6 +162,46 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          }
       } 
    }
+   
+   /*
+    * Used in testing only
+    */
+   public synchronized boolean containsSession(String remotingClientSessionID)
+   {
+      return sessions.containsKey(remotingClientSessionID);
+   }
+   
+   /*
+    * Used in testing only
+    */
+   public synchronized Map getClients()
+   {
+      return Collections.unmodifiableMap(jmsClients);
+   }
+
+   // ConnectionListener --------------------------------------------
+
+   /**
+    * Be aware that ConnectionNotifier uses to call this method with null Throwables.
+    * @param t - expect it to be null!
+    */
+   public void handleConnectionException(Throwable t, Client client)
+   {  
+      if (t instanceof ClientDisconnectedException)
+      {
+         // This is OK
+         if (log.isTraceEnabled()) { log.trace(this + " notified that client " + client + " has disconnected"); }
+         return;
+      }
+      String remotingSessionID = client.getSessionId();
+      
+      if (remotingSessionID != null)
+      {
+         handleClientFailure(remotingSessionID);
+      }
+   }
+   
+   
 
    // Public --------------------------------------------------------
 

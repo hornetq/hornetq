@@ -86,6 +86,8 @@ public class AcknowledgmentTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
       topic = (Topic)initialContext.lookup("/topic/Topic");     
+      
+      drainDestination(cf, queue);
 
       log.debug("setup done");
    }
@@ -241,6 +243,8 @@ public class AcknowledgmentTest extends MessagingTestCase
          TextMessage m6 = (TextMessage)newcons.receive(3000);
          assertNotNull(m6);
          assertEquals("testing456", m6.getText());
+         
+         newsess.commit();
          
       }
       finally

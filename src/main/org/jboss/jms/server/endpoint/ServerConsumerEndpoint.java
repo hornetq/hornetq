@@ -124,7 +124,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                                     throws InvalidSelectorException
    {
       if (trace) { log.trace("creating consumer endpoint " + id); }
-
+      
       this.id = id;
       this.channel = channel;
       this.sessionEndpoint = sessionEndpoint;
@@ -446,29 +446,42 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {
       if (trace) log.trace("attempting to remove receiver " + this + " from destination " + channel);
       
+      boolean wereDeliveries = false;
       for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
       {
          SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
          try
          {
             d.cancel();
+            wereDeliveries = true;
          }
          catch(Throwable t)
          {
             throw new MessagingJMSException("Failed to cancel delivery", t);
          }
       }
-      deliveries.clear();
+      deliveries.clear();           
       
       if (!disconnected)
       {
-         close();
+         if (!closed)
+         {
+            close();
+         }
       }
       
       sessionEndpoint.getConnectionEndpoint().
          getServerPeer().removeConsumerEndpoint(new Integer(id));                  
             
       sessionEndpoint.removeConsumerEndpoint(id);
+      
+      if (wereDeliveries)
+      {
+         //If we cancelled any deliveries we need to force a deliver on the channel
+         //This is because there may be other waiting competing consumers who need a chance to get
+         //any of the cancelled messages
+         channel.deliver();
+      }
    }  
    
    protected void acknowledgeAll() throws JMSException

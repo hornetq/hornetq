@@ -147,7 +147,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected String removeAllNonReliableRefs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE='N'";
       
-   protected String updateAllReliableRefs = "UPDATE JMS_MESSAGE_REFERENCE SET LOADED='N'";
+   protected String updateReliableRefsNotLoaded = "UPDATE JMS_MESSAGE_REFERENCE SET LOADED='N' WHERE CHANNELID=?";
    
    //FIXME Must have channel mapper table maintained here too since have cross dependency
    protected String deleteNonDurableSubs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID NOT IN (SELECT ID FROM JMS_CHANNEL_MAPPING)";
@@ -1826,6 +1826,74 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
    }
    
+   public void resetLoadedStatus(long channelID) throws Exception
+   {
+      if (trace)
+      {
+         log.trace("resetting all channel data for channel " + channelID);
+      }
+      
+      Connection conn = null;
+      PreparedStatement ps = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      log.trace("Resetting message data. This may take several minutes for large queues/subscriptions...");
+      
+      try
+      {
+         conn = ds.getConnection();
+         
+         log.debug("Updating all reliable references to not loaded");
+                  
+         ps = conn.prepareStatement(updateReliableRefsNotLoaded);
+         
+         ps.setLong(1, channelID);
+         
+         int rows = ps.executeUpdate();
+         
+         if (trace)
+         {
+            log.trace(JDBCUtil.statementToString(updateReliableRefsNotLoaded)
+                  + " updated " + rows + " rows");
+         }
+               
+         ps.close();
+         
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         wrap.end();
+      }
+   }
+   
+   
+   
+   
    public void removeAllChannelData(long channelID) throws Exception
    {
       if (trace)
@@ -2325,7 +2393,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       updateReliableRefs = sqlProperties.getProperty("UPDATE_RELIABLE_REFS", updateReliableRefs);
       deleteChannelMessageRefs = sqlProperties.getProperty("DELETE_CHANNEL_MESSAGE_REFS", deleteChannelMessageRefs);
       removeAllNonReliableRefs = sqlProperties.getProperty("REMOVE_ALL_NONRELIABLE_REFS", removeAllNonReliableRefs);
-      updateAllReliableRefs = sqlProperties.getProperty("UPDATE_ALL_RELIABLE_REFS", updateAllReliableRefs);
+      updateReliableRefsNotLoaded = sqlProperties.getProperty("UPDATE_RELIABLE_REFS_NOT_LOADED", updateReliableRefsNotLoaded);
       selectMinOrdering = sqlProperties.getProperty("SELECT_MIN_ORDERING", selectMinOrdering);
       
       deleteNonDurableSubs = sqlProperties.getProperty("DELETE_NON_DURABLE", deleteNonDurableSubs);
@@ -2421,23 +2489,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                   + " removed " + rows + " rows");
          }
          
-         ps.close();
-         
-         ps = null;
-         
-         log.debug("Updating all reliable references to not loaded");
-                  
-         ps = conn.prepareStatement(updateAllReliableRefs);
-         
-         rows = ps.executeUpdate();
-         
-         if (trace)
-         {
-            log.trace(JDBCUtil.statementToString(updateAllReliableRefs)
-                  + " updated " + rows + " rows");
-         }
-               
-         ps.close();
+         ps.close();                  
          
          ps = null;
                    
