@@ -117,8 +117,11 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       
       if (jmsClientId != null)
       {
-         log.warn(this + " handling client " + remotingSessionID + "'s remoting connection failure ");
-                    
+         log.warn("A problem has been detected with the connection to remote client " + remotingSessionID
+                + " It is possible the client has exited without closing its connection(s) or there is a network "
+                + "problem. "
+                + "All connection resources corresponding to that client process will now be removed.");
+
          //Remoting only provides one pinger per invoker, not per connection therefore when the pinger dies
          //we must close ALL the connections corresponding to that jms client id
          Map endpoints = (Map)jmsClients.get(jmsClientId);                  
@@ -190,8 +193,12 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       if (t instanceof ClientDisconnectedException)
       {
          // This is OK
-         if (log.isTraceEnabled()) { log.trace(this + " notified that client " + client + " has disconnected"); }
+         if (log.isTraceEnabled()) { log.trace(this + " Notified that client " + client + " has disconnected"); }
          return;
+      }
+      else
+      {
+         if (log.isTraceEnabled()) { log.trace(this + " Failure on client " + client, t); }
       }
       String remotingSessionID = client.getSessionId();
       

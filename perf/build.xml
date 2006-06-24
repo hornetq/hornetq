@@ -21,8 +21,8 @@
    <dirname property="remote.root" file="${basedir}"/>
    <dirname property="project.root" file="${remote.root}"/>
    <property environment="ENV"/>
-   <property name="messaging.config.name" value="messaging-mysql"/>
-   <property name="jbossmq.config.name" value="jbossmq-mysql"/>
+   <property name="messaging.config.name" value="messaging"/>
+   <property name="jbossmq.config.name" value="jbossmq"/>
    <property name="perf.config.file" value="perf.xml"/>
 
 

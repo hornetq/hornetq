@@ -86,7 +86,12 @@ public class DeliveryRunnable implements Runnable, Serializable
       }
       catch(Throwable t)
       {
-         log.warn("Failed to deliver the message to the client, clearing up connection resources", t);
+         log.warn("Failed to deliver the message to the client.");
+         
+         if (trace)
+         {
+            log.trace("Failed to deliver message", t);
+         }
          
          ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
          
