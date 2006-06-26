@@ -341,6 +341,8 @@ public abstract class RoutableSupport implements Routable, Externalizable
    
    // Attributes ----------------------------------------------------
 
+   private boolean trace = log.isTraceEnabled();
+   
    protected long messageID;
    protected boolean reliable;
    /** GMT milliseconds at which this message expires. 0 means never expires **/
@@ -561,7 +563,11 @@ public abstract class RoutableSupport implements Routable, Externalizable
       if (overtime >= 0)
       {
          // discard it
-         log.debug("Message " + messageID + " expired by " + overtime + " ms");
+         if (trace)
+         {
+            log.trace("Message " + messageID + " expired by " + overtime + " ms");
+         }
+         
          return true;
       }
       return false;

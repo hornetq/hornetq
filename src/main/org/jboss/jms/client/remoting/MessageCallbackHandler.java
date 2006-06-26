@@ -499,19 +499,25 @@ public class MessageCallbackHandler
                }
                               
                if (trace) { log.trace("received " + m + " after being blocked on the buffer"); }
-                                  
+                       
+               //If message is expired we still call pre and post deliver
+               //this makes sure the message is acknowledged so it gets removed
+               //from the queue/subscription
+               preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
+               
+               postDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
+               
                if (!m.getMessage().isExpired())
                {
                   if (trace) { log.trace("message " + m + " is not expired, pushing it to the caller"); }
                   
-                  preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
-                  
-                  postDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
-                  
                   return m;
                }
                
-               log.debug("message expired, discarding");
+               if (trace)
+               {
+                  log.trace("message expired, discarding");
+               }
                
                // the message expired, so discard the message, adjust timeout and reenter the buffer
                if (timeout != 0)

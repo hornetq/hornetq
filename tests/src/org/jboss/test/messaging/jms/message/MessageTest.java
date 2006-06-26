@@ -463,11 +463,10 @@ public class MessageTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
-      
-      
+            
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
-      
+                 
       ServerManagement.undeployTopic("Topic");
       ServerManagement.deployTopic("Topic");
 
@@ -475,6 +474,8 @@ public class MessageTest extends MessagingTestCase
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       queue = (Destination)ic.lookup("/queue/Queue");
       topic = (Destination)ic.lookup("/topic/Topic");
+      
+      drainDestination(cf, queue);
 
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();

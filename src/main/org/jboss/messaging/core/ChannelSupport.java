@@ -383,12 +383,47 @@ public abstract class ChannelSupport implements Channel
    protected synchronized boolean deliver(DeliveryObserver sender, Receiver receiver)
       throws Throwable
    {
-      MessageReference ref = state.peekFirst();
       
-      if (ref == null)
-      {
-         return false;
+      MessageReference ref;
+      
+      while (true)
+      {      
+         ref = state.peekFirst();
+         
+         if (ref != null)
+         {
+            //Check if message is expired (we also do this on the client side)
+            //If so ack it from the channel            
+            if (ref.isExpired())                 
+            {
+               if (trace)
+               {
+                  log.trace("Message reference: " + ref + " has expired");
+               }
+               
+               //remove and acknowledge it
+               
+               state.removeFirstInMemory();
+              
+               Delivery delivery = new SimpleDelivery(this, ref, true);
+               
+               //is this stage really necessary?
+               state.addDelivery(delivery);
+              
+               state.acknowledge(delivery);                             
+            }            
+            else
+            {
+               break;
+            }
+         }
+         else
+         {
+            //No more refs in channel
+            return false;
+         }
       }
+
       
       if (trace){ log.trace(this + " delivering " + ref); }
 

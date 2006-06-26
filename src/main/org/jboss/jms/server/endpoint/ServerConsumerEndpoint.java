@@ -179,7 +179,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             log.warn(message + " has exceed maximum delivery attempts and will be removed");
             delivery = new SimpleDelivery(observer, ref, true);
             return delivery;
-         }
+         }                 
 
          selectorRejected = !this.accept(message);
 

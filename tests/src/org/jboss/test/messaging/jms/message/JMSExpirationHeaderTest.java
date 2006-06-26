@@ -22,16 +22,21 @@
 package org.jboss.test.messaging.jms.message;
 
 
+import java.util.List;
+
 import javax.jms.Message;
 import javax.jms.DeliveryMode;
+import javax.management.ObjectName;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -290,7 +295,36 @@ public class JMSExpirationHeaderTest extends MessageTest
       assertNull(expectedMessage);      
    }
 
-
+   /*
+    * Need to make sure that expired messages are acked so they get removed from the
+    * queue/subscription, when delivery is attempted
+    */
+   public void testExpiredMessageDoesNotGoBackOnQueue() throws Exception
+   {
+      Message m = queueProducerSession.createMessage();
+      
+      m.setStringProperty("weebles", "wobble but they don't fall down");
+      
+      queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
+      
+      Thread.sleep(2000);
+      
+      assertNull(queueConsumer.receive(100));
+      
+      //Need to check message isn't still in queue
+      
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
+      
+      List list = (List)ServerManagement.invoke(
+            destObjectName, 
+            "listMessages", 
+            new Object[] {null}, 
+            new String[] {"java.lang.String"});
+      assertNotNull(list);
+            
+      assertEquals(0, list.size());            
+   }
 
 
 
