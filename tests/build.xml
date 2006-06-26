@@ -95,6 +95,7 @@
    <path id="dependentmodule.classpath">
       <path refid="jboss.jms.classpath"/>
       <path refid="jboss.common.classpath"/>
+      <path refid="jboss.jbossxb.classpath"/>
       <path refid="jboss.j2ee.classpath"/>
       <path refid="jboss.j2se.classpath"/>
       <path refid="jboss.jmx.classpath"/>
