@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.messaging.core.ChannelSupport;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
@@ -50,10 +51,10 @@ public class Queue extends ChannelSupport implements CoreDestination
 
    // Constructors --------------------------------------------------
 
-   public Queue(long id, MessageStore ms, PersistenceManager pm,
+   public Queue(long id, MessageStore ms, PersistenceManager pm, MemoryManager mm,
                 boolean recoverable, int fullSize, int pageSize, int downCacheSize)
    {      
-      super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, mm, true, recoverable, fullSize, pageSize, downCacheSize);
       router = new PointToPointRouter();
       this.fullSize = fullSize;
       this.pageSize = pageSize;

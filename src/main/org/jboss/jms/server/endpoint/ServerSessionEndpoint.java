@@ -52,6 +52,7 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.local.CoreDestination;
 import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
@@ -88,6 +89,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private ChannelMapper cm;
    private PersistenceManager pm;
    private MessageStore ms;
+   private MemoryManager mm;
 
    // Constructors --------------------------------------------------
 
@@ -102,6 +104,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       cm = sp.getChannelMapperDelegate();
       pm = sp.getPersistenceManagerDelegate();
       ms = sp.getMessageStoreDelegate();
+      mm = sp.getMemoryManager();
 
       consumers = new HashMap();
 		browsers = new HashMap();
@@ -155,7 +158,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             // non-durable subscription
             if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + coreDestination); }
-            subscription = cm.createSubscription(jmsDestination.getName(), selector, noLocal, ms, pm);
+            subscription =
+               cm.createSubscription(jmsDestination.getName(), selector, noLocal, ms, pm, mm);
          }
          else
          {
@@ -171,7 +175,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                throw new JMSException("Cannot create durable subscriber without a valid client ID");
             }
 
-            subscription = cm.getDurableSubscription(clientID, subscriptionName, ms, pm);
+            subscription = cm.getDurableSubscription(clientID, subscriptionName, ms, pm, mm);
 
             if (subscription == null)
             {
@@ -182,7 +186,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                            selector,
                                                            noLocal,
                                                            ms,
-                                                           pm);
+                                                           pm,
+                                                           mm);
             }
             else
             {
@@ -238,7 +243,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                               selector,
                                                               noLocal,
                                                               ms,
-                                                              pm);
+                                                              pm,
+                                                              mm);
                }               
             }
          }
@@ -419,7 +425,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       connectionEndpoint.addTemporaryDestination(dest);
       
       //FIXME - Params should not be hardcoded
-      cm.deployCoreDestination(dest.isQueue(), dest.getName(), ms, pm, 50000, 1000, 1000);
+      cm.deployCoreDestination(dest.isQueue(), dest.getName(), ms, pm, mm, 50000, 1000, 1000);
    }
    
    public void deleteTemporaryDestination(JBossDestination dest) throws JMSException
@@ -485,7 +491,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
 
       DurableSubscription subscription =
-         cm.getDurableSubscription(clientID, subscriptionName, ms, pm);
+         cm.getDurableSubscription(clientID, subscriptionName, ms, pm, mm);
 
       if (subscription == null)
       {

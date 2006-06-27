@@ -21,31 +21,30 @@
   */
 package org.jboss.messaging.core.distributed.queue;
 
-import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.distributed.Distributed;
-import org.jboss.messaging.core.distributed.ViewKeeper;
-import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.DistributedException;
 import org.jboss.messaging.core.distributed.Peer;
 import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.RemotePeer;
+import org.jboss.messaging.core.distributed.ViewKeeper;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.util.SelectiveIterator;
 import org.jboss.messaging.util.Util;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
-
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * A distributed queue.
@@ -84,7 +83,7 @@ public class DistributedQueue extends Queue implements Distributed
    public DistributedQueue(String name, MessageStore ms, PersistenceManager tl,
                            RpcDispatcher dispatcher)
    {
-      super(-1, ms, tl, true, 0, 0, 0);
+      super(-1, ms, tl, null, true, 0, 0, 0);
       viewKeeper = new QueueViewKeeper();
       peer = new QueuePeer(this, dispatcher);
    }

@@ -24,6 +24,7 @@ package org.jboss.jms.server.subscription;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
@@ -43,11 +44,11 @@ public class DurableSubscription extends Subscription
    protected String clientID;
    
    public DurableSubscription(long id, Topic topic, 
-         MessageStore ms, PersistenceManager pm,
+         MessageStore ms, PersistenceManager pm, MemoryManager mm, 
          int fullSize, int pageSize, int downCacheSize, Selector selector, boolean isNoLocal,
          String name, String clientID)
    {
-      super(id, topic, ms, pm, true, fullSize, pageSize, downCacheSize, selector, isNoLocal);
+      super(id, topic, ms, pm, mm, true, fullSize, pageSize, downCacheSize, selector, isNoLocal);
       this.name = name;
       this.clientID = clientID;
    }

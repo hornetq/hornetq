@@ -113,20 +113,20 @@ public class JDBCChannelMapperTest extends MessagingTestCase
                                                                subscriptionName,
                                                                selector,
                                                                false,
-                                                               ms, pm);
+                                                               ms, pm, null);
 
       assertEquals(sub.getSelector(), selector);
 
       DurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
                                                               subscriptionName,
-                                                              ms, pm);
+                                                              ms, pm, null);
 
       assertEquals(sub_r.getSelector(), selector);
 
       boolean removed = channelMapper.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
 
-      sub_r = channelMapper.getDurableSubscription(clientID, subscriptionName, ms, pm);
+      sub_r = channelMapper.getDurableSubscription(clientID, subscriptionName, ms, pm, null);
 
       assertNull(sub_r);
 
@@ -148,20 +148,20 @@ public class JDBCChannelMapperTest extends MessagingTestCase
                                                                subscriptionName,
                                                                null,
                                                                false,
-                                                               ms, pm);
+                                                               ms, pm, null);
 
       assertNull(sub.getSelector());
 
       DurableSubscription sub_r = channelMapper.getDurableSubscription(clientID,
                                                               subscriptionName,
-                                                              ms, pm);
+                                                              ms, pm, null);
 
       assertNull(sub_r.getSelector());
 
       boolean removed = channelMapper.removeDurableSubscription(clientID, subscriptionName);
       assertTrue(removed);
 
-      sub_r = channelMapper.getDurableSubscription(clientID, subscriptionName, ms, pm);
+      sub_r = channelMapper.getDurableSubscription(clientID, subscriptionName, ms, pm, null);
 
       assertNull(sub_r);
 
@@ -241,9 +241,9 @@ public class JDBCChannelMapperTest extends MessagingTestCase
       
       //Deploy core destinations
       
-      channelMapper.deployCoreDestination(true, "queue1", ms, pm, 100, 20, 10);
+      channelMapper.deployCoreDestination(true, "queue1", ms, pm, null, 100, 20, 10);
       
-      channelMapper.deployCoreDestination(false, "topic1", ms, pm, 100, 20, 10);
+      channelMapper.deployCoreDestination(false, "topic1", ms, pm, null, 100, 20, 10);
       
       //Lookup core dest
       
@@ -321,9 +321,9 @@ public class JDBCChannelMapperTest extends MessagingTestCase
       
       //Deploy a core dest
       
-      channelMapper.deployCoreDestination(true, "queue1", ms, pm, 100, 20, 10);
+      channelMapper.deployCoreDestination(true, "queue1", ms, pm, null, 100, 20, 10);
       
-      channelMapper.deployCoreDestination(false, "topic1", ms, pm, 100, 20, 10);
+      channelMapper.deployCoreDestination(false, "topic1", ms, pm, null, 100, 20, 10);
             
       //lookup core dest - verify has same id
       

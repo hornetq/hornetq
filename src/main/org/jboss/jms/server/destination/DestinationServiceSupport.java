@@ -122,8 +122,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          //while it is still being loaded
          
          cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(),
-               serverPeer.getPersistenceManagerDelegate(), fullSize,
-               pageSize, downCacheSize);
+               serverPeer.getPersistenceManagerDelegate(),
+               serverPeer.getMemoryManager(),
+               fullSize, pageSize, downCacheSize);
    
          jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
         

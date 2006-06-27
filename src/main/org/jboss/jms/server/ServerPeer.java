@@ -45,6 +45,8 @@ import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.memory.MemoryManager;
+import org.jboss.messaging.core.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -105,6 +107,7 @@ public class ServerPeer extends ServiceMBeanSupport
    protected ConnectionManager connectionManager;
    protected ConnectorManager connectorManager;
    protected IdManager messageIdManager;
+   protected MemoryManager memoryManager;
 
    // plugins
 
@@ -144,6 +147,7 @@ public class ServerPeer extends ServiceMBeanSupport
       connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
       connectionManager = new SimpleConnectionManager();
       connectorManager = new SimpleConnectorManager();
+      memoryManager = new SimpleMemoryManager();
 
       consumers = new ConcurrentReaderHashMap();
 
@@ -193,6 +197,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
       // start the rest of the internal components
 
+      memoryManager.start();
       destinationJNDIMapper.start();
       securityStore.start();
       connFactoryJNDIMapper.start();
@@ -226,6 +231,7 @@ public class ServerPeer extends ServiceMBeanSupport
       removeRecoverable();
 
       // stop the internal components
+      memoryManager.stop();
       txRepository.stop();
       txRepository = null;
       securityStore.stop();
@@ -480,6 +486,11 @@ public class ServerPeer extends ServiceMBeanSupport
    public MessageStore getMessageStoreDelegate()
    {
       return messageStoreDelegate;
+   }
+   
+   public MemoryManager getMemoryManager()
+   {
+      return memoryManager;
    }
 
    public synchronized int getNextObjectID()

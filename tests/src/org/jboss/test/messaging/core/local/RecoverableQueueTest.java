@@ -56,7 +56,7 @@ public class RecoverableQueueTest extends QueueTestBase
       
       ms = new SimpleMessageStore("s14");
 
-      channel = new Queue(1, ms, pm, true, 100, 20, 10);
+      channel = new Queue(1, ms, pm, null, true, 100, 20, 10);
 
       
       tr.start(pm);
@@ -82,7 +82,7 @@ public class RecoverableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue(1, ms, pm, true, 100, 20, 10);
+      channel = new Queue(1, ms, pm, null, true, 100, 20, 10);
    }
 
    // Public --------------------------------------------------------

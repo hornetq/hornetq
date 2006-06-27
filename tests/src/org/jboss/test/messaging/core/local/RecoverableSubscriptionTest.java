@@ -63,7 +63,7 @@ public class RecoverableSubscriptionTest extends ChannelTestBase
 
       tr.start(tl);
    
-      channel = new CoreSubscription(123, null, ms, tl, true, 100, 20, 10, null);
+      channel = new CoreSubscription(123, null, ms, tl, null, true, 100, 20, 10, null);
       
 
       log.debug("setup done");

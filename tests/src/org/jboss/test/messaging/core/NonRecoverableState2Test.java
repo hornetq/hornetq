@@ -41,7 +41,7 @@ public class NonRecoverableState2Test extends StateTestBase
       channel = new SimpleChannel(1, ms);
 
       // the state ACCEPTS reliable messages
-      state = new ChannelState(channel, this.persistenceManagerDelegate, true, false, 100, 20, 10);
+      state = new ChannelState(channel, this.persistenceManagerDelegate, null, true, false, 100, 20, 10);
    }
 
    public void tearDown()throws Exception

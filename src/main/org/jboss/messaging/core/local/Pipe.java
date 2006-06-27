@@ -21,9 +21,10 @@
   */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.ChannelSupport;
+import org.jboss.messaging.core.memory.MemoryManager;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -41,11 +42,11 @@ public class Pipe extends ChannelSupport
    
    // Constructors --------------------------------------------------
 
-   public Pipe(long id, MessageStore ms, PersistenceManager pm,               
+   public Pipe(long id, MessageStore ms, PersistenceManager pm, MemoryManager mm,              
                boolean acceptReliableMessages, boolean recoverable,
                int fullSize, int pageSize, int downCacheSize)
    {
-      super(id, ms, pm, acceptReliableMessages, recoverable, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, mm, acceptReliableMessages, recoverable, fullSize, pageSize, downCacheSize);
       router = new SingleDestinationRouter();
    }
     

@@ -38,7 +38,7 @@ public class RecoverableStateTest extends StateTestBase
       channel = new SimpleChannel(1, ms);
       
       // the state accepts reliable messages
-      state = new ChannelState(channel, persistenceManagerDelegate, true, true, 100, 20, 10);
+      state = new ChannelState(channel, persistenceManagerDelegate, null, true, true, 100, 20, 10);
 
       log.debug("setup done");
    }

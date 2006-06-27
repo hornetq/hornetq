@@ -14,6 +14,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.subscription.DurableSubscription;
 import org.jboss.jms.server.subscription.Subscription;
 import org.jboss.messaging.core.local.CoreDestination;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
@@ -46,6 +47,7 @@ public interface ChannelMapper extends ServerPlugin
                               String destName, 
                               MessageStore ms, 
                               PersistenceManager pm,
+                              MemoryManager mm,                              
                               int fullSize, 
                               int pageSize, 
                               int downCacheSize) throws JMSException;
@@ -59,18 +61,21 @@ public interface ChannelMapper extends ServerPlugin
                                                   String selector,
                                                   boolean noLocal,
                                                   MessageStore ms,
-                                                  PersistenceManager pm) throws JMSException;
+                                                  PersistenceManager pm,
+                                                  MemoryManager mm) throws JMSException;
    
    Subscription createSubscription(String topicName,
-                                       String selector,
-                                       boolean noLocal,
-                                       MessageStore ms,
-                                       PersistenceManager pm) throws JMSException;
+                                   String selector,
+                                   boolean noLocal,
+                                   MessageStore ms,
+                                   PersistenceManager pm,
+                                   MemoryManager mm) throws JMSException;
    
    DurableSubscription getDurableSubscription(String clientID,
-                                                  String subscriptionName,
-                                                  MessageStore ms,
-                                                  PersistenceManager pm) throws JMSException;
+                                              String subscriptionName,
+                                              MessageStore ms,
+                                              PersistenceManager pm,
+                                              MemoryManager mm) throws JMSException;
 
    boolean removeDurableSubscription(String clientID, String subscriptionName) throws JMSException;
 

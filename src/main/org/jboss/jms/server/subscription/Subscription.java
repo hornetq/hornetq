@@ -24,6 +24,7 @@ package org.jboss.jms.server.subscription;
 import org.jboss.jms.selector.Selector;
 import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
@@ -41,17 +42,17 @@ public class Subscription extends CoreSubscription
    private boolean isNoLocal;
    
    public Subscription(long id, Topic topic, 
-         MessageStore ms, PersistenceManager pm,
+         MessageStore ms, PersistenceManager pm, MemoryManager mm,
          int fullSize, int pageSize, int downCacheSize, Selector selector, boolean isNoLocal)
    {
-      this(id, topic, ms, pm, false, fullSize, pageSize, downCacheSize, selector, isNoLocal);
+      this(id, topic, ms, pm, mm, false, fullSize, pageSize, downCacheSize, selector, isNoLocal);
    }
    
    protected Subscription(long id, Topic topic, 
-         MessageStore ms, PersistenceManager pm, boolean recoverable,
+         MessageStore ms, PersistenceManager pm, MemoryManager mm, boolean recoverable,
          int fullSize, int pageSize, int downCacheSize, Selector selector, boolean isNoLocal)
    {
-      super(id, topic, ms, pm, recoverable, fullSize, pageSize, downCacheSize, selector);
+      super(id, topic, ms, pm, mm, recoverable, fullSize, pageSize, downCacheSize, selector);
       this.isNoLocal = isNoLocal;
    }
          

@@ -26,6 +26,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -63,12 +64,13 @@ public class CoreSubscription extends Pipe
    // Constructors --------------------------------------------------
  
    public CoreSubscription(long id, Topic topic, 
-                           MessageStore ms, PersistenceManager pm, boolean recoverable,
+                           MessageStore ms, PersistenceManager pm, MemoryManager mm,
+                           boolean recoverable,
                            int fullSize, int pageSize, int downCacheSize, Filter filter)
                               
    {
       // A CoreSubscription must accept reliable messages
-      super(id, ms, pm, true, recoverable, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, mm, true, recoverable, fullSize, pageSize, downCacheSize);
       this.topic = topic;
       this.filter = filter;
    }

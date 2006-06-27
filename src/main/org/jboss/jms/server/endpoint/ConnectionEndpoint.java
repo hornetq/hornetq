@@ -27,7 +27,6 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
  * 

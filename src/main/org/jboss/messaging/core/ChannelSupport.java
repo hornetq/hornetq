@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -56,6 +57,7 @@ public abstract class ChannelSupport implements Channel
    protected State state;
    protected MessageStore ms;
    protected PersistenceManager pm;
+   protected MemoryManager mm;
    
    private boolean trace = log.isTraceEnabled();
 
@@ -69,6 +71,7 @@ public abstract class ChannelSupport implements Channel
    protected ChannelSupport(long channelID,
                             MessageStore ms,
                             PersistenceManager pm,
+                            MemoryManager mm,
                             boolean acceptReliableMessages,
                             boolean recoverable,
                             int fullSize, int pageSize, int downCacheSize)
@@ -84,10 +87,12 @@ public abstract class ChannelSupport implements Channel
          throw new IllegalArgumentException("PersistenceManager is null");
       }
       
-      this.state = new ChannelState(this, pm, acceptReliableMessages, recoverable, fullSize, pageSize, downCacheSize); 
+      this.state = new ChannelState(this, pm, mm, acceptReliableMessages, recoverable,
+                                    fullSize, pageSize, downCacheSize); 
       
       this.ms = ms;
       this.pm = pm;
+      this.mm = mm;
       
       this.channelID = channelID;
    }     

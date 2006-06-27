@@ -66,9 +66,9 @@ public class SingleChannel_NP_2PCTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      Channel queue = new Queue(1, ms, pm, true, 100, 20, 10);
+      Channel queue = new Queue(1, ms, pm, null, true, 100, 20, 10);
       
-      ChannelState state = new ChannelState(queue, pm, true, true, 100, 20, 10);
+      ChannelState state = new ChannelState(queue, pm, null, true, true, 100, 20, 10);
                        
       Message[] msgs = new Message[241];
       

@@ -52,7 +52,7 @@ public class NonRecoverableSubscriptionTest extends QueueTestBase
    {
       super.setUp();
       
-      channel = new CoreSubscription(123, null, ms, pm, false, 100, 20, 10, null);
+      channel = new CoreSubscription(123, null, ms, pm, null, false, 100, 20, 10, null);
       
       log.debug("setup done");
    }

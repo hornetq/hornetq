@@ -87,7 +87,7 @@ public class SubscriptionWithFilterTest extends MessagingTestCase
    {
       Filter f = new SimpleFilter(3);
       
-      CoreSubscription sub = new CoreSubscription(123, null, ms, pm, false, 100, 20, 10, f);
+      CoreSubscription sub = new CoreSubscription(123, null, ms, pm, null, false, 100, 20, 10, f);
             
       Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null, 0);
       Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null, 0);
@@ -105,7 +105,7 @@ public class SubscriptionWithFilterTest extends MessagingTestCase
    
    public void testWithoutFilter()
    {
-      CoreSubscription sub = new CoreSubscription(123, null, ms, pm, false, 100, 20, 10, null);
+      CoreSubscription sub = new CoreSubscription(123, null, ms, pm, null, false, 100, 20, 10, null);
             
       Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null, 0);
       Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null, 0);

@@ -65,9 +65,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testReload() throws Throwable
    {
-      Channel queue = new Queue(1, ms, pm, true, 100, 20, 10);
+      Channel queue = new Queue(1, ms, pm, null, true, 100, 20, 10);
       
-      ChannelState state = new ChannelState(queue, pm, true, true, 100, 20, 10);
+      ChannelState state = new ChannelState(queue, pm, null, true, true, 100, 20, 10);
         
       Message[] msgs = new Message[200];
       
@@ -122,9 +122,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       tr.start(pm);
          
-      Channel queue2 = new Queue(1, ms, pm, true, 100, 20, 10);
+      Channel queue2 = new Queue(1, ms, pm, null, true, 100, 20, 10);
       
-      ChannelState state2 = new ChannelState(queue2, pm, true, true, 100, 20, 10);
+      ChannelState state2 = new ChannelState(queue2, pm, null, true, true, 100, 20, 10);
       
       state2.load();
       

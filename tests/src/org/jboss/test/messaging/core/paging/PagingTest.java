@@ -62,7 +62,7 @@ public class PagingTest extends MessagingTestCase
    public void testPaging() throws Exception
    {
 
-      Pipe p = new Pipe(0, ms, pm, true, true, 100, 20, 10);
+      Pipe p = new Pipe(0, ms, pm, null, true, true, 100, 20, 10);
       CoreMessage m = null;
 
       m = MessageFactory.createCoreMessage(0);

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
@@ -77,6 +78,8 @@ public class ChannelState implements State
    
    protected PersistenceManager pm;
    
+   protected MemoryManager mm;
+   
    protected int fullSize;
    
    protected int pageSize;
@@ -96,7 +99,7 @@ public class ChannelState implements State
     
    // Constructors --------------------------------------------------
    
-   public ChannelState(Channel channel, PersistenceManager pm,
+   public ChannelState(Channel channel, PersistenceManager pm, MemoryManager mm, 
                        boolean acceptReliableMessages, boolean recoverable,
                        int fullSize, int pageSize, int downCacheSize)
    {      
@@ -130,6 +133,8 @@ public class ChannelState implements State
       this.channel = channel;
       
       this.pm = pm;
+      
+      this.mm = mm;
       
       this.acceptReliableMessages = acceptReliableMessages;
       
@@ -167,8 +172,10 @@ public class ChannelState implements State
    }      
    
    public void addReference(MessageReference ref, Transaction tx) throws Throwable
-   {   
+   {               
       if (trace) { log.trace(this + " adding " + ref + "transactionally in transaction: " + tx); }
+      
+      checkMemory();
 
       if (ref.isReliable() && !acceptReliableMessages)
       {
@@ -197,6 +204,8 @@ public class ChannelState implements State
           
    public boolean addReference(MessageReference ref) throws Throwable
    {
+      checkMemory();
+      
       boolean first;
                  
       ref.setOrdering(getNextReferenceOrdering());      
@@ -497,6 +506,41 @@ public class ChannelState implements State
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+   
+   protected void checkMemory()
+   {
+      
+      //Disabled for now
+      
+//      if (mm != null)
+//      {
+//         boolean isLow = mm.isMemoryLow();
+//         
+//         if (isLow)
+//         {
+//            
+//            synchronized (refLock)
+//            {
+//               if (!paging)
+//               {         
+//                  log.info("Memory is low:" + this);
+//                  
+//                  fullSize = messageRefs.size() + 1;
+//                  
+//                  //TODO Make this configurable
+//                  pageSize = downCacheSize = Math.max(1, fullSize / 50);
+//                  
+//                  log.info("Turned paging on, fullSize=" + fullSize + " dc:" + downCacheSize + " ps: " + pageSize);
+//               }
+//               else
+//               {
+//                  //log.info("already paging");
+//               }
+//               
+//            }
+//         }
+//      }
+   }
             
    protected boolean addReferenceInMemory(MessageReference ref) throws Throwable
    {
@@ -529,6 +573,8 @@ public class ChannelState implements State
                // We are full in memory - go into paging mode
    
                if (trace) { log.trace(this + " going into paging mode"); }
+               
+               log.info("**** FULL IN MEMORY " + fullSize + " , GOING INTO PAGING");
                
                paging = true;           
             }                         

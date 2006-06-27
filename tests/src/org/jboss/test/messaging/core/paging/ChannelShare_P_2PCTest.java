@@ -50,13 +50,13 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      Channel queue1 = new Queue(1, ms, pm, true, 100, 20, 10);
+      Channel queue1 = new Queue(1, ms, pm, null, true, 100, 20, 10);
       
-      ChannelState state1 = new ChannelState(queue1, pm, true, true, 100, 20, 10);
+      ChannelState state1 = new ChannelState(queue1, pm, null, true, true, 100, 20, 10);
       
-      Channel queue2 = new Queue(2, ms, pm, true, 50, 10, 5);
+      Channel queue2 = new Queue(2, ms, pm, null, true, 50, 10, 5);
       
-      ChannelState state2 = new ChannelState(queue2, pm, true, true, 50, 10, 5);
+      ChannelState state2 = new ChannelState(queue2, pm, null, true, true, 50, 10, 5);
                   
       Message[] msgs = new Message[150];
       

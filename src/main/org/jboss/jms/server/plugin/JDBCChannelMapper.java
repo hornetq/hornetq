@@ -45,6 +45,7 @@ import org.jboss.messaging.core.local.CoreDestination;
 import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.local.Topic;
+import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.persistence.JDBCUtil;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -235,6 +236,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                                      String destName,
                                      MessageStore ms, 
                                      PersistenceManager pm,
+                                     MemoryManager mm,
                                      int fullSize, 
                                      int pageSize, 
                                      int downCacheSize) throws JMSException
@@ -268,7 +270,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          // TODO I am using LocalQueues for the time being, switch to distributed Queues
          if (isQueue)
          {
-            cd = new Queue(id, ms, pm, true, fullSize, pageSize, downCacheSize);
+            cd = new Queue(id, ms, pm, mm, true, fullSize, pageSize, downCacheSize);
             
             try
             {
@@ -296,7 +298,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             //       the DurableSubscriptionStore - I'm not sure it really belongs here
             
             // Load any durable subscriptions for the Topic
-            List durableSubs = loadDurableSubscriptionsForTopic(destName, ms, pm);
+            List durableSubs = loadDurableSubscriptionsForTopic(destName, ms, pm, mm);
             
             Iterator iter = durableSubs.iterator();
             while (iter.hasNext())
@@ -387,9 +389,10 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    
    
    public DurableSubscription getDurableSubscription(String clientID,
-                                                         String subscriptionName,                                                         
-                                                         MessageStore ms,
-                                                         PersistenceManager pm)
+                                                     String subscriptionName,                                                         
+                                                     MessageStore ms,
+                                                     PersistenceManager pm,
+                                                     MemoryManager mm)
       throws JMSException
    {
       // Look in memory first
@@ -466,7 +469,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                
                // create in memory
                sub = createDurableSubscriptionInternal(id, topicName, clientID, subscriptionName, sel,
-                                                       noLocal, ms, pm);
+                                                       noLocal, ms, pm, mm);
                
                // load its state
                sub.load();
@@ -511,7 +514,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                                                          String selector, 
                                                          boolean noLocal,                                                            
                                                          MessageStore ms,
-                                                         PersistenceManager pm) throws JMSException
+                                                         PersistenceManager pm,
+                                                         MemoryManager mm) throws JMSException
    {
       Selector sel = selector == null ? null : new Selector(selector);
       
@@ -530,11 +534,12 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
       
       return createDurableSubscriptionInternal(id, topicName, clientID, subscriptionName, sel,
-                                               noLocal, ms, pm);          
+                                               noLocal, ms, pm, mm);          
    }
 
    public Subscription createSubscription(String topicName, String selector, boolean noLocal,
-                                          MessageStore ms, PersistenceManager pm)
+                                          MessageStore ms, PersistenceManager pm,
+                                          MemoryManager mm)
       throws JMSException
    {
       Selector sel = selector == null ? null : new Selector(selector);
@@ -550,7 +555,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
          }
 
-         return new Subscription(id, topic, ms, pm, topic.getFullSize(), topic.getPageSize(),
+         return new Subscription(id, topic, ms, pm, mm,
+                                 topic.getFullSize(), topic.getPageSize(),
                                  topic.getDownCacheSize(), sel, noLocal);
       }
       catch (Exception e)
@@ -776,7 +782,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    
    protected List loadDurableSubscriptionsForTopic(String topicName,                                               
                                                    MessageStore ms,
-                                                   PersistenceManager pm) throws JMSException
+                                                   PersistenceManager pm,
+                                                   MemoryManager mm) throws JMSException
    {      
       try
       {         
@@ -822,7 +829,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                                                             subName,
                                                             sel,
                                                             noLocal,
-                                                            ms, pm);
+                                                            ms, pm, mm);
                      result.add(sub);
                   }                  
                }
@@ -1084,7 +1091,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                                                                    Selector selector,
                                                                    boolean noLocal,
                                                                    MessageStore ms,
-                                                                   PersistenceManager pm)
+                                                                   PersistenceManager pm,
+                                                                   MemoryManager mm)
       throws JMSException
    {
       Map subs = (Map)subscriptions.get(clientID);
@@ -1102,7 +1110,7 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
       }
        
       DurableSubscription subscription =
-         new DurableSubscription(id, topic, ms, pm, 
+         new DurableSubscription(id, topic, ms, pm, mm,
                topic.getFullSize(), topic.getPageSize(), topic.getDownCacheSize(), selector,
                noLocal, subscriptionName, clientID);
       
