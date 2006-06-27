@@ -70,6 +70,9 @@ public class WireFormatTest extends MessagingTestCase
       
    private static final Logger log = Logger.getLogger(WireFormatTest.class);
 
+   // TODO - replace with a dynamic value
+   private static final byte CURRENT_VERSION = 3;
+
    // Static --------------------------------------------------------
       
    // Attributes ----------------------------------------------------
@@ -280,14 +283,14 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         //Check the bytes
+         // Check the bytes
                   
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
          
-         //First byte should be version
+         // First byte should be version
          byte version = ois.readByte();
          
-         assertEquals(2, version);
+         assertEquals(CURRENT_VERSION, version);
          
          bis.reset();
          
@@ -343,10 +346,10 @@ public class WireFormatTest extends MessagingTestCase
          
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
          
-         //First byte should be version
+         // First byte should be version
          byte version = ois.readByte();
          
-         assertEquals(2, version);
+         assertEquals(CURRENT_VERSION, version);
          
          bis.reset();
          
@@ -387,10 +390,10 @@ public class WireFormatTest extends MessagingTestCase
          
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
          
-         //First byte should be version
+         // First byte should be version
          byte version = ois.readByte();
          
-         assertEquals(2, version);
+         assertEquals(CURRENT_VERSION, version);
          
          bis.reset();
          
@@ -1385,8 +1388,8 @@ public class WireFormatTest extends MessagingTestCase
          
          JBossObjectInputStream ois = new JBossObjectInputStream(bis);
                    
-         //First byte should be version
-         assertEquals(2, ois.readByte());         
+         // First byte should be version
+         assertEquals(CURRENT_VERSION, ois.readByte());
          
          int b = ois.readByte();
          
