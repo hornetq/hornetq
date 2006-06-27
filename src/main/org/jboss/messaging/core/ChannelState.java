@@ -574,8 +574,6 @@ public class ChannelState implements State
    
                if (trace) { log.trace(this + " going into paging mode"); }
                
-               log.info("**** FULL IN MEMORY " + fullSize + " , GOING INTO PAGING");
-               
                paging = true;           
             }                         
          }   
