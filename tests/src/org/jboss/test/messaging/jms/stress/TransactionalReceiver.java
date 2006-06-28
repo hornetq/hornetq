@@ -94,6 +94,8 @@ public class TransactionalReceiver extends Receiver
                }
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+               
+            //   log.info("got " + prodName + ":" + msgCount);
                         
                Count count = (Count)counts.get(prodName);
                if (count == null)
@@ -149,6 +151,8 @@ public class TransactionalReceiver extends Receiver
                }
                String prodName = m.getStringProperty("PROD_NAME");               
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+               
+            //   log.info("got " + prodName + ":" + msgCount);
                  
                Count count = (Count)counts.get(prodName);
                if (count == null)

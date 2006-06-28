@@ -29,7 +29,7 @@
          <url>jdbc:mysql://localhost:3306/messaging</url>
          <driver>com.mysql.jdbc.Driver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
-         <username>sa</username>
+         <username>root</username>
       </database-configuration>
 
       <database-configuration name="oracle">

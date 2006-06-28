@@ -21,6 +21,8 @@ import javax.jms.DeliveryMode;
 
 /**
  * A stress test written to investigate http://jira.jboss.org/jira/browse/JBMESSAGING-362
+ * 
+ * TODO Why isn't this using the standard stress test base?
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>

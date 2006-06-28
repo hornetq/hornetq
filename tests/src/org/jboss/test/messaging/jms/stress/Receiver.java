@@ -40,6 +40,7 @@ import org.jboss.logging.Logger;
 /**
  * 
  * A Receiver.
+ * 
  * Receives messages from a dstination for stress testing
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -67,6 +68,13 @@ public class Receiver extends Runner implements MessageListener
    
    protected ConnectionConsumer cc;
    
+   private Object lock1 = new Object();
+   
+   private Object lock2 = new Object();
+   
+   private Message theMessage;
+   
+   
    public Receiver(Connection conn, Session sess, int numMessages, Destination dest) throws Exception
    {
       super(sess, numMessages);
@@ -92,18 +100,27 @@ public class Receiver extends Runner implements MessageListener
       }
    }
    
-   protected volatile Message theMessage;
+   private boolean done;
    
    public void onMessage(Message m)
    {      
       try
-      {
-         theMessage = m;
+      {            
+         synchronized (lock1)
+         {
+            theMessage = m;
+            
+            lock1.notify();
+         }
          
          //Wait for message to be processed
-         synchronized (lock)
+         synchronized (lock2)
          {
-            lock.wait();
+            while (!done)
+            {
+               lock2.wait();
+            }
+            done = false;
          }
          
       }
@@ -114,7 +131,7 @@ public class Receiver extends Runner implements MessageListener
       }
    }
    
-   private Object lock = new Object();
+   
       
    protected Message getMessage() throws Exception
    {
@@ -122,18 +139,19 @@ public class Receiver extends Runner implements MessageListener
       
       if (isListener)
       {
-         long start = System.currentTimeMillis();
-         m = null;
-         while (System.currentTimeMillis() - start < RECEIVE_TIMEOUT)
-         {
-            if (theMessage != null)
+         synchronized (lock1)
+         {     
+            long start = System.currentTimeMillis();
+            long waitTime = RECEIVE_TIMEOUT;
+            while (theMessage == null && waitTime >= 0)
             {
-               m = theMessage;
-               theMessage = null;
-               break;
+               lock1.wait(waitTime);
+               
+               waitTime = RECEIVE_TIMEOUT - (System.currentTimeMillis() - start);
             }
-            Thread.yield();
-         }
+            m = theMessage;
+            theMessage = null;
+         }         
       }
       else
       {         
@@ -147,9 +165,10 @@ public class Receiver extends Runner implements MessageListener
    {
       if (isListener)
       {
-         synchronized (lock)
+         synchronized (lock2)
          {
-            lock.notify();
+            done = true;
+            lock2.notify();
          }
       }
    }
@@ -185,9 +204,7 @@ public class Receiver extends Runner implements MessageListener
              
             prodName = m.getStringProperty("PROD_NAME");
             msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-            
-            //log.info("got " + prodName + ":" + msgCount);
-                   
+                    
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)
             {
