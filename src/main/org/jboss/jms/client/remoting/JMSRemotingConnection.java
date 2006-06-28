@@ -67,8 +67,8 @@ public class JMSRemotingConnection
    { 
       serverLocator = new InvokerLocator(serverLocatorURI);
             
-      //Enable client pinging
-      //Server leasing is enabled separately on the server side
+      // Enable client pinging
+      // Server leasing is enabled separately on the server side
       Map config = new HashMap();
 
       config.put(Client.ENABLE_LEASE, String.valueOf(clientPing));
