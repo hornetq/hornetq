@@ -218,9 +218,22 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   // receiveNoWait
 
                   if (trace) { log.trace(this + " attempting to get message with receiveNoWait"); }
-
-                  Message m = cons.receive(-1);
-                                    
+                  
+                  Message m = null;
+                  
+                  try
+                  {
+                     m = cons.receive(-1);
+                  }
+                  catch (JMSException e)
+                  {
+                     //If the consumer is closed, we will get a JMSException so we ignore
+                     if (!closed)
+                     {
+                        throw e;
+                     }                        
+                  }
+               
                   if (m == null)
                   {
                      if (trace) { log.trace("receiveNoWait did not retrieve any message"); }
@@ -238,7 +251,20 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
                   if (trace) { log.trace(this + " attempting to get message with blocking receive (no timeout)"); }
 
-                  Message m = cons.receive(0);
+                  Message m = null;
+                  
+                  try
+                  {
+                     m = cons.receive(0);                  
+                  }
+                  catch (JMSException e)
+                  {
+                     //If the consumer is closed, we will get a JMSException so we ignore
+                     if (!closed)
+                     {
+                        throw e;
+                     }                        
+                  }          
                   
                   if (m != null)
                   {
