@@ -201,10 +201,10 @@ public class Receiver extends Runner implements MessageListener
                processingDone();
                return;
             }
-             
+            
             prodName = m.getStringProperty("PROD_NAME");
             msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
-                    
+                             
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)
             {
@@ -239,6 +239,20 @@ public class Receiver extends Runner implements MessageListener
       {
          log.error("Failed to receive message", e);
          failed = true;
+      }
+      finally
+      {
+         if (this.cc != null)
+         {
+            try
+            {
+               cc.close();
+            }
+            catch (JMSException e)
+            {
+               log.error("Failed to close connection consumer", e);
+            }
+         }
       }
    }
    

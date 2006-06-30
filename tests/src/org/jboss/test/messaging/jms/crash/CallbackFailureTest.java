@@ -123,7 +123,7 @@ public class CallbackFailureTest extends MessagingTestCase
       String remotingSessionId = (String)remoteServer.executeCommand(command);
       
       remoteServer.exit();
-      
+        
       //we have removed the exception listener so the server side resouces shouldn't be cleared up
       
       Thread.sleep(20000);
@@ -151,7 +151,7 @@ public class CallbackFailureTest extends MessagingTestCase
       prod.send(sess.createMessage());
       prod.send(sess.createMessage());
       
-      Thread.sleep(10000);
+      Thread.sleep(45000);
       
       assertFalse(cm.containsSession(remotingSessionId));   
                

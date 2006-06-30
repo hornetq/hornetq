@@ -67,6 +67,11 @@ public class IdManager
          throw new IllegalArgumentException("block size must be > 0");
       }
       
+      if (size > bigBlockSize)
+      {
+         throw new IllegalArgumentException("block size must be <= bigBlockSize");
+      }
+      
       if (size > high - nextBlock + 1)
       {
          getNextBigBlock();
