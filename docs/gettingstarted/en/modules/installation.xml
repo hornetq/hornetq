@@ -82,7 +82,7 @@ JBoss Messaging Warning: DataSource connection transaction isolation should be R
                          Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
                          Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
 
-14:23:57,276 INFO  [ServerPeer] JBoss Messaging 1.0.1.CR1 server [server.0] started
+14:23:57,276 INFO  [ServerPeer] JBoss Messaging 1.0.1.CR3 server [server.0] started
 14:23:57,937 INFO  [ConnectionFactory] Connector has leasing enabled, lease period 20000 milliseconds
 14:23:57,937 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] deployed
 14:23:57,987 INFO  [Queue] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000

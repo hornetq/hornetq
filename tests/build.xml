@@ -30,7 +30,7 @@
    <!-- Module name(s) & version -->
    <property name="module.name" value="jms"/>
    <property name="module.Name" value="JBoss Messaging"/>
-   <property name="module.version" value="1.0.0"/>
+   <property name="module.version" value="1.0.1"/>
 
 
    <property environment="ENV"/>

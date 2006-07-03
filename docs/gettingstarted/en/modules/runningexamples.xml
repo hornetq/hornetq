@@ -12,7 +12,8 @@
     <title>Sending messages to a queue</title>
 
     <para>
-    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file
+    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file.
+    Make sure the JBoss server reference by the JBOSS_HOME is started.
    </para>
 
     <programlisting>
@@ -116,6 +117,7 @@ public class QueueExample extends ExampleSupport
 
     <para>
     Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file
+    Make sure the JBoss server reference by the JBOSS_HOME is started.
    </para>
 
    <programlisting>

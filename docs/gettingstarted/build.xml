@@ -1,17 +1,17 @@
 <project name="jbmessaging.documentation" default="all" basedir=".">
 
-  <property name="build.dir" value="${basedir}/../../output/docs/usersguide"/>
+  <property name="build.dir" value="${basedir}/../../output/docs/userguide"/>
   <property name="pdf.name"  value="JBossMessagingUsersGuide.pdf"/>
   <import file="${basedir}/../../../docbook-support/support.xml"/>
 
   <target name="all" depends="clean">
-    <mkdir dir="en/images" /> 
+    <mkdir dir="en/images" />
     <antcall target="lang.all"><param name="lang" value="en"/></antcall>
   </target>
-        
+
   <target name="html.doc" description="creates the html docs only and opens a browser">
-    <mkdir dir="en/images" /> 
+    <mkdir dir="en/images" />
     <antcall target="lang.dochtml"><param name="lang" value="en"/></antcall>
   </target>
-        
+
 </project>

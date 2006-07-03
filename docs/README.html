@@ -7,9 +7,9 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.0.1.CR2 Release Notes</h1>
+JBoss Messaging 1.0.1.CR3 Release Notes</h1>
 <br>
-May 25, 2006<br>
+3 June, 2006<br>
 <br>
 <br>
 <h2>Installation</h2>
@@ -34,91 +34,28 @@ Notes" below.<br>
 <h2>Release
 Notes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </h2>
-<h2 style="margin-left: 40px;">Feature Request</h2>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-367">JBMESSAGING-367</a>]
-- Upgrade JBossSerialization to GA version</li>
+
+Release Notes - JBoss Messaging - Version 1.0.1.CR3
+
+<h2>Bug</h2>
+<ul>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-405'>JBMESSAGING-405</a>] - Memory leak with message selector</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-411'>JBMESSAGING-411</a>] - Fails with strings >= 64K</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-415'>JBMESSAGING-415</a>] - Memory leak in acknowledgment</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-416'>JBMESSAGING-416</a>] - Issue with cancellation of messages on client failure</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-417'>JBMESSAGING-417</a>] - JMS Client does not exit</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-419'>JBMESSAGING-419</a>] - Getting started installation doco is broken</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-420'>JBMESSAGING-420</a>] - Channel State not reloaded on redeploy</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-421'>JBMESSAGING-421</a>] - Destination  should be added to JNDI after it is loaded</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-423'>JBMESSAGING-423</a>] - Cannot retrieve long JMS string message (TextMessage) from JMS Queue</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-426'>JBMESSAGING-426</a>] - Expired messages remain on queue</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-430'>JBMESSAGING-430</a>] - Messy close of connection consumer</li>
 </ul>
-<h2 style="margin-left: 40px;">Bug</h2>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-279">JBMESSAGING-279</a>]
-- IllegalStateException on ConnectionEndpoint: Cannot find consumer <id></id></li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-290">JBMESSAGING-290</a>]
-- ServiceContainer.stop does not function correctlly</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-292">JBMESSAGING-292</a>]
-- Remoting Lease memory leak</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-344">JBMESSAGING-344</a>]
-- MDB example dies with "java.lang.UnsupportedOperationException:
-Destination not specified" on server</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-362">JBMESSAGING-362</a>]
-- Remote stress test fails</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-366">JBMESSAGING-366</a>]
-- Cannot Get SSL Remoting To Work</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-368">JBMESSAGING-368</a>]
-- Since 1.0.0.CR7, Serialization produces per-message DEBUG statements</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-370">JBMESSAGING-370</a>]
-- Using Serialization 1.0.0.GA generates client-side
-NullPointerException</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-371">JBMESSAGING-371</a>]
-- MessageListener times out on inactivity, after receiving at least one
-message</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-372">JBMESSAGING-372</a>]
-- Two JMSRemotingConnections instances are created per connection.</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-391">JBMESSAGING-391</a>]
-- Getting SSLException with jboss-remoting head</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-392">JBMESSAGING-392</a>]
-- ConcurrentModificationException in SimpleConnectionManager</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-394">JBMESSAGING-394</a>]
-- JBoss Serialization 1.0.0.GA corrupts serialized data on concurrent
-access</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-396">JBMESSAGING-396</a>]
-- Client not compatible with 1.0.1.CR1 server</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-397">JBMESSAGING-397</a>]
-- 1.0.1.CR1 client not compatible with this server</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-399">JBMESSAGING-399</a>]
-- Race condition in deserializing Objectmessage</li>
+
+<h2>Task</h2>
+<ul>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-418'>JBMESSAGING-418</a>] - JMS examples not handling exceptions properly</li>
 </ul>
-<h2 style="margin-left: 40px;">Task</h2>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-117">JBMESSAGING-117</a>]
-- Document dependencies on JBoss 5.0</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-125">JBMESSAGING-125</a>]
-- Review the messaging core code for thread safety</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-172">JBMESSAGING-172</a>]
-- Stress tests</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-195">JBMESSAGING-195</a>]
-- Integration test: run existing JBossAS unit tests agains the new stack</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-215">JBMESSAGING-215</a>]
-- Factor common behavior out of JDBC support classes
-(JDBCTransactionLog, JDBCMessageStore and JDBCDurableSubscriptionStore)</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-282">JBMESSAGING-282</a>]
-- Document how to use the functional test suite</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-295">JBMESSAGING-295</a>]
-- Make serialization manager pluggable</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-304">JBMESSAGING-304</a>]
-- Use TransactionManagerLocator instead of TxManager</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-369">JBMESSAGING-369</a>]
-- Add backward and forward compatibilty tests to run on release</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-376">JBMESSAGING-376</a>]
-- Hand over the release to the QA team</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-389">JBMESSAGING-389</a>]
-- Test with JBoss AOP 1.5.0.GA</li>
-</ul>
-<h2>JBoss Messaging Links</h2>
-<div style="margin-left: 40px;">JBoss Messaging home page: <a
- href="http://www.jboss.com/products/messaging">http://www.jboss.com/products/messaging</a><br>
-JBoss Messaging on-line documentation: <a
- href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a><br>
-JBoss Messaging project roadmap: <a
- href="http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel">http://jira.jboss.org/jira/browse/JBMESSAGING?report=com.atlassian.jira.plugin.system.project:roadmap-panel</a><br>
-JBoss Messaging user forum: <a
- href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238</a><br>
-JBoss Messaging design forum: <a
- href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153">http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153</a><br>
-JBoss Messaging repository: <a
- href="http://fisheye.jboss.com/viewrep/JBoss/jboss-jms">http://fisheye.jboss.com/viewrep/JBoss/jboss-jms</a><br>
-</div>
-<br>
-<hr style="width: 100%; height: 2px;">
-</body>
-</html>
+
+
+

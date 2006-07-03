@@ -570,7 +570,7 @@
       <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar" >
          <patternset>
             <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
-            <!-- 
+            <!--
                  required by 4.0.1sp1 and lower
             -->
             <include name="org/jboss/util/propertyeditor/**"/>
@@ -720,7 +720,7 @@
       <property name="release.output" value="${module.root}/release/jboss-messaging-${module.version}"/>
       <mkdir dir="${release.output}/util"/>
       <mkdir dir="${release.output}/examples"/>
-      <mkdir dir="${release.output}/docs/gettingstarted"/>
+      <mkdir dir="${release.output}/docs/userguide"/>
       <mkdir dir="${release.output}/src"/>
       <mkdir dir="${release.output}/test-results"/>
    </target>
@@ -742,8 +742,8 @@
 
    <target name="userdoc" depends="release-structure">
       <ant dir="./docs/gettingstarted" antfile="build.xml" target="all"/>
-      <copy todir="${release.output}/docs/gettingstarted">
-         <fileset dir="${module.output}/docs/gettingstarted/en">
+      <copy todir="${release.output}/docs/userguide">
+         <fileset dir="${module.output}/docs/userguide/en">
             <include name="**"/>
             <exclude name="**/do-not-distribute*"/>
          </fileset>

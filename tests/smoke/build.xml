@@ -48,12 +48,13 @@
       <delete file="./output/smoke.log" quiet="true"/>
       <antcall target="build-deployment-archives-from-scratch"/>
       <antcall target="installation-tests"/>
+
       <antcall target="old-server-compatibility-tests">
          <param name="smoke.test.type" value="client.compatibility"/>
-      </antcall>                                            
+      </antcall>
       <antcall target="old-client-compatibility-tests">
          <param name="smoke.test.type" value="server.compatibility"/>
-      </antcall>                                                   
+      </antcall>
       <antcall target="report"/>
 
    </target>
@@ -149,6 +150,13 @@
       <!--                                                       -->
       <!-- ====================================================  -->
 
+
+      <!--
+
+      http://jira.jboss.com/jira/browse/JBMESSAGING-427
+
+      Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
+
       <antcall target="old-server-compatibility-test">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.messaging.version" value="1.0.1.CR1"/>
@@ -159,20 +167,34 @@
          <param name="jboss.messaging.version" value="1.0.1.CR2"/>
       </antcall>
 
+      -->
+
    </target>
 
    <target name="old-client-compatibility-tests">
+
+      <!-- http://jira.jboss.com/jira/browse/JBMESSAGING-427
+
+      Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
+
+      -->
+
+      <!--
 
       <antcall target="create-messaging-config">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
       </antcall>
 
+      -->
+
       <!-- ====================================================  -->
       <!--                                                       -->
       <!--  Add here other old client versions to test:          -->
       <!--                                                       -->
       <!-- ====================================================  -->
+
+      <!--
 
       <antcall target="old-client-compatibility-test">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
@@ -191,6 +213,8 @@
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
       </antcall>
+
+      -->
 
    </target>
 
@@ -595,7 +619,7 @@
          <arg value="-basename"/>
          <arg value="smoke-test-report"/>
          <arg value="-installerdir"/>
-         <arg value="C:\work\jnlp"/>
+         <arg value="C:\dev\jnlp"/>
          <classpath>
             <pathelement location="../output/classes"/>
          </classpath>
