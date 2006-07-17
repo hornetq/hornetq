@@ -419,9 +419,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    public void cancelDeliveries(List ackInfos) throws JMSException
    {
       //Deliveries must be cancelled in reverse order
-      
-      log.info(this + " cancelling deliveries");
-      
+       
       Set consumers = new HashSet();
       
       for (int i = ackInfos.size() - 1; i >= 0; i--)
