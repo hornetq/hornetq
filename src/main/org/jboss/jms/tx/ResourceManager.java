@@ -21,6 +21,13 @@
   */
 package org.jboss.jms.tx;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -30,6 +37,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.MessagingXAException;
 import org.jboss.logging.Logger;
 
@@ -119,6 +127,8 @@ public class ResourceManager
     * 
     * @param xid - The id of the transaction to add the message to
     * @param ackInfo Information describing the acknowledgement
+    * @param sessionState - the session the ack is in - we need this so on rollback we can tell each session
+    * to redeliver it's messages
     */
    public void addAck(Object xid, AckInfo ackInfo) throws JMSException
    {
@@ -170,6 +180,8 @@ public class ResourceManager
          new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, null, tx);
       
       connection.sendTransaction(request);
+      
+      redeliverMessages(tx);
    }
    
    public void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
@@ -252,8 +264,76 @@ public class ResourceManager
       }
       
       sendTransactionXA(request, connection);
+      
+      try
+      {
+         redeliverMessages(tx);
+      }
+      catch (JMSException e)
+      {
+         log.error("Failed to redeliver", e);
+      }
    }
    
+   
+   /*
+    * Rollback has occurred so we need to redeliver any unacked messages corresponding to the acks
+    * is in the transaction
+    */
+   private void redeliverMessages(TxState tx) throws JMSException
+   {
+      Iterator iter = tx.getAcks().iterator();
+      
+      //Sort them into lists - one for each session
+        
+      //We use a LinkedHashMap since we need to preserve the order of the sessions
+      Map toAck = new LinkedHashMap();
+      
+      while (iter.hasNext())
+      {
+         AckInfo ack = (AckInfo)iter.next();
+         
+         SessionDelegate del = ack.msg.getSessionDelegate();
+         
+         List acks = (List)toAck.get(del);
+         
+         if (acks == null)
+         {
+            acks = new ArrayList();
+            
+            toAck.put(del, acks);
+         }
+         
+         acks.add(ack);
+      }
+      
+      //Now tell each session to redeliver
+      
+      LinkedList l = new LinkedList();
+      
+      iter = toAck.entrySet().iterator();
+                  
+      //need to reverse the order
+      while (iter.hasNext())
+      {
+         Object entry = iter.next();
+         
+         l.addFirst(entry);         
+      }
+      
+      iter = l.iterator();
+      
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+         
+         SessionDelegate sess = (SessionDelegate)entry.getKey();
+         
+         List acks = (List)entry.getValue();
+         
+         sess.redeliver(acks);
+      }  
+   }
 
    // Protected ------------------------------------------------------
    

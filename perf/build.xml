@@ -59,6 +59,11 @@
    </path>
 
    <path id="perf.execution.classpath">
+
+      <!-- Make sure we pick up the correct log4j - previously we weren't which made the perf results slow since too much was being logged -->
+
+      <pathelement location="./etc"/>
+
       <path refid="perf.compilation.classpath"/>
       <path refid="apache.log4j.classpath"/>
       <path refid="javassist.classpath"/>

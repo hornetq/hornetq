@@ -123,8 +123,6 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);
 
-         log.trace("Started connection consumer");
-
          connProducer = cf.createConnection();
 
          Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -135,8 +133,6 @@ public class ConnectionConsumerTest extends MessagingTestCase
             TextMessage m = sessProd.createTextMessage("testing testing");
             prod.send(m);
          }
-
-         log.trace("Sent messages");
 
          //Wait for messages
 
@@ -342,11 +338,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
       public synchronized void onMessage(Message message)
       {
          try
-         {
-    
-            
-            //log.trace("Received message " + msgsReceived);
-            
+         {                       
             TextMessage tm = (TextMessage)message;
             
             if (!tm.getText().equals("testing testing"))

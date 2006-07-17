@@ -246,7 +246,7 @@ public class PersistenceTest extends MessagingTestCase
          assertEquals("a", t.getText());
       }
       {
-         TextMessage t = (TextMessage)cons.receiveNoWait();
+         TextMessage t = (TextMessage)cons.receive(500);
          assertNull(t);
       }
       

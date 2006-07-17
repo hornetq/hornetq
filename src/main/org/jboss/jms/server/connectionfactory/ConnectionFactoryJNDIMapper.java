@@ -76,12 +76,14 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
    public synchronized int registerConnectionFactory(String clientID,
                                                      JNDIBindings jndiBindings,
                                                      String locatorURI,
-                                                     boolean clientPing) throws Exception
+                                                     boolean clientPing,
+                                                     int prefetchSize) throws Exception
    {
       int id = serverPeer.getNextObjectID();
 
       ServerConnectionFactoryEndpoint endpoint =
-         new ServerConnectionFactoryEndpoint(id, serverPeer, clientID, jndiBindings);
+         new ServerConnectionFactoryEndpoint(id, serverPeer, clientID, jndiBindings,
+                                             prefetchSize);
 
       ClientConnectionFactoryDelegate delegate;
       try

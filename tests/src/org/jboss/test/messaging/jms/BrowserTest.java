@@ -157,6 +157,7 @@ public class BrowserTest extends MessagingTestCase
 		for (int i = 0; i < numMessages; i++)
 		{
 			Message m = session.createMessage();
+         m.setIntProperty("cnt", i);
 			producer.send(m);         
 		}
 		
@@ -185,7 +186,7 @@ public class BrowserTest extends MessagingTestCase
 		
 		for (int i = 0; i < numMessages; i++)
 		{
-			mc.receive();
+			Message m = mc.receive();
 		}
 		
 		browser = session.createBrowser(queue);

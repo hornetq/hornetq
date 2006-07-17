@@ -37,7 +37,9 @@ public interface ConnectionFactoryManager
     *
     * @return an identifier that uniques identifies the registered ConnectionFactory.
     */
-   int registerConnectionFactory(String clientID, JNDIBindings jndiBindings, String locatorURI, boolean clientPing) throws Exception;
+   int registerConnectionFactory(String clientID, JNDIBindings jndiBindings,
+                                 String locatorURI, boolean clientPing,
+                                 int prefetchSize) throws Exception;
 
    void unregisterConnectionFactory(int connectionFactoryID) throws Exception;
 

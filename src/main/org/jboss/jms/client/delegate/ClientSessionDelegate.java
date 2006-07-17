@@ -22,6 +22,7 @@
 package org.jboss.jms.client.delegate;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
@@ -42,6 +43,7 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
+import org.jboss.jms.tx.AckInfo;
 import org.jboss.remoting.Client;
 
 /**
@@ -81,16 +83,25 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void acknowledge(String messageID, String receiverID) throws JMSException
+   public void acknowledge(AckInfo ackInfo) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-
+   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void acknowledge() throws JMSException
+   public void acknowledgeBatch(List ackInfos) throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void acknowledgeAll() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -108,7 +119,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void cancelDeliveries() throws JMSException
+   public void redeliver() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -282,7 +293,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void postDeliver(long messageID, int receiverID) throws JMSException
+   public void postDeliver(MessageProxy proxy, int consumerID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -291,7 +302,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void preDeliver(long messageID, int receiverID) throws JMSException
+   public void preDeliver(MessageProxy proxy, int consumerID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -304,7 +315,16 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-
+   
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void redeliver(List ackInfos) throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -385,6 +405,16 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
+   
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void cancelDeliveries(List ackInfos)
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
 
    // Public --------------------------------------------------------
 

@@ -95,7 +95,7 @@ public class TransactionalReceiver extends Receiver
                String prodName = m.getStringProperty("PROD_NAME");
                Integer msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
                
-            //   log.info("got " + prodName + ":" + msgCount);
+              // log.info("got " + prodName + ":" + msgCount);
                         
                Count count = (Count)counts.get(prodName);
                if (count == null)
@@ -182,13 +182,16 @@ public class TransactionalReceiver extends Receiver
                }
                count.lastReceived = msgCount.intValue();          
                
-               if (innerCount == rollbackSize -1)
+               if ((innerCount == rollbackSize -1) && (outerCount != iterations - 1))
                {
+                  //Don't roll back on the very last one
                   sess.rollback();
                }
                processingDone();
             }            
-         }        
+         }
+         log.info(this + " done");
+         finished();
       }
       catch (Exception e)
       {

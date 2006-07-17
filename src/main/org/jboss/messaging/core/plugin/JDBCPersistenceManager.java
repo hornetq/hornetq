@@ -462,10 +462,12 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       if (trace)
       {
          log.trace("Updating reliable references for channel " + channelID + " between " + orderStart + " and " + orderEnd);
-      } 
+      }
       Connection conn = null;
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
+      
+      final int MAX_TRIES = 25;      
       
       try
       {
@@ -479,13 +481,39 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          ps.setLong(3, channelID);
          
-         int rows = ps.executeUpdate();
+         int tries = 0;
          
-         if (trace)
+         while (true)
          {
-            log.trace(JDBCUtil.statementToString(updateReliableRefs, new Long(channelID),
-                  new Long(orderStart), new Long(orderEnd))
-                  + " updated " + rows + " rows");
+            try
+            {
+               int rows = ps.executeUpdate();
+               
+               if (trace)
+               {
+                  log.trace(JDBCUtil.statementToString(updateReliableRefs, new Long(channelID),
+                        new Long(orderStart), new Long(orderEnd))
+                        + " updated " + rows + " rows");
+               }
+               if (tries > 0)
+               {
+                  log.warn("Update worked after retry");
+               }
+               break;
+            }
+            catch (SQLException e)
+            {
+               log.warn("SQLException caught - assuming deadlock detected, try:" + (tries + 1), e);
+               tries++;
+               if (tries == MAX_TRIES)
+               {
+                  log.error("Retried " + tries + " times, now giving up");
+                  throw new IllegalStateException("Failed to update references");
+               }
+               log.warn("Trying again after a pause");
+               //Now we wait for a random amount of time to minimise risk of deadlock
+               Thread.sleep((long)(Math.random() * 500));
+            }  
          }
       }
       catch (Exception e)
@@ -527,7 +555,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       PreparedStatement ps = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-      
+          
       try
       {
          conn = ds.getConnection();

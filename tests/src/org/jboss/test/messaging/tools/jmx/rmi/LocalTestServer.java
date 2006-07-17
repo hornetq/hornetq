@@ -68,8 +68,7 @@ public class LocalTestServer implements Server
 
    private ServiceContainer sc;
 
-   // service dependencies
-   private ObjectName threadPoolObjectName;
+   // service dependencies   
    private ObjectName persistenceManagerObjectName;
    private ObjectName messageStoreObjectName;
    private ObjectName channelMapperObjectName;
@@ -257,13 +256,7 @@ public class LocalTestServer implements Server
          (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
       persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
       sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);
-
-      MBeanConfigurationElement threadPoolConfig =
-         (MBeanConfigurationElement)mdd.query("service", "ThreadPool").iterator().next();
-      threadPoolObjectName = sc.registerAndConfigureService(threadPoolConfig);
-      sc.invoke(threadPoolObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(threadPoolObjectName, "start", new Object[0], new String[0]);
+      sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);     
 
       MBeanConfigurationElement messageStoreConfig =
          (MBeanConfigurationElement)mdd.query("service", "MessageStore").iterator().next();
@@ -388,9 +381,6 @@ public class LocalTestServer implements Server
       sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(persistenceManagerObjectName);
 
-      sc.invoke(threadPoolObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(threadPoolObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(threadPoolObjectName);
    }
 
    public boolean isServerPeerStarted() throws Exception
@@ -561,9 +551,16 @@ public class LocalTestServer implements Server
       sc.invoke(destinationObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(destinationObjectName);
    }
-
+   
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings) throws Exception
+   {
+      deployConnectionFactory(objectName, jndiBindings, -1);
+   }
+
+   public void deployConnectionFactory(String objectName,
+                                       String[] jndiBindings,
+                                       int prefetchSize) throws Exception
    {
       String config =
          "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
@@ -571,8 +568,14 @@ public class LocalTestServer implements Server
                 "xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
          "<depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
          "<depends optional-attribute-name=\"Connector\">" + ServiceContainer.REMOTING_OBJECT_NAME +
-         "</depends>\n" +
-         "<attribute name=\"JNDIBindings\"><bindings>";
+         "</depends>\n";
+      
+      if (prefetchSize != -1)
+      {
+         config += "<attribute name=\"PrefetchSize\">" + prefetchSize + "</attribute>";
+      }
+      
+      config += "<attribute name=\"JNDIBindings\"><bindings>";
 
       for(int i = 0; i < jndiBindings.length; i++)
       {

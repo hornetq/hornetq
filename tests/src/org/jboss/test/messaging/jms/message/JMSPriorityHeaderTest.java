@@ -175,9 +175,11 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
          assertEquals("a", t.getText());
       }
       {
-         TextMessage t = (TextMessage)cons.receiveNoWait();
+         TextMessage t = (TextMessage)cons.receive(500);
          assertNull(t);
       }
+      
+      cons.close();
       
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 0, 0);
       prod.send(m1, DeliveryMode.NON_PERSISTENT, 0, 0);
@@ -189,6 +191,8 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       prod.send(m7, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 6, 0);
+      
+      cons = sessReceive.createConsumer(queue);         
       
       {
          TextMessage t = (TextMessage)cons.receive(1000);

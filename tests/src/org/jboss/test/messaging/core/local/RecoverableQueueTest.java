@@ -25,6 +25,8 @@ import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -56,7 +58,7 @@ public class RecoverableQueueTest extends QueueTestBase
       
       ms = new SimpleMessageStore("s14");
 
-      channel = new Queue(1, ms, pm, null, true, 100, 20, 10);
+      channel = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
 
       
       tr.start(pm);
@@ -82,7 +84,7 @@ public class RecoverableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue(1, ms, pm, null, true, 100, 20, 10);
+      channel = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
    }
 
    // Public --------------------------------------------------------

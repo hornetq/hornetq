@@ -56,7 +56,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    private MessageHolder holder;
    
-   private int deliveryCount;
+   //private int deliveryCount;
    
    private long ordering;
    
@@ -144,24 +144,31 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       return holder.getInMemoryChannelCount();
    }
   
-   public int getDeliveryCount()
-   {
-      return deliveryCount;
-   }
+   //These are all handled in RoutableSupport
    
-   public void incrementDeliveryCount()
-   {
-      deliveryCount++;      
-   }
-   
-   public void setDeliveryCount(int deliveryCount)
-   {
-      this.deliveryCount = deliveryCount;
-      if (deliveryCount > 0)
-      {
-         this.redelivered = true;
-      }
-   }
+//   public int getDeliveryCount()
+//   {
+//      return deliveryCount;
+//   }
+//   
+//   public void incrementDeliveryCount()
+//   {
+//      deliveryCount++;      
+//   }
+//   
+//   public void decrementDeliveryCount()
+//   {
+//      deliveryCount--;
+//   }
+//   
+//   public void setDeliveryCount(int deliveryCount)
+//   {
+//      this.deliveryCount = deliveryCount;
+//      if (deliveryCount > 0)
+//      {
+//         this.redelivered = true;
+//      }
+//   }
    
    public long getOrdering()
    {

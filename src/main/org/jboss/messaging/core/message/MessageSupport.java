@@ -29,6 +29,7 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
@@ -48,6 +49,9 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = -4474943687659785336L;
+   
+   private static final Logger log = Logger.getLogger(MessageSupport.class);
+
    
    // Attributes ----------------------------------------------------
    
@@ -207,7 +211,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
             try
             {
                ByteArrayInputStream bis = new ByteArrayInputStream(payloadAsByteArray);
-               ois = new JBossObjectInputStream(bis);
+               ois = new JBossObjectInputStream(bis);   
                payload = readPayloadExternal(ois, payloadAsByteArray.length);
             }
             finally
@@ -299,7 +303,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       super.writeExternal(out);
       
       byte[] bytes = getPayloadAsByteArray();
-           
+            
       if (bytes != null)
       {
          out.writeInt(bytes.length);

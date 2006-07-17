@@ -94,6 +94,8 @@ public interface Routable extends Serializable
    
    void incrementDeliveryCount();
    
+   void decrementDeliveryCount();
+   
    /**
     * Binds a header. If the header map previously contained a mapping for this name, the old value
     * is replaced by the specified value.

@@ -22,6 +22,7 @@
 package org.jboss.jms.delegate;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
@@ -64,9 +65,9 @@ public interface SessionDelegate extends SessionEndpoint
    
    TextMessageProxy createTextMessage(String text) throws JMSException;
    
-   void preDeliver(long messageID, int receiverID) throws JMSException;
+   void preDeliver(MessageProxy proxy, int consumerID) throws JMSException;
    
-   void postDeliver(long messageID, int receiverID) throws JMSException;
+   void postDeliver(MessageProxy proxy, int consumerID) throws JMSException;
    
    MessageListener getMessageListener() throws JMSException;
    
@@ -88,7 +89,11 @@ public interface SessionDelegate extends SessionEndpoint
    
    void recover() throws JMSException;
    
+   void redeliver(List ackInfos) throws JMSException;
+   
    ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
+   
+   void acknowledgeAll() throws JMSException;
 
 
 }

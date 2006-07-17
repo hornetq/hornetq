@@ -44,6 +44,8 @@ public class SendJob extends ThroughputJobSupport
 
    private MessageFactory messageFactory;
    
+   private boolean trace = log.isTraceEnabled();
+   
    // Constructors --------------------------------------------------
 
    public SendJob()
@@ -203,6 +205,8 @@ public class SendJob extends ThroughputJobSupport
 
             long start = System.currentTimeMillis();
             long timeLeft;
+            
+            Message m = messageFactory.getMessage(sess, messageSize);
 
             while (true)
             {
@@ -213,9 +217,7 @@ public class SendJob extends ThroughputJobSupport
                   log.debug("terminating sending because time (" + duration + " ms) expired");
                   break;
                }
-
-               Message m = messageFactory.getMessage(sess, messageSize);
-
+               
                if (anon)
                {
                   prod.send(destination, m);
@@ -227,7 +229,7 @@ public class SendJob extends ThroughputJobSupport
 
                currentMessageCount++;
 
-               if (log.isTraceEnabled()) { log.trace("sent message " + currentMessageCount); }
+               if (trace) { log.trace("sent message " + currentMessageCount); }
 
                if (transacted)
                {

@@ -25,6 +25,7 @@ import java.util.HashMap;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.plugin.JDBCChannelMapper;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.messaging.core.Message;
@@ -92,6 +93,8 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
          pm.start();
          
          cm.setPersistenceManager(pm);
+         
+         cm.setQueuedExecutorPool(new QueuedExecutorPool(100));
          
          cm.start();
                       

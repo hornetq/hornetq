@@ -23,14 +23,15 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.ChannelState;
+import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.LockMap;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
@@ -65,10 +66,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      Channel queue = new Queue(1, ms, pm, null, true, 100, 20, 10);
-      
-      ChannelState state = new ChannelState(queue, pm, null, true, true, 100, 20, 10);
-                       
+      ChannelSupport queue = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
+                     
       Message[] msgs = new Message[241];
       
       MessageReference[] refs = new MessageReference[241];
@@ -79,7 +78,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+         queue.handle(null, refs[i], null);
+         refs[i].releaseMemoryReference();
       }
       
       //verify no refs in storage
@@ -95,23 +95,24 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(99, ms.size());
       
       //Verify 99 refs in queue
-      assertEquals(99, state.memoryRefCount());
+      assertEquals(99, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify not paging
-      assertFalse(state.isPaging());
+      assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
       
       
       //Send one more ref
       
       msgs[99] = MessageFactory.createCoreMessage(99, false, null);
       refs[99] = ms.reference(msgs[99]);
-      state.addReference(refs[99]);
+      queue.handle(null, refs[99], null);
+      refs[99].releaseMemoryReference();
       
       //verify no refs in storage
       
@@ -126,16 +127,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
             
       //Verify paging
-      assertTrue(state.isPaging());
+      assertTrue(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
                   
       //Send 9 more
       
@@ -143,7 +144,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]); 
+         queue.handle(null, refs[i], null); 
+         refs[i].releaseMemoryReference();
       }
       
       //verify no refs in storage
@@ -159,16 +161,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(109, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 9 refs in downcache
-      assertEquals(9, state.downCacheCount());
+      assertEquals(9, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
@@ -177,7 +179,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       
       msgs[109] = MessageFactory.createCoreMessage(109, false, null);
       refs[109] = ms.reference(msgs[109]);
-      state.addReference(refs[109]);
+      queue.handle(null, refs[109], null);
+      refs[109].releaseMemoryReference();
       
       //verify 10 refs in storage
       
@@ -194,16 +197,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
@@ -211,7 +214,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       
       msgs[110] = MessageFactory.createCoreMessage(110, false, null);
       refs[110] = ms.reference(msgs[110]);
-      state.addReference(refs[110]);
+      queue.handle(null, refs[110], null);
+      refs[110].releaseMemoryReference();
       
       //verify 10 refs in storage
       
@@ -228,16 +232,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(101, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 1 refs in downcache
-      assertEquals(1, state.downCacheCount());
+      assertEquals(1, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
@@ -247,7 +251,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);         
+         queue.handle(null, refs[i], null);         
+         refs[i].releaseMemoryReference();
       }      
       
       //verify 20 refs in storage
@@ -265,16 +270,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
@@ -285,7 +290,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);         
+         queue.handle(null, refs[i], null);         
+         refs[i].releaseMemoryReference();
       }  
       
       //verify 30 refs in storage
@@ -303,16 +309,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
@@ -323,7 +329,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);         
+         queue.handle(null, refs[i], null);         
+         refs[i].releaseMemoryReference();
       }  
       
       //verify 40 refs in storage
@@ -341,16 +348,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());  
+      assertTrue(queue.isPaging());  
 
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
       
       
       
@@ -359,7 +366,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       
       msgs[140] = MessageFactory.createCoreMessage(140, false, null);
       refs[140] = ms.reference(msgs[140]);
-      state.addReference(refs[140]);
+      queue.handle(null, refs[140], null);
+      refs[140].releaseMemoryReference();
       
       //verify 40 refs in storage
       
@@ -376,23 +384,23 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(101, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 1 refs in downcache
-      assertEquals(1, state.downCacheCount());
+      assertEquals(1, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());  
+      assertTrue(queue.isPaging());  
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
                 
       
       
       //Consume 1
       int consumeCount = 0;
-      consume(queue, state, consumeCount, refs, 1);
+      consume(queue, consumeCount, refs, 1);
       consumeCount++;
       
       //verify 40 refs in storage
@@ -410,16 +418,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 99 refs in queue
-      assertEquals(99, state.memoryRefCount());
+      assertEquals(99, queue.memoryRefCount());
       
       //Verify 1 refs in downcache
-      assertEquals(1, state.downCacheCount());
+      assertEquals(1, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
@@ -427,7 +435,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Now we should have 99 refs in memory, 40 refs in storage, and 1 in down cache, 100 msgs in memory
       
       //Consume 18 more
-      consume(queue, state, consumeCount, refs, 18);
+      consume(queue, consumeCount, refs, 18);
       consumeCount += 18;
       
       //We should have 81 refs in memory, 40 refs in storage, and 1 in down cache, 82 msgs in memory
@@ -447,23 +455,23 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(82, ms.size());
       
       //Verify 81 refs in queue
-      assertEquals(81, state.memoryRefCount());
+      assertEquals(81, queue.memoryRefCount());
       
       //Verify 1 refs in downcache
-      assertEquals(1, state.downCacheCount());
+      assertEquals(1, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
       
       //Consume one more
       
-      consume(queue, state, consumeCount, refs, 1);
+      consume(queue, consumeCount, refs, 1);
       consumeCount++;
       
       //This should force a load of 20 and flush the downcache
@@ -484,23 +492,23 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
       
       //Consume 20 more
       
-      consume(queue, state, consumeCount, refs, 20);
+      consume(queue, consumeCount, refs, 20);
       consumeCount += 20;
       
       //verify 1 ref in storage
@@ -518,23 +526,23 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
       
       //Consume 1 more
       
-      consume(queue, state, consumeCount, refs, 1);
+      consume(queue, consumeCount, refs, 1);
       consumeCount ++;
       
       //verify 0 ref in storage
@@ -550,23 +558,23 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 81 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
       
       
       
       
       //Consume 20 more
       
-      consume(queue, state, consumeCount, refs, 20);
+      consume(queue, consumeCount, refs, 20);
       consumeCount += 20;
       
       //verify 0 ref in storage
@@ -582,23 +590,23 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(80, ms.size());
       
       //Verify 80 refs in queue
-      assertEquals(80, state.memoryRefCount());
+      assertEquals(80, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify not paging
-      assertFalse(state.isPaging());
+      assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
       
       
       
       //Consumer 60 more
       
             
-      consume(queue, state, consumeCount, refs, 60);
+      consume(queue, consumeCount, refs, 60);
       consumeCount += 60;
       
       //verify 0 ref in storage
@@ -614,16 +622,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(20, ms.size());
       
       //Verify 20 refs in queue
-      assertEquals(20, state.memoryRefCount());
+      assertEquals(20, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify not paging
-      assertFalse(state.isPaging());
+      assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
             
       
       
@@ -632,7 +640,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+         queue.handle(null, refs[i], null);
+         refs[i].releaseMemoryReference();
       }
       
       //verify 0 ref in storage
@@ -648,16 +657,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(40, ms.size());
       
       //Verify 40 refs in queue
-      assertEquals(40, state.memoryRefCount());
+      assertEquals(40, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify not paging
-      assertFalse(state.isPaging());
+      assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
       
       
       
@@ -667,7 +676,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+         queue.handle(null, refs[i], null);
+         refs[i].releaseMemoryReference();
       }
       
       //verify 0 ref in storage
@@ -683,16 +693,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(60, ms.size());
       
       //Verify 60 refs in queue
-      assertEquals(60, state.memoryRefCount());
+      assertEquals(60, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify not paging
-      assertFalse(state.isPaging());
+      assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
       
       
       
@@ -701,7 +711,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       {
          msgs[i] = MessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
-         state.addReference(refs[i]);
+         queue.handle(null, refs[i], null);
+         refs[i].releaseMemoryReference();
       }
       
       //verify 20 ref in storage
@@ -719,16 +730,16 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify 0 refs in downcache
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, state.memoryDeliveryCount());;      
+      assertEquals(0, queue.memoryDeliveryCount());;      
       
       
        
@@ -737,15 +748,9 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //remove 20 but don't ack them yet
       //this should cause a load to be triggered
       
-      SimpleDelivery[] dels = new SimpleDelivery[20];
-      for (int i = 0; i < 20; i++)
-      {
-         MessageReference ref = state.removeFirstInMemory();
-         assertNotNull(ref);
-         assertEquals(refs[i + consumeCount].getMessageID(), ref.getMessageID());
-         dels[i] = new SimpleDelivery(queue, ref, false);
-         state.addDelivery(dels[i]);
-      }
+//      CancellingReceiver r = new CancellingReceiver(20);
+//      queue.add(r);
+      SimpleDelivery[] dels = getDeliveries(queue, 20);
       
       //verify 0 ref in storage
       
@@ -760,20 +765,20 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(120, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify 20 deliveries
-      assertEquals(20, state.memoryDeliveryCount());;      
+      assertEquals(20, queue.memoryDeliveryCount());;      
       
       
        
       //Cancel last 7
       for (int i = 19; i > 12; i--)
       {
-         state.cancelDelivery(dels[i]);   
+         dels[i].cancel();  
       }
       
       //This should cause the refs corresponding to the deliveries to go the front of the in memory quuee
@@ -792,13 +797,13 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(120, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify 13 deliveries
-      assertEquals(13, state.memoryDeliveryCount());;      
+      assertEquals(13, queue.memoryDeliveryCount());;      
       
       
    
@@ -806,7 +811,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       
       for (int i = 12; i > 9; i--)
       {
-         state.cancelDelivery(dels[i]);
+         dels[i].cancel();
       }
       
       //This should cause the down cache to be flushed
@@ -826,13 +831,13 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(110, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify 10 deliveries
-      assertEquals(10, state.memoryDeliveryCount());;      
+      assertEquals(10, queue.memoryDeliveryCount());;      
       
             
       
@@ -840,7 +845,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       
       for (int i = 9; i >= 0; i--)
       {
-         state.cancelDelivery(dels[i]);
+         dels[i].cancel();
       }
       
       //consumeCount += 20;
@@ -862,24 +867,24 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
       //Verify paging
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
       //Verify 0 deliveries
-      assertEquals(0, state.memoryDeliveryCount());;      
+      assertEquals(0, queue.memoryDeliveryCount());;      
       
-      
+      assertEquals(0, queue.downCacheCount());
 
 
       //Now there should be 120 message left to consume
       
       //Consume 50
       
-      consume(queue, state, consumeCount, refs, 50);
+      consume(queue, consumeCount, refs, 50);
       consumeCount += 50;
-      
+
       //verify 0 ref in storage
       
       refIds = getReferenceIds(queue.getChannelID());
@@ -892,21 +897,25 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify 70 msgs in store
       assertEquals(70, ms.size());
       
-      //Verify 70 refs in queue
-      assertEquals(70, state.memoryRefCount());  
-      
-      //Verify not paging
-      assertFalse(state.isPaging());      
-      
       //Verify 0 deliveries
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
+      
+      assertEquals(0, queue.downCacheCount());
+                  
+      //Verify 70 refs in queue
+      assertEquals(70, queue.memoryRefCount());  
+      
+//    Verify not paging
+      assertFalse(queue.isPaging());      
+      
+      
       
       
       
       
       //Consume the rest
       
-      consume(queue, state, consumeCount, refs, 70);
+      consume(queue, consumeCount, refs, 70);
       consumeCount += 70;
       
       //verify 0 ref in storage
@@ -922,14 +931,12 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(0, ms.size());
       
       //Verify 0 refs in queue
-      assertEquals(0, state.memoryRefCount());
+      assertEquals(0, queue.memoryRefCount());
       
-      //Make sure there are no more refs in state
+      //Make sure there are no more refs in queue
       
-      MessageReference ref = state.removeFirstInMemory();
-      
-      assertNull(ref);
-         
+      assertEquals(0, queue.messageCount());
+            
       assertEquals(0, LockMap.instance.getSize());
    }
    

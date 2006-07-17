@@ -32,8 +32,10 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.LocalTx;
+import org.jboss.jms.tx.TxState;
 
 /**
  * This aspect handles transaction related logic
@@ -124,6 +126,13 @@ public class TransactionAspect
       ConnectionState connState = (ConnectionState)state.getParent();
       ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
       
+      TxState tx = connState.getResourceManager().getTx(state.getCurrentTxId());
+      
+      if (tx == null)
+      {
+         throw new IllegalStateException("Cannot find tx:" + state.getCurrentTxId());
+      }
+        
       try
       {
          connState.getResourceManager().rollbackLocal((LocalTx)state.getCurrentTxId(), conn);
@@ -134,8 +143,8 @@ public class TransactionAspect
          Object xid = connState.getResourceManager().createLocalTx();
          
          state.setCurrentTxId(xid);
-      } 
-      
+      }                 
+           
       return null;            
    }
    
@@ -174,14 +183,18 @@ public class TransactionAspect
    public Object handlePreDeliver(Invocation invocation) throws Throwable
    {
       SessionState state = (SessionState)getState(invocation);
-      
+       
       if (state.isTransacted())
       {
          MethodInvocation mi = (MethodInvocation)invocation;
          
-         long messageID = ((Long)mi.getArguments()[0]).longValue();
+         MessageProxy proxy = (MessageProxy)mi.getArguments()[0];
+         
+         //long messageID = proxy.getMessage().getMessageID();
          
          int consumerID = ((Integer)mi.getArguments()[1]).intValue();
+         
+         AckInfo info = new AckInfo(proxy, consumerID);
          
          Object txID = state.getCurrentTxId();
          
@@ -193,10 +206,10 @@ public class TransactionAspect
          ConnectionState connState = (ConnectionState)state.getParent();
          
          //Add the acknowledgement to the transaction
-         
-         connState.getResourceManager().addAck(txID, new AckInfo(messageID, consumerID));                  
+
+         connState.getResourceManager().addAck(txID, info);                  
       }
-      
+
       return null;
    }
 

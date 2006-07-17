@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.jboss.jms.message.MessageProxy;
+
 /**
  * Struct like class for holding information regarding an acknowledgement to be passed to the server
  * for processing.
@@ -45,7 +47,10 @@ public class AckInfo implements Externalizable
    protected long messageID;
    
    protected int consumerID;
-
+   
+   //The actual proxy must not get serialized
+   protected transient MessageProxy msg;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -54,10 +59,17 @@ public class AckInfo implements Externalizable
    {      
    }
    
+   public AckInfo(MessageProxy proxy, int consumerID)
+   {
+      this.msg = proxy;
+      this.messageID = proxy.getMessage().getMessageID();
+      this.consumerID = consumerID;    
+   }
+   
    public AckInfo(long messageID, int consumerID)
    {
       this.messageID = messageID;
-      this.consumerID = consumerID;    
+      this.consumerID = consumerID;
    }
 
    // Public --------------------------------------------------------
@@ -70,6 +82,11 @@ public class AckInfo implements Externalizable
    public int getConsumerID()
    {
       return consumerID;
+   }
+   
+   public MessageProxy getMessage()
+   {
+      return msg;
    }
 
    public String toString()

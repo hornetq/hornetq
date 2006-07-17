@@ -91,7 +91,7 @@ public class XATransactionTest extends MessagingTestCase
          s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          conn.start();
    
-         TextMessage rm = (TextMessage)s.createConsumer(queue).receiveNoWait();
+         TextMessage rm = (TextMessage)s.createConsumer(queue).receive(500);
    
          assertEquals("one", rm.getText());
       }

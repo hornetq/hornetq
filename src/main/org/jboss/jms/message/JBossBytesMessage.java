@@ -39,7 +39,6 @@ import javax.jms.MessageFormatException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.util.MessagingJMSException;
-import org.jboss.jms.util.SafeUTF;
 import org.jboss.logging.Logger;
 
 /**

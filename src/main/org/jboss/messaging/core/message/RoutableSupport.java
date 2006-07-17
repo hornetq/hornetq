@@ -468,6 +468,11 @@ public abstract class RoutableSupport implements Routable, Externalizable
       deliveryCount++;      
    }
    
+   public void decrementDeliveryCount()
+   {
+      deliveryCount--;
+   }
+   
    public void setDeliveryCount(int deliveryCount)
    {
       this.deliveryCount = deliveryCount;

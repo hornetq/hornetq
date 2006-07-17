@@ -35,9 +35,11 @@ import javax.transaction.TransactionManager;
 import org.jboss.jms.server.plugin.JDBCChannelMapper;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.State;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -142,58 +144,278 @@ public class PagingStateTestBase extends MessagingTestCase
       }
    }
    
+   class ConsumingReceiver implements Receiver
+   {
+      int numToConsume;
+      
+      int count;
+      
+      MessageReference[] refs;
+      
+      int consumeCount;
+      
+      boolean xa;
+      
+      boolean tx;
+      
+      SimpleDelivery[] dels;
+      
+      ConsumingReceiver(int numToConsume, MessageReference[] refs, int consumeCount, boolean tx, boolean xa)
+         throws Exception
+      {
+         this.numToConsume = numToConsume;
+         
+         this.refs = refs;
+         
+         this.consumeCount = consumeCount;
+         
+         this.xa = xa;
+         
+         this.tx = tx;
+         
+         this.dels = new SimpleDelivery[numToConsume];
+      }
 
-   protected void consume(Channel channel, State state, int consumeCount,
-         MessageReference[] refs, int num)
-      throws Throwable
-   {
-      for (int i = 0; i < num; i++)
+      public synchronized Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+      {  
+         if (count >= numToConsume)
+         {
+            return null;
+         }
+         
+         MessageReference ref = (MessageReference)routable;
+         
+         assertEquals(refs[consumeCount + count].getMessageID(), ref.getMessageID());
+         
+         SimpleDelivery del = new SimpleDelivery(observer, ref);
+         
+         dels[count] = del;
+         
+         count++;
+         
+         if (count == numToConsume)
+         {
+            notify();
+         }
+           
+         return del;                 
+      }      
+      
+      void acknowledge() throws Throwable
       {
-         MessageReference ref = state.removeFirstInMemory();
-         assertNotNull(ref);
-         assertNotNull(ref.getMessage());
-         assertEquals(refs[consumeCount + i].getMessageID(), ref.getMessageID());
-         Delivery del = new SimpleDelivery(channel, ref, false);
-         state.addDelivery(del);
-         state.acknowledge(del);
+         //Wait for them all to arrive first
+         
+         synchronized (this)
+         {
+         
+            while (count < numToConsume)
+            {
+               wait(10000);
+      
+               if (count < numToConsume)
+               {
+                  PagingStateTestBase.fail();
+                  return;
+               }
+            }
+         }
+         
+         Transaction theTx = null;
+         
+         if (tx)
+         {
+            if (xa)
+            {
+               theTx = createXATx();
+            }
+            else
+            {
+               theTx = tr.createTransaction();
+            }
+         }
+         
+         for (int i = 0; i < numToConsume; i++)
+         {
+            dels[i].acknowledge(theTx);
+         }
+         
+         if (tx)
+         {
+            if (xa)
+            {
+               theTx.prepare();
+               theTx.commit();
+            }
+            else
+            {
+               theTx.commit();
+            }
+         }
+         
+         
       }
    }
    
-   protected void consumeInTx(Channel channel, State state, int consumeCount,
+   class CancellingReceiver implements Receiver
+   {
+      int numToCancel;
+      
+      int count;
+        
+      SimpleDelivery[] toCancel;
+      
+      CancellingReceiver(int numToConsume)
+         throws Exception
+      {
+         this.numToCancel = numToConsume;
+         
+         this.toCancel = new SimpleDelivery[numToCancel];
+         
+      }
+
+      public synchronized Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+      {
+         if (count == numToCancel)
+         {
+            return null;
+         }
+         
+         MessageReference ref = (MessageReference)routable;
+         
+         SimpleDelivery del = new SimpleDelivery(observer, ref);
+         
+         toCancel[count] = del;                  
+         
+         count++;         
+         
+         if (count == numToCancel)
+         {
+            notify();
+         }
+         
+         return del;
+                  
+      }      
+      
+      public synchronized SimpleDelivery[] getToCancel() throws Exception
+      {
+         // Wait for them all to arrive first
+         
+         while (count < numToCancel)
+         {
+            wait(1000);
+            
+            if (count < numToCancel)
+            {
+               PagingStateTestBase.fail();
+               return null;
+            }
+         }
+         
+         return toCancel;
+         
+      }
+      
+      void cancel() throws Exception
+      {
+         //Wait for them all to arrive first
+         
+         synchronized (this)
+         {
+            
+            while (count < numToCancel)
+            {
+               wait(1000);
+               
+               if (count < numToCancel)
+               {
+                  PagingStateTestBase.fail();
+                  return;
+               }
+            }
+         }
+         
+         for (int i = numToCancel - 1; i >=0; i--)
+         {
+            try
+            {
+               toCancel[i].cancel();
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to cancel", t);
+               PagingStateTestBase.fail();
+            }
+         }
+      }
+   }
+
+   protected void consume(Channel channel, int consumeCount,
          MessageReference[] refs, int num)
       throws Throwable
    {
-      Transaction tx = tr.createTransaction();
-      for (int i = 0; i < num; i++)
-      {
-         MessageReference ref = state.removeFirstInMemory();
-         assertNotNull(ref);
-         assertNotNull(ref.getMessage());
-         assertEquals(refs[consumeCount + i].getMessageID(), ref.getMessageID());
-         Delivery del = new SimpleDelivery(channel, ref, false);
-         state.addDelivery(del);
-         state.acknowledge(del, tx);
-      }
-      tx.commit();
+      ConsumingReceiver r = new ConsumingReceiver(num, refs, consumeCount, false, false);
+      channel.add(r);
+      channel.deliver(false);
+      r.acknowledge();
+      channel.remove(r);
+      //Need to give enough time for the call to handle to complete and return
+      //thus removing the ref
+      Thread.sleep(500);
    }
    
-   protected void consumeIn2PCTx(Channel channel, State state, int consumeCount,
+   protected void consumeInTx(Channel channel, int consumeCount,
          MessageReference[] refs, int num)
       throws Throwable
    {
-      Transaction tx = createXATx();
-      for (int i = 0; i < num; i++)
-      {
-         MessageReference ref = state.removeFirstInMemory();
-         assertNotNull(ref);
-         assertNotNull(ref.getMessage());
-         assertEquals(refs[consumeCount + i].getMessageID(), ref.getMessageID());
-         Delivery del = new SimpleDelivery(channel, ref, false);
-         state.addDelivery(del);
-         state.acknowledge(del, tx);
-      }
-      tx.prepare();
-      tx.commit();
+      ConsumingReceiver r = new ConsumingReceiver(num, refs, consumeCount, true, false);
+      channel.add(r);
+      channel.deliver(false);
+      r.acknowledge();
+      channel.remove(r);
+      //Need to give enough time for the call to handle to complete and return
+      //thus removing the ref
+      Thread.sleep(500);
+   }
+   
+   protected void consumeIn2PCTx(Channel channel, int consumeCount,
+         MessageReference[] refs, int num)
+      throws Throwable
+   {
+      ConsumingReceiver r = new ConsumingReceiver(num, refs, consumeCount, true, true);
+      channel.add(r);
+      channel.deliver(false);
+      r.acknowledge();
+      channel.remove(r);
+      //Need to give enough time for the call to handle to complete and return
+      //thus removing the ref
+      Thread.sleep(500);
+   }
+   
+   protected SimpleDelivery[] getDeliveries(Channel channel, int number) throws Exception
+   {
+      CancellingReceiver r1 = new CancellingReceiver(number);
+      channel.add(r1);
+      channel.deliver(false);   
+      SimpleDelivery[] dels = r1.getToCancel();
+      channel.remove(r1);
+      //Need to give enough time for the call to handle to complete and return
+      //thus removing the ref
+      Thread.sleep(500);      
+      
+      return dels;
+   }
+   
+   protected void cancelDeliveries(Channel channel, int number) throws Exception
+   {
+      CancellingReceiver r1 = new CancellingReceiver(number);
+      channel.add(r1);
+      channel.deliver(false);   
+      r1.cancel();
+      channel.remove(r1);
+      //Need to give enough time for the call to handle to complete and return
+      //thus removing the ref
+      Thread.sleep(500);      
    }
    
    

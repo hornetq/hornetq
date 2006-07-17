@@ -119,6 +119,8 @@ public class SimpleReceiver implements Receiver
 
    public Delivery handle(DeliveryObserver observer, Routable r, Transaction tx)
    {
+      log.info(this + " got routable:" + r);
+      
       try
       {
          if (r == null)
@@ -201,7 +203,7 @@ public class SimpleReceiver implements Receiver
          return;
       }
       log.info("receiver explicitely requesting message from the channel");
-      channel.deliver(this);
+      channel.deliver(true);
    }
 
    public void clear()

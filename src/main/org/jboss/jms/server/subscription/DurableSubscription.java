@@ -28,6 +28,8 @@ import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * 
  * A DurableSubscription.
@@ -45,10 +47,11 @@ public class DurableSubscription extends Subscription
    
    public DurableSubscription(long id, Topic topic, 
          MessageStore ms, PersistenceManager pm, MemoryManager mm, 
-         int fullSize, int pageSize, int downCacheSize, Selector selector, boolean isNoLocal,
+         int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor,
+         Selector selector, boolean isNoLocal,
          String name, String clientID)
    {
-      super(id, topic, ms, pm, mm, true, fullSize, pageSize, downCacheSize, selector, isNoLocal);
+      super(id, topic, ms, pm, mm, true, fullSize, pageSize, downCacheSize, executor, selector, isNoLocal);
       this.name = name;
       this.clientID = clientID;
    }

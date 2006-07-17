@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
 /**
@@ -57,21 +56,6 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
 
    // ConsumerAdvised implementation --------------------------------
 
-   public void activate() throws JMSException
-   {
-      endpoint.activate();
-   }
-
-   public void cancelDelivery(long messageID) throws JMSException
-   {
-      endpoint.cancelDelivery(messageID);
-   }
-   
-   public void cancelDeliveries(List messageIDs) throws JMSException
-   {
-      endpoint.cancelDeliveries(messageIDs);
-   }
-
    public void close() throws JMSException
    {
       endpoint.close();
@@ -81,17 +65,12 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
    {
       endpoint.closing();
    }
-
-   public long deactivate() throws JMSException
+   
+   public void more() throws JMSException
    {
-      return endpoint.deactivate();
+      endpoint.more();
    }
-
-   public MessageProxy getMessageNow(boolean wait) throws JMSException
-   {
-      return endpoint.getMessageNow(wait);
-   }
-
+  
    // AdvisedSupport overrides --------------------------------------
 
    public Object getEndpoint()

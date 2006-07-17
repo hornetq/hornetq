@@ -135,7 +135,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-
       producerConnection.close();
       consumerConnection.close();
 
@@ -324,6 +323,15 @@ public class MessageConsumerTest extends MessagingTestCase
 
       // start consumer connection after the message is submitted
       consumerConnection.start();
+      
+      //NOTE! There semantics of receiveNoWait do not guarantee the message is available
+      //immediately after the message is sent
+      //It will be available some indeterminate time later.
+      //This is fine and as per spec.
+      //To implement receiveNoWait otherwise would be very costly
+      //Also other messaging systems e.g. Sun implement it this way
+      
+      Thread.sleep(500);
 
       TextMessage m = (TextMessage)queueConsumer.receiveNoWait();
       assertEquals(tm.getText(), m.getText());
@@ -382,37 +390,40 @@ public class MessageConsumerTest extends MessagingTestCase
    // closed consumer tests
    //
 
-   public void testClose1() throws Exception
-   {
-      // there is a consumer already open by setup
-
-      consumerConnection.start();
-
-      Message m = producerSession.createMessage();
-      queueProducer.send(m);
-
-      // the message is in the channel, however the queue maintains it as "not delivered"
-
-      QueueBrowser browser = producerSession.createBrowser(queue);
-      Enumeration e = browser.getEnumeration();
-      Message bm = (Message)e.nextElement();
-      assertEquals(m.getJMSMessageID(), bm.getJMSMessageID());
-      assertFalse(e.hasMoreElements());
-
-      // create a second consumer and try to receive from queue, it should return the message
-      MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
-
-      Message rm = queueConsumer2.receive(3000);
-      assertEquals(m.getJMSMessageID(), rm.getJMSMessageID());
-
-      queueConsumer.close();
-
-
-      // try to receive from queue again, it should get a message
-      rm = queueConsumer2.receive(3000);
-      assertNull(rm);
-
-   }
+   //This test is not valid - 
+   //The message will not be in the new consumer it will be in the original consumer
+   
+//   public void testClose1() throws Exception
+//   {
+//      // there is a consumer already open by setup
+//
+//      consumerConnection.start();
+//
+//      Message m = producerSession.createMessage();
+//      queueProducer.send(m);
+//
+//      // the message is in the channel, however the queue maintains it as "not delivered"
+//
+//      QueueBrowser browser = producerSession.createBrowser(queue);
+//      Enumeration e = browser.getEnumeration();
+//      Message bm = (Message)e.nextElement();
+//      assertEquals(m.getJMSMessageID(), bm.getJMSMessageID());
+//      assertFalse(e.hasMoreElements());
+//
+//      // create a second consumer and try to receive from queue, it should return the message
+//      MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
+//
+//      Message rm = queueConsumer2.receive(3000);
+//      assertEquals(m.getJMSMessageID(), rm.getJMSMessageID());
+//
+//      queueConsumer.close();
+//
+//
+//      // try to receive from queue again, it should get a message
+//      rm = queueConsumer2.receive(3000);
+//      assertNull(rm);
+//
+//   }
 
    /* Test that an ack can be sent after the consumer that received the message has been closed.
     * Acks are scoped per session.
@@ -763,8 +774,10 @@ public class MessageConsumerTest extends MessagingTestCase
           assertEquals("hello1", rm1.getText());
           log.trace(rm1.getJMSMessageID());
 
+          log.trace("rolling back");
           //rollback should cause redelivery of messages not acked
           sess.rollback();
+          log.trace("rolled back");
 
           TextMessage rm2 = (TextMessage)cons1.receive(1500);
           assertEquals("hello1", rm2.getText());
@@ -817,14 +830,14 @@ public class MessageConsumerTest extends MessagingTestCase
           assertEquals("hello1", rm1.getText());
 
           cons1.close();
-
-          MessageConsumer cons2 = sess.createConsumer(queue);
-
+          
           //rollback should cause redelivery of messages
 
           //in this case redelivery occurs to a different receiver
 
           sess.rollback();
+  
+          MessageConsumer cons2 = sess.createConsumer(queue);
 
           TextMessage rm2 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm2);
@@ -932,13 +945,13 @@ public class MessageConsumerTest extends MessagingTestCase
           assertEquals("hello1", rm1.getText());
 
           cons1.close();
-
-          MessageConsumer cons2 = sess.createConsumer(queue);
-
+         
           log.debug("sess.recover()");
 
           //redeliver
           sess.recover();
+          
+          MessageConsumer cons2 = sess.createConsumer(queue);
 
           log.debug("receiving ...");
 
@@ -994,12 +1007,19 @@ public class MessageConsumerTest extends MessagingTestCase
 
           Message r1 = cons1.receive();
           
+          log.trace("Got first message");
+          
           cons1.close();
           
+          log.trace("Closed consumer");
+          
           MessageConsumer cons2 = sess.createConsumer(queue);
-
+          
+          log.trace("Wairting for second message");
           Message r2 = cons2.receive();
                   
+          log.trace("got second message");
+          
           Message r3 = cons2.receive();
           
           r1.acknowledge();
@@ -1066,96 +1086,102 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * Test server-side consumer delegate activation (on receive())
     */
-   public void testReceive1() throws Exception
-   {
-      Connection conn = null;
-
-       try
-       {
-          conn = cf.createConnection();
-
-          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-          s.createConsumer(queue);
-
-          conn.start();
-
-          MessageProducer p = s.createProducer(queue);
-          Message m = s.createTextMessage("1");
-          p.send(m);
-
-          MessageConsumer c2 = s.createConsumer(queue);
-
-          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
-
-          Message r = c2.receive(2000);
-
-
-          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-       }
-       finally
-       {
-          if (conn != null)
-          {
-             conn.close();
-          }
-       }
-   }
+// This test is not valid since the message will be in the first consumer, not c2
+   
+   
+//   public void testReceive1() throws Exception
+//   {
+//      Connection conn = null;
+//
+//       try
+//       {
+//          conn = cf.createConnection();
+//
+//          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//          s.createConsumer(queue);
+//
+//          conn.start();
+//
+//          MessageProducer p = s.createProducer(queue);
+//          Message m = s.createTextMessage("1");
+//          p.send(m);
+//
+//          MessageConsumer c2 = s.createConsumer(queue);
+//
+//          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
+//
+//          Message r = c2.receive(2000);
+//
+//
+//          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+//       }
+//       finally
+//       {
+//          if (conn != null)
+//          {
+//             conn.close();
+//          }
+//       }
+//   }
 
    /**
     * Test server-side consumer delegate activation (on receive())
     */
-   public void testReceive2() throws Exception
-   {
-      Connection conn = null;
-
-       try
-       {
-          conn = cf.createConnection();
-
-          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-          s.createConsumer(queue);
-
-          conn.start();
-
-          MessageProducer p = s.createProducer(queue);
-          Message m = s.createTextMessage("1");
-          p.send(m);
-
-          MessageConsumer c2 = s.createConsumer(queue);
-          final Set received = new HashSet();
-
-          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
-
-          class Listener implements MessageListener
-          {
-             Latch latch = new Latch();
-
-             public void onMessage(Message m)
-             {
-                received.add(m);
-                latch.release();
-             }
-          }
-
-          Listener list = new Listener();
-          c2.setMessageListener(list);
-
-          list.latch.acquire();
-          assertEquals(1, received.size());
-          Message r = (Message)received.iterator().next();
-          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-
-       }
-       finally
-       {
-          if (conn != null)
-          {
-             conn.close();
-          }
-       }
-   }
+   
+   //This test is not valid since the message will be in the first consumer, not c2
+   
+//   public void testReceive2() throws Exception
+//   {
+//      Connection conn = null;
+//
+//       try
+//       {
+//          conn = cf.createConnection();
+//
+//          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//          s.createConsumer(queue);
+//
+//          conn.start();
+//
+//          MessageProducer p = s.createProducer(queue);
+//          Message m = s.createTextMessage("1");
+//          p.send(m);
+//
+//          MessageConsumer c2 = s.createConsumer(queue);
+//          final Set received = new HashSet();
+//
+//          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
+//
+//          class Listener implements MessageListener
+//          {
+//             Latch latch = new Latch();
+//
+//             public void onMessage(Message m)
+//             {
+//                received.add(m);
+//                latch.release();
+//             }
+//          }
+//
+//          Listener list = new Listener();
+//          c2.setMessageListener(list);
+//
+//          list.latch.acquire();
+//          assertEquals(1, received.size());
+//          Message r = (Message)received.iterator().next();
+//          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+//
+//       }
+//       finally
+//       {
+//          if (conn != null)
+//          {
+//             conn.close();
+//          }
+//       }
+//   }
 
 
    public void testSendAndReceivePersistentDifferentConnections() throws Exception
@@ -1526,7 +1552,7 @@ public class MessageConsumerTest extends MessagingTestCase
       topicProducer.send(m1);
 
       // block this thread for a while to allow ServerConsumerDelegate's delivery thread to kick in
-      Thread.sleep(5);
+      Thread.sleep(500);
 
       m = topicConsumer.receiveNoWait();
 
@@ -2076,9 +2102,18 @@ public class MessageConsumerTest extends MessagingTestCase
          Session sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          Session sess2 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
+         
+         log.trace("careting consumer1");
          MessageConsumer cons1 = sess1.createConsumer(topic);
+         
+         log.trace("creating consumer2");
          MessageConsumer cons2 = sess2.createConsumer(topic);
+         
+         log.trace("starting connection");
+         
          conn1.start();
+         
+         log.trace("started connection");
 
          Session sess3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess3.createProducer(topic);
@@ -2116,6 +2151,7 @@ public class MessageConsumerTest extends MessagingTestCase
       {
          if (conn1 != null)
          {
+            log.trace("closing connection");
             conn1.close();
          }
       }
@@ -2831,6 +2867,9 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testRedeliveredDifferentSessions() throws Exception
    {
+      producerSession.close();
+      consumerSession.close();
+            
       Session sessProducer = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sessProducer.createProducer(queue);
       TextMessage tm = sessProducer.createTextMessage("testRedeliveredDifferentSessions");

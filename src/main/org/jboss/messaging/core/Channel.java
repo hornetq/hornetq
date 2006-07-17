@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-
 import java.util.List;
 
 /**
@@ -49,6 +47,9 @@ import java.util.List;
 public interface Channel extends DeliveryObserver, Receiver, Distributor
 {
 
+   /**    
+    * @return the unique ID of the channel
+    */
    long getChannelID();
 
    /**
@@ -83,24 +84,57 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
    List browse();
 
    /**
-    * @see Channel#browse()
+    * @param filter - may be null, in which case no filter is applied.
+    *
+    * @return a List containing message references of messages whose state is maintained by this
+    *         State instance. The list includes references of messages in process of being delivered
+    *         and references of messages for which delivery has not been attempted yet.
     */
    List browse(Filter filter);
 
-   MessageStore getMessageStore();
+   /**
+    * Delivers as many references as possible to it's router until no more deliveries are returned
+    *
+    */
+   void deliver(boolean synchronous);
 
    /**
-    * Synchronously pushes the "oldest" message stored by the channel to the receiver. If receiver
-    * is null, it delivers the message to the first available receiver.
+    * Close the channel
     *
-    * @return true if a message was handed over to the receiver and the channel got a delivery in
-    *         exchange, or false otherwise. 
     */
-   boolean deliver(Receiver receiver);
-   
-   boolean deliver();
-
    void close();
+
+   /**
+    * Get a list of message references of messages in the process of being delivered, subject to the filter
+    * @param filter
+    * @return the list
+    */
+   List delivering(Filter filter);
+
+   /**
+    * Get a list of message references of messages not in the process of being delivered, subject to the filter
+    * @param filter
+    * @return the list
+    */
+   List undelivered(Filter filter);   
+
+   /**
+    * Clears non-recoverable state but not persisted state, so a recovery of the channel is possible
+    * TODO really?
+    */
+   void clear();
+   
+   /**
+    * Message amount. 
+    * @return message amount.
+    */
+   int messageCount();   
+   
+   /**
+    * Load the channel state from storage
+    * @throws Exception
+    */
+   void load() throws Exception;
 
 }
 

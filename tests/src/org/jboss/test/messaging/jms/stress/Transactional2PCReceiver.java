@@ -215,6 +215,8 @@ public class Transactional2PCReceiver extends Receiver
          xaResource.end(xid, XAResource.TMSUCCESS);
          xaResource.prepare(xid);
          xaResource.commit(xid, false);
+         
+         finished();
            
       }
       catch (Exception e)

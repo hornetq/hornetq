@@ -34,6 +34,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    protected String clientID;
    protected int connectionFactoryID;
    protected JNDIBindings jndiBindings;
+   protected int prefetchSize = 150;
 
    protected ObjectName serverPeerObjectName;
    protected ConnectionFactoryManager connectionFactoryManager;
@@ -97,7 +98,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
       }
       
       connectionFactoryID = connectionFactoryManager.
-         registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing);
+         registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing, prefetchSize);
               
       if (enablePing)
       {
@@ -123,6 +124,16 @@ public class ConnectionFactory extends ServiceMBeanSupport
    }
 
    // JMX managed attributes ----------------------------------------
+   
+   public int getPrefetchSize()
+   {
+      return prefetchSize;
+   }
+   
+   public void setPrefetchSize(int prefetchSize)
+   {
+      this.prefetchSize = prefetchSize;
+   }
 
    public String getClientID()
    {

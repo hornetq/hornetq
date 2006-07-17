@@ -28,6 +28,8 @@ import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * 
  * A Subscription.
@@ -43,16 +45,18 @@ public class Subscription extends CoreSubscription
    
    public Subscription(long id, Topic topic, 
          MessageStore ms, PersistenceManager pm, MemoryManager mm,
-         int fullSize, int pageSize, int downCacheSize, Selector selector, boolean isNoLocal)
+         int fullSize, int pageSize, int downCacheSize,
+         QueuedExecutor executor, Selector selector, boolean isNoLocal)
    {
-      this(id, topic, ms, pm, mm, false, fullSize, pageSize, downCacheSize, selector, isNoLocal);
+      this(id, topic, ms, pm, mm, false, fullSize, pageSize, downCacheSize, executor, selector, isNoLocal);
    }
    
    protected Subscription(long id, Topic topic, 
          MessageStore ms, PersistenceManager pm, MemoryManager mm, boolean recoverable,
-         int fullSize, int pageSize, int downCacheSize, Selector selector, boolean isNoLocal)
+         int fullSize, int pageSize, int downCacheSize,
+         QueuedExecutor executor, Selector selector, boolean isNoLocal)
    {
-      super(id, topic, ms, pm, mm, recoverable, fullSize, pageSize, downCacheSize, selector);
+      super(id, topic, ms, pm, mm, recoverable, fullSize, pageSize, downCacheSize, executor, selector);
       this.isNoLocal = isNoLocal;
    }
          

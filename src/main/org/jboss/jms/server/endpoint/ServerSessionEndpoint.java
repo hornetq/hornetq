@@ -24,6 +24,7 @@ package org.jboss.jms.server.endpoint;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,6 +47,7 @@ import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.subscription.DurableSubscription;
 import org.jboss.jms.server.subscription.Subscription;
+import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -90,7 +92,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private PersistenceManager pm;
    private MessageStore ms;
    private MemoryManager mm;
-
+   
    // Constructors --------------------------------------------------
 
    protected ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
@@ -107,9 +109,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       mm = sp.getMemoryManager();
 
       consumers = new HashMap();
-		browsers = new HashMap();
+		browsers = new HashMap();  
    }
-
+   
    // SessionDelegate implementation --------------------------------
 
 	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
@@ -250,14 +252,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
+      int prefetchSize = connectionEndpoint.getPrefetchSize();
+      
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID,
                                     subscription == null ? (Channel)coreDestination : subscription,
-                                    this, selector, noLocal, jmsDestination);
+                                    this, selector, noLocal, jmsDestination, prefetchSize);
        
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
          
-      ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID);
+      
+      ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, prefetchSize);
       
       if (subscription != null)
       {
@@ -382,33 +387,69 @@ public class ServerSessionEndpoint implements SessionEndpoint
       connectionEndpoint.sendMessage(message, null);
    }
    
-   /**
-    * Cancel all the deliveries in the session
-    */
-	public void cancelDeliveries() throws JMSException
-	{
-      if (closed)
+   public void acknowledgeBatch(List ackInfos) throws JMSException
+   {
+      Iterator iter = ackInfos.iterator();
+      
+      while (iter.hasNext())
       {
-         throw new IllegalStateException("Session is closed");
+         AckInfo ackInfo = (AckInfo)iter.next();
+         
+         acknowledge(ackInfo);
+      }
+   }
+   
+   public void acknowledge(AckInfo ackInfo) throws JMSException
+   {
+      //If the message was delivered via a connection consumer then the message needs to be acked
+      //via the original consumer that was used to feed the connection consumer - which
+      //won't be one of the consumers of this session
+      //Therefore we always look in the global map of consumers held in the server peer
+      ServerConsumerEndpoint consumer = this.connectionEndpoint.getConsumerEndpoint(ackInfo.getConsumerID());
+
+      if (consumer == null)
+      {
+         throw new IllegalArgumentException("Cannot find consumer id: " + ackInfo.getConsumerID());
       }
       
-      if (trace) { log.trace("Cancelling messages"); }
-            
-		for(Iterator i = this.consumers.values().iterator(); i.hasNext(); )
-		{
-			ServerConsumerEndpoint scd = (ServerConsumerEndpoint)i.next();
-         scd.cancelAllDeliveries();
-		}     
-	}
-	
-   public void acknowledge() throws JMSException
+      consumer.acknowledge(ackInfo.getMessageID());
+      
+   }      
+   
+   public void cancelDeliveries(List ackInfos) throws JMSException
    {
+      //Deliveries must be cancelled in reverse order
+      
+      log.info(this + " cancelling deliveries");
+      
+      Set consumers = new HashSet();
+      
+      for (int i = ackInfos.size() - 1; i >= 0; i--)
+      {
+         AckInfo ack = (AckInfo)ackInfos.get(i);
+         
+         //We look in the global map since the message might have come from connection consumer
+         ServerConsumerEndpoint consumer = this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
 
-      Iterator iter = consumers.values().iterator();
+         if (consumer == null)
+         {
+            throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
+         }
+         
+         consumer.cancelDelivery(new Long(ack.getMessageID()));
+         
+         consumers.add(consumer);
+      }
+      
+      //Need to prompt delivery for all consumers
+      
+      Iterator iter = consumers.iterator();
+      
       while (iter.hasNext())
       {
          ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)iter.next();
-         consumer.acknowledgeAll();
+         
+         consumer.promptDelivery();
       }
    }
 
@@ -516,7 +557,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new MessagingJMSException("Failed to unsubscribe", e);
       }
    }
-   
+    
    // Public --------------------------------------------------------
    
    public ServerConnectionEndpoint getConnectionEndpoint()
@@ -576,13 +617,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
    /**
     * Starts this session's Consumers
     */
-   protected void setStarted(boolean s)
+   protected void setStarted(boolean s) throws JMSException
    {
       synchronized(consumers)
       {
          for(Iterator i = consumers.values().iterator(); i.hasNext(); )
          {
-            ((ServerConsumerEndpoint)i.next()).setStarted(s);
+            ServerConsumerEndpoint sce = (ServerConsumerEndpoint)i.next();
+            if (s)
+            {
+               sce.start();
+            }
+            else
+            {
+               sce.stop();
+            }
          }
       }
    }   

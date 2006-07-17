@@ -96,6 +96,15 @@ public class XATest extends MessagingTestCase
    {
       ServerManagement.undeployQueue("Queue");
       
+      if (!ServerManagement.isRemote())
+      {
+         if (tm.getTransaction() != null)
+         {
+            //roll it back
+            tm.rollback();
+         }
+      }
+      
       if (suspendedTx != null)
       {
          tm.resume(suspendedTx);
@@ -1181,7 +1190,7 @@ public class XATest extends MessagingTestCase
          assertEquals("jellyfish2", r1.getText());
                   
          cons1.close();
-         
+      
          MessageConsumer cons2 = sess2.createConsumer(queue);
          TextMessage r2 = (TextMessage)cons2.receive(1000);
          
@@ -1192,6 +1201,8 @@ public class XATest extends MessagingTestCase
          
          assertNotNull(r2);
          assertEquals("jellyfish4", r2.getText());
+         
+         cons2.close();            
          
          //rollback                          
          
@@ -1208,13 +1219,11 @@ public class XATest extends MessagingTestCase
          r3 = (TextMessage)cons.receive(1000);         
          assertNotNull(r3);
          assertEquals("jellyfish2", r3.getText());
-         //log.info(r3.getText());
-         
+
          TextMessage r4 = (TextMessage)cons.receive(1000);         
          assertNotNull(r4);
          assertEquals("jellyfish3", r4.getText());
-         //log.info(r4.getText());
-         
+
          r4 = (TextMessage)cons.receive(1000);         
          assertNotNull(r4);
          assertEquals("jellyfish4", r4.getText());
@@ -1300,7 +1309,9 @@ public class XATest extends MessagingTestCase
          assertNotNull(r2);
          assertEquals("jellyfish4", r2.getText());
          
-         //rollback                          
+         //rollback                 
+         
+         cons2.close();
          
          tx.rollback();
          
@@ -1321,13 +1332,11 @@ public class XATest extends MessagingTestCase
          r3 = (TextMessage)cons.receive(1000);         
          assertNotNull(r3);
          assertEquals("jellyfish4", r3.getText());
-         //log.info(r3.getText());
-         
+
          TextMessage r4 = (TextMessage)cons.receive(1000);         
          assertNotNull(r4);
          assertEquals("jellyfish1", r4.getText());
-         //log.info(r4.getText());
-         
+  
          r4 = (TextMessage)cons.receive(1000);         
          assertNotNull(r4);
          assertEquals("jellyfish2", r4.getText());
@@ -1357,7 +1366,7 @@ public class XATest extends MessagingTestCase
 
       try
       {
-         //First send 2 messages
+         //First send 4 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod  = sessProducer.createProducer(queue);
@@ -1385,7 +1394,6 @@ public class XATest extends MessagingTestCase
          tx.enlistResource(res1);
          tx.enlistResource(res2);
          
-         //Receive the messages, two on each consumer
          MessageConsumer cons1 = sess1.createConsumer(queue);
          TextMessage r1 = (TextMessage)cons1.receive(1000);
          
@@ -1433,13 +1441,11 @@ public class XATest extends MessagingTestCase
          r3 = (TextMessage)cons.receive(1000);         
          assertNotNull(r3);
          assertEquals("jellyfish2", r3.getText());
-         //log.info(r3.getText());
-         
+  
          TextMessage r4 = (TextMessage)cons.receive(1000);         
          assertNotNull(r4);
          assertEquals("jellyfish3", r4.getText());
-         //log.info(r4.getText());
-         
+      
          r4 = (TextMessage)cons.receive(1000);         
          assertNotNull(r4);
          assertEquals("jellyfish4", r4.getText());
@@ -1873,15 +1879,19 @@ public class XATest extends MessagingTestCase
          assertNotNull(r2);
          assertEquals("jellyfish2", r2.getText());
          
+         cons1.close();
+         
          //rollback this transaction
          tx2.rollback();
-         
+     
          //verify that second message is available
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
          MessageConsumer cons = sess.createConsumer(queue);
+
          TextMessage r3 = (TextMessage)cons.receive(1000);
+
          assertNotNull(r3);
          assertEquals("jellyfish2", r3.getText());
          r3 = (TextMessage)cons.receive(1000);
@@ -1891,7 +1901,7 @@ public class XATest extends MessagingTestCase
          //rollback the other tx
          tm.resume(suspended);
          suspended.rollback();
-         
+       
          //Verify the first message is now available
          r3 = (TextMessage)cons.receive(1000);
          assertNotNull(r3);

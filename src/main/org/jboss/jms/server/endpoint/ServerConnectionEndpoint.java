@@ -124,11 +124,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private Client callbackClient;
    
    private byte usingVersion;
+   
+   private int prefetchSize;
 
    // Constructors --------------------------------------------------
    
    protected ServerConnectionEndpoint(ServerPeer serverPeer, String clientID,
-                                      String username, String password)
+                                      String username, String password, int prefetchSize)
    {
       this.serverPeer = serverPeer;
 
@@ -141,6 +143,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
       this.connectionID = serverPeer.getNextObjectID();
       this.clientID = clientID;
+      this.prefetchSize = prefetchSize;
 
       sessions = new ConcurrentReaderHashMap();
       temporaryDestinations = new ConcurrentReaderHashSet();
@@ -176,7 +179,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
                   
          int sessionID = serverPeer.getNextObjectID();
-         
+           
          // create the corresponding server-side session endpoint and register it with this
          // connection endpoint instance
          ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this);
@@ -409,9 +412,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          else if (request.getRequestType() == TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST)
          {
             if (trace) { log.trace("one phase rollback request received"); }
-              
-            // We just need to cancel deliveries
-
+                    
             Transaction tx = null;
             try
             {               
@@ -542,7 +543,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       return (Xid[])xids.toArray(new Xid[xids.size()]);
    }
-
+  
    // Public --------------------------------------------------------
    
    public String getUsername()
@@ -596,6 +597,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    public byte getUsingVersion()
    {
       return usingVersion;
+   }
+   
+   public int getPrefetchSize()
+   {
+      return prefetchSize;
    }
          
    public String toString()
@@ -805,7 +811,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // Private -------------------------------------------------------
    
-   private void setStarted(boolean s)
+   private void setStarted(boolean s) throws JMSException
    {
       synchronized(sessions)
       {

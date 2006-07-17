@@ -133,6 +133,7 @@ $reldir/../../src/resources/hsqldb.jar${SEP}\
 $reldir/../../src/resources/mysql-connector-java-3.0.17-ga-bin.jar${SEP}\
 $reldir/../../src/resources/ojdbc14.jar${SEP}\
 $reldir/../../src/resources/postgresql-8.1-405.jdbc3.jar${SEP}\
+$reldir/../../../naming/output/lib/jnp-client.jar${SEP}\
 ${REMOTING_LIB}${SEP}\
 ${SERIALIZATION_LIB}${SEP}\
 ${AOP_LIB}${SEP}\

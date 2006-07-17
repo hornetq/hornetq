@@ -74,6 +74,8 @@ public class Receiver extends Runner implements MessageListener
    
    private Message theMessage;
    
+   private boolean finished;
+   
    
    public Receiver(Connection conn, Session sess, int numMessages, Destination dest) throws Exception
    {
@@ -116,7 +118,7 @@ public class Receiver extends Runner implements MessageListener
          //Wait for message to be processed
          synchronized (lock2)
          {
-            while (!done)
+            while (!done && !finished)
             {
                lock2.wait();
             }
@@ -128,6 +130,15 @@ public class Receiver extends Runner implements MessageListener
       {
          log.error("Failed to put in channel", e);
          failed = true;
+      }
+   }
+   
+   protected void finished()
+   {
+      synchronized (lock2)
+      {
+         finished = true;
+         lock2.notify();
       }
    }
    
@@ -204,6 +215,8 @@ public class Receiver extends Runner implements MessageListener
             
             prodName = m.getStringProperty("PROD_NAME");
             msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+          //  
+         //   log.info(this + " Got: " + prodName + ":" + msgCount);
                              
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)

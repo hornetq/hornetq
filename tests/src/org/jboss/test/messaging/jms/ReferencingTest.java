@@ -87,6 +87,8 @@ public class ReferencingTest extends MessagingTestCase
 
       queue = (Destination)initialContext.lookup("/queue/Queue"); 
       
+      this.drainDestination(cf, queue);
+      
    }
 
    public void tearDown() throws Exception
@@ -185,7 +187,7 @@ public class ReferencingTest extends MessagingTestCase
       assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
       
       ref.releaseMemoryReference();
-      
+          
       m2.acknowledge();
       
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());

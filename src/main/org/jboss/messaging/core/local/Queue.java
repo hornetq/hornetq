@@ -26,6 +26,8 @@ import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
@@ -52,9 +54,10 @@ public class Queue extends ChannelSupport implements CoreDestination
    // Constructors --------------------------------------------------
 
    public Queue(long id, MessageStore ms, PersistenceManager pm, MemoryManager mm,
-                boolean recoverable, int fullSize, int pageSize, int downCacheSize)
+                boolean recoverable, int fullSize, int pageSize, int downCacheSize,
+                QueuedExecutor executor)
    {      
-      super(id, ms, pm, mm, true, recoverable, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, mm, true, recoverable, fullSize, pageSize, downCacheSize, executor);
       router = new PointToPointRouter();
       this.fullSize = fullSize;
       this.pageSize = pageSize;
@@ -68,11 +71,6 @@ public class Queue extends ChannelSupport implements CoreDestination
       return "CoreQueue[" + getChannelID() + "]";
    }
    
-   public void load() throws Exception
-   {
-      state.load();
-   }
-   
    public boolean isQueue()
    {
       return true;
@@ -80,7 +78,7 @@ public class Queue extends ChannelSupport implements CoreDestination
    
    public int getMessageCount()
    {
-      return state.messageCount();
+      return messageCount();
    }
    
    // CoreDestination implementation -------------------------------

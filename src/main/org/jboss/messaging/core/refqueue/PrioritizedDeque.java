@@ -34,9 +34,9 @@ import java.util.List;
  */
 public interface PrioritizedDeque
 {
-   boolean addFirst(Object obj, int priority);
+   void addFirst(Object obj, int priority);
    
-   boolean addLast(Object obj, int priority);
+   void addLast(Object obj, int priority);
    
    Object removeFirst();
    

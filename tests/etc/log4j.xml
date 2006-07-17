@@ -33,8 +33,11 @@
       <param name="Append" value="true"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
-      <!-- <param name="Threshold" value="INFO"/> -->
+      <param name="Threshold" value="INFO"/>
+
+      <!--
       <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
+      -->
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -81,70 +84,7 @@
       <priority value="INFO"/>
    </category>
 
-   <category name="org.jboss.test">
-      <!-- <priority value="INFO"/> -->
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
 
-   <category name="org.jboss.jms">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="INFO"/> -->
-   </category>
-
-   <category name="org.jboss.jms.client.JBossConnectionConsumer">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="INFO"/> -->
-   </category>
-
-   <category name="org.jboss.jms.client.remoting.MessageCallbackHandler">
-         <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-         <!-- <priority value="INFO"/> -->
-   </category>
-
-   <category name="org.jboss.serial">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.jms.server.remoting.JMSWireFormat">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.jms.server.remoting.JMSServerInvocationHandler">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.jms.server.security">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.jms.perf">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.messaging">
-      <!-- <priority value="INFO"/> -->
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-   </category>
-
-   <!--
-   <category name="org.jboss.messaging.core.message">
-      <priority value="INFO"/>
-   </category>
-   -->
-
-   <category name="org.jboss.remoting">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="WARN"/>
-   </category>
-
-   <category name="org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService">
-      <priority value="WARN"/>
-   </category>
-
-   <category name="org.jboss.resource.connectionmanager.ConnectionFactoryBindingService">
-      <priority value="WARN"/>
-   </category>
 
    <!-- ======================= -->
    <!-- Setup the Root category -->

@@ -21,14 +21,13 @@
   */
 package org.jboss.jms.destination;
 
+import java.io.Serializable;
+
 import javax.jms.Destination;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.Referenceable;
 
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
-
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

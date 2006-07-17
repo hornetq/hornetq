@@ -26,6 +26,8 @@ import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -44,9 +46,9 @@ public class Pipe extends ChannelSupport
 
    public Pipe(long id, MessageStore ms, PersistenceManager pm, MemoryManager mm,              
                boolean acceptReliableMessages, boolean recoverable,
-               int fullSize, int pageSize, int downCacheSize)
+               int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor)
    {
-      super(id, ms, pm, mm, acceptReliableMessages, recoverable, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, mm, acceptReliableMessages, recoverable, fullSize, pageSize, downCacheSize, executor);
       router = new SingleDestinationRouter();
    }
     

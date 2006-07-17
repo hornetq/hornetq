@@ -21,8 +21,15 @@
   */
 package org.jboss.jms.client.state;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
+import javax.jms.Session;
+
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.MessagingXAResource;
@@ -53,6 +60,12 @@ public class SessionState extends HierarchicalStateSupport
    //Executor used for executing onMessage methods
    private QueuedExecutor executor;
    
+   private boolean recoverCalled;
+   
+   private List toAck;
+   
+   private Map callbackHandlers;
+   
    public SessionState(ConnectionState parent, SessionDelegate delegate,
                        boolean transacted, int ackMode, boolean xa)
    {
@@ -72,6 +85,21 @@ public class SessionState extends HierarchicalStateSupport
          currentTxId = parent.getResourceManager().createLocalTx();        
       }
       executor = new QueuedExecutor(new LinkedQueue());
+      
+      if (ackMode == Session.CLIENT_ACKNOWLEDGE || ackMode == Session.AUTO_ACKNOWLEDGE ||
+          ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         toAck = new ArrayList();
+      }
+      
+      //TODO could optimise this to use the same map of callbackmanagers (which holds refs
+      //to callbackhandlers) in the connection, instead of maintaining another map
+      callbackHandlers = new HashMap();
+   }
+   
+   public List getToAck()
+   {
+      return toAck;
    }
     
    public int getAcknowledgeMode()
@@ -104,6 +132,11 @@ public class SessionState extends HierarchicalStateSupport
       return currentTxId;
    }
    
+   public boolean isRecoverCalled()
+   {
+      return recoverCalled;
+   }
+   
    public void setCurrentTxId(Object id)
    {
       this.currentTxId = id;
@@ -112,6 +145,31 @@ public class SessionState extends HierarchicalStateSupport
    public Version getVersionToUse()
    {
       return parent.getVersionToUse();
+   }
+   
+   public void setRecoverCalled(boolean recoverCalled)
+   {
+      this.recoverCalled = recoverCalled;
+   }
+   
+   public MessageCallbackHandler getCallbackHandler(int consumerID)
+   {
+      return (MessageCallbackHandler)callbackHandlers.get(new Integer(consumerID));
+   }
+   
+   public void addCallbackHandler(MessageCallbackHandler handler)
+   {
+      callbackHandlers.put(new Integer(handler.getConsumerId()), handler);
+   }
+   
+   public void removeCallbackHandler(MessageCallbackHandler handler)
+   {
+      callbackHandlers.remove(new Integer(handler.getConsumerId()));
+   }
+   
+   public List getCallbackHandlers()
+   {
+      return new ArrayList(callbackHandlers.values());
    }
 
 }

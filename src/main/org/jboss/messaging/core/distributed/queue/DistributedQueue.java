@@ -31,7 +31,6 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.distributed.Distributed;
 import org.jboss.messaging.core.distributed.DistributedException;
@@ -83,7 +82,7 @@ public class DistributedQueue extends Queue implements Distributed
    public DistributedQueue(String name, MessageStore ms, PersistenceManager tl,
                            RpcDispatcher dispatcher)
    {
-      super(-1, ms, tl, null, true, 0, 0, 0);
+      super(-1, ms, tl, null, true, 0, 0, 0, null);
       viewKeeper = new QueueViewKeeper();
       peer = new QueuePeer(this, dispatcher);
    }
@@ -109,58 +108,59 @@ public class DistributedQueue extends Queue implements Distributed
       return messages;
    }
 
-   public boolean deliver(Receiver r)
+   public void deliver()
    {
-      boolean delivered = super.deliver(r);
+//      boolean delivered = super.deliver(r);
+//
+//      if (delivered)
+//      {
+//         return true;
+//      }
+//
+//      // this peer has not redelivered any message but other peers may have messages to redeliver
+//
+//      if (r instanceof RemoteQueue)
+//      {
+//         // this was a remote forward request, but there are no local messages to forward so return
+//         return false;
+//      }
+//
+//      // no message in the local state, try remotely
+//      boolean peerWillForward = false;
+//      try
+//      {
+//         peerWillForward = peer.requestForward();
+//      }
+//      catch(DistributedException e)
+//      {
+//         log.error("Redelivery request failed", e);
+//         return false;
+//      }
+//
+//      if (!peerWillForward)
+//      {
+//         return false;
+//      }
+//
+//      // at least one peer will forward a message
+//      while(!delivered)
+//      {
+//         // TODO: experimental. Also see QueuePeer.requestForward() and QueueFacade.forward()
+//         try
+//         {
+//            Thread.sleep(200);
+//         }
+//         catch(InterruptedException e)
+//         {
+//            // ignore
+//         }
+//
+//         if (log.isTraceEnabled()) { log.trace("retrying redelivery"); }
+//         delivered = super.deliver(r);
+//      }
+//
+//      return delivered;
 
-      if (delivered)
-      {
-         return true;
-      }
-
-      // this peer has not redelivered any message but other peers may have messages to redeliver
-
-      if (r instanceof RemoteQueue)
-      {
-         // this was a remote forward request, but there are no local messages to forward so return
-         return false;
-      }
-
-      // no message in the local state, try remotely
-      boolean peerWillForward = false;
-      try
-      {
-         peerWillForward = peer.requestForward();
-      }
-      catch(DistributedException e)
-      {
-         log.error("Redelivery request failed", e);
-         return false;
-      }
-
-      if (!peerWillForward)
-      {
-         return false;
-      }
-
-      // at least one peer will forward a message
-      while(!delivered)
-      {
-         // TODO: experimental. Also see QueuePeer.requestForward() and QueueFacade.forward()
-         try
-         {
-            Thread.sleep(200);
-         }
-         catch(InterruptedException e)
-         {
-            // ignore
-         }
-
-         if (log.isTraceEnabled()) { log.trace("retrying redelivery"); }
-         delivered = super.deliver(r);
-      }
-
-      return delivered;
    }
 
    public void close()

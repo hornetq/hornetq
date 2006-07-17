@@ -21,12 +21,9 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.util.List;
-
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.message.MessageProxy;
 
 /**
  * Represents the set of methods from the ConsumerDelegate that are handled on the server.
@@ -38,17 +35,13 @@ import org.jboss.jms.message.MessageProxy;
  * $Id$
  */
 public interface ConsumerEndpoint extends Closeable
-{
-   void cancelDelivery(long messageID) throws JMSException;
-
-   void cancelDeliveries(List messageIDs) throws JMSException;
-
-   MessageProxy getMessageNow(boolean wait) throws JMSException;
-
-   void activate() throws JMSException;
-
+{  
    /**
-    * @return the last message ID delivered to the client consumer
+    * If the client buffer has previously become full because the server was sending at a faster rate than the
+    * client could consume, then the server will stop sending messages.
+    * When the client has emptied the buffer it then needs to inform the server that it can receive more messages
+    * by calling this method
+    * @throws JMSException
     */
-   long deactivate() throws JMSException;
+   void more() throws JMSException;   
 }

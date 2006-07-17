@@ -28,12 +28,6 @@
 
    <!-- plugins ObjectNames -->
 
-   <attribute access="read-write" getMethod="getThreadPool" setMethod="setThreadPool">
-      <description>The ObjectName of the thread pool plugin</description>
-      <name>ThreadPool</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-
    <attribute access="read-write" getMethod="getPersistenceManager" setMethod="setPersistenceManager">
       <description>The ObjectName of the persistence manager</description>
       <name>PersistenceManager</name>
@@ -138,6 +132,12 @@
       <description>The Security config to use when the destination does not supply any</description>
       <name>DefaultSecurityConfig</name>
       <type>org.w3c.dom.Element</type>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="getQueuedExecutorPoolSize" setMethod="setQueuedExecutorPoolSize">
+      <description>The size of the rotating pool from which to allocate QueuedExecutors</description>
+      <name>QueuedExecutorPoolSize</name>
+      <type>int</type>
    </attribute>
 
    <!-- Managed operations -->

@@ -28,6 +28,8 @@ import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.distributed.queue.base.DistributedQueueTestBase;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -118,7 +120,7 @@ public class RecoverableDistributedQueueTest extends DistributedQueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      channel = new Queue(-1, ms, tl, null, true, 0, 0, 0);
+      channel = new Queue(-1, ms, tl, null, true, 0, 0, 0, new QueuedExecutor());
    }
 
 

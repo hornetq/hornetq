@@ -162,7 +162,9 @@ public class SessionTest extends MessagingTestCase
 
       MessageConsumer c = sess.createConsumer(queue);
       conn.start();
-      TextMessage rm = (TextMessage)c.receiveNoWait();
+      
+      //receiveNoWait is not guaranteed to return message immediately
+      TextMessage rm = (TextMessage)c.receive(1000);
 
       assertEquals("something", rm.getText());
    }

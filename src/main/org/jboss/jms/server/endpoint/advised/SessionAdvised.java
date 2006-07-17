@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.server.endpoint.advised;
 
+import java.util.List;
+
 import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.BrowserDelegate;
@@ -30,6 +32,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
+import org.jboss.jms.tx.AckInfo;
 
 /**
  * The server-side advised instance corresponding to a Session. It is bound to the AOP
@@ -98,14 +101,14 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       return endpoint.createTopic(topicName);
    }
 
-   public void acknowledge() throws JMSException
+   public void acknowledgeBatch(List ackInfos) throws JMSException
    {
-      endpoint.acknowledge();
+      endpoint.acknowledgeBatch(ackInfos);
    }
-
-   public void cancelDeliveries() throws JMSException
+   
+   public void acknowledge(AckInfo ack) throws JMSException
    {
-      endpoint.cancelDeliveries();
+      endpoint.acknowledge(ack);
    }
 
    public void addTemporaryDestination(JBossDestination destination) throws JMSException
@@ -122,6 +125,12 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    {
       endpoint.unsubscribe(subscriptionName);
    }
+   
+   public void cancelDeliveries(List ackInfos) throws JMSException
+   {
+      endpoint.cancelDeliveries(ackInfos);
+   }
+
 
    // AdvisedSupport overrides --------------------------------------
 

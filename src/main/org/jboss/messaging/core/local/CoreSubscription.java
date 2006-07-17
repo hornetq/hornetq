@@ -31,6 +31,8 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * Represents a subscription to a destination (topic or queue).
  * 
@@ -66,11 +68,12 @@ public class CoreSubscription extends Pipe
    public CoreSubscription(long id, Topic topic, 
                            MessageStore ms, PersistenceManager pm, MemoryManager mm,
                            boolean recoverable,
-                           int fullSize, int pageSize, int downCacheSize, Filter filter)
+                           int fullSize, int pageSize, int downCacheSize,
+                           QueuedExecutor executor, Filter filter)
                               
    {
       // A CoreSubscription must accept reliable messages
-      super(id, ms, pm, mm, true, recoverable, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, mm, true, recoverable, fullSize, pageSize, downCacheSize, executor);
       this.topic = topic;
       this.filter = filter;
    }
@@ -114,12 +117,7 @@ public class CoreSubscription extends Pipe
    {
       return topic;
    }
-   
-   public void load() throws Exception
-   {
-      state.load();
-   }
-     
+        
    public String toString()
    {
       return "CoreSubscription[" + getChannelID() + ", " + topic + "]";

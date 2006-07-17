@@ -42,6 +42,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * Tests a queue's management interface.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -176,43 +177,50 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("QueueMessageCount");
-      Queue queue = (Queue)ic.lookup("/queue/QueueMessageCount");
       
-      // Test MessageCount, should be 0 msg
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueMessageCount");
-      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
-      assertEquals(0, count.intValue());
+      try
+      {
+         Queue queue = (Queue)ic.lookup("/queue/QueueMessageCount");
+         
+         // Test MessageCount, should be 0 msg
+         ObjectName destObjectName = 
+            new ObjectName("jboss.messaging.destination:service=Queue,name=QueueMessageCount");
+         Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
+         assertEquals(0, count.intValue());
+         
+         // Send 1 message to queue
+         Connection conn = cf.createConnection();
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         TextMessage m = session.createTextMessage("message one");
+         prod.send(m);
+         conn.close();           
+         
+         // Test MessageCount again, should be 1 msg
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
+         assertEquals(1, count.intValue());
+         
+         
+         // Consume the message
+         conn = cf.createConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = session.createConsumer(queue);
+         conn.start();
+         
+         cons.receive();
+         conn.close();
+         
+         // Test MessageCount again, should be 0 msg
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
+         assertEquals(0, count.intValue());
+      }
+      finally
+      {
       
-      // Send 1 message to queue
-      Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = session.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      TextMessage m = session.createTextMessage("message one");
-      prod.send(m);
-      conn.close();
-      
-      // Test MessageCount again, should be 1 msg
-      count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
-      assertEquals(1, count.intValue());
-      
-      
-      // Consume the message
-      conn = cf.createConnection();
-      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = session.createConsumer(queue);
-      conn.start();
-      
-      cons.receive();
-      conn.close();
-      
-      // Test MessageCount again, should be 0 msg
-      count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
-      assertEquals(0, count.intValue());
-      
-      ServerManagement.undeployQueue("QueueMessageCount");
+         ServerManagement.undeployQueue("QueueMessageCount");
+      }
    }
    
    // TODO this test should be done in DestinationManagementTestBase, once implemented in Topic
@@ -223,44 +231,51 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("QueueRemoveMessages");
-      Queue queue = (Queue)ic.lookup("/queue/QueueRemoveMessages");
       
-      // Send 1 message to queue
-      Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = session.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      TextMessage m = session.createTextMessage("message one");
-      prod.send(m);
-      
-      // Remove all messages from the queue
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueRemoveMessages");
-      ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
-
-      // Test MessageCount again, should be 0 msg
-      Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
-      assertEquals(0, count.intValue());
-
-      // Send another message
-      m = session.createTextMessage(MESSAGE_TWO);
-      prod.send(m);
-      conn.close();
-
-      // Consume the 2nd message
-      conn = cf.createConnection();
-      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = session.createConsumer(queue);
-      conn.start();
-      
-      Object ms = cons.receive();
-      assertTrue(ms instanceof TextMessage);
-      assertEquals(((TextMessage)ms).getText(), MESSAGE_TWO);
-      assertNull(cons.receiveNoWait());
-      conn.close();
-      
-      ServerManagement.undeployQueue("QueueRemoveMessages");
+      try
+      {
+         Queue queue = (Queue)ic.lookup("/queue/QueueRemoveMessages");
+         
+         // Send 1 message to queue
+         Connection conn = cf.createConnection();
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         TextMessage m = session.createTextMessage("message one");
+         prod.send(m);
+         
+         // Remove all messages from the queue
+         ObjectName destObjectName = 
+            new ObjectName("jboss.messaging.destination:service=Queue,name=QueueRemoveMessages");
+         ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
+   
+         // Test MessageCount again, should be 0 msg
+         Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
+         assertEquals(0, count.intValue());
+   
+         // Send another message
+         m = session.createTextMessage(MESSAGE_TWO);
+         prod.send(m);
+         conn.close();
+   
+         // Consume the 2nd message
+         conn = cf.createConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = session.createConsumer(queue);
+         conn.start();
+         
+         Object ms = cons.receive();
+         assertTrue(ms instanceof TextMessage);
+         assertEquals(((TextMessage)ms).getText(), MESSAGE_TWO);
+         Thread.sleep(500);
+         assertNull(cons.receiveNoWait());
+         conn.close();
+      }
+      finally
+      {      
+         ServerManagement.undeployQueue("QueueRemoveMessages");
+      }
    }
    
    public void testListMessages() throws Exception
@@ -269,59 +284,67 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("QueueListMessages");
-      Queue queue = (Queue)ic.lookup("/queue/QueueListMessages");
       
-      // Test listMessages, should be 0 msg
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueListMessages");
+      try
+      {
+         
+         Queue queue = (Queue)ic.lookup("/queue/QueueListMessages");
+         
+         // Test listMessages, should be 0 msg
+         ObjectName destObjectName = 
+            new ObjectName("jboss.messaging.destination:service=Queue,name=QueueListMessages");
+         
+         List list = (List)ServerManagement.invoke(
+               destObjectName, 
+               "listMessages", 
+               new Object[] {null}, 
+               new String[] {"java.lang.String"});
+         assertNotNull(list);
+         assertEquals(0, list.size());
+         
+         // Send 1 message to queue
+         Connection conn = cf.createConnection();
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         TextMessage m = session.createTextMessage("message one");
+         prod.send(m);
+         conn.close();
+           
+         // Test listMessages again, should be 1 msg
+         list = (List)ServerManagement.invoke(
+               destObjectName, 
+               "listMessages", 
+               new Object[] {null}, 
+               new String[] {"java.lang.String"});
+         assertEquals(1, list.size());
+         assertTrue(list.get(0) instanceof TextMessage);
+         TextMessage m1 = (TextMessage)list.get(0);
+         assertEquals(m1.getText(), m.getText());
+         
+         // Consume the message
+         conn = cf.createConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = session.createConsumer(queue);
+         conn.start();
+         
+         cons.receive();
+         conn.close();
+         
+         // Test MessageCount again, should be 0 msg
+         list = (List)ServerManagement.invoke(
+               destObjectName, 
+               "listMessages", 
+               new Object[] {null}, 
+               new String[] {"java.lang.String"});
+         assertEquals(0, list.size());
+      }
+      finally
+      {
       
-      List list = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listMessages", 
-            new Object[] {null}, 
-            new String[] {"java.lang.String"});
-      assertNotNull(list);
-      assertEquals(0, list.size());
-      
-      // Send 1 message to queue
-      Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = session.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      TextMessage m = session.createTextMessage("message one");
-      prod.send(m);
-      conn.close();
-      
-      // Test listMessages again, should be 1 msg
-      list = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listMessages", 
-            new Object[] {null}, 
-            new String[] {"java.lang.String"});
-      assertEquals(1, list.size());
-      assertTrue(list.get(0) instanceof TextMessage);
-      TextMessage m1 = (TextMessage)list.get(0);
-      assertEquals(m1.getText(), m.getText());
-      
-      // Consume the message
-      conn = cf.createConnection();
-      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = session.createConsumer(queue);
-      conn.start();
-      
-      cons.receive();
-      conn.close();
-      
-      // Test MessageCount again, should be 0 msg
-      list = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listMessages", 
-            new Object[] {null}, 
-            new String[] {"java.lang.String"});
-      assertEquals(0, list.size());
-      
-      ServerManagement.undeployQueue("QueueListMessages");
+         ServerManagement.undeployQueue("QueueListMessages");
+      }
    }
 
    /**

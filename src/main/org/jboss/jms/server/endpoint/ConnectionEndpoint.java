@@ -54,7 +54,6 @@ public interface ConnectionEndpoint extends Closeable
 
    void sendTransaction(TransactionRequest request) throws JMSException;
 
-   Xid[] getPreparedTransactions();
-
+   Xid[] getPreparedTransactions();   
 }
 

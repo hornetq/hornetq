@@ -36,6 +36,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.subscription.DurableSubscription;
 import org.jboss.jms.server.subscription.Subscription;
@@ -54,6 +55,7 @@ import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.tm.TransactionManagerServiceMBean;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * JDBC Implementation of ChannelMapper
@@ -142,6 +144,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    protected boolean createTablesOnStartup = true;
    protected Properties sqlProperties;
    protected List populateTables;
+   
+   protected QueuedExecutorPool queuedExecutorPool;
 
    // Constructors --------------------------------------------------
    
@@ -181,6 +185,11 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    public void setPersistenceManager(PersistenceManager pm) throws Exception
    {      
       this.channelIDManager = new IdManager("CHANNEL_ID", 10, pm);
+   }
+   
+   public void setQueuedExecutorPool(QueuedExecutorPool pool) throws Exception
+   {
+      this.queuedExecutorPool = pool;
    }
    
    // ServiceMBeanSupport overrides ---------------------------------
@@ -270,7 +279,10 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          // TODO I am using LocalQueues for the time being, switch to distributed Queues
          if (isQueue)
          {
-            cd = new Queue(id, ms, pm, mm, true, fullSize, pageSize, downCacheSize);
+            //We allocate an executor for the queue from the rotating pool
+            QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(destName);
+            
+            cd = new Queue(id, ms, pm, mm, true, fullSize, pageSize, downCacheSize, executor);
             
             try
             {
@@ -555,9 +567,13 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
             throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
          }
 
+         //We allocate an executor for the subscription from the rotating pool
+         //Currently all subscriptions for the same topic share the same executor
+         QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(topicName);
+                  
          return new Subscription(id, topic, ms, pm, mm,
                                  topic.getFullSize(), topic.getPageSize(),
-                                 topic.getDownCacheSize(), sel, noLocal);
+                                 topic.getDownCacheSize(), executor, sel, noLocal);
       }
       catch (Exception e)
       {
@@ -1109,9 +1125,14 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
       }
        
+      //We allocate an executor for the subscription from the rotating pool
+      //Currently all subscriptions for the same topic share the same executor
+      QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(topicName);
+             
       DurableSubscription subscription =
          new DurableSubscription(id, topic, ms, pm, mm,
-               topic.getFullSize(), topic.getPageSize(), topic.getDownCacheSize(), selector,
+               topic.getFullSize(), topic.getPageSize(), topic.getDownCacheSize(),
+               executor, selector,
                noLocal, subscriptionName, clientID);
       
       subs.put(subscriptionName, subscription);

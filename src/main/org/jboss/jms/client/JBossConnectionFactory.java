@@ -38,7 +38,6 @@ import javax.jms.XATopicConnection;
 import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.Referenceable;
 
 import org.jboss.aop.Advised;
 import org.jboss.jms.client.container.JmsClientAspectXMLLoader;
@@ -77,12 +76,12 @@ public class JBossConnectionFactory implements
    protected ConnectionFactoryDelegate delegate;
    
    private boolean initialised;
-   
+     
    // Constructors --------------------------------------------------
 
    public JBossConnectionFactory(ConnectionFactoryDelegate delegate)
    {
-      this.delegate = delegate;
+      this.delegate = delegate;      
    }
 
    // ConnectionFactory implementation ------------------------------

@@ -177,6 +177,8 @@ public class SelectorTest extends MessagingTestCase
          assertNotNull(m);
       }
       
+      Thread.sleep(500);
+      
       Message m = cons1.receiveNoWait();
       
       assertNull(m);
@@ -215,9 +217,7 @@ public class SelectorTest extends MessagingTestCase
       for (int j = 0; j < 100; j++)
       {
          Message m = cons1.receive(1000);
-         
-         //log.info("Got message:" + m);
-         
+              
          assertNotNull(m);
       }
       

@@ -24,6 +24,8 @@ package org.jboss.test.messaging.core.local;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 import org.jboss.messaging.core.local.Queue;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * Tests a non-recoverable queue that doesn't accept reliable messages.
  *
@@ -54,7 +56,7 @@ public class NonRecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
 
-      channel = new Queue(1, ms, pm, null, false, 100, 20, 10);
+      channel = new Queue(1, ms, pm, null, false, 100, 20, 10, new QueuedExecutor());
    }
 
    public void tearDown() throws Exception

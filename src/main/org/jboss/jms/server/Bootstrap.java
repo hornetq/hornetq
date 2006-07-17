@@ -21,44 +21,7 @@
   */
 package org.jboss.jms.server;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.Attribute;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import org.jboss.aop.AspectXmlLoader;
-import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
-import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
-import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
-import org.jboss.jms.server.plugin.contract.ThreadPool;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
-import org.jboss.jms.server.remoting.JMSWireFormat;
-import org.jboss.jms.server.security.SecurityMetadataStore;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IdManager;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.util.Util;
-import org.jboss.mx.loading.UnifiedClassLoader3;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.remoting.serialization.SerializationStreamFactory;
-import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
-import org.w3c.dom.Element;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * A bootstrap for a scoped deployment.
@@ -71,8 +34,6 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 public class Bootstrap extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(Bootstrap.class);
 
    // Static --------------------------------------------------------
 

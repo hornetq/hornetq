@@ -45,6 +45,10 @@ public class StressTestBase extends MessagingTestCase
    
    protected static final int NUM_NON_PERSISTENT_MESSAGES = 6000;
    
+   protected static final int NUM_PERSISTENT_PRESEND = 2000;
+   
+   protected static final int NUM_NON_PERSISTENT_PRESEND = 3000;
+   
    protected ConnectionFactory cf;
 
    protected Destination topic;
@@ -72,11 +76,11 @@ public class StressTestBase extends MessagingTestCase
       
       //We test with small values for paging params to really stress it
       
-      final int fullSize = 3000;
+      final int fullSize = 1000;
       
-      final int pageSize = 1000;
+      final int pageSize = 100;
       
-      final int downCacheSize = 1000;
+      final int downCacheSize = 100;
       
       ServerManagement.deployQueue("Queue1", fullSize, pageSize, downCacheSize);
       ServerManagement.deployQueue("Queue2", fullSize, pageSize, downCacheSize);

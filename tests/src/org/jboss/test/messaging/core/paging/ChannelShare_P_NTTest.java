@@ -23,14 +23,14 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.ChannelState;
+import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.LockMap;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 
 /**
@@ -65,14 +65,10 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      Channel queue1 = new Queue(1, ms, pm, null, true, 100, 20, 10);
+      ChannelSupport queue1 = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
       
-      ChannelState state1 = new ChannelState(queue1, pm, null, true, true, 100, 20, 10);
-      
-      Channel queue2 = new Queue(2, ms, pm, null, true, 50, 10, 5);
-      
-      ChannelState state2 = new ChannelState(queue2, pm, null, true, true, 50, 10, 5);
-                  
+      ChannelSupport queue2 = new Queue(2, ms, pm, null, true, 50, 10, 5, new QueuedExecutor());
+                     
       Message[] msgs = new Message[150];
       
       MessageReference[] refs1 = new MessageReference[150];
@@ -87,11 +83,15 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         queue1.handle(null, refs1[i], null); 
+         
+         refs1[i].releaseMemoryReference();
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         queue2.handle(null, refs2[i], null); 
+         
+         refs2[i].releaseMemoryReference();
       }
       
       //Queue1
@@ -101,13 +101,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue1.getChannelID());
       assertEquals(50, refIds.size());
                                     
-      assertEquals(50, state1.memoryRefCount());
+      assertEquals(50, queue1.memoryRefCount());
       
-      assertEquals(0, state1.downCacheCount());
+      assertEquals(0, queue1.downCacheCount());
       
-      assertFalse(state1.isPaging());      
+      assertFalse(queue1.isPaging());      
       
-      assertEquals(0, state1.memoryDeliveryCount());
+      assertEquals(0, queue1.memoryDeliveryCount());
       
       //Queue2
       
@@ -117,13 +117,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(50, refIds.size());
                               
-      assertEquals(50, state2.memoryRefCount());
+      assertEquals(50, queue2.memoryRefCount());
       
-      assertEquals(0, state2.downCacheCount());
+      assertEquals(0, queue2.downCacheCount());
       
-      assertTrue(state2.isPaging());      
+      assertTrue(queue2.isPaging());      
       
-      assertEquals(0, state2.memoryDeliveryCount());
+      assertEquals(0, queue2.memoryDeliveryCount());
             
       //Msgs
       
@@ -140,11 +140,15 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         queue1.handle(null, refs1[i], null); 
+         
+         refs1[i].releaseMemoryReference();
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         queue2.handle(null, refs2[i], null); 
+         
+         refs2[i].releaseMemoryReference();
       }
       
       //Queue1
@@ -155,13 +159,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue1.getChannelID());
       assertEquals(75, refIds.size());
                                     
-      assertEquals(75, state1.memoryRefCount());
+      assertEquals(75, queue1.memoryRefCount());
       
-      assertEquals(0, state1.downCacheCount());
+      assertEquals(0, queue1.downCacheCount());
       
-      assertFalse(state1.isPaging());      
+      assertFalse(queue1.isPaging());      
       
-      assertEquals(0, state1.memoryDeliveryCount());
+      assertEquals(0, queue1.memoryDeliveryCount());
       
       //Queue2
       
@@ -171,13 +175,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(75, refIds.size());
                               
-      assertEquals(50, state2.memoryRefCount());
+      assertEquals(50, queue2.memoryRefCount());
       
-      assertEquals(0, state2.downCacheCount());
+      assertEquals(0, queue2.downCacheCount());
       
-      assertTrue(state2.isPaging());      
+      assertTrue(queue2.isPaging());      
       
-      assertEquals(0, state2.memoryDeliveryCount());
+      assertEquals(0, queue2.memoryDeliveryCount());
             
       //Msgs
       
@@ -196,11 +200,15 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         queue1.handle(null, refs1[i], null); 
+         
+         refs1[i].releaseMemoryReference();
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         queue2.handle(null, refs2[i], null); 
+         
+         refs2[i].releaseMemoryReference();
       }
       
       //Queue1
@@ -211,13 +219,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue1.getChannelID());
       assertEquals(100, refIds.size());
                                     
-      assertEquals(100, state1.memoryRefCount());
+      assertEquals(100, queue1.memoryRefCount());
       
-      assertEquals(0, state1.downCacheCount());
+      assertEquals(0, queue1.downCacheCount());
       
-      assertTrue(state1.isPaging());      
+      assertTrue(queue1.isPaging());      
       
-      assertEquals(0, state1.memoryDeliveryCount());
+      assertEquals(0, queue1.memoryDeliveryCount());
       
       //Queue2
       
@@ -227,13 +235,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(100, refIds.size());
                               
-      assertEquals(50, state2.memoryRefCount());
+      assertEquals(50, queue2.memoryRefCount());
       
-      assertEquals(0, state2.downCacheCount());
+      assertEquals(0, queue2.downCacheCount());
       
-      assertTrue(state2.isPaging());      
+      assertTrue(queue2.isPaging());      
       
-      assertEquals(0, state2.memoryDeliveryCount());
+      assertEquals(0, queue2.memoryDeliveryCount());
             
       //Msgs
       
@@ -251,11 +259,15 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
          
          refs1[i] = ms.reference(msgs[i]);
                 
-         state1.addReference(refs1[i]); 
+         queue1.handle(null, refs1[i], null); 
+         
+         refs1[i].releaseMemoryReference();
          
          refs2[i] = ms.reference(msgs[i]);
          
-         state2.addReference(refs2[i]); 
+         queue2.handle(null, refs2[i], null); 
+         
+         refs2[i].releaseMemoryReference();
       }
       
       //Queue1
@@ -266,13 +278,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue1.getChannelID());
       assertEquals(150, refIds.size());
                                     
-      assertEquals(100, state1.memoryRefCount());
+      assertEquals(100, queue1.memoryRefCount());
       
-      assertEquals(0, state1.downCacheCount());
+      assertEquals(0, queue1.downCacheCount());
       
-      assertTrue(state1.isPaging());      
+      assertTrue(queue1.isPaging());      
       
-      assertEquals(0, state1.memoryDeliveryCount());
+      assertEquals(0, queue1.memoryDeliveryCount());
       
       //Queue2
       
@@ -282,13 +294,13 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(150, refIds.size());
                               
-      assertEquals(50, state2.memoryRefCount());
+      assertEquals(50, queue2.memoryRefCount());
       
-      assertEquals(0, state2.downCacheCount());
+      assertEquals(0, queue2.downCacheCount());
       
-      assertTrue(state2.isPaging());      
+      assertTrue(queue2.isPaging());      
       
-      assertEquals(0, state2.memoryDeliveryCount());
+      assertEquals(0, queue2.memoryDeliveryCount());
             
       //Msgs
       
@@ -298,64 +310,41 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       assertEquals(150, msgIds.size());
       
       //    Remove 100 then cancel
-      SimpleDelivery[] dels1 = new SimpleDelivery[100];
-      for (int i = 0; i < 100; i++)
-      {
-         MessageReference ref = state1.removeFirstInMemory();
-         assertNotNull(ref);       
-         dels1[i] = new SimpleDelivery(queue1, ref, false);
-         state1.addDelivery(dels1[i]);
-      }
+      this.cancelDeliveries(queue1, 100);
       
-      SimpleDelivery[] dels2 = new SimpleDelivery[100];
-      for (int i = 0; i < 100; i++)
-      {
-         MessageReference ref = state2.removeFirstInMemory();
-         assertNotNull(ref);       
-         dels2[i] = new SimpleDelivery(queue2, ref, false);
-         state2.addDelivery(dels2[i]);
-      }
-      
-      for (int i = 99; i >=0; i--)
-      {
-         state1.cancelDelivery(dels1[i]);
-      }
-      for (int i = 99; i >=0; i--)
-      {
-         state2.cancelDelivery(dels2[i]);
-      }
+      this.cancelDeliveries(queue2, 100);
       
       //Now consume them all
       
-      this.consume(queue1, state1, 0, refs1, 150);
+      this.consume(queue1, 0, refs1, 150);
        
-      this.consume(queue2, state2, 0, refs2, 150);
+      this.consume(queue2, 0, refs2, 150);
       
       //    Queue1
       refIds = getReferenceIds(queue1.getChannelID());
                 
       assertEquals(0, refIds.size());
                                     
-      assertEquals(0, state1.memoryRefCount());
+      assertEquals(0, queue1.memoryRefCount());
       
-      assertEquals(0, state1.downCacheCount());
+      assertEquals(0, queue1.downCacheCount());
       
-      assertFalse(state1.isPaging());      
+      assertFalse(queue1.isPaging());      
       
-      assertEquals(0, state1.memoryDeliveryCount());
+      assertEquals(0, queue1.memoryDeliveryCount());
       
       //Queue2
       
       refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(0, refIds.size());
                               
-      assertEquals(0, state2.memoryRefCount());
+      assertEquals(0, queue2.memoryRefCount());
       
-      assertEquals(0, state2.downCacheCount());
+      assertEquals(0, queue2.downCacheCount());
       
-      assertFalse(state2.isPaging());      
+      assertFalse(queue2.isPaging());      
       
-      assertEquals(0, state2.memoryDeliveryCount());
+      assertEquals(0, queue2.memoryDeliveryCount());
             
       //Msgs
       
@@ -366,9 +355,9 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
       
       //Should be none left
       
-      assertNull(state1.removeFirstInMemory());
+      assertEquals(0, queue1.messageCount());
       
-      assertNull(state2.removeFirstInMemory());
+      assertEquals(0, queue2.messageCount());
       
       assertEquals(0, LockMap.instance.getSize());
       

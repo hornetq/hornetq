@@ -22,6 +22,8 @@
 package org.jboss.jms.server.endpoint;
 
 
+import java.util.List;
+
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
@@ -31,6 +33,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.tx.AckInfo;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -62,13 +65,20 @@ public interface SessionEndpoint extends Closeable
     * the exception of temporary topics.
     */
    JBossTopic createTopic(String topicName) throws JMSException;
-
+ 
    /**
-    * Acknowledges the session
-    */ 
-   void acknowledge() throws JMSException;
+    * Acknowledge a batch of messages - used with client acknowledge or dups_ok acknowledge
+    * @param ackInfos
+    * @throws JMSException
+    */
+   void acknowledgeBatch(List ackInfos) throws JMSException;
    
-   void cancelDeliveries() throws JMSException;
+   /**
+    * Acknowledge a message - used for auto acknowledge
+    * @param ackInfo
+    * @throws JMSException
+    */
+   void acknowledge(AckInfo ackInfo) throws JMSException;
    
    /**
     * Add a temporary destination.
@@ -89,8 +99,20 @@ public interface SessionEndpoint extends Closeable
     */
    void unsubscribe(String subscriptionName) throws JMSException;
    
+   /**
+    * Send a message
+    * @param message The message to send
+    * @throws JMSException
+    */
    void send(JBossMessage message) throws JMSException;
    
-     
+   /**
+    * Cancel some deliveries.
+    * This used at consumer close to cancel any undelivered messages left in the client buffer
+    * or at session recovery to cancel any messages that couldn't be redelivered locally
+    * @param ackInfos
+    * @throws Exception
+    */
+   void cancelDeliveries(List ackInfos) throws JMSException;
 }
 

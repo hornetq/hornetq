@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.subscription.DurableSubscription;
 import org.jboss.jms.server.subscription.Subscription;
 import org.jboss.messaging.core.local.CoreDestination;
@@ -83,5 +84,7 @@ public interface ChannelMapper extends ServerPlugin
    
    //TODO Handle this dependency properly
    void setPersistenceManager(PersistenceManager pm) throws Exception;
+   
+   void setQueuedExecutorPool(QueuedExecutorPool pool) throws Exception;
 
 }

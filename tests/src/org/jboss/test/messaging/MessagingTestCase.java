@@ -108,7 +108,7 @@ public class MessagingTestCase extends TestCase
          log.trace("Draining messages from " + dest);
          while (true)
          {
-            m = cons.receiveNoWait();
+            m = cons.receive(500);
             if (m == null) break;
             log.trace("Drained message");
          }         
@@ -133,7 +133,7 @@ public class MessagingTestCase extends TestCase
          log.trace("Draining messages from " + topic + ":" + subName);
          while (true)
          {
-            m = cons.receiveNoWait();
+            m = cons.receive(500);
             if (m == null) break;
             log.trace("Drained message");
          }         

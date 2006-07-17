@@ -64,6 +64,7 @@ public class Sender extends Runner
             Message m = sess.createMessage();
             m.setStringProperty("PROD_NAME", prodName);
             m.setIntProperty("MSG_NUMBER", count);
+       //     log.info("sent: " + prodName + ":" + count);
             prod.send(m);
             count++;
          }

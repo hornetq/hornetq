@@ -85,17 +85,12 @@ public class SimpleChannel implements Channel
       return ms;
    }
 
-   public boolean deliver(Receiver receiver)
+   public void deliver(boolean synch)
    {
-      log.debug("redeliver(" + receiver + ")");
+      log.debug("deliver()");
       deliveryNotification = true;
-      return false;
    }
    
-   public boolean deliver()
-   {
-      throw new NotYetImplementedException();
-   }
 
    public void close()
    {
@@ -170,6 +165,26 @@ public class SimpleChannel implements Channel
    public String toString()
    {
       return "SimpleChannel[" + getChannelID() + "]";
+   }
+
+   public List delivering(Filter filter)
+   {
+      throw new NotYetImplementedException();
+   }
+
+   public void load() throws Exception
+   { 
+      throw new NotYetImplementedException();
+   }
+
+   public int messageCount()
+   {
+      throw new NotYetImplementedException();
+   }
+
+   public List undelivered(Filter filter)
+   {
+      throw new NotYetImplementedException();
    }
 
    // Package protected ---------------------------------------------

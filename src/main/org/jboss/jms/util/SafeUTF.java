@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.MessageSupport;
+
 /**
  * 
  * A SafeUTF
@@ -50,6 +53,9 @@ import java.io.ObjectOutput;
  */
 public class SafeUTF
 {      
+   private static final Logger log = Logger.getLogger(SafeUTF.class);
+
+   
    //Default is 16K chunks
    private static final int CHUNK_SIZE = 16 * 1024;
    
@@ -74,8 +80,7 @@ public class SafeUTF
    }
       
    public void safeWriteUTF(ObjectOutput out, String str) throws IOException
-   {      
-
+   {        
       if (str == null)
       {
          out.writeByte(NULL);
@@ -96,8 +101,9 @@ public class SafeUTF
          }         
          
          out.writeByte(NOT_NULL);
-         out.writeShort(numChunks);
          
+         out.writeShort(numChunks);
+              
          int i = 0;
          while (len > 0)
          {
@@ -106,7 +112,7 @@ public class SafeUTF
             int endCopy = len <= chunkSize ? beginCopy + len : beginCopy + chunkSize;
      
             String theChunk = str.substring(beginCopy, endCopy);
-             
+               
             out.writeUTF(theChunk);
             
             len -= chunkSize;
@@ -117,7 +123,7 @@ public class SafeUTF
    }
    
    public String safeReadUTF(ObjectInput in) throws IOException
-   {
+   {   
       boolean isNull = in.readByte() == NULL;
       
       if (isNull)
@@ -137,9 +143,9 @@ public class SafeUTF
          // and the maximum buffer size. Since the input stream
          // available() can be <= 0 we check for that and default to
          // a small msg size of 256 bytes.
-
-         int inSize = in.available();
          
+         int inSize = in.available();
+               
          if (inSize <= 0)
          {
             inSize = 256;

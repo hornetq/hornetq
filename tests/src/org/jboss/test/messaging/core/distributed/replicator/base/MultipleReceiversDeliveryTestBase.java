@@ -103,8 +103,6 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
       Acknowledgment ack = new Acknowledgment("peer0", new Long(ref.getMessageID()), Acknowledgment.REJECTED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
 
-      log.info("acknowledgment handled");
-
       observer.waitForCancellation(delivery);
       assertTrue(delivery.isCancelled());
       assertFalse(delivery.isDone());
@@ -157,8 +155,6 @@ public abstract class MultipleReceiversDeliveryTestBase extends DeliveryTestBase
 
       Acknowledgment ack = new Acknowledgment("peer0", new Long(ref.getMessageID()), Acknowledgment.ACCEPTED);
       ((MultipleReceiversDelivery)delivery).handle(ack);
-
-      log.info("acknowledgment handled");
 
       observer.waitForAcknowledgment(delivery);
       assertTrue(delivery.isDone());

@@ -24,6 +24,8 @@ package org.jboss.test.messaging.core.local;
 import org.jboss.messaging.core.local.CoreSubscription;
 import org.jboss.test.messaging.core.local.base.QueueTestBase;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -52,7 +54,7 @@ public class NonRecoverableSubscriptionTest extends QueueTestBase
    {
       super.setUp();
       
-      channel = new CoreSubscription(123, null, ms, pm, null, false, 100, 20, 10, null);
+      channel = new CoreSubscription(123, null, ms, pm, null, false, 100, 20, 10, new QueuedExecutor(), null);
       
       log.debug("setup done");
    }

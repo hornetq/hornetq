@@ -21,7 +21,6 @@
          <arg type="java.lang.String" value="/topic" />
       </constructor>
 
-      <depends optional-attribute-name="ThreadPool">jboss.messaging:service=ThreadPool</depends>
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
       <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
@@ -36,15 +35,6 @@
    </mbean>
 
    <!-- Plug-ins -->
-
-   <mbean code="org.jboss.jms.server.plugin.DefaultThreadPool"
-      name="jboss.messaging:service=ThreadPool"
-      xmbean-dd="xmdesc/DefaultThreadPool-xmbean.xml">
-      <constructor>
-         <!-- the default pool size -->
-         <arg type="int" value="40" />
-      </constructor>
-   </mbean>
 
    <mbean code="org.jboss.messaging.core.plugin.SimpleMessageStore"
       name="jboss.messaging:service=MessageStore"

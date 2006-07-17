@@ -169,6 +169,8 @@ public class ProducerAspect
       JBossMessage messageToSend;
       boolean foreign = false;
 
+      boolean doCopy = false;
+      
       if (!(m instanceof MessageProxy))
       {
          // it's a foreign message
@@ -211,6 +213,12 @@ public class ProducerAspect
          // get the actual message
          MessageProxy proxy = (MessageProxy)m;
          messageToSend = proxy.getMessage();
+                  
+         if (proxy.isSent())
+         {
+            doCopy = true;
+         }
+         
          messageToSend.doAfterSend();
          proxy.setSent();
       }
@@ -223,6 +231,14 @@ public class ProducerAspect
       
       messageToSend.setJMSMessageID(null);
       messageToSend.setMessageId(id);
+      
+      //If the message has already been sent we need to make a shallow copy since if we are invm then we do not
+      //want to change the ids of messages already sent - which would happen if we were sending the same
+      //underlying instance
+      if (doCopy)
+      {
+         messageToSend = messageToSend.doShallowCopy();
+      }
 
       // now that we know the messageID, set it also on the foreign message, if is the case
       if (foreign)

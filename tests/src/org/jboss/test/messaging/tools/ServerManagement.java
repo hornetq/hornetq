@@ -442,7 +442,15 @@ public class ServerManagement
       server.undeployDestination(isQueue, name);
    }
 
-   public static void deployConnectionFactory(String objectName, String[] jndiBindings)
+   public static void deployConnectionFactory(String objectName,
+                                              String[] jndiBindings, int prefetchSize)
+      throws Exception
+   {
+      server.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+   }
+   
+   public static void deployConnectionFactory(String objectName,
+                                              String[] jndiBindings)
       throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings);

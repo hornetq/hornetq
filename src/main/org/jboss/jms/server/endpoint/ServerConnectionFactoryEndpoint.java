@@ -52,13 +52,15 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    
    // Attributes ----------------------------------------------------
 
-   protected ServerPeer serverPeer;
+   private ServerPeer serverPeer;
    
-   protected String clientID;
+   private String clientID;
    
-   protected int id;
+   private int id;
    
-   protected JNDIBindings jndiBindings;
+   private JNDIBindings jndiBindings;
+   
+   private int prefetchSize;
  
    // Constructors --------------------------------------------------
 
@@ -68,12 +70,14 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
     */
    public ServerConnectionFactoryEndpoint(int id, ServerPeer serverPeer,
                                           String defaultClientID,
-                                          JNDIBindings jndiBindings)
+                                          JNDIBindings jndiBindings,
+                                          int preFetchSize)
    {
       this.serverPeer = serverPeer;
       this.clientID = defaultClientID;
       this.id = id;
       this.jndiBindings = jndiBindings;
+      this.prefetchSize = preFetchSize;
    }
 
    // ConnectionFactoryDelegate implementation ----------------------
@@ -101,7 +105,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
       ServerConnectionEndpoint endpoint =
-         new ServerConnectionEndpoint(serverPeer, clientID, username, password);
+         new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize);
 
       int connectionID = endpoint.getConnectionID();
 

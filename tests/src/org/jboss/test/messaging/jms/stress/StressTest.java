@@ -276,49 +276,50 @@ public class StressTest extends StressTestBase
       MessageConsumer cons20 = rsess20.createDurableSubscriber(topic1, "sub10");
 
       
-      //To make sure paging occurs first send the messages, then receive
+      //To make sure paging occurs first send some messages before receiving
   
       Runner[] runners = new Runner[] {
             
-      new Sender("prod1", sess1, prod1, NUM_NON_PERSISTENT_MESSAGES),
-      new Sender("prod2", sess2, prod2, NUM_PERSISTENT_MESSAGES)
+      new Sender("prod1", sess1, prod1, NUM_NON_PERSISTENT_PRESEND),
+      new Sender("prod2", sess2, prod2, NUM_PERSISTENT_PRESEND)
       };
       
       runRunners(runners);
       
       runners = new Runner[] {
       //4 auto ack
-      new Receiver(rsess1, cons1, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, false),
-      new Receiver(rsess2, cons2, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, true),
-      new Receiver(rsess3, cons3, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, false),
-      new Receiver(rsess4, cons4, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, true),
-      
+      new Receiver(rsess1, cons1, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, false),      
+      new Receiver(rsess2, cons2, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, true),
+      new Receiver(rsess3, cons3, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, false),
+      new Receiver(rsess4, cons4, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, true),
+     
       //4 dups ok
-      new Receiver(rsess5, cons5, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, false),
-      new Receiver(rsess6, cons6, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, true),
-      new Receiver(rsess7, cons7, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, false),
-      new Receiver(rsess8, cons8, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, true),
+      new Receiver(rsess5, cons5, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, false),
+      new Receiver(rsess6, cons6, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, true),
+      new Receiver(rsess7, cons7, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, false),
+      new Receiver(rsess8, cons8, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, true),
       
       //4 client ack
-      
-      new RecoveringReceiver(rsess9, cons9, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 1, 1, false),
-      new RecoveringReceiver(rsess10, cons10, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 10, 7, true),
-      new RecoveringReceiver(rsess11, cons11, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 50, 21, false),
-      new RecoveringReceiver(rsess12, cons12, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 100, 67, true),
+      new RecoveringReceiver(rsess9, cons9, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 1, 1, false),
+      new RecoveringReceiver(rsess10, cons10, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 10, 7, true),
+      new RecoveringReceiver(rsess11, cons11, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 50, 21, false),
+      new RecoveringReceiver(rsess12, cons12, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 100, 67, true),
        
       //4 transactional
       
-      new TransactionalReceiver(rsess13, cons13, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 1, 1, false),
-      new TransactionalReceiver(rsess14, cons14, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 10, 7, true),
-      new TransactionalReceiver(rsess15, cons15, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 50, 21, false),
-      new TransactionalReceiver(rsess16, cons16, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 100, 67, true),
+      new TransactionalReceiver(rsess13, cons13, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 1, 1, false),
+      new TransactionalReceiver(rsess14, cons14, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 10, 7, true),
+      new TransactionalReceiver(rsess15, cons15, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 50, 21, false),
+      new TransactionalReceiver(rsess16, cons16, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 100, 67, true),
       
       //4 2pc transactional
-      new Transactional2PCReceiver(rxaSess1, cons17, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 1, 1, false),
-      new Transactional2PCReceiver(rxaSess2, cons18, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 10, 7, true),
-      new Transactional2PCReceiver(rxaSess3, cons19, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 50, 21, false),
-      new Transactional2PCReceiver(rxaSess4, cons20, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES, 100, 67, true),
+      new Transactional2PCReceiver(rxaSess1, cons17, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 1, 1, false),
+      new Transactional2PCReceiver(rxaSess2, cons18, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 10, 7, true),
+      new Transactional2PCReceiver(rxaSess3, cons19, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 50, 21, false),
+      new Transactional2PCReceiver(rxaSess4, cons20, NUM_NON_PERSISTENT_MESSAGES + NUM_PERSISTENT_MESSAGES + NUM_NON_PERSISTENT_PRESEND + NUM_PERSISTENT_PRESEND, 100, 67, true),
        
+      new Sender("prod3", sess1, prod1, NUM_NON_PERSISTENT_MESSAGES),
+      new Sender("prod4", sess2, prod2, NUM_PERSISTENT_MESSAGES) 
       };
       
       runRunners(runners);

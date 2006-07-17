@@ -40,7 +40,6 @@ import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
-import org.jboss.jms.server.plugin.contract.ThreadPool;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
@@ -93,6 +92,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
    protected String defaultQueueJNDIContext;
    protected String defaultTopicJNDIContext;
+   
+   protected int queuedExecutorPoolSize = 50;
 
    protected boolean started;
 
@@ -108,11 +109,10 @@ public class ServerPeer extends ServiceMBeanSupport
    protected ConnectorManager connectorManager;
    protected IdManager messageIdManager;
    protected MemoryManager memoryManager;
+   protected QueuedExecutorPool queuedExecutorPool;
 
    // plugins
 
-   protected ObjectName threadPoolObjectName;
-   protected ThreadPool threadPoolDelegate;
    protected ObjectName persistenceManagerObjectName;
    protected PersistenceManager persistenceManagerDelegate;
    protected ObjectName messageStoreObjectName;
@@ -177,9 +177,6 @@ public class ServerPeer extends ServiceMBeanSupport
       // circumventing the MBeanServer. However, they are installed as services to take advantage
       // of their automatically-creating management interface.
 
-      threadPoolDelegate =
-         (ThreadPool)mbeanServer.getAttribute(threadPoolObjectName, "Instance");
-
       persistenceManagerDelegate =
          (PersistenceManager)mbeanServer.getAttribute(persistenceManagerObjectName, "Instance");
 
@@ -189,11 +186,20 @@ public class ServerPeer extends ServiceMBeanSupport
 
       channelMapper = (ChannelMapper)mbeanServer.
          getAttribute(channelMapperObjectName, "Instance");
+      
+      if (queuedExecutorPoolSize < 1)
+      {
+         throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
+      }
+      queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
+
 
       // TODO: Shouldn't this go into ChannelMapper's dependencies? Since it's a plug in,
       //       we shouldn't inject their dependencies externally, but they should take care
       ///      of them themselves.
       channelMapper.setPersistenceManager(persistenceManagerDelegate);
+      
+      channelMapper.setQueuedExecutorPool(queuedExecutorPool);
 
       // start the rest of the internal components
 
@@ -203,7 +209,7 @@ public class ServerPeer extends ServiceMBeanSupport
       connFactoryJNDIMapper.start();
       txRepository.start(persistenceManagerDelegate);
       txRepository.loadPreparedTransactions();
-
+      
       //TODO Make block size configurable
       messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
 
@@ -249,16 +255,6 @@ public class ServerPeer extends ServiceMBeanSupport
    }
 
    // JMX Attributes ------------------------------------------------
-
-   public ObjectName getThreadPool()
-   {
-      return threadPoolObjectName;
-   }
-
-   public void setThreadPool(ObjectName on)
-   {
-      threadPoolObjectName = on;
-   }
 
    public ObjectName getPersistenceManager()
    {
@@ -374,7 +370,17 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return handler;
    }
-
+   
+   public int getQueuedExecutorPoolSize()
+   {
+      return queuedExecutorPoolSize;
+   }
+   
+   public void setQueuedExecutorPoolSize(int poolSize)
+   {
+      this.queuedExecutorPoolSize = poolSize;
+   }
+   
    // JMX Operations ------------------------------------------------
 
    public String createQueue(String name, String jndiName) throws Exception
@@ -473,11 +479,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // access to plugin references
 
-   public ThreadPool getThreadPoolDelegate()
-   {
-      return threadPoolDelegate;
-   }
-
    public PersistenceManager getPersistenceManagerDelegate()
    {
       return persistenceManagerDelegate;
@@ -513,6 +514,11 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       log.debug(this + " removing consumer " + consumerID + " from the cache");
       return (ServerConsumerEndpoint)consumers.remove(consumerID);
+   }
+   
+   public QueuedExecutorPool getQueuedExecutorPool()
+   {
+      return queuedExecutorPool;
    }
 
    public String toString()

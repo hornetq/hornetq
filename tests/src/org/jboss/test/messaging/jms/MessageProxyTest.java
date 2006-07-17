@@ -23,14 +23,15 @@ package org.jboss.test.messaging.jms;
 
 import java.util.Map;
 
-import javax.naming.InitialContext;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.MapMessage;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.message.JBossMessage;
@@ -91,6 +92,121 @@ public class MessageProxyTest extends MessagingTestCase
    
    // Public --------------------------------------------------------
          
+   
+   public void testMessageIDs1() throws Exception
+   {
+      if (ServerManagement.isRemote())
+      {
+         return;
+      }
+      
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         conn.start();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
+         MessageConsumer cons = sess.createConsumer(queue);
+         
+         Message msent = sess.createMessage();
+
+         prod.send(msent);
+                  
+         Message mrec = cons.receive();
+         
+         //The two ids should be the same
+         
+         long id1 = ((MessageProxy)msent).getMessage().getMessageID();
+         long id2 = ((MessageProxy)mrec).getMessage().getMessageID();
+         
+         assertEquals(id1, id2);
+         
+         //Now send the message again
+         prod.send(msent);
+         
+         //The sent id should be different
+         long id3 = ((MessageProxy)msent).getMessage().getMessageID();
+         long id4 = ((MessageProxy)mrec).getMessage().getMessageID();
+         
+         assertFalse(id1 == id3);
+         
+         //But this shouldn't affect the received id
+         assertEquals(id2, id4);
+            
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+                
+   }
+   
+  
+   public void testMessageIDs2() throws Exception
+   {
+      if (ServerManagement.isRemote())
+      {
+         return;
+      }
+      
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         conn.start();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
+         MessageConsumer cons = sess.createConsumer(queue);
+         
+         Message msent = sess.createMessage();
+
+         prod.send(msent);
+                  
+         Message mrec = cons.receive();
+         
+         //The two ids should be the same
+         
+         long id1 = ((MessageProxy)msent).getMessage().getMessageID();
+         long id2 = ((MessageProxy)mrec).getMessage().getMessageID();
+         
+         assertEquals(id1, id2);
+         
+         //Now send the received again
+         prod.send(mrec);
+         
+         //The sent id should be different
+         long id3 = ((MessageProxy)msent).getMessage().getMessageID();
+         
+         //But this shouldn't affect the sent id
+         assertEquals(id1, id3);
+            
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+                
+   }
+   
    public void testCopyAfterSend() throws Exception
    {
       if (ServerManagement.isRemote())
@@ -191,7 +307,7 @@ public class MessageProxyTest extends MessagingTestCase
          //Body should be copied in the sent but not the received
          assertFalse(usent_4.getPayload() == usent_1.getPayload());
          assertTrue(urec_4.getPayload() == urec_1.getPayload());
-                       
+                     
       }
       finally
       {      
@@ -258,9 +374,6 @@ public class MessageProxyTest extends MessagingTestCase
          
          //And the bodies shouldn't be copied since we didn't change it either
          assertTrue(usent_2.getPayload() == usent_1.getPayload());
-         
-         log.info("urec2:" + urec_2.getPayload());
-         log.info("urec1:" + urec_1.getPayload());
          
          assertTrue(urec_2.getPayload() == urec_1.getPayload());
          assertTrue(usent_1.getPayload() == urec_1.getPayload());

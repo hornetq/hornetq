@@ -209,6 +209,11 @@ public class CTSMiscellaneousTest extends MessagingTestCase
       }
    }
 
+   /*
+    * I don't think this test is valid since it assumes the message is going to go cons2 on rollback-
+    * whereas in reality the point to point router will give it to the first available consumer
+    * which in this case is cons, not cons2.
+    */
    public void testContestedQueueOnRollback() throws Exception
    {
       ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");

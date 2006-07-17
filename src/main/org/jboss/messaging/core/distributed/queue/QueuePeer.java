@@ -21,27 +21,27 @@
   */
 package org.jboss.messaging.core.distributed.queue;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.distributed.pipe.DistributedPipe;
-import org.jboss.messaging.core.distributed.pipe.DistributedPipeOutput;
-import org.jboss.messaging.core.distributed.util.RpcServerCall;
-import org.jboss.messaging.core.distributed.util.ServerResponse;
-import org.jboss.messaging.core.distributed.util.RpcServer;
-import org.jboss.messaging.core.distributed.PeerSupport;
-import org.jboss.messaging.core.distributed.PeerIdentity;
 import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.core.distributed.PeerIdentity;
+import org.jboss.messaging.core.distributed.PeerSupport;
 import org.jboss.messaging.core.distributed.RemotePeer;
 import org.jboss.messaging.core.distributed.RemotePeerInfo;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.core.distributed.pipe.DistributedPipe;
+import org.jboss.messaging.core.distributed.pipe.DistributedPipeOutput;
+import org.jboss.messaging.core.distributed.util.RpcServer;
+import org.jboss.messaging.core.distributed.util.RpcServerCall;
+import org.jboss.messaging.core.distributed.util.ServerResponse;
 import org.jboss.util.id.GUID;
 import org.jgroups.blocks.RpcDispatcher;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * The class that mediates the access of a distributed queue instance to the group.
@@ -100,7 +100,9 @@ public class QueuePeer extends PeerSupport implements QueueFacade
       if (log.isTraceEnabled()) { log.trace(this + " got forward request from " + targetID); }
 
       RemoteQueue target = ((DistributedQueue.QueueViewKeeper)viewKeeper).getRemoteQueue(targetID);
-      return queue.deliver(target);
+      queue.deliver();
+      
+      return true;
    }
 
    // Public --------------------------------------------------------

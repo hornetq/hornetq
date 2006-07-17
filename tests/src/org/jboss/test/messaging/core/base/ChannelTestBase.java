@@ -184,6 +184,8 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
    // Channel tests -------------------------------------------------
    
+   
+   
    /*
     * If a channel has a set a receiver and remove is called with a different receiver
     * need to ensure the receiver is not removed (since it doesn't match)
@@ -286,14 +288,14 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertFalse(sm.isReliable());
       assertEquals(0, sm.getMessageID());
 
-      assertFalse(channel.deliver(null));
-
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(channel.deliver(receiver));
+      channel.add(receiver);
+      channel.deliver(true);
       assertEquals(1, receiver.getMessages().size());
       assertEquals(0, ((Message)receiver.getMessages().get(0)).getMessageID());
 
-      assertFalse(channel.deliver(receiver));
+      channel.deliver(true);
+      assertEquals(1, receiver.getMessages().size());
 
 
    }
@@ -324,25 +326,23 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
          Delivery delivery = channel.handle(observer, messages[i], null);
 
          assertTrue(delivery.isDone());
-
-         assertFalse(channel.deliver(null));
       }
 
       List stored = channel.browse();
       assertEqualSets(messages, stored);
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+      channel.add(receiver);
+      channel.deliver(true);
+      assertEquals(10, receiver.getMessages().size());
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertTrue(channel.deliver(receiver));
-         assertEquals(1, receiver.getMessages().size());
-         assertEquals(i, ((Message)receiver.getMessages().get(0)).getMessageID());
-         receiver.clear();
+         assertEquals(i, ((Message)receiver.getMessages().get(i)).getMessageID());         
       }
+      receiver.clear();
 
-      assertFalse(channel.deliver(receiver));
-
-      log.info("ok");
+      channel.deliver(true);
+      assertEquals(0, receiver.getMessages().size());
    }
 
    ////////
@@ -385,10 +385,13 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
 
       assertTrue(channel.browse().isEmpty());
 
-      assertFalse(channel.deliver(null));
-      assertFalse(channel.deliver(new SimpleReceiver("ACKING", SimpleReceiver.ACKING)));
-
-      log.info("ok");
+      channel.deliver(true);
+      
+      Receiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+      
+      channel.add(r);
+      
+      channel.deliver(true);
    }
 
    ///////////
@@ -427,16 +430,16 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertTrue(sm.isReliable());
       assertEquals(0, sm.getMessageID());
 
-      assertFalse(channel.deliver(null));
+      channel.deliver(true);
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
-      assertTrue(channel.deliver(receiver));
+      channel.add(receiver);
+      channel.deliver(true);
       assertEquals(1, receiver.getMessages().size());
       assertEquals(0, ((Message)receiver.getMessages().get(0)).getMessageID());
 
-      assertFalse(channel.deliver(receiver));
-
-      log.info("ok");
+      channel.deliver(true);
+      assertEquals(1, receiver.getMessages().size());
    }
 
    //////////
@@ -477,13 +480,16 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
          // the channel must not accept the message
          assertNull(delivery);
 
-         assertFalse(channel.deliver(null));
-         assertFalse(channel.deliver(new SimpleReceiver("ACKING", SimpleReceiver.ACKING)));
+         channel.deliver(true);
+         
+         Receiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+         
+         channel.add(r);
+         
+         channel.deliver(true);
       }
 
       assertTrue(channel.browse().isEmpty());
-
-      log.info("ok");
    }
 
    ///////////
@@ -523,17 +529,17 @@ public abstract class ChannelTestBase extends NoTestsChannelTestBase
       assertEqualSets(messages, channel.browse());
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
+      channel.add(receiver);
+      channel.deliver(true);
+      assertEquals(10, receiver.getMessages().size());
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
-         assertTrue(channel.deliver(receiver));
-         assertEquals(1, receiver.getMessages().size());
-         assertEquals(i, ((Message)receiver.getMessages().get(0)).getMessageID());
-         receiver.clear();
+         assertEquals(i, ((Message)receiver.getMessages().get(i)).getMessageID());         
       }
+      receiver.clear();
 
-      assertFalse(channel.deliver(receiver));
-
-      log.info("ok");
+      channel.deliver(true);
+      assertEquals(0, receiver.getMessages().size());
    }
 
 

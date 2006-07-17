@@ -56,7 +56,7 @@ public class MessageProxy implements Message, Serializable
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 5903095946142192468L;
-
+   
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -64,6 +64,8 @@ public class MessageProxy implements Message, Serializable
    protected JBossMessage message;
 
    protected transient SessionDelegate delegate;
+   
+   protected transient boolean cc;
 
    protected transient boolean messageCopied;
 
@@ -364,9 +366,10 @@ public class MessageProxy implements Message, Serializable
 
    public void acknowledge() throws JMSException
    {
-      if (delegate != null)
+      if (!cc)
       {
-         delegate.acknowledge();
+         //Only acknowledge for client ack if is not in connection consumer
+         delegate.acknowledgeAll();
       }
    }
 
@@ -380,9 +383,15 @@ public class MessageProxy implements Message, Serializable
 
    // Public --------------------------------------------------------
 
-   public void setSessionDelegate(SessionDelegate sd)
+   public void setSessionDelegate(SessionDelegate sd, boolean isConnectionConsumer)
    {
       this.delegate = sd;
+      this.cc = isConnectionConsumer;
+   }
+   
+   public SessionDelegate getSessionDelegate()
+   {
+      return delegate;
    }
 
    public void setSent()
@@ -409,6 +418,11 @@ public class MessageProxy implements Message, Serializable
    public int getDeliveryCount()
    {
       return deliveryCount;
+   }
+   
+   public void incDeliveryCount()
+   {
+      this.deliveryCount++;
    }
 
    public String toString()
@@ -439,7 +453,7 @@ public class MessageProxy implements Message, Serializable
       }
    }
 
-   protected boolean isSent()
+   public boolean isSent()
    {
       return state == STATE_SENT;
    }

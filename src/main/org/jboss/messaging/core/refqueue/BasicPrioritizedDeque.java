@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.ChannelSupport;
+
 /**
  * A basic non synchronized PrioritizedDeque implementation.
  * 
@@ -38,6 +41,9 @@ import java.util.List;
  */
 public class BasicPrioritizedDeque implements PrioritizedDeque
 {     
+   private static final Logger log = Logger.getLogger(BasicPrioritizedDeque.class);
+
+   
    protected LinkedList[] linkedLists;
    
    protected int priorities;
@@ -51,27 +57,24 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       initDeques();
    }
    
-   public boolean addFirst(Object obj, int priority)
+   public void addFirst(Object obj, int priority)
    {   
       linkedLists[priority].addFirst(obj);
       
-      size++;
-      
-      return size == 1;          
+      size++;     
    }
    
-   public boolean addLast(Object obj, int priority)
-   {
+   public void addLast(Object obj, int priority)
+   { 
       linkedLists[priority].addLast(obj);
       
       size++;
-      
-      return size == 1;
    }
 
    public Object removeFirst()
    {
       Object obj = null;
+            
       
       //Initially we are just using a simple prioritization algorithm:
       //Highest priority refs always get returned first.
@@ -83,28 +86,12 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
       {
          LinkedList ll = linkedLists[i];
          
-         //TODO improve this further
-         int listSize = ll.size();
-         if (listSize == 1 || listSize == 2)
+         if (!ll.isEmpty())
          {
-            if (!ll.isEmpty())
-            {
-               obj = linkedLists[i].removeFirst();
-            }           
-         }
-         else
-         {
-            //No need to synchronize
-            if (!ll.isEmpty())
-            {
-               obj = linkedLists[i].removeFirst();
-            }
-         }
-                  
-         if (obj != null)
-         {
+            obj = ll.removeFirst();
             break;
          }
+                           
       }
       
       if (obj != null)

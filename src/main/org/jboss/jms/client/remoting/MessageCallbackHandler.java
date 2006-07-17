@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.jms.Session;
@@ -33,10 +34,11 @@ import javax.jms.Session;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.tx.AckInfo;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Future;
 import org.jboss.remoting.callback.HandleCallbackException;
 
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
@@ -52,10 +54,6 @@ public class MessageCallbackHandler
    
    private static final Logger log;
    
-   //TODO Make configurable
-   private static final int CLOSE_TIMEOUT = 20000;
-   
-   
    // Static --------------------------------------------------------
    
    private static boolean trace;
@@ -65,7 +63,10 @@ public class MessageCallbackHandler
       log = Logger.getLogger(MessageCallbackHandler.class);
       trace = log.isTraceEnabled();
    }
-   
+     
+   //Hardcoded for now
+   private static final int MAX_REDELIVERIES = 10;
+      
    public static void callOnMessage(ConsumerDelegate cons,
                                     SessionDelegate sess,
                                     MessageListener listener,
@@ -73,33 +74,59 @@ public class MessageCallbackHandler
                                     boolean isConnectionConsumer,
                                     MessageProxy m,
                                     int ackMode)
-         throws JMSException
+      throws JMSException
    {
       preDeliver(sess, consumerID, m, isConnectionConsumer);  
                   
-      try
-      {      
-         listener.onMessage(m);         
-      }
-      catch (RuntimeException e)
+      int tries = 0;
+      
+      while (true)
       {
-         long id = m.getMessage().getMessageID();
-
-         log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
-         
-         // See JMS 1.1 spec 4.5.2
-
-         if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-         {
-            // cancel the delivery - this means it will be immediately redelivered
-            if (trace) { log.trace("cancelling " + id); }
-            cons.cancelDelivery(id);
+         try
+         {      
+            listener.onMessage(m); 
+            
+            break;
          }
-         else
+         catch (RuntimeException e)
          {
-            // Session is either transacted or CLIENT_ACKNOWLEDGE
-            // We just deliver next message
-            if (trace) { log.trace("ignoring exception on " + id); }
+            long id = m.getMessage().getMessageID();
+   
+            log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
+            
+            // See JMS 1.1 spec 4.5.2
+   
+            if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+            {
+               //We redeliver at certain number of times
+               if (tries < MAX_REDELIVERIES)
+               {
+                  m.setJMSRedelivered(true);
+                  
+                  //TODO delivery count although optional should be global
+                  //so we need to send it back to the server
+                  //but this has performance hit so perhaps we just don't support it?
+                  m.incDeliveryCount();
+                  
+                  tries++;
+               }
+               else
+               {
+                  log.error("Max redeliveries has occurred for message: " + m.getJMSMessageID());
+                  
+                  //TODO - Send to DLQ
+                  
+                  break;
+               }
+            }
+            else
+            {
+               // Session is either transacted or CLIENT_ACKNOWLEDGE
+               // We just deliver next message
+               if (trace) { log.trace("ignoring exception on " + id); }
+               
+               break;
+            }
          }
       }
             
@@ -116,7 +143,7 @@ public class MessageCallbackHandler
       // add anything to the tx for this session.
       if (!isConnectionConsumer)
       {
-         sess.preDeliver(m.getMessage().getMessageID(), consumerID);
+         sess.preDeliver(m, consumerID);
       }         
    }
    
@@ -130,300 +157,206 @@ public class MessageCallbackHandler
       // add anything to the tx for this session
       if (!isConnectionConsumer)
       {
-         sess.postDeliver(m.getMessage().getMessageID(), consumerID);
+         sess.postDeliver(m, consumerID);
       }         
    }
    
    // Attributes ----------------------------------------------------
       
-   protected LinkedList buffer;
+   private LinkedList buffer;
    
-   protected SessionDelegate sessionDelegate;
+   private SessionDelegate sessionDelegate;
    
-   protected ConsumerDelegate consumerDelegate;
+   private ConsumerDelegate consumerDelegate;
    
-   protected int consumerID;
+   private int consumerID;
    
-   protected boolean isConnectionConsumer;
+   private boolean isConnectionConsumer;
    
-   protected volatile Thread receiverThread;
+   private volatile Thread receiverThread;
    
-   protected MessageListener listener;
-   
-   protected int deliveryAttempts;
-   
-   protected int ackMode;
+   private MessageListener listener;
     
-   // Executor used for executing onMessage methods - there is one per session
-   protected QueuedExecutor onMessageExecutor;
-   
-   // Executor for executing activateConsumer methods asynchronously, there is one pool per connection
-   protected PooledExecutor activateConsumerExecutor;
-       
-   protected Object mainLock;
-   
-   protected Object onMessageLock;
-   
-   protected boolean closed;
+   private int ackMode;
       
-   protected volatile boolean closing;
+   private boolean closed;
    
-   protected boolean gotLastMessage;
+   private Object mainLock;
    
-   //The id of the last message we received
-   protected long lastMessageId = -1;
+   private boolean serverSending;
    
-   protected volatile int activationCount;
+   private int bufferSize;
    
-   protected volatile boolean onMessageExecuting;
+   private QueuedExecutor sessionExecutor;
    
+   private boolean listenerRunning;
+        
    // Constructors --------------------------------------------------
 
-   public MessageCallbackHandler(boolean isCC, int ackMode, QueuedExecutor onMessageExecutor,
-                                 PooledExecutor activateConsumerExecutor,
-                                 SessionDelegate sess, ConsumerDelegate cons, int consumerID)
+   public MessageCallbackHandler(boolean isCC, int ackMode,                                
+                                 SessionDelegate sess, ConsumerDelegate cons, int consumerID,
+                                 int bufferSize, QueuedExecutor sessionExecutor)
    {
+      if (bufferSize < 1)
+      {
+         throw new IllegalArgumentException(this + " bufferSize must be > 0");
+      }
+              
+      this.bufferSize = bufferSize;
+      
       buffer = new LinkedList();
       
       isConnectionConsumer = isCC;
       
       this.ackMode = ackMode;
       
-      this.onMessageExecutor = onMessageExecutor;
-      
-      this.activateConsumerExecutor = activateConsumerExecutor;
-         
       this.sessionDelegate = sess;
       
       this.consumerDelegate = cons;
       
       this.consumerID = consumerID;
       
-      mainLock = new Object();
-          
-      onMessageLock = new Object();
+      this.serverSending = true;
+      
+      mainLock = new Object();                  
+      
+      this.sessionExecutor = sessionExecutor;
    }
         
    // Public --------------------------------------------------------
-   
-   public void handleMessage(MessageProxy md) throws HandleCallbackException
+      
+
+   /**
+    * Handles a list of messages sent from the server
+    * @param msgs The list of messages
+    * @return The number of messages handled (placeholder for future - now we always accept all messages)
+    *         or -1 if closed
+    */
+   public HandleMessageResponse handleMessage(List msgs) throws HandleCallbackException
    {            
-      if (trace) { log.trace("receiving message " + md + " from the remoting layer"); }
-      
-      md = processMessage(md);
-      
+      if (trace) { log.trace(this + " receiving " + msgs.size() + " messages from the remoting layer"); }            
+                      
       synchronized (mainLock)
       {
          if (closed)
-         {
-            //Sanity check
-            //This should never happen
-            //Part of the close procedure is to ensure that no more messages will be sent
-            //If this happens it implies the close() procedure is not functioning correctly
-            throw new IllegalStateException("Message has arrived after consumer is closed!");
+         {             
+            //Ignore
+            return new HandleMessageResponse(false, 0);
          }
+                                      
+         //Put the messages in the buffer
+         //And notify any waiting receive()
          
-         if (closing && gotLastMessage)
-         {
-            //Sanity check - this should never happen
-            //No messages should arrive after the last one sent by the server consumer endpoint
-            throw new IllegalStateException("Message has arrived after we have received the last one");
-         }
+         processMessages(msgs);
+                   
+         buffer.addAll(msgs);                  
          
-         // We record the last message we received
-         this.lastMessageId = md.getMessage().getMessageID();
-                                 
-         if (listener != null)
-         {
-            // Queue the message to be delivered by the session
-            ClientDeliveryRunnable cdr = new ClientDeliveryRunnable(md);
-            
-            onMessageExecuting = true;         
-            
-            try
-            {
-               onMessageExecutor.execute(cdr);
-            }
-            catch (InterruptedException e)
-            {
-               //This should never happen
-               throw new IllegalStateException("Thread interrupted in client delivery executor");
-            }
-         }
-         else
-         {                                                    
-            //Put the message in the buffer
-            //And notify any waiting receive()
-            //On close any remaining messages will be cancelled
-            //We do not wait for the message to be received before returning
-                  
-            buffer.add(md);                                 
-         }   
+         if (trace) { log.trace(this + " added messages to the buffer"); }            
          
-         if (closing)
+         boolean full = buffer.size() >= bufferSize;         
+         
+         if (trace) { log.trace(this + " receiving messages from the remoting layer"); }            
+                   
+         messagesAdded();
+         
+         if (full)
          {
-            //If closing then we may have the close() thread waiting for the last message as well as a receive
-            //thread
-            mainLock.notifyAll();
+            serverSending = false;
          }
-         else
-         {
-            //Otherwise we will only have at most one receive thread waiting
-            //We don't want to do notifyAll in both cases since notifyAll can have a perf penalty
-            if (receiverThread != null)
-            {
-               mainLock.notify();
-            }
-         }
+                                          
+         //For now we always accept all messages - in the future this may change
+         return new HandleMessageResponse(full, msgs.size());
       }
    }
-    
+         
    public void setMessageListener(MessageListener listener) throws JMSException
-   {
+   {     
       synchronized (mainLock)
-      {         
-         if (closed)
-         {
-            throw new JMSException("Cannot set MessageListener - consumer is closed");
-         }
-         
-         // JMS consumer is single threaded, so it shouldn't be possible to set a MessageListener
-         // while another thread is receiving
-         
+      {
          if (receiverThread != null)
          {
             // Should never happen
-            throw new javax.jms.IllegalStateException("Consumer is currently in receive(..) Cannot set MessageListener");
+            throw new IllegalStateException("Consumer is currently in receive(..) Cannot set MessageListener");
          }
          
-         synchronized (onMessageLock)
-         {         
-            this.listener = listener;
+         this.listener = listener;
+          
+         if (!buffer.isEmpty())
+         {  
+            listenerRunning = true;
+            this.queueRunner(new ListenerRunner());
          }
-   
-         log.debug("installed listener " + listener);
-   
-         activateConsumer();
       }
    }
-          
+      
    public void close() throws JMSException
-   {
-      try
+   {   
+      synchronized (mainLock)
       {
-         synchronized (mainLock)
+         log.debug(this + " closing");
+         
+         if (closed)
          {
-            log.debug(this + " closing");
-            
-            if (closed)
-            {
-               return;
-            }
-            
-            closing = true;   
-            
-            //We wait for any activation in progress to complete and the resulting message
-            //(if any) to be returned and processed.
-            //The ensures a clean, gracefully closure of the client side consumer, without
-            //any messages in transit which might arrive after the consumer is closed and which
-            //subsequently might be cancelled out of sequence causing message ordering problems
-            
-            if (activationCount > 0)
-            {
-               long waitTime = CLOSE_TIMEOUT;
-               
-               while (activationCount > 0 && waitTime > 0)
-               {               
-                  waitTime = waitOnLock(mainLock, waitTime);           
-               }
-               
-               if (activationCount > 0)
-               {
-                  log.warn("Timed out waiting for activations to complete");
-               }
-            }                       
-               
-            //Now we know there are no activations in progress but the consumer may still be active so we call
-            //deactivate which returns the id of the last message we should have received
-            //if we have received this message then we know there is no possibility of any message still in
-            //transit and we can close down with confidence
-            //otherwise we wait for this message and timeout if it doesn't arrive which might be the case
-            //if the connection to the server has been lost
-                        
-            long lastMessageIDToExpect = deactivateConsumer();
-            
-            if (lastMessageIDToExpect != -1)
-            {            
-               long waitTime = CLOSE_TIMEOUT;
-               
-               while (lastMessageIDToExpect != lastMessageId && waitTime > 0)
-               {               
-                  waitTime = waitOnLock(mainLock, waitTime);           
-               }
-               
-               if (lastMessageIDToExpect != lastMessageId)
-               {
-                  log.warn("Timed out waiting for last message to arrive, last=" + lastMessageId +" expected=" + lastMessageIDToExpect);
-               }
-            }
-            
-            //We set this even if we timed out waiting since we do not want any more to arrive now
-            gotLastMessage = true;            
-            
-            //Wake up any receive() thread that might be waiting
-            if (trace) { log.trace("Notifying main lock"); }
-            mainLock.notify();
-            if (trace) { log.trace("Notified main lock"); }
-            
-            //Now make sure that any onMessage of a listener has finished executing
-            
-            long waitTime = CLOSE_TIMEOUT;
-            
-            synchronized (onMessageLock)
-            {               
-               while (onMessageExecuting && waitTime > 0)
-               {
-                  waitTime = waitOnLock(onMessageLock, waitTime);   
-               }
-               if (onMessageExecuting)
-               {
-                  //Timed out waiting for last onMessage to be processed
-                  log.warn("Timed out waiting for last onMessage to be executed");            
-               }
-            }
-                        
-            //Now we know that all messages have been received and processed                                 
-            
-            if (!buffer.isEmpty())
-            {            
-               //Now we cancel any deliveries that might be waiting in our buffer
-               Iterator iter = buffer.iterator();
-               
-               List ids = new ArrayList();
-               while (iter.hasNext())
-               {                        
-                  MessageProxy mp = (MessageProxy)iter.next();
-                  
-                  ids.add(new Long(mp.getMessage().getMessageID()));                                    
-               }
-               cancelDeliveries(ids);
-            }
-          
-            //Now we are done
-            listener = null;
-            
-            receiverThread = null;
-            
-            closed = true;  
+            return;
          }
+         
+         closed = true;   
+         
+         if (receiverThread != null)
+         {            
+            //Wake up any receive() thread that might be waiting
+            mainLock.notify();
+         }                                       
+         
+         //Wait for any on message executions to complete
+         
+         Future result = new Future();
+         
+         try
+         {
+            this.sessionExecutor.execute(new Closer(result));
+            
+            result.getResult();
+         }
+         catch (InterruptedException e)
+         {
+            log.warn("Thread interrupted", e);
+         }
+         
+         //Now we cancel anything left in the buffer
+         //The reason we do this now is that otherwise the deliveries wouldn't get cancelled
+         //until session close (since we don't cancel consumer's deliveries until then)
+         //which is too late - since we need to preserve the order of messages delivered in a session.
+         
+         if (!buffer.isEmpty())
+         {            
+            //Now we cancel any deliveries that might be waiting in our buffer
+            //This is because, otherwise the messages wouldn't get cancelled until
+            //the corresponding session died.
+            //So if another consumer in another session tried to consume from the channel
+            //before that session died it wouldn't receive those messages
+            Iterator iter = buffer.iterator();
+            
+            List ackInfos = new ArrayList();
+            while (iter.hasNext())
+            {                        
+               MessageProxy mp = (MessageProxy)iter.next();
+               
+               AckInfo ack = new AckInfo(mp, consumerID);
+               
+               ackInfos.add(ack);
+               
+            }
+                  
+            sessionDelegate.cancelDeliveries(ackInfos);
+            
+            buffer.clear();
+         }          
       }
-      catch (InterruptedException e)
-      {
-         //Ignore         
-      }
+      
       if (trace) { log.trace(this + " closed"); }
    }
-   
+     
    /**
     * Method used by the client thread to get a Message, if available.
     *
@@ -433,12 +366,14 @@ public class MessageCallbackHandler
     *        concurrently closed.
     */
    public MessageProxy receive(long timeout) throws JMSException
-   {                    
+   {                
+      MessageProxy m = null;      
+      
       synchronized (mainLock)
       {        
          if (trace) { log.trace(this + " receiving, timeout = " + timeout); }
          
-         if (closed || closing)
+         if (closed)
          {
             //If consumer is closed or closing calling receive returns null
             return null;
@@ -452,9 +387,7 @@ public class MessageCallbackHandler
          receiverThread = Thread.currentThread();
                
          long startTimestamp = System.currentTimeMillis();
-         
-         MessageProxy m = null;
-         
+                  
          try
          {
             while(true)
@@ -511,7 +444,7 @@ public class MessageCallbackHandler
                {
                   if (trace) { log.trace("message " + m + " is not expired, pushing it to the caller"); }
                   
-                  return m;
+                  break;
                }
                
                if (trace)
@@ -523,34 +456,52 @@ public class MessageCallbackHandler
                if (timeout != 0)
                {
                   timeout -= System.currentTimeMillis() - startTimestamp;
-               }
-               
-               if (closing)
-               {
-                  return null;
-               }               
-            }
+               }                            
+            }           
          }
          finally
          {
             receiverThread = null;            
          }
       } 
+      
+      //This needs to be outside the lock
+      if (buffer.isEmpty() && !serverSending)
+      {
+         //The server has previously stopped sending because the buffer was full
+         //but now it is empty, so we tell the server to start sending again
+         consumerDelegate.more();
+      }
+      
+      return m;
    }    
    
+
    public MessageListener getMessageListener()
    {
-      synchronized (onMessageLock)
-      {
-         return listener;
-      }
+      return listener;      
    }
 
    public String toString()
    {
       return "MessageCallbackHandler[" + consumerID + "]";
    }
-
+   
+   public int getConsumerId()
+   {
+      return consumerID;
+   }
+   
+   public void addToFrontOfBuffer(MessageProxy proxy)
+   {
+      synchronized (mainLock)
+      {
+         buffer.addFirst(proxy);
+         
+         messagesAdded();
+      }
+   }
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -575,88 +526,23 @@ public class MessageCallbackHandler
          return 0;
       }     
    }
-    
-   protected void cancelDeliveries(List ids)
-   {
-      try
-      {
-         consumerDelegate.cancelDeliveries(ids);
-      }
-      catch (Exception e)
-      {
-         String msg = "Failed to cancel deliveries";
-         log.warn(msg, e);         
-      }
-   }
-   
-   protected void activateConsumer() throws JMSException
-   {
-      // We execute this on a separate thread to avoid the case where the asynchronous delivery
-      // arrives before we have returned from the synchronus call, which would cause us to lose
-      // the message.
         
-      try
-      {
-         if (trace) { log.trace("initiating consumer endpoint activation"); }
-         activationCount++;         
-         activateConsumerExecutor.execute(new ConsumerActivationRunnable());
-      }
-      catch (InterruptedException e)
-      {
-         // This should never happen
-         throw new IllegalStateException("Activation executor thread interrupted");
-      }
-   }
-   
-   protected long deactivateConsumer() throws JMSException
-   {
-      return consumerDelegate.deactivate();
-   }
-   
-   protected MessageProxy getMessageNow() throws JMSException
-   {
-      MessageProxy del = (MessageProxy)consumerDelegate.getMessageNow(false);      
-      
-      if (del != null)
-      {
-         //We record the id of the last message delivered
-         //No need to notify here since this will never be called while we
-         //are closing
-         lastMessageId = del.getMessage().getMessageID();         
-                  
-         return processMessage(del);
-      }
-      else
-      {
-         return null;
-      }
-   }
-   
    protected MessageProxy getMessage(long timeout) throws JMSException
    {
-      MessageProxy m = null;
-      
-      // If it's receiveNoWait then get the message directly
       if (timeout == -1)
       {
-         m = getMessageNow();        
+         //receiveNoWait so don't wait
       }
       else
-      {
-         // ... otherwise we activate the server side consumer and wait for a message to arrive
-         // asynchronously         
-         activateConsumer();
-      
+      {         
          try
          {         
             if (timeout == 0)
             {
                //Wait for ever potentially
-               while (!closing && buffer.isEmpty())
+               while (!closed && buffer.isEmpty())
                {
-                  if (trace) { log.trace("waiting on main lock"); }
                   mainLock.wait();               
-                  if (trace) { log.trace("done waiting on main lock"); }
                }
             }
             else
@@ -664,170 +550,187 @@ public class MessageCallbackHandler
                //Wait with timeout
                long toWait = timeout;
              
-               while (!closing && buffer.isEmpty() && toWait > 0)
+               while (!closed && buffer.isEmpty() && toWait > 0)
                {
+                  if (trace) { log.trace("Waiting on lock"); }
                   toWait = waitOnLock(mainLock, toWait);
-               }
-            }
-             
-            if (closing)
-            {
-               m = null;
-            }
-            else
-            {
-               if (!buffer.isEmpty())
-               {
-                  m = (MessageProxy)buffer.removeFirst();
-               }
-               else
-               {
-                  m = null;
+                  if (trace) { log.trace("Done waiting on lock, empty?" + buffer.isEmpty()); }
                }
             }
          }
          catch (InterruptedException e)
          {
-            //interrupting receive thread should make it return null
-            m = null;
-         }         
-         finally
-         {
-            // We only need to call this if we timed out        
-            if (m == null)
-            {
-               deactivateConsumer();
-            }               
+            return null;
          } 
       }
-               
+             
+      if (closed)
+      {
+         return null;
+      }
+         
+      MessageProxy m = null;     
+      
+      if (!buffer.isEmpty())
+      {
+         m = (MessageProxy)buffer.removeFirst();
+         
+         if (trace) { log.trace("Got message:" + m); }                  
+      }
+      else
+      {
+         m = null;
+      }
+     
       return m;
    }
    
-   protected MessageProxy processMessage(MessageProxy del)
+   protected void processMessages(List msgs)
    {
-      //if this is the handler for a connection consumer we don't want to set the session delegate
-      //since this is only used for client acknowledgement which is illegal for a session
-      //used for an MDB
-      if (!this.isConnectionConsumer)
-      {
-         del.setSessionDelegate(sessionDelegate);
-      }         
-      del.setReceived();
+      Iterator iter = msgs.iterator();
       
-      return del;
+      while (iter.hasNext())
+      {         
+         MessageProxy msg = (MessageProxy)iter.next();
+      
+         //if this is the handler for a connection consumer we don't want to set the session delegate
+         //since this is only used for client acknowledgement which is illegal for a session
+         //used for an MDB
+         msg.setSessionDelegate(sessionDelegate, isConnectionConsumer);
+                  
+         msg.setReceived();
+      }
    }
    
    // Private -------------------------------------------------------
    
-   // Inner classes -------------------------------------------------
-   
-   private class ClientDeliveryRunnable implements Runnable
+   private void queueRunner(ListenerRunner runner)
    {
-      private MessageProxy message;
-      
-      private ClientDeliveryRunnable(MessageProxy message)
+      try
       {
-         this.message = message;
+         this.sessionExecutor.execute(runner);
+      }
+      catch (InterruptedException e)
+      {
+         log.warn("Thread interrupted", e);
+      }
+   }
+   
+   private void messagesAdded()
+   {
+      //If we have a thread waiting on receive() we notify it
+      if (receiverThread != null)
+      {
+         if (trace) { log.trace(this + " notifying receiver thread"); }            
+         mainLock.notify();
+      }     
+      else if (listener != null)
+      { 
+         //We have a message listener
+         if (!listenerRunning)
+         {
+            listenerRunning = true;
+            this.queueRunner(new ListenerRunner());
+         }     
+         
+         //TODO - Execute onMessage on same thread for even better throughput 
+      }
+   }
+   
+   // Inner classes -------------------------------------------------   
+   
+   /*
+    * This class is used to put on the listener executor to wait for onMessage
+    * invocations to complete when closing
+    */
+   private class Closer implements Runnable
+   {
+      Future result;
+      
+      Closer(Future result)
+      {
+         this.result = result;
       }
       
       public void run()
       {
-         // We synchronize here to prevent the message listener being set with a different one
-         // between callOnMessage and activate being called
-         synchronized (onMessageLock)
-         { 
-            if (closed)
+         result.setResult(null);
+      }
+   }
+   
+   /*
+    * This class handles the execution of onMessage methods
+    */
+   private class ListenerRunner implements Runnable
+   {
+      public void run()
+      {         
+         MessageProxy mp = null;
+         
+         boolean again = false;
+           
+         synchronized (mainLock)
+         {
+            //remove a message from the buffer
+
+            if (buffer.isEmpty())
             {
-               // Sanity check. This should never happen. Part of the close procedure is to ensure
-               // there are no messages in the executor queue for delivery to the MessageListener.
-               // If this happens it implies the close() procedure is not working properly.
-               throw new IllegalStateException("Calling onMessage() but the consumer is closed!");
+               listenerRunning = false;               
             }
             else
+            {               
+               mp = (MessageProxy)buffer.removeFirst();
+               
+               if (mp == null)
+               {
+                  throw new java.lang.IllegalStateException("Cannot find message in buffer!");
+               }
+               
+               again = !buffer.isEmpty();
+               
+               if (!again)
+               {
+                  listenerRunning  = false;
+               }  
+            }
+         }
+                        
+         if (mp != null)
+         {
+            try
             {
+               callOnMessage(consumerDelegate, sessionDelegate, listener, consumerID, false, mp, ackMode);
+            }
+            catch (JMSException e)
+            {
+               log.error("Failed to deliver message", e);
+            } 
+         }
+         
+         if (again)
+         {
+            //Queue it up again
+            queueRunner(this);
+         }
+         else
+         {
+            if (!serverSending)
+            {
+               //Ask server for more messages
                try
-               {                                                    
-                  MessageCallbackHandler.callOnMessage(consumerDelegate, sessionDelegate, listener,
-                                                       consumerID, isConnectionConsumer, message, ackMode);
-                  if (!closing)
-                  {
-                     consumerDelegate.activate();                                  
-                  }
-                  
-                  onMessageExecuting = false;
-                  
-                  //The close() thread may be waiting for us to finish executing, so wake it up
-                  onMessageLock.notify();                 
+               {
+                  consumerDelegate.more();
                }
                catch (JMSException e)
                {
-                  log.error("Failed to deliver message", e);
-               }                           
+                  log.error("Failed to execute more()", e);
+               }
+               return;
             }
          }
       }
    }
-   
-   private class ConsumerActivationRunnable implements Runnable
-   {
-      public void run()
-      {      
-         try
-         {
-            // We always try and return the message immediately, if available. This prevents an
-            // extra network call to deliver the message. If the message is not available,
-            // the consumer will stay active and the message will delivered asynchronously (pushed)
-            // (that is what the boolean param is for)
-            
-            if (trace) { log.trace("activation runnable running, getting message now"); }
-            
-            try
-            {
-               MessageProxy m = (MessageProxy)consumerDelegate.getMessageNow(true);
-               
-               if (trace) { log.trace("got message " + m); }
-               
-               if (m != null)
-               {
-                  if (trace) { log.trace("handling " + m); }
-                  handleMessage(m);
-               }
-
-               if (trace) { log.trace("activation runnable done"); }
-            }
-            finally
-            {
-               activationCount--;
-               // closing is volatile so we don't have to do the check inside the synchronized
-               // (mainLock) {} block which should aid concurrency
-               if (closing)
-               {
-                  synchronized (mainLock)
-                  {
-                     mainLock.notifyAll();                     
-                  }
-               }
-            }                        
-         }
-         catch(Throwable t)
-         {
-            log.error("Consumer endpoint activation failed", t);
-            if (t.getCause() != null)
-            {
-               log.error("Cause:" + t.getCause());
-            }            
-            try
-            {
-               close();
-            }
-            catch (JMSException e)
-            {
-               log.error("Failed to close consumer", e);
-            }
-         }             
-      } 
-   }      
 }
+
 
 

@@ -162,6 +162,9 @@ public class MessagingXAResource implements XAResource
    {
       if (trace) { log.trace(this + " rolling back " + xid); }
 
+      //TODO Hmmm on rollback should we also stop and start the consumers to remove any transient messages
+      //Like we do on local session rollback??
+      
       rm.rollback(xid, connection);
    }
 

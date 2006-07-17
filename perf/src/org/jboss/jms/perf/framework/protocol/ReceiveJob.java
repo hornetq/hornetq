@@ -43,7 +43,7 @@ public class ReceiveJob extends ThroughputJobSupport
    protected boolean noLocal;
    protected boolean asynch;
    protected String clientID;
-
+   
    // Constructors --------------------------------------------------
 
    public ReceiveJob()
@@ -207,7 +207,7 @@ public class ReceiveJob extends ThroughputJobSupport
             log.debug("start receiving using " + fullDump());
 
             long start = System.currentTimeMillis();
-
+            
             while (true)
             {
                long timeLeft = duration - System.currentTimeMillis() + start;
@@ -219,7 +219,7 @@ public class ReceiveJob extends ThroughputJobSupport
                }
 
                Message m = consumer.receive(timeLeft);
-
+               
                if (m == null)
                {
                   log.debug("terminating receiving because time (" + duration + " ms) expired");

@@ -21,12 +21,12 @@
   */
 package org.jboss.jms.client.remoting;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanServer;
 
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.server.endpoint.DeliveryRunnable;
+import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
@@ -50,7 +50,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 public class CallbackManager implements ServerInvocationHandler
 {
    protected Map callbackHandlers;
-   
+
    public CallbackManager()
    {
       callbackHandlers = new ConcurrentReaderHashMap();
@@ -74,12 +74,12 @@ public class CallbackManager implements ServerInvocationHandler
    {
       MessagingMarshallable mm = (MessagingMarshallable)ir.getParameter();
       
-      DeliveryRunnable dr = (DeliveryRunnable)mm.getLoad();
+      ClientDelivery dr = (ClientDelivery)mm.getLoad();
       
       int consumerID = dr.getConsumerID();
       
-      MessageProxy del = dr.getMessageProxy();
-      
+      List msgs = dr.getMessages();
+
       MessageCallbackHandler handler =
          (MessageCallbackHandler)callbackHandlers.get(new Integer(consumerID));
       
@@ -88,14 +88,11 @@ public class CallbackManager implements ServerInvocationHandler
          throw new IllegalStateException("Cannot find handler for consumer: " + consumerID);
       }
       
-      handler.handleMessage(del);
-      
-      return null;
+      return new MessagingMarshallable(mm.getVersion(), handler.handleMessage(msgs));
    }
 
    public void removeListener(InvokerCallbackHandler arg0)
    {
-
    }
 
    public void setInvoker(ServerInvoker arg0)

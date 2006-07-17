@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.client.delegate;
 
-import java.util.List;
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -31,7 +29,6 @@ import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.remoting.Client;
 
@@ -52,14 +49,18 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    private static final long serialVersionUID = -2578195153435251519L;
 
    // Attributes ----------------------------------------------------
+   
+   protected int bufferSize;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConsumerDelegate(int objectID)
+   public ClientConsumerDelegate(int objectID, int bufferSize)
    {
       super(objectID);
+      
+      this.bufferSize = bufferSize;
    }
    
    public ClientConsumerDelegate()
@@ -72,29 +73,11 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void activate() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void cancelDelivery(long messageID) throws JMSException
+   public void more()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
    
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void cancelDeliveries(List ids) throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }   
-
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -108,16 +91,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-  public void closing() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public long deactivate() throws JMSException
+   public void closing() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -131,15 +105,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public MessageProxy getMessageNow(boolean wait) throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -192,6 +157,8 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       super.init();
       getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID,
                                 new Integer(id), PayloadKey.TRANSIENT);
+      getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.PREFETCH_SIZE,
+                                new Integer(bufferSize), PayloadKey.TRANSIENT);
    }
 
    public String toString()

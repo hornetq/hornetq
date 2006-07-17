@@ -31,6 +31,8 @@ import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.local.Pipe;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -62,7 +64,7 @@ public class PagingTest extends MessagingTestCase
    public void testPaging() throws Exception
    {
 
-      Pipe p = new Pipe(0, ms, pm, null, true, true, 100, 20, 10);
+      Pipe p = new Pipe(0, ms, pm, null, true, true, 100, 20, 10, new QueuedExecutor());
       CoreMessage m = null;
 
       m = MessageFactory.createCoreMessage(0);

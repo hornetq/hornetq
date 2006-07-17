@@ -94,7 +94,7 @@ public class DrainJob extends JobSupport
 
          while (true)
          {
-            Message m = consumer.receiveNoWait();
+            Message m = consumer.receive(1000);
             if (m == null)
             {
                break;

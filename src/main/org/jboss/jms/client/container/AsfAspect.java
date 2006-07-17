@@ -162,7 +162,9 @@ public class AsfAspect
 
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
          
-         MessageCallbackHandler.callOnMessage(holder.consumerDelegate, del, sessionListener, holder.consumerID, false, holder.msg, ackMode);                          
+         MessageCallbackHandler.callOnMessage(holder.consumerDelegate, del,
+                                              sessionListener, holder.consumerID, false,
+                                              holder.msg, ackMode);                          
       }
       
       return null;

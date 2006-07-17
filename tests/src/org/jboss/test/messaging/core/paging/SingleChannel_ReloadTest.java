@@ -23,8 +23,7 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.ChannelState;
+import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
@@ -33,6 +32,8 @@ import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.tx.TransactionRepository;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
@@ -65,10 +66,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testReload() throws Throwable
    {
-      Channel queue = new Queue(1, ms, pm, null, true, 100, 20, 10);
+      ChannelSupport queue = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
       
-      ChannelState state = new ChannelState(queue, pm, null, true, true, 100, 20, 10);
-        
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];
@@ -80,7 +79,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          
          refs[i] = ms.reference(msgs[i]);
                 
-         state.addReference(refs[i]); 
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
       }
       
       //Send 50 p messages
@@ -90,19 +91,21 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          
          refs[i] = ms.reference(msgs[i]);
                 
-         state.addReference(refs[i]); 
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
       }
 
       List refIds = getReferenceIds(queue.getChannelID());
       assertEquals(100, refIds.size());
                                                 
-      assertEquals(100, state.memoryRefCount());
+      assertEquals(100, queue.memoryRefCount());
       
-      assertEquals(0, state.downCacheCount());
+      assertEquals(0, queue.downCacheCount());
       
-      assertTrue(state.isPaging());      
+      assertTrue(queue.isPaging());      
       
-      assertEquals(0, state.memoryDeliveryCount());
+      assertEquals(0, queue.memoryDeliveryCount());
       
       //Stop and restart the persistence manager
       //Only the persistent messages should survive
@@ -122,31 +125,27 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       tr.start(pm);
          
-      Channel queue2 = new Queue(1, ms, pm, null, true, 100, 20, 10);
+      ChannelSupport queue2 = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
       
-      ChannelState state2 = new ChannelState(queue2, pm, null, true, true, 100, 20, 10);
-      
-      state2.load();
+      queue2.load();
       
       refIds = getReferenceIds(queue.getChannelID());
       assertEquals(50, refIds.size());
-                  
-      this.consume(queue2, state2, 150, refs, 50);
+                   
+      this.consume(queue2, 150, refs, 50);
       
       refIds = getReferenceIds(queue2.getChannelID());
       assertEquals(0, refIds.size());
                                                 
-      assertEquals(0, state2.memoryRefCount());
+      assertEquals(0, queue2.memoryRefCount());
       
-      assertEquals(0, state2.downCacheCount());
+      assertEquals(0, queue2.downCacheCount());
       
-      assertFalse(state2.isPaging());      
+      assertFalse(queue2.isPaging());      
       
-      assertEquals(0, state2.memoryDeliveryCount());
+      assertEquals(0, queue2.memoryDeliveryCount());
       
-      MessageReference ref = state2.removeFirstInMemory();
-      
-      assertNull(ref);
+      assertEquals(0, queue2.messageCount());
       
       assertEquals(0, LockMap.instance.getSize());
    }

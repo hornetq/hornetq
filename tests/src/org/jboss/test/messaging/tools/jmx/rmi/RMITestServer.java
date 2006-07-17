@@ -149,6 +149,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       server.deployConnectionFactory(objectName, jndiBindings);
    }
+   
+   public void deployConnectionFactory(String objectName, String[] jndiBindings, int prefetchSize) throws Exception
+   {
+      server.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+   }
 
    public void undeployConnectionFactory(ObjectName objectName) throws Exception
    {

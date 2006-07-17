@@ -24,13 +24,17 @@ package org.jboss.jms.client.container;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.remoting.CallbackManager;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.endpoint.ServerBrowserEndpoint;
+import org.jboss.logging.Logger;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
@@ -47,7 +51,10 @@ import org.jboss.jms.delegate.SessionDelegate;
 public class ConsumerAspect
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ConsumerAspect.class);
 
+   
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -71,33 +78,51 @@ public class ConsumerAspect
       SessionDelegate sessionDelegate = (SessionDelegate)invocation.getTargetObject();
       ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
       int consumerID = consumerState.getConsumerID();
+      int prefetchSize = consumerState.getPrefetchSize();
+      QueuedExecutor sessionExecutor = sessionState.getExecutor();
       
       MessageCallbackHandler messageHandler =
          new MessageCallbackHandler(isCC, sessionState.getAcknowledgeMode(),
-                                    sessionState.getExecutor(), connectionState.getPooledExecutor(),
-                                    sessionDelegate, consumerDelegate, consumerID);
+                                    sessionDelegate, consumerDelegate, consumerID,
+                                    prefetchSize, sessionExecutor);
+      
+      sessionState.addCallbackHandler(messageHandler);
       
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
       cm.registerHandler(consumerID, messageHandler);
          
       consumerState.setMessageCallbackHandler(messageHandler);
-
+      
+      //Now we have finished creating the client consumer, we can tell the SCD
+      //we are ready
+      consumerDelegate.more();
+      
       return consumerDelegate;
    }
    
    public Object handleClosing(Invocation invocation) throws Throwable
    {      
+      //First we make sure closing is called on the ServerConsumerEndpoint
+      //This ensures that any in transit messages are flushed out to the client side
+      Object res = invocation.invokeNext();
+      
       ConsumerState consumerState = getState(invocation);
       
-      ConnectionState connectionState = (ConnectionState)consumerState.getParent().getParent();
+      SessionState sessionState = (SessionState)consumerState.getParent();
+      
+      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
             
+      //Then we call close on the messagecallbackhandler which waits for onMessage invocations
+      //to complete and then cancels anything in the client buffer
       consumerState.getMessageCallbackHandler().close();
+      
+      sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());
 
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
       cm.unregisterHandler(consumerState.getConsumerID());
             
-      return invocation.invokeNext();
-   }
+      return res;
+   }      
    
    public Object handleGetDestination(Invocation invocation) throws Throwable
    {
@@ -114,7 +139,6 @@ public class ConsumerAspect
       return getState(invocation).getSelector();
    }
    
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

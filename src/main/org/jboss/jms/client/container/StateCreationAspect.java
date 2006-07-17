@@ -26,6 +26,7 @@ import javax.jms.Destination;
 import org.jboss.aop.Advised;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
@@ -131,13 +132,17 @@ public class StateCreationAspect
       boolean noLocal = ((Boolean)mi.getArguments()[2]).booleanValue();    
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
 
+      SimpleMetaData md = ((Advised)consumerDelegate)._getInstanceAdvisor().getMetaData();
+      
       int consumerID =
-         ((Integer)((Advised)consumerDelegate)._getInstanceAdvisor().getMetaData().
-         getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID)).intValue();
+         ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID)).intValue();
+      
+      int prefetchSize =
+         ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.PREFETCH_SIZE)).intValue();
       
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector,
-                           noLocal, consumerID, connectionConsumer);
+                           noLocal, consumerID, connectionConsumer, prefetchSize);
       
       delegate.setState(consumerState);
       return consumerDelegate;

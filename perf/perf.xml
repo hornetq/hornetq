@@ -16,7 +16,7 @@
    <message-size>0</message-size>
 
    <!-- safeguard for receive jobs that block waiting messages will never arrive -->
-   <duration>60000</duration>
+   <duration>600000</duration>
 
    <providers>
 
@@ -74,8 +74,263 @@
       </performance-test>
       -->
 
-      <!--
-      <performance-test name="Measured Send Rate vs. Intended Send Rate" loops="1">
+      <performance-test name="Throughput-Remote">
+
+               <graph>
+                  <x job="send" result="yes" metric="rate" label="measured send rate (msg/s)"/>
+                  <y job="receive" result="yes" metric="rate" label="measured receive rate (msg/s)" />
+               </graph>
+
+               <destination>/queue/simpleQueue</destination>
+               <delivery-mode>NON_PERSISTENT</delivery-mode>
+               <message-size>0</message-size>
+               <duration>30000</duration>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="500" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="1000" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="1500" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="2000" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="2500" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="3000" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="3500" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="4000" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="4500" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="5000" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="5500" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="6000" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="6500" executor="REMOTE"/>
+                  <receive executor="REMOTE2"/>
+               </parallel>
+
+               <drain/>
+
+               <execution provider="JBossMessaging"/>
+               <execution provider="JBossMQ"/>
+
+            </performance-test>
+
+
+         <performance-test name="Throughput-INVM">
+
+               <graph>
+                  <x job="send" result="yes" metric="rate" label="measured send rate (msg/s)"/>
+                  <y job="receive" result="yes" metric="rate" label="measured receive rate (msg/s)" />
+               </graph>
+
+               <destination>/queue/simpleQueue</destination>
+               <delivery-mode>NON_PERSISTENT</delivery-mode>
+               <message-size>0</message-size>
+               <duration>30000</duration>
+
+               <drain/>
+               <parallel>
+                  <send rate="1000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="2000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="3000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="4000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="5000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="6000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+
+               <drain/>
+
+               <parallel>
+                  <send rate="7000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="8000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="9000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="10000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="11000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="12000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="13000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <parallel>
+                  <send rate="14000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <parallel>
+                  <send rate="15000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="16000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="17000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+               <drain/>
+
+               <parallel>
+                  <send rate="18000" executor="LOCAL"/>
+                  <receive executor="LOCAL2"/>
+               </parallel>
+
+
+               <drain/>
+
+               <execution provider="JBossMessaging"/>
+
+
+               <execution provider="JBossMQ"/>
+
+
+      </performance-test>
+
+      <performance-test name="Measured Send Rate vs. Intended Send Rate INVM">
 
          <graph>
             <x job="send" metric="rate" label="intended send rate (msg/s)"/>
@@ -88,53 +343,103 @@
          <messages>50000</messages>
 
          <drain executor="LOCAL"/>
-         <send rate="500" executor="LOCAL"/>
-
-         <drain executor="LOCAL"/>
          <send rate="1000" executor="LOCAL"/>
 
          <drain executor="LOCAL"/>
-         <send rate="1500" executor="LOCAL"/>
+         <send rate="2000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="3000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="4000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="6000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="8000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="10000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="12000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="14000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="16000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="18000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="20000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="22000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="24000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="26000" executor="LOCAL"/>
+
+         <drain executor="LOCAL"/>
+         <send rate="28000" executor="LOCAL"/>
 
          <execution provider="JBossMessaging"/>
          <execution provider="JBossMQ"/>
-      </performance-test>
-     -->
+   </performance-test>
 
-      <!--
-      <performance-test name="ReceiveRateVsSendRate">
+
+
+<performance-test name="Measured Send Rate vs. Intended Send Rate Remote">
 
          <graph>
-            <x job="send" result="no" metric="rate" label="target send rate (msg/s)"/>
-            <y job="receive" result="yes" metric="rate" label="measured receive rate (msg/s)" />
+            <x job="send" metric="rate" label="intended send rate (msg/s)"/>
+            <y job="send" metric="rate" label="measured send rate (msg/s)" result="true"/>
          </graph>
 
          <destination>/queue/simpleQueue</destination>
          <delivery-mode>NON_PERSISTENT</delivery-mode>
          <message-size>0</message-size>
-         <messages>2000</messages>
+         <messages>50000</messages>
 
-         <drain/>
+         <drain executor="REMOTE"/>
+         <send rate="1000" executor="REMOTE"/>
 
-         <parallel>
-            <send rate="500" executor="LOCAL"/>
-            <receive messages="2000" executor="LOCAL2"/>
-         </parallel>
+         <drain executor="REMOTE"/>
+         <send rate="2000" executor="REMOTE"/>
 
-         <parallel>
-            <send rate="1000" executor="LOCAL"/>
-            <receive messages="2000" executor="LOCAL2"/>
-         </parallel>
+         <drain executor="REMOTE"/>
+         <send rate="3000" executor="REMOTE"/>
 
-         <parallel>
-            <send rate="1500" executor="LOCAL"/>
-            <receive messages="2000" executor="LOCAL2"/>
-         </parallel>
+         <drain executor="REMOTE"/>
+         <send rate="4000" executor="REMOTE"/>
+
+         <drain executor="REMOTE"/>
+         <send rate="6000" executor="REMOTE"/>
+
+         <drain executor="REMOTE"/>
+         <send rate="8000" executor="REMOTE"/>
+
+         <drain executor="REMOTE"/>
+         <send rate="10000" executor="REMOTE"/>
+
+         <drain executor="REMOTE"/>
+         <send rate="12000" executor="REMOTE"/>
 
          <execution provider="JBossMessaging"/>
          <execution provider="JBossMQ"/>
-      </performance-test>
-      -->
+   </performance-test>
+
+
+
+
+
 
       <!--
 
@@ -249,6 +554,7 @@
 
           -->
 
+<!--
       <performance-test name="Send 20000 Non-Persistent Non-Transactional 1 KB Text Local" loops="3">
 
          <graph>
@@ -348,7 +654,7 @@
          <execution provider="JBossMQ"/>
       </performance-test>
 
-
+-->
 
       <!--
       <performance-test name="Send 30000 Non-Persistent Non-Transactional 0 KB Remote">
