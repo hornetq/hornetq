@@ -128,7 +128,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
    }
 
    public synchronized void acknowledge(Transaction tx) throws Throwable
-   {
+   {        
       if (trace) { log.trace(this + " acknowledging delivery in tx:" + tx); }
       
       // deals with the race condition when acknowledgment arrives before the delivery
@@ -142,7 +142,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       //This meant that if the acknowledgement (in the tx) came in before the call to handle()
       //had returned the delivery would end up in the delivery set in the channel and never
       //get removed - causing a leak
-      done = true;
+      done = true;      
    }
 
    public synchronized void cancel() throws Throwable
@@ -152,7 +152,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       // deals with the race condition when cancellation arrives before the delivery
       // is returned back to the sending delivery observer      
       observer.cancel(this);
-      cancelled = true;
+      cancelled = true;      
    }
 
    // Public --------------------------------------------------------

@@ -132,7 +132,11 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    {
       if (released)
       {
-         throw new IllegalStateException("Reference is already released");
+         //Do nothing -
+         //It's possible releaseMemoryReference can be called more than once on a reference since it's
+         //allowable that acknowledge is called more than once for a delivery and each call will call this
+         //method - so we don't want to throw an exception
+         return;
       }
       holder.decrementInMemoryChannelCount();
       
@@ -144,32 +148,6 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       return holder.getInMemoryChannelCount();
    }
   
-   //These are all handled in RoutableSupport
-   
-//   public int getDeliveryCount()
-//   {
-//      return deliveryCount;
-//   }
-//   
-//   public void incrementDeliveryCount()
-//   {
-//      deliveryCount++;      
-//   }
-//   
-//   public void decrementDeliveryCount()
-//   {
-//      deliveryCount--;
-//   }
-//   
-//   public void setDeliveryCount(int deliveryCount)
-//   {
-//      this.deliveryCount = deliveryCount;
-//      if (deliveryCount > 0)
-//      {
-//         this.redelivered = true;
-//      }
-//   }
-   
    public long getOrdering()
    {
       return ordering;

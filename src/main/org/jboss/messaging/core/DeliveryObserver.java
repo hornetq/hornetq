@@ -31,7 +31,7 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public interface DeliveryObserver
 {
-   void acknowledge(Delivery d, Transaction tx);
+   void acknowledge(Delivery d, Transaction tx) throws Throwable;
 
    void cancel(Delivery d) throws Throwable;
 }

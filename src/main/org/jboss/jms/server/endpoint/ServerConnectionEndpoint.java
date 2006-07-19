@@ -415,10 +415,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                     
             Transaction tx = null;
             try
-            {               
-               tx = tr.createTransaction();
-               processTransaction(request.getState(), tx);
-               tx.rollback();
+            {             
+               //Nothing to do on rollback
+//               tx = tr.createTransaction();
+//               processTransaction(request.getState(), tx);
+//               tx.rollback();
             }
             catch (Throwable t)
             {

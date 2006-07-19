@@ -226,7 +226,7 @@ public abstract class ChannelSupport implements Channel
 
    // DeliveryObserver implementation --------------------------
 
-   public void acknowledge(Delivery d, Transaction tx)
+   public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
       if (trace)
       {
@@ -236,55 +236,47 @@ public abstract class ChannelSupport implements Channel
                            : " transactionally in " + tx));
       }
 
-      try
+      if (tx == null)
       {
-         if (tx == null)
-         {
-            // acknowledge non transactionally
+         // acknowledge non transactionally
 
-            // we put the acknowledgement on the event queue
+         // we put the acknowledgement on the event queue
 
-            // try
-            // {
-            // Future result = new Future();
-            //
-            // this.executor.execute(new AcknowledgeRunnable(d, result));
-            //               
-            // //For now we wait for result, but this may not be necessary
-            // result.getResult();
-            // }
-            // catch (InterruptedException e)
-            // {
-            // log.warn("Thread interrupted", e);
-            // }
+         // try
+         // {
+         // Future result = new Future();
+         //
+         // this.executor.execute(new AcknowledgeRunnable(d, result));
+         //               
+         // //For now we wait for result, but this may not be necessary
+         // result.getResult();
+         // }
+         // catch (InterruptedException e)
+         // {
+         // log.warn("Thread interrupted", e);
+         // }
 
-            // TODO We should consider also executing acks on the event queue
-            acknowledgeInternal(d);
-
-         }
-         else
-         {
-            this.getCallback(tx).addDelivery(d);
-
-            if (trace)
-            {
-               log.trace(this + " added " + d + " to memory on transaction "
-                        + tx);
-            }
-
-            if (recoverable && d.getReference().isReliable())
-            {
-               pm.removeReference(channelID, d.getReference(), tx);
-            }
-         }
+         // TODO We should consider also executing acks on the event queue
+         acknowledgeInternal(d);
       }
-      catch (Throwable t)
+      else
       {
-         log.error("Failed to remove delivery " + d + " from state", t);
+         this.getCallback(tx).addDelivery(d);
+
+         if (trace)
+         {
+            log.trace(this + " added " + d + " to memory on transaction "
+                     + tx);
+         }
+
+         if (recoverable && d.getReference().isReliable())
+         {
+            pm.removeReference(channelID, d.getReference(), tx);
+         }
       }
    }
 
-   public void cancel(Delivery d)
+   public void cancel(Delivery d) throws Throwable
    {
       // We put the cancellation on the event queue
       // try
@@ -302,15 +294,7 @@ public abstract class ChannelSupport implements Channel
       // }
 
       // TODO We should also consider executing cancels on the event queue
-      try
-      {
-         cancelInternal(d);
-      }
-      catch (Throwable t)
-      {
-         log.error("Failed to cancel delivery", t);
-      }
-
+      cancelInternal(d);   
    }
 
    // Distributor implementation ------------------------------------
@@ -935,7 +919,7 @@ public abstract class ChannelSupport implements Channel
    }
 
    protected void acknowledgeInternal(Delivery d) throws Throwable
-   {
+   {      
       synchronized (deliveryLock)
       {
          acknowledgeInMemory(d);
@@ -943,16 +927,10 @@ public abstract class ChannelSupport implements Channel
 
       if (recoverable && d.getReference().isReliable())
       {
-         // TODO - Optimisation - If the message is acknowledged before the call
-         // to handle() returns
-         // And it is a new message then there won't be any reference in the
-         // database
-         // So the call to remove from the db is wasted.
-         // We should add a flag to check this
          pm.removeReference(channelID, d.getReference(), null);
       }
-
-      d.getReference().releaseMemoryReference();
+         
+      d.getReference().releaseMemoryReference();      
    }
 
    protected void cancelInternal(Delivery del) throws Throwable
@@ -1272,7 +1250,7 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected void acknowledgeInMemory(Delivery d) throws Throwable
+   protected boolean acknowledgeInMemory(Delivery d) throws Throwable
    {
       if (d == null)
       {
@@ -1288,6 +1266,8 @@ public abstract class ChannelSupport implements Channel
       {
          log.trace(this + " removed " + d + " from memory:" + removed);
       }
+      
+      return removed;
    }
 
    protected void load(int number) throws Exception
