@@ -53,7 +53,6 @@ public class TransactionRequest implements Externalizable
    private static final long serialVersionUID = -5371388526898322431L;
    
    public final static byte ONE_PHASE_COMMIT_REQUEST = 0;
-   public final static byte ONE_PHASE_ROLLBACK_REQUEST = 1;
    public final static byte TWO_PHASE_PREPARE_REQUEST = 2;
    public final static byte TWO_PHASE_COMMIT_REQUEST = 3;
    public final static byte TWO_PHASE_ROLLBACK_REQUEST = 4;
@@ -183,11 +182,10 @@ public class TransactionRequest implements Externalizable
    {
       return "TransactionRequest[" +
          (requestType == ONE_PHASE_COMMIT_REQUEST ? "ONE_PHASE_COMMIT":
-            (requestType == ONE_PHASE_ROLLBACK_REQUEST ? "ONE_PHASE_ROLLBACK":
                (requestType == TWO_PHASE_PREPARE_REQUEST ? "TWO_PHASE_PREPARE":
                   (requestType == TWO_PHASE_COMMIT_REQUEST ? "TWO_PHASE_COMMIT":
                      (requestType == TWO_PHASE_ROLLBACK_REQUEST ? "TWO_PHASE_ROLLBACK_":
-                        "UNKNOW_REQUEST_TYPE"))))) + ", " + xid + "]";
+                        "UNKNOW_REQUEST_TYPE")))) + ", " + xid + "]";
    }
 
    // Package protected ---------------------------------------------

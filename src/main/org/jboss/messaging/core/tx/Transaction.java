@@ -148,11 +148,19 @@ public class Transaction
       return (TxCallback)keyedCallbackMap.get(key);
    }
       
-   public void commit() throws Exception
+   public synchronized void commit() throws Exception
    {
       if (state == STATE_ROLLBACK_ONLY)
       {
          throw new TransactionException("Transaction marked rollback only, cannot commit");
+      }
+      if (state == STATE_COMMITTED)
+      {
+         throw new TransactionException("Transaction already committed, cannot commit");
+      }
+      if (state == STATE_ROLLEDBACK)
+      {
+         throw new TransactionException("Transaction already rolled back, cannot commit");
       }
 
       if (trace) { log.trace("executing before commit hooks " + this); }
@@ -195,8 +203,13 @@ public class Transaction
       if (trace) { log.trace("commit process complete " + this); }
    }
    
-   public void prepare() throws Exception
+   public synchronized void prepare() throws Exception
    {
+      if (state != STATE_ACTIVE)
+      {
+         throw new TransactionException("Transaction not active, cannot prepare");
+      }
+      
       if (trace) { log.trace("executing before prepare hooks " + this); }
       
       List cb = new ArrayList(callbacks);
@@ -229,8 +242,17 @@ public class Transaction
       if (trace) { log.trace("prepare process complete " + this); }
    }
    
-   public void rollback() throws Exception
+   public synchronized void rollback() throws Exception
    {
+      if (state == STATE_COMMITTED)
+      {
+         throw new TransactionException("Transaction already committed, cannot rollback");
+      }
+      if (state == STATE_ROLLEDBACK)
+      {
+         throw new TransactionException("Transaction already rolled back, cannot rollback");
+      }
+      
       if (trace) { log.trace("executing before rollback hooks " + this); }
       
       boolean onePhase = state != STATE_PREPARED;
@@ -263,7 +285,7 @@ public class Transaction
       if (trace) { log.trace("rollback process complete " + this); }
    }
 
-   public void setRollbackOnly() throws Exception
+   public synchronized void setRollbackOnly() throws Exception
    {
       if (trace) { log.trace("setting rollback_only on " + this); }
 

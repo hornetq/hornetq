@@ -176,10 +176,7 @@ public class ResourceManager
       //Don't need messages for rollback
       tx.clearMessages();
       
-      TransactionRequest request =
-         new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, null, tx);
-      
-      connection.sendTransaction(request);
+      //For one phase rollback there is nothing to do on the server
       
       redeliverMessages(tx);
    }
@@ -252,6 +249,8 @@ public class ResourceManager
       if ((tx == null) || tx.getState() == TxState.TX_PREPARED)
       {
          request = new TransactionRequest(TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST, xid, tx);
+         
+         sendTransactionXA(request, connection);
       } 
       else
       {
@@ -260,10 +259,8 @@ public class ResourceManager
             throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
          }
          
-         request = new TransactionRequest(TransactionRequest.ONE_PHASE_ROLLBACK_REQUEST, xid, tx);
+         //For one phase rollback there is nothing to do on the server
       }
-      
-      sendTransactionXA(request, connection);
       
       try
       {

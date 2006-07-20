@@ -97,8 +97,6 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
    private Selector messageSelector;
    
-   private DeliveryCallback deliveryCallback;
-
    private JBossDestination destination;
    
    private List toDeliver;
@@ -546,10 +544,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       {
          d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
       }
+      
+      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getKeyedCallback(this);
+            
       if (deliveryCallback == null)
       {
          deliveryCallback = new DeliveryCallback();
-         tx.addCallback(deliveryCallback);
+         tx.addKeyedCallback(deliveryCallback, this);
       }
       deliveryCallback.addMessageID(messageID);
          
@@ -848,10 +849,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
    }
    
+   /**
+    * 
+    * The purpose of this class is to remove deliveries from the delivery list on commit
+    * Each transaction has once instance of this per SCE
+    *
+    */
    private class DeliveryCallback implements TxCallback
    {
       List delList = new ArrayList();
-      
+         
       public void beforePrepare()
       {         
          //NOOP
@@ -872,7 +879,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          //NOOP
       }
       
-      public void afterCommit(boolean onePhase) throws TransactionException
+      public synchronized void afterCommit(boolean onePhase) throws TransactionException
       {
          // Remove the deliveries from the delivery map.
          Iterator iter = delList.iterator();
@@ -885,16 +892,14 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                throw new TransactionException("Failed to remove delivery " + messageID);
             }
          }
-
-         deliveryCallback = null;
       }
       
       public void afterRollback(boolean onePhase) throws TransactionException
-      {                   
-         //Do nothing
+      {                            
+         //NOOP
       }
       
-      void addMessageID(long messageID)
+      synchronized void addMessageID(long messageID)
       {
          delList.add(new Long(messageID));
       }
