@@ -11,6 +11,7 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.ConnectionFactoryManager;
+import org.jboss.remoting.InvokerLocator;
 import org.w3c.dom.Element;
 
 import javax.management.ObjectName;
@@ -99,16 +100,21 @@ public class ConnectionFactory extends ServiceMBeanSupport
       
       connectionFactoryID = connectionFactoryManager.
          registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing, prefetchSize);
+
+      InvokerLocator locator = new InvokerLocator(locatorURI);
+      String info =
+         "Connector " + locator.getProtocol() + "://" + locator.getHost() + ":" + locator.getPort();
               
       if (enablePing)
       {
-         log.info("Connector has leasing enabled, lease period " + leasePeriod + " milliseconds");
+         info += " has leasing enabled, lease period " + leasePeriod + " milliseconds";
       }
       else
       {
-         log.info("Connector has lease disabled");
+         info += " has lease disabled";
       }
-      
+
+      log.info(info);
       log.info(this + " deployed");
    }
 
