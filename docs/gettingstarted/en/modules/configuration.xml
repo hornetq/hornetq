@@ -7,7 +7,7 @@
      services to client applications.</para>
 
    <para>
-      Starting with JBoss Messaging 1.0.1 release, the service configuration is spread among several configuration files.
+      Starting with the JBoss Messaging 1.0.1 release, the service configuration is spread among several configuration files.
       (The 1.0.0 release used to have all configuration information lumped together in the SAR's deployment
       descriptor <filename>jboss-messaging.sar/META-INF/jboss-service.xml</filename>). Depending
       on the functionality provided by the services it configures, the configuration data is
