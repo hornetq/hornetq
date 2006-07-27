@@ -47,6 +47,7 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.TxState;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.ToString;
@@ -62,8 +63,6 @@ import org.jboss.remoting.Client;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -107,8 +106,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    private String password;
 
-   private ReadWriteLock closeLock;
-
    // the server itself
    private ServerPeer serverPeer;
 
@@ -150,8 +147,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       this.username = username;
       this.password = password;
-      
-      closeLock = new WriterPreferenceReadWriteLock();
    }
    
    // ConnectionDelegate implementation -----------------------------
@@ -161,14 +156,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                                                 boolean isXA)
       throws JMSException
    {
-      try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
       try
       {
          log.debug("creating session " + (transacted ? "transacted" :"non transacted")+ ", " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " + (isXA ? "XA": "non XA"));
@@ -194,22 +181,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          return d;
       }
-      finally
+      catch (Throwable t)
       {
-         closeLock.readLock().release();
+         throw ExceptionUtil.handleJMSInvocation(t, this + " createSessionDelegate");         
       }
    }
          
    public String getClientID() throws JMSException
    {
-      try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
       try
       {
          if (closed)
@@ -218,22 +197,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          return clientID;
       }
-      finally
+      catch (Throwable t)
       {
-         closeLock.readLock().release();
-      }
+         throw ExceptionUtil.handleJMSInvocation(t, this + " getClientID");
+      }  
    }
    
-   public void setClientID(String clientID) throws IllegalStateException
+   public void setClientID(String clientID) throws JMSException
    {
-      try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
       try
       {
          if (closed)
@@ -247,22 +218,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          this.clientID = clientID;
       }
-      finally
+      catch (Throwable t)
       {
-         closeLock.readLock().release();
-      }
+         throw ExceptionUtil.handleJMSInvocation(t, this + " setClientID");
+      } 
    }
       
    public void start() throws JMSException
    {
-      try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
       try
       {
          if (closed)
@@ -272,22 +235,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          setStarted(true);
          log.debug(this + " started");
       }
-      finally
+      catch (Throwable t)
       {
-         closeLock.readLock().release();
-      }
+         throw ExceptionUtil.handleJMSInvocation(t, this + " start");
+      } 
    }   
    
    public synchronized void stop() throws JMSException
    {
-      try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
       try
       {
          if (closed)
@@ -297,22 +252,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          setStarted(false);
          log.debug("Connection " + connectionID + " stopped");
       }
-      finally
+      catch (Throwable t)
       {
-         closeLock.readLock().release();
-      }
+         throw ExceptionUtil.handleJMSInvocation(t, this + " stop");
+      } 
    }
    
    public void close() throws JMSException
    {      
-      try
-      {
-         closeLock.writeLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         // Ignore
-      }
       try
       {
          if (trace) { log.trace("close()"); }
@@ -322,19 +269,19 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             log.warn("Connection is already closed");
             return;
          }
-
+   
          // We clone to avoid concurrent modification exceptions
          for(Iterator i = new HashSet(sessions.values()).iterator(); i.hasNext(); )
          {
             ServerSessionEndpoint sess = (ServerSessionEndpoint)i.next();
-
+   
             // clear all consumers associated with this session from the serverPeer's cache
             for(Iterator j = sess.getConsumerEndpointIDs().iterator(); j.hasNext(); )
             {
                Integer consumerID = (Integer)j.next();
                serverPeer.removeConsumerEndpoint(consumerID);
             }
-
+   
             // ... and also close the session
             sess.close();
          }
@@ -342,21 +289,20 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
          {
             JBossDestination dest = (JBossDestination)i.next();
-            channelMapper.undeployCoreDestination(dest.isQueue(), dest.getName());
+            channelMapper.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
          }
          
          temporaryDestinations.clear();
-
+   
          cm.unregisterConnection(jmsClientVMId, remotingClientSessionId);
-
+   
          JMSDispatcher.instance.unregisterTarget(new Integer(connectionID));
          closed = true;
       }
-      finally
+      catch (Throwable t)
       {
-         closeLock.writeLock().release();
-      }
-
+         throw ExceptionUtil.handleJMSInvocation(t, this + " close");
+      } 
    }
    
    public void closing() throws JMSException
@@ -365,22 +311,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
      
    public void sendTransaction(TransactionRequest request) throws JMSException
-   {
+   {    
       try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
-      try
-      {
+      {      
          if (closed)
          {
             throw new IllegalStateException("Connection is closed");
          }
-                        
+                              
          if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
          {
             if (trace) { log.trace("one phase commit request received"); }
@@ -477,12 +415,12 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             }
          }      
                  
-         if (trace) { log.trace("request processed ok"); }
+         if (trace) { log.trace("request processed ok"); }      
       }
-      finally
+      catch (Throwable t)
       {
-         closeLock.readLock().release();
-      }
+         throw ExceptionUtil.handleJMSInvocation(t, this + " sendTransaction");
+      } 
    }
    
    /**
@@ -490,11 +428,18 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     * This would be used by the transaction manager in recovery or by a tool to apply
     * heuristic decisions to commit or rollback particular transactions
     */
-   public Xid[] getPreparedTransactions()
+   public Xid[] getPreparedTransactions() throws JMSException
    {
-      List xids = tr.getPreparedTransactions();
-      
-      return (Xid[])xids.toArray(new Xid[xids.size()]);
+      try
+      {
+         List xids = tr.getPreparedTransactions();
+         
+         return (Xid[])xids.toArray(new Xid[xids.size()]);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " getPreparedTransactions");
+      }
    }
   
    // Public --------------------------------------------------------
@@ -579,22 +524,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    protected boolean isStarted()
    {
-      try
-      {
-         closeLock.readLock().acquire();
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
-      }
-      try
-      {
-         return started;
-      }
-      finally
-      {
-         closeLock.readLock().release();
-      }
+      return started;    
    }
    
    /**
@@ -665,7 +595,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return jmsClientVMId;
    }
 
-   protected void sendMessage(JBossMessage jbm, Transaction tx) throws JMSException
+   protected void sendMessage(JBossMessage jbm, Transaction tx) throws Exception
    {
       // The JMSDestination header must already have been set for each message
       JBossDestination jbDest = (JBossDestination)jbm.getJMSDestination();
@@ -701,14 +631,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       boolean internalTx = false;
       if (m.isReliable() && tx == null && !coreDestination.isQueue())
       {
-         try
-         {
-            tx = tr.createTransaction();
-         }
-         catch (Exception e)
-         {
-            throw new MessagingJMSException("Failed to create internal transaction", e);
-         }
+         tx = tr.createTransaction();
+         
          internalTx = true;
       }
       
@@ -764,7 +688,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // Private -------------------------------------------------------
    
-   private void setStarted(boolean s) throws JMSException
+   private void setStarted(boolean s) throws Throwable
    {
       synchronized(sessions)
       {
@@ -777,7 +701,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }   
    
-   private void processTransaction(TxState txState, Transaction tx) throws JMSException
+   private void processTransaction(TxState txState, Transaction tx) throws Throwable
    {
       if (trace) { log.trace("processing transaction, there are " + txState.getMessages().size() + " messages and " + txState.getAcks().size() + " acks "); }
       

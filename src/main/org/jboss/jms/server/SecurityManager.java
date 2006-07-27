@@ -21,13 +21,13 @@
   */
 package org.jboss.jms.server;
 
+import java.util.Set;
+
+import javax.jms.JMSSecurityException;
+import javax.security.auth.Subject;
+
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.w3c.dom.Element;
-
-import javax.security.auth.Subject;
-import javax.jms.JMSSecurityException;
-import javax.jms.JMSException;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -42,8 +42,8 @@ public interface SecurityManager
     */
    SecurityMetadata getSecurityMetadata(boolean isQueue, String destName);
 
-   void setSecurityConfig(boolean isQueue, String destName, Element conf) throws JMSException;
-   void clearSecurityConfig(boolean isQueue, String name) throws JMSException;
+   void setSecurityConfig(boolean isQueue, String destName, Element conf) throws Exception;
+   void clearSecurityConfig(boolean isQueue, String name) throws Exception;
 
    /**
     * Authenticate the specified user with the given password. Implementations are most likely to

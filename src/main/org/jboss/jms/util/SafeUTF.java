@@ -26,7 +26,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.MessageSupport;
 
 /**
  * 

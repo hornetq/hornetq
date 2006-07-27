@@ -42,7 +42,7 @@ import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.server.subscription.Subscription;
-import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
@@ -337,45 +337,52 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
    public void closing() throws JMSException
    {
-      if (trace) { log.trace(this + " closing"); }
-      
-      stop();         
+      try
+      {
+         if (trace) { log.trace(this + " closing"); }
+         
+         stop(); 
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " closing");
+      }     
    }
    
    public void close() throws JMSException
-   {            
-      synchronized (lock)
-      { 
-         //On close we only disconnect the consumer from the Channel we don't actually remove it
-         // This is because it may still contain deliveries that may well be acknowledged after
-         // the consumer has closed. This is perfectly valid.      
-         //FIXME - The deliveries should really be stored in the session endpoint, not here
-         //that is their natural place, that would mean we wouldn't have to mess around with keeping
-         //deliveries after this is closed
-               
-         disconnect(); 
-         
-         JMSDispatcher.instance.unregisterTarget(new Integer(id));
-         
-         //If it's a subscription, remove it
-         if (channel instanceof Subscription)
-         {
-            Subscription sub = (Subscription)channel;
-            try
+   {      
+      try
+      {
+         synchronized (lock)
+         { 
+            //On close we only disconnect the consumer from the Channel we don't actually remove it
+            // This is because it may still contain deliveries that may well be acknowledged after
+            // the consumer has closed. This is perfectly valid.      
+            //FIXME - The deliveries should really be stored in the session endpoint, not here
+            //that is their natural place, that would mean we wouldn't have to mess around with keeping
+            //deliveries after this is closed
+                  
+            disconnect(); 
+            
+            JMSDispatcher.instance.unregisterTarget(new Integer(id));
+            
+            //If it's a subscription, remove it
+            if (channel instanceof Subscription)
             {
+               Subscription sub = (Subscription)channel;
                if (!sub.isRecoverable())
                {
                   //We don't disconnect durable subs
                   sub.disconnect();
-               }
-            }
-            catch (Exception e)
-            {
-               throw new MessagingJMSException("Failed to disconnect", e);
-            }
-         } 
-         
-         closed = true;
+               }            
+            } 
+            
+            closed = true;
+         }
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " close");
       }
    }
                
@@ -385,7 +392,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
     * This is called by the client consumer to tell the server to wake up and start sending more
     * messages if available
     */
-   public void more()
+   public void more() throws JMSException
    {           
       try
       {
@@ -417,13 +424,17 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          result.getResult();
                   
          //Now we know the deliverer has delivered any outstanding messages to the client buffer
+         
+         channel.deliver(false);
       }
       catch (InterruptedException e)
       {
          log.warn("Thread interrupted", e);
+      }       
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " more");
       }
-      
-      channel.deliver(false);
    }
    
    
@@ -449,13 +460,77 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       return id;
    }
     
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------   
+   
+   protected void acknowledgeTransactionally(long messageID, Transaction tx) throws Throwable
+   {
+      if (trace) { log.trace("acknowledging transactionally " + messageID); }
+      
+      SingleReceiverDelivery d = null;
+                 
+      // The actual removal of the deliveries from the delivery list is deferred until tx commit
+      synchronized (lock)
+      {
+         d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
+      }
+      
+      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getKeyedCallback(this);
+            
+      if (deliveryCallback == null)
+      {
+         deliveryCallback = new DeliveryCallback();
+         tx.addKeyedCallback(deliveryCallback, this);
+      }
+      deliveryCallback.addMessageID(messageID);
+         
+      if (d != null)
+      {
+         d.acknowledge(tx);
+      }
+      else
+      {
+         throw new IllegalStateException("Failed to acknowledge delivery " + d);
+      }             
+   }      
+   
+   protected void acknowledge(long messageID) throws Throwable
+   {  
+      // acknowledge a delivery   
+      SingleReceiverDelivery d;
+        
+      synchronized (lock)
+      {
+         d = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
+      }
+      
+      if (d != null)
+      {
+                  
+         //TODO - Selector kludge - remove this
+         if (d.isSelectorAccepted())
+         {
+            d.acknowledge(null);
+         }
+         else
+         {
+            d.cancel();
+         }
+      }
+      else
+      {
+         throw new IllegalStateException("Cannot find delivery to acknowledge:" + messageID);
+      }      
+   }
+   
    /**
     * Actually remove the consumer and clear up any deliveries it may have
     * This is called by the session on session.close()
     * We can get rid of this when we store the deliveries on the session
     *
     **/
-   public void remove() throws JMSException
+   protected void remove() throws Throwable
    {         
       if (trace) log.trace("attempting to remove receiver " + this + " from destination " + channel);
       
@@ -463,15 +538,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
       {
          SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
-         try
-         {
-            d.cancel();
-            wereDeliveries = true;
-         }
-         catch(Throwable t)
-         {
-            throw new MessagingJMSException("Failed to cancel delivery", t);
-         }
+
+         d.cancel();
+         wereDeliveries = true;
       }
       deliveries.clear();           
       
@@ -497,104 +566,18 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
    }  
    
-   public void acknowledge(long messageID) throws JMSException
-   {  
-      // acknowledge a delivery
-      try
-      {     
-         SingleReceiverDelivery d;
-           
-         synchronized (lock)
-         {
-            d = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
-         }
-         
-         if (d != null)
-         {
-                     
-            //TODO - Selector kludge - remove this
-            if (d.isSelectorAccepted())
-            {
-               d.acknowledge(null);
-            }
-            else
-            {
-               d.cancel();
-            }
-         }
-         else
-         {
-            throw new IllegalStateException("Cannot find delivery to acknowledge:" + messageID);
-         }
-      }
-      catch(Throwable t)
-      {
-         throw new MessagingJMSException("Failed to acknowledge deliveries", t);
-      }      
-   }
-   
-   public void acknowledgeTransactionally(long messageID, Transaction tx) throws JMSException
-   {
-      if (trace) { log.trace("acknowledging transactionally " + messageID); }
-      
-      SingleReceiverDelivery d = null;
-                 
-      // The actual removal of the deliveries from the delivery list is deferred until tx commit
-      synchronized (lock)
-      {
-         d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
-      }
-      
-      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getKeyedCallback(this);
-            
-      if (deliveryCallback == null)
-      {
-         deliveryCallback = new DeliveryCallback();
-         tx.addKeyedCallback(deliveryCallback, this);
-      }
-      deliveryCallback.addMessageID(messageID);
-         
-      if (d != null)
-      {
-         try
-         {
-            d.acknowledge(tx);
-         }
-         catch(Throwable t)
-         {
-            throw new MessagingJMSException("Message " + messageID +
-                                            "cannot be acknowledged to the source", t);
-         } 
-      }
-      else
-      {
-         throw new IllegalStateException("Failed to acknowledge delivery " + d);
-      }             
-   }      
-   
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------   
-   
    protected void promptDelivery()
    {
       channel.deliver(false);
    }
    
-   protected void cancelDelivery(Long messageID) throws JMSException
+   protected void cancelDelivery(Long messageID) throws Throwable
    {
       SingleReceiverDelivery del = (SingleReceiverDelivery)deliveries.remove(messageID);
       if (del != null)
       {  
           del.getReference().decrementDeliveryCount();    
-          try
-          {
-             del.cancel();
-          }
-          catch (Throwable t)
-          {
-             throw new MessagingJMSException("Failed to cancel delivery " + del, t);
-          }
+          del.cancel();
       }
       else
       {
@@ -602,7 +585,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
    }
                
-   protected void start() throws JMSException
+   protected void start()
    {             
       synchronized (lock)
       {
@@ -624,7 +607,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       channel.deliver(false);
    }
    
-   protected void stop() throws JMSException
+   protected void stop() throws Throwable
    {     
       //We need to:
       //Stop accepting any new messages in the SCE

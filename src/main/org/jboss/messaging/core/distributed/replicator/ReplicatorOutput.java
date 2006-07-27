@@ -451,7 +451,7 @@ public class ReplicatorOutput extends ReplicatorPeer implements Distributed, Rep
          sendAsynchronousResponse(collectorAddress, new Long(ref.getMessageID()), Acknowledgment.ACCEPTED);
       }
 
-      public void cancel(Delivery d) throws Throwable
+      public void cancel(Delivery d) throws Exception
       {
          MessageReference ref = d.getReference();
 

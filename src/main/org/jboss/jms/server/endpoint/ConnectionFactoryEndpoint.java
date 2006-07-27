@@ -41,7 +41,7 @@ public interface ConnectionFactoryEndpoint
    ConnectionDelegate createConnectionDelegate(String username, String password)
       throws JMSException;
    
-   byte[] getClientAOPConfig();
+   byte[] getClientAOPConfig() throws JMSException;
 
    IdBlock getIdBlock(int size) throws JMSException;
 }

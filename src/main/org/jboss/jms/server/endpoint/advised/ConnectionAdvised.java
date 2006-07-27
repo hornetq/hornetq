@@ -99,7 +99,7 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
       endpoint.sendTransaction(request);
    }
 
-   public Xid[] getPreparedTransactions()
+   public Xid[] getPreparedTransactions() throws JMSException
    {
       return endpoint.getPreparedTransactions();
    }

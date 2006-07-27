@@ -29,7 +29,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
-import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdBlock;
 
@@ -85,51 +85,57 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public ConnectionDelegate createConnectionDelegate(String username, String password)
       throws JMSException
    {
-      log.debug("creating a new connection for user " + username);
-      
-      // authenticate the user
-      serverPeer.getSecurityManager().authenticate(username, password);
-      
-      // see if there is a preconfigured client id for the user
-      if (username != null)
-      {
-         String preconfClientID =
-            serverPeer.getChannelMapperDelegate().getPreConfiguredClientID(username);
-         
-         if (preconfClientID != null)
-         {
-            clientID = preconfClientID;
-         }
-      }
-
-      // create the corresponding "server-side" connection endpoint and register it with the
-      // server peer's ClientManager
-      ServerConnectionEndpoint endpoint =
-         new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize);
-
-      int connectionID = endpoint.getConnectionID();
-
-      ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
-      JMSDispatcher.instance.registerTarget(new Integer(connectionID), connAdvised);
-      
-      log.debug("created and registered " + endpoint);
-
-      ClientConnectionDelegate delegate;
       try
       {
-         delegate = new ClientConnectionDelegate(connectionID);
+         log.debug("creating a new connection for user " + username);
+         
+         // authenticate the user
+         serverPeer.getSecurityManager().authenticate(username, password);
+         
+         // see if there is a preconfigured client id for the user
+         if (username != null)
+         {
+            String preconfClientID =
+               serverPeer.getChannelMapperDelegate().getPreConfiguredClientID(username);
+            
+            if (preconfClientID != null)
+            {
+               clientID = preconfClientID;
+            }
+         }
+   
+         // create the corresponding "server-side" connection endpoint and register it with the
+         // server peer's ClientManager
+         ServerConnectionEndpoint endpoint =
+            new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize);
+   
+         int connectionID = endpoint.getConnectionID();
+   
+         ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
+         JMSDispatcher.instance.registerTarget(new Integer(connectionID), connAdvised);
+         
+         log.debug("created and registered " + endpoint);
+   
+         ClientConnectionDelegate delegate = new ClientConnectionDelegate(connectionID);     
+         
+         return delegate;
       }
-      catch (Exception e)
+      catch (Throwable t)
       {
-         throw new MessagingJMSException("Failed to create connection stub", e);
-      }  
-      
-      return delegate;
+         throw ExceptionUtil.handleJMSInvocation(t, this + " createConnectionDelegate");
+      }
    }
    
-   public byte[] getClientAOPConfig()
+   public byte[] getClientAOPConfig() throws JMSException
    {
-      return serverPeer.getClientAOPConfig();
+      try
+      {
+         return serverPeer.getClientAOPConfig();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " getClientAOPConfig");
+      }
    }
 
    public IdBlock getIdBlock(int size) throws JMSException
@@ -138,9 +144,9 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       {
          return serverPeer.getMessageIdManager().getIdBlock(size);
       }
-      catch (Exception e)
+      catch (Throwable t)
       {
-         throw new MessagingJMSException("Failed to get id block", e);
+         throw ExceptionUtil.handleJMSInvocation(t, this + " getIdBlock");
       }
    }
 

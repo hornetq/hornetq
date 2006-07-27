@@ -14,6 +14,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.util.ExceptionUtil;
 
 /**
  * A deployable JBoss Messaging queue.
@@ -47,72 +48,93 @@ public class Queue extends DestinationServiceSupport
 
    // JMX managed attributes ----------------------------------------
    
-   public int getMessageCount() throws JMSException
+   public int getMessageCount() throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Queue is stopped.");
-         return 0;
+         if (!started)
+         {
+            log.warn("Queue is stopped.");
+            return 0;
+         }
+   
+         JBossQueue jbq = new JBossQueue(name);
+         org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
+   	   return q.getMessageCount();
       }
-
-      JBossQueue jbq = new JBossQueue(name);
-      org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
-	   return q.getMessageCount();
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getMessageCount");
+      }
    }
 
    // JMX managed operations ----------------------------------------
    
-   public void removeAllMessages() throws JMSException
+   public void removeAllMessages() throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Queue is stopped.");
-         return;
+         if (!started)
+         {
+            log.warn("Queue is stopped.");
+            return;
+         }
+   
+         JBossQueue jbq = new JBossQueue(name);
+         org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
+         q.removeAllMessages();
       }
-
-      JBossQueue jbq = new JBossQueue(name);
-      org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
-      q.removeAllMessages();
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " removeAllMessages");
+      } 
    }
    
-   public List listMessages(String selector) throws JMSException
+   public List listMessages(String selector) throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Queue is stopped.");
-         return new ArrayList();
-      }
-      
-      if (selector != null)
-      {
-         selector = selector.trim();
-         if (selector.equals(""))
+         if (!started)
          {
-            selector = null;
+            log.warn("Queue is stopped.");
+            return new ArrayList();
+         }
+         
+         if (selector != null)
+         {
+            selector = selector.trim();
+            if (selector.equals(""))
+            {
+               selector = null;
+            }
+         }
+   
+         JBossQueue jbq = new JBossQueue(name);
+         org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
+         try 
+         {
+            List msgs;
+            if (selector == null)
+            {
+               msgs = q.browse();
+            }
+            else
+            {
+               msgs = q.browse(new Selector(selector));
+            }
+            return msgs;
+         }
+         catch (InvalidSelectorException e)
+         {
+            Throwable th = new JMSException(e.getMessage());
+            th.initCause(e);
+            throw (JMSException)th;
          }
       }
-
-      JBossQueue jbq = new JBossQueue(name);
-      org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
-      try 
+      catch (Throwable t)
       {
-         List msgs;
-         if (selector == null)
-         {
-            msgs = q.browse();
-         }
-         else
-         {
-            msgs = q.browse(new Selector(selector));
-         }
-         return msgs;
-      }
-      catch (InvalidSelectorException e)
-      {
-         Throwable th = new JMSException(e.getMessage());
-         th.initCause(e);
-         throw (JMSException)th;
-      }
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listMessages");
+      } 
    }
     
    // Public --------------------------------------------------------

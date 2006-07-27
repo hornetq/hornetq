@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.ChannelSupport;
 
 /**
  * A basic non synchronized PrioritizedDeque implementation.
@@ -42,7 +41,6 @@ import org.jboss.messaging.core.ChannelSupport;
 public class BasicPrioritizedDeque implements PrioritizedDeque
 {     
    private static final Logger log = Logger.getLogger(BasicPrioritizedDeque.class);
-
    
    protected LinkedList[] linkedLists;
    

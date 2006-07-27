@@ -40,6 +40,7 @@ import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.subscription.DurableSubscription;
 import org.jboss.jms.server.subscription.Subscription;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.CoreDestination;
@@ -59,7 +60,6 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * JDBC Implementation of ChannelMapper
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -196,27 +196,34 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    
    protected void startService() throws Exception
    {
-      if (ds == null)
+      try
       {
-         InitialContext ic = new InitialContext();
-         ds = (DataSource)ic.lookup(dataSourceJNDIName);
-         ic.close();
+         if (ds == null)
+         {
+            InitialContext ic = new InitialContext();
+            ds = (DataSource)ic.lookup(dataSourceJNDIName);
+            ic.close();
+         }
+         
+         if (ds == null)
+         {
+            throw new IllegalStateException("No DataSource found. This service dependencies must " +
+            "have not been enforced correctly!");
+         }
+   
+         initSqlProperties();
+         
+         if (createTablesOnStartup)
+         {
+            createSchema();
+         }
+         
+         log.debug(this + " started");
       }
-      
-      if (ds == null)
+      catch (Throwable t)
       {
-         throw new IllegalStateException("No DataSource found. This service dependencies must " +
-         "have not been enforced correctly!");
-      }
-
-      initSqlProperties();
-      
-      if (createTablesOnStartup)
-      {
-         createSchema();
-      }
-      
-      log.debug(this + " started");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      } 
    }
    
    protected void stopService() throws Exception
@@ -240,6 +247,8 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    {
       return (JBossDestination)idMap.get(new Long(coreDestinationId));
    }
+   
+   
     
    public void deployCoreDestination(boolean isQueue, 
                                      String destName,
@@ -248,118 +257,110 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                                      MemoryManager mm,
                                      int fullSize, 
                                      int pageSize, 
-                                     int downCacheSize) throws JMSException
-   {
-      try
-      {         
-         if (log.isTraceEnabled()) { log.trace("creating core destination for " + destName); }
+                                     int downCacheSize) throws Exception
+   {        
+      if (log.isTraceEnabled()) { log.trace("creating core destination for " + destName); }
+      
+      CoreDestination cd = getCoreDestinationInternal(isQueue, destName);
+      if (cd != null)
+      {
+         throw new JMSException("Destination " + destName + " already deployed");
+      }
+      
+      // Might already be in db
+      long id;
+      Long l = getIdForDestination(isQueue, destName);
+      if (l == null)
+      {
+         //Not in db - insert a new mapping row
+         id = this.getNextId();
          
-         CoreDestination cd = getCoreDestinationInternal(isQueue, destName);
-         if (cd != null)
+         insertMappingRow(id, isQueue ? TYPE_QUEUE : TYPE_TOPIC,
+                          destName, null, null, null, null);
+      }
+      else
+      {
+         id = l.longValue();
+      }
+      
+      // TODO I am using LocalQueues for the time being, switch to distributed Queues
+      if (isQueue)
+      {
+         //We allocate an executor for the queue from the rotating pool
+         QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(destName);
+         
+         cd = new Queue(id, ms, pm, mm, true, fullSize, pageSize, downCacheSize, executor);
+         
+         try
          {
-            throw new JMSException("Destination " + destName + " already deployed");
+            // we load the queue with any state it might have in the db
+            ((Queue)cd).load();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to load queue state", e);
+            JMSException e2 = new JMSException("Failed to load queue state");
+            e2.setLinkedException(e);
+            throw e2;
          }
          
-         // Might already be in db
-         long id;
-         Long l = getIdForDestination(isQueue, destName);
-         if (l == null)
-         {
-            //Not in db - insert a new mapping row
-            id = this.getNextId();
-            
-            insertMappingRow(id, isQueue ? TYPE_QUEUE : TYPE_TOPIC,
-                             destName, null, null, null, null);
-         }
-         else
-         {
-            id = l.longValue();
-         }
+         queues.put(destName, cd);
+      }
+      else
+      {
+         // TODO I am using LocalTopics for the time being, switch to distributed Topics
+         cd = new Topic(id, fullSize, pageSize, downCacheSize);
          
-         // TODO I am using LocalQueues for the time being, switch to distributed Queues
-         if (isQueue)
+         topics.put(destName, cd);
+         
+         // TODO: The following piece of code may be better placed either in the Topic itself or in
+         //       the DurableSubscriptionStore - I'm not sure it really belongs here
+         
+         // Load any durable subscriptions for the Topic
+         List durableSubs = loadDurableSubscriptionsForTopic(destName, ms, pm, mm);
+         
+         Iterator iter = durableSubs.iterator();
+         while (iter.hasNext())
          {
-            //We allocate an executor for the queue from the rotating pool
-            QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(destName);
-            
-            cd = new Queue(id, ms, pm, mm, true, fullSize, pageSize, downCacheSize, executor);
-            
+            DurableSubscription sub = (DurableSubscription)iter.next();
+            //load the state of the dub
             try
             {
-               // we load the queue with any state it might have in the db
-               ((Queue)cd).load();
+               sub.load();
             }
             catch (Exception e)
             {
                log.error("Failed to load queue state", e);
-               JMSException e2 = new JMSException("Failed to load queue state");
+               JMSException e2 = new JMSException("Failed to load durable subscription state");
                e2.setLinkedException(e);
                throw e2;
             }
-            
-            queues.put(destName, cd);
+            //and connect it to the Topic
+            sub.connect();
          }
-         else
-         {
-            // TODO I am using LocalTopics for the time being, switch to distributed Topics
-            cd = new Topic(id, fullSize, pageSize, downCacheSize);
-            
-            topics.put(destName, cd);
-            
-            // TODO: The following piece of code may be better placed either in the Topic itself or in
-            //       the DurableSubscriptionStore - I'm not sure it really belongs here
-            
-            // Load any durable subscriptions for the Topic
-            List durableSubs = loadDurableSubscriptionsForTopic(destName, ms, pm, mm);
-            
-            Iterator iter = durableSubs.iterator();
-            while (iter.hasNext())
-            {
-               DurableSubscription sub = (DurableSubscription)iter.next();
-               //load the state of the dub
-               try
-               {
-                  sub.load();
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to load queue state", e);
-                  JMSException e2 = new JMSException("Failed to load durable subscription state");
-                  e2.setLinkedException(e);
-                  throw e2;
-               }
-               //and connect it to the Topic
-               sub.connect();
-            }
-         }
-         
-         // Put in id map too
-         
-         JBossDestination jbd ;
-         
-         if (isQueue)
-         {
-            jbd = new JBossQueue(destName);
-         }
-         else
-         {
-            jbd =  new JBossTopic(destName);
-         }
-         
-         idMap.put(new Long(id), jbd);
-
-         log.debug("core destination " + cd + " (fullSize=" + fullSize + ", pageSize=" +
-                   pageSize  + ", downCacheSize=" + downCacheSize + ") deployed");
       }
-      catch (Exception e)
+      
+      // Put in id map too
+      
+      JBossDestination jbd ;
+      
+      if (isQueue)
       {
-         log.error("Failed to deploy core destination", e);
-         throw new MessagingJMSException("Failed to deploy core destination", e);        
+         jbd = new JBossQueue(destName);
       }
+      else
+      {
+         jbd =  new JBossTopic(destName);
+      }
+      
+      idMap.put(new Long(id), jbd);
+
+      log.debug("core destination " + cd + " (fullSize=" + fullSize + ", pageSize=" +
+                pageSize  + ", downCacheSize=" + downCacheSize + ") deployed");
    }
-   
+         
    public CoreDestination undeployCoreDestination(boolean isQueue, String destName)
-      throws JMSException
+      throws Exception
    {
       Map m = isQueue ? queues : topics;
       
@@ -400,12 +401,80 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    }
    
    
+   public void deployTemporaryCoreDestination(boolean isQueue, 
+            String destName,
+            long id,
+            MessageStore ms, 
+            PersistenceManager pm,
+            MemoryManager mm,
+            int fullSize, 
+            int pageSize, 
+            int downCacheSize) throws Exception
+   {        
+      if (log.isTraceEnabled()) { log.trace("creating temporary core destination for " + destName); }
+      
+      CoreDestination cd = getCoreDestinationInternal(isQueue, destName);
+      if (cd != null)
+      {
+         throw new JMSException("Destination " + destName + " already deployed");
+      }      
+      
+      if (isQueue)
+      {
+         //We allocate an executor for the queue from the rotating pool
+         QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(destName);
+         
+         cd = new Queue(id, ms, pm, mm, false, fullSize, pageSize, downCacheSize, executor);                 
+         
+         queues.put(destName, cd);
+      }
+      else
+      {
+         cd = new Topic(id, fullSize, pageSize, downCacheSize);
+         
+         topics.put(destName, cd);         
+      }
+      
+      //Put in id map too
+      
+      JBossDestination jbd ;
+      
+      if (isQueue)
+      {
+         jbd = new JBossQueue(destName);
+      }
+      else
+      {
+         jbd =  new JBossTopic(destName);
+      }
+      
+      idMap.put(new Long(id), jbd);
+      
+      log.debug("core destination " + cd + " (fullSize=" + fullSize + ", pageSize=" +
+               pageSize  + ", downCacheSize=" + downCacheSize + ") deployed");
+   }
+   
+   public CoreDestination undeployTemporaryCoreDestination(boolean isQueue, String destName)
+      throws Exception
+   {
+      Map m = isQueue ? queues : topics;
+      
+      CoreDestination dest = (CoreDestination)m.remove(destName);
+      
+      if (dest != null)
+      {      
+         idMap.remove(new Long(dest.getId())); 
+      }
+      
+      return dest;
+   }
+   
    public DurableSubscription getDurableSubscription(String clientID,
                                                      String subscriptionName,                                                         
                                                      MessageStore ms,
                                                      PersistenceManager pm,
                                                      MemoryManager mm)
-      throws JMSException
+      throws Exception
    {
       // Look in memory first
       DurableSubscription sub = getDurableSubscription(clientID, subscriptionName);
@@ -415,108 +484,93 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
          return sub;
       }
       
-      //Now look in the db
+      //Now look in the db        
+      Connection conn = null;
+      PreparedStatement ps  = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      
       try
-      {         
-         Connection conn = null;
-         PreparedStatement ps  = null;
-         ResultSet rs = null;
-         TransactionWrapper wrap = new TransactionWrapper();
+      {
+         conn = ds.getConnection();
+         
+         ps = conn.prepareStatement(selectDurableSub);
+         
+         ps.setString(1, clientID);
+         ps.setString(2, subscriptionName);
+         
+         boolean exists = false;
          
          try
          {
-            conn = ds.getConnection();
-            
-            ps = conn.prepareStatement(selectDurableSub);
-            
-            ps.setString(1, clientID);
-            ps.setString(2, subscriptionName);
-            
-            boolean exists = false;
-            
-            try
-            {
-               rs = ps.executeQuery();
-               exists = rs.next();
-            }
-            finally
-            {
-               if (log.isTraceEnabled())
-               {
-                  String s = JDBCUtil.statementToString(selectDurableSub, clientID, subscriptionName);
-                  log.trace(s + (rs == null ? " failed!" : (exists ? " returned rows" : " did NOT return rows")));
-               }
-            }
-            
-            if (exists)
-            {
-               String topicName = rs.getString(1);
-               long id = rs.getLong(2);
-               String selector = rs.getString(3);
-               boolean noLocal = rs.getString(4).equals("Y");
-               
-               Selector sel = selector == null ? null : new Selector(selector);
-               
-               Map subs = (Map)subscriptions.get(clientID);
-               if (subs == null)
-               {
-                  subs = new ConcurrentReaderHashMap();
-                  subscriptions.put(clientID, subs);
-               }
-               
-               //The subscription might be in the database, but the Topic which owns the subscription
-               //might not be deployed.
-               //In this case the user needs to make sure the Topic is deployed
-               
-               Topic topic = (Topic)getCoreDestinationInternal(false, topicName);
-               
-               if (topic == null)
-               {
-                  throw new MessagingJMSException("Unable to get subscription: " + subscriptionName
-                        + " for client-id: "
-                        + clientID + " which belongs to topic: " + topicName
-                        + " since this topic is not currently deployed. Please deploy the topic and try again");
-               }
-               
-               
-               // create in memory
-               sub = createDurableSubscriptionInternal(id, topicName, clientID, subscriptionName, sel,
-                                                       noLocal, ms, pm, mm);
-               
-               // load its state
-               sub.load();
-            }
-            
-            return sub;
+            rs = ps.executeQuery();
+            exists = rs.next();
          }
          finally
          {
-            if (rs != null)
+            if (log.isTraceEnabled())
             {
-               rs.close();
+               String s = JDBCUtil.statementToString(selectDurableSub, clientID, subscriptionName);
+               log.trace(s + (rs == null ? " failed!" : (exists ? " returned rows" : " did NOT return rows")));
             }
-            if (ps != null)
-            {
-               ps.close();
-            }
-            if (conn != null)
-            {
-               conn.close();
-            }
-            wrap.end();
          }
+         
+         if (exists)
+         {
+            String topicName = rs.getString(1);
+            long id = rs.getLong(2);
+            String selector = rs.getString(3);
+            boolean noLocal = rs.getString(4).equals("Y");
+            
+            Selector sel = selector == null ? null : new Selector(selector);
+            
+            Map subs = (Map)subscriptions.get(clientID);
+            if (subs == null)
+            {
+               subs = new ConcurrentReaderHashMap();
+               subscriptions.put(clientID, subs);
+            }
+            
+            //The subscription might be in the database, but the Topic which owns the subscription
+            //might not be deployed.
+            //In this case the user needs to make sure the Topic is deployed
+            
+            Topic topic = (Topic)getCoreDestinationInternal(false, topicName);
+            
+            if (topic == null)
+            {
+               throw new MessagingJMSException("Unable to get subscription: " + subscriptionName
+                     + " for client-id: "
+                     + clientID + " which belongs to topic: " + topicName
+                     + " since this topic is not currently deployed. Please deploy the topic and try again");
+            }
+            
+            
+            // create in memory
+            sub = createDurableSubscriptionInternal(id, topicName, clientID, subscriptionName, sel,
+                                                    noLocal, ms, pm, mm);
+            
+            // load its state
+            sub.load();
+         }
+         
+         return sub;
       }
-      catch (JMSException e)
+      finally
       {
-         throw e;
-      }
-      catch (Exception e)
-      {
-         final String msg = "Failed to get subscription";
-         log.error(msg, e);
-         JMSException e2 = new JMSException(msg);
-         e2.setLinkedException(e);
-         throw e2;
+         if (rs != null)
+         {
+            rs.close();
+         }
+         if (ps != null)
+         {
+            ps.close();
+         }
+         if (conn != null)
+         {
+            conn.close();
+         }
+         wrap.end();
       }      
    }
      
@@ -527,24 +581,18 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
                                                          boolean noLocal,                                                            
                                                          MessageStore ms,
                                                          PersistenceManager pm,
-                                                         MemoryManager mm) throws JMSException
+                                                         MemoryManager mm) throws Exception
    {
       Selector sel = selector == null ? null : new Selector(selector);
       
       long id;
-      try
-      {
-         //First insert a row in the db
-         id = this.getNextId();
-         
-         insertMappingRow(id, TYPE_DURABLE_SUB, topicName, subscriptionName, clientID,
-                          selector, new Boolean(noLocal));
-      }
-      catch (Exception e)
-      {
-         throw new MessagingJMSException("Failed to create durable subscription", e);
-      }
+
+      //First insert a row in the db
+      id = this.getNextId();
       
+      insertMappingRow(id, TYPE_DURABLE_SUB, topicName, subscriptionName, clientID,
+                       selector, new Boolean(noLocal));
+            
       return createDurableSubscriptionInternal(id, topicName, clientID, subscriptionName, sel,
                                                noLocal, ms, pm, mm);          
    }
@@ -552,64 +600,50 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    public Subscription createSubscription(String topicName, String selector, boolean noLocal,
                                           MessageStore ms, PersistenceManager pm,
                                           MemoryManager mm)
-      throws JMSException
+      throws Exception
    {
       Selector sel = selector == null ? null : new Selector(selector);
 
-      try
+      long id = this.getNextId();
+      
+      Topic topic = (Topic)getCoreDestinationInternal(false, topicName);
+      
+      if (topic == null)
       {
-         long id = this.getNextId();
-         
-         Topic topic = (Topic)getCoreDestinationInternal(false, topicName);
-         
-         if (topic == null)
-         {
-            throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
-         }
+         throw new javax.jms.IllegalStateException("Topic " + topicName + " is not loaded");
+      }
 
-         //We allocate an executor for the subscription from the rotating pool
-         //Currently all subscriptions for the same topic share the same executor
-         QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(topicName);
-                  
-         return new Subscription(id, topic, ms, pm, mm,
-                                 topic.getFullSize(), topic.getPageSize(),
-                                 topic.getDownCacheSize(), executor, sel, noLocal);
-      }
-      catch (Exception e)
-      {
-         throw new MessagingJMSException("Failed to create durable subscription", e);        
-      }
+      //We allocate an executor for the subscription from the rotating pool
+      //Currently all subscriptions for the same topic share the same executor
+      QueuedExecutor executor = (QueuedExecutor)queuedExecutorPool.get(topicName);
+               
+      return new Subscription(id, topic, ms, pm, mm,
+                              topic.getFullSize(), topic.getPageSize(),
+                              topic.getDownCacheSize(), executor, sel, noLocal);
    }
    
    
    
    public boolean removeDurableSubscription(String clientID, String subscriptionName)
-      throws JMSException
+      throws Exception
    {
-      try
+      DurableSubscription removed = removeDurableSubscriptionInMemory(clientID, subscriptionName);
+      
+      if (removed != null)
       {
-         DurableSubscription removed = removeDurableSubscriptionInMemory(clientID, subscriptionName);
+         //Now remove from db
+         deleteMappingRow(removed.getChannelID());
          
-         if (removed != null)
-         {
-            //Now remove from db
-            deleteMappingRow(removed.getChannelID());
-            
-            return true;
-         }
-         else
-         {
-            return false;
-         }
+         return true;
       }
-      catch (Exception e)
+      else
       {
-         throw new MessagingJMSException("Failed to remove durable subscription", e);        
+         return false;
       }
    }
    
    //FIXME - This doesn't belong here
-   public String getPreConfiguredClientID(String username) throws JMSException
+   public String getPreConfiguredClientID(String username) throws Exception
    {
       try
       {
@@ -799,99 +833,81 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    protected List loadDurableSubscriptionsForTopic(String topicName,                                               
                                                    MessageStore ms,
                                                    PersistenceManager pm,
-                                                   MemoryManager mm) throws JMSException
-   {      
-      try
-      {         
-         List result = new ArrayList();
-         
-         try
-         {
-            Connection conn = null;
-            PreparedStatement ps  = null;
-            ResultSet rs = null;
-            TransactionWrapper wrap = new TransactionWrapper();
-            int rowCount = -1;
-            
-            try
-            {
-               conn = ds.getConnection();
+                                                   MemoryManager mm) throws Exception
+   {              
+      List result = new ArrayList();
       
-               ps = conn.prepareStatement(selectSubscriptionsForTopic);
-               
-               ps.setString(1, topicName);
-               
-               rs = ps.executeQuery();
-               
-               rowCount = 0;
-               
-               while (rs.next())
-               {
-                  rowCount ++;
-                  long id = rs.getLong(1);
-                  String clientId = rs.getString(2);
-                  String subName = rs.getString(3);
-                  String selector = rs.getString(4);
-                  boolean noLocal = rs.getString(5).equals("Y");
-                  
-                  Selector sel = selector == null ? null : new Selector(selector);
-                                    
-                  DurableSubscription sub = getDurableSubscription(clientId, subName);
-                  
-                  if (sub == null)
-                  {
-                     sub = createDurableSubscriptionInternal(id, topicName,
-                                                            clientId,
-                                                            subName,
-                                                            sel,
-                                                            noLocal,
-                                                            ms, pm, mm);
-                     result.add(sub);
-                  }                  
-               }
-            }
-            catch (SQLException e)
-            {
-               wrap.exceptionOccurred();
-               throw e;
-            }
-            finally
-            {
-               if (log.isTraceEnabled())
-               {
-                  String s = JDBCUtil.statementToString(selectSubscriptionsForTopic, topicName);
-                  log.trace(s + " returned " + rowCount + " rows");
-               }            
-               if (rs != null)
-               {
-                  rs.close();
-               }
-               if (ps != null)
-               {
-                  ps.close();
-               }
-               if (conn != null)
-               {
-                  conn.close();
-               }
-               wrap.end();
-            }
-         }
-         catch (Exception e)
-         {
-            final String msg = "Failed to get durable subscription";
-            log.error(msg, e);
-            JMSException e2 = new JMSException(msg);
-            e2.setLinkedException(e);
-            throw e2;
-         }
-                 
-         return result;
-      }
-      catch (Exception e)
+      Connection conn = null;
+      PreparedStatement ps  = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      int rowCount = -1;
+      
+      try
       {
-         throw new MessagingJMSException("Failed to load durable subscriptions for topic", e);        
+         conn = ds.getConnection();
+
+         ps = conn.prepareStatement(selectSubscriptionsForTopic);
+         
+         ps.setString(1, topicName);
+         
+         rs = ps.executeQuery();
+         
+         rowCount = 0;
+         
+         while (rs.next())
+         {
+            rowCount ++;
+            long id = rs.getLong(1);
+            String clientId = rs.getString(2);
+            String subName = rs.getString(3);
+            String selector = rs.getString(4);
+            boolean noLocal = rs.getString(5).equals("Y");
+            
+            Selector sel = selector == null ? null : new Selector(selector);
+                              
+            DurableSubscription sub = getDurableSubscription(clientId, subName);
+            
+            if (sub == null)
+            {
+               sub = createDurableSubscriptionInternal(id, topicName,
+                                                      clientId,
+                                                      subName,
+                                                      sel,
+                                                      noLocal,
+                                                      ms, pm, mm);
+               result.add(sub);
+            }                  
+         }
       }
+      catch (SQLException e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (log.isTraceEnabled())
+         {
+            String s = JDBCUtil.statementToString(selectSubscriptionsForTopic, topicName);
+            log.trace(s + " returned " + rowCount + " rows");
+         }            
+         if (rs != null)
+         {
+            rs.close();
+         }
+         if (ps != null)
+         {
+            ps.close();
+         }
+         if (conn != null)
+         {
+            conn.close();
+         }
+         wrap.end();
+      }
+      
+      return result;
    }
 
    

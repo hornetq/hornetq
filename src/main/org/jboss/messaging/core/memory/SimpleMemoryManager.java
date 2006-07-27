@@ -144,7 +144,7 @@ public class SimpleMemoryManager implements MemoryManager
             
             if (100 * availableMemory / totalMemory <= freeMemoryPercent)
             {
-               log.warn("Less than " + freeMemoryPercent + "% of total available memory free");
+               //log.warn("Less than " + freeMemoryPercent + "% of total available memory free");
                
                low = true;
             }

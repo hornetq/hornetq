@@ -111,7 +111,7 @@ public class SimpleChannel implements Channel
       throw new NotYetImplementedException();
    }
 
-   public void cancel(Delivery d) throws Throwable
+   public void cancel(Delivery d) throws Exception
    {
       throw new NotYetImplementedException();
    }

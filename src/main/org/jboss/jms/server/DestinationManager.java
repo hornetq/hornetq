@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.server;
 
-import javax.jms.JMSException;
-
 import org.w3c.dom.Element;
 
 /**
@@ -41,12 +39,12 @@ public interface DestinationManager
     * @return the name under which the destination was bound in JNDI.
     */
    String registerDestination(boolean isQueue, String name, String jndiName, Element securityConfig)
-      throws JMSException;
+      throws Exception;
 
    /**
     * Method called by a destination service to unregister itself from the server peer. The server
     * peer is supposed to clean up the state maintained on behalf of the unregistered destination.
     */
-   void unregisterDestination(boolean isQueue, String name) throws JMSException;
+   void unregisterDestination(boolean isQueue, String name) throws Exception;
 
 }

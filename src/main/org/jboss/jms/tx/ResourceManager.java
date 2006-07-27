@@ -458,7 +458,15 @@ public class ResourceManager
       
       if (flags == XAResource.TMSTARTRSCAN)
       {
-         return conn.getPreparedTransactions();
+         try
+         {
+            Xid[] txs = conn.getPreparedTransactions();
+            return txs;
+         }
+         catch (JMSException e)
+         {
+            throw new MessagingXAException(XAException.XAER_RMFAIL, "Failed to get prepared transactions");
+         }
       }
       else
       {

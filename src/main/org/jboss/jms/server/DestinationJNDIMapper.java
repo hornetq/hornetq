@@ -29,15 +29,14 @@ import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.util.JNDIUtil;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.w3c.dom.Element;
 
@@ -80,7 +79,7 @@ class DestinationJNDIMapper implements DestinationManager
    // DestinationManager implementation -----------------------------
    
    public String registerDestination(boolean isQueue, String name, String jndiName,
-                                     Element securityConfiguration) throws JMSException
+                                     Element securityConfiguration) throws Exception
    {            
       String parentContext;
       String jndiNameInContext;
@@ -117,31 +116,19 @@ class DestinationJNDIMapper implements DestinationManager
       {
          // OK
       }
-      catch(Exception e)
-      {
-         e.printStackTrace();
-         throw new MessagingJMSException("JNDI failure", e);
-      }
 
       Destination jmsDestination =
          isQueue ? (Destination) new JBossQueue(name) : (Destination) new JBossTopic(name);
 
-      try
+      Context c = JNDIUtil.createContext(initialContext, parentContext);
+      c.rebind(jndiNameInContext, jmsDestination);
+      if (isQueue)
       {
-         Context c = JNDIUtil.createContext(initialContext, parentContext);
-         c.rebind(jndiNameInContext, jmsDestination);
-         if (isQueue)
-         {
-            queueNameToJNDI.put(name, jndiName);
-         }
-         else
-         {
-            topicNameToJNDI.put(name, jndiName);
-         }
+         queueNameToJNDI.put(name, jndiName);
       }
-      catch(Exception e)
+      else
       {
-         throw new MessagingJMSException("JNDI failure", e);
+         topicNameToJNDI.put(name, jndiName);
       }
 
       // if the destination has no security configuration, then the security manager will always
@@ -158,7 +145,7 @@ class DestinationJNDIMapper implements DestinationManager
       return jndiName;
    }
 
-   public void unregisterDestination(boolean isQueue, String name) throws JMSException
+   public void unregisterDestination(boolean isQueue, String name) throws Exception
    {
       String jndiName = null;
       if (isQueue)
@@ -174,14 +161,7 @@ class DestinationJNDIMapper implements DestinationManager
          return;
       }
 
-      try
-      {
-         initialContext.unbind(jndiName);
-      }
-      catch(Exception e)
-      {
-         throw new MessagingJMSException("JNDI failure", e);
-      }
+      initialContext.unbind(jndiName);      
 
       serverPeer.getSecurityManager().clearSecurityConfig(isQueue, name);
 

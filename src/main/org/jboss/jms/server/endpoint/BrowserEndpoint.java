@@ -41,5 +41,5 @@ public interface BrowserEndpoint extends Closeable
    
    boolean hasNextMessage() throws JMSException;
       
-   Message[] nextMessageBlock(int maxMessages) throws JMSException;   
+   Message[] nextMessageBlock(int maxMessages) throws JMSException;
 }

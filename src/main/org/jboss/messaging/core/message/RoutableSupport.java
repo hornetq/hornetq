@@ -458,6 +458,11 @@ public abstract class RoutableSupport implements Routable, Externalizable
       this.redelivered = redelivered;      
    }
    
+   public void setReliable(boolean reliable)
+   {
+      this.reliable = reliable;
+   }
+   
    public int getDeliveryCount()
    {
       return deliveryCount;

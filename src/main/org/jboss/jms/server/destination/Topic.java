@@ -17,6 +17,7 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.subscription.DurableSubscription;
 import org.jboss.jms.server.subscription.Subscription;
+import org.jboss.jms.util.ExceptionUtil;
 
 
 /**
@@ -56,23 +57,30 @@ public class Topic extends DestinationServiceSupport
    /**
     * Remove all messages from subscription's storage.
     */
-   public void removeAllMessages() throws JMSException
+   public void removeAllMessages() throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Topic is stopped.");
-         return;
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return;
+         }
+         JBossTopic jbt = new JBossTopic(name);
+         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         
+         //XXX How to lock down all subscriptions?
+         Iterator iter = t.iterator();
+         while (iter.hasNext())
+         {
+            Object sub = iter.next();
+            ((Subscription)sub).removeAllMessages();
+         }
       }
-      JBossTopic jbt = new JBossTopic(name);
-      org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-      
-      //XXX How to lock down all subscriptions?
-      Iterator iter = t.iterator();
-      while (iter.hasNext())
+      catch (Throwable t)
       {
-         Object sub = iter.next();
-         ((Subscription)sub).removeAllMessages();
-      }
+         throw ExceptionUtil.handleJMXInvocation(t, this + " removeAllMessages");
+      } 
    }
    
    /**
@@ -80,25 +88,32 @@ public class Topic extends DestinationServiceSupport
     * @return all subscription count
     * @throws JMSException
     */
-   public int subscriptionCount() throws JMSException
+   public int subscriptionCount() throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Topic is stopped.");
-         return 0;
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return 0;
+         }
+   
+         JBossTopic jbt = new JBossTopic(name);
+         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+        
+         int count = 0;
+         Iterator iter = t.iterator();
+         while (iter.hasNext())
+         {
+            count++;
+            iter.next();
+         }
+         return count;
       }
-
-      JBossTopic jbt = new JBossTopic(name);
-      org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-     
-      int count = 0;
-      Iterator iter = t.iterator();
-      while (iter.hasNext())
+      catch (Throwable t)
       {
-         count++;
-         iter.next();
-      }
-      return count;
+         throw ExceptionUtil.handleJMXInvocation(t, this + " subscriptionCount");
+      } 
    }
 
    /**
@@ -108,28 +123,35 @@ public class Topic extends DestinationServiceSupport
     * @return either durable or nondurable subscription count depending on param.
     * @throws JMSException
     */
-   public int subscriptionCount(boolean durable) throws JMSException
+   public int subscriptionCount(boolean durable) throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Topic is stopped.");
-         return 0;
-      }
-
-      JBossTopic jbt = new JBossTopic(name);
-      org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-      
-      int count = 0;
-      Iterator iter = t.iterator();
-      while (iter.hasNext())
-      {
-         Subscription sub = (Subscription)iter.next();
-         if (sub.isRecoverable() ^ !durable)
+         if (!started)
          {
-            count++;
+            log.warn("Topic is stopped.");
+            return 0;
          }
+   
+         JBossTopic jbt = new JBossTopic(name);
+         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         
+         int count = 0;
+         Iterator iter = t.iterator();
+         while (iter.hasNext())
+         {
+            Subscription sub = (Subscription)iter.next();
+            if (sub.isRecoverable() ^ !durable)
+            {
+               count++;
+            }
+         }
+         return count;
       }
-      return count;
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " subscriptionCount");
+      } 
    }
 
    /**
@@ -152,17 +174,24 @@ public class Topic extends DestinationServiceSupport
     * Returns a human readable list containing the names of current subscriptions.
     * @return String of subscription list. Never null.
     */
-   public String listSubscriptionsAsText() throws JMSException
+   public String listSubscriptionsAsText() throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Topic is stopped.");
-         return "";
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return "";
+         }
+   
+         JBossTopic jbt = new JBossTopic(name);
+         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         return getSubscriptionsAsText(t, true) + getSubscriptionsAsText(t, false);
       }
-
-      JBossTopic jbt = new JBossTopic(name);
-      org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-      return getSubscriptionsAsText(t, true) + getSubscriptionsAsText(t, false);
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listSubscriptionsAsText");
+      } 
    }
    
    
@@ -173,17 +202,24 @@ public class Topic extends DestinationServiceSupport
     *                If false, return non-durable subscription list.
     * @return String of subscription list. Never null.
     */
-   public String listSubscriptionsAsText(boolean durable) throws JMSException
+   public String listSubscriptionsAsText(boolean durable) throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Topic is stopped.");
-         return "";
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return "";
+         }
+   
+         JBossTopic jbt = new JBossTopic(name);
+         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         return getSubscriptionsAsText(t, durable);
       }
-
-      JBossTopic jbt = new JBossTopic(name);
-      org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-      return getSubscriptionsAsText(t, durable);
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listSubscriptionsAsText");
+      } 
    }
 
    /**
@@ -235,17 +271,24 @@ public class Topic extends DestinationServiceSupport
     * @see ManageableTopic#getMessagesFromDurableSub(String, String, String)
     */
    public List listMessagesDurableSub(String name, String clientID, String selector)
-      throws JMSException
+      throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Topic is stopped.");
-         return new ArrayList();
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return new ArrayList();
+         }
+   
+         JBossTopic jbt = new JBossTopic(this.name);
+         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         return getMessagesFromDurableSub(t, name, clientID, trimSelector(selector));
       }
-
-      JBossTopic jbt = new JBossTopic(this.name);
-      org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-      return getMessagesFromDurableSub(t, name, clientID, trimSelector(selector));
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listMessagesDurableSub");
+      } 
    }
    
    /**
@@ -257,17 +300,24 @@ public class Topic extends DestinationServiceSupport
     * @see ManageableTopic#getMessagesFromNonDurableSub(Long, String)
     */
    public List listMessagesNonDurableSub(long channelID, String selector)
-      throws JMSException
+      throws Exception
    {
-      if (!started)
+      try
       {
-         log.warn("Topic is stopped.");
-         return new ArrayList();
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return new ArrayList();
+         }
+         
+         JBossTopic jbt = new JBossTopic(this.name);
+         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         return getMessagesFromNonDurableSub(t, channelID, trimSelector(selector));
       }
-      
-      JBossTopic jbt = new JBossTopic(this.name);
-      org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-      return getMessagesFromNonDurableSub(t, channelID, trimSelector(selector));
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listMessagesNonDurableSub");
+      } 
    }
 
    

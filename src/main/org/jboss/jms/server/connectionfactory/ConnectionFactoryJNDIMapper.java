@@ -36,7 +36,6 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
-import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.logging.Logger;
 
@@ -85,18 +84,10 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
          new ServerConnectionFactoryEndpoint(id, serverPeer, clientID, jndiBindings,
                                              prefetchSize);
 
-      ClientConnectionFactoryDelegate delegate;
-      try
-      {
-         delegate = new ClientConnectionFactoryDelegate(id, locatorURI,
-                                                        serverPeer.getVersion(),
-                                                        serverPeer.getServerPeerID(),
-                                                        clientPing);
-      }
-      catch (Exception e)
-      {
-         throw new MessagingJMSException("Failed to create connection factory delegate", e);
-      }
+      ClientConnectionFactoryDelegate delegate = new ClientConnectionFactoryDelegate(id, locatorURI,
+                                                                                      serverPeer.getVersion(),
+                                                                                      serverPeer.getServerPeerID(),
+                                                                                      clientPing);
 
       ConnectionFactoryAdvised connFactoryAdvised = new ConnectionFactoryAdvised(endpoint);
       

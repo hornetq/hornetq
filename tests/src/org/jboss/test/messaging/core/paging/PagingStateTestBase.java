@@ -97,7 +97,7 @@ public class PagingStateTestBase extends MessagingTestCase
       sc.start();
 
       JDBCChannelMapper cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
-      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm, false);
+      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
       
       cm.start();
       

@@ -190,20 +190,30 @@ public class ConnectionAspect implements ConnectionListener
 
       if (exceptionListener != null)
       {
+         JMSException j = null;
          if (t instanceof Error)
          {
-            log.error("Caught error on connection", t);
+            final String msg = "Caught Error on underlying connection";
+            log.error(msg, t);
+            j = new JMSException(msg + ": " + t.getMessage());
+         }
+         else if (t instanceof Exception)
+         {
+            Exception e =(Exception)t;
+            j = new JMSException("Throwable received from underlying connection");
+            j.setLinkedException(e);            
          }
          else
          {
-            Exception e =(Exception)t;
-            JMSException j = new JMSException("Throwable received from underlying connection");
-            j.setLinkedException(e);
-            synchronized (exceptionListener)
-            {
-               exceptionListener.onException(j);
-            }
-         }         
+            //Some other Throwable subclass
+            final String msg = "Caught Throwable on underlying connection";
+            log.error(msg, t);
+            j = new JMSException(msg + ": " + t.getMessage());
+         }
+         synchronized (exceptionListener)
+         {
+            exceptionListener.onException(j);
+         }
       }      
    }
 

@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.server.endpoint.advised;
 
-import java.util.List;
-
 import javax.jms.JMSException;
 
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;

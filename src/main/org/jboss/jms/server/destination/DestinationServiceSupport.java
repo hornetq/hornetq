@@ -12,6 +12,7 @@ import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.plugin.contract.ChannelMapper;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -133,10 +134,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
          log.info(this + " started, fullSize=" + fullSize + ", pageSize=" + pageSize + ", downCacheSize=" + downCacheSize);
       }
-      catch (Exception e)
+      catch (Throwable t)
       {
-         log.error("Failed to start service", e);
-         throw e;
+         ExceptionUtil.handleJMXInvocation(t, this + " startService");
       }
    }
 
@@ -149,10 +149,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          started = false;
          log.info(this + " stopped");
       }
-      catch (Exception e)
+      catch (Throwable t)
       {
-         log.error("Failed to stop service", e);
-         throw e;
+         ExceptionUtil.handleJMXInvocation(t, this + " stopService");
       }
    }
 
@@ -193,13 +192,20 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    public void setSecurityConfig(Element securityConfig) throws Exception
    {
-      // push security update to the server
-      if (sm != null)
+      try
       {
-         sm.setSecurityConfig(isQueue(), name, securityConfig);
+         // push security update to the server
+         if (sm != null)
+         {
+            sm.setSecurityConfig(isQueue(), name, securityConfig);
+         }
+   
+         this.securityConfig = securityConfig;
       }
-
-      this.securityConfig = securityConfig;
+      catch (Throwable t)
+      {
+         ExceptionUtil.handleJMXInvocation(t, this + " setSecurityConfig");
+      }
    }
 
    public Element getSecurityConfig()

@@ -60,6 +60,8 @@ public interface Routable extends Serializable
     * @return true if the delivery must be guaranteed for this routable, false othewise.
     */
    boolean isReliable();
+   
+   void setReliable(boolean reliable);
 
    /**
     * @return the time (in GMT milliseconds) when this routable expires and must be removed

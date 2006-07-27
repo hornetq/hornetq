@@ -148,10 +148,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected String removeAllNonReliableRefs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE='N'";
       
    protected String updateReliableRefsNotLoaded = "UPDATE JMS_MESSAGE_REFERENCE SET LOADED='N' WHERE CHANNELID=?";
-   
-   //FIXME Must have channel mapper table maintained here too since have cross dependency
-   protected String deleteNonDurableSubs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID NOT IN (SELECT ID FROM JMS_CHANNEL_MAPPING)";
-   
+    
    //JMS_MESSAGE
    
    protected String createMessage = "CREATE TABLE JMS_MESSAGE (MESSAGEID BIGINT, RELIABLE CHAR(1), "
@@ -234,13 +231,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected Map channelMultipliers;
    
-   protected boolean deleteSubs;
-
    // Constructors --------------------------------------------------
    
    public JDBCPersistenceManager() throws Exception
    {
-      this(null, null, null, true);
+      this(null, null, null);
    }
    
    /**
@@ -249,7 +244,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     */
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm) throws Exception
    {
-      this(ds, tm, null, false);
+      this(ds, tm, null);
    }
 
    /**
@@ -257,14 +252,13 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     * injected as dependencies.
     */
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm,
-                                 ChannelMapper cm, boolean deleteSubs) throws Exception
+                                 ChannelMapper cm) throws Exception
    {
       this.ds = ds;
       this.tm = tm;
       this.cm = cm;
       sqlProperties = new Properties();
       channelMultipliers = new ConcurrentReaderHashMap();
-      this.deleteSubs = deleteSubs;
    }
 
    // ServiceMBeanSupport overrides ---------------------------------
@@ -2424,8 +2418,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       updateReliableRefsNotLoaded = sqlProperties.getProperty("UPDATE_RELIABLE_REFS_NOT_LOADED", updateReliableRefsNotLoaded);
       selectMinOrdering = sqlProperties.getProperty("SELECT_MIN_ORDERING", selectMinOrdering);
       
-      deleteNonDurableSubs = sqlProperties.getProperty("DELETE_NON_DURABLE", deleteNonDurableSubs);
- 
       //Message
       createMessage = sqlProperties.getProperty("CREATE_MESSAGE", createMessage);
       loadMessages = sqlProperties.getProperty("LOAD_MESSAGES", loadMessages);
@@ -2521,18 +2513,6 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          ps = null;
                    
-         if (deleteSubs)
-         {            
-            ps = conn.prepareStatement(deleteNonDurableSubs);
-            
-            rows = ps.executeUpdate();
-            
-            if (trace)
-            {
-               log.trace(JDBCUtil.statementToString(deleteNonDurableSubs)
-                     + " deleted " + rows + " rows");
-            }          
-         }
       }
       catch (Exception e)
       {

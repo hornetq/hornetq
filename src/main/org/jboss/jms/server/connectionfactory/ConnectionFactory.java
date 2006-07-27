@@ -6,15 +6,16 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
-import org.jboss.system.ServiceMBeanSupport;
+import javax.management.ObjectName;
+
+import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.ConnectionFactoryManager;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
-
-import javax.management.ObjectName;
 
 /**
  * A deployable JBoss Messaging connection factory.
@@ -63,70 +64,84 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
    public synchronized void startService() throws Exception
    {
-      started = true;
-      
-      if (connectorObjectName == null)
+      try
       {
-         throw new IllegalArgumentException("A Connector must be specified for each Connection Factory");
-      }
+         started = true;
+         
+         if (connectorObjectName == null)
+         {
+            throw new IllegalArgumentException("A Connector must be specified for each Connection Factory");
+         }
+         
+         if (serverPeerObjectName == null)
+         {
+            throw new IllegalArgumentException("ServerPeer must be specified for each Connection Factory");
+         }
       
-      if (serverPeerObjectName == null)
+         String locatorURI = (String)server.getAttribute(connectorObjectName, "InvokerLocator");
+         ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+         
+         connectionFactoryManager = serverPeer.getConnectionFactoryManager();
+         connectorManager = serverPeer.getConnectorManager();
+         connectionManager = serverPeer.getConnectionManager();
+         
+         long leasePeriod = ((Long)server.getAttribute(connectorObjectName, "LeasePeriod")).longValue();
+         
+         // if leasePeriod <= 0, disable pinging altogether
+         
+         int refCount = connectorManager.registerConnector(connectorObjectName.getCanonicalName());
+         
+         boolean enablePing = leasePeriod > 0;
+         
+         if (refCount == 1 && enablePing)
+         {
+            // install the connection listener that listens for failed connections            
+            server.invoke(connectorObjectName, "addConnectionListener",
+                  new Object[] {connectionManager},
+                  new String[] {"org.jboss.remoting.ConnectionListener"});                     
+         }
+         
+         connectionFactoryID = connectionFactoryManager.
+            registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing, prefetchSize);
+      
+         InvokerLocator locator = new InvokerLocator(locatorURI);
+         String info =
+            "Connector " + locator.getProtocol() + "://" + locator.getHost() + ":" + locator.getPort();
+                 
+         if (enablePing)
+         {
+            info += " has leasing enabled, lease period " + leasePeriod + " milliseconds";
+         }
+         else
+         {
+            info += " has lease disabled";
+         }
+      
+         log.info(info);
+         log.info(this + " deployed");
+      }
+      catch (Throwable t)
       {
-         throw new IllegalArgumentException("ServerPeer must be specified for each Connection Factory");
-      }
-
-      String locatorURI = (String)server.getAttribute(connectorObjectName, "InvokerLocator");
-      ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
-      
-      connectionFactoryManager = serverPeer.getConnectionFactoryManager();
-      connectorManager = serverPeer.getConnectorManager();
-      connectionManager = serverPeer.getConnectionManager();
-      
-      long leasePeriod = ((Long)server.getAttribute(connectorObjectName, "LeasePeriod")).longValue();
-      
-      // if leasePeriod <= 0, disable pinging altogether
-      
-      int refCount = connectorManager.registerConnector(connectorObjectName.getCanonicalName());
-      
-      boolean enablePing = leasePeriod > 0;
-      
-      if (refCount == 1 && enablePing)
-      {
-         // install the connection listener that listens for failed connections            
-         server.invoke(connectorObjectName, "addConnectionListener",
-               new Object[] {connectionManager},
-               new String[] {"org.jboss.remoting.ConnectionListener"});                     
-      }
-      
-      connectionFactoryID = connectionFactoryManager.
-         registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing, prefetchSize);
-
-      InvokerLocator locator = new InvokerLocator(locatorURI);
-      String info =
-         "Connector " + locator.getProtocol() + "://" + locator.getHost() + ":" + locator.getPort();
-              
-      if (enablePing)
-      {
-         info += " has leasing enabled, lease period " + leasePeriod + " milliseconds";
-      }
-      else
-      {
-         info += " has lease disabled";
-      }
-
-      log.info(info);
-      log.info(this + " deployed");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      } 
    }
 
    public synchronized void stopService() throws Exception
    {
-      started = false;
-      
-      connectionFactoryManager.unregisterConnectionFactory(connectionFactoryID);
-      
-      connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
-      
-      log.info(this + " undeployed");
+      try
+      {
+         started = false;
+         
+         connectionFactoryManager.unregisterConnectionFactory(connectionFactoryID);
+         
+         connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
+         
+         log.info(this + " undeployed");
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      } 
    }
 
    // JMX managed attributes ----------------------------------------

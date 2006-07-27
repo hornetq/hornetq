@@ -38,9 +38,9 @@ public interface ChannelMapper extends ServerPlugin
     * @return
     * @throws JMSException
     */
-   String getPreConfiguredClientID(String username) throws JMSException;
+   String getPreConfiguredClientID(String username) throws Exception;
          
-   CoreDestination getCoreDestination(JBossDestination jbDest) throws JMSException;
+   CoreDestination getCoreDestination(JBossDestination jbDest) throws Exception;
    
    JBossDestination getJBossDestination(long coreDestinationID);
       
@@ -51,10 +51,23 @@ public interface ChannelMapper extends ServerPlugin
                               MemoryManager mm,                              
                               int fullSize, 
                               int pageSize, 
-                              int downCacheSize) throws JMSException;
+                              int downCacheSize) throws Exception;
 
    CoreDestination undeployCoreDestination(boolean isQueue, String destName)
-      throws JMSException;
+      throws Exception;
+   
+   void deployTemporaryCoreDestination(boolean isQueue, 
+                                       String destName, 
+                                       long id,
+                                       MessageStore ms, 
+                                       PersistenceManager pm,
+                                       MemoryManager mm,                              
+                                       int fullSize, 
+                                       int pageSize, 
+                                       int downCacheSize) throws Exception;
+
+   CoreDestination undeployTemporaryCoreDestination(boolean isQueue, String destName)
+      throws Exception;
    
    DurableSubscription createDurableSubscription(String topicName,
                                                   String clientID,
@@ -63,22 +76,22 @@ public interface ChannelMapper extends ServerPlugin
                                                   boolean noLocal,
                                                   MessageStore ms,
                                                   PersistenceManager pm,
-                                                  MemoryManager mm) throws JMSException;
+                                                  MemoryManager mm) throws Exception;
    
    Subscription createSubscription(String topicName,
                                    String selector,
                                    boolean noLocal,
                                    MessageStore ms,
                                    PersistenceManager pm,
-                                   MemoryManager mm) throws JMSException;
+                                   MemoryManager mm) throws Exception;
    
    DurableSubscription getDurableSubscription(String clientID,
                                               String subscriptionName,
                                               MessageStore ms,
                                               PersistenceManager pm,
-                                              MemoryManager mm) throws JMSException;
+                                              MemoryManager mm) throws Exception;
 
-   boolean removeDurableSubscription(String clientID, String subscriptionName) throws JMSException;
+   boolean removeDurableSubscription(String clientID, String subscriptionName) throws Exception;
 
    Set getSubscriptions(String clientID);
    

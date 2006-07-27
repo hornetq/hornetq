@@ -22,7 +22,6 @@
 package org.jboss.jms.server.subscription;
 
 import org.jboss.jms.selector.Selector;
-import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.messaging.core.local.Topic;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -69,16 +68,9 @@ public class DurableSubscription extends Subscription
    public void unsubscribe() throws Exception
    {
       disconnect();
-      try
+      if (pm != null)
       {
-         if (pm != null)
-         {
-            pm.removeAllChannelData(this.channelID);            
-         }
-      }
-      catch (Exception e)
-      {
-         throw new MessagingJMSException("Failed to remove subscription data");
+         pm.removeAllChannelData(this.channelID);            
       }
    }   
 }

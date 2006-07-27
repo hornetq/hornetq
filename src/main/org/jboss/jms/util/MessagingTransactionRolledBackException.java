@@ -23,7 +23,6 @@ package org.jboss.jms.util;
 
 import javax.jms.TransactionRolledBackException;
 
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.logging.Logger;
 
 /**

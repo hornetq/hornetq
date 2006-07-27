@@ -383,20 +383,8 @@ public abstract class ChannelSupport implements Channel
             // refs paged into persistent storage
             // Also is very inefficient since it makes a copy
             List references = delivering(filter);
-            
-            Iterator iter = references.iterator();
-            while (iter.hasNext())
-            {
-               MessageReference ref = (MessageReference)iter.next();
-            }
-            
-            List undel = undelivered(filter);
-            
-            iter = undel.iterator();
-            while (iter.hasNext())
-            {
-               MessageReference ref = (MessageReference)iter.next();
-            }
+                        
+            List undel = undelivered(filter);            
 
             references.addAll(undel);
             
@@ -828,18 +816,31 @@ public abstract class ChannelSupport implements Channel
 
             ref.setOrdering(messageOrdering.increment());
 
-            if (ref.isReliable() && recoverable)
+            if (ref.isReliable())
             {
-               // Reliable message in a recoverable state - also add to db
-               if (trace)
+               if (recoverable)
                {
-                  log.trace("adding " + ref
-                           + " to database non-transactionally");
+                  // Reliable message in a recoverable state - also add to db
+                  if (trace)
+                  {
+                     log.trace("adding " + ref
+                              + " to database non-transactionally");
+                  }
+   
+                  pm.addReference(channelID, ref, null);
                }
-
-               pm.addReference(channelID, ref, null);
+               else
+               {
+                  //Reliable reference in a non recoverable channel-
+                  //We handle it as a non reliable reference
+                  //It's important that we set it to non reliable otherwise if the channel
+                  //pages and is non recoverable a reliable ref will be paged in the database as reliable
+                  //which makes them hard to remove on server restart.
+                  //If we always page them as unreliable then it is easy to remove them.
+                  ref.setReliable(false);
+               }
             }
-
+            
             addReferenceInMemory(ref);
 
             // We only do delivery if there are receivers that haven't said they
@@ -918,22 +919,22 @@ public abstract class ChannelSupport implements Channel
       return new SimpleDelivery(sender, ref, true);
    }
 
-   protected void acknowledgeInternal(Delivery d) throws Throwable
+   protected void acknowledgeInternal(Delivery d) throws Exception
    {      
       synchronized (deliveryLock)
       {
          acknowledgeInMemory(d);
       }
-
+         
       if (recoverable && d.getReference().isReliable())
       {
          pm.removeReference(channelID, d.getReference(), null);
       }
-         
-      d.getReference().releaseMemoryReference();      
+           
+      d.getReference().releaseMemoryReference();        
    }
 
-   protected void cancelInternal(Delivery del) throws Throwable
+   protected void cancelInternal(Delivery del) throws Exception
    {
       if (trace)
       {
@@ -995,7 +996,7 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected MessageReference removeFirstInMemory() throws Throwable
+   protected MessageReference removeFirstInMemory() throws Exception
    {
       synchronized (refLock)
       {
@@ -1087,7 +1088,7 @@ public abstract class ChannelSupport implements Channel
       // }
    }
 
-   protected void addReferenceInMemory(MessageReference ref) throws Throwable
+   protected void addReferenceInMemory(MessageReference ref) throws Exception
    {
       if (ref.isReliable() && !acceptReliableMessages)
       {
@@ -1167,7 +1168,7 @@ public abstract class ChannelSupport implements Channel
                   + " refs from downcache");
       }
 
-      // Non persistent refs or persistent refs in a non recoverable state won't
+      // Non persistent refs won't
       // already be in the db
       // so they need to be inserted
       // Persistent refs in a recoverable state will already be there so need to
@@ -1250,7 +1251,7 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected boolean acknowledgeInMemory(Delivery d) throws Throwable
+   protected boolean acknowledgeInMemory(Delivery d)
    {
       if (d == null)
       {

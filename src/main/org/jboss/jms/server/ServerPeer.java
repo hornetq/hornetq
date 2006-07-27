@@ -43,6 +43,7 @@ import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.SimpleMemoryManager;
@@ -160,98 +161,112 @@ public class ServerPeer extends ServiceMBeanSupport
 
    public synchronized void startService() throws Exception
    {
-      if (started)
+      try
       {
-         return;
+         if (started)
+         {
+            return;
+         }
+   
+         log.debug(this + " starting");
+   
+         loadClientAOPConfig();
+   
+         loadServerAOPConfig();
+   
+         MBeanServer mbeanServer = getServer();
+   
+         // Acquire references to plugins. Each plug-in will be accessed directly via a reference
+         // circumventing the MBeanServer. However, they are installed as services to take advantage
+         // of their automatically-creating management interface.
+   
+         persistenceManagerDelegate =
+            (PersistenceManager)mbeanServer.getAttribute(persistenceManagerObjectName, "Instance");
+   
+         // TODO: is should be possible to share this with other peers
+         messageStoreDelegate =
+            (MessageStore)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
+   
+         channelMapper = (ChannelMapper)mbeanServer.
+            getAttribute(channelMapperObjectName, "Instance");
+         
+         if (queuedExecutorPoolSize < 1)
+         {
+            throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
+         }
+         queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
+   
+   
+         // TODO: Shouldn't this go into ChannelMapper's dependencies? Since it's a plug in,
+         //       we shouldn't inject their dependencies externally, but they should take care
+         ///      of them themselves.
+         channelMapper.setPersistenceManager(persistenceManagerDelegate);
+         
+         channelMapper.setQueuedExecutorPool(queuedExecutorPool);
+   
+         // start the rest of the internal components
+   
+         memoryManager.start();
+         destinationJNDIMapper.start();
+         securityStore.start();
+         connFactoryJNDIMapper.start();
+         txRepository.start(persistenceManagerDelegate);
+         txRepository.loadPreparedTransactions();
+         
+         //TODO Make block size configurable
+         messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
+   
+         initializeRemoting(mbeanServer);
+   
+         createRecoverable();
+   
+         started = true;
+   
+         log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
+            getServerPeerID()+ "] started");      
       }
-
-      log.debug(this + " starting");
-
-      loadClientAOPConfig();
-
-      loadServerAOPConfig();
-
-      MBeanServer mbeanServer = getServer();
-
-      // Acquire references to plugins. Each plug-in will be accessed directly via a reference
-      // circumventing the MBeanServer. However, they are installed as services to take advantage
-      // of their automatically-creating management interface.
-
-      persistenceManagerDelegate =
-         (PersistenceManager)mbeanServer.getAttribute(persistenceManagerObjectName, "Instance");
-
-      // TODO: is should be possible to share this with other peers
-      messageStoreDelegate =
-         (MessageStore)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
-
-      channelMapper = (ChannelMapper)mbeanServer.
-         getAttribute(channelMapperObjectName, "Instance");
-      
-      if (queuedExecutorPoolSize < 1)
+      catch (Throwable t)
       {
-         throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
-      }
-      queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
-
-
-      // TODO: Shouldn't this go into ChannelMapper's dependencies? Since it's a plug in,
-      //       we shouldn't inject their dependencies externally, but they should take care
-      ///      of them themselves.
-      channelMapper.setPersistenceManager(persistenceManagerDelegate);
-      
-      channelMapper.setQueuedExecutorPool(queuedExecutorPool);
-
-      // start the rest of the internal components
-
-      memoryManager.start();
-      destinationJNDIMapper.start();
-      securityStore.start();
-      connFactoryJNDIMapper.start();
-      txRepository.start(persistenceManagerDelegate);
-      txRepository.loadPreparedTransactions();
-      
-      //TODO Make block size configurable
-      messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
-
-      initializeRemoting(mbeanServer);
-
-      createRecoverable();
-
-      started = true;
-
-      log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
-         getServerPeerID()+ "] started");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      } 
    }
 
    public synchronized void stopService() throws Exception
    {
-      if (!started)
+      try
       {
-         return;
+         if (!started)
+         {
+            return;
+         }
+   
+         log.debug(this + " stopping");
+   
+         started = false;
+   
+         removeRecoverable();
+   
+         // stop the internal components
+         memoryManager.stop();
+         txRepository.stop();
+         txRepository = null;
+         securityStore.stop();
+         securityStore = null;
+         connFactoryJNDIMapper.stop();
+         connFactoryJNDIMapper = null;
+         destinationJNDIMapper.stop();
+         destinationJNDIMapper = null;
+   
+         unloadServerAOPConfig();
+   
+         // TODO unloadClientAOPConfig();
+   
+         log.info("JMS " + this + " stopped");
       }
-
-      log.debug(this + " stopping");
-
-      started = false;
-
-      removeRecoverable();
-
-      // stop the internal components
-      memoryManager.stop();
-      txRepository.stop();
-      txRepository = null;
-      securityStore.stop();
-      securityStore = null;
-      connFactoryJNDIMapper.stop();
-      connFactoryJNDIMapper = null;
-      destinationJNDIMapper.stop();
-      destinationJNDIMapper = null;
-
-      unloadServerAOPConfig();
-
-      // TODO unloadClientAOPConfig();
-
-      log.info("JMS " + this + " stopped");
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " stopService");
+      } 
    }
 
    // JMX Attributes ------------------------------------------------
@@ -385,37 +400,86 @@ public class ServerPeer extends ServiceMBeanSupport
 
    public String createQueue(String name, String jndiName) throws Exception
    {
-      return createDestinationDefault(true, name, jndiName);
+      try
+      {
+         return createDestinationDefault(true, name, jndiName);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " createQueue");
+      } 
    }
 
    public String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
-      return createDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
+      try
+      {
+         return createDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " createQueue(2)");
+      } 
    }
 
    public boolean destroyQueue(String name) throws Exception
    {
-      return destroyDestination(true, name);
+      try
+      {
+         return destroyDestination(true, name);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyQueue");
+      } 
    }
 
    public String createTopic(String name, String jndiName) throws Exception
    {
-      return createDestinationDefault(false, name, jndiName);
+      try
+      {
+         return createDestinationDefault(false, name, jndiName);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " createTopic");
+      } 
    }
 
    public String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
-      return createDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
+      try
+      {
+         return createDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " createTopic(2)");
+      } 
    }
 
    public boolean destroyTopic(String name) throws Exception
    {
-      return destroyDestination(false, name);
+      try
+      {
+         return destroyDestination(false, name);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyTopic");
+      } 
    }
 
    public Set getDestinations() throws Exception
    {
-      return destinationJNDIMapper.getDestinations();
+      try
+      {
+         return destinationJNDIMapper.getDestinations();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getDestinations");
+      } 
    }
 
    // Public --------------------------------------------------------

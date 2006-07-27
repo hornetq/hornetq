@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jms.JMSSecurityException;
-import javax.jms.JMSException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
@@ -38,7 +37,6 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectSecurityManager;
-import org.jboss.jms.util.MessagingJMSException;
 import org.w3c.dom.Element;
 
 /**
@@ -119,20 +117,11 @@ public class SecurityMetadataStore implements SecurityManager
       return m;
    }
 
-   public void setSecurityConfig(boolean isQueue, String destName, Element conf) throws JMSException
+   public void setSecurityConfig(boolean isQueue, String destName, Element conf) throws Exception
    {
       if (trace) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
 
-      SecurityMetadata m = null;
-
-      try
-      {
-         m = new SecurityMetadata(conf);
-      }
-      catch(Exception e)
-      {
-         throw new MessagingJMSException("Cannot create security metadata", e);
-      }
+      SecurityMetadata m = new SecurityMetadata(conf);
 
       if (isQueue)
       {
@@ -144,7 +133,7 @@ public class SecurityMetadataStore implements SecurityManager
       }
    }
 
-   public void clearSecurityConfig(boolean isQueue, String name) throws JMSException
+   public void clearSecurityConfig(boolean isQueue, String name) throws Exception
    {
       if (trace) { log.trace("clearing security configuration for " + (isQueue ? "queue " : "topic ") + name); }
 
