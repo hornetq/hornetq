@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- $Id$ -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+<project name="main.build" default="synchronize">
+
+   <!-- ======================================================================================== -->
+   <!-- Configuration                                                                            -->
+   <!-- ======================================================================================== -->
+
+   <property file="local.properties"/>
+   <property file="synchronize.properties"/>
+   <property name="librariesEntFile" value="./thirdparty/libraries.ent"/>
+
+   <property environment="ENV"/>
+
+   <!--
+      | Allow jbossbuild.repository to be set from (in order or priority)
+      | 1) Command line -Djbossbuild.repository=...
+      | 2) synchronize.properties jbossbuild.repository setting
+      | 3) JBOSS_REPOSITORY environment variable
+   -->
+   <condition property="jbossbuild.repository" value="${ENV.JBOSS_REPOSITORY}">
+      <isset property="ENV.JBOSS_REPOSITORY"/>
+   </condition>
+
+   <!--
+      | Fall back to default.
+   -->
+   <property name="jbossbuild.repository" value="http://repository.jboss.com"/>
+
+   <import file="./tools/etc/jbossbuild/tasks.xml"/>
+
+   <!--
+      | This is where JBoss Messaging external dependencies are declared. The repository is in CVS
+      | under the module repository.jboss.com whose contents are pushed to the
+      | http://repository.jboss.com site.
+   -->
+   <build id="jboss-messaging"
+          impltitle="JBoss Messaging"
+          implversion="undefined"
+          implvendor="JBoss Inc."
+          implurl="http://www.jboss.org"
+          description="JBoss Messaging"
+          cvsroot="${cvs.prefix}@cvs.forge.jboss.com:/cvsroot/jboss"
+          thirdpartypath="./thirdparty/"
+          location="${jbossbuild.repository}"
+          targetdefs="targets">
+
+
+      <!--
+           Dependencies requrired to build the project.
+      -->
+      <componentref name="retrotranslator" version="0.9.6jboss"/>
+      <componentref name="sun-javacc" version="3.2"/>
+      <componentref name="oswego-concurrent" version="1.3.4"/>
+      <componentref name="apache-log4j" version="1.2.8"/>
+      <componentref name="javassist" version="3.2.0.GA"/>
+      <componentref name="jgroups" version="2.3"/>
+      <componentref name="trove" version="1.0.2"/>
+      <componentref name="jboss/common" version="snapshot"/>
+      <componentref name="jboss/aop" version="1.5.0.GA"/>
+      <componentref name="jboss/serialization" version="1.0.1.GA"/>
+      <componentref name="jboss/remoting" version="2.0.0.Beta2"/>
+
+      <!--
+           Dependencies required to test the project.
+      -->
+      <componentref name="junit" version="3.8.1"/>
+      <componentref name="hsqldb" version="1.8.0.2"/>
+      <componentref name="dom4j" version="1.6"/>
+      <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5"/>
+      <componentref name="jboss/jbossxb" version="1.0.0.CR6"/>
+
+
+   </build>
+
+   <synchronizeinfo/>
+
+   <!--
+      | Generate the targets.
+   -->
+   <generate generate="jboss-messaging"/>
+
+   <target name="generate-libraries-ent" depends="synchronize">
+      <gen-lib-file path="tools/etc/buildmagic" filename="${librariesEntFile}"/>
+      <visit-componentref-graph componentVisitor="org.jboss.ant.util.graph.ComponentRefGraphLicenseVisitor"/>
+   </target>
+
+</project>

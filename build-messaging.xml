@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+   <!ENTITY libraries SYSTEM "thirdparty/libraries.ent">
+]>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- $Id$ -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<project default="compile" name="JBoss Messaging">
+
+   <!-- ======================================================================================== -->
+   <!-- Configuration                                                                            -->
+   <!-- ======================================================================================== -->
+
+   <!--
+        Module name(s) & version.
+   -->
+
+   <property name="messaging.version.major" value="1"/>
+   <property name="messaging.version.minor" value="0"/>
+   <property name="messaging.version.revision" value="1"/>
+   <property name="messaging.version.incrementing" value="5"/>
+   <property name="messaging.version.tag" value="CR4"/>
+   <property name="messaging.version.name" value=""/>
+   <property name="messaging.version.cvstag" value="JBossMessaging_1_0_1_CR4"/>
+   <property name="module.name" value="messaging"/>
+   <property name="module.Name" value="JBoss Messaging"/>
+   <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
+
+   <property name="jms.version.major" value="1"/>
+   <property name="jms.version.minor" value="1"/>
+   <property name="jms.version" value="1.1"/>
+
+   <!--
+        Jar manifest version information.
+    -->
+
+   <tstamp>
+     <format property="build.number" pattern="yyyyMMddHHmm"/>
+   </tstamp>
+
+   <property name="messaging.specification.title" value="${module.Name}"/>
+   <property name="messaging.specification.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
+   <property name="messaging.specification.vendor" value="JBoss (http://www.jboss.org/)"/>
+
+   <property name="messaging.implementation.title" value="${module.Name}"/>
+   <property name="messaging.implementation.url" value="http://www.jboss.org/"/>
+   <property name="messaging.implementation.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag} (build: CVSTag=${messaging.version.cvstag} date=${build.number})"/>
+   <property name="messaging.implementation.vendor" value="JBoss Inc."/>
+   <property name="messaging.implementation.vendor.id" value="${messaging.implementation.url}"/>
+
+   <property environment="ENV"/>
+
+   <!--
+        Project paths.
+   -->
+
+   <property name="project.root" value="${basedir}"/>
+   <property name="project.source" value="${project.root}/src"/>
+   <property name="source.java" value="${project.source}/main"/>
+   <property name="source.etc" value="${project.source}/etc"/>
+   <property name="project.output" value="${project.root}/output"/>
+   <property name="build.classes" value="${project.output}/classes"/>
+   <property name="build.lib" value="${project.output}/lib"/>
+   <property name="build.api" value="${project.output}/api"/>
+   <property name="build.etc" value="${project.output}/etc"/>
+   <property name="build.bin" value="${project.output}/bin"/>
+   <property name="build.docs" value="${project.output}/docs"/>
+   <property name="build.parsers" value="${project.output}/gen-parsers"/>
+   <property name="build.resources" value="${project.output}/resources"/>
+   <property name="build.examples" value="${project.output}/examples"/>
+   <property name="build.reports" value="${project.output}/reports"/>
+   <property name="build.gen" value="${project.output}/gen"/>
+   <property name="build.gen-src" value="${project.output}/gen-src"/>
+   <property name="build.todo" value="${project.output}/todo"/>
+   <property name="build.jar" value="${project.output}/jar"/>
+   <property name="build.scoped-sar" value="${project.output}/scoped-sar"/>
+   <property name="project.thirdparty" value="${project.root}/thirdparty"/>
+   <property name="release.output" value="${project.root}/release/jboss-messaging-${module.version}"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Thirdparty Dependency Definitions                                                        -->
+   <!-- ======================================================================================== -->
+
+   &libraries;
+
+   <!--
+       This module is based on Java 1.4
+   -->
+
+   <property name="javac.target" value="1.4"/>
+   <property name="javac.source" value="1.4"/>
+
+   <property name="javac.debug" value="true"/>
+   <property name="javac.optimize" value="false"/>
+   <property name="javac.depend" value="false"/>
+   <property name="javac.verbose" value="false"/>
+   <property name="javac.deprecation" value="true"/>
+   <property name="javac.include.ant.runtime" value="false"/>
+   <property name="javac.include.java.runtime" value="true"/>
+   <property name="javac.fail.onerror" value="true"/>
+
+   <!--
+        Non-JBoss dependencies.
+        They must available in the repository and declared as <componentrefs> in build-thirdparty.xml.
+   -->
+   <path id="external.dependencies.classpath">
+      <!-- <path refid="apache.commons.classpath"/> -->
+      <path refid="oswego.concurrent.classpath"/>
+      <path refid="javassist.classpath"/>
+      <path refid="jgroups.jgroups.classpath"/>
+      <path refid="trove.trove.classpath"/>
+   </path>
+
+   <!--
+        JBoss dependencies.
+        They must available in the repository and declared as <componentrefs> in build-thirdparty.xml.
+
+        NOTE: If one of JBoss dependencies (jboss-remoting.jar, jboss-serialization.jar) is locally
+              present in ./lib, it will take precedence over the corresponding repository instance.
+    -->
+   <path id="jboss.dependencies.classpath">
+      <path refid="jboss.common.classpath"/>
+      <path refid="jboss.aop.classpath"/>
+      <path refid="jboss.remoting.classpath"/>
+      <path refid="jboss.serialization.classpath"/>
+   </path>
+
+   <!--
+        Locally maintained dependencies.
+
+        NOTE: If one of JBoss dependencies (jboss-remoting.jar, jboss-serialization.jar) is locally
+              present in ./lib, it will take precedence over the corresponding repository instance.
+   -->
+
+   <property name="jboss.j2ee.lib" value="${project.root}/lib/"/>
+   <path id="jboss.j2ee.classpath">
+      <pathelement location="${project.root}/lib/jboss-j2ee.jar"/>
+   </path>
+
+   <property name="jboss.j2se.lib" value="${project.root}/lib/"/>
+   <path id="jboss.j2se.classpath">
+      <pathelement location="${project.root}/lib/jboss-j2se.jar"/>
+   </path>
+
+   <path id="jboss.system.classpath">
+      <pathelement location="${project.root}/lib/jboss-system.jar"/>
+   </path>
+
+   <path id="jboss.security.classpath">
+      <pathelement location="${project.root}/lib/jbosssx.jar"/>
+   </path>
+
+   <path id="jboss.transaction.classpath">
+      <pathelement location="${project.root}/lib/jboss-transaction.jar"/>
+   </path>
+
+   <!--
+       If I don't use directly UnifiedClassLoader3, this should go away.
+   -->
+   <path id="jboss.jmx.classpath">
+      <pathelement location="${project.root}/lib/jboss-jmx.jar"/>
+   </path>
+
+   <property name="jboss.server.lib" value="${project.root}/lib/"/>
+
+   <property name="jboss.naming.lib" value="${project.root}/lib/"/>
+
+   <path id="local.dependencies.classpath">
+      <path refid="jboss.j2ee.classpath"/>
+      <path refid="jboss.j2se.classpath"/>
+      <path refid="jboss.system.classpath"/>
+      <path refid="jboss.security.classpath"/>
+      <path refid="jboss.transaction.classpath"/>
+      <path refid="jboss.jmx.classpath"/>
+      <path refid="jboss.remoting.classpath"/>
+       <path refid="jboss.serialization.classpath"/>
+   </path>
+
+   <!--
+        The compilation classpath.
+   -->
+   <path id="compilation.classpath">
+      <path refid="local.dependencies.classpath"/>
+      <path refid="external.dependencies.classpath"/>
+      <path refid="jboss.dependencies.classpath"/>
+   </path>
+
+   <!--
+        The AOPC classpath.
+   -->
+   <path id="aopc.classpath">
+      <path refid="compilation.classpath"/>
+      <pathelement path="${build.classes}"/>
+   </path>
+
+   <!-- ======================================================================================== -->
+   <!-- Local Dependencies Override Tasks                                                        -->
+   <!-- ======================================================================================== -->
+
+   <target name="resolve-local-dependencies"
+           depends="detect-availability,
+                    use-local-remoting,
+                    use-repository-remoting,
+                    use-local-serialization,
+                    use-repository-serialization"/>
+
+
+   <target name="detect-availability">
+      <detect-availability dependency="remoting"/>
+      <detect-availability dependency="serialization"/>
+   </target>
+
+   <target name="use-local-remoting" if="local.remoting.present">
+      <path id="jboss.remoting.classpath">
+         <pathelement location="${project.root}/lib/jboss-remoting.jar"/>
+      </path>
+      <property name="current.jboss.remoting.lib" value="${project.root}/lib"/>
+   </target>
+
+   <target name="use-repository-remoting" unless="local.remoting.present">
+      <property name="current.jboss.remoting.lib" value="${jboss.remoting.lib}"/>
+   </target>
+
+   <target name="use-local-serialization" if="local.serialization.present">
+      <path id="jboss.serialization.classpath">
+         <pathelement location="${project.root}/lib/jboss-serialization.jar"/>
+      </path>
+      <property name="current.jboss.serialization.lib" value="${project.root}/lib"/>
+   </target>
+
+   <target name="use-repository-serialization" unless="local.serialization.present">
+      <property name="current.jboss.serialization.lib" value="${jboss.serialization.lib}"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Compilation Tasks                                                                        -->
+   <!-- ======================================================================================== -->
+
+   <target name="compile" depends="compile-parsers, compile-classes, compile-etc"/>
+
+   <target name="compile-parsers">
+
+      <mkdir dir="${build.parsers}/org/jboss/jms/selector"/>
+      <echo message="${sun.javacc.lib}"/>
+      <javacc target="${source.java}/org/jboss/jms/selector/SelectorParser.jj"
+              outputdirectory="${build.parsers}/org/jboss/jms/selector"
+              javacchome="${sun.javacc.lib}"
+              static="false"/>
+
+      <mkdir dir="${build.classes}"/>
+      <javac destdir="${build.classes}"
+             target="${javac.target}"
+             source="${javac.source}"
+             debug="${javac.debug}"
+             optimize="${javac.optimize}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src path="${build.parsers}"/>
+         <src path="${source.java}"/>
+         <include name="org/jboss/jms/selector/ASCII_CharStream.java"/>
+         <include name="org/jboss/jms/selector/ParserException.java"/>
+         <include name="org/jboss/jms/selector/SelectorParser.java"/>
+         <include name="org/jboss/jms/selector/SelectorParserConstants.java"/>
+         <include name="org/jboss/jms/selector/SelectorParserTokenManager.java"/>
+         <include name="org/jboss/jms/selector/Token.java"/>
+         <include name="org/jboss/jms/selector/TokenMgrError.java"/>
+         <include name="org/jboss/jms/selector/Operator.java"/>
+         <include name="org/jboss/jms/selector/Identifier.java"/>
+         <classpath refid="compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-classes">
+
+      <mkdir dir="${build.classes}"/>
+      <!-- <display-path path="compilation.classpath"/> -->
+      <javac destdir="${build.classes}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src path="${source.java}"/>
+         <include name="**/*.java"/>
+         <classpath refid="compilation.classpath"/>
+      </javac>
+
+      <taskdef name="aopc" classname="org.jboss.aop.ant.AopC" classpathref="jboss.aop.classpath"/>
+      <echo message="NOTE: aopc incremental compilation might fail, if so do an ant clean first (see JMESSAGING-271)"/>
+      <aopc compilerclasspathref="aopc.classpath"
+            classpathref="aopc.classpath"
+            verbose="false">
+         <classpath refid="aopc.classpath"/>
+         <src path="${build.classes}"/>
+         <aoppath path="src/etc/prepare-aop.xml"/>
+      </aopc>
+   </target>
+
+   <target name="compile-etc">
+
+      <mkdir dir="${build.etc}"/>
+      <copy todir="${build.etc}" filtering="yes">
+         <fileset dir="${source.etc}">
+            <include name="**"/>
+         </fileset>
+         <filterset>
+            <filter token="JMS_VERSION" value="${jms.version}"/>
+            <filter token="JMS_VERSION_MAJOR" value="${jms.version.major}"/>
+            <filter token="JMS_VERSION_MINOR" value="${jms.version.minor}"/>
+            <filter token="MODULE_VERSION" value="${module.version}"/>
+            <filter token="MESSAGING_VERSION_MAJOR" value="${messaging.version.major}"/>
+            <filter token="MESSAGING_VERSION_MINOR" value="${messaging.version.minor}"/>
+            <filter token="MESSAGING_VERSION_INCREMENTING" value="${messaging.version.incrementing}"/>
+            <filter token="MODULE_NAME" value="${module.Name}"/>
+         </filterset>
+      </copy>
+      <move file="${build.etc}/VERSION-PRE-SUBSTITUTE" toFile="${build.etc}/VERSION"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Javadoc                                                                                  -->
+   <!-- ======================================================================================== -->
+
+   <target name="javadoc" depends="compile">
+
+      <javadoc destdir="${build.api}" author="true" version="true" use="true" windowtitle="JBoss Messaging ${module.version}">
+
+         <packageset dir="${source.java}" defaultexcludes="yes">
+            <include name="org/jboss/**"/>
+         </packageset>
+
+         <doctitle><![CDATA[<h2>JBoss Messaging  ${module.version}</h2>]]></doctitle>
+         <bottom><![CDATA[<i>Copyright &#169; 2006 JBoss Inc. All Rights Reserved.</i>]]></bottom>
+         <tag name="todo" scope="all" description="To do:"/>
+         <group title="JMS Facade" packages="org.jboss.jms.*"/>
+         <group title="Messaging Core" packages="org.jboss.messaging.*"/>
+      </javadoc>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Archival Tasks                                                                           -->
+   <!-- ======================================================================================== -->
+
+   <target name="jar" depends="compile, jar-structure">
+
+      <mkdir dir="${build.lib}"/>
+      <jar jarfile="${build.lib}/jboss-${module.name}.jar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.jar}" includes="**"/>
+      </jar>
+   </target>
+
+   <target name="scoped-sar" depends="compile, scoped-sar-structure, extract-server-dependencies">
+
+      <mkdir dir="${build.lib}"/>
+      <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.scoped-sar}" includes="**"/>
+         <fileset dir="${build.jar}" includes="**"/>
+      </jar>
+   </target>
+
+   <target name="jar-structure">
+
+      <mkdir dir="${build.jar}/META-INF"/>
+      <mkdir dir="${build.jar}/xmdesc"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/messaging-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/connection-factories-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/destinations-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/hsqldb-persistence-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/remoting-service.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/jms-ds.xml"/>
+      <copy file="${build.etc}/VERSION" toFile="${build.jar}/VERSION"/>
+      <copy todir="${build.jar}/xmdesc">
+         <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
+      </copy>
+      <copy todir="${build.jar}" file="${source.etc}/aop-messaging-server.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/aop-messaging-client.xml"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/config/messaging-users.properties"/>
+      <copy todir="${build.jar}" file="${source.etc}/server/default/config/messaging-roles.properties"/>
+   </target>
+
+   <target name="scoped-sar-structure" depends="jar-structure, extract-server-dependencies">
+
+      <copy todir="${build.scoped-sar}/META-INF" file="${source.etc}/server/default/deploy/jboss-service.xml"/>
+   </target>
+
+   <target name="extract-server-dependencies" depends="resolve-local-dependencies">
+
+      <fail message="Fix the build script to correctly define 'current.jboss.remoting.lib'!" unless="current.jboss.remoting.lib"/>
+      <fail message="Fix the build script to correctly define 'current.jboss.serialization.lib'!" unless="current.jboss.serialization.lib"/>
+
+      <mkdir dir="${build.scoped-sar}"/>
+
+      <copy todir="${build.scoped-sar}" file="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
+      <copy todir="${build.scoped-sar}" file="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
+      <copy todir="${build.scoped-sar}" file="${jboss.aop.lib}/jboss-aop.jar"/>
+      <!-- <copy todir="${build.scoped-sar}" file="${jboss.aspects.lib}/jboss-aspect-library.jar"/> -->
+      <copy todir="${build.scoped-sar}" file="${javassist.javassist.lib}/javassist.jar"/>
+      <copy todir="${build.scoped-sar}" file="${trove.trove.lib}/trove.jar"/>
+
+      <mkdir dir="${build.scoped-sar}/tmp"/>
+      <!-- we need org/jboss/util/collection.SoftValueHashMap
+           which was moved http://jira.jboss.org/jira/browse/JBMESSAGING-281
+      -->
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar" >
+         <patternset>
+            <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
+            <!--
+                 required by 4.0.1sp1 and lower
+            -->
+            <include name="org/jboss/util/propertyeditor/**"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.scoped-sar}/jboss-common-softvaluehashmap.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      <delete>
+          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </delete>
+      <!-- I also need org.jboss.util.stream.* -->
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar">
+         <patternset>
+            <include name="org/jboss/util/stream/**"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.scoped-sar}/jboss-common-stream.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      <delete>
+          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </delete>
+
+      <!-- I need InvocationMarshaller both on server and client side, and versions prior to
+           JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
+           org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
+           like javaURLContextFactory, which will mess up JNDI and other things.
+      -->
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.server.lib}/jboss.jar">
+         <patternset>
+            <include name="org/jboss/invocation/unified/**"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.scoped-sar}/jboss-unified-invocation.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      <delete>
+          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </delete>
+
+      <!--
+           Required to deploy in 4.0.1 and lower. Currently we don't support it.
+      -->
+      <!--
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.security.lib}/jbosssx.jar">
+         <patternset>
+            <include name="org/jboss/security/SecurityAssociation*.class"/>
+            <include name="org/jboss/security/SecurityActions*.class"/>
+         </patternset>
+      </unjar>
+      <jar jarfile="${build.scoped-sar}/jboss-securityassociation.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+      -->
+
+      <delete dir="${build.scoped-sar}/tmp"/>
+   </target>
+
+   <target name="artifacts" depends="jar, scoped-sar, client-jar"/>
+
+   <target name="client-jar" depends="compile, scoped-sar">
+
+      <mkdir dir="${project.output}/jboss-messaging-client"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.aop.lib}/jboss-aop.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${current.jboss.remoting.lib}/jboss-remoting.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${current.jboss.serialization.lib}/jboss-serialization.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${javassist.javassist.lib}/javassist.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${trove.trove.lib}/trove.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${build.scoped-sar}/jboss-common-softvaluehashmap.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.common.lib}/jboss-common-client.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.j2ee.lib}/jboss-j2ee.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.j2se.lib}/jboss-j2se.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.naming.lib}/jnp-client.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${oswego.concurrent.lib}/concurrent.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${apache.log4j.lib}/log4j.jar"/>
+      <jar jarfile="${build.lib}/jboss-messaging-client.jar">
+         <fileset dir="${build.classes}">
+            <include name="org/jboss/**"/>
+         </fileset>
+         <fileset dir="${build.etc}">
+            <include name="VERSION"/>
+         </fileset>
+         <fileset dir="${project.output}/jboss-messaging-client">
+            <include name="VERSION"/>
+         </fileset>
+         <fileset dir="${project.output}/jboss-messaging-client" includes="**"/>
+      </jar>
+      <delete dir="${project.output}/jboss-messaging-client"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Release Tasks                                                                            -->
+   <!-- ======================================================================================== -->
+
+   <target name="archive-functional" depends="release-structure">
+
+      <mkdir dir="./tests/output/jboss-messaging-functional-test-results-${module.version}"/>
+      <copy todir="./tests/output/jboss-messaging-functional-test-results-${module.version}">
+         <fileset dir="./tests/output/reports/html">
+            <include name="**"/>
+         </fileset>
+      </copy>
+      <zip destfile="${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip"
+           basedir="./tests/output" includes="jboss-messaging-functional-test-results-${module.version}/**"/>
+      <delete dir="./tests/output/jboss-messaging-functional-test-results-${module.version}"/>
+   </target>
+
+   <target name="archive-stress" depends="release-structure">
+
+      <mkdir dir="./tests/output/jboss-messaging-stress-test-results-${module.version}"/>
+      <copy todir="./tests/output/jboss-messaging-stress-test-results-${module.version}">
+         <fileset dir="./tests/output/reports/html">
+            <include name="**"/>
+         </fileset>
+      </copy>
+      <zip destfile="${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip"
+           basedir="./tests/output" includes="jboss-messaging-stress-test-results-${module.version}/**"/>
+      <delete dir="./tests/output/jboss-messaging-stress-test-results-${module.version}"/>
+   </target>
+
+   <target name="archive-smoke" depends="release-structure">
+
+      <copy todir="${release.output}/test-results">
+         <fileset dir="./tests/smoke/output">
+            <include name="*.html"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="release-bundle" depends="artifacts, release-structure, examples, userdoc, bundle-source, bundle-test-results, javadoc">
+
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-scoped.sar"/>
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client.jar"/>
+      <copy todir="${release.output}" file="./docs/README.html"/>
+      <copy todir="${release.output}/api">
+         <fileset dir="${build.api}" includes="**"/>
+      </copy>
+      <copy todir="${release.output}/util">
+         <fileset dir="./util">
+            <include name="*.xml"/>
+            <exclude name="do-not-distribute*"/>
+         </fileset>
+      </copy>
+      <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
+           basedir="${project.root}/release"/>
+      <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
+   </target>
+
+   <target name="release-structure">
+
+      <mkdir dir="${release.output}/util"/>
+      <mkdir dir="${release.output}/examples"/>
+      <mkdir dir="${release.output}/docs/userguide"/>
+      <mkdir dir="${release.output}/src"/>
+      <mkdir dir="${release.output}/test-results"/>
+   </target>
+
+   <!-- Note: This target must be ran after the smoke test -->
+   <target name="examples" depends="release-structure">
+
+      <copy todir="${release.output}/examples">
+         <fileset dir="./docs/examples">
+            <exclude name="programmatic-deployment"/>
+            <exclude name="**/do-not-distribute*"/>
+         </fileset>
+      </copy>
+      <copy todir="${release.output}/examples/config">
+         <fileset dir="./src/etc/server/default/deploy">
+            <include name="*-persistence-service.xml"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="userdoc" depends="release-structure">
+
+      <ant dir="./docs/gettingstarted" antfile="build.xml" target="all"/>
+      <copy todir="${release.output}/docs/userguide">
+         <fileset dir="${project.output}/docs/userguide/en">
+            <include name="**"/>
+            <exclude name="**/do-not-distribute*"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="bundle-source" depends="release-structure">
+
+      <zip destfile="${release.output}/src/jboss-messaging-${module.version}-src.zip"
+           basedir="${source.java}" excludes="**/CVS,*.iml"/>
+      <zip destfile="${release.output}/src/jboss-messaging-tests-${module.version}-src.zip"
+           basedir="${project.root}/tests/src" includes="org/jboss/test/**" excludes="**/CVS,*.iml"/>
+   </target>
+
+   <target name="bundle-test-results" depends="release-structure">
+
+      <available file="${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip"
+                 property="functional.test.results.present" value="true"/>
+      <fail message="Functional test results ${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip not available!"
+            unless="functional.test.results.present"/>
+      <available file="${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip"
+                 property="stress.test.results.present" value="true"/>
+      <fail message="Stress test results ${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip not available!"
+            unless="stress.test.results.present"/>
+   </target>
+
+   <target name="deployscoped" depends="scoped-sar">
+      <copy file="${build.lib}/jboss-${module.name}-scoped.sar"
+            todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
+   </target>
+
+   <target name="deploydefault" depends="jar">
+      <copy file="${build.lib}/jboss-${module.name}.sar"
+            todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
+   </target>
+
+   <target name="undeploydefault">
+      <delete file="${ENV.JBOSS_HOME}/server/default/deploy/jboss-${module.name}.sar"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- TCK Tasks                                                                                -->
+   <!-- ======================================================================================== -->
+
+   <target name="cts-deploy" depends="jar">
+      <copy file="${build.lib}/jboss-${module.name}.sar"
+         todir="${ENV.JBOSS_HOME}/server/cts-messaging/deploy"/>
+   </target>
+
+   <target name="cts-undeploy">
+      <delete file="${ENV.JBOSS_HOME}/server/cts-messaging/deploy/jboss-${module.name}.sar"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Cleaning Tasks                                                                           -->
+   <!-- ======================================================================================== -->
+
+   <target name="clean">
+
+      <delete dir="${project.output}" quiet="true"/>
+
+      <ant dir="./docs/examples/queue" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/topic" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/mdb" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/stateless" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/ejb3mdb" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/secure-socket" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./tests" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./perf" antfile="build.xml" inheritAll="false" target="clean"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Macros                                                                                   -->
+   <!-- ======================================================================================== -->
+
+   <macrodef name="display-path">
+      <attribute name="path"/>
+      <sequential>
+         <pathconvert refid="@{path}" targetos="unix" property="@{path}.representation"/>
+         <echo message="@{path}: ${@{path}.representation}"/>
+      </sequential>
+   </macrodef>
+
+   <macrodef name="detect-availability">
+      <attribute name="dependency"/>
+      <sequential>
+         <available file="${project.root}/lib/jboss-@{dependency}.jar"
+                    property="local.@{dependency}.present"/>
+      </sequential>
+   </macrodef>
+
+</project>

@@ -1,0 +1,97 @@
+<!-- list of aliases used to bridge gap between buildmagic defs and jbossbuild -->
+
+
+<path id="apache.commons.classpath">
+  <pathelement path="${apache.collections.lib}/commons-collections.jar"/>
+  <pathelement path="${apache.logging.lib}/commons-logging.jar"/>
+  <pathelement path="${apache.httpclient.lib}/commons-httpclient.jar"/>
+  <pathelement path="${apache.pool.lib}/commons-pool.jar"/>
+  <pathelement path="${apache.discovery.lib}/commons-discovery.jar"/>
+  <pathelement path="${apache.fileupload.lib}/commons-fileupload.jar"/>
+  <pathelement path="${apache.lang.lib}/commons-lang-2.0.jar"/>  
+</path>
+
+<path id="sax.classpath">
+  <pathelement path="${xml-sax.classpath}"/>
+</path>
+ 
+<property name="xdoclet-xdoclet.lib" value="${xdoclet.xdoclet.lib}"/>
+<path id="xdoclet.task.classpath">
+  <path refid="xdoclet.xdoclet.classpath"/>
+</path>
+   
+<property name="gjt.jpl-util.lib" value="${gjt.jpl.util.lib}"/>   
+<path id="gjt.jpl-util.classpath">
+   <path refid="gjt.jpl.util.classpath"/>
+</path>   
+
+<property name="opennms.joesnmp.lib" value="${joesnmp.joesnmp.lib}"/>   
+<path id="opennms.joesnmp.classpath">
+   <path refid="joesnmp.joesnmp.classpath"/>
+</path>   
+
+<path id="jacorb.idl.classpath">
+   <path refid="apache.avalon.logkit.classpath"/>
+   <pathelement path="${jacorb.jacorb.lib}/idl.jar"/>
+</path>
+
+<property name="jacorb.idl.include" value="${jacorb.jacorb.resources}"/>
+<property name="jacorb.jacorb.properties" value="${jacorb.jacorb.resources}"/>
+  
+<property name="sleepycat.lib" value="${sleepycat.sleepycat.lib}"/>
+<path id="sleepycat.classpath">
+   <path refid="sleepycat.sleepycat.classpath"/>
+</path>
+  
+<property name="apache.tomcat55.root" value="${apache.tomcat.root}"/>
+<property name="apache.tomcat55.lib" value="${apache.tomcat.lib}"/>
+<path id="apache.tomcat55.classpath">
+   <path refid="apache.tomcat.classpath"/>
+</path>
+  
+<property name="trove.lib" value="${trove.trove.lib}"/>  
+<path id="trove.classpath">
+   <path refid="trove.trove.classpath"/>
+</path>
+  
+<path id="qdox.classpath">
+   <path refid="qdox.qdox.classpath"/>
+</path>
+  
+<property name="javassist.lib" value="${javassist.javassist.lib}"/>
+<path id="javassist.classpath">
+  <path refid="javassist.javassist.classpath"/>
+</path>
+  
+<property name="hibernate.lib" value="${hibernate.hibernate.lib}"/>  
+<path id="hibernate3.classpath">
+  <path refid="hibernate.hibernate.classpath"/>
+</path>
+
+<property name="odmg.lib" value="${odmg.odmg.lib}"/>
+<path id="odmg.classpath">
+  <path refid="odmg.odmg.classpath"/>
+</path>
+
+<property name="cglib.lib" value="${cglib.cglib.lib}"/>
+<path id="cglib.classpath">
+  <path refid="cglib.cglib.classpath"/>  
+</path>
+
+<path id="ejb3-persistence.classpath">
+   <path refid="hibernate.annotations.classpath"/>
+   <path refid="hibernate.entitymanager.classpath"/>
+</path>
+
+<property name="spring.lib" value="${spring.spring.lib}"/>
+<path id="spring.classpath">
+  <path refid="spring.spring.classpath"/>  
+</path>
+
+<!-- Ant -->
+<property name="apache.ant.root" value="${project.tools}"/>
+<property name="apache.ant.lib" value="${apache.ant.root}/lib"/>
+<path id="apache.ant.classpath">
+  <pathelement path="${apache.ant.lib}/ant.jar"/>
+</path>
+  

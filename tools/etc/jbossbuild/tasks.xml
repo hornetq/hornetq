@@ -1,0 +1,1023 @@
+<?xml version="1.0"?>
+
+<!--
+ JBoss, the OpenSource J2EE webOS
+ 
+ Distributable under LGPL license.
+ See terms of license at gnu.org.
+-->
+<project name="jboss.ant.tasks"
+         default="help-fragment"
+>
+<!-- ================================================================== -->
+<!-- Properties                                                         -->
+<!-- ================================================================== -->
+
+   <!-- because this file may be imported from various locations
+     locations must be referenced in an absolute fashion   -->
+   <dirname property="imported.basedir" file="${ant.file.jboss.ant.tasks}"/>
+
+
+   <property file="${imported.basedir}/jbossbuild.properties"/>
+
+   <property name="jboss.tasks.path" 
+      value="${imported.basedir}/../../../tools/lib/jbossbuild.jar"   />
+
+   <!-- items required for javcc task --> 
+   <property name="sun.javacc.lib"
+      value="${imported.basedir}/../../../${jbossbuild.thirdparty.dir}/sun-javacc/lib/"/>
+             
+   <property name="jacorb.root"
+      value="${imported.basedir}/../../../${jbossbuild.thirdparty.dir}/jacorb"/> 
+
+   <property name="apache.logkit.lib"
+      value="${imported.basedir}/../../../${jbossbuild.thirdparty.dir}/apache-avalon-logkit/lib"/>              
+
+      
+    <path id="jacorb.idl.classpath">
+       <pathelement path="${jacorb.root}/lib/idl.jar"/>
+       <pathelement path="${apache.logkit.lib}/logkit.jar"/>
+    </path>
+
+
+<!-- ================================================================== -->
+<!-- Type Definitions                                                   -->
+<!-- ================================================================== -->
+
+   <!-- The generate type -->
+   <typedef name="generate"
+            classname="org.jboss.ant.types.Generate" 
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+   <!-- The build type -->
+   <typedef name="build"
+            classname="org.jboss.ant.types.build.Build" 
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+   <!-- The artifact type definition type -->
+   <typedef name="artifacttype"
+            classname="org.jboss.ant.types.build.ArtifactType" 
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+   <!-- The component definition type -->
+   <typedef name="componentdef"
+            classname="org.jboss.ant.types.component.ComponentDefinition" 
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+   <!-- The component type -->
+   <typedef name="component"
+            classname="org.jboss.ant.types.build.Component" 
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+   <!-- The includes type -->
+   <typedef name="includes"
+            classname="org.jboss.ant.types.Includes" 
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+   <!-- The build targets type -->
+   <typedef name="targets"
+            classname="org.jboss.ant.types.target.TargetDefinitions" 
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+<!-- ================================================================== -->
+<!-- Task Definitions                                                   -->
+<!-- ================================================================== -->
+
+   <!-- Update ide info for the main build -->
+   <taskdef name="idemain"
+            classname="org.jboss.ant.tasks.build.IDETask"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+
+   <!-- Update ide info for the component -->
+   <taskdef name="idecomponent"
+            classname="org.jboss.ant.tasks.component.IDETask"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+   
+   <!-- Generate a componentref graph and resolve the dependencies -->
+   <taskdef name="synchronizeinfo"
+            classname="org.jboss.ant.tasks.build.SynchronizeComponentsTask"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />
+   
+   <!-- A task which allows a visitor to visit the graph -->
+   <taskdef name="visit-componentref-graph"
+            classname="org.jboss.ant.tasks.build.VisitComponentRefGraphTask"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />   
+   
+   <!-- Generate libraries.ent with version number in paths -->
+   <taskdef name="gen-lib-file"
+            classname="org.jboss.ant.tasks.build.GenerateLibrariesFile"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />  
+     
+   <!-- RMIC compilation logic -->
+   <taskdef name="rmic-helper"
+            classname="org.jboss.ant.tasks.build.RMICHelper"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />     
+
+   <!-- Executes a given target without reparsing the project file -->
+   <taskdef name="execute-target"
+            classname="org.jboss.ant.tasks.build.TargetExecutor"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   /> 
+  
+   <!-- Copy with support for zipfile sets -->
+   <taskdef name="copy-zfs"
+            classname="org.jboss.ant.tasks.build.CopyWithZipFileSetSupport"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   /> 
+   
+   <!-- File release task -->
+   <taskdef name="copy-release"
+            classname="org.jboss.ant.tasks.build.CopyRelease"
+            loaderRef="jboss.tasks.path"
+            classpath="${jboss.tasks.path}"
+   />  
+   
+  
+   
+
+   
+
+<!-- ================================================================== -->
+<!-- Artifact Definitions                                               -->
+<!-- ================================================================== -->
+
+   <artifacttype type="jar" outputtype="lib"/>
+   <artifacttype type="zip" outputtype="lib"/>
+   <artifacttype type="sar" outputtype="lib"/>
+   <artifacttype type="rar" outputtype="lib"/>
+   <artifacttype type="war" outputtype="lib"/>
+   <artifacttype type="deployer" outputtype="lib"/>   
+   <artifacttype type="api" outputtype="api"/>
+   <artifacttype type="xml" outputtype="resource"/>
+   <artifacttype type="policy" outputtype="resource"/>
+   <artifacttype type="properties" outputtype="resource"/>
+   <artifacttype type="sh" outputtype="bin"/>
+   <artifacttype type="bat" outputtype="bin"/>
+   <artifacttype type="conf" outputtype="bin"/>
+   <artifacttype type="dtd" outputtype="dtd"/>
+   <artifacttype type="xsd" outputtype="schema"/>
+   <artifacttype type="aop" outputtype="resource"/>
+   <artifacttype type="idl" outputtype="resource"/>   
+   <artifacttype type="md5" outputtype="bin"/>      
+   <artifacttype type="dir" outputtype="lib"/>
+   <artifacttype type="ddl" outputtype="resource"/>
+   
+<!-- ================================================================== -->
+<!-- Target Definitions                                                 -->
+<!-- ================================================================== -->
+
+   <targets id="targets">
+
+      <!-- ============================================================ -->
+      <!-- Build All                                                    -->
+      <!-- Builds everything (build, docs, tests and release archives)  -->
+      <!-- ============================================================ -->
+
+      <targetdef target="all" description="Build All">
+         <main depends="build, doc, test, archives" components="none"/>
+         <component depends="build, doc, test"/>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!--  Init                                                        -->
+      <!--  Basic initilization tasks and property setup                -->
+      <!-- ============================================================ -->      
+      <targetdef target="build.init" description="initilization tasks and property setup">
+
+         <!-- for each componentdef in jbossbuild file, setup properties 
+              in case a use wishes to access them    
+         -->
+         <component>
+            <property name="build.module" value="@{parentDir}"/>
+            <property name="build.module.src" value="${build.module}/src"/>
+            <property name="build.module.resources" value="${build.module}/src/resources"/>
+            <property name="build.module.etc" value="${build.module}/src/etc"/>
+            <property name="build.module.output" value="@{output}"/>
+            <property name="build.module.output.gen-src" value="${build.module.output}/gen-src"/>            
+            <property name="build.module.dir" value="@{output}"/>
+            <property name="build.module.output.resources" value="${build.module.output}/resources"/>                        
+            <property name="build.module.output.lib" value="${build.module.output}/lib"/>                                    
+            <property name="build.module.output.classes" value="${build.module.output}/classes"/> 
+         </component>
+      </targetdef>      
+
+      <!-- ============================================================ -->
+      <!-- Build                                                        -->
+      <!-- Builds the artifacts and compiles all source                 -->
+      <!-- ============================================================ -->
+
+      <targetdef target="build" description="Build" >
+
+         <!-- Build the main release
+              Creates the main release directory and copies artifacts
+              to the specified location
+         -->
+         <main>
+            <mkdir dir="@{releaseDir}"/>
+            <antCall target="release"/>
+         </main>
+
+
+         <!-- 
+         Build the component
+              Just makes the output folder
+         -->         
+         <component depends="build.init, build.etc">
+            <mkdir dir="@{output}/etc"/>
+            <copy todir="@{output}/etc" filtering="yes">
+               <fileset dir="@{component.dir}/src/etc/" includes="**"/>
+            </copy>
+         </component>
+
+         <!-- Build resources if the component has a 
+              resource node -->
+         <resource depends="build.resources"/>
+         
+         <!-- JTREE-JAVACC source generation  -->
+         <generatedsource when="@{jtree-javacc}">
+
+            <dirname file="/@{jtree-javacc}" property="@{id}.path"/>
+            <property name="@{id}.output.path" value="@{output}/${@{id}.path}"/>
+
+            <mkdir dir="${@{id}.output.path}"/>
+            <jjtree
+               target="src/@{srcdir}/@{jtree-javacc}"
+               outputdirectory="${@{id}.output.path}"
+               javacchome="${sun.javacc.lib}"/>
+
+            <basename file="@{jtree-javacc}" 
+               property="@{id}.basename"
+               suffix="jjt"/>
+
+            <javacc
+               target="${@{id}.output.path}/${@{id}.basename}.jj"
+               javacchome="${sun.javacc.lib}"/>
+
+         </generatedsource>
+
+         <!-- JAVACC source generation -->
+         <generatedsource when="@{javacc}">
+
+            <dirname file="/@{javacc}" property="@{id}.path"/>
+            <property name="@{id}.output.path" value="@{output}/${@{id}.path}"/>
+
+            <mkdir dir="${@{id}.output.path}"/>
+
+            <javacc
+               target="src/@{srcdir}/@{javacc}"
+               javacchome="${sun.javacc.lib}"
+               static="@{static}"
+               outputdirectory="${@{id}.output.path}"/>
+
+         </generatedsource>
+
+         <!-- IDL compilation -->         
+         <generatedsource when="@{idl}">
+
+            <!-- Task to compile idl files required by jacorb -->
+            <taskdef name="jacidl"
+               classname="org.jacorb.idl.JacIDL"
+               classpathref="jacorb.idl.classpath"
+            />             
+            
+            <property name="@{id}.output.path" value="@{output}/@{id}"/>
+
+            <mkdir dir="${@{id}.output.path}"/>
+
+            <jacidl
+               srcdir ="src/@{idl}"
+               destdir="${@{id}.output.path}"
+               includes="*.idl"
+               includepath="${jacorb.root}/resources/"
+             />
+         
+         </generatedsource> 
+         
+ 
+         <!-- Compile the source
+              Runs depend on the source output then compiles the source
+         -->
+         <source if="@{compileable}">
+             
+            <mkdir dir="@{output}"/>
+            <depend srcdir="@{sourcePath}"
+                    destdir="@{output}"
+            >
+               <classpath>
+                  <buildpathelements/>
+               </classpath>
+            </depend>
+            <javac srcdir="@{sourcePath}" 
+                   destdir="@{output}"
+                   debug="true"
+                   deprecation="true"
+                   excludes="@{excludes}"
+                   target="@{jvmTarget}"
+                   source="@{jvmSource}"
+                   fork="true"
+                   memoryMaximumSize="512M"
+            >
+               <classpath>
+                  <buildpathelements/>
+               </classpath>
+               <src path="@{sourcePath}"/>
+               <!-- allow multiple sources to be compiled at once to handle circular references -->
+               <srcelements/>
+            </javac>
+
+           <copy toDir="@{output}">
+               <fileset dir="@{sourcePath}">
+                <include name="**/*.properties"/>
+              </fileset>
+           </copy>
+         </source>
+         
+        <source when="@{stubversion}">
+	    <property name="jb.stubversion" value="@{stubversion}"/>
+        </source>         
+         
+
+         <!-- Remote method call compilation.   -->
+         <source when="@{rmic}">
+            <rmic-helper
+                  base="@{output}"
+                  includes="@{rmic}"
+                  verify="true"
+                  debug="false"
+                  iiop="@{iiop}"
+                  idl="false"
+                  external="@{external}"
+                  stubversion="${jb.stubversion}"
+                  
+            >
+               <classpath>
+                  <buildpathelements/>
+               </classpath>
+               </rmic-helper>
+         </source>
+
+         <!-- Create a jar archive
+              Jars the inputs of the jar artifact
+         -->
+         <jar null="@{manifest}" if="@{buildable}">
+            <mkdir dir="@{parentDir}"/>
+            <jar destfile="@{output}">
+               <manifest>
+                  <attribute name="Created-by"               value="@{component.VMVersion} @{component.VMVendor}"/>
+                  <attribute name="Specification-Title"      value="@{component.specTitle}"/>
+                  <attribute name="Specification-Version"    value="@{component.specVersion}"/>
+                  <attribute name="Specification-Vendor"     value="@{component.specVendor}"/>
+                  <attribute name="Implementation-Title"     value="@{component.implTitle}"/>
+                  <attribute name="Implementation-URL"       value="@{component.implURL}"/>
+                  <attribute name="Implementation-Version"   value="@{component.implVersion}"/>
+                  <attribute name="Implementation-Vendor"    value="@{component.implVendor}"/>
+                  <attribute name="Implementation-Vendor-Id" value="@{component.implURL}"/>
+                  <attribute name="Class-Path"               value="@{classpath}"/>
+               </manifest>
+               <filesets/>
+            </jar>
+         </jar>
+
+         <!-- Create an aop archive
+              Jars the inputs of the aop artifact
+         -->
+         <aop  if="@{buildable}">
+            <mkdir dir="@{parentDir}"/>
+            <jar destfile="@{output}">
+                <filesets/>
+            </jar>
+         </aop>         
+
+         <jar when="@{manifest}" if="@{buildable}">
+            <mkdir dir="@{parentDir}"/>
+            <jar destfile="@{output}"
+                 manifest="@{component.output}/etc/manifest/@{manifest}">
+               <filesets/>
+            </jar>
+         </jar>
+         
+         
+
+         <!-- Create a sar archive
+              Jars the inputs of the sar artifact
+         -->
+         <sar null="@{manifest}">
+            <mkdir dir="@{parentDir}"/>
+            <jar destfile="@{output}">
+               <manifest>
+                  <attribute name="Created-by"               value="@{component.VMVersion} @{component.VMVendor}"/>
+                  <attribute name="Specification-Title"      value="@{component.specTitle}"/>
+                  <attribute name="Specification-Version"    value="@{component.specVersion}"/>
+                  <attribute name="Specification-Vendor"     value="@{component.specVendor}"/>
+                  <attribute name="Implementation-Title"     value="@{component.implTitle}"/>
+                  <attribute name="Implementation-URL"       value="@{component.implURL}"/>
+                  <attribute name="Implementation-Version"   value="@{component.implVersion}"/>
+                  <attribute name="Implementation-Vendor"    value="@{component.implVendor}"/>
+                  <attribute name="Implementation-Vendor-Id" value="@{component.implURL}"/>
+                  <attribute name="Class-Path"               value="@{classpath}"/>
+               </manifest>
+               <filesets/>
+            </jar>
+         </sar>
+
+
+         <!-- Create a rar archive
+              Jars the inputs of the rar artifact
+         -->
+         <rar null="@{manifest}">
+            <mkdir dir="@{parentDir}"/>
+            <jar destfile="@{output}">
+               <manifest>
+                  <attribute name="Created-by"               value="@{component.VMVersion} @{component.VMVendor}"/>
+                  <attribute name="Specification-Title"      value="@{component.specTitle}"/>
+                  <attribute name="Specification-Version"    value="@{component.specVersion}"/>
+                  <attribute name="Specification-Vendor"     value="@{component.specVendor}"/>
+                  <attribute name="Implementation-Title"     value="@{component.implTitle}"/>
+                  <attribute name="Implementation-URL"       value="@{component.implURL}"/>
+                  <attribute name="Implementation-Version"   value="@{component.implVersion}"/>
+                  <attribute name="Implementation-Vendor"    value="@{component.implVendor}"/>
+                  <attribute name="Implementation-Vendor-Id" value="@{component.implURL}"/>
+                  <attribute name="Class-Path"               value="@{classpath}"/>
+               </manifest>
+               <filesets/>
+            </jar>
+         </rar>
+
+         <!-- Create a war archive
+              Jars the inputs of the war artifact
+         -->
+         <war null="@{manifest}">
+            <mkdir dir="@{parentDir}"/>
+            <jar destfile="@{output}">
+               <manifest>
+                  <attribute name="Created-by"               value="@{component.VMVersion} @{component.VMVendor}"/>
+                  <attribute name="Specification-Title"      value="@{component.specTitle}"/>
+                  <attribute name="Specification-Version"    value="@{component.specVersion}"/>
+                  <attribute name="Specification-Vendor"     value="@{component.specVendor}"/>
+                  <attribute name="Implementation-Title"     value="@{component.implTitle}"/>
+                  <attribute name="Implementation-URL"       value="@{component.implURL}"/>
+                  <attribute name="Implementation-Version"   value="@{component.implVersion}"/>
+                  <attribute name="Implementation-Vendor"    value="@{component.implVendor}"/>
+                  <attribute name="Implementation-Vendor-Id" value="@{component.implURL}"/>
+                  <attribute name="Class-Path"               value="@{classpath}"/>
+               </manifest>
+               <filesets/>
+            </jar>
+         </war>
+         
+         <!-- Create a deployer archive
+              Jars the inputs of the war artifact
+         -->
+         <deployer null="@{manifest}" if="@{buildable}">
+            <mkdir dir="@{parentDir}"/>
+            <jar destfile="@{output}">
+               <manifest>
+                  <attribute name="Created-by" value="@{component.VMVersion} @{component.VMVendor}"/>
+                  <attribute name="Specification-Title" value="@{component.specTitle}"/>
+                  <attribute name="Specification-Version" value="@{component.specVersion}"/>
+                  <attribute name="Specification-Vendor" value="@{component.specVendor}"/>
+                  <attribute name="Implementation-Title" value="@{component.implTitle}"/>
+                  <attribute name="Implementation-URL" value="@{component.implURL}"/>
+                  <attribute name="Implementation-Version" value="@{component.implVersion}"/>
+                  <attribute name="Implementation-Vendor" value="@{component.implVendor}"/>
+                  <attribute name="Implementation-Vendor-Id" value="@{component.implURL}"/>
+                  <attribute name="Class-Path" value="@{classpath}"/>
+               </manifest>
+               <filesets/>
+            </jar>
+         </deployer>       
+         
+         <!-- Create a md5 checksumarchive  -->
+         <md5 null="@{manifest}">
+            <mkdir dir="@{parentDir}"/>
+            <checksum>
+              <filesets/>
+            </checksum>
+         </md5>         
+         
+         <!-- create a directory and copy into it all of the filesets or zipfilesets -->
+         <dir if="@{buildable}">
+            <mkdir dir="@{output}"/>
+            <copy-zfs todir="@{output}">
+               <filesets/>
+            </copy-zfs>
+         </dir>
+         
+         
+         <!-- this is a hack.  jbbuild will not allow artifacts with same id
+            varia requires a dir to be created called kernel, but cannot be created
+            because kernel already exists as a component.  Only option is to create the dir
+            and rename it to kernel -->
+         <dir if="@{buildable}" when="@{rename}">
+            <mkdir dir="@{parentDir}/@{rename}"/>
+            <copy-zfs todir="@{parentDir}/@{rename}">
+               <filesets/>
+            </copy-zfs>
+         </dir>     
+      
+         <!-- copying of artifacts to new name -->         
+         <artifactdef when="@{toname}">
+            <mkdir dir="@{parentDir}"/>
+            <copy toFile="@{parentDir}/@{toname}">
+               <filesets/>
+            </copy>
+         </artifactdef>
+         
+         <sh depends="build.bin"/>
+         <bat depends="build.bin"/>
+      </targetdef>
+
+      <!-- Copy the etc -->
+      <targetdef target="build.etc">
+
+         <component>
+              
+            <mkdir dir="@{output}/etc"/>
+            <mkdir dir="@{component.dir}/src/etc/"/>
+            <copy todir="@{output}/etc" filtering="yes">
+               
+               <fileset dir="@{component.dir}/src/etc/" includes="**"/>
+               <filterset>
+                  <filter token="java.vm.version"           value="@{component.VMVersion}"/>
+                  <filter token="java.vm.vendor"            value="@{component.VMVendor}"/>
+                  <filter token="specification.title"       value="@{component.specTitle}"/>
+                  <filter token="specification.version"     value="@{component.specVersion}"/>
+                  <filter token="specification.vendor"      value="@{component.specVendor}"/>
+                  <filter token="implementation.title"      value="@{component.implTitle}"/>
+                  <filter token="implementation.url"        value="@{component.implURL}"/>
+                  <filter token="implementation.version"    value="@{component.implVersion}"/>
+                  <filter token="implementation.vendor"     value="@{component.implVendor}"/>
+                  <filter token="implementation.vendor.id"  value="@{component.implURL}"/>
+               </filterset>
+            </copy>
+         </component>
+
+      </targetdef>
+
+      <targetdef target="build.resources">
+     
+         <component>
+            <mkdir dir="@{output}/resources"/>
+            <copy todir="@{output}" filtering="yes">
+               <fileset dir="@{component.dir}/src" includes="resources/**"/>
+            </copy>
+         </component>
+      </targetdef>
+      
+
+
+      <targetdef target="build.bin">
+         <component>
+            <mkdir dir="@{output}/bin"/>
+            <copy todir="@{output}/bin" filtering="yes">
+              <fileset dir="@{component.dir}/src/bin">
+                <include name="**/*"/>
+              </fileset>
+            </copy>
+
+            <fixcrlf srcdir="@{output}/bin"
+              eol="lf" eof="remove"
+              includes="**/*.sh"/>
+
+            <fixcrlf srcdir="@{output}/bin"
+              eol="crlf" eof="remove"
+              includes="**/*.bat, **/*.cmd"/>
+
+            <chmod perm="+x">
+              <fileset dir="@{output}/bin">
+                <include name="**/*.sh"/>
+              </fileset>
+            </chmod>
+
+         </component>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Release                                                      -->
+      <!-- Create the release by copying all artifacts that have a      -->
+      <!-- release tag to that specified location.                      -->
+      <!-- ============================================================ -->
+
+      <targetdef target="release">
+      
+
+          <!-- Copy the artifact into the release -->
+         <artifact when="@{tofile}">
+             <copy-release release="@{release}" tofile="@{tofile}" requiredJDK="@{requiredJDK}"
+             exploded="@{exploded}" overwrite="@{overwrite}">
+                <output/>
+             </copy-release>
+         </artifact>
+         
+       <artifact null="@{tofile}" when="@{release}" >
+            <copy-release release="@{release}"
+              exploded="@{exploded}"
+              requiredJDK="@{requiredJDK}"
+              overwrite="@{overwrite}"
+              >
+               <output/>
+            </copy-release>
+         </artifact>         
+
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Publish                                                      -->
+      <!-- Copy an artifact to the location specified by                -->
+      <!-- ${jbossbuild.repository.root}                                -->
+      <!-- Used by the continous build to publish to the repository.    -->
+      <!-- ============================================================ -->
+
+      <targetdef target="publish" if="@{local}">
+
+         <!-- copy the component-info.xml into the repository -->
+         <componentmain if="@{local}">
+            <fail unless="repository.root">
+              The publish target requires repository.root to be set.
+            </fail>
+            <mkdir dir="${repository.root}/@{relativePath}"/>
+            <copy failonerror="false" file="@{dir}/${jbossbuild.component.info}"
+                  todir="${repository.root}/@{relativePath}"
+            />
+
+         </componentmain>
+
+         <!-- Copy the artifact into the release -->
+         <artifact if="@{component.local}">
+            <fail unless="repository.root">
+              The publish target requires repository.root to be set.
+            </fail>
+            <mkdir dir="${repository.root}/@{relativePath}"/>
+            <copy todir="${repository.root}/@{relativePath}">
+               <output/>
+            </copy>
+         </artifact>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Archives                                                     -->
+      <!-- Builds the release archive(s)                                -->
+      <!-- ============================================================ -->
+
+      <!-- Build the release archives -->
+      <targetdef target="archives" description="Build the release archives">
+
+         <!-- Make the archives -->
+         <main>
+         
+            <!-- Create the zip file -->
+            <zip destfile="@{output}/@{releaseName}.zip"
+                 basedir="@{releaseDir}"
+            />
+         </main>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Doc                                                          -->
+      <!-- Creates the documentation.                                   -->
+      <!-- ============================================================ -->
+
+      <targetdef target="doc" description="Documentation">
+
+         <!-- Generate the documentation -->
+         <component depends="api"/>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- API                                                          -->
+      <!-- Creates the javadoc                                          -->
+      <!-- ============================================================ -->
+
+      <targetdef target="api" description="Javadoc">
+
+         <!-- Generate the javadoc -->
+         <component/>
+         <api>
+            <mkdir dir="@{output}"/>
+            <javadoc packagenames="*"
+                     destdir="@{output}"
+            >
+               <doctitle>
+                  <![CDATA[<h1>@{description} API Documentation</h1>]]>
+               </doctitle>
+               <bottom>
+                  <![CDATA[
+                     <i>
+                        <div align="center">
+                           <font size="-1">
+                              Copyright &#169; 2005 JBoss Inc. All Rights Reservered.
+                           </font>
+                        </div>
+                     </i>
+                  ]]>
+               </bottom>
+               <link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
+               <sourcepath>
+                  <sourcepaths/>
+               </sourcepath>
+               <classpath>
+                  <sourcepathelements/>
+               </classpath>
+            </javadoc>
+         </api>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Clean                                                        -->
+      <!-- Deletes the output folder                                    -->
+      <!-- ============================================================ -->
+
+      <targetdef target="clean" description="Clean">
+         <common>
+            <delete dir="@{output}" failonerror="false"/>
+         </common>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Clobber                                                      -->
+      <!-- Deletes the output folder and removes thirdparty             -->
+      <!-- ============================================================ -->
+
+      <targetdef target="clobber" description="Clobber">
+         <main depends="clean">
+            <delete dir="@{thirdparty}"/>
+         </main>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Synchronize                                                  -->
+      <!-- Resynchronizes the project with cvs                          -->
+      <!-- ============================================================ -->
+
+      <targetdef target="synchronize" description="Synchronize">
+
+         <!-- Update the main build folder and tools from cvs
+              then do the same for the components before running
+              the after synchronization processing
+              NOTE: Does not automatically invoke component builds
+              as the list of components maybe out-of-date at this point
+              and we need to conditionally do cvs co/update
+         -->
+         <main components="none">
+            <!-- cvs command="update -dP" failonerror="true"/-->
+            <!--invoke target="synchronize" dir="../tools"/-->
+            <execute-target target="synchronize.components" />
+            <!-- execant target="synchronize.after.main"/-->
+         </main>
+
+         <componentmain unless="@{local}">
+            <mkdir dir="@{thirdpartyDir}"/>
+            <get src="@{location}/${jbossbuild.component.info}"
+                 dest="@{thirdpartyDir}/${jbossbuild.component.info}"
+                 useTimestamp="false"
+                 verbose="true"
+            />
+         </componentmain>
+
+         <!-- If the component exists we just do a cvs update -->
+         <componentmain if="@{exists}">
+           <cvs dest="@{dir}" command="update"/>
+            <!-- NOTE: unable to delegate to component until JBBUILD-62 is resolved -->
+            <!--invoke target="synchronize" dir="@{dir}"/--> 
+            <!--execant target="synchronize.after" dir="@{dir}"/--> 
+         </componentmain>
+
+         <!-- If the component doesn't exist and we want to
+              get the source build check it out from cvs
+         -->
+         <componentmain unless="@{exists}" if="@{local}">
+            <cvs dest="@{dir.parent}">
+               <commandline>
+                  <argument value="-d"/>
+                  <argument value="@{build.cvsroot}"/>
+                  <argument value="co"/>
+                  <argument value="-d"/>
+                  <argument value="@{id}"/>
+                  <argument value="@{module}"/>
+               </commandline>
+            </cvs>
+            <!-- execant target="synchronize.after" dir="@{dir}"/--> 
+         </componentmain>
+
+         <!-- The component already exists do a cvs update
+              and run the after synchronization
+         -->
+         <component nomain="true">
+            <cvs command="update -dP" failonerror="true"/>
+            <!--execant target="synchronize.after"/-->
+         </component>
+
+         <!-- If we are not doing a source checkout of this
+              component, download the artifacts to thirdparty
+         -->
+         <artifact unless="@{component.local}">
+            <mkdir dir="@{parentDir}"/>
+            <get src="@{location}" 
+                 dest="@{output}" 
+                 useTimestamp="false"
+                 verbose="true"
+            />
+         </artifact>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Commit                                                       -->
+      <!-- Commits the changes to cvs                                   -->
+      <!-- ============================================================ -->
+
+      <targetdef target="commit" description="Commit">
+         <!-- Commit the main build and tools -->
+         <main>
+            <fail message="Use -Dm=&quot;xxx&quot; to specify the commit message" unless="m"/>
+            <cvs failonerror="true">
+               <commandline>
+                  <argument value="commit"/>
+                  <argument value="-m"/>
+                  <argument value="${m}"/>
+               </commandline>
+            </cvs>
+            <invoke target="commit" dir="../tools"/>
+         </main>
+         <!-- Commit the component -->
+         <component>
+            <fail message="Use -Dm=&quot;xxx&quot; to specify the commit message" unless="m"/>
+            <cvs failonerror="true">
+               <commandline>
+                  <argument value="commit"/>
+                  <argument value="-m"/>
+                  <argument value="${m}"/>
+               </commandline>
+            </cvs>
+         </component>
+      </targetdef>
+      
+      <!-- ============================================================ -->
+      <!-- Test                                                         -->
+      <!-- Builds and runs the tests                                    -->
+      <!-- ============================================================ -->
+
+      <targetdef target="test" description="Build and run the tests">
+         <component depends="build, runtest"/>
+      </targetdef>
+      
+      <!-- ============================================================ -->
+      <!-- RunTest                                                      -->
+      <!-- Runs the tests for sources marked with a test attribute      -->
+      <!-- ============================================================ -->
+      
+      <!-- Run the Test -->
+      <targetdef target="runtest" description="Run tests">
+         <component/>
+         <source when="@{test}">
+            <mkdir dir="@{testDir}"/>
+            <delete file="@{testDir}/test.log"/>
+            <junit fork="true"
+                   printSummary="true">
+               <sysproperty key="org.jboss.test.logfile" value="@{testDir}/test.log"/>
+               <formatter type="plain"/>
+               <classpath>
+                  <pathElements/>
+               </classpath>
+               <batchtest todir="@{testDir}">
+                  <fileset dir="@{sourceDir}" includes="@{test}"/>
+               </batchtest>
+            </junit>
+         </source>
+      </targetdef>
+      
+      <!-- ============================================================ -->
+      <!-- Rebuild                                                      -->
+      <!-- Synchronizes then builds                                     -->
+      <!-- ============================================================ -->
+      
+      <!-- Rebuild -->
+      <targetdef target="rebuild" description="Synchronize then build">
+         <common depends="synchronize">
+            <execant target="build"/>
+         </common>
+      </targetdef>
+      
+      <!-- ============================================================ -->
+      <!-- RebuildAll                                                   -->
+      <!-- Synchronizes then builds all                                 -->
+      <!-- ============================================================ -->
+      
+      <!-- Rebuild all -->
+      <targetdef target="rebuildall" description="Synchronize then build all">
+         <common depends="synchronize">
+            <execant target="all"/>
+         </common>
+      </targetdef>
+
+      <!-- ============================================================ -->
+      <!-- Synchronize.After                                            -->
+      <!-- After synchronization processing                             -->
+      <!-- ============================================================ -->
+
+      <!-- After synchronization processing -->
+      <targetdef target="synchronize.after" description="After synchronization processing">
+              <main>
+                 <idemain/>
+              </main>
+              <component>
+                 <idecomponent/>
+              </component>
+      </targetdef>
+      
+
+      
+ </targets>   
+
+<!-- ================================================================== -->
+<!-- Macro Definitions                                                  -->
+<!-- ================================================================== -->
+
+   <condition property="execant-executable" value="cmd.exe">
+     <os family="windows"/>
+   </condition>
+   <property name="execant-executable" value="ant"/>
+   <condition property="execant-prefix" value="/c ant">
+     <os family="windows"/>
+   </condition>
+   <property name="execant-prefix" value=""/>
+   <!-- Set the execant.args to empty unless it already exists -->
+   <condition property="execant.args" value="">
+      <not><isset property="execant.args"/></not>
+   </condition>
+
+   <!-- The execant macro -->
+   <macrodef name="execant">
+      <attribute name="dir"
+                 default="${basedir}"
+                 description="The directory"
+      />
+      <attribute name="target"
+                 description="The target"
+      />
+      <attribute name="filename"
+                 default="jbossbuild.xml"
+                 description="The ant file to execute"
+      />
+      <sequential>
+         <!-- Invoke using a new ant -->
+         <exec dir="@{dir}" 
+               executable="${execant-executable}"
+         >
+            <arg line="${execant-prefix} ${execant.args} -f @{filename} @{target}"/>
+         </exec>
+      </sequential>
+   </macrodef>
+
+   <!-- The invoke macro -->
+   <macrodef name="invoke">
+      <attribute name="dir"
+                 default="${basedir}"
+                 description="The directory"
+      />
+      <attribute name="target"
+                 description="The target"
+      />
+      <sequential>
+         <!-- Invoke using a new ant -->
+         <ant antfile="jbossbuild.xml" dir="@{dir}" target="@{target}"/>
+      </sequential>
+   </macrodef>
+
+<!-- ================================================================== -->
+<!-- Targets                                                            -->
+<!-- ================================================================== -->
+
+   <target name="help-fragment">
+      <fail message="Do not execute this build fragment directly!"/>
+   </target>
+   
+</project>
+

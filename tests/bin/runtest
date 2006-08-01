@@ -38,6 +38,14 @@ if [ "$ENV_TEST_SERIALIZATION" != "" ]; then
    TEST_SERIALIZATION=$ENV_TEST_SERIALIZATION
 fi
 
+#
+# We should use the same test execution classpath as the ant <junit> task, so we run ant to get
+# it from there.
+#
+
+ant -Dtest.execution.classpath.file=bin/.test.execution.classpath -f $reldir/../build.xml get-test-execution-classpath
+CLASSPATH=`cat $reldir/.test.execution.classpath`
+
 outputdir="$reldir/../output"
 
 if ! mkdir -p $outputdir/logs; then
@@ -88,23 +96,6 @@ done
 
 JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE -Dtest.serialization=$TEST_SERIALIZATION"
 
-#
-# Local path overrides
-#
-
-#REMOTING_LIB=$reldir/../../../thirdparty/jboss/remoting/lib/jboss-remoting.jar
-REMOTING_LIB=$reldir/../../src/resources/jboss-remoting.jar
-
-#SERIALIZATION_LIB=$reldir/../../../thirdparty/jboss/serialization/lib/jboss-serialization.jar
-SERIALIZATION_LIB=$reldir/../../src/resources/jboss-serialization.jar
-
-#AOP_LIB=$reldir/../../../aop/output/lib/jboss-aop.jar
-AOP_LIB=$reldir/../../src/resources/jboss-aop.jar
-
-JGROUPS_LIB=$reldir/../../../thirdparty/jgroups/lib/jgroups.jar
-#JGROUPS_LIB=$reldir/../resources/jgroups-core.jar
-
-
 if [ "$TARGET_TEST" != "" ]; then
    TARGET_TEST="-t $TARGET_TEST"
 fi
@@ -114,47 +105,9 @@ if [ "$isRemote" = "true" ]; then
   $reldir/start-rmi-server $REMOTE_DEBUG_FLAG
 fi
 
-java $JAVA_OPTS -cp \
-$reldir/../etc${SEP}\
-$reldir/../../src/etc${SEP}\
-$reldir/../../output/etc${SEP}\
-$reldir/../output/classes${SEP}\
-$reldir/../../output/lib/jboss-messaging.jar${SEP}\
-$reldir/../../../thirdparty/apache-log4j/lib/log4j.jar${SEP}\
-$reldir/../../../thirdparty/apache-logging/lib/commons-logging.jar${SEP}\
-$reldir/../../../thirdparty/junit/lib/junit.jar${SEP}\
-$reldir/../../../thirdparty/oswego-concurrent/lib/concurrent.jar${SEP}\
-$reldir/../../../thirdparty/javassist/lib/javassist.jar${SEP}\
-$reldir/../../../thirdparty/trove/lib/trove.jar${SEP}\
-$reldir/../../../thirdparty/apache-httpclient/lib/commons-httpclient.jar${SEP}\
-$reldir/../../../thirdparty/dom4j/lib/dom4j.jar${SEP}\
-$reldir/../../../thirdparty/sun-servlet/lib/servlet-api.jar${SEP}\
-$reldir/../../src/resources/hsqldb.jar${SEP}\
-$reldir/../../src/resources/mysql-connector-java-3.0.17-ga-bin.jar${SEP}\
-$reldir/../../src/resources/ojdbc14.jar${SEP}\
-$reldir/../../src/resources/postgresql-8.1-405.jdbc3.jar${SEP}\
-$reldir/../../../naming/output/lib/jnp-client.jar${SEP}\
-${REMOTING_LIB}${SEP}\
-${SERIALIZATION_LIB}${SEP}\
-${AOP_LIB}${SEP}\
-$reldir/../../../j2ee/output/lib/jboss-j2ee.jar${SEP}\
-$reldir/../../../j2se/output/lib/jboss-j2se.jar${SEP}\
-$reldir/../../../jmx/output/lib/jboss-jmx.jar${SEP}\
-$reldir/../../../mbeans/output/lib/jboss-mbeans.jar${SEP}\
-$reldir/../../../common/output/lib/jboss-common.jar${SEP}\
-$reldir/../../../common/output/lib/jboss-xml-binding.jar${SEP}\
-$reldir/../../../system/output/lib/jboss-system.jar${SEP}\
-$reldir/../../../transaction/output/lib/jboss-transaction.jar${SEP}\
-$reldir/../../../security/output/lib/jbosssx.jar${SEP}\
-$reldir/../../../connector/output/lib/jboss-local-jdbc.jar${SEP}\
-$reldir/../../../connector/output/lib/jboss-common-jdbc-wrapper.jar${SEP}\
-$reldir/../../../connector/output/lib/jboss-jca.jar${SEP}\
-$reldir/../../../connector/output/lib/jms-ra.jar${SEP}\
-$reldir/../../../server/output/lib/jboss.jar${SEP}\
-$reldir/../../../build/output/jboss-5.0.0.Alpha/client/jbossall-client.jar${SEP}\
-${JGROUPS_LIB}${SEP}\
- org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
 
+$JAVA_HOME/bin/java $JAVA_OPTS -cp "$CLASSPATH" \
+org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
 
 if [ "$isRemote" = "true" ]; then
   $reldir/stop-rmi-server
