@@ -354,9 +354,9 @@
    <!-- ======================================================================================== -->
 
    <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-      <!--<antcall target="crash-tests"/>-->
+      <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
-      <!-- <antcall target="remote-tests"/> -->
+      <antcall target="remote-tests"/>
    </target>
 
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
