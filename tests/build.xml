@@ -184,7 +184,9 @@
    <!-- Compilation Tasks                                                                        -->
    <!-- ======================================================================================== -->
 
-   <target name="compile">
+   <target name="init" depends="resolve-local-dependencies"/>
+
+   <target name="compile" depends="init">
 
       <mkdir dir="${build.tests.classes}"/>
       <javac destdir="${build.tests.classes}"
@@ -244,7 +246,8 @@
       <property name="test.logs.cleared" value="true"/>
    </target>
 
-   <target name="start-rmi-server" description="Starts the RMI server used by remote tests">
+   <target name="start-rmi-server" depends="init"
+           description="Starts the RMI server used by remote tests">
 
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -259,7 +262,8 @@
       </java>
    </target>
 
-   <target name="start-rmi-server-stress" description="Starts the RMI server used by remote stress tests">
+   <target name="start-rmi-server-stress" depends="init"
+           description="Starts the RMI server used by remote stress tests">
 
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <jvmarg value="-Xmx768M"/>
@@ -273,7 +277,8 @@
       </java>
    </target>
 
-   <target name="stop-rmi-server" description="Stops the RMI server used by remote tests">
+   <target name="stop-rmi-server" depends="init"
+           description="Stops the RMI server used by remote tests">
       <!-- <display-path path="test.execution.classpath"/> -->
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
             classpathref="test.execution.classpath"/>
@@ -636,7 +641,7 @@
    </target>
 
 
-   <target name="crash-test" description="Runs crash test">
+   <target name="crash-test" depends="init" description="Runs crash test">
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
@@ -886,12 +891,7 @@
 
    <property name="test.execution.classpath.file" value=".test.execution.classpath"/>
 
-   <target name="get-test-execution-classpath">
-      <echo message="${test.execution.classpath.file}"/>
-      <!--
-      <pathconvert refid="test.execution.classpath" targetos="unix" pathsep=";"
-                   property="test.execution.classpath.unix"/>
-                   -->
+   <target name="get-test-execution-classpath" depends="init">
       <pathconvert refid="test.execution.classpath" targetos="windows"
                    property="test.execution.classpath.unix"/>
       <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>

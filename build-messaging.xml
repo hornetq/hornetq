@@ -266,7 +266,8 @@
    <!-- Compilation Tasks                                                                        -->
    <!-- ======================================================================================== -->
 
-   <target name="compile" depends="compile-parsers, compile-classes, compile-etc"/>
+   <target name="compile"
+           depends="resolve-local-dependencies, compile-parsers, compile-classes, compile-etc"/>
 
    <target name="compile-parsers">
 
@@ -307,7 +308,7 @@
    <target name="compile-classes">
 
       <mkdir dir="${build.classes}"/>
-      <!-- <display-path path="compilation.classpath"/> -->
+      <!--<display-path path="compilation.classpath"/>-->
       <javac destdir="${build.classes}"
              target="${javac.target}"
              source="${javac.source}"
