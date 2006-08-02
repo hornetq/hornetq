@@ -68,6 +68,14 @@
       <ant antfile="build-messaging.xml" target="compile"/>
    </target>
 
+   <target name="scoped-sar" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="scoped-sar"/>
+   </target>
+
+   <target name="client-jar" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="client-jar"/>
+   </target>
+
    <target name="jar" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar"/>
    </target>
