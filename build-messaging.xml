@@ -203,7 +203,7 @@
       <path refid="jboss.transaction.classpath"/>
       <path refid="jboss.jmx.classpath"/>
       <path refid="jboss.remoting.classpath"/>
-       <path refid="jboss.serialization.classpath"/>
+      <path refid="jboss.serialization.classpath"/>
    </path>
 
    <!--

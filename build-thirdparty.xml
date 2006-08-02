@@ -101,8 +101,10 @@
       <componentref name="junit" version="3.8.1"/>
       <componentref name="hsqldb" version="1.8.0.2"/>
       <componentref name="dom4j" version="1.6"/>
+      <componentref name="apache-xerces" version="2.7.1"/> <!-- needed by org.jboss.logging.Log4jLoggerPlugin -->
       <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5"/>
       <componentref name="jboss/jbossxb" version="1.0.0.CR6"/>
+
 
 
    </build>

@@ -3,5 +3,6 @@
 
 reldir=`dirname $0`
 
-$ANT_HOME/bin/ant -lib $reldir/../thirdparty/junit/lib/junit.jar "$@" 
+#export ANT_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"
+$ANT_HOME/bin/ant -lib $reldir/../thirdparty/junit/lib/junit.jar "$@"
 

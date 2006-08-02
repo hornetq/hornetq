@@ -167,90 +167,13 @@
       <path refid="test.compilation.classpath"/>
       <path refid="dom4j.dom4j.classpath"/>
       <path refid="apache.log4j.classpath"/>
+      <path refid="apache.xerces.classpath"/>
       <path refid="jboss.mbeans.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
       <path refid="mysql.jdbc.driver.classpath"/>
       <path refid="oracle.jdbc.driver.classpath"/>
       <path refid="postgres.jdbc.driver.classpath"/>
    </path>
-
-
-   <!--  This is the complete execution classpath of the CVS latest snapshot -->
-   <!--
-
-   This doesn't seem to be used, also is referencing files on Ovidiu's machine
-
-<path id="test.execution.classpath2">
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-log4j/lib/log4j.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/oswego-concurrent/lib/concurrent.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/junit/lib/junit.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/javassist/lib/javassist.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/trove/lib/trove.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/dom4j/lib/dom4j.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/jgroups/lib/jgroups.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/sun-servlet/lib/servlet-api.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/sun-servlet/lib/jsp-api.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-collections/lib/commons-collections.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-logging/lib/commons-logging.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-httpclient/lib/commons-httpclient.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-pool/lib/commons-pool.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-discovery/lib/commons-discovery.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-fileupload/lib/commons-fileupload.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-lang/lib/commons-lang-2.0.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/catalina-ant.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/catalina.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/el-api.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/jasper-el.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/jasper-jdt.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/jasper.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/jsp-api.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/servlet-api.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/tomcat-coyote.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/tomcat-dbcp.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/tomcat-i18n-es.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/tomcat-i18n-fr.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-tomcat/lib/tomcat-i18n-ja.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/hsqldb.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/jcommon-1.0.0-rc1.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/jfreechart-1.0.0-rc1.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/jboss-remoting.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/mysql-connector-java-3.1.13-bin.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/ojdbc14.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/postgresql-8.1-405.jdbc3.jar"/>
-<pathelement location="C:/work/jboss-messaging/output/lib/jboss-messaging.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/jboss/common/lib/namespace.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/jboss/common/lib/jboss-common.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/jboss/common/lib/jboss-archive-browsing.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/j2ee/output/lib/jboss-j2ee.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/j2ee/output/lib/jboss-jaxrpc.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/j2ee/output/lib/jboss-saaj.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/j2se/output/lib/jboss-j2se.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jmx/output/lib/jboss-jmx.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/mbeans/output/lib/jboss-mbeans.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/jboss-serialization.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/jboss-aop.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/jms/src/resources/jboss-aspects.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/system/output/lib/jboss-system.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/transaction/output/lib/jboss-transaction.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/naming/output/lib/jnpserver.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/server/output/lib/jboss.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/server/output/lib/jmx-adaptor-plugin.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/security/output/lib/jbosssx.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/connector/output/lib/jboss-jca.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/connector/output/lib/jboss-local-jdbc.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/connector/output/lib/jboss-ha-local-jdbc.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/connector/output/lib/jboss-common-jdbc-wrapper.jar"/>
-<pathelement location="C:/work/src/cvs/jboss-head/connector/output/lib/jms-ra.jar"/>
-<pathelement location="C:/work/jboss-messaging/tests/etc"/>
-<pathelement location="C:/work/jboss-messaging/src/etc"/>
-<pathelement location="C:/work/jboss-messaging/output/etc"/>
-<pathelement location="C:/work/jboss-messaging/tests/output/classes"/>
-  </path>
-
-  -->
-
 
    <path id="stress.test.execution.classpath">
       <pathelement path="${tests.root}/etc/stress"/>
@@ -351,6 +274,7 @@
    </target>
 
    <target name="stop-rmi-server" description="Stops the RMI server used by remote tests">
+      <!-- <display-path path="test.execution.classpath"/> -->
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
             classpathref="test.execution.classpath"/>
    </target>
