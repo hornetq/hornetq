@@ -45,4 +45,19 @@ public class QueuedExecutorPool extends RotatingPool
    {
       return new QueuedExecutor();
    }
+   
+   public void shutdown()
+   {
+      for (int i = 0; i < entries.length; i++)
+      {
+         QueuedExecutor q = (QueuedExecutor)entries[i];
+         
+         if (q != null)
+         {
+            q.shutdownAfterProcessingCurrentlyQueuedTasks();
+         }
+      }
+      
+      entries = null;
+   }
 }

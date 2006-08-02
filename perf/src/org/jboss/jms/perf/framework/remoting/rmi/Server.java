@@ -7,11 +7,10 @@
 package org.jboss.jms.perf.framework.remoting.rmi;
 
 
-import org.jboss.jms.perf.framework.remoting.Result;
-import org.jboss.jms.perf.framework.remoting.Request;
-
 import java.rmi.Remote;
-import java.io.Serializable;
+
+import org.jboss.jms.perf.framework.remoting.Request;
+import org.jboss.jms.perf.framework.remoting.Result;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

@@ -46,6 +46,24 @@
       <name>PrefetchSize</name>
       <type>int</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getDefaultTempQueueFullSize" setMethod="setDefaultTempQueueFullSize">
+      <description>The default value of paging full size for any temporary queues created for connections from this connection factory</description>
+      <name>DefaultTempQueueFullSize</name>
+      <type>int</type>
+   </attribute>   
+   
+   <attribute access="read-write" getMethod="getDefaultTempQueuePageSize" setMethod="setDefaultTempQueuePageSize">
+      <description>The default value of paging page size for any temporary queues created for connections from this connection factory</description>
+      <name>DefaultTempQueuePageSize</name>
+      <type>int</type>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="getDefaultTempQueueDownCacheSize" setMethod="setDefaultTempQueueDownCacheSize">
+      <description>The default value of paging down cache size for any temporary queues created for connections from this connection factory</description>
+      <name>DefaultTempQueueDownCacheSize</name>
+      <type>int</type>
+   </attribute>      
 
    <!-- ServerPeer ObjectName is configured as a dependency optional-attribute-name, this is the
         only reason for this attribute to be writable. Any write attempt on this attribute after

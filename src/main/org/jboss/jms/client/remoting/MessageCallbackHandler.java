@@ -157,7 +157,7 @@ public class MessageCallbackHandler
       // add anything to the tx for this session
       if (!isConnectionConsumer)
       {
-         sess.postDeliver(m, consumerID);
+         sess.postDeliver();
       }         
    }
    
@@ -280,13 +280,13 @@ public class MessageCallbackHandler
          }
          
          this.listener = listener;
-          
-         if (!buffer.isEmpty())
+                            
+         if (listener != null && !buffer.isEmpty())
          {  
             listenerRunning = true;
             this.queueRunner(new ListenerRunner());
-         }
-      }
+         }        
+      }   
    }
       
    public void close() throws JMSException
@@ -306,55 +306,62 @@ public class MessageCallbackHandler
          {            
             //Wake up any receive() thread that might be waiting
             mainLock.notify();
-         }                                       
+         }   
          
-         //Wait for any on message executions to complete
-         
-         Future result = new Future();
-         
-         try
-         {
-            this.sessionExecutor.execute(new Closer(result));
-            
-            result.getResult();
-         }
-         catch (InterruptedException e)
-         {
-            log.warn("Thread interrupted", e);
-         }
-         
-         //Now we cancel anything left in the buffer
-         //The reason we do this now is that otherwise the deliveries wouldn't get cancelled
-         //until session close (since we don't cancel consumer's deliveries until then)
-         //which is too late - since we need to preserve the order of messages delivered in a session.
-         
-         if (!buffer.isEmpty())
-         {            
-            //Now we cancel any deliveries that might be waiting in our buffer
-            //This is because, otherwise the messages wouldn't get cancelled until
-            //the corresponding session died.
-            //So if another consumer in another session tried to consume from the channel
-            //before that session died it wouldn't receive those messages
-            Iterator iter = buffer.iterator();
-            
-            List ackInfos = new ArrayList();
-            while (iter.hasNext())
-            {                        
-               MessageProxy mp = (MessageProxy)iter.next();
-               
-               AckInfo ack = new AckInfo(mp, consumerID);
-               
-               ackInfos.add(ack);
-               
-            }
-                  
-            sessionDelegate.cancelDeliveries(ackInfos);
-            
-            buffer.clear();
-         }          
+         this.listener = null;
       }
+         
+      waitForOnMessageToComplete();
+      
+      //Now we cancel anything left in the buffer
+      //The reason we do this now is that otherwise the deliveries wouldn't get cancelled
+      //until session close (since we don't cancel consumer's deliveries until then)
+      //which is too late - since we need to preserve the order of messages delivered in a session.
+      
+      if (!buffer.isEmpty())
+      {            
+         //Now we cancel any deliveries that might be waiting in our buffer
+         //This is because, otherwise the messages wouldn't get cancelled until
+         //the corresponding session died.
+         //So if another consumer in another session tried to consume from the channel
+         //before that session died it wouldn't receive those messages
+         Iterator iter = buffer.iterator();
+         
+         List ackInfos = new ArrayList();
+         while (iter.hasNext())
+         {                        
+            MessageProxy mp = (MessageProxy)iter.next();
+            
+            AckInfo ack = new AckInfo(mp, consumerID);
+            
+            ackInfos.add(ack);
+            
+         }
+               
+         sessionDelegate.cancelDeliveries(ackInfos);
+         
+         buffer.clear();
+      }                
       
       if (trace) { log.trace(this + " closed"); }
+   }
+   
+   private void waitForOnMessageToComplete()
+   {
+      //Wait for any on message executions to complete
+      
+      Future result = new Future();
+      
+      try
+      {
+         this.sessionExecutor.execute(new Closer(result));
+         
+         result.getResult();
+      }
+      catch (InterruptedException e)
+      {
+         log.warn("Thread interrupted", e);
+      }
    }
      
    /**
@@ -671,6 +678,13 @@ public class MessageCallbackHandler
            
          synchronized (mainLock)
          {
+            if (listener == null)
+            {
+               listenerRunning = false;
+               
+               return;
+            }
+            
             //remove a message from the buffer
 
             if (buffer.isEmpty())

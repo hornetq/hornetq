@@ -441,6 +441,17 @@ public class ServerManagement
       insureStarted();
       server.undeployDestination(isQueue, name);
    }
+   
+   public static void deployConnectionFactory(String objectName,
+                                             String[] jndiBindings, int prefetchSize,
+                                             int defaultTempQueueFullSize,
+                                             int defaultTempQueuePageSize,
+                                             int defaultTempQueueDownCacheSize)
+   throws Exception
+   {
+      server.deployConnectionFactory(objectName, jndiBindings, prefetchSize,
+             defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
+   }
 
    public static void deployConnectionFactory(String objectName,
                                               String[] jndiBindings, int prefetchSize)

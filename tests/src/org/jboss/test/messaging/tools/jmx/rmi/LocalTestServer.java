@@ -552,15 +552,26 @@ public class LocalTestServer implements Server
       sc.unregisterService(destinationObjectName);
    }
    
+   
+   public void deployConnectionFactory(String objectName,
+                                       String[] jndiBindings,
+                                       int prefetchSize) throws Exception
+   {
+      deployConnectionFactory(objectName, jndiBindings, prefetchSize, -1, -1, -1);
+   }
+   
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings) throws Exception
    {
-      deployConnectionFactory(objectName, jndiBindings, -1);
+      deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1);
    }
 
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings,
-                                       int prefetchSize) throws Exception
+                                       int prefetchSize,
+                                       int defaultTempQueueFullSize,
+                                       int defaultTempQueuePageSize,
+                                       int defaultTempQueueDownCacheSize) throws Exception
    {
       String config =
          "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
@@ -569,6 +580,21 @@ public class LocalTestServer implements Server
          "<depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
          "<depends optional-attribute-name=\"Connector\">" + ServiceContainer.REMOTING_OBJECT_NAME +
          "</depends>\n";
+      
+      if (defaultTempQueueFullSize != -1)
+      {
+         config += "<attribute name=\"DefaultTempQueueFullSize\">" + defaultTempQueueFullSize + "</attribute>\n";
+      }
+      
+      if (defaultTempQueuePageSize != -1)
+      {
+         config += "<attribute name=\"DefaultTempQueuePageSize\">" + defaultTempQueuePageSize + "</attribute>\n";
+      }
+      
+      if (defaultTempQueueDownCacheSize != -1)
+      {
+         config += "<attribute name=\"DefaultTempQueueDownCacheSize\">" + defaultTempQueueDownCacheSize + "</attribute>\n";
+      }
       
       if (prefetchSize != -1)
       {

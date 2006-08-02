@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main"/>
-	<classpathentry kind="src" path="perf/src"/>
-	<classpathentry kind="src" path="output/parsers"/>
-	<classpathentry kind="src" path="tests/src"/>
-	<classpathentry kind="src" path="/j2ee"/>
-	<classpathentry kind="lib" path="/thirdparty/jboss/common/lib/jboss-common.jar"/>
-	<classpathentry kind="src" path="/system"/>
-	<classpathentry kind="src" path="/aop"/>
-	<classpathentry kind="lib" path="/thirdparty/junit/lib/junit.jar"/>
-	<classpathentry kind="lib" path="/thirdparty/javassist/lib/javassist.jar"/>
-	<classpathentry kind="lib" path="/thirdparty/oswego-concurrent/lib/concurrent.jar"/>
-	<classpathentry kind="lib" path="/thirdparty/apache-log4j/lib/log4j.jar"/>
-	<classpathentry kind="src" path="/j2se"/>
-	<classpathentry kind="src" path="/aspects"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/server"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/connector"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/transaction"/>
-	<classpathentry kind="lib" path="src/resources/hsqldb.jar"/>
-	<classpathentry kind="lib" path="/thirdparty/jgroups/lib/jgroups.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/thirdparty/apache-logging/lib/commons-logging.jar"/>
-	<classpathentry kind="lib" path="/tools/lib/ant.jar"/>
-	<classpathentry kind="lib" path="/tools/lib/ant-junit.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jmx"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/mbeans"/>
-	<classpathentry kind="lib" path="src/resources/jboss-remoting.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/security"/>
-	<classpathentry kind="lib" path="src/resources/jboss-serialization.jar"/>
+	<classpathentry excluding="**/.svn/**/*" kind="src" path="perf/src"/>
+	<classpathentry kind="src" path="output/gen-parsers"/>
+	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
+	<classpathentry kind="lib" path="lib/jboss.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-j2se.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-jmx.jar"/>
+	<classpathentry kind="lib" path="lib/jbosssx.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-system.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-transaction.jar"/>
+	<classpathentry kind="lib" path="lib/jnp-client.jar"/>
+	<classpathentry kind="lib" path="src/resources/clester.jar"/>
+	<classpathentry kind="lib" path="src/resources/jboss-aspect-library.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/j2sdk1.4.2_09"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
+	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
+	<classpathentry kind="lib" path="tests/lib/jboss-common-jdbc-wrapper.jar"/>
+	<classpathentry kind="lib" path="tests/lib/jboss-jca.jar"/>
+	<classpathentry kind="lib" path="tests/lib/jboss-local-jdbc.jar"/>
+	<classpathentry kind="lib" path="tests/lib/jboss-mbeans.jar"/>
+	<classpathentry kind="lib" path="tests/lib/jms-ra.jar"/>
+	<classpathentry kind="lib" path="tests/lib/mysql-connector-java-3.1.13-bin.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="perf/resources/jcommon-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="perf/resources/jfreechart-1.0.0-rc1.jar"/>
-	<classpathentry kind="lib" path="/thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
-	<classpathentry kind="output" path="output/eclipse-classes"/>
+	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-remoting.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-serialization.jar"/>
+	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
+	<classpathentry kind="lib" path="thirdparty/hsqldb/lib/hsqldb.jar"/>
+	<classpathentry kind="lib" path="C:/tools/apache-ant-1.6.5/lib/ant-junit.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-logging/lib/commons-logging.jar"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

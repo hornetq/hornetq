@@ -23,9 +23,11 @@ package org.jboss.messaging.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,9 +46,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
- * A basic channel implementation. It supports atomicity, isolation and, if a
- * non-null PersistenceManager is available, it supports recoverability of
- * reliable messages. The channel implementation here uses a "SEDA-type"
+ * Channel implementation. It supports atomicity, isolation and recoverability of
+ * reliable messages.
+ * The channel implementation here uses a "SEDA-type"
  * approach, where requests to handle messages, deliver to receivers or
  * acknowledge messages are not executed concurrently but placed on an event
  * queue and executed serially by a single thread. This prevents lock contention
@@ -382,6 +384,8 @@ public abstract class ChannelSupport implements Channel
             //FIXME - This is currently broken since it doesn't take into account
             // refs paged into persistent storage
             // Also is very inefficient since it makes a copy
+            
+            //TODO use the ref queue iterator
             List references = delivering(filter);
                         
             List undel = undelivered(filter);            
@@ -435,35 +439,53 @@ public abstract class ChannelSupport implements Channel
          router.clear();
          router = null;
       }
-   }
-
-   public void removeAllMessages()
-   {
+      
+   }  
+   
+   /*
+    * This method clears the channel.
+    * Basically it acknowledges any outstanding deliveries and consumes the rest of the messages in the channel.
+    * We can't just delete the corresponding references directly from the database since
+    * a) We might be paging
+    * b) The message might remain in the message store causing a leak
+    * 
+    */
+   public void removeAllReferences() throws Throwable
+   {  
       synchronized (refLock)
       {
          synchronized (deliveryLock)
          {
-            // Remove all deliveries
+            //Ack the deliveries
+            
+            //Clone to avoid ConcurrentModificationException
+            Set dels = new HashSet(deliveries);
 
-            Iterator iter = deliveries.iterator();
+            Iterator iter = dels.iterator();
             while (iter.hasNext())
             {
-               Delivery d = (Delivery) iter.next();
-               MessageReference r = d.getReference();
-               removeCompletely(r);
+               SimpleDelivery d = (SimpleDelivery) iter.next();
+               
+               d.acknowledge(null);
             }
-            deliveries.clear();
-
-            // Remove all holding messages
-
-            iter = messageRefs.getAll().iterator();
-            while (iter.hasNext())
+            
+            //Now we consume the rest of the messages
+            //This may take a while if we have a lot of messages including perhaps millions
+            //paged in the database - but there's no obvious other way to do it.
+            //We cannot just delete them directly from the database - because we may end up with messages leaking
+            //in the message store,
+            //also we might get race conditions when other channels are updating the same message in the db
+            
+            //Note - we don't do this in a tx - because the tx could be too big if we have millions of refs
+            //paged in storage
+            
+            MessageReference ref;
+            while ((ref = removeFirstInMemory()) != null)
             {
-               MessageReference r = (MessageReference) iter.next();
-               removeCompletely(r);
+               SimpleDelivery del = new SimpleDelivery(this, ref, false);
+               
+               del.acknowledge(null);           
             }
-            messageRefs.clear();
-
          }
       }
    }
@@ -623,13 +645,31 @@ public abstract class ChannelSupport implements Channel
    {
       try
       {
+         //The iterator is used to iterate through the refs in the channel in the case
+         //That they don't match the selectors of any receivers
+         ListIterator iter = null;
+         
+         MessageReference ref = null;
+         
          while (true)
-         {
-            MessageReference ref;
-
+         {           
             synchronized (refLock)
-            {
-               ref = (MessageReference) messageRefs.peekFirst();               
+            {              
+               if (iter == null)
+               {
+                  ref = (MessageReference) messageRefs.peekFirst();
+               }
+               else
+               {
+                  if (iter.hasNext())
+                  {                        
+                     ref = (MessageReference)iter.next();
+                  } 
+                  else
+                  {
+                     ref = null;
+                  }
+               }
             }
 
             if (ref != null)
@@ -639,22 +679,19 @@ public abstract class ChannelSupport implements Channel
                // If so ack it from the channel
                if (ref.isExpired())
                {
-                  if (trace)
-                  {
-                     log.trace("Message reference: " + ref + " has expired");
-                  }
+                  if (trace) { log.trace("Message reference: " + ref + " has expired"); }
 
                   // remove and acknowledge it
-
-                  removeFirstInMemory();
+                  if (iter == null)
+                  {
+                     removeFirstInMemory();
+                  }
+                  else
+                  {
+                     iter.remove();
+                  }
 
                   Delivery delivery = new SimpleDelivery(this, ref, true);
-
-                  // TODO - is this stage really necessary?
-                  synchronized (deliveryLock)
-                  {
-                     deliveries.add(delivery);
-                  }
 
                   acknowledgeInternal(delivery);
                }
@@ -662,38 +699,46 @@ public abstract class ChannelSupport implements Channel
                {
                   // Reference is not expired
 
-                  // Push the ref to a receiver
+                  // Attempt to push the ref to a receiver
                   Delivery del = push(ref);
 
                   if (del == null)
                   {
-                     // no receiver, receiver that doesn't accept the message or
-                     // broken receiver
-
-                     if (trace)
-                     {
-                        log.trace(this + ": no delivery returned for message"
-                                 + ref + " so no receiver got the message");
-                     }
-
-                     // Now we stop delivering
-
-                     if (trace)
-                     {
-                        log.trace("Delivery is now complete");
-                     }
+                     // no receiver, broken receiver
+                     // or full receiver    
+                     // so we stop delivering
+                     if (trace) { log.trace(this + ": no delivery returned for message" 
+                                  + ref + " so no receiver got the message");
+                                  log.trace("Delivery is now complete"); }
 
                      receiversReady = false;
 
                      return;
                   }
+                  else if (!del.isSelectorAccepted())
+                  {
+                     // No receiver accepted the message because no selectors matched
+                     // So we create an iterator (if we haven't already created it) to
+                     // iterate through the refs in the channel
+                     // TODO Note that this is only a partial solution since if there are messages paged to storage
+                     // it won't try those - i.e. it will only iterate through those refs in memory.
+                     // Dealing with refs in storage is somewhat tricky since we can't just load them and iterate
+                     // through them since we might run out of memory
+                     // So we will need to load individual refs from storage given the selector expressions
+                     // Secondly we should also introduce some in memory indexes here to prevent having to
+                     // iterate through all the refs every time
+                     // Having said all that, having consumers on a queue that don't match many messages
+                     // is an antipattern and should be avoided by the user
+                     if (iter == null)
+                     {
+                        iter = messageRefs.iterator();
+                     }                     
+                  }
                   else
                   {
-                     if (trace)
-                     {
-                        log.trace(this + ": delivery returned for message:"
-                                 + ref);
-                     }
+                     if (trace) { log.trace(this + ": delivery returned for message:" + ref); }
+                     
+                     //Receiver accepted the reference
 
                      // We must synchronize here to cope with another race
                      // condition where message is
@@ -704,11 +749,7 @@ public abstract class ChannelSupport implements Channel
                      // delivery being added (observed).
                      synchronized (del)
                      {
-                        if (trace)
-                        {
-                           log.trace(this + " incrementing delivery count for "
-                                    + del);
-                        }
+                        if (trace) { log.trace(this + " incrementing delivery count for " + del); }
 
                         // FIXME - It's actually possible the delivery could be
                         // cancelled before it reaches
@@ -721,26 +762,18 @@ public abstract class ChannelSupport implements Channel
                         // http://jira.jboss.com/jira/browse/JBMESSAGING-355
                         // This will make life a lot easier
 
-                        // Note we don't increment the delivery count if the
-                        // message didn't match the selector
-                        // FIXME - this is a temporary hack that will disappear
-                        // once
-                        // http://jira.jboss.org/jira/browse/JBMESSAGING-275
-                        // is solved
-                        boolean incrementCount = true;
-                        if (del instanceof SimpleDelivery)
-                        {
-                           SimpleDelivery sd = (SimpleDelivery) del;
-                           incrementCount = sd.isSelectorAccepted();
-                        }
-                        if (incrementCount)
-                        {
-                           del.getReference().incrementDeliveryCount();                    
-                        }
+                        del.getReference().incrementDeliveryCount();                    
 
                         if (!del.isCancelled())
                         {
-                           removeFirstInMemory();
+                           if (iter == null)
+                           {
+                              removeFirstInMemory();
+                           }
+                           else
+                           {
+                              iter.remove();                                
+                           }
 
                            // delivered
                            if (!del.isDone())
@@ -759,10 +792,7 @@ public abstract class ChannelSupport implements Channel
             else
             {
                // No more refs in channel
-               if (trace)
-               {
-                  log.trace(this + " no more refs to deliver ");
-               }
+               if (trace) { log.trace(this + " no more refs to deliver "); }
                break;
             }
          }
@@ -794,7 +824,17 @@ public abstract class ChannelSupport implements Channel
 
       try
       {
-
+         if (ref.isReliable() && !recoverable)
+         {
+            //Reliable reference in a non recoverable channel-
+            //We handle it as a non reliable reference
+            //It's important that we set it to non reliable otherwise if the channel
+            //pages and is non recoverable a reliable ref will be paged in the database as reliable
+            //which makes them hard to remove on server restart.
+            //If we always page them as unreliable then it is easy to remove them.
+            ref.setReliable(false);               
+         }
+         
          if (tx == null)
          {
             // Don't even attempt synchronous delivery for a reliable message
@@ -812,33 +852,20 @@ public abstract class ChannelSupport implements Channel
                return null;
             }
 
-            checkMemory();
+            checkMemory();                        
 
             ref.setOrdering(messageOrdering.increment());
-
-            if (ref.isReliable())
+            
+            if (ref.isReliable() && recoverable)
             {
-               if (recoverable)
+               // Reliable message in a recoverable state - also add to db
+               if (trace)
                {
-                  // Reliable message in a recoverable state - also add to db
-                  if (trace)
-                  {
-                     log.trace("adding " + ref
-                              + " to database non-transactionally");
-                  }
-   
-                  pm.addReference(channelID, ref, null);
+                  log.trace("adding " + ref
+                           + " to database non-transactionally");
                }
-               else
-               {
-                  //Reliable reference in a non recoverable channel-
-                  //We handle it as a non reliable reference
-                  //It's important that we set it to non reliable otherwise if the channel
-                  //pages and is non recoverable a reliable ref will be paged in the database as reliable
-                  //which makes them hard to remove on server restart.
-                  //If we always page them as unreliable then it is easy to remove them.
-                  ref.setReliable(false);
-               }
+
+               pm.addReference(channelID, ref, null);               
             }
             
             addReferenceInMemory(ref);
@@ -852,7 +879,7 @@ public abstract class ChannelSupport implements Channel
                deliverInternal();
             }
          }
-        else
+         else
          {
             if (trace)
             {
@@ -873,9 +900,7 @@ public abstract class ChannelSupport implements Channel
                // transaction
                if (trace)
                {
-                  log
-                           .trace(this
-                                    + " cannot handle reliable messages, dooming the transaction");
+                  log.trace(this + " cannot handle reliable messages, dooming the transaction");
                }
                tx.setRollbackOnly();
             } 
@@ -1281,8 +1306,7 @@ public abstract class ChannelSupport implements Channel
       // Must flush the down cache first
       flushDownCache();
 
-      List refInfos = pm.getReferenceInfos(channelID, loadFromOrderingValue,
-               number);
+      List refInfos = pm.getReferenceInfos(channelID, loadFromOrderingValue,number);
 
       // We may load less than desired due to "holes" - this is ok
       int numberLoaded = refInfos.size();
@@ -1302,8 +1326,7 @@ public abstract class ChannelSupport implements Channel
       // Put the refs that we already have messages for in a map
       while (iter.hasNext())
       {
-         PersistenceManager.ReferenceInfo info = (PersistenceManager.ReferenceInfo) iter
-                  .next();
+         PersistenceManager.ReferenceInfo info = (PersistenceManager.ReferenceInfo) iter.next();
 
          long msgId = info.getMessageId();
 
@@ -1350,7 +1373,7 @@ public abstract class ChannelSupport implements Channel
             // return a reference
             // to the pre-existing message
             MessageReference ref = ms.reference(m);
-
+            
             refMap.put(new Long(m.getMessageID()), ref);
          }
       }
@@ -1385,7 +1408,15 @@ public abstract class ChannelSupport implements Channel
          ref.setDeliveryCount(info.getDeliveryCount());
 
          ref.setOrdering(info.getOrdering());
-
+         
+         //We ignore the reliable field from the message - this is because reliable might be true on the message
+         //but this is a non recoverable state
+         
+         //FIXME - Really the message shouldn't have a reliable field at all,
+         //Reliability is an attribute of the message reference, not the message
+         
+         ref.setReliable(info.isReliable());
+         
          messageRefs.addLast(ref, ref.getPriority());
 
          if (recoverable && ref.isReliable())
@@ -1447,24 +1478,7 @@ public abstract class ChannelSupport implements Channel
 
       return callback;
    }
-
-   protected void removeCompletely(MessageReference r)
-   {
-      if (recoverable && r.isReliable())
-      {
-         try
-         {
-            pm.removeReference(channelID, r, null);
-         }
-         catch (Exception e)
-         {
-            if (trace)
-            {
-               log.trace("removeAll() failed on removing " + r, e);
-            }
-         }
-      }
-   }
+   
 
    // Private -------------------------------------------------------
 

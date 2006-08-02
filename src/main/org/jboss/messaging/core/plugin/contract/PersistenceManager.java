@@ -41,12 +41,7 @@ public interface PersistenceManager extends ServerPlugin
     * Currently unused but will be used for XA recovery
     */
    List retrievePreparedTransactions() throws Exception;
-    
-   /**
-    * TODO Do we really need this method?
-    */
-   void removeAllChannelData(long channelID) throws Exception;
-   
+      
    void resetLoadedStatus(long channelID) throws Exception;
       
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
@@ -86,13 +81,17 @@ public interface PersistenceManager extends ServerPlugin
       
       private int deliveryCount;
       
-      public ReferenceInfo(long msgId, long ordering, int deliveryCount)
+      private boolean reliable;
+      
+      public ReferenceInfo(long msgId, long ordering, int deliveryCount, boolean reliable)
       {
          this.messageId = msgId;
          
          this.ordering = ordering;
          
          this.deliveryCount = deliveryCount;
+         
+         this.reliable = reliable;
       }    
       
       public long getMessageId()
@@ -109,6 +108,11 @@ public interface PersistenceManager extends ServerPlugin
       {
          return deliveryCount;
       }      
+      
+      public boolean isReliable()
+      {
+         return reliable;
+      }
    }
    
 }

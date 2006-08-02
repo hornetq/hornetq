@@ -458,7 +458,7 @@ public class MessageProxy implements Message, Serializable
       return state == STATE_SENT;
    }
 
-   protected boolean isReceived()
+   public boolean isReceived()
    {
       return state == STATE_RECEIVED;
    }

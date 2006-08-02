@@ -187,6 +187,7 @@ public class BrowserTest extends MessagingTestCase
 		for (int i = 0; i < numMessages; i++)
 		{
 			Message m = mc.receive();
+         assertNotNull(m);
 		}
 		
 		browser = session.createBrowser(queue);

@@ -64,7 +64,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       super.tearDown();
    }
    
-   public void testReload() throws Throwable
+   public void testRecoverableQueueCrash() throws Throwable
    {
       ChannelSupport queue = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
       
@@ -109,6 +109,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       //Stop and restart the persistence manager
       //Only the persistent messages should survive
+      //This is what would happen if the server crashed
        
       tr.stop();
       ms.stop();
@@ -149,4 +150,158 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertEquals(0, LockMap.instance.getSize());
    }
+   
+   public void testNonRecoverableQueueCrash() throws Throwable
+   {
+      //Non recoverable queue - eg temporary queue
+      
+      ChannelSupport queue = new Queue(1, ms, pm, null, false, 100, 20, 10, new QueuedExecutor());
+      
+      Message[] msgs = new Message[200];
+      
+      MessageReference[] refs = new MessageReference[200];
+       
+      //Send 150 np mesages
+      for (int i = 0; i < 150; i++)
+      {
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         
+         refs[i] = ms.reference(msgs[i]);
+                
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
+      }
+      
+      //Send 50 p messages
+      for (int i = 150; i < 200; i++)
+      {
+         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         
+         refs[i] = ms.reference(msgs[i]);
+                
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
+      }
+
+      List refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(100, refIds.size());
+                                                
+      assertEquals(100, queue.memoryRefCount());
+      
+      assertEquals(0, queue.downCacheCount());
+      
+      assertTrue(queue.isPaging());      
+      
+      assertEquals(0, queue.memoryDeliveryCount());
+      
+      //Stop and restart the persistence manager
+      //No messages should survive
+      //This is what would happen if the server crashed
+       
+      tr.stop();
+      ms.stop();
+      pm.stop();
+      
+      pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+
+      ((JDBCPersistenceManager)pm).start();
+
+      ms = new SimpleMessageStore("store1");
+      
+      tr = new TransactionRepository();
+      
+      tr.start(pm);
+         
+      ChannelSupport queue2 = new Queue(1, ms, pm, null, false, 100, 20, 10, new QueuedExecutor());
+      
+      queue2.load();
+      
+      refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(0, refIds.size());
+      
+      List msgIds = getMessageIds();
+      assertEquals(0, msgIds.size());
+                                                                  
+      assertEquals(0, queue2.memoryRefCount());
+      
+      assertEquals(0, queue2.downCacheCount());
+      
+      assertFalse(queue2.isPaging());      
+      
+      assertEquals(0, queue2.memoryDeliveryCount());
+      
+      assertEquals(0, queue2.messageCount());
+      
+      assertEquals(0, LockMap.instance.getSize());
+   }
+   
+   public void testNonRecoverableQueueRemoveAllReferences() throws Throwable
+   {
+      //Non recoverable queue - eg temporary queue
+      
+      ChannelSupport queue = new Queue(1, ms, pm, null, false, 100, 20, 10, new QueuedExecutor());
+      
+      Message[] msgs = new Message[200];
+      
+      MessageReference[] refs = new MessageReference[200];
+       
+      //Send 150 np mesages
+      for (int i = 0; i < 150; i++)
+      {
+         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         
+         refs[i] = ms.reference(msgs[i]);
+                
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
+      }
+      
+      //Send 50 p messages
+      for (int i = 150; i < 200; i++)
+      {
+         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         
+         refs[i] = ms.reference(msgs[i]);
+                
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
+      }
+
+      List refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(100, refIds.size());
+                                                
+      assertEquals(100, queue.memoryRefCount());
+      
+      assertEquals(0, queue.downCacheCount());
+      
+      assertTrue(queue.isPaging());      
+      
+      assertEquals(0, queue.memoryDeliveryCount());
+      
+      queue.removeAllReferences();
+      
+      refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(0, refIds.size());
+      
+      List msgIds = getMessageIds();
+      assertEquals(0, msgIds.size());
+                                                                  
+      assertEquals(0, queue.memoryRefCount());
+      
+      assertEquals(0, queue.downCacheCount());
+      
+      assertFalse(queue.isPaging());      
+      
+      assertEquals(0, queue.memoryDeliveryCount());
+      
+      assertEquals(0, queue.messageCount());
+      
+      assertEquals(0, LockMap.instance.getSize());
+   }
+   
 }

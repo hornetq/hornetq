@@ -32,7 +32,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.Command;
 
 /**
@@ -48,8 +47,6 @@ public class CreateClientOnServerCommand implements Command
 {
    private static final long serialVersionUID = -997724797145152821L;
    
-   private static final Logger log = Logger.getLogger(CreateClientOnServerCommand.class);
-
    private ConnectionFactory cf;
    
    private Queue queue;

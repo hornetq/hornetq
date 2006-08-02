@@ -413,8 +413,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    public void send(JBossMessage message) throws JMSException
    {
       try
-      {
-         log.info("Received message:" + message);
+      {       
          connectionEndpoint.sendMessage(message, null);
       }
       catch (Throwable t)
@@ -511,9 +510,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
          connectionEndpoint.addTemporaryDestination(dest);
          
          //FIXME - Params should not be hardcoded
-         long id = this.getConnectionEndpoint().getServerPeer().getNextObjectID();
+         long id = connectionEndpoint.getServerPeer().getNextObjectID();
          
-         cm.deployTemporaryCoreDestination(dest.isQueue(), dest.getName(), id, ms, pm, mm, 50000, 1000, 1000);
+         cm.deployTemporaryCoreDestination(dest.isQueue(), dest.getName(), id, ms, pm, mm,
+                                           connectionEndpoint.getDefaultTempQueueFullSize(),
+                                           connectionEndpoint.getDefaultTempQueuePageSize(),
+                                           connectionEndpoint.getDefaultTempQueueDownCacheSize());
       }
       catch (Throwable t)
       {

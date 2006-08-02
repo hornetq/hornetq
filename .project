@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>jms</name>
+	<name>jboss-messaging</name>
 	<comment></comment>
 	<projects>
-		<project>aop</project>
-		<project>common</project>
-		<project>j2ee</project>
-		<project>jmx</project>
-		<project>remoting</project>
-		<project>system</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

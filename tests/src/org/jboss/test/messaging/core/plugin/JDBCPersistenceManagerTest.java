@@ -92,14 +92,14 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doSetup(boolean batch) throws Exception
+   protected void doSetup(boolean batch) throws Throwable
    {
       pm = createPM();      
       pm.setUsingBatchUpdates(batch);      
       ms = new SimpleMessageStore("s0");      
    }
    
-   protected JDBCPersistenceManager createPM() throws Exception
+   protected JDBCPersistenceManager createPM() throws Throwable
    {
       JDBCPersistenceManager p = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       p.start();
@@ -117,7 +117,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       super.tearDown();
    }
    
-   public void testGetMinOrdering() throws Exception
+   public void testGetMinOrdering() throws Throwable
    {
       doSetup(false);
       
@@ -192,9 +192,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       long minOrdering = pm.getMinOrdering(channel.getChannelID());
       
       assertEquals(11, minOrdering);
-      
-      pm.removeAllChannelData(channel.getChannelID());
-      
+           
+      pm.removeReferences(channel.getChannelID(), refs);
+ 
       pm.addReferences(channel.getChannelID(), refs, true);
       
       refIds = getReferenceIds(channel.getChannelID());
@@ -228,12 +228,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       minOrdering = pm.getMinOrdering(channel.getChannelID());
       
       assertEquals(0, minOrdering);
-      
-      pm.removeAllChannelData(channel.getChannelID());
-      
+        
    }
    
-   public void testGetNumberOfReferences() throws Exception
+   public void testGetNumberOfReferences() throws Throwable
    {
       doSetup(false);
       
@@ -367,12 +365,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       numberOfReferences = pm.getNumberOfUnloadedReferences(channel.getChannelID());
       
-      assertEquals(4, numberOfReferences);
-          
-      pm.removeAllChannelData(channel.getChannelID());    
+      assertEquals(4, numberOfReferences);    
    }
    
-   public void testGetReferenceInfos() throws Exception
+   public void testGetReferenceInfos() throws Throwable
    {
       doSetup(false);
       
@@ -490,13 +486,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       {
          //ok - there are not this many refs
       }
-     
-      pm.removeAllChannelData(channel.getChannelID());
-     
    }
    
    
-   public void testGetMessages() throws Exception
+   public void testGetMessages() throws Throwable
    {
       doSetup(false);
       
@@ -570,8 +563,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(containsMessage(ms, ref7.getMessageID()));
       assertTrue(containsMessage(ms, ref9.getMessageID()));
       assertTrue(containsMessage(ms, ref1.getMessageID()));
-      
-      pm.removeAllChannelData(channel.getChannelID());    
+        
    }
    
    protected boolean containsMessage(List msgs, long msgId)
@@ -588,7 +580,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       return false;
    }
    
-   public void testGetMessagesMaxParams() throws Exception
+   public void testGetMessagesMaxParams() throws Throwable
    {
       doSetup(false);
       
@@ -662,22 +654,20 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(containsMessage(ms, ref4.getMessageID()));
       assertTrue(containsMessage(ms, ref7.getMessageID()));
       assertTrue(containsMessage(ms, ref9.getMessageID()));
-      assertTrue(containsMessage(ms, ref1.getMessageID()));
-      
-      pm.removeAllChannelData(channel.getChannelID());    
+      assertTrue(containsMessage(ms, ref1.getMessageID()));   
    }
    
-   public void testaddRemoveGetReferences_Batch() throws Exception
+   public void testaddRemoveGetReferences_Batch() throws Throwable
    {
       addRemoveGetReferences(true);
    }
    
-   public void testaddRemoveGetReferences_NoBatch() throws Exception
+   public void testaddRemoveGetReferences_NoBatch() throws Throwable
    {
       addRemoveGetReferences(false);
    }
    
-   protected void addRemoveGetReferences(boolean batch) throws Exception
+   protected void addRemoveGetReferences(boolean batch) throws Throwable
    {
       doSetup(false);
       
@@ -859,14 +849,12 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       ms = getMessageIds();
       assertNotNull(ms);
       assertEquals(0, ms.size());
-      
-      pm.removeAllChannelData(channel1.getChannelID());    
    }
    
    
    
    
-   public void testAddRemoveReference() throws Exception
+   public void testAddRemoveReference() throws Throwable
    {
       doSetup(false);
       
@@ -981,63 +969,26 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       }
    }
        
-   public void testRemoveAllChannelData() throws Exception
-   {
-      doSetup(false);
-      
-      Channel channel = new SimpleChannel(0, ms);
-      
-      Message[] messages = createMessages(10);     
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];
-         
-         MessageReference ref = ms.reference(m);
-                           
-         pm.addReference(channel.getChannelID(), ref, null);
-      }
-         
-      List refs = getReferenceIds(channel.getChannelID());
-      assertNotNull(refs);
-      assertEquals(messages.length, refs.size());
-      
-
-      List msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(messages.length, msgs.size());
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message m = messages[i];         
-         assertTrue(refs.contains(new Long(m.getMessageID())));         
-      }
-      
-      pm.removeAllChannelData(channel.getChannelID());
-            
-      refs = getReferenceIds(channel.getChannelID());
-      assertTrue(refs.isEmpty());      
-      
-   }
+   
    
    //non batch
    
-   public void testCommit_NotXA_Long_NB() throws Exception
+   public void testCommit_NotXA_Long_NB() throws Throwable
    {
       doTransactionCommit(false, false);
    }
    
-   public void testCommit_XA_Long_NB() throws Exception
+   public void testCommit_XA_Long_NB() throws Throwable
    {
       doTransactionCommit(true, false);
    }
 
-   public void testRollback_NotXA_Long_NB() throws Exception
+   public void testRollback_NotXA_Long_NB() throws Throwable
    {
       doTransactionRollback(false, false);
    }
        
-   public void testRollback_XA_Long_NB() throws Exception
+   public void testRollback_XA_Long_NB() throws Throwable
    {
       doTransactionRollback(true, false);
    }
@@ -1045,28 +996,28 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
    //batch
    
-   public void testCommit_NotXA_Long_B() throws Exception
+   public void testCommit_NotXA_Long_B() throws Throwable
    {
       doTransactionCommit(false, true);
    }
      
-   public void testCommit_XA_Long_B() throws Exception
+   public void testCommit_XA_Long_B() throws Throwable
    {
       doTransactionCommit(true, true);
    }
 
-   public void testRollback_NotXA_Long_B() throws Exception
+   public void testRollback_NotXA_Long_B() throws Throwable
    {
       doTransactionRollback(false, true);
    }
         
-   public void testRollback_XA_Long_B() throws Exception
+   public void testRollback_XA_Long_B() throws Throwable
    {
       doTransactionRollback(true, true);
    }
    
 
-   public void testRetrievePreparedTransactions() throws Exception
+   public void testRetrievePreparedTransactions() throws Throwable
    {
       doSetup(false);
       
@@ -1103,14 +1054,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       for (int i = 0; i < txs.length; i++)
       {
          txs[i].rollback();
-      }
-      
-      
-      pm.removeAllChannelData(channel.getChannelID());
-      
+      }   
    }
    
-   protected Message createMessage(byte i, boolean reliable) throws Exception
+   protected Message createMessage(byte i, boolean reliable) throws Throwable
    {
       Map headers = generateFilledMap(true);
 
@@ -1124,7 +1071,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
                            i % 2 == 0 ? new WibblishObject() : null);
    }
    
-   protected Message[] createMessages(int num) throws Exception
+   protected Message[] createMessages(int num) throws Throwable
    {
       //Generate some messages with a good range of attribute values
       Message[] messages = new Message[num];
@@ -1135,7 +1082,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       return messages;
    }
    
-   protected void checkEquivalent(Message m1, Message m2) throws Exception
+   protected void checkEquivalent(Message m1, Message m2) throws Throwable
    {
       if (m1 == m2)
       {
@@ -1425,7 +1372,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doTransactionCommit(boolean xa, boolean batch) throws Exception
+   protected void doTransactionCommit(boolean xa, boolean batch) throws Throwable
    {
       doSetup(batch);
 
@@ -1519,12 +1466,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(msgs.contains(new Long(ref3.getMessageID())));
       assertTrue(msgs.contains(new Long(ref4.getMessageID())));
       assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      
-      pm.removeAllChannelData(channel.getChannelID());
-      
    }
          
-   protected void doTransactionRollback(boolean xa, boolean batch) throws Exception
+   protected void doTransactionRollback(boolean xa, boolean batch) throws Throwable
    {
       doSetup(batch);
 
@@ -1611,13 +1555,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
       assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      
-      pm.removeAllChannelData(channel.getChannelID());
-            
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));          
    }
    
-   protected List getReferenceIds(long channelId) throws Exception
+   protected List getReferenceIds(long channelId) throws Throwable
    {
       InitialContext ctx = new InitialContext();
 
@@ -1655,7 +1596,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       return msgIds;
    }
    
-   protected List getMessageIds() throws Exception
+   protected List getMessageIds() throws Throwable
    {
       InitialContext ctx = new InitialContext();
 

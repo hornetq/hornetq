@@ -260,6 +260,8 @@ public class ServerPeer extends ServiceMBeanSupport
          unloadServerAOPConfig();
    
          // TODO unloadClientAOPConfig();
+         
+         queuedExecutorPool.shutdown();
    
          log.info("JMS " + this + " stopped");
       }

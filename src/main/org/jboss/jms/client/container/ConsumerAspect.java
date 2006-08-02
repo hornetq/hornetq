@@ -31,7 +31,6 @@ import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.endpoint.ServerBrowserEndpoint;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;

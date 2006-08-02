@@ -39,7 +39,10 @@ public interface ConnectionFactoryManager
     */
    int registerConnectionFactory(String clientID, JNDIBindings jndiBindings,
                                  String locatorURI, boolean clientPing,
-                                 int prefetchSize) throws Exception;
+                                 int prefetchSize,
+                                 int defaultTempQueueFullSize,
+                                 int defaultTempQueuePageSize,
+                                 int defaultTempQueueDownCacheSize) throws Exception;
 
    void unregisterConnectionFactory(int connectionFactoryID) throws Exception;
 

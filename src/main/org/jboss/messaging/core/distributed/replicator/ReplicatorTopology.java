@@ -21,28 +21,21 @@
   */
 package org.jboss.messaging.core.distributed.replicator;
 
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.distributed.util.RpcServerCall;
-import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.messaging.core.distributed.util.ServerResponse;
-import org.jboss.messaging.core.distributed.util.RpcServerCall;
-import org.jboss.messaging.core.distributed.util.ServerResponse;
-import org.jboss.messaging.core.distributed.replicator.Replicator;
-import org.jboss.messaging.core.distributed.DistributedException;
-import org.jboss.messaging.core.distributed.PeerIdentity;
-import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.Address;
-
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Collections;
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.distributed.DistributedException;
+import org.jboss.messaging.util.NotYetImplementedException;
+import org.jgroups.Address;
+import org.jgroups.blocks.RpcDispatcher;
 
 /**
  * The Observers interested in topology changes should register here.

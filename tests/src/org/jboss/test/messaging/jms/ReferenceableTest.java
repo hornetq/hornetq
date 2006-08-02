@@ -33,14 +33,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
-import javax.naming.Reference;
-import javax.naming.Referenceable;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.referenceable.ConnectionFactoryObjectFactory;
-import org.jboss.jms.referenceable.DestinationObjectFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

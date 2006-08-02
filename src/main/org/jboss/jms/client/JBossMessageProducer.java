@@ -133,7 +133,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    public void send(Message message) throws JMSException
    {
       // by default the message never expires
-      send(message, -1, -1, 0);
+      send(message, -1, -1, Long.MIN_VALUE);
    }
    
    /**
@@ -147,7 +147,7 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    
    public void send(Destination destination, Message message) throws JMSException
    {      
-      send(destination, message, -1, -1, 0);
+      send(destination, message, -1, -1, Long.MIN_VALUE);
    }
 
    public void send(Destination destination,

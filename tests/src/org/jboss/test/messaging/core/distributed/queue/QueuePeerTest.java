@@ -21,11 +21,10 @@
 */
 package org.jboss.test.messaging.core.distributed.queue;
 
-import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.distributed.Distributed;
+import org.jboss.messaging.core.distributed.queue.DistributedQueue;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.test.messaging.core.distributed.base.PeerTestBase;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**

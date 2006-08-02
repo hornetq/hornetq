@@ -44,6 +44,7 @@ import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.tx.AckInfo;
+import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 
 /**
@@ -60,6 +61,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
+   
+   
    private static final long serialVersionUID = -8096852898620279131L;
 
    // Attributes ----------------------------------------------------
@@ -76,7 +80,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public ClientSessionDelegate()
    {      
    }
-
+   
    // SessionDelegate implementation --------------------------------
 
    /**
@@ -293,7 +297,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void postDeliver(MessageProxy proxy, int consumerID) throws JMSException
+   public void postDeliver() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

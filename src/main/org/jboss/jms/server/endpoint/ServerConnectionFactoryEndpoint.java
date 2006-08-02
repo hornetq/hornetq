@@ -61,6 +61,13 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    private JNDIBindings jndiBindings;
    
    private int prefetchSize;
+   
+   protected int defaultTempQueueFullSize;
+   
+   protected int defaultTempQueuePageSize;
+   
+   protected int defaultTempQueueDownCacheSize;
+
  
    // Constructors --------------------------------------------------
 
@@ -71,13 +78,19 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public ServerConnectionFactoryEndpoint(int id, ServerPeer serverPeer,
                                           String defaultClientID,
                                           JNDIBindings jndiBindings,
-                                          int preFetchSize)
+                                          int preFetchSize,
+                                          int defaultTempQueueFullSize,
+                                          int defaultTempQueuePageSize,
+                                          int defaultTempQueueDownCacheSize)
    {
       this.serverPeer = serverPeer;
       this.clientID = defaultClientID;
       this.id = id;
       this.jndiBindings = jndiBindings;
       this.prefetchSize = preFetchSize;
+      this.defaultTempQueueFullSize = defaultTempQueueFullSize;
+      this.defaultTempQueuePageSize = defaultTempQueuePageSize;
+      this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
    }
 
    // ConnectionFactoryDelegate implementation ----------------------
@@ -107,7 +120,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          // create the corresponding "server-side" connection endpoint and register it with the
          // server peer's ClientManager
          ServerConnectionEndpoint endpoint =
-            new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize);
+            new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize,
+                     defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
    
          int connectionID = endpoint.getConnectionID();
    

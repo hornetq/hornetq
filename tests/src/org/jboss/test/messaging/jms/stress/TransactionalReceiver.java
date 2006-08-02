@@ -21,8 +21,6 @@
   */
 package org.jboss.test.messaging.jms.stress;
 
-import javax.jms.Connection;
-import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;

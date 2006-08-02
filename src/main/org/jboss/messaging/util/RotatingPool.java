@@ -43,13 +43,13 @@ public abstract class RotatingPool
 {
    private static final Logger log = Logger.getLogger(RotatingPool.class);
    
-   private int maxSize;
+   protected int maxSize;
    
-   private int pos;
+   protected int pos;
    
-   private Object[] entries;
+   protected Object[] entries;
    
-   private Map keyMappings;
+   protected Map keyMappings;
    
    public RotatingPool(int maxSize)
    { 
@@ -72,7 +72,9 @@ public abstract class RotatingPool
          
          if (entry == null)
          {
-            entry = entries[pos] = createEntry();
+            entry = createEntry();
+            
+            entries[pos] = entry;
          }
          
          keyMappings.put(key, entry);

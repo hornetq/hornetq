@@ -30,8 +30,6 @@ import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SyncSet;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
@@ -56,16 +54,6 @@ public class ConnectionState extends HierarchicalStateSupport
    
    private String serverID;
    
-   //Thread pool used for making asynch calls to server - e.g. activateConsumer
-   private static PooledExecutor pooledExecutor;
-   
-   static
-   {
-      //TODO Make size configurable
-      pooledExecutor = new PooledExecutor(new LinkedQueue(), 40);
-      pooledExecutor.setMinimumPoolSize(40);
-   }
- 
    private Version versionToUse;
     
    public ConnectionState(String serverID, ConnectionDelegate delegate,
@@ -98,11 +86,6 @@ public class ConnectionState extends HierarchicalStateSupport
    public MessageIdGenerator getIdGenerator()
    {
       return idGenerator;
-   }
-   
-   public PooledExecutor getPooledExecutor()
-   {
-      return pooledExecutor;
    }
    
    public JMSRemotingConnection getRemotingConnection()

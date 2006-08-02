@@ -28,6 +28,7 @@ import javax.jms.Destination;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.server.Version;
+import org.jboss.logging.Logger;
 
 /**
  * State corresponding to a Consumer. This state is acessible inside aspects/interceptors.
@@ -39,6 +40,9 @@ import org.jboss.jms.server.Version;
  */
 public class ConsumerState extends HierarchicalStateSupport
 {
+   private static final Logger log = Logger.getLogger(ConsumerState.class);
+   
+   
    private Destination destination;
    
    private String selector;
@@ -111,7 +115,7 @@ public class ConsumerState extends HierarchicalStateSupport
    {
       return prefetchSize;
    }
-   
+    
 }
 
 

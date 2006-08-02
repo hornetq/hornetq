@@ -67,7 +67,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    void preDeliver(MessageProxy proxy, int consumerID) throws JMSException;
    
-   void postDeliver(MessageProxy proxy, int consumerID) throws JMSException;
+   void postDeliver() throws JMSException;
    
    MessageListener getMessageListener() throws JMSException;
    

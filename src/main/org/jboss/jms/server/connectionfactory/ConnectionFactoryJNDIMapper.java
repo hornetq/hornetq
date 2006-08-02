@@ -76,13 +76,17 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
                                                      JNDIBindings jndiBindings,
                                                      String locatorURI,
                                                      boolean clientPing,
-                                                     int prefetchSize) throws Exception
+                                                     int prefetchSize,
+                                                     int defaultTempQueueFullSize,
+                                                     int defaultTempQueuePageSize,
+                                                     int defaultTempQueueDownCacheSize) throws Exception
    {
       int id = serverPeer.getNextObjectID();
 
       ServerConnectionFactoryEndpoint endpoint =
          new ServerConnectionFactoryEndpoint(id, serverPeer, clientID, jndiBindings,
-                                             prefetchSize);
+                                             prefetchSize, defaultTempQueueFullSize,
+                                             defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
 
       ClientConnectionFactoryDelegate delegate = new ClientConnectionFactoryDelegate(id, locatorURI,
                                                                                       serverPeer.getVersion(),

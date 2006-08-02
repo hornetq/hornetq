@@ -30,6 +30,8 @@ package org.jboss.jms.util;
 public class XMLException extends Exception
 {
    // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = -1766745141220167507L;
 
    // Static --------------------------------------------------------
    

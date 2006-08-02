@@ -21,39 +21,35 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
+import javax.jms.QueueReceiver;
 import javax.jms.Session;
+import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.MessageListener;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.QueueBrowser;
-import javax.jms.InvalidDestinationException;
-import javax.jms.ObjectMessage;
-import javax.jms.MapMessage;
-import javax.jms.StreamMessage;
-import javax.jms.BytesMessage;
-import javax.jms.QueueReceiver;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.destination.JBossTopic;
-
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -149,6 +145,75 @@ public class MessageConsumerTest extends MessagingTestCase
       
       super.tearDown();
    }
+   
+   public void testRelayMessage() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      conn.start();
+      
+      final Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageConsumer cons = sess.createConsumer(queue);
+      
+      final Object lock = new Object();
+      
+      final int numMessages = 100;
+      
+      
+      class MyListener implements MessageListener
+      {
+         boolean failed;
+         
+         int count;
+         
+         public void onMessage(Message m)
+         {
+            try
+            {
+               MessageProducer prod = sess.createProducer(queue2);
+            
+               prod.send(m);
+               
+               count++;
+               
+               if (count == numMessages)
+               {
+                  synchronized (lock)
+                  {
+                     lock.notify();
+                  }
+                  
+               }
+            }
+            catch (JMSException e)
+            {
+               failed = true;
+            }
+         }
+      }
+      
+      MyListener listener = new MyListener();
+         
+      cons.setMessageListener(listener);
+      
+      MessageProducer prod = sess.createProducer(queue);
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         prod.send(sess.createMessage());
+      }
+      
+      synchronized (lock)
+      {
+         lock.wait();         
+      }
+      
+      conn.close();
+     
+      assertFalse(listener.failed);
+   }
+   
    
    /*
     * If there are two competing consumers on a queue/subscription then if one closes

@@ -174,6 +174,7 @@ public class MessageWithReadResolveTest extends MessagingTestCase
    /* This class would trigger the exception when serialized with jboss serialization */
    public static class TestMessage implements Serializable
    {
+      private static final long serialVersionUID = -5932581134414145967L;
       private long id;
       private Object clazz;
 
@@ -209,6 +210,9 @@ public class MessageWithReadResolveTest extends MessagingTestCase
    
    public static class TestEnum implements Serializable
    {
+
+      private static final long serialVersionUID = 4306026990380393029L;
+
       public Object readResolve()
       {
         return null;

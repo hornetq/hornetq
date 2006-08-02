@@ -24,8 +24,7 @@ package org.jboss.messaging.core.refqueue;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.jboss.logging.Logger;
+import java.util.ListIterator;
 
 /**
  * A basic non synchronized PrioritizedDeque implementation.
@@ -39,9 +38,7 @@ import org.jboss.logging.Logger;
  * $Id$
  */
 public class BasicPrioritizedDeque implements PrioritizedDeque
-{     
-   private static final Logger log = Logger.getLogger(BasicPrioritizedDeque.class);
-   
+{      
    protected LinkedList[] linkedLists;
    
    protected int priorities;
@@ -175,6 +172,11 @@ public class BasicPrioritizedDeque implements PrioritizedDeque
    public int size()
    {
       return size;
+   }
+   
+   public ListIterator iterator()
+   {
+      return new PrioritizedDequeIterator(linkedLists);
    }
    
    protected void initDeques()

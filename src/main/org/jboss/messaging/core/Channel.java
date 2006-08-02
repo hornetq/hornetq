@@ -135,6 +135,12 @@ public interface Channel extends DeliveryObserver, Receiver, Distributor
     * @throws Exception
     */
    void load() throws Exception;
+   
+   /**
+    * Remove all the references in the channel
+    * @throws Throwable
+    */
+   void removeAllReferences() throws Throwable;
 
 }
 

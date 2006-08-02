@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.refqueue;
 
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * A deque that returns objects according to a priority.<br>
@@ -49,4 +50,6 @@ public interface PrioritizedDeque
    void clear();   
    
    int size();
+   
+   ListIterator iterator();
 }

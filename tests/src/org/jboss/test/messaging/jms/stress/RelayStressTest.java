@@ -1,0 +1,269 @@
+/**
+ * JBoss, Home of Professional Open Source
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+package org.jboss.test.messaging.jms.stress;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+
+/**
+ * 
+ * A RelayTest
+ * 
+ * Send messages to a topic with selector1, consumer them with multiple consumers
+ * and relay them back to the topic with a different selector, then consume that with more consumers
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision: 1.1 $</tt>
+ *
+ * $Id$
+ *
+ */
+public class RelayStressTest extends MessagingTestCase
+{
+   // Constants -----------------------------------------------------
+
+   private static Logger log = Logger.getLogger(RelayStressTest.class);
+
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   private InitialContext ic;
+
+   // Constructors --------------------------------------------------
+
+   public RelayStressTest(String name)
+   {
+      super(name);
+   }
+
+   // Public --------------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      ServerManagement.start("all");
+      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ServerManagement.deployTopic("StressTestTopic");
+
+      log.debug("setup done");
+   }
+
+   protected void tearDown() throws Exception
+   {
+      ServerManagement.undeployTopic("StressTestTopic");
+      ic.close();
+      super.tearDown();
+   }
+   
+   public void testRelay() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      Topic topic = (Topic)ic.lookup("/topic/StressTestTopic");
+      
+      final int numMessages = 50000;
+      
+      final int numRelayers = 10;
+      
+      final int numConsumers = 50;
+      
+      Connection conn = cf.createConnection();
+      
+      class Relayer implements MessageListener
+      {
+         boolean done;
+         
+         boolean failed;
+         
+         int count;
+         
+         MessageProducer prod;
+         
+         Relayer(MessageProducer prod)
+         {
+            this.prod = prod;
+         }
+         
+         public void onMessage(Message m)
+         {
+            try
+            {
+               //log.info(this + " got message");
+               
+               //log.info("blah");               
+               
+               m.clearProperties();
+               m.setStringProperty("name", "Tim");
+               
+               //log.info("set property");
+ 
+               prod.send(m);
+               
+               //log.info("sent");
+               
+               count++;
+               
+               if (count % 100 == 0)
+               {
+                 // log.info("relayed " + count + " messages");
+               }
+               
+               if (count == numMessages)
+               {
+                  synchronized (this)
+                  {                
+                     done = true;
+                     notify();
+                  }
+               }
+            }
+            catch (JMSException e)
+            {
+               e.printStackTrace();
+               synchronized (this)
+               {                  
+                  done = true;
+                  failed = true;
+                  notify();
+               }               
+            }         
+         }
+      }
+      
+      class Consumer implements MessageListener
+      {
+         boolean failed;
+         
+         boolean done;
+         
+         int count;
+         
+         public void onMessage(Message m)
+         {
+            count++; 
+            
+            if (count % 100 == 0)
+            {
+               //log.info("consumed " + count + " messages");
+            }
+            
+            if (count == numMessages * numRelayers)
+            {
+               synchronized (this)
+               {  
+                  done = true;                  
+                  notify();
+                  //log.info(this + " done");
+               }
+            }
+         }
+      }
+      
+      Relayer[] relayers = new Relayer[numRelayers];
+      
+      Consumer[] consumers = new Consumer[numConsumers];
+      
+            
+      for (int i = 0; i < numRelayers; i++)
+      {
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sess.createConsumer(topic, "name = 'Watt'");
+         //MessageConsumer cons = sess.createConsumer(topic);
+         
+         MessageProducer prod = sess.createProducer(topic);
+         
+         relayers[i] = new Relayer(prod);
+         
+         cons.setMessageListener(relayers[i]);
+      }
+      
+      for (int i = 0; i < numConsumers; i++)
+      {
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sess.createConsumer(topic, "name = 'Tim'");
+         
+         consumers[i] = new Consumer();
+         
+         cons.setMessageListener(consumers[i]);
+      }
+      
+      conn.start();
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sess.createProducer(topic);
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         Message m = sess.createMessage();
+         
+         m.setStringProperty("name", "Watt");
+         
+         prod.send(m);
+         
+         if (i % 100 == 0)
+         {
+            log.info("sent " + i + " messages");
+         }
+      }
+      
+      log.info("sent messages");
+      
+      for (int i = 0; i < numRelayers; i++)
+      {
+         synchronized (relayers[i])
+         {
+            if (!relayers[i].done)
+            {
+               relayers[i].wait();
+            }
+         }
+      }
+      
+      for (int i = 0; i < numConsumers; i++)
+      {
+         synchronized (consumers[i])
+         {
+            if (!consumers[i].done)
+            {
+               consumers[i].wait();
+            }
+         }
+      }
+      
+      conn.close();
+      
+      for (int i = 0; i < numRelayers; i++)
+      {
+         assertFalse(relayers[i].failed);         
+      }
+      
+      for (int i = 0; i < numConsumers; i++)
+      {
+         assertFalse(consumers[i].failed);         
+      }
+           
+   }  
+}
+

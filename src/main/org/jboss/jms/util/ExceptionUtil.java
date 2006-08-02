@@ -24,6 +24,7 @@ package org.jboss.jms.util;
 import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
+import org.jboss.util.id.GUID;
 
 /**
  * A ExceptionUtil
@@ -54,8 +55,13 @@ public class ExceptionUtil
     */
    public static JMSException handleJMSInvocation(Throwable t, String msg)
    {
+      //We create a GUID and log it and send it in the client exception.
+      //This allows what is received at the client to be correlated if necessary
+      //to what is logged in the server logs
+      String id = new GUID().toString();
+      
       //First we log the Throwable
-      log.error(msg, t);
+      log.error(msg + " [" + id + "]", t);
       
       if (t instanceof JMSException)
       {
@@ -64,7 +70,7 @@ public class ExceptionUtil
       else
       {
          JMSException e = new MessagingJMSException("A failure has occurred during processing of the request. " + 
-                                                    "Please consult the server logs for more details. " + msg);    
+                                                    "Please consult the server logs for more details. " + msg + " [" + id + "]");    
          return e;
       }    
    }   

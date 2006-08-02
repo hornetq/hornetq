@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.jboss.logging.Logger;
-
 /**
  * 
  * A SafeUTF
@@ -52,9 +50,6 @@ import org.jboss.logging.Logger;
  */
 public class SafeUTF
 {      
-   private static final Logger log = Logger.getLogger(SafeUTF.class);
-
-   
    //Default is 16K chunks
    private static final int CHUNK_SIZE = 16 * 1024;
    

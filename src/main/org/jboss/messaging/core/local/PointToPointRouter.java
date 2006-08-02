@@ -21,22 +21,24 @@
   */
 package org.jboss.messaging.core.local;
 
-import org.jboss.messaging.core.Router;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.logging.Logger;
-
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Router;
+import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
@@ -67,6 +69,8 @@ public class PointToPointRouter implements Router
    {
       Set deliveries = new HashSet();
       
+      boolean selectorRejected = false;
+      
       synchronized(receivers)
       {
          for(Iterator i = receivers.iterator(); i.hasNext(); )
@@ -81,9 +85,16 @@ public class PointToPointRouter implements Router
      
                if (d != null && !d.isCancelled())
                {
-                  // deliver to the first receiver that acknowledges
-                  deliveries.add(d);
-                  break;
+                  if (d.isSelectorAccepted())
+                  {
+                     // deliver to the first receiver that accepts
+                     deliveries.add(d);
+                     break;
+                  }
+                  else
+                  {
+                     selectorRejected = true;
+                  }
                }
             }
             catch(Throwable t)
@@ -93,6 +104,12 @@ public class PointToPointRouter implements Router
             }
          }
       }
+      
+      if (deliveries.isEmpty() && selectorRejected)
+      {
+         deliveries.add(new SimpleDelivery(null, null, true, false));
+      }
+
       return deliveries;
    }
 

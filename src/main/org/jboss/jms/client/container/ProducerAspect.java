@@ -126,7 +126,7 @@ public class ProducerAspect
          timeToLive = producerState.getTimeToLive();
          if (trace) { log.trace("Using producer's default timeToLive: " + timeToLive); }
       }
-
+      
       if (timeToLive == 0)
       {
          // Zero implies never expires
@@ -214,8 +214,8 @@ public class ProducerAspect
          MessageProxy proxy = (MessageProxy)m;
          messageToSend = proxy.getMessage();
                   
-         if (proxy.isSent())
-         {
+         if (proxy.isSent() || proxy.isReceived())
+         {           
             doCopy = true;
          }
          

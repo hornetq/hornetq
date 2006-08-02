@@ -14,13 +14,15 @@ package org.jboss.jms.util;
 public class XMLRuntimeException extends RuntimeException
 {
    // Constants -----------------------------------------------------
+   
+   private static final long serialVersionUID = -8900987884583231425L;
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-
+ 
    public XMLRuntimeException(String msg)
    {
       super(msg);

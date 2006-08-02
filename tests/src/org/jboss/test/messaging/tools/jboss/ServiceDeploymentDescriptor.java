@@ -6,20 +6,20 @@
  */
 package org.jboss.test.messaging.tools.jboss;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.w3c.dom.NamedNodeMap;
-import org.jboss.jms.util.XMLUtil;
-import org.jboss.logging.Logger;
-import org.jboss.jms.util.XMLUtil;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.management.ObjectName;
-import java.net.URL;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Collections;
+
+import org.jboss.jms.util.XMLUtil;
+import org.jboss.logging.Logger;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * The convenience object model of a JBoss service deployment descriptor (<server>).

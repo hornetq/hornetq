@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.plugin;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 
 /**
@@ -36,8 +35,6 @@ import org.jboss.messaging.core.Message;
  */
 class MessageHolder
 {
-   private static final Logger log = Logger.getLogger(MessageHolder.class);
-   
    /*
     * The number of channels *currently in memory* that hold a reference to the message
     * We need this so we know when to evict the message from the store (when it reaches zero)

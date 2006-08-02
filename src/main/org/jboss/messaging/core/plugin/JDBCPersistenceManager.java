@@ -90,8 +90,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(JDBCPersistenceManager.class);
-   
+   private static final Logger log = Logger.getLogger(JDBCPersistenceManager.class); 
    
    /* The default DML and DDL works with HSQLDB */
    
@@ -130,7 +129,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected String rollbackMessageRef2 = "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE TRANSACTIONID=? AND STATE='-'";
    
    protected String loadReferenceInfo = 
-      "SELECT MESSAGEID, ORD, DELIVERYCOUNT FROM JMS_MESSAGE_REFERENCE "
+      "SELECT MESSAGEID, ORD, DELIVERYCOUNT, RELIABLE FROM JMS_MESSAGE_REFERENCE "
       + "WHERE CHANNELID=? AND STATE <> '+' AND LOADED = 'N' AND "
       + "ORD BETWEEN ? AND ? ORDER BY ORD";
    
@@ -142,12 +141,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected String updateReliableRefs = 
       "UPDATE JMS_MESSAGE_REFERENCE SET LOADED='Y' WHERE ORD BETWEEN ? AND ? AND CHANNELID=? AND RELIABLE='Y' AND STATE <> '+'";
-   
-   protected String deleteChannelMessageRefs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=?";
-   
-   protected String removeAllNonReliableRefs = "DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE='N'";
-      
+    
    protected String updateReliableRefsNotLoaded = "UPDATE JMS_MESSAGE_REFERENCE SET LOADED='N' WHERE CHANNELID=?";
+   
+   protected String deleteUnreliableRefs = 
+      "DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE = 'N'";
     
    //JMS_MESSAGE
    
@@ -175,7 +173,12 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    
    protected String messageIdColumn = "MESSAGEID";
    
-   protected String removeAllNonReliableMessages = "DELETE FROM JMS_MESSAGE WHERE RELIABLE='N'";
+   protected String updateUnreliableChannelCount =
+      "UPDATE JMS_MESSAGE M SET M.CHANNELCOUNT = M.CHANNELCOUNT - 1 WHERE " +
+      "M.MESSAGEID IN (SELECT MR.MESSAGEID FROM JMS_MESSAGE_REFERENCE MR WHERE MR.RELIABLE = 'N' AND MR.CHANNELID = ?)";
+    
+   protected String deleteUnreffedMessages = 
+      "DELETE FROM JMS_MESSAGE WHERE CHANNELCOUNT = 0";
    
    
    //JMS_TRANSACTION
@@ -200,6 +203,11 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    protected String selectCounter = "SELECT NEXT_ID FROM JMS_COUNTER WHERE NAME=?";
    
    protected String insertCounter = "INSERT INTO JMS_COUNTER (NAME, NEXT_ID) VALUES (?, ?)";
+   
+   //Other
+   
+   protected String selectAllChannels = "SELECT DISTINCT(CHANNELID) FROM JMS_MESSAGE_REFERENCE";
+   
         
    // Static --------------------------------------------------------
    
@@ -316,7 +324,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          createSchema();
       }
       
-      resetMessageData();
+      removeUnreliableMessageData();
         
       log.debug(this + " started");
    }
@@ -1402,6 +1410,8 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          
          do
          {                 
+            
+            
             ps = conn.prepareStatement(loadReferenceInfo);
             
             ps.setLong(1, channelID);
@@ -1418,8 +1428,9 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
                long msgId = rs.getLong(1);
                long ordering = rs.getLong(2);
                int deliveryCount = rs.getInt(3);
+               boolean reliable = rs.getString(4).equals("Y");
                
-               ReferenceInfo ri = new ReferenceInfo(msgId, ordering, deliveryCount);
+               ReferenceInfo ri = new ReferenceInfo(msgId, ordering, deliveryCount, reliable);
                
                refs.add(ri);        
                
@@ -1912,68 +1923,65 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
          wrap.end();
       }
    }
-   
-   
-   
-   
-   public void removeAllChannelData(long channelID) throws Exception
-   {
-      if (trace)
-      {
-         log.trace("removing all references for channel " + channelID);
-      }
-      
-      Connection conn = null;
-      PreparedStatement ps = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-      boolean success = false;
-      
-      try
-      {
-         conn = ds.getConnection();
-         
-         ps = conn.prepareStatement(deleteChannelMessageRefs);
-         
-         ps.setLong(1, channelID);
-         
-         ps.executeUpdate();
-         success = true;
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (trace)
-         {
-            String s = JDBCUtil.statementToString(deleteChannelMessageRefs, new Long(channelID));
-            log.trace(s + (success ? " successful" : "failed"));
-         }
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         wrap.end();
-      }
-   }
+     
+//   public void removeAllChannelData(long channelID) throws Exception
+//   {
+//      if (trace)
+//      {
+//         log.trace("removing all references for channel " + channelID);
+//      }
+//      
+//      Connection conn = null;
+//      PreparedStatement ps = null;
+//      TransactionWrapper wrap = new TransactionWrapper();
+//      boolean success = false;
+//      
+//      try
+//      {
+//         conn = ds.getConnection();
+//         
+//         ps = conn.prepareStatement(deleteChannelMessageRefs);
+//         
+//         ps.setLong(1, channelID);
+//         
+//         ps.executeUpdate();
+//         success = true;
+//      }
+//      catch (Exception e)
+//      {
+//         wrap.exceptionOccurred();
+//         throw e;
+//      }
+//      finally
+//      {
+//         if (trace)
+//         {
+//            String s = JDBCUtil.statementToString(deleteChannelMessageRefs, new Long(channelID));
+//            log.trace(s + (success ? " successful" : "failed"));
+//         }
+//         if (ps != null)
+//         {
+//            try
+//            {
+//               ps.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         if (conn != null)
+//         {
+//            try
+//            {
+//               conn.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         wrap.end();
+//      }
+//   }
    
    
    
@@ -2394,7 +2402,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    }
    
    protected void initSqlProperties()
-   {
+   { 
       //Message Reference
       createMessageReference = sqlProperties.getProperty("CREATE_MESSAGE_REF", createMessageReference);
       createIdxMessageRefTx = sqlProperties.getProperty("CREATE_IDX_MESSAGE_REF_TX", createIdxMessageRefTx);
@@ -2413,20 +2421,20 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       loadReferenceInfo = sqlProperties.getProperty("LOAD_REF_INFO", loadReferenceInfo);
       selectCountReferences = sqlProperties.getProperty("SELECT_COUNT_REFS", selectCountReferences);
       updateReliableRefs = sqlProperties.getProperty("UPDATE_RELIABLE_REFS", updateReliableRefs);
-      deleteChannelMessageRefs = sqlProperties.getProperty("DELETE_CHANNEL_MESSAGE_REFS", deleteChannelMessageRefs);
-      removeAllNonReliableRefs = sqlProperties.getProperty("REMOVE_ALL_NONRELIABLE_REFS", removeAllNonReliableRefs);
       updateReliableRefsNotLoaded = sqlProperties.getProperty("UPDATE_RELIABLE_REFS_NOT_LOADED", updateReliableRefsNotLoaded);
       selectMinOrdering = sqlProperties.getProperty("SELECT_MIN_ORDERING", selectMinOrdering);
-      
+      deleteUnreliableRefs = sqlProperties.getProperty("DELETE_UNRELIABLE_REFS", deleteUnreliableRefs);
+        
       //Message
       createMessage = sqlProperties.getProperty("CREATE_MESSAGE", createMessage);
       loadMessages = sqlProperties.getProperty("LOAD_MESSAGES", loadMessages);
       insertMessage = sqlProperties.getProperty("INSERT_MESSAGE", insertMessage);
-      updateMessageChannelCount = sqlProperties.getProperty("UPDATE_MESSAGE_CHANNEL_COUNT", updateMessageChannelCount);
+      updateMessageChannelCount = sqlProperties.getProperty("UPDATE_MESSAGE_CHANNELCOUNT", updateMessageChannelCount);
       deleteMessage = sqlProperties.getProperty("DELETE_MESSAGE", deleteMessage);
-      messageIdColumn = sqlProperties.getProperty("MESSAGE_ID_COLUMN", messageIdColumn);
-      removeAllNonReliableMessages = sqlProperties.getProperty("REMOVE_ALL_NONRELIABLE_MSGS", removeAllNonReliableMessages); 
- 
+      messageIdColumn = sqlProperties.getProperty("MESSAGEID_COLUMN", messageIdColumn);
+      updateUnreliableChannelCount = sqlProperties.getProperty("UPDATE_UNRELIABLE_CHANNELCOUNT", updateUnreliableChannelCount);
+      deleteUnreffedMessages = sqlProperties.getProperty("DELETE_UNREFFED_MESSAGES", deleteUnreffedMessages);
+
       //Transaction
       createTransaction = sqlProperties.getProperty("CREATE_TRANSACTION", createTransaction);      
       insertTransaction = sqlProperties.getProperty("INSERT_TRANSACTION", insertTransaction);
@@ -2437,9 +2445,10 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       createCounter = sqlProperties.getProperty("CREATE_COUNTER", createCounter);
       updateCounter = sqlProperties.getProperty("UPDATE_COUNTER", updateCounter);
       selectCounter = sqlProperties.getProperty("SELECT_COUNTER", selectCounter);
-      insertCounter = sqlProperties.getProperty("INSERT_COUNTER", insertCounter);
-      //selectReferenceCount = sqlProperties.getProperty("SELECT_REF_COUNT", selectReferenceCount);
-      //updateReferenceCount = sqlProperties.getProperty("UPDATE_REF_COUNT", updateReferenceCount);       
+      insertCounter = sqlProperties.getProperty("INSERT_COUNTER", insertCounter);      
+      
+      //Other
+      selectAllChannels = sqlProperties.getProperty("SELECT_ALL_CHANNELS", selectAllChannels);
    }
    
    protected TransactionCallback getCallback(Transaction tx)
@@ -2466,52 +2475,73 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
    }
    
    /*
-    * Remove any non-persistent message data
-    * Update any persistent refs to LOADED='N'
+    *
+    * We want to remove any non reliable refs from the database and any corresponding messages if their channel count
+    * has gone to zero
+    * 
+    * TODO
+    * Really - this method only needs to be executed on start up if the server has crashed
+    * We should save a flag in the db at server shutdown and check for this at startup to see if there
+    * was a clean shutdown
+    * 
     */
-   protected void resetMessageData() throws Exception
+   protected void removeUnreliableMessageData() throws Exception
    {
-      if (trace) { log.trace("Removing all non-persistent data"); }
+      log.trace("Removing all non-persistent data");
       
       Connection conn = null;
-      PreparedStatement ps = null;
+      PreparedStatement psRes = null;
+      PreparedStatement psUpdate = null;
+      PreparedStatement psDeleteMsgs = null;
+      PreparedStatement psDeleteRefs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-      
-      log.trace("Resetting message data. This may take several minutes for large queues/subscriptions...");
+          
+      ResultSet rs = null;
       
       try
       {
          conn = ds.getConnection();
          
-         log.debug("Removing all non-reliable message references");
+         psRes = conn.prepareStatement(selectAllChannels);
          
-         ps = conn.prepareStatement(removeAllNonReliableRefs);
+         psUpdate = conn.prepareStatement(updateUnreliableChannelCount);
+                          
+         rs = psRes.executeQuery();
          
-         int rows = ps.executeUpdate();
+         while (rs.next())
+         {
+            long channelID = rs.getLong(1);
+            
+            psUpdate.setLong(1, channelID);
+            
+            int rows = psUpdate.executeUpdate();
+            
+            if (trace)
+            {
+               log.trace(JDBCUtil.statementToString(updateUnreliableChannelCount)
+                     + " updated " + rows + " rows");
+            }            
+         }
+         
+         psDeleteRefs = conn.prepareStatement(deleteUnreliableRefs);
+         
+         int rows = psDeleteRefs.executeUpdate();
          
          if (trace)
          {
-            log.trace(JDBCUtil.statementToString(removeAllNonReliableRefs)
-                  + " removed " + rows + " rows");
+            log.trace(JDBCUtil.statementToString(deleteUnreliableRefs)
+                  + " deleted " + rows + " rows");
          }
+                  
+         psDeleteMsgs = conn.prepareStatement(deleteUnreffedMessages);
          
-         ps.close();
-         
-         ps = null;
-          
-         ps = conn.prepareStatement(removeAllNonReliableMessages);
-         
-         rows = ps.executeUpdate();
+         rows = psDeleteMsgs.executeUpdate();
          
          if (trace)
          {
-            log.trace(JDBCUtil.statementToString(removeAllNonReliableMessages)
-                  + " removed " + rows + " rows");
+            log.trace(JDBCUtil.statementToString(deleteUnreffedMessages)
+                  + " deleted " + rows + " rows");
          }
-         
-         ps.close();                  
-         
-         ps = null;
                    
       }
       catch (Exception e)
@@ -2521,11 +2551,51 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
       }
       finally
       {
-         if (ps != null)
+         if (rs != null)
          {
             try
             {
-               ps.close();
+               rs.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (psRes != null)
+         {
+            try
+            {
+               psRes.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (psUpdate != null)
+         {
+            try
+            {
+               psUpdate.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (psDeleteMsgs != null)
+         {
+            try
+            {
+               psDeleteMsgs.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (psDeleteRefs != null)
+         {
+            try
+            {
+               psDeleteRefs.close();
             }
             catch (Throwable e)
             {

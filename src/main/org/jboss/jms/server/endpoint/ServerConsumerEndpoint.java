@@ -133,7 +133,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                                     throws InvalidSelectorException
    {
       if (trace) { log.trace("creating consumer endpoint " + id); }
-      
+         
       this.id = id;
       this.channel = channel;
       this.sessionEndpoint = sessionEndpoint;
@@ -189,8 +189,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       //and when we do clustering we will have to replicate it too!!
       //Let's GET RID OF IT!!!!!!!!!!!
       this.deliveries = new LinkedHashMap();
-      
-      
+            
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();      // adding the consumer to the channel
       this.channel.add(this);
       
@@ -240,6 +239,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          boolean selectorRejected = !this.accept(message);
    
          SimpleDelivery delivery = new SimpleDelivery(observer, ref, false, !selectorRejected);
+         
+         if (selectorRejected)
+         {
+            return delivery;
+         }
             
          checkDeliveryCount(delivery);
          
@@ -249,25 +253,6 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          }
    
          deliveries.put(new Long(ref.getMessageID()), delivery);                 
-         if (selectorRejected)
-         {
-            // we "arrest" the message so we can get the next one
-            // TODO this DOES NOT scale. With a poor usage pattern, we may end with a lot of
-            // arrested messages sitting here for nothing. Review this:
-            // http://jira.jboss.org/jira/browse/JBMESSAGING-275
-            if (trace) { log.trace(this + " DOES NOT accept the message because the selector rejected it"); }
-            
-            //FIXME - This hack also breaks delivery behaviour - if there are multiple competing consumers
-            //on the same queue, each with a different selector, then if the message arrives at one receiver
-            //(e.g. this one) and doesn't match the selector, then it is arrested, which means the 
-            //PointToPointRouter does not try the next receiver which does match.
-            //See 
-   
-            // ... however, keep asking for messages, the fact that this one wasn't accepted doesn't
-            // mean that the next one it won't.
-   
-            return delivery;
-         }
    
          // We don't send the message as-is, instead we create a MessageProxy instance. This allows
          // local fields such as deliveryCount to be handled by the proxy but global data to be
@@ -373,9 +358,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                if (!sub.isRecoverable())
                {
                   //We don't disconnect durable subs
-                  sub.disconnect();
+                  sub.disconnect();                  
                }            
             } 
+            
+            //If it's non recoverable, i.e. it's a non durable sub or a temporary queue
+            //then remove all it's references
+            if (!channel.isRecoverable())
+            {
+               channel.removeAllReferences();
+            }
             
             closed = true;
          }
@@ -507,19 +499,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       if (d != null)
       {
-                  
-         //TODO - Selector kludge - remove this
-         if (d.isSelectorAccepted())
-         {
-            d.acknowledge(null);
-         }
-         else
-         {
-            d.cancel();
-         }
+         d.acknowledge(null);
       }
       else
-      {
+      {     
          throw new IllegalStateException("Cannot find delivery to acknowledge:" + messageID);
       }      
    }
@@ -677,26 +660,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    /**
     * Disconnect this consumer from the Channel that feeds it. This method does not clear up
-    * deliveries, except the "arrested" ones
+    * deliveries
     */
    private void disconnect()
    {
-      // clean up "arrested" deliveries, no acknowledgment will ever come for them
-      for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
-      {
-         SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
-         if (!d.isSelectorAccepted())
-         {
-            try
-            {
-               d.cancel();
-            }
-            catch(Throwable t)
-            {
-               log.error("Failed to cancel delivery " + d, t);
-            }
-         }
-      }
 
       boolean removed = channel.remove(this);
       
@@ -725,7 +692,6 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             log.error("Failed to acknowledge delivery", t);
          }
       }                 
-
    }
    
    // Inner classes -------------------------------------------------   

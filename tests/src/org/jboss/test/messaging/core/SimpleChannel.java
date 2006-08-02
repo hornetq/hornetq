@@ -102,6 +102,10 @@ public class SimpleChannel implements Channel
    {
       throw new NotYetImplementedException();
    }
+   
+   public void removeAllReferences()
+   {      
+   }
   
 
    // DeliveryObserver implementation -------------------------------

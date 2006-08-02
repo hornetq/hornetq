@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.core.refqueue;
 
 import java.util.Iterator;
+import java.util.ListIterator;
 
 import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -45,6 +46,22 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
    protected Wibble h;
    protected Wibble i;
    protected Wibble j;
+   protected Wibble k;
+   protected Wibble l;
+   protected Wibble m;
+   protected Wibble n;
+   protected Wibble o;   
+   protected Wibble p;
+   protected Wibble q;
+   protected Wibble r;
+   protected Wibble s;
+   protected Wibble t;
+   protected Wibble u;
+   protected Wibble v;
+   protected Wibble w;
+   protected Wibble x;
+   protected Wibble y;   
+   protected Wibble z;
    
    public PrioritizedReferenceQueueTest(String name)
    {
@@ -67,6 +84,22 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
       h = new Wibble("h");
       i = new Wibble("i");
       j = new Wibble("j");
+      k = new Wibble("k");
+      l = new Wibble("l");
+      m = new Wibble("m");
+      n = new Wibble("n");
+      o = new Wibble("o");
+      p = new Wibble("p");
+      q = new Wibble("q");
+      r = new Wibble("r");
+      s = new Wibble("s");
+      t = new Wibble("t");
+      u = new Wibble("u");
+      v = new Wibble("v");
+      w = new Wibble("w");
+      x = new Wibble("x");
+      y = new Wibble("y");
+      z = new Wibble("z");
    }
    
    
@@ -74,133 +107,7 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
    {
       super.tearDown();
    }
-   
-//   public void testContainsOne() throws Exception
-//   {
-//      boolean one = deque.addFirst(a, 0);
-//      assertTrue(one);
-//      one = deque.addFirst(a, 0);
-//      assertFalse(one);
-//            
-//      one = deque.addFirst(b, 1);
-//      assertFalse(one);
-//      one = deque.addFirst(b, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addFirst(c, 2);
-//      assertFalse(one);
-//      one = deque.addFirst(c, 2);
-//      assertFalse(one);
-//      
-//      one = deque.addFirst(d, 3);
-//      assertFalse(one);
-//      one = deque.addFirst(d, 3);
-//      assertFalse(one);
-//      
-//      one = deque.addFirst(e, 4);
-//      assertFalse(one);
-//      one = deque.addFirst(e, 4);
-//      assertFalse(one);
-//      
-//      one = deque.addFirst(f, 5);
-//      assertFalse(one);
-//      one = deque.addFirst(f, 5);
-//      assertFalse(one);
-//      
-//      one = deque.addFirst(g, 6);
-//      assertFalse(one);
-//      one = deque.addFirst(g, 6);
-//      assertFalse(one);
-//      
-//      one = deque.addFirst(h, 7);
-//      assertFalse(one);
-//      one = deque.addFirst(h, 7);
-//      assertFalse(one);
-//      
-//      one = deque.addFirst(i, 8);
-//      assertFalse(one);
-//      one = deque.addFirst(i, 8);
-//      assertFalse(one);
-//            
-//      one = deque.addFirst(j, 9);
-//      assertFalse(one);
-//      one = deque.addFirst(j, 9);
-//      assertFalse(one);
-//      
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      deque.removeFirst();
-//      
-//      one = deque.addLast(a, 0);
-//      assertTrue(one);
-//      one = deque.addLast(a, 0);
-//      assertFalse(one);
-//            
-//      one = deque.addLast(b, 1);
-//      assertFalse(one);
-//      one = deque.addLast(b, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addLast(c, 1);
-//      assertFalse(one);
-//      one = deque.addLast(c, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addLast(d, 1);
-//      assertFalse(one);
-//      one = deque.addLast(d, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addLast(e, 1);
-//      assertFalse(one);
-//      one = deque.addLast(e, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addLast(f, 1);
-//      assertFalse(one);
-//      one = deque.addLast(f, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addLast(g, 1);
-//      assertFalse(one);
-//      one = deque.addLast(g, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addLast(h, 1);
-//      assertFalse(one);
-//      one = deque.addLast(h, 1);
-//      assertFalse(one);
-//      
-//      one = deque.addLast(i, 1);
-//      assertFalse(one);
-//      one = deque.addLast(i, 1);
-//      assertFalse(one);
-//            
-//      one = deque.addLast(j, 1);
-//      assertFalse(one);
-//      one = deque.addLast(j, 1);
-//      assertFalse(one);
-//      
-//   }
-
-   
+    
    public void testAddFirst() throws Exception
    {
       deque.addFirst(a, 0);
@@ -235,22 +142,6 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
 
    }
    
-//   public void testRemove() throws Exception
-//   {
-//      deque.addLast(a, 0);
-//      deque.addLast(b, 0);
-//      deque.addLast(c, 0);
-//      deque.addLast(d, 0);
-//      deque.addLast(e, 0);
-//      
-//      deque.remove(b);
-//      deque.remove(d);
-//      
-//      assertEquals(a, deque.removeFirst());
-//      assertEquals(c, deque.removeFirst());
-//      assertEquals(e, deque.removeFirst());
-//      assertNull(deque.removeFirst());
-//   }
    
    public void testRemoveFirst() throws Exception
    {
@@ -462,6 +353,217 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
          count++;
       }
       assertEquals(10, count);
+   }
+   
+   public void testIterator()
+   {
+      deque.addLast(a, 9);
+      deque.addLast(b, 9);
+      deque.addLast(c, 8);
+      deque.addLast(d, 8);
+      deque.addLast(e, 7);
+      deque.addLast(f, 7);
+      deque.addLast(g, 7);
+      deque.addLast(h, 6);
+      deque.addLast(i, 6);
+      deque.addLast(j, 6);
+      deque.addLast(k, 5);
+      deque.addLast(l, 5);
+      deque.addLast(m, 4);
+      deque.addLast(n, 4);
+      deque.addLast(o, 4);
+      deque.addLast(p, 3);
+      deque.addLast(q, 3);
+      deque.addLast(r, 3);
+      deque.addLast(s, 2);
+      deque.addLast(t, 2);
+      deque.addLast(u, 2);
+      deque.addLast(v, 1);
+      deque.addLast(w, 1);
+      deque.addLast(x, 1);
+      deque.addLast(y, 0);
+      deque.addLast(z, 0);
+      
+      ListIterator iter = deque.iterator();
+      
+      int c = 0;
+      while (iter.hasNext())
+      {
+         Wibble w = (Wibble)iter.next();
+         c++;
+      }      
+      assertEquals(c, 26);
+      
+      iter = deque.iterator();
+      assertTrue(iter.hasNext());
+      Wibble w = (Wibble)iter.next();
+      assertEquals("a", w.s);      
+      w = (Wibble)iter.next();
+      assertEquals("b", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("c", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("d", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("e", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("f", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("g", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("h", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("i", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("j", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("k", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("l", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("m", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("n", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("o", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("p", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("q", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("r", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("s", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("t", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("u", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("v", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("w", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("x", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("y", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("z", w.s);
+      assertFalse(iter.hasNext());
+      
+      iter = deque.iterator();
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      assertEquals("a", w.s);   
+      
+      iter.remove();
+      
+      w = (Wibble)iter.next();
+      assertEquals("b", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("c", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("d", w.s);
+      
+      iter.remove();
+      
+      w = (Wibble)iter.next();
+      assertEquals("e", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("f", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("g", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("h", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("i", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("j", w.s);
+      
+      iter.remove();
+      
+      w = (Wibble)iter.next();
+      assertEquals("k", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("l", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("m", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("n", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("o", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("p", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("q", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("r", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("s", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("t", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("u", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("v", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("w", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("x", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("y", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("z", w.s);
+      iter.remove();
+      assertFalse(iter.hasNext());
+      
+      iter = deque.iterator();
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      assertEquals("b", w.s);   
+      w = (Wibble)iter.next();
+      assertEquals("c", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("e", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("f", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("g", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("h", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("i", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("k", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("l", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("m", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("n", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("o", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("p", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("q", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("r", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("s", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("t", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("u", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("v", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("w", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("x", w.s);
+      w = (Wibble)iter.next();
+      assertEquals("y", w.s);     
+      assertFalse(iter.hasNext());
+      
    }
       
      

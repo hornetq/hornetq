@@ -65,12 +65,10 @@ public class DurableSubscription extends Subscription
       return clientID;
    }
    
-   public void unsubscribe() throws Exception
+   public void unsubscribe() throws Throwable
    {
       disconnect();
-      if (pm != null)
-      {
-         pm.removeAllChannelData(this.channelID);            
-      }
+      
+      this.removeAllReferences();     
    }   
 }

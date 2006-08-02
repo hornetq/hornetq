@@ -176,6 +176,10 @@
 
 
    <!--  This is the complete execution classpath of the CVS latest snapshot -->
+   <!--
+
+   This doesn't seem to be used, also is referencing files on Ovidiu's machine
+
 <path id="test.execution.classpath2">
 <pathelement location="C:/work/src/cvs/jboss-head/thirdparty/apache-log4j/lib/log4j.jar"/>
 <pathelement location="C:/work/src/cvs/jboss-head/thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
@@ -244,6 +248,8 @@
 <pathelement location="C:/work/jboss-messaging/output/etc"/>
 <pathelement location="C:/work/jboss-messaging/tests/output/classes"/>
   </path>
+
+  -->
 
 
    <path id="stress.test.execution.classpath">
@@ -383,7 +389,7 @@
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="build.lib" value="${build.lib}"/>
-         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
          -->

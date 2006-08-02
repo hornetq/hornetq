@@ -74,7 +74,7 @@ public class Topic extends DestinationServiceSupport
          while (iter.hasNext())
          {
             Object sub = iter.next();
-            ((Subscription)sub).removeAllMessages();
+            ((Subscription)sub).removeAllReferences();
          }
       }
       catch (Throwable t)

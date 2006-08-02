@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms.message.foreign;
 
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.StreamMessage;
 

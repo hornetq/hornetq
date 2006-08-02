@@ -82,7 +82,7 @@ public class Queue extends DestinationServiceSupport
    
          JBossQueue jbq = new JBossQueue(name);
          org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
-         q.removeAllMessages();
+         q.removeAllReferences();
       }
       catch (Throwable t)
       {

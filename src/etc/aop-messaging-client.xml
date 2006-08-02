@@ -111,7 +111,7 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->preDeliver(..))">
       <advice name="handlePreDeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->postDeliver(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->postDeliver())">
       <advice name="handlePostDeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->acknowledgeAll(..))">
@@ -122,7 +122,10 @@
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->redeliver(..))">
       <advice name="handleRedeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
-   </bind> 
+   </bind>    
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->close())">
+      <advice name="handleClose" aspect="org.jboss.jms.client.container.SessionAspect"/>         
+   </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->commit())">
       <advice name="handleCommit" aspect="org.jboss.jms.client.container.TransactionAspect"/>
    </bind>

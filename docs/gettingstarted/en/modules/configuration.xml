@@ -468,6 +468,12 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
               or <literal>DownCacheSize</literal> are specified they will default to values
               75000, 2000, 2000 respectively.
            </para>
+
+           <para>
+              If you want to specify the paging parameters used for temporary queues then you need to specify them
+              on the appropriate connection factory.
+              See connection factory configuration for details.
+           </para>
         </section>
      </section>
 
@@ -559,6 +565,10 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
            &lt;/constructor&gt;
            &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
            &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;jboss.messaging:service=Connector,transport=socket&lt;/depends&gt;
+           &lt;attribute name=&quot;PrefetchSize&quot;&gt;10&lt;/attribute&gt;
+           &lt;attribute name=&quot;DefaultTempQueueFullSize&quot;&gt;1000&lt;/attribute&gt;
+           &lt;attribute name=&quot;DefaultTempQueuePageSize&quot;&gt;50&lt;/attribute&gt;
+           &lt;attribute name=&quot;DefaultTempQueueDownCacheSize&quot;&gt;50&lt;/attribute&gt;
            &lt;attribute name=&quot;JNDIBindings&quot;&gt;
               &lt;bindings&gt;
                  &lt;binding&gt;/MyConnectionFactory1&lt;/binding&gt;
@@ -577,6 +587,16 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
         and <literal>/factories/cf</literal>. The connection factory will use the default
         remoting connector. To use a different remoting connector with the connection factory
         change the <literal>Connector</literal> attribute to specify the service name of the connector you wish to use.
+    </para>
+    <para>prefetchSize is an optional attribute that determines how many messages client side message consumers will buffer locally. Pre-fetching messages prevents
+    the client having to go to the server each time a message is consumed to say it is ready to receive another message.
+    This greatly increases throughput. The default value for prefetchSize is 150. You may want to change this to a smaller value if you are dealing with
+    very large messages, so as not to use too much memory on the client.
+    </para>
+    <para>DefaultTempQueueFullSize, DefaultTempQueuePageSize, DefaultTempQueueDownCacheSize are optional attributes that determine the default paging parameters to be used for
+    any temporary destinations scoped to connections created using this connection factory. See the section on paging channels for more information
+    on what these values mean.
+    They will default to values of 75000, 2000 and 2000 respectively if ommitted.
     </para>
   </section>
 

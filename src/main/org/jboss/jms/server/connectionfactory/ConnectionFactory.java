@@ -37,6 +37,10 @@ public class ConnectionFactory extends ServiceMBeanSupport
    protected int connectionFactoryID;
    protected JNDIBindings jndiBindings;
    protected int prefetchSize = 150;
+   
+   protected int defaultTempQueueFullSize = 75000;
+   protected int defaultTempQueuePageSize = 2000;
+   protected int defaultTempQueueDownCacheSize = 2000;
 
    protected ObjectName serverPeerObjectName;
    protected ConnectionFactoryManager connectionFactoryManager;
@@ -102,7 +106,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
          }
          
          connectionFactoryID = connectionFactoryManager.
-            registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing, prefetchSize);
+            registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing, prefetchSize,
+                     defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
          String info =
@@ -145,6 +150,36 @@ public class ConnectionFactory extends ServiceMBeanSupport
    }
 
    // JMX managed attributes ----------------------------------------
+   
+   public int getDefaultTempQueueFullSize()
+   {
+      return defaultTempQueueFullSize;
+   }
+   
+   public void setDefaultTempQueueFullSize(int size)
+   {
+      this.defaultTempQueueFullSize = size;
+   }
+   
+   public int getDefaultTempQueuePageSize()
+   {
+      return defaultTempQueuePageSize;
+   }
+   
+   public void setDefaultTempQueuePageSize(int size)
+   {
+      this.defaultTempQueuePageSize = size;
+   }
+   
+   public int getDefaultTempQueueDownCacheSize()
+   {
+      return defaultTempQueueDownCacheSize;
+   }
+   
+   public void setDefaultTempQueueDownCacheSize(int size)
+   {
+      this.defaultTempQueueDownCacheSize = size;
+   }
    
    public int getPrefetchSize()
    {

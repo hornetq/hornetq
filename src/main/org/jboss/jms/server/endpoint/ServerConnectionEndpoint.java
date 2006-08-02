@@ -56,6 +56,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.CoreDestination;
+import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.core.util.ConcurrentReaderHashSet;
@@ -123,11 +124,20 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private byte usingVersion;
    
    private int prefetchSize;
+   
+   protected int defaultTempQueueFullSize;
+   
+   protected int defaultTempQueuePageSize;
+   
+   protected int defaultTempQueueDownCacheSize;
 
    // Constructors --------------------------------------------------
    
    protected ServerConnectionEndpoint(ServerPeer serverPeer, String clientID,
-                                      String username, String password, int prefetchSize)
+                                      String username, String password, int prefetchSize,
+                                      int defaultTempQueueFullSize,
+                                      int defaultTempQueuePageSize,
+                                      int defaultTempQueueDownCacheSize)
    {
       this.serverPeer = serverPeer;
 
@@ -141,6 +151,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.connectionID = serverPeer.getNextObjectID();
       this.clientID = clientID;
       this.prefetchSize = prefetchSize;
+      
+      this.defaultTempQueueFullSize = defaultTempQueueFullSize;
+      this.defaultTempQueuePageSize = defaultTempQueuePageSize;
+      this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
 
       sessions = new ConcurrentReaderHashMap();
       temporaryDestinations = new ConcurrentReaderHashSet();
@@ -289,7 +303,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
          {
             JBossDestination dest = (JBossDestination)i.next();
-            channelMapper.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
+            CoreDestination cd  = channelMapper.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
+            if (dest.isQueue())
+            {
+               //If it's a temp queue then remove it's data-
+               //If it's a topic then the data in the consumers will have been removed when they were closed
+               Queue queue = (Queue)cd;
+               queue.removeAllReferences();
+            }
          }
          
          temporaryDestinations.clear();
@@ -501,7 +522,22 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return prefetchSize;
    }
-         
+   
+   public int getDefaultTempQueueFullSize()
+   {
+      return defaultTempQueueFullSize;
+   }
+   
+   public int getDefaultTempQueuePageSize()
+   {
+      return defaultTempQueuePageSize;
+   }
+     
+   public int getDefaultTempQueueDownCacheSize()
+   {
+      return defaultTempQueueDownCacheSize;
+   }
+           
    public String toString()
    {
       return "ConnectionEndpoint[" + connectionID + "]";

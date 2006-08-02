@@ -63,6 +63,19 @@ public class SessionAspect
    
    // Public --------------------------------------------------------
 
+   public Object handleClose(Invocation invocation) throws Throwable
+   {      
+      Object res = invocation.invokeNext();
+      
+      SessionState state = getState(invocation);
+      
+      //We must explicitly shutdown the executor
+
+      state.getExecutor().shutdownNow();
+         
+      return res;
+   }      
+   
    public Object handlePreDeliver(Invocation invocation) throws Throwable
    { 
       MethodInvocation mi = (MethodInvocation)invocation;
@@ -77,7 +90,7 @@ public class SessionAspect
          SessionDelegate del = (SessionDelegate)mi.getTargetObject();
          
          //We store the ack in a list for later acknowledgement or recovery
-         
+    
          Object[] args = mi.getArguments();
          
          MessageProxy mp = (MessageProxy)args[0];
@@ -130,13 +143,17 @@ public class SessionAspect
          {
             //We don't acknowledge the message if recover() was called
             
-            Object[] args = mi.getArguments();
+            //Object[] args = mi.getArguments();
             
-            MessageProxy proxy = (MessageProxy)args[0];
+            //MessageProxy proxy = (MessageProxy)args[0];
                    
-            int consumerID = ((Integer)args[1]).intValue();
+            //int consumerID = ((Integer)args[1]).intValue();
 
-            AckInfo ack = new AckInfo(proxy, consumerID);
+            //AckInfo ack = new AckInfo(proxy, consumerID);
+            
+            List acks = state.getToAck();
+            
+            AckInfo ack = (AckInfo)acks.get(0);
             
             del.acknowledge(ack);   
                

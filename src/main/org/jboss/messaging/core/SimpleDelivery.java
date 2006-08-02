@@ -83,6 +83,7 @@ public class SimpleDelivery implements SingleReceiverDelivery, Serializable
       this.done = done;
       this.reference = reference;
       this.observer = observer;
+      this.selectorAccepted = true;
    }
 
    public SimpleDelivery(DeliveryObserver observer, MessageReference reference, boolean done,

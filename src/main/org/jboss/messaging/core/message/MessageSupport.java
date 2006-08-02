@@ -29,7 +29,6 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
@@ -49,9 +48,6 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = -4474943687659785336L;
-   
-   private static final Logger log = Logger.getLogger(MessageSupport.class);
-
    
    // Attributes ----------------------------------------------------
    

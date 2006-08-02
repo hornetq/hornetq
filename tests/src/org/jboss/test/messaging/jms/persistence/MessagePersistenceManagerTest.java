@@ -64,7 +64,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       super.setUp();              
    }
    
-   protected void doSetup(boolean batch) throws Exception
+   protected void doSetup(boolean batch) throws Throwable
    {
       super.doSetup(batch);
       
@@ -107,7 +107,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       }
    }
   
-   protected void checkEquivalent(Message m1, Message m2) throws Exception
+   protected void checkEquivalent(Message m1, Message m2) throws Throwable
    {
       super.checkEquivalent(m1, m2);
      

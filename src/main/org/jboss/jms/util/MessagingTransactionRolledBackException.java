@@ -23,8 +23,6 @@ package org.jboss.jms.util;
 
 import javax.jms.TransactionRolledBackException;
 
-import org.jboss.logging.Logger;
-
 /**
  * 
  * A JBossTransactionRolledBackException.
@@ -40,9 +38,6 @@ public class MessagingTransactionRolledBackException extends TransactionRolledBa
    
    private static final long serialVersionUID = -1395246656299977995L;
 
-   private static final Logger log = Logger.getLogger(MessagingTransactionRolledBackException.class);
-   
-   
    // Static --------------------------------------------------------
       
    // Attributes ----------------------------------------------------
