@@ -102,7 +102,7 @@ fi
 
 if [ "$isRemote" = "true" ]; then
   export TEST_DATABASE TEST_SERIALIZATION
-  $reldir/start-rmi-server $REMOTE_DEBUG_FLAG
+  $reldir/start-rmi-server $REMOTE_DEBUG_FLAG -use-existent-test-classpath-file
 fi
 
 
@@ -110,6 +110,6 @@ $JAVA_HOME/bin/java $JAVA_OPTS -cp "$CLASSPATH" \
 org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
 
 if [ "$isRemote" = "true" ]; then
-  $reldir/stop-rmi-server
+  $reldir/stop-rmi-server -use-existent-test-classpath-file
 fi
 
