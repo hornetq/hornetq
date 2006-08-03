@@ -58,7 +58,12 @@ public class Queue extends ChannelSupport implements CoreDestination
                 QueuedExecutor executor)
    {      
       super(id, ms, pm, mm, true, recoverable, fullSize, pageSize, downCacheSize, executor);
-      router = new PointToPointRouter();
+      
+      //TODO make the policy configurable
+      //By default we use a router with a round robin policy for even distribution in the
+      //case of multiple consumers
+      router = new RoundRobinPointToPointRouter();
+      
       this.fullSize = fullSize;
       this.pageSize = pageSize;
       this.downCacheSize = downCacheSize;

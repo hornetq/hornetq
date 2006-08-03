@@ -68,7 +68,9 @@ public class ManifestTest extends MessagingTestCase
    public void testManifestEntries() throws Exception
    {
       Properties props = System.getProperties();
-      String userDir = props.getProperty("jboss.jms.lib");
+      String userDir = props.getProperty("build.lib");
+      
+      log.info("userDir is " + userDir);
 
       // The jar must be there
       File file = new File(userDir, "jboss-messaging.jar");

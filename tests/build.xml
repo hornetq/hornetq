@@ -163,6 +163,7 @@
    -->
 
    <path id="test.execution.classpath">
+      <pathelement location="../lib/jnp-client.jar"/>
       <pathelement location="${tests.root}/etc"/>
       <pathelement location="${build.tests.classes}"/>
       <pathelement location="${project.root}/src/etc"/> <!-- server's configuration files -->
