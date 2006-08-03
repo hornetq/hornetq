@@ -2064,13 +2064,16 @@ public class MessageConsumerTest extends MessagingTestCase
          MessageConsumer consumer1 = sess1.createConsumer(topic, null, true);
 
          conn2 = cf.createConnection();
+
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
          assertEquals(Session.AUTO_ACKNOWLEDGE, sess2.getAcknowledgeMode());
-
          MessageConsumer consumer2 = sess2.createConsumer(topic, null, true);
 
-         MessageConsumer consumer3 = sess2.createConsumer(topic, null, false);
+         // we need different session because we cannot access the same session from two different
+         // threads
+         Session sess3 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         assertEquals(Session.AUTO_ACKNOWLEDGE, sess3.getAcknowledgeMode());
+         MessageConsumer consumer3 = sess3.createConsumer(topic, null, true);
 
          //Consumer 1 should not get the message but consumers 2 and 3 should
 
