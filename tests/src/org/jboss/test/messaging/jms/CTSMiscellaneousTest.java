@@ -295,6 +295,99 @@ public class CTSMiscellaneousTest extends MessagingTestCase
 
    }
 
+   public void testContestedQueueOnRollback2() throws Exception
+   {
+      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+      Queue queue = (Queue)ic.lookup("/queue/Queue");
+
+      Connection c =  cf.createConnection();
+      try
+      {
+         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         TextMessage tm = s.createTextMessage("blah");
+         s.createProducer(queue).send(tm);
+      }
+      finally
+      {
+         c.close();
+      }
+
+      // message is in the queue
+      log.debug("message is in the queue");
+
+      c = cf.createConnection();
+      c.start();
+
+      try
+      {
+         Session s = c.createSession(true, Session.SESSION_TRANSACTED);
+         MessageConsumer cons = s.createConsumer(queue);
+
+         Session s2 = c.createSession(true, Session.SESSION_TRANSACTED);
+         final MessageConsumer cons2 = s2.createConsumer(queue);
+
+         Session sessionToRollback = s;
+         MessageConsumer cc = cons2;
+         TextMessage rm = (TextMessage)cons.receiveNoWait();
+
+         if (rm == null)
+         {
+            sessionToRollback = s2;
+            cc = cons;
+            rm = (TextMessage)cons.receiveNoWait();
+         }
+
+         assertEquals("blah", rm.getText());
+
+         final Slot slot = new Slot();
+         final MessageConsumer contestingConsumer = cc;
+
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  log.debug("contester blocking to receive");
+                  Message m = contestingConsumer.receive(8000);
+                  log.debug("contester received " + m);
+
+                  if (m != null)
+                  {
+                     // if I receive a message, unlock the slot
+                     slot.put(m);
+                  }
+               }
+               catch(Exception e)
+               {
+                  log.error("contested receive failed", e);
+               }
+            }
+         }, "Contester Thread").start();
+
+         // wait for the contested thread to start receiving
+         Thread.sleep(2000);
+
+         // send the message back to the queue
+         log.debug("rolling back");
+         sessionToRollback.rollback();
+         log.debug("rolled back");
+
+         // wait for the contester to receive
+         TextMessage rm2 = (TextMessage)slot.poll(5000);
+
+         assertEquals("blah", rm2.getText());
+      }
+      finally
+      {
+         log.debug("closing connection");
+         c.close();
+      }
+
+
+   }
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
