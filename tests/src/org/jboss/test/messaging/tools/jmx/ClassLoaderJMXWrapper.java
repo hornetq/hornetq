@@ -59,6 +59,13 @@ public class ClassLoaderJMXWrapper extends URLClassLoader implements ClassLoader
       return delegate.loadClass(name);
    }
 
+   // ClassLoader overrides -----------------------------------------
+
+   public URL getResource(String name)
+   {
+      return delegate.getResource(name);
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
