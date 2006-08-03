@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
-Created-By: @java.vm.version@ (@java.vm.vendor@)
-Specification-Title: @messaging.specification.title@
-Specification-Version: @messaging.specification.version@
-Specification-Vendor: @messaging.specification.vendor@
-Implementation-Title: @messaging.implementation.title@
-Implementation-URL: @messaging.implementation.url@
-Implementation-Version: @messaging.implementation.version@
-Implementation-Vendor: @messaging.implementation.vendor@
-Implementation-Vendor-Id: @messaging.implementation.vendor.id@
+Created-By: @JAVA_VM_VERSION@ (@JAVA_VM_VENDOR@)
+Specification-Title: @MODULE_NAME@
+Specification-Version: @MODULE_VERSION@
+Specification-Vendor: @MODULE_VENDOR@
+Implementation-Title: @MODULE_NAME@
+Implementation-URL: @MODULE_URL@
+Implementation-Version: @MODULE_IMPLEMENTATION_VERSION@
+Implementation-Vendor: @MODULE_VENDOR@
+Implementation-Vendor-Id: @MODULE_URL@

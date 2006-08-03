@@ -69,13 +69,13 @@
    </tstamp>
 
    <property name="messaging.specification.title" value="${module.Name}"/>
-   <property name="messaging.specification.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
-   <property name="messaging.specification.vendor" value="JBoss (http://www.jboss.org/)"/>
+   <property name="messaging.specification.version" value="${module.version}"/>
+   <property name="messaging.specification.vendor" value="JBoss Inc. (http://www.jboss.org/)"/>
 
    <property name="messaging.implementation.title" value="${module.Name}"/>
    <property name="messaging.implementation.url" value="http://www.jboss.org/"/>
    <property name="messaging.implementation.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag} (build: CVSTag=${messaging.version.cvstag} date=${build.number})"/>
-   <property name="messaging.implementation.vendor" value="JBoss Inc."/>
+   <property name="messaging.implementation.vendor" value="${messaging.specification.vendor}"/>
    <property name="messaging.implementation.vendor.id" value="${messaging.implementation.url}"/>
 
    <property environment="ENV"/>
@@ -352,6 +352,11 @@
             <filter token="MESSAGING_VERSION_MINOR" value="${messaging.version.minor}"/>
             <filter token="MESSAGING_VERSION_INCREMENTING" value="${messaging.version.incrementing}"/>
             <filter token="MODULE_NAME" value="${module.Name}"/>
+            <filter token="MODULE_VENDOR" value="${messaging.specification.vendor}"/>
+            <filter token="MODULE_URL" value="${messaging.implementation.url}"/>
+            <filter token="MODULE_IMPLEMENTATION_VERSION" value="${messaging.implementation.version}"/>
+            <filter token="JAVA_VM_VERSION" value="${java.vm.version}"/>
+            <filter token="JAVA_VM_VENDOR" value="${java.vm.vendor}"/>
          </filterset>
       </copy>
       <move file="${build.etc}/VERSION-PRE-SUBSTITUTE" toFile="${build.etc}/VERSION"/>

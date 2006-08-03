@@ -75,6 +75,7 @@ public class ManifestTest extends MessagingTestCase
       // The jar must be there
       File file = new File(userDir, "jboss-messaging.jar");
       assertTrue(file.exists());
+
       // Open the jar and load MANIFEST.MF
       JarFile jar = new JarFile(file);
       Manifest manifest = jar.getManifest();
