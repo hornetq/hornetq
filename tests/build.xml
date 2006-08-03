@@ -128,6 +128,10 @@
       <pathelement path="${jboss.mbeans.lib}/jboss-mbeans.jar"/>
    </path>
 
+   <path id="jboss.naming.classpath">
+      <pathelement path="${jboss.naming.lib}/jnp-client.jar"/>
+   </path>
+
    <!--
        JDBC Drivers.
    -->
@@ -163,7 +167,6 @@
    -->
 
    <path id="test.execution.classpath">
-      <pathelement location="../lib/jnp-client.jar"/>
       <pathelement location="${tests.root}/etc"/>
       <pathelement location="${build.tests.classes}"/>
       <pathelement location="${project.root}/src/etc"/> <!-- server's configuration files -->
@@ -172,6 +175,7 @@
       <path refid="apache.log4j.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="jboss.mbeans.classpath"/>
+      <path refid="jboss.naming.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
       <path refid="mysql.jdbc.driver.classpath"/>
       <path refid="oracle.jdbc.driver.classpath"/>
