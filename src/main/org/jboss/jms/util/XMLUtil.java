@@ -59,6 +59,14 @@ public class XMLUtil
    {
 
       String name = n.getNodeName();
+
+      short type = n.getNodeType();
+
+      if (Node.CDATA_SECTION_NODE == type)
+      {
+         return "<![CDATA[" + n.getNodeValue() + "]]>";
+      }
+
       if (name.startsWith("#"))
       {
          return "";
@@ -238,11 +246,19 @@ public class XMLUtil
          throw new XMLRuntimeException("nodes have different node names");
       }
 
+      int attrCount = 0;
       NamedNodeMap attrs = node.getAttributes();
-      int attrCount = attrs.getLength();
+      if (attrs != null)
+      {
+         attrCount = attrs.getLength();
+      }
 
+      int attrCount2 = 0;
       NamedNodeMap attrs2 = node2.getAttributes();
-      int attrCount2 = attrs2.getLength();
+      if (attrs2 != null)
+      {
+         attrCount2 = attrs2.getLength();
+      }
 
       if (attrCount != attrCount2)
       {

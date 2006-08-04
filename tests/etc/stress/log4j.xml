@@ -74,6 +74,11 @@
       <priority value="INFO"/>
    </category>
 
+   <category name="org.jboss">
+      <priority value="DEBUG"/>
+   </category>
+
+
    <!-- ======================= -->
    <!-- Setup the Root category -->
    <!-- ======================= -->

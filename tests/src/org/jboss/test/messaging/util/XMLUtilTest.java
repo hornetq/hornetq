@@ -238,5 +238,15 @@ public class XMLUtilTest extends MessagingTestCase
       XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
+   public void testElementToString_4() throws Exception
+   {
+      String s = "<a><![CDATA[somedata]]></a>";
+      Element e = XMLUtil.stringToElement(s);
+      String tostring = XMLUtil.elementToString(e);
+      Element convertedAgain = XMLUtil.stringToElement(tostring);
+      XMLUtil.assertEquivalent(e, convertedAgain);
+   }
+
+
 
 }
