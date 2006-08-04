@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
-"../../../../docbook-support/support/docbook-dtd/docbookx.dtd" [
+"../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
 <!ENTITY about SYSTEM "modules/about.xml">
 <!ENTITY introduction SYSTEM "modules/introduction.xml">
 <!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">

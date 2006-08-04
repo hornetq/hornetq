@@ -2,7 +2,7 @@
 
   <property name="build.dir" value="${basedir}/../../output/docs/userguide"/>
   <property name="pdf.name"  value="JBossMessagingUsersGuide.pdf"/>
-  <import file="${basedir}/../../../docbook-support/support.xml"/>
+  <import file="${basedir}/../../lib/docbook-support/support.xml"/>
 
   <target name="all" depends="clean">
     <mkdir dir="en/images" />
