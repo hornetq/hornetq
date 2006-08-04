@@ -1,0 +1,217 @@
+<project name="DocSupport" default="all.doc" basedir=".">
+
+    <dirname property="support.basedir" file="${ant.file.DocSupport}"/>
+
+    <!-- Set build directories for all formats. -->
+    <property name="build.dir"             value="${basedir}/build"/>
+
+    <!-- Support files for build process. -->
+    <property name="support.dir"           value="${support.basedir}/support"/>
+    <property name="styles.dir"            value="${support.basedir}/styles"/>
+
+    <!-- Set DocBook stylesheets. -->
+    <property name="db.style.fopdf"        value="fopdf.xsl"/>
+    <property name="db.style.html"         value="html_chunk.xsl"/>
+    <property name="db.style.htmlsingle"   value="html.xsl"/>
+
+    <property name="maxmem"                value="1024m" />
+
+    <xmlcatalog id="docbook.catalog">
+        <catalogpath path="${support.basedir}/docbook-dtd/catalog.xml" />
+    </xmlcatalog>
+
+
+    <!-- Classpath for the build tools. -->
+    <path id="lib.classpath">
+        <fileset dir="${support.dir}/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- ################################################################## -->
+
+    <target name="all.doc" depends="clean">
+        <antcall target="lang.all"><param name="lang" value="en"/></antcall>
+    </target>
+
+    <!-- ################################################################## -->
+
+    <target name="lang.all.bypass.check" unless="lang.all.bypass.disabled">
+       <uptodate property="lang.all.bypass.on" targetfile="${build.dir}/${lang}/pdf/${pdf.name}">
+          <srcfiles dir="${support.basedir}" includes="**"/>
+          <srcfiles dir="${basedir}/${lang}" includes="**"/>
+          <srcfiles dir="${basedir}" includes="build.xml"/>
+       </uptodate>
+    </target>
+
+    <target name="lang.all.run" depends="lang.all.bypass.check, lang.all.bypass.message" unless="lang.all.bypass.on">
+       <antcall target="clean"/>
+       <antcall target="lang.all"/>
+    </target>
+    
+    <target name="lang.all.bypass.message" if="lang.all.bypass.on">
+       <echo>Already uptodate: ${build.dir}/${lang}/pdf/${pdf.name}</echo>
+       <echo>add -Dlang.all.bypass.disabled=true to force a rebuild</echo>
+    </target>
+
+    <!-- ################################################################## -->
+
+    <target name="lang.dochtml.bypass.check" unless="lang.dochtml.bypass.disabled">
+       <uptodate property="lang.dochtml.bypass.on" targetfile="${build.dir}/${lang}/html/index.html">
+          <srcfiles dir="${support.basedir}" includes="**"/>
+          <srcfiles dir="${basedir}/${lang}" includes="**"/>
+          <srcfiles dir="${basedir}" includes="build.xml"/>
+       </uptodate>
+    </target>
+
+    <target name="lang.dochtml.run" depends="lang.dochtml.bypass.check, lang.dochtml.bypass.message" unless="lang.dochtml.bypass.on">
+       <antcall target="clean.dochtml"/>
+       <antcall target="lang.dochtml"/>
+       <antcall target="lang.dochtmlsingle"/>
+    </target>
+    
+    <target name="lang.dochtml.bypass.message" if="lang.dochtml.bypass.on">
+       <echo>Already uptodate: ${build.dir}/${lang}/html/index.html</echo>
+       <echo>add -Dlang.dochtml.bypass.disabled=true to force a rebuild</echo>
+    </target>
+
+    <!-- ################################################################## -->
+
+    <target name="clean">
+        <!-- Delete build directory. -->
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="clean.dochtml">
+        <!-- Delete build directory for single html -->
+        <delete dir="${build.dir}/${lang}/html"/>
+        <delete dir="${build.dir}/${lang}/html_single"/>
+    </target>
+
+    <!-- ################################################################## -->
+
+    <target name="lang.all">
+        <antcall target="lang.docpdf"/>
+        <antcall target="lang.dochtml"/>
+        <antcall target="lang.dochtmlsingle"/>
+        <!-- 
+        <antcall target="lang.htmlmisc"/>
+        -->
+    </target>
+
+    <target name="lang.docpdf">
+        <!-- Copy all the images to the output location, 
+             will be removed later. -->
+        <copy todir="${build.dir}/${lang}/pdf/images">
+            <fileset dir="${basedir}/${lang}/images">
+                <include name="**/*.png"/>
+                <include name="**/*.svg"/>
+                <include name="**/*.gif"/>
+                <include name="**/*.jpg"/>
+            </fileset>
+        </copy>
+
+        <!-- Create the XSL/FO temporary file. -->
+
+        <java classname="com.icl.saxon.StyleSheet"
+              maxmemory="${maxmem}"
+              fork="true" dir="${basedir}">
+            <classpath refid="lib.classpath"/>
+            <arg value="-o" />
+            <arg value="${build.dir}/${lang}/pdf/docbook_fop.tmp"/>
+            <arg value="${basedir}/${lang}/master.xml"/>
+            <arg value="${styles.dir}/${lang}/${db.style.fopdf}"/>
+        </java>
+
+
+<!--
+        <xslt out="${build.dir}/${lang}/pdf/docbook_fop.tmp"
+                   in="${basedir}/${lang}/master.xml"
+              style="${styles.dir}/${lang}/${db.style.fopdf}">
+            <xmlcatalog refid="docbook.catalog"/>
+        </xslt>
+-->
+        <!-- Create a PDF from the XSL/FO. -->
+        <java classname="org.apache.fop.apps.Fop" 
+	      maxmemory="${maxmem}"
+              fork="true" dir="${basedir}">
+            <classpath refid="lib.classpath"/>
+            <arg value="${build.dir}/${lang}/pdf/docbook_fop.tmp"/>
+            <arg value="${build.dir}/${lang}/pdf/${pdf.name}"/>
+        </java>
+
+        <!-- Delete temporary files. -->
+        <delete file="${build.dir}/${lang}/pdf/docbook_fop.tmp"/>
+        <delete dir="${build.dir}/${lang}/pdf/images"/>
+    </target>
+
+    <target name="lang.dochtml">
+        <mkdir dir="${build.dir}/${lang}/html/"/>
+
+        <!-- Copy all the images to the output location -->
+        <copy todir="${build.dir}/${lang}/html/images">
+            <fileset dir="${basedir}/${lang}/images">
+                <include name="**/*.png"/>
+                <include name="**/*.gif"/>
+                <include name="**/*.jpg"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.dir}/${lang}/html/css">
+            <fileset dir="${styles.dir}/${lang}">
+                <include name="**/*.css"/>
+            </fileset>
+        </copy>
+
+        <java classname="com.icl.saxon.StyleSheet"
+              fork="true" dir="${build.dir}/${lang}/html">
+            <classpath refid="lib.classpath"/>
+            <arg value="${basedir}/${lang}/master.xml"/>
+            <arg value="${styles.dir}/${lang}/${db.style.html}"/>
+        </java>
+    </target>
+
+    <target name="lang.dochtmlsingle">
+        <mkdir dir="${build.dir}/${lang}/html_single/"/>
+
+        <!-- Copy all the images to the output location -->
+        <copy todir="${build.dir}/${lang}/html_single/images">
+            <fileset dir="${basedir}/${lang}/images">
+                <include name="**/*.png"/>
+                <include name="**/*.gif"/>
+                <include name="**/*.jpg"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.dir}/${lang}/html_single/css">
+            <fileset dir="${styles.dir}/${lang}">
+                <include name="**/*.css"/>
+            </fileset>
+        </copy>
+
+        <java classname="com.icl.saxon.StyleSheet" 
+	      fork="true" dir="${basedir}">
+            <classpath refid="lib.classpath"/>
+            <arg value="-o"/>
+            <arg value="${build.dir}/${lang}/html_single/index.html"/>
+            <arg value="${basedir}/${lang}/master.xml"/>
+            <arg value="${styles.dir}/${lang}/${db.style.htmlsingle}"/>
+        </java>
+    </target>
+
+    <!-- I do not really like to have external dependency for HTML pages 
+         So, I am not using this task ... -->
+    <target name="lang.htmlmisc">
+        <!-- Copy images and CSS for HTML documentation, language specific. -->
+        <copy todir="${build.dir}/${lang}/shared/images">
+            <fileset dir="${basedir}/${lang}/images">
+                <include name="**/*.png"/>
+                <include name="**/*.gif"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${build.dir}/${lang}/shared/css">
+            <fileset dir="${styles.dir}/${lang}">
+                <include name="**/*.css"/>
+            </fileset>
+        </copy>
+    </target>
+</project>
