@@ -91,9 +91,7 @@
    <property name="junit.haltonfailure" value="false"/>
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
-   <property name="junit.timeout" value="1200000"/>
-
-   <property name="junit.timeout2" value="300000"/>
+   <property name="junit.timeout" value="100000"/>
    <property name="stress.timeout" value="4800000"/>
 
    <property name="junit.showoutput" value="true"/>
@@ -318,7 +316,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -364,7 +362,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -403,7 +401,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -489,7 +487,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -649,7 +647,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -703,7 +701,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
@@ -738,7 +736,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
@@ -771,7 +769,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
@@ -809,7 +807,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout2}">
+             timeout="${junit.timeout}">
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
