@@ -84,6 +84,22 @@
       <ant antfile="build-messaging.xml" target="artifacts"/>
    </target>
 
+   <target name="archive-functional" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="archive-functional"/>
+   </target>
+
+   <target name="archive-stress" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="archive-stress"/>
+   </target>
+
+   <target name="archive-smoke" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="archive-smoke"/>
+   </target>
+
+   <target name="release-bundle" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="release-bundle"/>
+   </target>
+
    <target name="clean">
       <ant antfile="build-messaging.xml" target="clean"/>
    </target>

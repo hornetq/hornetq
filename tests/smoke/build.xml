@@ -29,6 +29,8 @@
    <property name="run.ejb3mdb.example" value="false"/>
    <property name="run.secure-socket.example" value="true"/>
 
+   <property name="jboss.home" value="${jboss.compatibility.home}"/>
+
    <path id="twiddle.classpath">
       <pathelement location="${jboss.home}/bin/twiddle.jar"/>
       <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
@@ -42,7 +44,13 @@
    <!--      Configurable Targets                                                -->
    <!-- ======================================================================== -->
 
-   <target name="all">
+   <target name="insure-smoke-properties">
+      <available file="./smoke.properties" property="smoke.properties.present"/>
+      <fail message="The ./smoke.properties file NOT available. Create one based on 'smoke.properties.example' and try again."
+            unless="smoke.properties.present"/>
+   </target>
+
+   <target name="all" depends="insure-smoke-properties">
 
       <mkdir dir="./output"/>
       <delete file="./output/smoke.log" quiet="true"/>
@@ -51,7 +59,7 @@
 
       <antcall target="old-server-compatibility-tests">
          <param name="smoke.test.type" value="client.compatibility"/>
-      </antcall>
+      </antcall>                                           
       <antcall target="old-client-compatibility-tests">
          <param name="smoke.test.type" value="server.compatibility"/>
       </antcall>
@@ -153,9 +161,11 @@
 
       <!--
 
-      http://jira.jboss.com/jira/browse/JBMESSAGING-427
+           http://jira.jboss.com/jira/browse/JBMESSAGING-427
+           Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
+      -->
 
-      Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
+      <!--
 
       <antcall target="old-server-compatibility-test">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
@@ -169,24 +179,20 @@
 
       -->
 
+      <antcall target="old-server-compatibility-test">
+         <param name="jboss.home" value="${jboss.compatibility.home}"/>
+         <param name="jboss.messaging.version" value="1.0.1.CR3"/>
+      </antcall>
+
    </target>
 
    <target name="old-client-compatibility-tests">
 
-      <!-- http://jira.jboss.com/jira/browse/JBMESSAGING-427
-
-      Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
-
-      -->
-
-      <!--
 
       <antcall target="create-messaging-config">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
       </antcall>
-
-      -->
 
       <!-- ====================================================  -->
       <!--                                                       -->
@@ -195,6 +201,11 @@
       <!-- ====================================================  -->
 
       <!--
+           http://jira.jboss.com/jira/browse/JBMESSAGING-427
+           Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
+      -->
+
+      <!--
 
       <antcall target="old-client-compatibility-test">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
@@ -208,13 +219,18 @@
          <param name="jboss.messaging.version" value="1.0.1.CR2"/>
       </antcall>
 
+      -->
+
+      <antcall target="old-client-compatibility-test">
+         <param name="jboss.home" value="${jboss.compatibility.home}"/>
+         <param name="jboss.configuration" value="current-version-server"/>
+         <param name="jboss.messaging.version" value="1.0.1.CR3"/>
+      </antcall>
 
       <antcall target="clean-messaging-config">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
       </antcall>
-
-      -->
 
    </target>
 
@@ -289,7 +305,7 @@
    <target name="run-example">
 
       <!--
-           determine if a specific example should run with a specific test; to prevent a test from
+           Determine if a specific example should run with a specific test; to prevent a test from
            running an example, set "run.<examplename>.example to false.
        -->
       <condition property="do.run" value="true">
@@ -638,28 +654,6 @@
 
       <pathconvert targetos="unix" property="classpath.tostring.property" refid="twiddle.classpath"/>
       <echo message="${classpath.tostring.property}"/>
-
-   </target>
-
-   <!-- ======================================================================== -->
-   <!--      Temporary Targets                                                   -->
-   <!-- ======================================================================== -->
-
-   <!-- GET RID OF THIS WHEN http://jira.jboss.org/jira/browse/JBMESSAGING-391 IS FIXED! -->
-   <target name="ssh">
-
-      <mkdir dir="./output"/>
-      <delete file="./output/smoke.log" quiet="true"/>
-      <antcall target="build-deployment-archives-from-scratch"/>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${ENV.JBOSS_HOME}"/>
-         <param name="run.queue.example" value="false"/>
-         <param name="run.topic.example" value="false"/>
-         <param name="run.mdb.example" value="false"/>
-         <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="true"/>
-      </antcall>
 
    </target>
 
