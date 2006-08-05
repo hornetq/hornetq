@@ -86,7 +86,9 @@
           <root url="jar://$MODULE_DIR$/lib/jboss-remoting.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../cvs/JBossRemoting-2.0.0.Beta2/src/main" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -158,7 +160,20 @@
           <root url="jar://$MODULE_DIR$/thirdparty/oswego-concurrent/lib/concurrent.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../concurrent-1.3.4/src" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/thirdparty/jboss/aop/lib/jboss-aop.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../jboss-aop_1.5.0.GA/src/aspect-framework/main" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntryProperties />

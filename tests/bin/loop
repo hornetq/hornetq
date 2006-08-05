@@ -12,7 +12,7 @@ while [ $i -lt $count ]; do
    echo "#                                           #"
    echo "#############################################"
    echo ""
-   #cat /dev/null ../output/logs/messaging-tests.trace.log
+   cat /dev/null > ../output/logs/messaging-tests.trace.log
    if ! ./runtest; then
 		echo "Test failed on loop $i"
       exit 1

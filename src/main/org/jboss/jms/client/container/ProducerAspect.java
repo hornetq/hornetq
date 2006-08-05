@@ -232,9 +232,9 @@ public class ProducerAspect
       messageToSend.setJMSMessageID(null);
       messageToSend.setMessageId(id);
       
-      //If the message has already been sent we need to make a shallow copy since if we are invm then we do not
-      //want to change the ids of messages already sent - which would happen if we were sending the same
-      //underlying instance
+      // If the message has already been sent we need to make a shallow copy since if we are invm
+      // then we do not want to change the ids of messages already sent - which would happen if we
+      // were sending the same underlying instance.
       if (doCopy)
       {
          messageToSend = messageToSend.doShallowCopy();

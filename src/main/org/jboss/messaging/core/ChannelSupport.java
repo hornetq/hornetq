@@ -46,14 +46,12 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
- * Channel implementation. It supports atomicity, isolation and recoverability of
- * reliable messages.
- * The channel implementation here uses a "SEDA-type"
- * approach, where requests to handle messages, deliver to receivers or
- * acknowledge messages are not executed concurrently but placed on an event
- * queue and executed serially by a single thread. This prevents lock contention
- * since requests are executed serially, resulting in better scalability and
- * higher throughput at the expense of some latency
+ * Channel implementation. It supports atomicity, isolation and recoverability of reliable messages.
+ * The channel implementation here uses a "SEDA-type" approach, where requests to handle messages,
+ * deliver to receivers or acknowledge messages are not executed concurrently but placed on an event
+ * queue and executed serially by a single thread. This prevents lock contention since requests are
+ * executed serially, resulting in better scalability and higher throughput at the expense of some
+ * latency.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -210,12 +208,10 @@ public abstract class ChannelSupport implements Channel
 
       try
       {
-         // Instead of executing directly, we add the handle request to the
-         // event queue
-         // Since remoting doesn't currently handle non blocking IO, we still
-         // have to wait for the result
-         // But when remoting does, we can use a full SEDA approach and get even
-         // better throughput
+         // Instead of executing directly, we add the handle request to the event queue.
+         // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
+         // result, but when remoting does, we can use a full SEDA approach and get even better
+         // throughput.
          this.executor.execute(new HandleRunnable(result, sender, r, tx));
       }
       catch (InterruptedException e)
@@ -223,7 +219,7 @@ public abstract class ChannelSupport implements Channel
          log.warn("Thread interrupted", e);
       }
 
-      return (Delivery) result.getResult();
+      return (Delivery)result.getResult();
    }
 
    // DeliveryObserver implementation --------------------------
@@ -265,10 +261,7 @@ public abstract class ChannelSupport implements Channel
       {
          this.getCallback(tx).addDelivery(d);
 
-         if (trace)
-         {
-            log.trace(this + " added " + d + " to memory on transaction "
-                     + tx);
+         if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx);
          }
 
          if (recoverable && d.getReference().isReliable())
@@ -303,20 +296,13 @@ public abstract class ChannelSupport implements Channel
 
    public boolean add(Receiver r)
    {
-      if (trace)
-      {
-         log.trace(this + " attempting to add receiver " + r);
-      }
+      if (trace) { log.trace(this + " attempting to add receiver " + r); }
 
       boolean added = router.add(r);
 
-      if (trace)
-      {
-         log.trace("receiver " + r + (added ? "" : " NOT") + " added");
-      }
+      if (trace) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
       
       receiversReady = true;
-
       return added;
    }
 
@@ -324,10 +310,7 @@ public abstract class ChannelSupport implements Channel
    {
       boolean removed = router.remove(r);
 
-      if (trace)
-      {
-         log.trace(this + (removed ? " removed " : " did NOT remove ") + r);
-      }
+      if (trace) { log.trace(this + (removed ? " removed " : " did NOT remove ") + r); }
 
       return removed;
    }
@@ -422,7 +405,7 @@ public abstract class ChannelSupport implements Channel
          
          if (synchronous)
          {
-            //Wait to complete
+            // Wait to complete
             future.getResult();
          }
       }
@@ -645,8 +628,8 @@ public abstract class ChannelSupport implements Channel
    {
       try
       {
-         //The iterator is used to iterate through the refs in the channel in the case
-         //That they don't match the selectors of any receivers
+         // The iterator is used to iterate through the refs in the channel in the case that they
+         // don't match the selectors of any receivers.
          ListIterator iter = null;
          
          MessageReference ref = null;
@@ -803,22 +786,14 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected Delivery handleInternal(DeliveryObserver sender, Routable r,
-            Transaction tx)
+   protected Delivery handleInternal(DeliveryObserver sender, Routable r, Transaction tx)
    {
       if (r == null)
       {
          return null;
       }
 
-      if (trace)
-      {
-         log.trace(this
-                  + " handles "
-                  + r
-                  + (tx == null ? " non-transactionally" : " in transaction: "
-                           + tx));
-      }
+      if (trace) { log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
 
       MessageReference ref = obtainReference(r);
 
@@ -859,20 +834,15 @@ public abstract class ChannelSupport implements Channel
             if (ref.isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
-               if (trace)
-               {
-                  log.trace("adding " + ref
-                           + " to database non-transactionally");
-               }
+               if (trace) { log.trace(this + "adding " + ref + " to database non-transactionally"); }
 
                pm.addReference(channelID, ref, null);               
             }
             
             addReferenceInMemory(ref);
 
-            // We only do delivery if there are receivers that haven't said they
-            // don't want
-            // any more references
+            // We only do delivery if there are receivers that haven't said they don't want
+            // any more references.
             if (receiversReady)
             {
                // Prompt delivery
@@ -881,14 +851,7 @@ public abstract class ChannelSupport implements Channel
          }
          else
          {
-            if (trace)
-            {
-               log.trace("adding "
-                        + ref
-                        + " to state "
-                        + (tx == null ? "non-transactionally"
-                                 : "in transaction: " + tx));
-            }
+            if (trace) { log.trace(this + "adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx)); }
 
             checkMemory();
 
@@ -919,13 +882,7 @@ public abstract class ChannelSupport implements Channel
             if (ref.isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
-               if (trace)
-               {
-                  log.trace("adding "
-                           + ref
-                           + (tx == null ? " to database non-transactionally"
-                                    : " in transaction: " + tx));
-               }
+               if (trace) { log.trace(this + "adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
 
                pm.addReference(channelID, ref, tx);
             }
@@ -1063,7 +1020,7 @@ public abstract class ChannelSupport implements Channel
          }
          else
          {
-            // Each channel has it's own copy of the reference
+            // Each channel has its own copy of the reference
             ref = ((MessageReference) r).copy();
          }
 
@@ -1582,6 +1539,12 @@ public abstract class ChannelSupport implements Channel
          executeAndWaitForResult();
       }
 
+      public String toString()
+      {
+         return ChannelSupport.this + ".InMemoryCallback[" +
+                Integer.toHexString(InMemoryCallback.this.hashCode()) + "]";
+      }
+
       private void executeAndWaitForResult() throws TransactionException
       {
          result = new Future();
@@ -1627,11 +1590,7 @@ public abstract class ChannelSupport implements Channel
          {
             MessageReference ref = (MessageReference) iter.next();
 
-            if (trace)
-            {
-               log.trace(this + ": adding " + ref
-                                 + " to non-recoverable state");
-            }
+            if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
 
             try
             {
@@ -1684,6 +1643,7 @@ public abstract class ChannelSupport implements Channel
             ref.releaseMemoryReference();
          }
       }
+
    }
 
    /**
@@ -1770,8 +1730,7 @@ public abstract class ChannelSupport implements Channel
 
       Transaction tx;
 
-      HandleRunnable(Future result, DeliveryObserver sender, Routable routable,
-               Transaction tx)
+      HandleRunnable(Future result, DeliveryObserver sender, Routable routable, Transaction tx)
       {
          this.result = result;
          this.sender = sender;
@@ -1782,7 +1741,6 @@ public abstract class ChannelSupport implements Channel
       public void run()
       {
          Delivery d = handleInternal(sender, routable, tx);
-
          result.setResult(d);
       }
    }

@@ -122,10 +122,10 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
       return acceptReliableMessages;
    }
 
-   //TODO If we can assume that the message is not known to the store before
-   //(true when sending messages)
-   //Then we can avoid synchronizing on this and use a ConcurrentHashmap
-   //Which will give us much better concurrency for many threads
+   // TODO If we can assume that the message is not known to the store before
+   // (true when sending messages)
+   // Then we can avoid synchronizing on this and use a ConcurrentHashmap
+   // Which will give us much better concurrency for many threads
    public MessageReference reference(Message m)
    {
       if (m.isReliable() && !acceptReliableMessages)

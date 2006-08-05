@@ -19,8 +19,7 @@
       <param name="Append" value="true"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
-
+         <param name="ConversionPattern" value="%d %-5r %-5p [%c] @%t %m%n"/>
       </layout>
    </appender>
 

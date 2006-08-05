@@ -19,8 +19,7 @@
       <param name="Append" value="true"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
-
+         <param name="ConversionPattern" value="%d %-5r %-5p [%c] @%t %m%n"/>
       </layout>
    </appender>
 
@@ -55,6 +54,16 @@
 
    <category name="org.jboss.test">
       <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
+   <!-- Ignoring trace from these: -->
+
+   <category name="org.jboss.jms.server.remoting.JMSServerInvocationHandler">
+      <priority value="DEBUG"/>
+   </category>
+
+   <category name="org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager">
+      <priority value="DEBUG"/>
    </category>
 
    <root>

@@ -55,7 +55,7 @@ public class InjectionAspect
     {
        MethodInvocation mi = (MethodInvocation)invocation;
        
-       //First we inject the callback client for the connection
+       // First we inject the callback client for the connection
        
        ServerInvokerCallbackHandler handler =
           (ServerInvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS,
@@ -75,7 +75,7 @@ public class InjectionAspect
        
        endpoint.setCallbackClient(handler.getCallbackClient());
        
-       //Then we inject the remoting session id of the client
+       // Then we inject the remoting session id of the client
        String sessionId =
           (String)mi.getMetaData(MetaDataConstants.JMS,
                                  MetaDataConstants.REMOTING_SESSION_ID);
@@ -85,7 +85,7 @@ public class InjectionAspect
           throw new IllegalStateException("Can't find session id");
        }
        
-       //Then we inject the unique id of the client VM
+       // Then we inject the unique id of the client VM
        String jmsClientVMID =
           (String)mi.getMetaData(MetaDataConstants.JMS,
                                  MetaDataConstants.JMS_CLIENT_VM_ID);
@@ -97,7 +97,7 @@ public class InjectionAspect
        
        endpoint.setRemotingInformation(jmsClientVMID, sessionId);       
        
-       //Then we inject the version number from to be used
+       // Then we inject the version number from to be used
        
        Byte ver =
           (Byte)mi.getMetaData(MetaDataConstants.JMS,

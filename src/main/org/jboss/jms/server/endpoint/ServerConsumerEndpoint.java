@@ -101,16 +101,16 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
    private List toDeliver;
    
-   //Must be volatile
+   // Must be volatile
    private volatile boolean clientConsumerFull;
    
-   //Must be volatile
+   // Must be volatile
    private volatile boolean bufferFull;
    
-   //No need to be volatile - is protected by lock
+   // No need to be volatile - is protected by lock
    private boolean started;
    
-   //No need to be volatile
+   //No need to be volatile - is protected by lock
    private boolean closed;
    
    //No need to be volatile
@@ -132,40 +132,36 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                                     int prefetchSize)
                                     throws InvalidSelectorException
    {
-      if (trace) { log.trace("creating consumer endpoint " + id); }
+      if (trace) { log.trace("constructing consumer endpoint " + id); }
          
       this.id = id;
       this.channel = channel;
       this.sessionEndpoint = sessionEndpoint;
       this.prefetchSize = prefetchSize;
       
-      //We always created with clientConsumerFull = true
-      //This prevents the SCD sending messages to the client before the client has fully
-      //finished creating the MessageCallbackHandler      
+      // We always created with clientConsumerFull = true. This prevents the SCD sending messages to
+      // the client before the client has fully finished creating the MessageCallbackHandler.
       this.clientConsumerFull = true;
             
-      //We allocate an executor for this consumer based on the destination name
-      //so that all consumers for the same destination currently use the same executor
-      //(we can change this if need be)
-      //Note that they do not use the same executor as the channel of the destination
+      // We allocate an executor for this consumer based on the destination name so that all
+      // consumers for the same destination currently use the same executor (we can change this if
+      // need be). Note that they do not use the same executor as the channel of the destination.
       QueuedExecutorPool pool =
          sessionEndpoint.getConnectionEndpoint().getServerPeer().getQueuedExecutorPool();
       
       this.executor = (QueuedExecutor)pool.get("consumer" + dest.getName());
              
-      /*
-      Note that using a PooledExecutor with a linked queue is not sufficient to ensure that
-      deliveries for the same consumer happen serially, since even if they are queued serially
-      the actual deliveries can happen in parallel, resulting in a later one "overtaking" an earlier
-      non-deterministicly depending on thread scheduling.
-      Consequently we use a QueuedExecutor to ensure the deliveries happen sequentially.
-      We do not want each ServerConsumerEndpoint instance to have it's own instance - since
-      we would end up using too many threads, neither do we want to share the same instance
-      amongst all consumers - we do not want to serialize delivery to all consumers.
-      So we maintain a bag of QueuedExecutors and give them out to consumers as required.
-      Different consumers can end up using the same queuedexecutor concurrently if there are a lot
-      of active consumers. 
-      */      
+      // Note that using a PooledExecutor with a linked queue is not sufficient to ensure that
+      // deliveries for the same consumer happen serially, since even if they are queued serially
+      // the actual deliveries can happen in parallel, resulting in a later one "overtaking" an
+      // earlier non-deterministicly depending on thread scheduling.
+      // Consequently we use a QueuedExecutor to ensure the deliveries happen sequentially. We do
+      // not want each ServerConsumerEndpoint instance to have its own instance - since we would
+      // end up using too many threads, neither do we want to share the same instance amongst all
+      // consumers - we do not want to serialize delivery to all consumers. So we maintain a bag of
+      // QueuedExecutors and give them out to consumers as required. Different consumers can end up
+      // using the same queuedexecutor concurrently if there are a lot of active consumers.
+
       this.noLocal = noLocal;
       this.destination = dest;
       
@@ -190,36 +186,38 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       //Let's GET RID OF IT!!!!!!!!!!!
       this.deliveries = new LinkedHashMap();
             
-      this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();      // adding the consumer to the channel
+      this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
+
+      // adding the consumer to the channel
       this.channel.add(this);
       
-      //prompt delivery
+      // prompt delivery
       channel.deliver(false);
       
-      log.debug(this + " created");
+      log.debug(this + " constructed");
    }
 
    // Receiver implementation ---------------------------------------
 
    /*
-    * The channel ensures that handle is never called concurrently by more than one thread
+    * The channel ensures that handle is never called concurrently by more than one thread.
     */
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
-      if (trace) { log.trace(this + " receives reference " + reference.getMessageID() + " for delivery"); }
+      if (trace) { log.trace(this + " receives reference " + reference + " for delivery"); }
       
-      //This is ok to have outside lock - is volatile
+      // This is ok to have outside lock - is volatile
       if (bufferFull)
       {
-         //We buffer a maximum of PREFETCH_LIMIT messages at once
+         // We buffer a maximum of PREFETCH_LIMIT messages at once
          
          if (trace) { log.trace(this + " has reached prefetch size will not accept any more references"); }
          
          return null;
       }
        
-      //Need to synchronized around the whole block to prevent setting started = false
-      //but handle is already running and a message is deposited during the stop procedure
+      // Need to synchronized around the whole block to prevent setting started = false
+      // but handle is already running and a message is deposited during the stop procedure.
       synchronized (lock)
       {  
          // If the consumer is stopped then we don't accept the message, it should go back into the
@@ -261,7 +259,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    
          MessageProxy mp = JBossMessage.createThinDelegate(message, ref.getDeliveryCount());
     
-         //Add the proxy to the list to deliver
+         // Add the proxy to the list to deliver
                            
          toDeliver.add(mp);     
           
@@ -572,7 +570,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {             
       synchronized (lock)
       {
-         //can't start or stop it if it is closed
+         // Can't start or stop it if it is closed.
          if (closed)
          {
             return;
@@ -586,7 +584,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
          started = true;
       }
       
-      //Prompt delivery
+      // Prompt delivery
       channel.deliver(false);
    }
    
@@ -707,11 +705,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {
       public void run()
       {
-         //Is there anything to deliver?
-         //This is ok outside lock - is volatile
+         // Is there anything to deliver?
+         // This is ok outside lock - is volatile
          if (clientConsumerFull)
          {
-            //Do nothing
+            // Do nothing
             return;
          }
          
@@ -740,22 +738,22 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             
                ClientDelivery del = new ClientDelivery(list, id);
                
-               //TODO How can we ensure that messages for the same consumer aren't delivered
-               //concurrently to the same consumer on different threads?
+               // TODO How can we ensure that messages for the same consumer aren't delivered
+               // concurrently to the same consumer on different threads?
                MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), del);
                
-               MessagingMarshallable resp = (MessagingMarshallable)connection.getCallbackClient().invoke(mm);    
+               MessagingMarshallable resp = (MessagingMarshallable)connection.getCallbackClient().invoke(mm);
+
+               if (trace) { log.trace("handed messages over to the remoting layer"); }
                 
                HandleMessageResponse result = (HandleMessageResponse)resp.getLoad();
-               
-               if (trace) { log.trace("handed messages over to the remoting layer"); }
-               
-               //For now we don't look at how many messages are accepted since they all will be
-               //The field is a placeholder for the future
+
+               // For now we don't look at how many messages are accepted since they all will be.
+               // The field is a placeholder for the future.
                if (result.clientIsFull())
                {
-                  //Stop the server sending any more messages to the client
-                  //This is ok outside lock
+                  // Stop the server sending any more messages to the client.
+                  // This is ok outside lock.
                   clientConsumerFull = true;       
                }                               
             }

@@ -436,7 +436,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             }
          }      
                  
-         if (trace) { log.trace("request processed ok"); }      
+         if (trace) { log.trace(this + " processed transaction successfully"); }
       }
       catch (Throwable t)
       {
@@ -498,7 +498,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       callbackClient.setUnMarshaller(new JMSWireFormat());
    }
    
-   //IOC
+   // IOC
    public void setRemotingInformation(String jmsClientVMId, String remotingClientSessionId)
    {
       this.remotingClientSessionId = remotingClientSessionId;

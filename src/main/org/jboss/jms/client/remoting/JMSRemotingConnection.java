@@ -79,7 +79,7 @@ public class JMSRemotingConnection
 
       if (log.isTraceEnabled()) { log.trace("created client"); }
             
-      //Get the callback server
+      // Get the callback server
       
       callbackServer = CallbackServerFactory.instance.getCallbackServer(serverLocator);
       

@@ -261,10 +261,9 @@ public class SessionAspect
               
          if (handler == null)
          {
-            //This is ok.
-            
-            //The original consumer has closed, this message wil get cancelled
-            //back to the channel
+            // This is ok.
+
+            // The original consumer has closed, this message wil get cancelled back to the channel.
             
             toCancel.addFirst(info);            
          }

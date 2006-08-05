@@ -538,7 +538,7 @@ public class MessageCallbackHandler
    {
       if (timeout == -1)
       {
-         //receiveNoWait so don't wait
+         // receiveNoWait so don't wait
       }
       else
       {         
@@ -546,7 +546,7 @@ public class MessageCallbackHandler
          {         
             if (timeout == 0)
             {
-               //Wait for ever potentially
+               // Wait for ever potentially
                while (!closed && buffer.isEmpty())
                {
                   mainLock.wait();               
@@ -554,7 +554,7 @@ public class MessageCallbackHandler
             }
             else
             {
-               //Wait with timeout
+               // Wait with timeout
                long toWait = timeout;
              
                while (!closed && buffer.isEmpty() && toWait > 0)

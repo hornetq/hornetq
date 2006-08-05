@@ -207,14 +207,12 @@ public class CallbackServerFactory
    protected void stopCallbackServer(Connector server)
    {
       server.stop();
-      
       server.destroy();
    }
    
    private class Holder
    {
       Connector server;
-      
       int refCount = 1;
    }
   

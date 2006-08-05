@@ -153,7 +153,7 @@ public class ClientConnectionFactoryDelegate
 
       if ("createConnectionDelegate".equals(methodName))
       {
-         //Create a new connection
+         // Create a new connection
          
          remotingConnection = new JMSRemotingConnection(serverLocatorURI, clientPing);
          
@@ -231,7 +231,7 @@ public class ClientConnectionFactoryDelegate
       
       if (remotingConnection != null)
       {
-         //It was a call to createConnectionDelegate - set the remoting connection to use
+         // It was a call to createConnectionDelegate - set the remoting connection to use
          ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)ret;
          
          connectionDelegate.setRemotingConnection(remotingConnection);
