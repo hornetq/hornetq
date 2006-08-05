@@ -60,7 +60,7 @@ public class RoundRobinPointToPointRouter implements Router
    
    private boolean trace = log.isTraceEnabled();
 
-   //It's important that we're actually using an ArrayList for fast array access
+   // it's important that we're actually using an ArrayList for fast array access
    protected ArrayList receivers;
    
    protected int pos;
@@ -70,7 +70,6 @@ public class RoundRobinPointToPointRouter implements Router
    public RoundRobinPointToPointRouter()
    {
       receivers = new ArrayList();
-      
       reset();
    }
 
@@ -79,8 +78,9 @@ public class RoundRobinPointToPointRouter implements Router
    public Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       Set deliveries = new HashSet();
-      
       boolean selectorRejected = false;
+      ArrayList receiversCopy = null;
+      int firstPos;
       
       synchronized(receivers)
       {
@@ -88,53 +88,57 @@ public class RoundRobinPointToPointRouter implements Router
          {
             return deliveries;
          }
-         
-         int firstPos = pos;
-         
-         while (true)
+         // make a copy to avoid deadlock (http://jira.jboss.org/jira/browse/JBMESSAGING-491)
+         int crtSize = receivers.size();
+         receiversCopy = new ArrayList(crtSize);
+         receiversCopy.addAll(receivers);
+         if (pos >= crtSize)
          {
-            Receiver receiver = (Receiver)receivers.get(pos);
-            
-            try
-            {
-               Delivery d = receiver.handle(observer, routable, tx);
+            pos = 0;
+         }
+         firstPos = pos;
+      }
 
-               if (trace) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
-     
-               if (d != null && !d.isCancelled())
+      while (true)
+      {
+         Receiver receiver = (Receiver)receiversCopy.get(pos);
+
+         try
+         {
+            Delivery d = receiver.handle(observer, routable, tx);
+
+            if (trace) { log.trace("receiver " + receiver + " handled " + routable + " and returned " + d); }
+
+            if (d != null && !d.isCancelled())
+            {
+               if (d.isSelectorAccepted())
                {
-                  if (d.isSelectorAccepted())
-                  {
-                     // deliver to the first receiver that accepts
-                     deliveries.add(d);
-                     
-                     incPos();
-                     
-                     break;
-                  }
-                  else
-                  {
-                     selectorRejected = true;
-                  }
+                  // deliver to the first receiver that accepts
+                  deliveries.add(d);
+                  incPos();
+                  break;
+               }
+               else
+               {
+                  selectorRejected = true;
                }
             }
-            catch(Throwable t)
-            {
-               // broken receiver - log the exception and ignore it
-               log.error("The receiver " + receiver + " is broken", t);
-            }
-            
-            incPos();
-            
-            //If we've tried them all then we break
-            
-            if (pos == firstPos)
-            {
-               break;
-            }            
+         }
+         catch(Throwable t)
+         {
+            // broken receiver - log the exception and ignore it
+            log.error("The receiver " + receiver + " is broken", t);
+         }
+
+         incPos();
+
+         // if we've tried them all then we break
+         if (pos == firstPos)
+         {
+            break;
          }
       }
-      
+
       if (deliveries.isEmpty() && selectorRejected)
       {
          deliveries.add(new SimpleDelivery(null, null, true, false));
@@ -209,8 +213,7 @@ public class RoundRobinPointToPointRouter implements Router
    
    protected void reset()
    {
-      //Reset back to the first one
-      
+      // Reset back to the first one
       pos = 0;
    }
    
@@ -218,9 +221,8 @@ public class RoundRobinPointToPointRouter implements Router
    {
       pos++;
       
-      //Wrap around
-      
-      if (pos == receivers.size())
+      // Wrap around
+      if (pos >= receivers.size())
       {
          pos = 0;
       }
