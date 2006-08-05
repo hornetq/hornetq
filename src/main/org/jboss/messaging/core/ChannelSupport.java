@@ -719,7 +719,7 @@ public abstract class ChannelSupport implements Channel
                   }
                   else
                   {
-                     if (trace) { log.trace(this + ": delivery returned for message:" + ref); }
+                     if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
                      
                      //Receiver accepted the reference
 

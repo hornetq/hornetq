@@ -234,18 +234,17 @@ public class MessageCallbackHandler
     */
    public HandleMessageResponse handleMessage(List msgs) throws HandleCallbackException
    {            
-      if (trace) { log.trace(this + " receiving " + msgs.size() + " messages from the remoting layer"); }            
+      if (trace) { log.trace(this + " receiving " + msgs.size() + " message(s) from the remoting layer"); }
                       
       synchronized (mainLock)
       {
          if (closed)
          {             
-            //Ignore
+            // Ignore
             return new HandleMessageResponse(false, 0);
          }
                                       
-         //Put the messages in the buffer
-         //And notify any waiting receive()
+         // Put the messages in the buffer and notify any waiting receive()
          
          processMessages(msgs);
                    
@@ -255,16 +254,15 @@ public class MessageCallbackHandler
          
          boolean full = buffer.size() >= bufferSize;         
          
-         if (trace) { log.trace(this + " receiving messages from the remoting layer"); }            
-                   
          messagesAdded();
          
          if (full)
          {
             serverSending = false;
+            if (trace) { log.trace(this + " is full"); }
          }
                                           
-         //For now we always accept all messages - in the future this may change
+         // For now we always accept all messages - in the future this may change
          return new HandleMessageResponse(full, msgs.size());
       }
    }
@@ -438,11 +436,10 @@ public class MessageCallbackHandler
                   }
                }
                               
-               if (trace) { log.trace("received " + m + " after being blocked on the buffer"); }
+               if (trace) { log.trace("received " + m + " after being blocked on buffer"); }
                        
-               //If message is expired we still call pre and post deliver
-               //this makes sure the message is acknowledged so it gets removed
-               //from the queue/subscription
+               // If message is expired we still call pre and post deliver. This makes sure the
+               // message is acknowledged so it gets removed from the queue/subscription.
                preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
                
                postDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
@@ -582,7 +579,8 @@ public class MessageCallbackHandler
       {
          m = (MessageProxy)buffer.removeFirst();
          
-         if (trace) { log.trace("Got message:" + m); }                  
+         if (trace) { log.trace("got " + m + " from buffer"); }
+
       }
       else
       {
@@ -625,7 +623,7 @@ public class MessageCallbackHandler
    
    private void messagesAdded()
    {
-      //If we have a thread waiting on receive() we notify it
+      // If we have a thread waiting on receive() we notify it
       if (receiverThread != null)
       {
          if (trace) { log.trace(this + " notifying receiver thread"); }            
@@ -633,10 +631,12 @@ public class MessageCallbackHandler
       }     
       else if (listener != null)
       { 
-         //We have a message listener
+         // We have a message listener
          if (!listenerRunning)
          {
             listenerRunning = true;
+
+            if (trace) { log.trace(this + ": new ListenerRunner scheduled"); }
             this.queueRunner(new ListenerRunner());
          }     
          
