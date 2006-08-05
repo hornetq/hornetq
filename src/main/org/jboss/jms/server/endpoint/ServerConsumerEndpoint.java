@@ -107,13 +107,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    // Must be volatile
    private volatile boolean bufferFull;
    
-   // No need to be volatile - is protected by lock
-   private boolean started;
+   // Must be volatile
+   private volatile boolean started;
    
-   //No need to be volatile - is protected by lock
+   // No need to be volatile - is protected by lock
    private boolean closed;
    
-   //No need to be volatile
+   // No need to be volatile
    private boolean disconnected;
    
    private Executor executor;
@@ -204,7 +204,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
     */
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
-      if (trace) { log.trace(this + " receives reference " + reference + " for delivery"); }
+      if (trace) { log.trace(this + " receives " + reference + " for delivery"); }
       
       // This is ok to have outside lock - is volatile
       if (bufferFull)
@@ -338,9 +338,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       {
          synchronized (lock)
          { 
-            //On close we only disconnect the consumer from the Channel we don't actually remove it
-            // This is because it may still contain deliveries that may well be acknowledged after
-            // the consumer has closed. This is perfectly valid.      
+            // On close we only disconnect the consumer from the Channel we don't actually remove
+            // it. This is because it may still contain deliveries that may well be acknowledged
+            // after the consumer has closed. This is perfectly valid.
+
             //FIXME - The deliveries should really be stored in the session endpoint, not here
             //that is their natural place, that would mean we wouldn't have to mess around with keeping
             //deliveries after this is closed
@@ -734,7 +735,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
             try
             {
-               if (trace) { log.trace("handing " + list.size() + " messages over to the remoting layer"); }
+               if (trace) { log.trace("handing " + list.size() + " message(s) over to the remoting layer"); }
             
                ClientDelivery del = new ClientDelivery(list, id);
                
