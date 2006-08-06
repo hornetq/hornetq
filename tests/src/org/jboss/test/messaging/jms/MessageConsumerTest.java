@@ -2495,6 +2495,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
          sess2.unsubscribe("mySubscription1");
 
+         log.debug("unsubscribed 'mySubscription1'");
+
          conn2.close();
 
          Connection conn3 = cf.createConnection();
@@ -2517,10 +2519,13 @@ public class MessageConsumerTest extends MessagingTestCase
 
          assertEquals(NUM_MESSAGES, count);
 
+         log.debug("received " + NUM_MESSAGES + " messages");
+
          MessageConsumer durable4 = sess3.createDurableSubscriber(topic, "mySubscription1");
 
          Message m = durable4.receive(1000);
          assertNull(m);
+
       }
       finally
       {

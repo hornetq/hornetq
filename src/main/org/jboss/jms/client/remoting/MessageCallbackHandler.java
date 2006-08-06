@@ -98,7 +98,7 @@ public class MessageCallbackHandler
    
             if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
             {
-               //We redeliver at certain number of times
+               // We redeliver at certain number of times
                if (tries < MAX_REDELIVERIES)
                {
                   m.setJMSRedelivered(true);
@@ -380,7 +380,8 @@ public class MessageCallbackHandler
          
          if (closed)
          {
-            //If consumer is closed or closing calling receive returns null
+            // If consumer is closed or closing calling receive returns null
+            if (trace) { log.trace(this + " closed, returning null"); }
             return null;
          }
          
@@ -399,7 +400,7 @@ public class MessageCallbackHandler
             {                             
                if (timeout == 0)
                {
-                  if (trace) { log.trace("receive with no timeout"); }
+                  if (trace) { log.trace(this + ": receive, no timeout"); }
                   
                   m = getMessage(0);                     
                   
@@ -411,26 +412,26 @@ public class MessageCallbackHandler
                else if (timeout == -1)
                {
                   //ReceiveNoWait
-                  if (trace) { log.trace("receive noWait"); }                  
+                  if (trace) { log.trace(this + ": receive, noWait"); }
                   
                   m = getMessage(-1);                     
                   
                   if (m == null)
                   {
-                     if (trace) { log.trace("no message available"); }
+                     if (trace) { log.trace(this + ": no message available"); }
                      return null;
                   }
                }
                else
                {
-                  if (trace) { log.trace("receive timeout " + timeout + " ms, blocking poll on queue"); }
+                  if (trace) { log.trace(this + ": receive, timeout " + timeout + " ms, blocking poll on queue"); }
                   
                   m = getMessage(timeout);
                                     
                   if (m == null)
                   {
                      // timeout expired
-                     if (trace) { log.trace(timeout + " ms timeout expired"); }
+                     if (trace) { log.trace(this + ": " + timeout + " ms timeout expired"); }
                      
                      return null;
                   }
@@ -514,7 +515,7 @@ public class MessageCallbackHandler
    {
       long start = System.currentTimeMillis();
       
-      //Wait for last message to arrive
+      // Wait for last message to arrive
       lock.wait(waitTime);
      
       long waited = System.currentTimeMillis() - start;
@@ -522,7 +523,6 @@ public class MessageCallbackHandler
       if (waited < waitTime)
       {
          waitTime = waitTime - waited;
-         
          return waitTime;
       }
       else
@@ -543,50 +543,46 @@ public class MessageCallbackHandler
          {         
             if (timeout == 0)
             {
-               // Wait for ever potentially
+               // wait for ever potentially
                while (!closed && buffer.isEmpty())
                {
-                  mainLock.wait();               
+                  if (trace) { log.trace(this + " waiting on main lock, no timeout"); }
+
+                  mainLock.wait();
+
+                  if (trace) { log.trace(this + " done waiting on main lock"); }
                }
             }
             else
             {
-               // Wait with timeout
+               // wait with timeout
                long toWait = timeout;
              
                while (!closed && buffer.isEmpty() && toWait > 0)
                {
-                  if (trace) { log.trace("Waiting on lock"); }
+                  if (trace) { log.trace(this + " waiting on main lock, timeout " + toWait + " ms"); }
+
                   toWait = waitOnLock(mainLock, toWait);
-                  if (trace) { log.trace("Done waiting on lock, empty?" + buffer.isEmpty()); }
+
+                  if (trace) { log.trace(this + " done waiting on lock, buffer is " + (buffer.isEmpty() ? "" : "NOT ") + "empty"); }
                }
             }
          }
          catch (InterruptedException e)
          {
+            if (trace) { log.trace("InterruptedException, " + this + ".getMessage() returning null"); }
             return null;
          } 
       }
+
+      MessageProxy m = null;
              
-      if (closed)
-      {
-         return null;
-      }
-         
-      MessageProxy m = null;     
-      
-      if (!buffer.isEmpty())
+      if (!closed && !buffer.isEmpty())
       {
          m = (MessageProxy)buffer.removeFirst();
-         
-         if (trace) { log.trace("got " + m + " from buffer"); }
+      }
 
-      }
-      else
-      {
-         m = null;
-      }
-     
+      if (trace) { log.trace("InterruptedException, " + this + ".getMessage() returning " + m); }
       return m;
    }
    
