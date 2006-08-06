@@ -245,6 +245,10 @@
          <pathelement location="${project.root}/lib/jboss-remoting.jar"/>
       </path>
       <property name="current.jboss.remoting.lib" value="${project.root}/lib"/>
+      <echo message=""/>
+      <echo message="################################################"/>
+      <echo message="#       Using local lib/jboss-remoting.jar!    #"/>
+      <echo message="################################################"/>
    </target>
 
    <target name="use-repository-remoting" unless="local.remoting.present">
@@ -256,6 +260,10 @@
          <pathelement location="${project.root}/lib/jboss-serialization.jar"/>
       </path>
       <property name="current.jboss.serialization.lib" value="${project.root}/lib"/>
+      <echo message=""/>
+      <echo message="################################################"/>
+      <echo message="#   Using local lib/jboss-serialization.jar!   #"/>
+      <echo message="################################################"/>
    </target>
 
    <target name="use-repository-serialization" unless="local.serialization.present">
