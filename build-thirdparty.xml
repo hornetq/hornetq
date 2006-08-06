@@ -90,7 +90,7 @@
       <componentref name="jboss/common" version="snapshot"/>
       <componentref name="jboss/aop" version="1.5.0.GA"/>
       <componentref name="jboss/serialization" version="1.0.1.GA"/>
-      <componentref name="jboss/remoting" version="2.0.0.Beta2"/>
+      <componentref name="jboss/remoting" version="2.0.0.CR1"/>
 
       <!-- Need this otherwise project doesn't build in Eclipse -->
       <componentref name="apache-logging" version="1.0.5.GA-jboss"/>
