@@ -23,6 +23,7 @@ package org.jboss.jms.server;
 
 import org.jboss.messaging.util.RotatingPool;
 
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
@@ -43,7 +44,11 @@ public class QueuedExecutorPool extends RotatingPool
    
    protected Object createEntry()
    {
-      return new QueuedExecutor();
+      //We make sure the executor queue is not bounded
+      //otherwise we could end up with everything grinding to a halt if the
+      //same executor  is shared by many consumers and it gets full
+      //The default bounded linked queue will block
+      return new QueuedExecutor(new LinkedQueue());
    }
    
    public void shutdown()

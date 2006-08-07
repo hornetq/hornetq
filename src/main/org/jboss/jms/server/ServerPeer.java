@@ -94,7 +94,7 @@ public class ServerPeer extends ServiceMBeanSupport
    protected String defaultQueueJNDIContext;
    protected String defaultTopicJNDIContext;
    
-   protected int queuedExecutorPoolSize = 50;
+   protected int queuedExecutorPoolSize = 200;
 
    protected boolean started;
 

@@ -80,11 +80,11 @@ public class RelayStressTest extends MessagingTestCase
       
       Topic topic = (Topic)ic.lookup("/topic/StressTestTopic");
       
-      final int numMessages = 50000;
+      final int numMessages = 20000;
       
-      final int numRelayers = 10;
+      final int numRelayers = 5;
       
-      final int numConsumers = 50;
+      final int numConsumers = 20;
       
       Connection conn = cf.createConnection();
       

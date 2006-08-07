@@ -143,13 +143,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       // the client before the client has fully finished creating the MessageCallbackHandler.
       this.clientConsumerFull = true;
             
-      // We allocate an executor for this consumer based on the destination name so that all
-      // consumers for the same destination currently use the same executor (we can change this if
-      // need be). Note that they do not use the same executor as the channel of the destination.
+      // We allocate an executor from the rotating pool for each consumer based on it's id
+      // This gives better latency than each consumer for the destination using the same
+      // executor
       QueuedExecutorPool pool =
          sessionEndpoint.getConnectionEndpoint().getServerPeer().getQueuedExecutorPool();
       
-      this.executor = (QueuedExecutor)pool.get("consumer" + dest.getName());
+      this.executor = (QueuedExecutor)pool.get("consumer" + id);
              
       // Note that using a PooledExecutor with a linked queue is not sufficient to ensure that
       // deliveries for the same consumer happen serially, since even if they are queued serially

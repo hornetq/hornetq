@@ -206,20 +206,27 @@ public abstract class ChannelSupport implements Channel
       
       Future result = new Future();
 
-      try
-      {
-         // Instead of executing directly, we add the handle request to the event queue.
-         // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
-         // result, but when remoting does, we can use a full SEDA approach and get even better
-         // throughput.
-         this.executor.execute(new HandleRunnable(result, sender, r, tx));
+      if (tx == null)
+      {         
+         try
+         {
+            // Instead of executing directly, we add the handle request to the event queue.
+            // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
+            // result, but when remoting does, we can use a full SEDA approach and get even better
+            // throughput.
+            this.executor.execute(new HandleRunnable(result, sender, r));
+         }
+         catch (InterruptedException e)
+         {
+            log.warn("Thread interrupted", e);
+         }
+   
+         return (Delivery)result.getResult();
       }
-      catch (InterruptedException e)
+      else
       {
-         log.warn("Thread interrupted", e);
+         return this.handleInternal(sender, r, tx);
       }
-
-      return (Delivery)result.getResult();
    }
 
    // DeliveryObserver implementation --------------------------
@@ -1728,19 +1735,16 @@ public abstract class ChannelSupport implements Channel
 
       Routable routable;
 
-      Transaction tx;
-
-      HandleRunnable(Future result, DeliveryObserver sender, Routable routable, Transaction tx)
+      HandleRunnable(Future result, DeliveryObserver sender, Routable routable)
       {
          this.result = result;
          this.sender = sender;
          this.routable = routable;
-         this.tx = tx;
       }
 
       public void run()
       {
-         Delivery d = handleInternal(sender, routable, tx);
+         Delivery d = handleInternal(sender, routable, null);
          result.setResult(d);
       }
    }
