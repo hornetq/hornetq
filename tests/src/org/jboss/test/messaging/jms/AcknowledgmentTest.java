@@ -1192,6 +1192,8 @@ public class AcknowledgmentTest extends MessagingTestCase
    
    private boolean assertRemainingMessages(int expected) throws Exception
    {
+      //Need to pause since delivery may still be in progress
+      Thread.sleep(1000);
       ObjectName destObjectName = 
          new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
       Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");      

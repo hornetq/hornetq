@@ -571,6 +571,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
          
          // Remove all messages from the topic
          
+         //Need to pause since delivery may still be in progress
+         Thread.sleep(2000);
+         
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
    
          // Try to receive messages from the two subscriptions, should be null
