@@ -179,20 +179,18 @@
 
       -->
 
-      <antcall target="old-server-compatibility-test">
-         <param name="jboss.home" value="${jboss.compatibility.home}"/>
-         <param name="jboss.messaging.version" value="1.0.1.CR3"/>
-      </antcall>
-
    </target>
 
    <target name="old-client-compatibility-tests">
 
+      <!--
 
       <antcall target="create-messaging-config">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
       </antcall>
+
+      -->
 
       <!-- ====================================================  -->
       <!--                                                       -->
@@ -221,16 +219,14 @@
 
       -->
 
-      <antcall target="old-client-compatibility-test">
-         <param name="jboss.home" value="${jboss.compatibility.home}"/>
-         <param name="jboss.configuration" value="current-version-server"/>
-         <param name="jboss.messaging.version" value="1.0.1.CR3"/>
-      </antcall>
+      <!--
 
       <antcall target="clean-messaging-config">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
       </antcall>
+
+      -->
 
    </target>
 
