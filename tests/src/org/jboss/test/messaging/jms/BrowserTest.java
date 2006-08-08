@@ -189,6 +189,11 @@ public class BrowserTest extends MessagingTestCase
 			Message m = mc.receive();
          assertNotNull(m);
 		}
+      
+      //Need to pause here since delivery is done on a different thread
+      //Message might not be removed from in memory state by this point
+      
+      Thread.sleep(2000);
 		
 		browser = session.createBrowser(queue);
 		en = browser.getEnumeration();
