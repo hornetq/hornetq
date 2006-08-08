@@ -212,6 +212,10 @@ public class QueueManagementTest extends DestinationManagementTestBase
          cons.receive();
          conn.close();
          
+         //Need to pause for a bit since the message is not necessarily removed
+         //in memory until sometime after receive has completed
+         Thread.sleep(1000);
+         
          // Test MessageCount again, should be 0 msg
          count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
          assertEquals(0, count.intValue());
