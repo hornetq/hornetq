@@ -171,7 +171,7 @@ public class ClientConnectionFactoryDelegate
       }
       else
       {
-         //Create a client - make sure pinging is off
+         // Create a client - make sure pinging is off
          
          Map configuration = new HashMap();
 
