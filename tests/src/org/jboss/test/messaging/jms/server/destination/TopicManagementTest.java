@@ -568,7 +568,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
          
          // Start the connection for delivery
          conn.start();
-   
+         
          // Remove all messages from the topic
          
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
