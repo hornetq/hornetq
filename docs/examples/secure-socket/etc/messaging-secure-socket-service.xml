@@ -95,7 +95,7 @@
       <!-- The protocol for the SSLContext. Default is TLS. -->
       <attribute name="SecureSocketProtocol">TLS</attribute>
       <!-- The algorithm for the key manager factory.  Default is SunX509. -->
-      <attribute name="KeyManagementAlgorithm">SunX509</attribute>
+      <attribute name="KeyStoreAlgorithm">SunX509</attribute>
       <!--
            The type to be used for the key store.
            Defaults to JKS. Some acceptable values are JKS (Java Keystore - Sun's keystore format),

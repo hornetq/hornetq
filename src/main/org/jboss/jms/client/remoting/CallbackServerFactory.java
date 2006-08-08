@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.security.SSLSocketBuilder;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.remoting.transport.PortUtil;
 
@@ -120,18 +121,14 @@ public class CallbackServerFactory
 
       final int MAX_RETRIES = 50;
       boolean completed = false;
-      int count = 0;
-      
       Connector server = null;
-      
-      String thisAddress = InetAddress.getLocalHost().getHostAddress();
-      
-      boolean isSSL = serverLocator.getProtocol().equals("sslsocket");
-      
-      Map params = serverLocator.getParameters();
-      
       String serializationType = null;
-      
+      int count = 0;
+
+      String thisAddress = InetAddress.getLocalHost().getHostAddress();
+      boolean isSSL = serverLocator.getProtocol().equals("sslsocket");
+      Map params = serverLocator.getParameters();
+
       if (params != null)
       {
          serializationType = (String)params.get("serializationtype");
@@ -148,9 +145,10 @@ public class CallbackServerFactory
             if (isSSL)
             {
                // See http://jira.jboss.com/jira/browse/JBREM-470
-               callbackServerURI = "sslsocket://" + thisAddress + ":" + bindPort +
-                                   CALLBACK_SERVER_PARAMS + "&useClientMode=true";
-            }      
+               callbackServerURI =
+                  "sslsocket://" + thisAddress + ":" +  bindPort + CALLBACK_SERVER_PARAMS +
+                  "&" + SSLSocketBuilder.REMOTING_SERVER_SOCKET_USE_CLIENT_MODE + "=true";
+            }
             else
             {
                callbackServerURI = serverLocator.getProtocol() + "://" + thisAddress +
@@ -167,13 +165,9 @@ public class CallbackServerFactory
             log.debug(this + " starting callback server " + callbackServerLocator.getLocatorURI());
       
             server = new Connector();
-      
             server.setInvokerLocator(callbackServerLocator.getLocatorURI());
-      
             server.create();
-            
             server.addInvocationHandler(JMS_CALLBACK_SUBSYSTEM, new CallbackManager());
-      
             server.start();
       
             if (log.isTraceEnabled()) { log.trace("callback server started"); }
