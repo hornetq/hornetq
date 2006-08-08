@@ -80,7 +80,7 @@
             todir="${jboss.home}/server/${jboss.configuration}/deploy/jboss-messaging.sar"/>
       <copy file="./etc/messaging-secure-socket-service.xml"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
-      <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
    </target>
 
    <target name="run" depends="compile, deploy">
