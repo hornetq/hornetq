@@ -204,8 +204,8 @@ public class SessionAspect
    /*
     * Redelivery occurs in two situations:
     * 1) When session.recover() is called (JMS1.1 4.4.11)
-    * "A session’s recover method is used to stop a session and restart it with its first
-    * unacknowledged message. In effect, the session’s series of delivered messages
+    * "A session's recover method is used to stop a session and restart it with its first
+    * unacknowledged message. In effect, the session's series of delivered messages
     * is reset to the point after its last acknowledged message."
     * An important note here is that session recovery is LOCAL to the session.
     * Session recovery DOES NOT result in delivered messages being cancelled back
@@ -216,8 +216,8 @@ public class SessionAspect
     * On rollback of a session the spec is clear that session recovery occurs:
     * "If a transaction rollback is done, its produced messages
     * are destroyed and its consumed messages are automatically recovered. For
-    * more information on session recovery, see Section 4.4.11 ”Message
-    * Acknowledgment.”"
+    * more information on session recovery, see Section 4.4.11 'Message
+    * Acknowledgment.'"
     * So on rollback we do session recovery (local redelivery) in the same as if 
     * session.recover() was called.
     * 

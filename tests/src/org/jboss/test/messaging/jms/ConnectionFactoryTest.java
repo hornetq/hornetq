@@ -154,19 +154,20 @@ public class ConnectionFactoryTest extends MessagingTestCase
       
       JBossConnectionFactory f1 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory1");            
       ClientConnectionFactoryDelegate del1 = (ClientConnectionFactoryDelegate)f1.getDelegate();      
-      assertTrue(del1.getServerLocatorURI().startsWith("socket://127.0.0.1:1234"));
+      
+      assertTrue(del1.getServerLocatorURI().startsWith("socket://localhost:1234"));
       
       JBossConnectionFactory f2 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory2");            
       ClientConnectionFactoryDelegate del2 = (ClientConnectionFactoryDelegate)f2.getDelegate();      
-      assertTrue(del2.getServerLocatorURI().startsWith("socket://127.0.0.1:1235"));
+      assertTrue(del2.getServerLocatorURI().startsWith("socket://localhost:1235"));
       
       JBossConnectionFactory f3 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory3");            
       ClientConnectionFactoryDelegate del3 = (ClientConnectionFactoryDelegate)f3.getDelegate();      
-      assertTrue(del3.getServerLocatorURI().startsWith("socket://127.0.0.1:1236"));
+      assertTrue(del3.getServerLocatorURI().startsWith("socket://localhost:1236"));
       
       JBossConnectionFactory f4 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory4");            
       ClientConnectionFactoryDelegate del4 = (ClientConnectionFactoryDelegate)f4.getDelegate();      
-      assertTrue(del4.getServerLocatorURI().startsWith("socket://127.0.0.1:1236"));
+      assertTrue(del4.getServerLocatorURI().startsWith("socket://localhost:1236"));
       
       Connection con1 = f1.createConnection();
       Connection con2 = f2.createConnection();
