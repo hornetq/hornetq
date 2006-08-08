@@ -82,7 +82,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    // Static --------------------------------------------------------
 
    private static final int MAX_DELIVERY_ATTEMPTS = 10;
-   
+
    // Attributes ----------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
@@ -90,40 +90,40 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    private int id;
 
    private Channel channel;
-   
+
    private ServerSessionEndpoint sessionEndpoint;
 
    private boolean noLocal;
 
    private Selector messageSelector;
-   
+
    private JBossDestination destination;
-   
+
    private List toDeliver;
-   
+
    // Must be volatile
    private volatile boolean clientConsumerFull;
-   
+
    // Must be volatile
    private volatile boolean bufferFull;
-   
+
    // Must be volatile
    private volatile boolean started;
-   
+
    // No need to be volatile - is protected by lock
    private boolean closed;
-   
+
    // No need to be volatile
    private boolean disconnected;
-   
+
    private Executor executor;
-   
+
    private int prefetchSize;
-   
+
    private Object lock;
-   
+
    private Map deliveries;
-   
+
    // Constructors --------------------------------------------------
 
    protected ServerConsumerEndpoint(int id, Channel channel,
@@ -133,22 +133,22 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                                     throws InvalidSelectorException
    {
       if (trace) { log.trace("constructing consumer endpoint " + id); }
-         
+
       this.id = id;
       this.channel = channel;
       this.sessionEndpoint = sessionEndpoint;
       this.prefetchSize = prefetchSize;
-      
+
       // We always created with clientConsumerFull = true. This prevents the SCD sending messages to
       // the client before the client has fully finished creating the MessageCallbackHandler.
       this.clientConsumerFull = true;
-            
+
       // We allocate an executor from the rotating pool for each consumer based on it's id
       // This gives better latency than each consumer for the destination using the same
       // executor
       QueuedExecutorPool pool =
          sessionEndpoint.getConnectionEndpoint().getServerPeer().getQueuedExecutorPool();
-      
+
       this.executor = (QueuedExecutor)pool.get("consumer" + id);
              
       // Note that using a PooledExecutor with a linked queue is not sufficient to ensure that
@@ -760,12 +760,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             }
             catch(Throwable t)
             {
-               log.warn("Failed to deliver the message to the client.");
-                             
-               if (trace)
-               {
-                  log.trace("Failed to deliver message", t);
-               }
+               log.warn("Failed to deliver the message to the client. See the server log for more details");
+               log.debug("Failed to deliver the message to the client.", t);
                
                ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
                
