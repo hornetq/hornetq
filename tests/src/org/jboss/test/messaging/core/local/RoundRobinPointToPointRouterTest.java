@@ -35,7 +35,12 @@ import org.jboss.messaging.core.plugin.SimpleMessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.MessagingTestCase;
 
-
+/**
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision: 1 $</tt>
+ * $Id: $
+ */
 public class RoundRobinPointToPointRouterTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
@@ -423,14 +428,58 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       assertNotNull(dels);
       assertEquals(0, dels.size());     
    }
+
+
+   /**
+    * http://jira.jboss.org/jira/browse/JBMESSAGING-491
+    */
+   public void testDeadlock() throws Exception
+   {
+      final Router router = new RoundRobinPointToPointRouter();
+
+      LockingReceiver receiver = new LockingReceiver();
+      router.add(receiver);
+
+      final Thread t = new Thread(new Runnable()
+      {
+         public void run()
+         {
+            // sends the message to the router on a separate thread
+            router.handle(null, new SimpleMessageReference(), null);
+         }
+      }, "Message sending thread");
+
+      // start the sending tread, which will immediately grab the router's "receivers" lock, and it
+      // will sleep for 3 seconds before attempting to grab LockingReceiver's lock.
+      t.start();
+
+
+      // in the mean time, the main thread immediately grabs receiver's lock ...
+
+      synchronized(receiver.getLock())
+      {
+         // ... sleeps for 500 ms to allow sender thread time to grab router's "receivers" lock
+         Thread.sleep(500);
+
+         // ... and try to remove the receiver form router
+         router.remove(receiver);
+      }
+
+      // normally, receiver removal should be immediate, as the router releases receiver's lock
+      // immediately, so test should complete. Pre-JBMESSAGING-491, the test deadlocks.
+   }
    
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+
    protected void checkReceiverGotRef(SimpleReceiver[] receivers, int pos)
    {
       log.info("checkReceiverGotRef:" + pos);
       for (int i = 0; i < receivers.length; i++)
       {
          SimpleReceiver r = receivers[i];
-         
+
          if (i == pos)
          {
             assertTrue(r.gotRef);
@@ -441,20 +490,18 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
          }
       }
    }
-   
+
    protected void resetReceivers(SimpleReceiver[] receivers)
    {
       for (int i = 0; i < receivers.length; i++)
       {
          SimpleReceiver r = receivers[i];
-         
+
          r.gotRef = false;
       }
    }
 
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
+
    
    // Private -------------------------------------------------------
    
@@ -486,5 +533,45 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       }
       
    }
+
+
+   class LockingReceiver implements Receiver
+   {
+      private Object lock;
+
+      public LockingReceiver()
+      {
+         lock = new Object();
+      }
+
+      public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+      {
+         // The delivering thread needs to grab the receiver's lock to complete delivery; this
+         // is how Messaging receivers are written, anyway. We simulate the race condition by
+         // putting the sending thread to sleep for 3 seconds before allowing it to attempt to
+         // grab the lock
+
+         try
+         {
+            Thread.sleep(3000);
+         }
+         catch(InterruptedException e)
+         {
+            // this shouldn't happen in the test
+            return null;
+         }
+
+         synchronized(lock)
+         {
+            return new SimpleDelivery(null, null, true, true);
+         }
+      }
+
+      public Object getLock()
+      {
+         return lock;
+      }
+   }
+
 }
 
