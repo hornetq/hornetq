@@ -7,9 +7,9 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.0.1.CR3 Release Notes</h1>
+JBoss Messaging 1.0.1.CR4 Release Notes</h1>
 <br>
-3 June, 2006<br>
+August 9, 2006<br>
 <br>
 <br>
 <h2>Installation</h2>
@@ -19,43 +19,87 @@ Messaging is a new JBoss JMS 1.1-compliant JMS provider, aimed to
 replace JBossMQ.&nbsp; An overview of its features, installation and
 configuration instructions are available in the "JBoss Messaging
 Getting Started Guide". The guide is bundled with this release and is
-provided in <a href="./docs/gettingstarted/html/index.html">HTML</a>, <a
- href="./docs/gettingstarted/html_single/index.html">HTML-single</a>
-and <a
- href="./docs/gettingstarted/pdf/JBossMessagingGettingStarted.pdf">PDF</a>
+provided in <a href="./docs/userguide/html/index.html">HTML</a>, <a
+ href="./docs/userguide/html_single/index.html">HTML-single</a>
+and <a href="./docs/userguide/pdf/JBossMessagingUsersGuide.pdf">PDF</a>
 formats.&nbsp; The guide is also available on-line at&nbsp; <a
  href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a><br>
 <br>
 <br>
 <h2>Summary of Changes</h2>
 This is just a candidate release, the summary will be compiled for the
-General Availability release. For the raw change list, see "Release
+General Availability release. For a raw change list, see "Release
 Notes" below.<br>
-<h2>Release
-Notes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</h2>
-
-Release Notes - JBoss Messaging - Version 1.0.1.CR3
-
-<h2>Bug</h2>
-<ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-405'>JBMESSAGING-405</a>] - Memory leak with message selector</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-411'>JBMESSAGING-411</a>] - Fails with strings >= 64K</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-415'>JBMESSAGING-415</a>] - Memory leak in acknowledgment</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-416'>JBMESSAGING-416</a>] - Issue with cancellation of messages on client failure</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-417'>JBMESSAGING-417</a>] - JMS Client does not exit</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-419'>JBMESSAGING-419</a>] - Getting started installation doco is broken</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-420'>JBMESSAGING-420</a>] - Channel State not reloaded on redeploy</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-421'>JBMESSAGING-421</a>] - Destination  should be added to JNDI after it is loaded</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-423'>JBMESSAGING-423</a>] - Cannot retrieve long JMS string message (TextMessage) from JMS Queue</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-426'>JBMESSAGING-426</a>] - Expired messages remain on queue</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-430'>JBMESSAGING-430</a>] - Messy close of connection consumer</li>
+<br>
+<h2>Release Notes </h2>
+<h2 style="margin-left: 40px;">Bug</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-427">JBMESSAGING-427</a>]
+- MDB compatibility test fails with an 1.0.1.CR1 server</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-433">JBMESSAGING-433</a>]
+- MessageConsumer.receive() successfully returned although the
+acknowledgement is failed</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-434">JBMESSAGING-434</a>]
+- Client receive the server side exception</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-436">JBMESSAGING-436</a>]
+- Messages are not cloned on resend</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-440">JBMESSAGING-440</a>]
+- ConcurrentModificationException in transaction commit</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-442">JBMESSAGING-442</a>]
+- JBoss Serialization issue with readResolve</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-448">JBMESSAGING-448</a>]
+- Durable subscription state on unsubscribe</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-449">JBMESSAGING-449</a>]
+- Persisted messages not removed on acknowledgement</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-450">JBMESSAGING-450</a>]
+- Queue/Topic removeAllMessages is broken</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-451">JBMESSAGING-451</a>]
+- Closing of non recoveranle channel does not remove references</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-452">JBMESSAGING-452</a>]
+- On startup of server remaining non persistent messages are not
+cleaned properly</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-453">JBMESSAGING-453</a>]
+- QueuedExecutors not being shutdown explicitly</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-484">JBMESSAGING-484</a>]
+- org.jboss.test.messaging.jms.MessageConsumerTest.testNoLocal fails
+locally and remotely</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-487">JBMESSAGING-487</a>]
+- ssh smoke test fails on 4.0.4.GA</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-489">JBMESSAGING-489</a>]
+- stress tests fail on dual core</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-490">JBMESSAGING-490</a>]
+- Race condition on ServerConsumerEndpoint creation</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-491">JBMESSAGING-491</a>]
+- Deadlock among ServerConsumerEndpoint.lock and
+RoundRobinPointToPointRouter.receiver's locks</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-492">JBMESSAGING-492</a>]
+- DurableSubscriberTest, MessageConsumerTest timeout occasionally</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-493">JBMESSAGING-493</a>]
+- QueuedExecutor is bounded</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-500">JBMESSAGING-500</a>]
+- Intermittent race in BrowserTest::testBrowse</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-501">JBMESSAGING-501</a>]
+- Race with removeAllReferences</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-503">JBMESSAGING-503</a>]
+- QueueManagementTest::testMessageCount</li>
 </ul>
-
-<h2>Task</h2>
-<ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-418'>JBMESSAGING-418</a>] - JMS examples not handling exceptions properly</li>
+<h2 style="margin-left: 40px;">Feature Request</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-476">JBMESSAGING-476</a>]
+- Reoccuring Consumer endpoint activation failed Error</li>
 </ul>
-
-
-
+<h2 style="margin-left: 40px;">Task</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-328">JBMESSAGING-328</a>]
+- Optimisation - batch messages to consumers</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-393">JBMESSAGING-393</a>]
+- Remove the serverless packages from CVS</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-403">JBMESSAGING-403</a>]
+- The Getting Started guide contains obsolete version numbers</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-441">JBMESSAGING-441</a>]
+- Refactoring of message delivery</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-481">JBMESSAGING-481</a>]
+- Implement a round robin routing strategy for queues and subscriptions</li>
+</ul>
+</body>
+</html>

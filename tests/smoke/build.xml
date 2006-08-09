@@ -631,7 +631,7 @@
          <arg value="-basename"/>
          <arg value="smoke-test-report"/>
          <arg value="-installerdir"/>
-         <arg value="C:\dev\jnlp"/>
+         <arg value="C:\work\jnlp"/>
          <classpath>
             <pathelement location="../output/classes"/>
          </classpath>
