@@ -2126,6 +2126,7 @@ public class JDBCPersistenceManager extends ServiceMBeanSupport implements Persi
     */
    
    // Public --------------------------------------------------------
+   
    /**
     * Managed attribute.
     */

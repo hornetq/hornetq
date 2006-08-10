@@ -770,6 +770,22 @@ public class JDBCChannelMapper extends ServiceMBeanSupport implements ChannelMap
    {
       return tmObjectName;
    }
+
+   /**
+    * Managed attribute.
+    */
+   public boolean isCreateTablesOnStartup() throws Exception
+   {
+      return createTablesOnStartup;
+   }
+
+   /**
+    * Managed attribute.
+    */
+   public void setCreateTablesOnStartup(boolean b) throws Exception
+   {
+      createTablesOnStartup = b;
+   }
    
    /**
     * @return a Set<String>. It may return an empty Set, but never null.
