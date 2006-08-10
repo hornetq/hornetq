@@ -215,6 +215,11 @@ public class RoundRobinPointToPointRouter implements Router
       synchronized(receivers)
       {
          int size = receivers.size();
+         if (size == 0)
+         {
+            // target has already been reset by remove()
+            return;
+         }
          target = Math.max((target + 1) % size, (currentTarget + 1) % size);
       }
    }
