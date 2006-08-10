@@ -48,10 +48,10 @@
    <property name="messaging.version.major" value="1"/>
    <property name="messaging.version.minor" value="0"/>
    <property name="messaging.version.revision" value="1"/>
-   <property name="messaging.version.incrementing" value="4"/>
-   <property name="messaging.version.tag" value="CR4"/>
+   <property name="messaging.version.incrementing" value="5"/>
+   <property name="messaging.version.tag" value="CR5"/>
    <property name="messaging.version.name" value=""/>
-   <property name="messaging.version.cvstag" value="JBossMessaging_1_0_1_CR4"/>
+   <property name="messaging.version.cvstag" value="JBossMessaging_1_0_1_CR5"/>
    <property name="module.name" value="messaging"/>
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
@@ -676,6 +676,19 @@
 
    <target name="undeploydefault">
       <delete file="${ENV.JBOSS_HOME}/server/default/deploy/jboss-${module.name}.sar"/>
+   </target>
+
+   <target name="source-bundle">
+      <zip destfile="${build.lib}/jboss-messaging-${module.version}-src.zip">
+         <zipfileset dir="${project.root}" prefix="jboss-messaging-${module.version}-src">
+            <exclude name="**/.svn"/>
+            <exclude name="*.iml"/>
+            <exclude name="*.ipr"/>
+            <exclude name="*.iws"/>
+            <exclude name="**/output/**"/>
+            <exclude name="release/**"/>
+         </zipfileset>
+      </zip>
    </target>
 
    <!-- ======================================================================================== -->
