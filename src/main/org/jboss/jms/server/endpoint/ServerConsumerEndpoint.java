@@ -41,18 +41,17 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
-import org.jboss.jms.server.subscription.Subscription;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.SingleReceiverDelivery;
+import org.jboss.messaging.core.local.MessageQueue;
+import org.jboss.messaging.core.plugin.contract.Exchange;
+import org.jboss.messaging.core.plugin.exchange.Binding;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
@@ -71,7 +70,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id$
  */
-public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoint
+public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 {
    // Constants -----------------------------------------------------
 
@@ -89,7 +88,9 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
 
    private int id;
 
-   private Channel channel;
+   private MessageQueue messageQueue;
+   
+   private String queueName;
 
    private ServerSessionEndpoint sessionEndpoint;
 
@@ -123,10 +124,10 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    private Object lock;
 
    private Map deliveries;
-
+   
    // Constructors --------------------------------------------------
 
-   protected ServerConsumerEndpoint(int id, Channel channel,
+   protected ServerConsumerEndpoint(int id, MessageQueue messageQueue, String queueName,
                                     ServerSessionEndpoint sessionEndpoint,
                                     String selector, boolean noLocal, JBossDestination dest,
                                     int prefetchSize)
@@ -135,7 +136,8 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       if (trace) { log.trace("constructing consumer endpoint " + id); }
 
       this.id = id;
-      this.channel = channel;
+      this.messageQueue = messageQueue;
+      this.queueName = queueName;
       this.sessionEndpoint = sessionEndpoint;
       this.prefetchSize = prefetchSize;
 
@@ -149,7 +151,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       QueuedExecutorPool pool =
          sessionEndpoint.getConnectionEndpoint().getServerPeer().getQueuedExecutorPool();
 
-      this.executor = (QueuedExecutor)pool.get("consumer" + id);
+      this.executor = (QueuedExecutor)pool.get();
              
       // Note that using a PooledExecutor with a linked queue is not sufficient to ensure that
       // deliveries for the same consumer happen serially, since even if they are queued serially
@@ -188,11 +190,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
 
-      // adding the consumer to the channel
-      this.channel.add(this);
+      // adding the consumer to the queue
+      this.messageQueue.add(this);
       
       // prompt delivery
-      channel.deliver(false);
+      messageQueue.deliver(false);
       
       log.debug(this + " constructed");
    }
@@ -200,7 +202,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    // Receiver implementation ---------------------------------------
 
    /*
-    * The channel ensures that handle is never called concurrently by more than one thread.
+    * The queue ensures that handle is never called concurrently by more than one thread.
     */
    public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
    {
@@ -221,7 +223,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       synchronized (lock)
       {  
          // If the consumer is stopped then we don't accept the message, it should go back into the
-         // channel for delivery later.
+         // queue for delivery later.
          if (!started)
          {
             // this is a common programming error, make this visible in the debug logs
@@ -306,10 +308,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             int conId = ((JBossMessage)r).getConnectionID();
             if (trace) { log.trace("message connection id: " + conId); }
 
-            if (trace) { log.trace("current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
+            if (trace) { log.trace("current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }   
+                 
             accept = conId != sessionEndpoint.getConnectionEndpoint().getConnectionID();
+            
             if (trace) { log.trace("accepting? " + accept); }
-
+            
          }
       }
       return accept;
@@ -338,11 +342,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       {
          synchronized (lock)
          { 
-            // On close we only disconnect the consumer from the Channel we don't actually remove
+            // On close we only disconnect the consumer from the queue we don't actually remove
             // it. This is because it may still contain deliveries that may well be acknowledged
             // after the consumer has closed. This is perfectly valid.
 
-            //FIXME - The deliveries should really be stored in the session endpoint, not here
+            //TODO - The deliveries should really be stored in the session endpoint, not here
             //that is their natural place, that would mean we wouldn't have to mess around with keeping
             //deliveries after this is closed
                   
@@ -350,24 +354,27 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
             
             JMSDispatcher.instance.unregisterTarget(new Integer(id));
             
-            //If it's a subscription, remove it
-            if (channel instanceof Subscription)
+            //If this is a consumer of a non durable subscription
+            //then we want to unbind the subscription and delete all it's data
+            
+            if (destination.isTopic())
             {
-               Subscription sub = (Subscription)channel;
-               if (!sub.isRecoverable())
+               Exchange topicExchange = 
+                  sessionEndpoint.getConnectionEndpoint().getServerPeer().getTopicExchangeDelegate();
+               
+               Binding binding = topicExchange.getBindingForName(queueName);
+               
+               if (binding == null)
                {
-                  //We don't disconnect durable subs
-                  sub.disconnect();                  
-               }            
-            } 
-            
-            //If it's non recoverable, i.e. it's a non durable sub or a temporary queue
-            //then remove all it's references
-            if (!channel.isRecoverable())
-            {
-               channel.removeAllReferences();
+                  throw new IllegalStateException("Cannot find queue with name " + queueName);
+               }
+               
+               if (!binding.isDurable())
+               {                 
+                  topicExchange.unbindQueue(queueName);
+               }
             }
-            
+                        
             closed = true;
          }
       }
@@ -416,7 +423,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
                   
          //Now we know the deliverer has delivered any outstanding messages to the client buffer
          
-         channel.deliver(false);
+         messageQueue.deliver(false);
       }
       catch (InterruptedException e)
       {
@@ -459,12 +466,12 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    {
       if (trace) { log.trace("acknowledging transactionally " + messageID); }
       
-      SingleReceiverDelivery d = null;
+      Delivery d = null;
                  
       // The actual removal of the deliveries from the delivery list is deferred until tx commit
       synchronized (lock)
       {
-         d = (SingleReceiverDelivery)deliveries.get(new Long(messageID));
+         d = (Delivery)deliveries.get(new Long(messageID));
       }
       
       DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getKeyedCallback(this);
@@ -489,11 +496,11 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    protected void acknowledge(long messageID) throws Throwable
    {  
       // acknowledge a delivery   
-      SingleReceiverDelivery d;
+      Delivery d;
         
       synchronized (lock)
       {
-         d = (SingleReceiverDelivery)deliveries.remove(new Long(messageID));
+         d = (Delivery)deliveries.remove(new Long(messageID));
       }
       
       if (d != null)
@@ -514,12 +521,13 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
     **/
    protected void remove() throws Throwable
    {         
-      if (trace) log.trace("attempting to remove receiver " + this + " from destination " + channel);
+      if (trace) log.trace("attempting to remove receiver " + this + " from destination " + messageQueue);
       
       boolean wereDeliveries = false;
       for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
       {
-         SingleReceiverDelivery d = (SingleReceiverDelivery)i.next();
+
+         Delivery d = (Delivery)i.next();
 
          d.cancel();
          wereDeliveries = true;
@@ -541,21 +549,21 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       
       if (wereDeliveries)
       {
-         //If we cancelled any deliveries we need to force a deliver on the channel
+         //If we cancelled any deliveries we need to force a deliver on the queue
          //This is because there may be other waiting competing consumers who need a chance to get
          //any of the cancelled messages
-         channel.deliver(false);
+         messageQueue.deliver(false);
       }
    }  
    
    protected void promptDelivery()
    {
-      channel.deliver(false);
+      messageQueue.deliver(false);
    }
    
    protected void cancelDelivery(Long messageID) throws Throwable
    {
-      SingleReceiverDelivery del = (SingleReceiverDelivery)deliveries.remove(messageID);
+      Delivery del = (Delivery)deliveries.remove(messageID);
       if (del != null)
       {  
           del.getReference().decrementDeliveryCount();    
@@ -586,7 +594,7 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
       }
       
       // Prompt delivery
-      channel.deliver(false);
+      messageQueue.deliver(false);
    }
    
    protected void stop() throws Throwable
@@ -658,18 +666,18 @@ public class ServerConsumerEndpoint implements Receiver, Filter, ConsumerEndpoin
    // Private -------------------------------------------------------
    
    /**
-    * Disconnect this consumer from the Channel that feeds it. This method does not clear up
+    * Disconnect this consumer from the queue that feeds it. This method does not clear up
     * deliveries
     */
    private void disconnect()
    {
 
-      boolean removed = channel.remove(this);
+      boolean removed = messageQueue.remove(this);
       
       if (removed)
       {
          disconnected = true;
-         if (trace) { log.trace(this + " removed from the channel"); }
+         if (trace) { log.trace(this + " removed from the queue"); }
       }
    }
      

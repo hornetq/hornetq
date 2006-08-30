@@ -21,22 +21,25 @@
 */
 package org.jboss.test.messaging.core;
 
-import org.jboss.test.messaging.core.base.SingleReceiverDeliveryTestBase;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$
  */
-public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
+public class SimpleDeliveryTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -45,6 +48,8 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
    // Attributes ----------------------------------------------------
 
    protected DeliveryObserver observer;
+   
+   protected Delivery delivery;
 
    // Constructors --------------------------------------------------
 
@@ -74,6 +79,24 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
 
    // Public --------------------------------------------------------
    
+   public void testAcknowledgment() throws Throwable
+   {
+      assertFalse(delivery.isDone());
+
+      delivery.acknowledge(null);
+
+      assertTrue(delivery.isDone());
+   }
+   
+   public void testCancellation() throws Throwable
+   {
+      assertFalse(delivery.isCancelled());
+
+      delivery.cancel();
+
+      assertTrue(delivery.isCancelled());
+   }
+   
    public void testDoneIsSetWithTransaction() throws Throwable
    {
       //Calling acknowledge on a SimpleDelivery
@@ -94,8 +117,7 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
       ((JDBCPersistenceManager)pm).start();
       
       TransactionRepository tr = new TransactionRepository();
-      
-      tr.start(pm);
+      tr.injectAttributes(pm, new IdManager("TRANSACTION_ID", 10, pm));
       
       Transaction tx = tr.createTransaction();
       
@@ -105,10 +127,7 @@ public class SimpleDeliveryTest extends SingleReceiverDeliveryTestBase
       
       pm.stop();
       
-      tr.stop();
-      
       sc.stop();
-
    }
 
    // Package protected ---------------------------------------------

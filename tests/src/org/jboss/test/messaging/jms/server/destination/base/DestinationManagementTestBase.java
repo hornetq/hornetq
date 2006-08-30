@@ -21,24 +21,22 @@
   */
 package org.jboss.test.messaging.jms.server.destination.base;
 
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import java.util.Set;
+
 import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.messaging.core.local.CoreDestination;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 import org.w3c.dom.Element;
-
-import java.util.Set;
 
 /**
  * Exercises a destinatio's management interface after deployment.
@@ -495,14 +493,22 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals(new Integer(pageSize), ServerManagement.getAttribute(destObjectName, "PageSize"));
       assertEquals(new Integer(downCacheSize), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
 
-      ChannelMapper cm = ServerManagement.getChannelMapper();
-      JBossDestination jbd = isQueue() ? (JBossDestination)new JBossQueue("PageableAttributes") : 
-         (JBossDestination)new JBossTopic("PageableAttributes");
-      CoreDestination cd = cm.getCoreDestination(jbd);
+      JBossDestination jbd2;
       
-      assertEquals(fullSize, cd.getFullSize());
-      assertEquals(pageSize, cd.getPageSize());
-      assertEquals(downCacheSize, cd.getDownCacheSize());
+      if (isQueue())
+      {
+         jbd2 = new JBossQueue("PageableAttributes");
+      }
+      else
+      {
+         jbd2 = new JBossTopic("PageableAttributes");
+      }
+      
+      jbd2 = ServerManagement.getDestinationManager().getDestination(jbd2);
+       
+      assertEquals(fullSize, jbd2.getFullSize());
+      assertEquals(pageSize, jbd2.getPageSize());
+      assertEquals(downCacheSize, jbd2.getDownCacheSize());
       
       // Try to change the values when destination lives, no effect
       ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
@@ -524,11 +530,12 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       // Start the service again and test the value from core destination
       ServerManagement.invoke(destObjectName, "start", null, null);
       
-      // Must get the new core destination!
-      cd = cm.getCoreDestination(jbd);
-      assertEquals(751119, cd.getFullSize());
-      assertEquals(20019, cd.getPageSize());
-      assertEquals(9999, cd.getDownCacheSize());
+      jbd2 = ServerManagement.getDestinationManager().getDestination(jbd2);
+      
+      // Must get the new core destination!      
+      assertEquals(751119, jbd2.getFullSize());
+      assertEquals(20019, jbd2.getPageSize());
+      assertEquals(9999, jbd2.getDownCacheSize());
 
       undeployDestination("PageableAttributes");
    }

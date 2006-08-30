@@ -175,6 +175,8 @@
       <path refid="jboss.mbeans.classpath"/>
       <path refid="jboss.naming.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
+      <path refid="jgroups.jgroups.classpath"/>
+      <path refid="apache.logging.classpath"/>
       <path refid="mysql.jdbc.driver.classpath"/>
       <path refid="oracle.jdbc.driver.classpath"/>
       <path refid="postgres.jdbc.driver.classpath"/>

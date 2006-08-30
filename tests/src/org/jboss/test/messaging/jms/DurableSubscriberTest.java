@@ -21,31 +21,31 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.InvalidDestinationException;
+import javax.jms.InvalidSelectorException;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.jms.ConnectionFactory;
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.Topic;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
-import javax.jms.Message;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.InvalidSelectorException;
-import java.util.Set;
 
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * Tests focused on durable subscription behavior. More durable subscription tests can be found in
  * MessageConsumerTest.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * $Id$
  */
@@ -106,29 +106,20 @@ public class DurableSubscriberTest extends MessagingTestCase
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
       s.createDurableSubscriber(topic, "monicabelucci");
-
-
-      Set subs = (Set)ServerManagement.
-         invoke(ServerManagement.getChannelMapperObjectName(),
-                "getSubscriptions",
-                new Object[] { "brookeburke" },
-                new String[] { "java.lang.String" });
-
-      assertEquals(1, subs.size());
-      assertEquals("monicabelucci", subs.iterator().next());
+      
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Topic,name=Topic");
+      String text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
+     
+      assertTrue(text.indexOf("monicabelucci") != -1);
 
       prod.send(s.createTextMessage("k"));
 
       conn.close();
 
-      subs = (Set)ServerManagement.
-         invoke(ServerManagement.getChannelMapperObjectName(),
-                "getSubscriptions",
-                new Object[] { "brookeburke" },
-                new String[] { "java.lang.String" });
-
-      assertEquals(1, subs.size());
-      assertEquals("monicabelucci", subs.iterator().next());
+      text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
+      
+      assertTrue(text.indexOf("monicabelucci") != -1);
 
       conn = cf.createConnection();
       conn.setClientID("brookeburke");
@@ -372,9 +363,11 @@ public class DurableSubscriberTest extends MessagingTestCase
       MessageConsumer ds = s.createDurableSubscriber(topic, "monicabelucci");
       conn.start();
 
+      log.info("&&&&&&&&&&&& sending messages");
       prod.send(s.createTextMessage("one"));
       prod.send(s.createTextMessage("two"));
-
+      log.info("&&&&&&&&&&&& sent messages");
+      
       ServerManagement.undeployTopic("TopicToBeRedeployed");
       log.debug("topic undeployed");
 
@@ -416,7 +409,7 @@ public class DurableSubscriberTest extends MessagingTestCase
       ds =  s.createDurableSubscriber(topic, "monicabelucci");
       conn.start();
 
-      tm = (TextMessage)ds.receive();
+      tm = (TextMessage)ds.receive(1000);
       assertEquals("two", tm.getText());
 
       conn.close();

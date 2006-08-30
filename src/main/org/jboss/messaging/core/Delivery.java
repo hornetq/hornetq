@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.tx.Transaction;
+
 /**
  * A message delivery. It can be "done" or active.
  * 
@@ -46,5 +48,9 @@ public interface Delivery
    //      See http://jira.jboss.org/jira/browse/JBMESSAGING-275
 
    boolean isSelectorAccepted();
+   
+   void acknowledge(Transaction tx) throws Throwable;
+
+   void cancel() throws Throwable;
 
 }

@@ -31,6 +31,7 @@ import org.jboss.messaging.core.Routable;
  * A simple test Filter that accepts a message based on the presence of a certain header value.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -38,6 +39,8 @@ import org.jboss.messaging.core.Routable;
 public class SimpleFilter implements Filter
 {
    // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = 4962761960390959612L;
 
    private static final Logger log = Logger.getLogger(SimpleFilter.class);
 
@@ -57,6 +60,11 @@ public class SimpleFilter implements Filter
    }
 
    // Filter implementation -----------------------------------------
+   
+   public String getFilterString()
+   {
+      return null;
+   }
 
    public boolean accept(Routable r)
    {

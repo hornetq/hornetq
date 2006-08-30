@@ -40,7 +40,13 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
+ * 
+ * A MessageProxyTest
+
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision: 1.1 $</tt>
+ *
+ * $Id$
  *
  */
 public class MessageProxyTest extends MessagingTestCase

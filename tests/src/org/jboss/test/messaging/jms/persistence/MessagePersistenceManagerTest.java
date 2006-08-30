@@ -25,9 +25,6 @@ import java.util.HashMap;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.QueuedExecutorPool;
-import org.jboss.jms.server.plugin.JDBCChannelMapper;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.test.messaging.core.plugin.JDBCPersistenceManagerTest;
@@ -44,9 +41,7 @@ import org.jboss.util.id.GUID;
 public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
 {
    // Attributes ----------------------------------------------------
-   
-   protected ChannelMapper cm;
-      
+     
    // Constructors --------------------------------------------------
 
    public MessagePersistenceManagerTest(String name)
@@ -67,44 +62,20 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    protected void doSetup(boolean batch) throws Throwable
    {
       super.doSetup(batch);
-      
-      cm.deployCoreDestination(true, "testDestination", ms, pm, null, 100, 20, 10);
-      cm.deployCoreDestination(true, "testReplyTo", ms, pm, null, 100, 20, 10);
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
-      
-      cm.undeployCoreDestination(true, "testDestination");
-      cm.undeployCoreDestination(true, "testReplyTo");
-      
-      cm.stop();
    }
    
    protected JDBCPersistenceManager createPM() throws Exception
-   {
-      try
-      {
-         cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
-                  
-         JDBCPersistenceManager pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
-         
-         pm.start();
-         
-         cm.setPersistenceManager(pm);
-         
-         cm.setQueuedExecutorPool(new QueuedExecutorPool(100));
-         
-         cm.start();
-                      
-         return pm;
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         return null;
-      }
+   {           
+      JDBCPersistenceManager pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      
+      pm.start();                 
+                   
+      return pm;     
    }
   
    protected void checkEquivalent(Message m1, Message m2) throws Throwable

@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.jms.util.SafeUTF;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.util.SafeUTF;
 import org.jboss.util.Primitives;
 
 /**

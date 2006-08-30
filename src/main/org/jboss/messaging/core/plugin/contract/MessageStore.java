@@ -6,8 +6,6 @@
  */
 package org.jboss.messaging.core.plugin.contract;
 
-import java.io.Serializable;
-
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 
@@ -20,25 +18,8 @@ import org.jboss.messaging.core.MessageReference;
  *
  * $Id$
  */
-public interface MessageStore extends ServerPlugin
+public interface MessageStore
 {
-   Serializable getStoreID();
-
-   boolean isRecoverable();
-
-   /**
-    * A non-recoverable message store cannot guarantee recoverability for reliable messages so by
-    * default it won't accept reliable messages. If specifically configured to do so, it must
-    * unequivocally indicates that it accepts reliable messages by returning true as result of this
-    * method.
-    *
-    * A recoverable message store must always accept reliable messages, so this method must always
-    * return true for a recoverable message store.
-    *
-    * @return false if the channel doesn't accept reliable messages.
-    */
-   public boolean acceptReliableMessages();
-
    /**
     * Message m is stored in the store if it is not already known to the store, then
     * a new MessageReference is returned for the Message
@@ -61,6 +42,5 @@ public interface MessageStore extends ServerPlugin
     * @param messageID
     * @return
     */
-   public boolean forgetMessage(long messageID);
-   
+   public boolean forgetMessage(long messageID);   
 }

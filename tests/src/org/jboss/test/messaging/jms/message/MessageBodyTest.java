@@ -47,10 +47,14 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
- * Tests for different types of message
- *
+ * 
+ * A MessageBodyTest
+
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+ *
  * $Id$
+ *
  */
 public class MessageBodyTest extends MessagingTestCase
 {

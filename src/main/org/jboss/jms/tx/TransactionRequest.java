@@ -37,6 +37,7 @@ import org.jboss.messaging.core.tx.XidImpl;
  * 
  * Partially based on JBossMQ version by:
  * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:Cojonudo14@hotmail.com">Hiram Chirino</a>
  * @author <a href="mailto:David.Maplesden@orion.co.nz">David Maplesden</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>

@@ -32,7 +32,7 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.util.SafeUTF;
+import org.jboss.messaging.util.SafeUTF;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.

@@ -35,7 +35,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * 
  * $Id$
  */
-public class SimpleDelivery implements SingleReceiverDelivery, Serializable
+public class SimpleDelivery implements Delivery, Serializable
 {
    // Constants -----------------------------------------------------
 

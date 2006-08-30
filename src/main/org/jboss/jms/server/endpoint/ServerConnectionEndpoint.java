@@ -41,7 +41,6 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.tx.AckInfo;
@@ -52,14 +51,12 @@ import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.CoreDestination;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.plugin.contract.Exchange;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.util.ConcurrentReaderHashSet;
+import org.jboss.messaging.util.ConcurrentReaderHashSet;
 import org.jboss.remoting.Client;
 import org.jboss.util.id.GUID;
 
@@ -111,13 +108,17 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private ServerPeer serverPeer;
 
    // access to server's extensions
-   private ChannelMapper channelMapper;
+   private Exchange directExchange;
+   
+   private Exchange topicExchange;
    
    private SecurityManager sm;
    
    private ConnectionManager cm;
    
    private TransactionRepository tr;
+   
+   private MessageStore ms;
    
    private Client callbackClient;
    
@@ -140,11 +141,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                                       int defaultTempQueueDownCacheSize)
    {
       this.serverPeer = serverPeer;
-
-      channelMapper = serverPeer.getChannelMapperDelegate();
+      
       sm = serverPeer.getSecurityManager();
       tr = serverPeer.getTxRepository();
       cm = serverPeer.getConnectionManager();
+      ms = serverPeer.getMessageStore();
+      directExchange = serverPeer.getDirectExchangeDelegate();
+      topicExchange = serverPeer.getTopicExchangeDelegate();
 
       started = false;
 
@@ -303,13 +306,25 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
          {
             JBossDestination dest = (JBossDestination)i.next();
-            CoreDestination cd  = channelMapper.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
+
             if (dest.isQueue())
             {
-               //If it's a temp queue then remove it's data-
-               //If it's a topic then the data in the consumers will have been removed when they were closed
-               Queue queue = (Queue)cd;
-               queue.removeAllReferences();
+//               //Unbind
+//               Binding binding = directExchange.unbind(dest.getName());
+//               
+//               //Remove all data for queue - even though it is a temporary queue it may have data in the
+//               //db since it might have gone into paging
+//               
+//               binding.getQueue().removeAllReferences();
+               
+               directExchange.unbindQueue(dest.getName());
+               
+            }
+            else
+            {
+               //No need to unbind - this will already have happened, and all removeAllReferences
+               //will have already been called when the subscriptions were closed
+               //which always happens before the connection closed (depth first close)              
             }
          }
          
@@ -631,96 +646,43 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return jmsClientVMId;
    }
 
-   protected void sendMessage(JBossMessage jbm, Transaction tx) throws Exception
+   protected void sendMessage(JBossMessage msg, Transaction tx) throws Exception
    {
-      // The JMSDestination header must already have been set for each message
-      JBossDestination jbDest = (JBossDestination)jbm.getJMSDestination();
-
-      if (jbDest == null)
-      {
-         throw new IllegalStateException("JMSDestination header not set!");
-      }
-
-      CoreDestination coreDestination = channelMapper.getCoreDestination(jbDest);
+      JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
-      if (coreDestination == null)
-      {
-         throw new JMSException("Destination " + jbDest.getName() + " does not exist");
-      }
+      //We must reference the message *before* we send it the destination to be handled. This is
+      // so we can guarantee that the message doesn't disappear from the store before the
+      // handling is complete. Each channel then takes copies of the reference if they decide to
+      // maintain it internally
       
-      // This allows the no-local consumers to filter out the messages that come from the same
-      // connection
-      // TODO Do we want to set this for ALL messages. Optimisation is possible here.
-      jbm.setConnectionID(connectionID);
-      
-      Message m = (Message)jbm;
-    
-      if (trace) { log.trace("sending " + jbm + (tx == null ? " non-transactionally" : " transactionally on " + tx + " to the core destination " + jbDest.getName())); }
-      
-      // If we are sending to a topic, then we *always* do the send in the context of a transaction,
-      // in order to ensure that the message is delivered to all durable subscriptions (if any)
-      // attached to the topic. Otherwise if the server crashed in mid send, we may end up with the
-      // message in some, but not all of the durable subscriptions, which would be in contravention
-      // of the spec. When there are many durable subs for the topic, this actually should give us
-      // a performance gain since all the inserts can be done in the same JDBC tx too.
-      
-      boolean internalTx = false;
-      if (m.isReliable() && tx == null && !coreDestination.isQueue())
-      {
-         tx = tr.createTransaction();
-         
-         internalTx = true;
-      }
+      MessageReference ref = null; 
       
       try
       {         
-         // We must reference the message *before* we send it the destination to be handled. This is
-         // so we can guarantee that the message doesn't disappear from the store before the
-         // handling is complete. Each channel then takes copies of the reference if they decide to
-         // maintain it internally
+         ref = ms.reference(msg);
          
-         MessageReference ref = this.serverPeer.getMessageStoreDelegate().reference(m);
-         
-         Delivery d;
-         
-         try
-         {         
-            d = coreDestination.handle(null, ref, tx);         
+         if (dest.isQueue())
+         {
+            if (!directExchange.route(ref, dest.getName(), tx))
+            {
+               throw new JMSException("Failed to route message");
+            }
          }
-         finally
+         else
+         {                                
+            topicExchange.route(ref, dest.getName(), tx);           
+         }
+      }
+      finally
+      {
+         if (ref != null)
          {
             ref.releaseMemoryReference();
          }
-         
-         if (internalTx)
-         {
-            tx.commit();
-         }
-         
-         // The core destination is supposed to acknowledge immediately. If not, there's a problem.
-         if (d == null || !d.isDone())
-         {
-            String msg = "The message was not acknowledged by destination " + coreDestination;
-            log.error(msg);
-            throw new MessagingJMSException(msg);
-         }
       }
-      catch (Throwable t)
-      {
-         if (internalTx)
-         {
-            try
-            {               
-               tx.rollback();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to rollback internal transaction", e);
-            }
-         }
-         throw new MessagingJMSException("Failed to send message", t);
-      }
-   }   
+         
+      if (trace) { log.trace("sent " + msg); }
+   }
 
    // Private -------------------------------------------------------
    
@@ -736,7 +698,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          started = s;
       }
    }   
-   
+    
    private void processTransaction(TxState txState, Transaction tx) throws Throwable
    {
       if (trace) { log.trace("processing transaction, there are " + txState.getMessages().size() + " messages and " + txState.getAcks().size() + " acks "); }
@@ -744,8 +706,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       for(Iterator i = txState.getMessages().iterator(); i.hasNext(); )
       {
          JBossMessage m = (JBossMessage)i.next();
+         
          sendMessage(m, tx);
-         if (trace) { log.trace("sent " + m); }
       }
       
       if (trace) { log.trace("done the sends"); }

@@ -66,6 +66,14 @@ public class Selector implements Filter
    public Object result;
    
    private Class resultType;
+   
+   /**
+    * Return the string representation of the selector
+    */
+   public String getFilterString()
+   {
+      return selector;
+   }
 
    /**
     * Get the class that implements the ISelectorParser interface to be used by

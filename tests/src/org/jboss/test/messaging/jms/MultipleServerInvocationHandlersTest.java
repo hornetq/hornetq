@@ -119,8 +119,6 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
 
       ServerManagement.start("all");
       
-      
-
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       // stop the Messaging server and re-start it after I register an extra remoting invocation

@@ -21,11 +21,12 @@
   */
 package org.jboss.messaging.core;
 
-import java.util.Set;
-
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
+ * 
+ * Routes a routable to a maximum of one of the attached receivers
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -34,10 +35,5 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public interface Router extends Distributor
 {
-
-   /**
-    * Returns a set of Delivery instances.
-    */
-   Set handle(DeliveryObserver observer, Routable routable, Transaction transaction);
-
+   Delivery handle(DeliveryObserver observer, Routable routable, Transaction transaction);
 }

@@ -10,10 +10,8 @@ import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityManager;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
 
@@ -64,8 +62,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    protected ObjectName serverPeerObjectName;
    protected DestinationManager dm;
-   protected ChannelMapper cm;
    protected SecurityManager sm;
+   protected Exchange exchange;
    protected Element securityConfig;
 
    protected String name;
@@ -76,83 +74,20 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    // The following 3 attributes can only be changed when service is stopped.
 
-   // In memory message number limit
-   private int fullSize = FULL_SIZE;
+   // Default in memory message number limit
+   protected int fullSize = FULL_SIZE;
 
-   // Paging size
-   private int pageSize = PAGE_SIZE;
+   // Default paging size
+   protected int pageSize = PAGE_SIZE;
 
-   // Down-cache size
-   private int downCacheSize = DOWN_CACHE_SIZE;
+   // Default down-cache size
+   protected int downCacheSize = DOWN_CACHE_SIZE;
 
    // Constructors --------------------------------------------------
 
    public DestinationServiceSupport(boolean createdProgrammatically)
    {
       this.createdProgrammatically = createdProgrammatically;
-   }
-
-   // ServiceMBeanSupport overrides ---------------------------------
-
-   public synchronized void startService() throws Exception
-   {
-      try
-      {
-         started = true;
-   
-         if (serviceName != null)
-         {
-            name = serviceName.getKeyProperty("name");
-         }
-   
-         if (name == null || name.length() == 0)
-         {
-            throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") + " " +
-                                             "name was not properly set in the service's" +
-                                             "ObjectName");
-         }
-   
-         ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
-
-         dm = serverPeer.getDestinationManager();
-         sm = serverPeer.getSecurityManager();
-         cm = serverPeer.getChannelMapperDelegate();
-         
-         //Core destination MUST be deployed before destination is registered in JNDI
-         //otherwise the user could get a reference to the destination and use it
-         //while it is still being loaded
-         
-         cm.deployCoreDestination(isQueue(), name, serverPeer.getMessageStoreDelegate(),
-               serverPeer.getPersistenceManagerDelegate(),
-               serverPeer.getMemoryManager(),
-               fullSize, pageSize, downCacheSize);
-   
-         jndiName = dm.registerDestination(isQueue(), name, jndiName, securityConfig);
-        
-         log.debug(this + " security configuration: " + (securityConfig == null ?
-            "null" : "\n" + XMLUtil.elementToString(securityConfig)));
-
-         log.info(this + " started, fullSize=" + fullSize + ", pageSize=" + pageSize + ", downCacheSize=" + downCacheSize);
-      }
-      catch (Throwable t)
-      {
-         ExceptionUtil.handleJMXInvocation(t, this + " startService");
-      }
-   }
-
-   public void stopService() throws Exception
-   {
-      try
-      {
-         dm.unregisterDestination(isQueue(), name);
-         cm.undeployCoreDestination(isQueue(), name);
-         started = false;
-         log.info(this + " stopped");
-      }
-      catch (Throwable t)
-      {
-         ExceptionUtil.handleJMXInvocation(t, this + " stopService");
-      }
    }
 
    // JMX managed attributes ----------------------------------------

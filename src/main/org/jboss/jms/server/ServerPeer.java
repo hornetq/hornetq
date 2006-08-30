@@ -39,7 +39,7 @@ import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
+import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
@@ -48,8 +48,12 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
+import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.exchange.ClusteredTopicExchange;
+import org.jboss.messaging.core.plugin.exchange.DirectExchange;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
@@ -87,41 +91,46 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // Attributes ----------------------------------------------------
 
-   protected String serverPeerID;
-   protected byte[] clientAOPConfig;
+   private String serverPeerID;
+   private byte[] clientAOPConfig;
    private Version version;
 
-   protected String defaultQueueJNDIContext;
-   protected String defaultTopicJNDIContext;
+   private String defaultQueueJNDIContext;
+   private String defaultTopicJNDIContext;
    
-   protected int queuedExecutorPoolSize = 200;
+   private int queuedExecutorPoolSize = 200;
 
-   protected boolean started;
+   private boolean started;
 
-   protected int objectIDSequence = Integer.MIN_VALUE + 1;
+   private int objectIDSequence = Integer.MIN_VALUE + 1;
 
    // wired components
 
-   protected DestinationJNDIMapper destinationJNDIMapper;
-   protected SecurityMetadataStore securityStore;
-   protected ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
-   protected TransactionRepository txRepository;
-   protected ConnectionManager connectionManager;
-   protected ConnectorManager connectorManager;
-   protected IdManager messageIdManager;
-   protected MemoryManager memoryManager;
-   protected QueuedExecutorPool queuedExecutorPool;
+   private DestinationJNDIMapper destinationJNDIMapper;
+   private SecurityMetadataStore securityStore;
+   private ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
+   private TransactionRepository txRepository;
+   private ConnectionManager connectionManager;
+   private ConnectorManager connectorManager;
+   private IdManager messageIdManager;
+   private IdManager channelIdManager;
+   private IdManager transactionIdManager;
+   private MemoryManager memoryManager;
+   private QueuedExecutorPool queuedExecutorPool;
+   private MessageStore messageStore;   
 
    // plugins
 
    protected ObjectName persistenceManagerObjectName;
    protected PersistenceManager persistenceManagerDelegate;
-   protected ObjectName messageStoreObjectName;
-   protected MessageStore messageStoreDelegate;
-   protected ObjectName channelMapperObjectName;
-   protected ChannelMapper channelMapper;
+   protected ObjectName directExchangeObjectName;
+   protected ObjectName topicExchangeObjectName;
+   protected Exchange directExchangeDelegate;
+   protected Exchange topicExchangeDelegate;
+   protected ObjectName JMSUserManagerObjectName;
+   protected JMSUserManager JMSUserManagerDelegate;
 
-   protected JMSServerInvocationHandler handler;
+   private JMSServerInvocationHandler handler;
 
    // We keep a map of consumers to prevent us to recurse through the attached session in order to
    // find the ServerConsumerDelegate so we can acknowledge the message. Originally, this map was
@@ -149,6 +158,7 @@ public class ServerPeer extends ServiceMBeanSupport
       connectionManager = new SimpleConnectionManager();
       connectorManager = new SimpleConnectorManager();
       memoryManager = new SimpleMemoryManager();
+      messageStore = new SimpleMessageStore();
 
       consumers = new ConcurrentReaderHashMap();
 
@@ -169,6 +179,13 @@ public class ServerPeer extends ServiceMBeanSupport
          }
    
          log.debug(this + " starting");
+         
+         if (queuedExecutorPoolSize < 1)
+         {
+            throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
+         }
+         queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
+         
    
          loadClientAOPConfig();
    
@@ -180,42 +197,48 @@ public class ServerPeer extends ServiceMBeanSupport
          // circumventing the MBeanServer. However, they are installed as services to take advantage
          // of their automatically-creating management interface.
    
+         //FIXME - Why are these called xxxDelegate ??
+         //They're not delegates - this is confusing
          persistenceManagerDelegate =
             (PersistenceManager)mbeanServer.getAttribute(persistenceManagerObjectName, "Instance");
    
-         // TODO: is should be possible to share this with other peers
-         messageStoreDelegate =
-            (MessageStore)mbeanServer.getAttribute(messageStoreObjectName, "Instance");
-   
-         channelMapper = (ChannelMapper)mbeanServer.
-            getAttribute(channelMapperObjectName, "Instance");
+         directExchangeDelegate = (Exchange)mbeanServer.
+            getAttribute(directExchangeObjectName, "Instance");
          
-         if (queuedExecutorPoolSize < 1)
-         {
-            throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
-         }
-         queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
-   
-   
-         // TODO: Shouldn't this go into ChannelMapper's dependencies? Since it's a plug in,
-         //       we shouldn't inject their dependencies externally, but they should take care
-         ///      of them themselves.
-         channelMapper.setPersistenceManager(persistenceManagerDelegate);
+         topicExchangeDelegate = (Exchange)mbeanServer.
+            getAttribute(topicExchangeObjectName, "Instance");
          
-         channelMapper.setQueuedExecutorPool(queuedExecutorPool);
-   
+         JMSUserManagerDelegate = (JMSUserManager)mbeanServer.
+            getAttribute(JMSUserManagerObjectName, "Instance");
+                  
+         //TODO Make block size configurable
+         messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
+         channelIdManager = new IdManager("CHANNEL_ID", 10, persistenceManagerDelegate);
+         transactionIdManager = new IdManager("TRANSACTION_ID", 4096, persistenceManagerDelegate);
+         
+         //Inject attributes
+         
+         ((DirectExchange)directExchangeDelegate).injectAttributes("Direct", serverPeerID,
+                                                                    messageStore,
+                                                                    channelIdManager,
+                                                                    queuedExecutorPool);
+                           
+         ((ClusteredTopicExchange)topicExchangeDelegate).injectAttributes(null, null, null, "Topic", serverPeerID,
+                                                                   messageStore, 
+                                                                   channelIdManager,
+                                                                   queuedExecutorPool,
+                                                                   txRepository,
+                                                                   persistenceManagerDelegate);
+         
+         txRepository.injectAttributes(persistenceManagerDelegate, transactionIdManager);
+         
          // start the rest of the internal components
    
          memoryManager.start();
          destinationJNDIMapper.start();
          securityStore.start();
-         connFactoryJNDIMapper.start();
-         txRepository.start(persistenceManagerDelegate);
-         txRepository.loadPreparedTransactions();
-         
-         //TODO Make block size configurable
-         messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
-   
+         connFactoryJNDIMapper.start();   
+
          initializeRemoting(mbeanServer);
    
          createRecoverable();
@@ -248,7 +271,6 @@ public class ServerPeer extends ServiceMBeanSupport
    
          // stop the internal components
          memoryManager.stop();
-         txRepository.stop();
          txRepository = null;
          securityStore.stop();
          securityStore = null;
@@ -282,25 +304,35 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       persistenceManagerObjectName = on;
    }
-
-   public ObjectName getMessageStore()
+   
+   public ObjectName getDirectExchange()
    {
-      return messageStoreObjectName;
+      return directExchangeObjectName;
    }
 
-   public void setMessageStore(ObjectName on)
+   public void setDirectExchange(ObjectName on)
    {
-      messageStoreObjectName = on;
+      directExchangeObjectName = on;
+   }
+   
+   public ObjectName getTopicExchange()
+   {
+      return topicExchangeObjectName;
    }
 
-   public ObjectName getChannelMapper()
+   public void setTopicExchange(ObjectName on)
    {
-      return channelMapperObjectName;
+      topicExchangeObjectName = on;
+   }
+   
+   public ObjectName getJMSUserManager()
+   {
+      return JMSUserManagerObjectName;
    }
 
-   public void setChannelMapper(ObjectName on)
+   public void setJMSUserManager(ObjectName on)
    {
-      channelMapperObjectName = on;
+      JMSUserManagerObjectName = on;
    }
 
    public Object getInstance()
@@ -381,6 +413,11 @@ public class ServerPeer extends ServiceMBeanSupport
    public IdManager getMessageIdManager()
    {
       return messageIdManager;
+   }
+   
+   public IdManager getChannelIdManager()
+   {
+      return channelIdManager;
    }
 
    public ServerInvocationHandler getInvocationHandler()
@@ -484,17 +521,7 @@ public class ServerPeer extends ServiceMBeanSupport
       } 
    }
 
-   // Public --------------------------------------------------------
-
-   public boolean isDeployed(boolean isQueue, String name)
-   {
-      return destinationJNDIMapper.isDeployed(isQueue, name);
-   }
-
-   public ChannelMapper getChannelMapperDelegate()
-   {
-      return channelMapper;
-   }
+   // Public --------------------------------------------------------     
 
    public TransactionRepository getTxRepository()
    {
@@ -542,6 +569,16 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return connectorManager;
    }
+   
+   public MessageStore getMessageStore()
+   {
+      return messageStore;
+   }
+   
+   public MemoryManager getMemoryManager()
+   {
+      return memoryManager;
+   }
 
    // access to plugin references
 
@@ -549,16 +586,23 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return persistenceManagerDelegate;
    }
-
-   public MessageStore getMessageStoreDelegate()
+   
+   public JMSUserManager getJMSUserManagerDelegate()
    {
-      return messageStoreDelegate;
+      return JMSUserManagerDelegate;
    }
    
-   public MemoryManager getMemoryManager()
+   public Exchange getDirectExchangeDelegate()
    {
-      return memoryManager;
+      return directExchangeDelegate;
    }
+   
+   public Exchange getTopicExchangeDelegate()
+   {
+      return topicExchangeDelegate;
+   }
+   
+   
 
    public synchronized int getNextObjectID()
    {

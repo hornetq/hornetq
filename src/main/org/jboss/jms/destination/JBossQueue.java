@@ -42,6 +42,11 @@ public class JBossQueue extends JBossDestination implements Queue
    
    // Constructors --------------------------------------------------
 
+   public JBossQueue(String name, int fullSize, int pageSize, int downCacheSize)
+   {
+      super(name, fullSize, pageSize, downCacheSize);
+   }
+   
    public JBossQueue(String name)
    {
       super(name);

@@ -45,4 +45,6 @@ public interface Filter extends Serializable
 	 * @return true if the Filter accepts the routable - i.e. let's it pass.
 	 */
 	boolean accept(Routable routable);
+   
+   String getFilterString();
 }

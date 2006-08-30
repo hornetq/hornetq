@@ -34,17 +34,23 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getMessageStore" setMethod="setMessageStore">
-      <description>The ObjectName of the message store</description>
-      <name>MessageStore</name>
+   <attribute access="read-write" getMethod="getDirectExchange" setMethod="setDirectExchange">
+      <description>The ObjectName of the direct exchange</description>
+      <name>DirectExchange</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-
-   <attribute access="read-write" getMethod="getChannelMapper" setMethod="setChannelMapper">
-      <description>The ObjectName of the channel mapper</description>
-      <name>ChannelMapper</name>
+   
+   <attribute access="read-write" getMethod="getTopicExchange" setMethod="setTopicExchange">
+      <description>The ObjectName of the topic exchange</description>
+      <name>TopicExchange</name>
       <type>javax.management.ObjectName</type>
-   </attribute>
+   </attribute>   
+   
+   <attribute access="read-write" getMethod="getJMSUserManager" setMethod="setJMSUserManager">
+      <description>The ObjectName of the jms user manager</description>
+      <name>JMSUserManager</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>   
 
    <!-- instance access -->
 

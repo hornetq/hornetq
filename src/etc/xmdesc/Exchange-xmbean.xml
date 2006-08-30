@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+<mbean>
+   <description>An exchange</description>
+   <class>org.jboss.messaging.core.plugin.ExchangeSupport</class>
+
+   <!-- Managed constructors -->
+
+   <!-- Managed attributes -->
+
+   <attribute access="read-only" getMethod="getInstance">
+      <description>The instance to plug into the server peer</description>
+      <name>Instance</name>
+      <type>java.lang.Object</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDataSource" setMethod="setDataSource">
+      <description>The JNDI name of the DataSource used by this ChannelMapper instance</description>
+      <name>DataSource</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getTransactionManager" setMethod="setTransactionManager">
+      <description>The ObjectName of the TransactionManager used by this ChannelMaper instance</description>
+      <name>TransactionManager</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="getSqlProperties" setMethod="setSqlProperties">
+      <description>DML and DDL overrides</description>
+      <name>SqlProperties</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="isCreateTablesOnStartup" setMethod="setCreateTablesOnStartup">
+      <description>Should database tables be created on startup?</description>
+      <name>CreateTablesOnStartup</name>
+      <type>boolean</type>
+   </attribute>
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>destroy</name>
+   </operation>
+
+   <!-- This operation was introduced for testing purposes. If more useful operations with a
+        similar semantics are added here, use those instead of this one
+   -->
+   
+   <operation>
+      <description>Returns the set of durable subscription names corresponding to the given clientID</description>
+      <name>getSubscriptions</name>
+      <parameter>
+         <name>clientID</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.Set</return-type>
+   </operation>
+      
+</mbean>

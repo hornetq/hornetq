@@ -25,8 +25,14 @@ import javax.jms.Message;
 import javax.jms.TemporaryQueue;
 
 /**
+ * 
+ * A JMSReplyToHeaderTest
+
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ *
  */
 public class JMSReplyToHeaderTest extends MessageTest
 {

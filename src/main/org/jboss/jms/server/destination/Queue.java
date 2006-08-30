@@ -14,7 +14,14 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.core.local.MessageQueue;
+import org.jboss.messaging.core.memory.MemoryManager;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.exchange.Binding;
 
 /**
  * A deployable JBoss Messaging queue.
@@ -57,10 +64,17 @@ public class Queue extends DestinationServiceSupport
             log.warn("Queue is stopped.");
             return 0;
          }
+         
+         Binding binding = (Binding)exchange.listBindingsForWildcard(name).get(0);
+         
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue:" + name);
+         }
+         
+         MessageQueue queue = binding.getQueue();
    
-         JBossQueue jbq = new JBossQueue(name);
-         org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
-   	   return q.getMessageCount();
+   	   return queue.messageCount();
       }
       catch (Throwable t)
       {
@@ -69,6 +83,84 @@ public class Queue extends DestinationServiceSupport
    }
 
    // JMX managed operations ----------------------------------------
+   
+   public synchronized void startService() throws Exception
+   {
+      try
+      {
+         started = true;
+   
+         if (serviceName != null)
+         {
+            name = serviceName.getKeyProperty("name");
+         }
+   
+         if (name == null || name.length() == 0)
+         {
+            throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") + " " +
+                                             "name was not properly set in the service's" +
+                                             "ObjectName");
+         }
+   
+         ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+
+         dm = serverPeer.getDestinationManager();
+         sm = serverPeer.getSecurityManager();         
+         exchange = serverPeer.getDirectExchangeDelegate();
+         
+         //Binding must be added before destination is registered in JNDI
+         //otherwise the user could get a reference to the destination and use it
+         //while it is still being loaded
+         
+         MessageStore ms = serverPeer.getMessageStore();
+         PersistenceManager pm = serverPeer.getPersistenceManagerDelegate(); 
+         //Binding might already exist
+         Binding binding = exchange.getBindingForName(name);
+         
+         if (binding != null)
+         {
+            //Reload the queue for the binding
+            exchange.reloadQueues(name, ms, pm, fullSize, pageSize, downCacheSize);
+         }
+         else
+         {         
+            //Make a binding for this queue
+            exchange.bindQueue(name, name, null, false, true, ms, pm, fullSize, pageSize, downCacheSize);
+         }
+         
+         JBossQueue q = new JBossQueue(name, fullSize, pageSize, downCacheSize);
+         
+         jndiName = dm.registerDestination(q, jndiName, securityConfig);
+        
+         log.debug(this + " security configuration: " + (securityConfig == null ?
+            "null" : "\n" + XMLUtil.elementToString(securityConfig)));
+
+         log.info(this + " started, fullSize=" + fullSize + ", pageSize=" + pageSize + ", downCacheSize=" + downCacheSize);
+      }
+      catch (Throwable t)
+      {
+         ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      }
+   }
+
+   public void stopService() throws Exception
+   {
+      try
+      {
+         dm.unregisterDestination(new JBossQueue(name));
+         
+         //We undeploy the queue from memory - this also deactivates the binding
+         exchange.unloadQueues(name);
+         
+         started = false;
+         
+         log.info(this + " stopped");
+      }
+      catch (Throwable t)
+      {
+         ExceptionUtil.handleJMXInvocation(t, this + " stopService");
+      }
+   }
    
    public void removeAllMessages() throws Exception
    {
@@ -79,10 +171,17 @@ public class Queue extends DestinationServiceSupport
             log.warn("Queue is stopped.");
             return;
          }
+         
+         Binding binding = (Binding)exchange.listBindingsForWildcard(name).get(0);
+         
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue:" + name);
+         }
+         
+         MessageQueue queue = binding.getQueue();
    
-         JBossQueue jbq = new JBossQueue(name);
-         org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
-         q.removeAllReferences();
+         queue.removeAllReferences();
       }
       catch (Throwable t)
       {
@@ -108,19 +207,26 @@ public class Queue extends DestinationServiceSupport
                selector = null;
             }
          }
+         
+         Binding binding = (Binding)exchange.listBindingsForWildcard(name).get(0);
+         
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue:" + name);
+         }
+         
+         MessageQueue queue = binding.getQueue();
    
-         JBossQueue jbq = new JBossQueue(name);
-         org.jboss.messaging.core.local.Queue q = (org.jboss.messaging.core.local.Queue)cm.getCoreDestination(jbq);
          try 
          {
             List msgs;
             if (selector == null)
             {
-               msgs = q.browse();
+               msgs = queue.browse();
             }
             else
             {
-               msgs = q.browse(new Selector(selector));
+               msgs = queue.browse(new Selector(selector));
             }
             return msgs;
          }

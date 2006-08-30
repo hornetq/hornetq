@@ -37,9 +37,14 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
+ * 
+ * A PersistenceTest
+
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
+ *
  */
 public class PersistenceTest extends MessagingTestCase
 {
@@ -121,7 +126,11 @@ public class PersistenceTest extends MessagingTestCase
       
       ServerManagement.stopServerPeer();
       
+      
+      log.info("******************** restartiong");
       ServerManagement.startServerPeer();
+      
+      
 
       // Messaging server restart implies new ConnectionFactory lookup
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
@@ -427,6 +436,7 @@ public class PersistenceTest extends MessagingTestCase
       ds = s.createDurableSubscriber(thisTopic, "sub", null, false);
 
       TextMessage rm = (TextMessage)ds.receive(3000);
+      assertNotNull(rm);
       assertEquals("thebody", rm.getText());
 
 

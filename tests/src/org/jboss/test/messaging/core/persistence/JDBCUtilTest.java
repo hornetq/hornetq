@@ -22,7 +22,7 @@
 package org.jboss.test.messaging.core.persistence;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.persistence.JDBCUtil;
+import org.jboss.messaging.util.JDBCUtil;
 
 
 /**

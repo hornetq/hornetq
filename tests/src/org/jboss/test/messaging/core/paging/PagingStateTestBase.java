@@ -32,7 +32,6 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.plugin.JDBCChannelMapper;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
@@ -40,6 +39,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -96,19 +96,15 @@ public class PagingStateTestBase extends MessagingTestCase
       sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
-      JDBCChannelMapper cm = new JDBCChannelMapper(sc.getDataSource(), sc.getTransactionManager());
-      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), cm);
-      
-      cm.start();
-      
+      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());            
+        
       ((JDBCPersistenceManager)pm).start();
 
-      ms = new SimpleMessageStore("store1");
+      ms = new SimpleMessageStore();
       
-      tr = new TransactionRepository();
+      tr = new TransactionRepository();      
       
-      tr.start(pm);
-      
+      tr.injectAttributes(pm, new IdManager("TRANSACTION_ID", 10, pm));
    }
    
    
@@ -250,9 +246,7 @@ public class PagingStateTestBase extends MessagingTestCase
             {
                theTx.commit();
             }
-         }
-         
-         
+         }    
       }
    }
    

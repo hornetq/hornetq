@@ -53,7 +53,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -2095,6 +2094,7 @@ public class MessageConsumerTest extends MessagingTestCase
                try
                {
                   m = consumer.receive(1500);
+                  log.info(consumer + " received: " + m);
                }
                catch (Exception e)
                {

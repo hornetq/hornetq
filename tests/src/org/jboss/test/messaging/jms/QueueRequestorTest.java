@@ -71,8 +71,7 @@ public class QueueRequestorTest extends MessagingTestCase
    {
       super.setUp();
       ServerManagement.start("all");
-      
-      
+            
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
       ServerManagement.undeployQueue("Queue");

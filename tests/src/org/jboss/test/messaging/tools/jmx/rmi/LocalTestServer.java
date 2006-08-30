@@ -35,18 +35,18 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.remoting.ServerInvocationHandler;
 import org.w3c.dom.Element;
 
 /**
@@ -70,8 +70,9 @@ public class LocalTestServer implements Server
 
    // service dependencies   
    private ObjectName persistenceManagerObjectName;
-   private ObjectName messageStoreObjectName;
-   private ObjectName channelMapperObjectName;
+   private ObjectName directExchangeObjectName;
+   private ObjectName topicExchangeObjectName;
+   private ObjectName jmsUserManagerObjectName;
 
    // the server MBean itself
    private ObjectName serverPeerObjectName;
@@ -246,23 +247,29 @@ public class LocalTestServer implements Server
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
       ServiceDeploymentDescriptor cfdd = new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
 
-      MBeanConfigurationElement channelMapperConfig =
-         (MBeanConfigurationElement)pdd.query("service", "ChannelMapper").iterator().next();
-      channelMapperObjectName = sc.registerAndConfigureService(channelMapperConfig);
-      sc.invoke(channelMapperObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(channelMapperObjectName, "start", new Object[0], new String[0]);
-
       MBeanConfigurationElement persistenceManagerConfig =
          (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
       persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
       sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);     
-
-      MBeanConfigurationElement messageStoreConfig =
-         (MBeanConfigurationElement)mdd.query("service", "MessageStore").iterator().next();
-      messageStoreObjectName = sc.registerAndConfigureService(messageStoreConfig);
-      sc.invoke(messageStoreObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(messageStoreObjectName, "start", new Object[0], new String[0]);
+      sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);    
+      
+      MBeanConfigurationElement directExchangeConfig =
+         (MBeanConfigurationElement)pdd.query("service", "DirectExchange").iterator().next();
+      directExchangeObjectName = sc.registerAndConfigureService(directExchangeConfig);
+      sc.invoke(directExchangeObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(directExchangeObjectName, "start", new Object[0], new String[0]);
+      
+      MBeanConfigurationElement topicExchangeConfig =
+         (MBeanConfigurationElement)pdd.query("service", "TopicExchange").iterator().next();
+      topicExchangeObjectName = sc.registerAndConfigureService(topicExchangeConfig);
+      sc.invoke(topicExchangeObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(topicExchangeObjectName, "start", new Object[0], new String[0]);
+      
+      MBeanConfigurationElement jmsUserManagerConfig =
+         (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
+      jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
+      sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);      
 
       // register server peer as a service, dependencies are injected automatically
       MBeanConfigurationElement serverPeerConfig =
@@ -368,14 +375,18 @@ public class LocalTestServer implements Server
       sc.unregisterService(serverPeerObjectName);
 
       log.debug("stopping ServerPeer's plug-in dependencies");
+      
+      sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(jmsUserManagerObjectName);
 
-      sc.invoke(channelMapperObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(channelMapperObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(channelMapperObjectName);
-
-      sc.invoke(messageStoreObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(messageStoreObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(messageStoreObjectName);
+      sc.invoke(directExchangeObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(directExchangeObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(directExchangeObjectName);
+      
+      sc.invoke(topicExchangeObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(topicExchangeObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(topicExchangeObjectName);
 
       sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
       sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
@@ -400,9 +411,14 @@ public class LocalTestServer implements Server
       return serverPeerObjectName;
    }
 
-   public ObjectName getChannelMapperObjectName()
+   public ObjectName getDirectExchangeObjectName()
    {
-      return channelMapperObjectName;
+      return directExchangeObjectName;
+   }
+   
+   public ObjectName getTopicExchangeObjectName()
+   {
+      return topicExchangeObjectName;
    }
 
    public Set getConnectorSubsystems() throws Exception
@@ -435,12 +451,10 @@ public class LocalTestServer implements Server
     */
    public MessageStore getMessageStore() throws Exception
    {
-      return (MessageStore)sc.getAttribute(messageStoreObjectName, "Instance");
+      ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
+      return serverPeer.getMessageStore();
    }
 
-   /**
-    * Only for in-VM use!
-    */
    public DestinationManager getDestinationManager() throws Exception
    {
       ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
@@ -452,15 +466,19 @@ public class LocalTestServer implements Server
       ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
       return serverPeer.getPersistenceManagerDelegate();
    }
-
-   /**
-    * Only for in-VM use!
-    */
-   public ChannelMapper getChannelMapper() throws Exception
+   
+   public Exchange getDirectExchange() throws Exception
    {
-      return (ChannelMapper)sc.
-         getAttribute(channelMapperObjectName, "Instance");
+      return (Exchange)sc.
+         getAttribute(directExchangeObjectName, "Instance");
    }
+   
+   public Exchange getTopicExchange() throws Exception
+   {
+      return (Exchange)sc.
+         getAttribute(topicExchangeObjectName, "Instance");
+   }
+
    
    /**
     * Only for in-VM use!

@@ -15,9 +15,15 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.selector.Selector;
-import org.jboss.jms.server.subscription.DurableSubscription;
-import org.jboss.jms.server.subscription.Subscription;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.core.local.MessageQueue;
+import org.jboss.messaging.core.memory.MemoryManager;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.exchange.Binding;
 
 
 /**
@@ -53,6 +59,89 @@ public class Topic extends DestinationServiceSupport
    // JMX managed attributes ----------------------------------------
 
    // JMX managed operations ----------------------------------------
+   
+   public synchronized void startService() throws Exception
+   {
+      try
+      {
+         started = true;
+   
+         if (serviceName != null)
+         {
+            name = serviceName.getKeyProperty("name");
+         }
+   
+         if (name == null || name.length() == 0)
+         {
+            throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") + " " +
+                                             "name was not properly set in the service's" +
+                                             "ObjectName");
+         }
+   
+         ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+
+         dm = serverPeer.getDestinationManager();
+         sm = serverPeer.getSecurityManager();
+         exchange = serverPeer.getTopicExchangeDelegate();
+         
+         MessageStore ms = serverPeer.getMessageStore();
+         PersistenceManager pm = serverPeer.getPersistenceManagerDelegate();
+        
+         //We deploy any queues corresponding to pre-existing durable subscriptions
+         exchange.reloadQueues(name, ms, pm, fullSize, pageSize, downCacheSize);
+                  
+         JBossTopic t = new JBossTopic(name, fullSize, pageSize, downCacheSize);
+         
+         jndiName = dm.registerDestination(t, jndiName, securityConfig);
+         
+         log.debug(this + " security configuration: " + (securityConfig == null ?
+            "null" : "\n" + XMLUtil.elementToString(securityConfig)));
+
+         log.info(this + " started, fullSize=" + fullSize + ", pageSize=" + pageSize + ", downCacheSize=" + downCacheSize);
+      }
+      catch (Throwable t)
+      {
+         ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      }
+   }
+
+   public void stopService() throws Exception
+   {
+      try
+      {
+         dm.unregisterDestination(new JBossTopic(name));
+         
+         //When undeploying a topic, any non durable subscriptions will be removed
+         //Any durable subscriptions will survive in persistent storage, but be removed
+         //from memory
+         
+         //First we remove any data for a non durable sub - a non durable sub might have data in the
+         //database since it might have paged
+         
+         List bindings = exchange.listBindingsForWildcard(name);
+         
+         Iterator iter = bindings.iterator();
+         while (iter.hasNext())            
+         {
+            Binding binding = (Binding)iter.next();
+            
+            if (!binding.isDurable())
+            {
+               binding.getQueue().removeAllReferences();
+            }
+         }
+          
+         //We undeploy the queues for the subscriptions - this also unbinds the bindings
+         exchange.unloadQueues(name);
+         
+         started = false;
+         log.info(this + " stopped");
+      }
+      catch (Throwable t)
+      {
+         ExceptionUtil.handleJMXInvocation(t, this + " stopService");
+      }
+   }
 
    /**
     * Remove all messages from subscription's storage.
@@ -66,15 +155,16 @@ public class Topic extends DestinationServiceSupport
             log.warn("Topic is stopped.");
             return;
          }
-         JBossTopic jbt = new JBossTopic(name);
-         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         
+         List subs = exchange.listBindingsForWildcard(name);
          
          //XXX How to lock down all subscriptions?
-         Iterator iter = t.iterator();
+         Iterator iter = subs.iterator();
          while (iter.hasNext())
          {
-            Object sub = iter.next();
-            ((Subscription)sub).removeAllReferences();
+            Binding binding = (Binding)iter.next();
+            MessageQueue queue = binding.getQueue();
+            queue.removeAllReferences();
          }
       }
       catch (Throwable t)
@@ -98,17 +188,9 @@ public class Topic extends DestinationServiceSupport
             return 0;
          }
    
-         JBossTopic jbt = new JBossTopic(name);
-         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-        
-         int count = 0;
-         Iterator iter = t.iterator();
-         while (iter.hasNext())
-         {
-            count++;
-            iter.next();
-         }
-         return count;
+         List subs = exchange.listBindingsForWildcard(name);
+         
+         return subs.size();         
       }
       catch (Throwable t)
       {
@@ -132,20 +214,23 @@ public class Topic extends DestinationServiceSupport
             log.warn("Topic is stopped.");
             return 0;
          }
-   
-         JBossTopic jbt = new JBossTopic(name);
-         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
+         
+         List subs = exchange.listBindingsForWildcard(name);
+         
+         Iterator iter = subs.iterator();
          
          int count = 0;
-         Iterator iter = t.iterator();
+         
          while (iter.hasNext())
          {
-            Subscription sub = (Subscription)iter.next();
-            if (sub.isRecoverable() ^ !durable)
+            Binding binding = (Binding)iter.next();
+            
+            if ((binding.isDurable() && durable) || (!binding.isDurable() && !durable))
             {
                count++;
             }
          }
+   
          return count;
       }
       catch (Throwable t)
@@ -184,9 +269,9 @@ public class Topic extends DestinationServiceSupport
             return "";
          }
    
-         JBossTopic jbt = new JBossTopic(name);
-         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-         return getSubscriptionsAsText(t, true) + getSubscriptionsAsText(t, false);
+         List subs = exchange.listBindingsForWildcard(name);
+         
+         return getSubscriptionsAsText(subs, true) + getSubscriptionsAsText(subs, false);
       }
       catch (Throwable t)
       {
@@ -212,9 +297,9 @@ public class Topic extends DestinationServiceSupport
             return "";
          }
    
-         JBossTopic jbt = new JBossTopic(name);
-         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-         return getSubscriptionsAsText(t, durable);
+         List subs = exchange.listBindingsForWildcard(name);
+         
+         return getSubscriptionsAsText(subs, durable);
       }
       catch (Throwable t)
       {
@@ -263,14 +348,14 @@ public class Topic extends DestinationServiceSupport
    
    /**
     * Get messages from a durable subscription.
-    * @param name Subscription name.
+    * @param subName Subscription name.
     * @param clientID Client ID.
     * @param selector Filter expression.
     * @return list of javax.jms.Message
     * @throws JMSException
     * @see ManageableTopic#getMessagesFromDurableSub(String, String, String)
     */
-   public List listMessagesDurableSub(String name, String clientID, String selector)
+   public List listMessagesDurableSub(String subName, String clientID, String selector)
       throws Exception
    {
       try
@@ -281,9 +366,9 @@ public class Topic extends DestinationServiceSupport
             return new ArrayList();
          }
    
-         JBossTopic jbt = new JBossTopic(this.name);
-         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-         return getMessagesFromDurableSub(t, name, clientID, trimSelector(selector));
+         List subs = exchange.listBindingsForWildcard(name);
+         
+         return getMessagesFromDurableSub(subs, subName, clientID, trimSelector(selector));
       }
       catch (Throwable t)
       {
@@ -310,9 +395,9 @@ public class Topic extends DestinationServiceSupport
             return new ArrayList();
          }
          
-         JBossTopic jbt = new JBossTopic(this.name);
-         org.jboss.messaging.core.local.Topic t = (org.jboss.messaging.core.local.Topic)cm.getCoreDestination(jbt);
-         return getMessagesFromNonDurableSub(t, channelID, trimSelector(selector));
+         List subs = exchange.listBindingsForWildcard(name);
+         
+         return getMessagesFromNonDurableSub(subs, channelID, trimSelector(selector));
       }
       catch (Throwable t)
       {
@@ -364,51 +449,57 @@ public class Topic extends DestinationServiceSupport
       return false;
    }
    
-   protected String getSubscriptionsAsText(org.jboss.messaging.core.local.Topic t, boolean durable)
+   protected String getSubscriptionsAsText(List bindings, boolean durable)
    {
       StringBuffer sb = new StringBuffer();
-      Iterator iter = t.iterator();
+      Iterator iter = bindings.iterator();
       while (iter.hasNext())
       {
-         Subscription sub = (Subscription)iter.next();
-         if (durable && sub.isRecoverable())
-         {            
-            DurableSubscription ds = (DurableSubscription)sub;
+         Binding binding = (Binding)iter.next();
+                  
+         if (durable && binding.isDurable())
+         {                      
+            MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueueName());
+            
             sb.append("Durable, subscriptionID=\"");
-            sb.append(sub.getChannelID());    
+            sb.append(binding.getChannelId());    
             sb.append("\", name=\"");
-            sb.append(ds.getName());
+            sb.append(helper.getSubName());
             sb.append("\", clientID=\"");
-            sb.append(ds.getClientID());
+            sb.append(helper.getClientId());
             sb.append("\", selector=\"");
-            sb.append(ds.getSelector());
+            sb.append(binding.getSelector());
             sb.append("\", noLocal=\"");
-            sb.append(ds.isNoLocal());
+            sb.append(binding.isNoLocal());
             sb.append("\"\n");
          }
-         else if (!durable && !sub.isRecoverable())
+         else if (!durable && !binding.isDurable())
          {            
             sb.append("Non-durable, subscriptionID=\"");
-            sb.append(sub.getChannelID());
+            sb.append(binding.getChannelId());
             sb.append("\", selector=\"");
-            sb.append(sub.getSelector());
+            sb.append(binding.getSelector());
             sb.append("\", noLocal=\"");
-            sb.append(sub.isNoLocal());
+            sb.append(binding.isNoLocal());
             sb.append("\"\n");
          }
       }
       return sb.toString();
    }
    
-   protected List getMessagesFromDurableSub(org.jboss.messaging.core.local.Topic t, String name, String clientID, String selector) throws InvalidSelectorException
+   protected List getMessagesFromDurableSub(List bindings, String name,
+                                            String clientID, String selector) throws InvalidSelectorException
    {
-      Iterator iter = t.iterator();
+      Iterator iter = bindings.iterator();
       while (iter.hasNext())
       {
-         Subscription sub = (Subscription)iter.next();
+         Binding binding = (Binding)iter.next();
          // If subID matches, then get message list from the subscription
-         if (matchDurableSubscription(name, clientID, sub))
-            return sub.browse(null == selector ? null : new Selector(selector));
+         if (matchDurableSubscription(name, clientID, binding))
+         {
+            MessageQueue queue = binding.getQueue();
+            return queue.browse(null == selector ? null : new Selector(selector));
+         }
       }   
       // No match, return an empty list
       return new ArrayList();
@@ -417,50 +508,51 @@ public class Topic extends DestinationServiceSupport
    /**
     * @see ManageableTopic#getMessagesFromNonDurableSub(Long, String)
     */
-   public List getMessagesFromNonDurableSub(org.jboss.messaging.core.local.Topic t, long channelID, String selector) throws InvalidSelectorException
+   public List getMessagesFromNonDurableSub(List bindings, long channelID, String selector) throws InvalidSelectorException
    {
-      Iterator iter = t.iterator();
+      Iterator iter = bindings.iterator();
       while (iter.hasNext())
       {
-         Subscription sub = (Subscription)iter.next();
+         Binding binding = (Binding)iter.next();
          // If subID matches, then get message list from the subscription
-         if (matchNonDurableSubscription(channelID, sub))
-            return sub.browse(null == selector ? null : new Selector(selector));
+         if (matchNonDurableSubscription(channelID, binding))
+            return binding.getQueue().browse(null == selector ? null : new Selector(selector));
       }   
       // No match, return an empty list
       return new ArrayList();
    }
 
    // Test if the durable subscriptions match
-   private boolean matchDurableSubscription(String name, String clientID, Subscription sub)
+   private boolean matchDurableSubscription(String name, String clientID, Binding binding)
    {
       // Validate the name
       if (null == name)
          throw new IllegalArgumentException();
       // Must be durable
-      if (!sub.isRecoverable())
+      if (!binding.isDurable())
          return false;
+      
+      MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueueName());
 
-      DurableSubscription duraSub = (DurableSubscription)sub;
       // Subscription name check
-      if (!name.equals(duraSub.getName()))
+      if (!name.equals(helper.getSubName()))
          return false;
       // Client ID check: if no client ID specified, it's considered as matched 
       if (null == clientID || 0 == clientID.length())
          return true;
-      if (!clientID.equals(duraSub.getClientID()))
+      if (!clientID.equals(helper.getClientId()))
          return false;
       return true;
    }
    
    // Test if the non-durable subscriptions match
-   private boolean matchNonDurableSubscription(long channelID, Subscription sub)
+   private boolean matchNonDurableSubscription(long channelID, Binding binding)
    {
       // Must be non-durable
-      if (sub.isRecoverable())
+      if (binding.isDurable())
          return false;
       // Channel ID must be the same
-      if (channelID != sub.getChannelID())
+      if (channelID != binding.getChannelId())
          return false;
       return true;
    }

@@ -134,7 +134,7 @@
         They must available in the repository and declared as <componentrefs> in build-thirdparty.xml.
    -->
    <path id="external.dependencies.classpath">
-      <!-- <path refid="apache.commons.classpath"/> -->
+      <path refid="apache.logging.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="javassist.classpath"/>
       <path refid="jgroups.jgroups.classpath"/>

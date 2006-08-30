@@ -16,15 +16,14 @@
       -->
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.plugin.JDBCChannelMapper"
-      name="jboss.messaging:service=ChannelMapper"
-      xmbean-dd="xmdesc/JDBCChannelMapper-xmbean.xml">
+   <mbean code="org.jboss.messaging.core.plugin.DirectExchange"
+      name="jboss.messaging:service=DirectExchange"
+      xmbean-dd="xmdesc/Exchange-xmbean.xml">
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
            the DataSource JNDI name in order to actually get a reference to it. Fix this.
       -->   
@@ -32,6 +31,30 @@
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
-   </mbean>         
+   </mbean>
+   
+	<mbean code="org.jboss.messaging.core.plugin.TopicExchange"
+      name="jboss.messaging:service=TopicExchange"
+      xmbean-dd="xmdesc/Exchange-xmbean.xml">
+      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
+           the DataSource JNDI name in order to actually get a reference to it. Fix this.
+      -->   
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <attribute name="CreateTablesOnStartup">true</attribute>
+   </mbean> 
+   
+   <mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManager"
+      name="jboss.messaging:service=JMSUserManager"
+      xmbean-dd="xmdesc/JMSUserManager-xmbean.xml">
+      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
+           the DataSource JNDI name in order to actually get a reference to it. Fix this.
+      -->   
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <attribute name="CreateTablesOnStartup">true</attribute>
+   </mbean>              
    
 </server>

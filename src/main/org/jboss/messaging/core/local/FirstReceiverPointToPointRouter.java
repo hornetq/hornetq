@@ -22,10 +22,8 @@
 package org.jboss.messaging.core.local;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
@@ -38,7 +36,6 @@ import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * 
- * This router deliver the reference to a maximum of one of the router's receivers.
  * It will always favour the first receiver in the internal list of receivers, but will retry
  * the next one (and the next one...) if a previous one does not want to accept the message.
  * If the router has several receivers (e.g. the case of multiple consumers on a queue)
@@ -72,9 +69,9 @@ public class FirstReceiverPointToPointRouter implements Router
 
    // Router implementation -----------------------------------------
 
-   public Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
-      Set deliveries = new HashSet();
+      Delivery del = null;
       
       boolean selectorRejected = false;
       
@@ -95,7 +92,8 @@ public class FirstReceiverPointToPointRouter implements Router
                   if (d.isSelectorAccepted())
                   {
                      // deliver to the first receiver that accepts
-                     deliveries.add(d);
+                     del = d;
+                     
                      break;
                   }
                   else
@@ -112,12 +110,12 @@ public class FirstReceiverPointToPointRouter implements Router
          }
       }
       
-      if (deliveries.isEmpty() && selectorRejected)
+      if (del == null && selectorRejected)
       {
-         deliveries.add(new SimpleDelivery(null, null, true, false));
+         del = new SimpleDelivery(null, null, true, false);
       }
 
-      return deliveries;
+      return del;
    }
 
    public boolean add(Receiver r)

@@ -21,8 +21,6 @@
 */
 package org.jboss.test.messaging.core.local;
 
-import java.util.Set;
-
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
@@ -87,81 +85,68 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       MessageReference ref = new SimpleMessageReference();
       
-      Set dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      Delivery del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 0);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 1);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 2);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 3);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 4);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 5);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 6);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 7);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 8);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 9);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 0);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 1);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 2);
       resetReceivers(receivers);
       
@@ -191,63 +176,53 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       MessageReference ref = new SimpleMessageReference();
       
-      Set dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      Delivery del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 0);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 1);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 3);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 4);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 7);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 8);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 0);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 1);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 3);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 4);
       resetReceivers(receivers);
       
@@ -274,17 +249,15 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       MessageReference ref = new SimpleMessageReference();
       
-      Set dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(0, dels.size());
+      Delivery del = router.handle(null, ref, null);
+      assertNull(del);
+
+      del = router.handle(null, ref, null);
+      assertNull(del);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(0, dels.size());
-      
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(0, dels.size());
+      del = router.handle(null, ref, null);
+      assertNull(del);
+
       
       
    }
@@ -313,63 +286,53 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       MessageReference ref = new SimpleMessageReference();
       
-      Set dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      Delivery del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 0);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 1);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 3);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 4);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 7);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 8);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 0);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 1);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 3);
       resetReceivers(receivers);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       checkReceiverGotRef(receivers, 4);
       resetReceivers(receivers);
       
@@ -395,18 +358,17 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       MessageReference ref = new SimpleMessageReference();
       
-      Set dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(1, dels.size());
-      assertFalse(((SimpleDelivery)dels.iterator().next()).isSelectorAccepted());
+      Delivery del = router.handle(null, ref, null);
+      assertNotNull(del);
+      assertFalse(del.isSelectorAccepted());
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertFalse(((SimpleDelivery)dels.iterator().next()).isSelectorAccepted());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
+      assertFalse(del.isSelectorAccepted());
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertFalse(((SimpleDelivery)dels.iterator().next()).isSelectorAccepted());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
+      assertFalse(del.isSelectorAccepted());
            
    }
    
@@ -416,17 +378,14 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
 
       MessageReference ref = new SimpleMessageReference();
       
-      Set dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(0, dels.size());
+      Delivery del = router.handle(null, ref, null);
+      assertNotNull(del);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(0, dels.size());
+      del = router.handle(null, ref, null);
+      assertNotNull(del);
       
-      dels = router.handle(null, ref, null);
-      assertNotNull(dels);
-      assertEquals(0, dels.size());     
+      del = router.handle(null, ref, null);
+      assertNotNull(del);    
    }
 
 

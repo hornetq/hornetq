@@ -21,8 +21,6 @@
 */
 package org.jboss.test.messaging.core.message.base;
 
-
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>

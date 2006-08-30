@@ -29,7 +29,7 @@ import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.local.Pipe;
+import org.jboss.messaging.core.local.MessageQueue;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -63,8 +63,8 @@ public class PagingTest extends MessagingTestCase
 
    public void testPaging() throws Exception
    {
+      MessageQueue p = new MessageQueue(0, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
 
-      Pipe p = new Pipe(0, ms, pm, null, true, true, 100, 20, 10, new QueuedExecutor());
       CoreMessage m = null;
 
       m = MessageFactory.createCoreMessage(0);
@@ -87,7 +87,7 @@ public class PagingTest extends MessagingTestCase
 
       pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
       pm.start();
-      ms = new SimpleMessageStore("store0");
+      ms = new SimpleMessageStore();
    }
 
    public void tearDown() throws Exception

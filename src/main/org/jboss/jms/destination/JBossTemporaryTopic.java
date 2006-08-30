@@ -53,6 +53,11 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
       this.delegate = delegate;
    }
    
+   public JBossTemporaryTopic(String name, int fullSize, int pageSize, int downCacheSize)
+   {
+      super(name, fullSize, pageSize, downCacheSize);
+   }
+   
    public JBossTemporaryTopic(String name)
    {
       super(name);

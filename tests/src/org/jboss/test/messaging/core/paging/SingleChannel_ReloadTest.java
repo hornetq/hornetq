@@ -23,10 +23,9 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.MessageQueue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.LockMap;
@@ -66,7 +65,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testRecoverableQueueCrash() throws Throwable
    {
-      ChannelSupport queue = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
+      MessageQueue queue = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
       
       Message[] msgs = new Message[200];
       
@@ -111,8 +110,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Only the persistent messages should survive
       //This is what would happen if the server crashed
        
-      tr.stop();
-      ms.stop();
       pm.stop();
       
       pm =
@@ -120,13 +117,11 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
 
       ((JDBCPersistenceManager)pm).start();
 
-      ms = new SimpleMessageStore("store1");
+      ms = new SimpleMessageStore();
       
       tr = new TransactionRepository();
-      
-      tr.start(pm);
-         
-      ChannelSupport queue2 = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
+       
+      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
       
       queue2.load();
       
@@ -155,8 +150,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      ChannelSupport queue = new Queue(1, ms, pm, null, false, 100, 20, 10, new QueuedExecutor());
-      
+      MessageQueue queue = new MessageQueue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
+
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];
@@ -199,9 +194,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Stop and restart the persistence manager
       //No messages should survive
       //This is what would happen if the server crashed
-       
-      tr.stop();
-      ms.stop();
+
       pm.stop();
       
       pm =
@@ -209,13 +202,11 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
 
       ((JDBCPersistenceManager)pm).start();
 
-      ms = new SimpleMessageStore("store1");
+      ms = new SimpleMessageStore();
       
       tr = new TransactionRepository();
       
-      tr.start(pm);
-         
-      ChannelSupport queue2 = new Queue(1, ms, pm, null, false, 100, 20, 10, new QueuedExecutor());
+      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
       
       queue2.load();
       
@@ -242,7 +233,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      ChannelSupport queue = new Queue(1, ms, pm, null, false, 100, 20, 10, new QueuedExecutor());
+      MessageQueue queue = new MessageQueue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
       
       Message[] msgs = new Message[200];
       
@@ -302,6 +293,182 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue.messageCount());
       
       assertEquals(0, LockMap.instance.getSize());
+   }
+   
+   public void testQueueReloadWithSmallerFullSize() throws Throwable
+   {
+      MessageQueue queue = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+
+      Message[] msgs = new Message[150];
+      
+      MessageReference[] refs = new MessageReference[150];
+       
+      //Send 150 p messages
+      for (int i = 0; i < 150; i++)
+      {
+         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         
+         refs[i] = ms.reference(msgs[i]);
+                
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
+      }
+
+      List refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(150, refIds.size());
+                                                
+      assertEquals(100, queue.memoryRefCount());
+      
+      assertEquals(0, queue.downCacheCount());
+      
+      assertTrue(queue.isPaging());      
+      
+      assertEquals(0, queue.memoryDeliveryCount());
+      
+      //Stop and restart the persistence manager
+
+      pm.stop();
+      
+      pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+
+      ((JDBCPersistenceManager)pm).start();
+
+      ms = new SimpleMessageStore();
+      
+      tr = new TransactionRepository();
+      
+      //Reload the queue with a smaller fullSize
+      
+      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, false, 50, 20, 10, new QueuedExecutor(), null);
+      
+      queue2.load();
+      
+      refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(150, refIds.size());
+      
+      List msgIds = getMessageIds();
+      assertEquals(150, msgIds.size());
+                                                                  
+      assertEquals(50, queue2.memoryRefCount());
+      
+      assertEquals(0, queue2.downCacheCount());
+      
+      assertTrue(queue2.isPaging());      
+      
+      assertEquals(0, queue2.memoryDeliveryCount());
+      
+      assertEquals(50, queue2.messageCount());
+      
+      //Consume all the messages
+      this.consume(queue2, 0, refs, 150);
+      
+      refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(0, refIds.size());
+      
+      msgIds = getMessageIds();
+      assertEquals(0, msgIds.size());
+                                                                  
+      assertEquals(0, queue2.memoryRefCount());
+      
+      assertEquals(0, queue2.downCacheCount());
+      
+      assertFalse(queue2.isPaging());      
+      
+      assertEquals(0, queue2.memoryDeliveryCount());
+      
+      assertEquals(0, queue2.messageCount());
+      
+      assertEquals(0, LockMap.instance.getSize());            
+   }
+   
+   public void testReloadWithLargerFullSize() throws Throwable
+   {
+      MessageQueue queue = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+
+      Message[] msgs = new Message[150];
+      
+      MessageReference[] refs = new MessageReference[150];
+       
+      //Send 150 p messages
+      for (int i = 0; i < 150; i++)
+      {
+         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         
+         refs[i] = ms.reference(msgs[i]);
+                
+         queue.handle(null, refs[i], null); 
+         
+         refs[i].releaseMemoryReference();
+      }
+
+      List refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(150, refIds.size());
+                                                
+      assertEquals(100, queue.memoryRefCount());
+      
+      assertEquals(0, queue.downCacheCount());
+      
+      assertTrue(queue.isPaging());      
+      
+      assertEquals(0, queue.memoryDeliveryCount());
+      
+      //Stop and restart the persistence manager
+
+      pm.stop();
+      
+      pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+
+      ((JDBCPersistenceManager)pm).start();
+
+      ms = new SimpleMessageStore();
+      
+      tr = new TransactionRepository();
+      
+      //Reload the queue with a smaller fullSize
+      
+      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, false, 130, 20, 10, new QueuedExecutor(), null);
+      
+      queue2.load();
+      
+      refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(150, refIds.size());
+      
+      List msgIds = getMessageIds();
+      assertEquals(150, msgIds.size());
+                                                                  
+      assertEquals(130, queue2.memoryRefCount());
+      
+      assertEquals(0, queue2.downCacheCount());
+      
+      assertTrue(queue2.isPaging());      
+      
+      assertEquals(0, queue2.memoryDeliveryCount());
+      
+      assertEquals(130, queue2.messageCount());
+      
+      //Consume all the messages
+      this.consume(queue2, 0, refs, 150);
+      
+      refIds = getReferenceIds(queue.getChannelID());
+      assertEquals(0, refIds.size());
+      
+      msgIds = getMessageIds();
+      assertEquals(0, msgIds.size());
+                                                                  
+      assertEquals(0, queue2.memoryRefCount());
+      
+      assertEquals(0, queue2.downCacheCount());
+      
+      assertFalse(queue2.isPaging());      
+      
+      assertEquals(0, queue2.memoryDeliveryCount());
+      
+      assertEquals(0, queue2.messageCount());
+      
+      assertEquals(0, LockMap.instance.getSize());            
    }
    
 }

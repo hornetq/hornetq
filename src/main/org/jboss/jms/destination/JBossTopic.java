@@ -38,10 +38,15 @@ public class JBossTopic extends JBossDestination implements Topic
 
    // Static --------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes ----------------------------------------------------     
    
    // Constructors --------------------------------------------------
 
+   public JBossTopic(String name, int fullSize, int pageSize, int downCacheSize)
+   {
+      super(name, fullSize, pageSize, downCacheSize);
+   }
+   
    public JBossTopic(String name)
    {
       super(name);

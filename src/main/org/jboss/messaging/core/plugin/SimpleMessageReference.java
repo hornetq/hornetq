@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core.plugin;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
@@ -56,9 +55,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    private MessageHolder holder;
    
-   //private int deliveryCount;
-   
-   private long ordering;
+   private long pagingOrder = -1;
    
    private boolean released;
    
@@ -117,11 +114,6 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    }
 
    // MessageReference implementation -------------------------------
-
-   public Serializable getStoreID()
-   {
-      return ms.getStoreID();
-   }
    
    public Message getMessage()
    {
@@ -148,14 +140,14 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       return holder.getInMemoryChannelCount();
    }
   
-   public long getOrdering()
+   public long getPagingOrder()
    {
-      return ordering;
+      return pagingOrder;
    }
    
-   public void setOrdering(long ordering)
+   public void setPagingOrder(long order)
    {
-      this.ordering = ordering;
+      this.pagingOrder = order;
    }
    
    public MessageReference copy()

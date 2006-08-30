@@ -34,16 +34,15 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
-import org.jboss.remoting.ServerInvocationHandler;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
@@ -298,12 +297,6 @@ public class ServerManagement
       return server.getServerPeerObjectName();
    }
 
-   public static ObjectName getChannelMapperObjectName() throws Exception
-   {
-      insureStarted();
-      return server.getChannelMapperObjectName();
-   }
-
    /**
     * @return a Set<String> with the subsystems currently registered with the Connector.
     *         This method is supposed to work locally as well as remotely.
@@ -354,13 +347,6 @@ public class ServerManagement
    {
       insureStarted();
       return server.getPersistenceManager();
-   }
-
-   public static ChannelMapper getChannelMapper()
-      throws Exception
-   {
-      insureStarted();
-      return server.getChannelMapper();
    }
 
    public static void configureSecurityForDestination(String destName, String config)

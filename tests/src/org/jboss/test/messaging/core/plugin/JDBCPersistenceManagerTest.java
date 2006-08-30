@@ -40,6 +40,7 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -96,7 +97,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    {
       pm = createPM();      
       pm.setUsingBatchUpdates(batch);      
-      ms = new SimpleMessageStore("s0");      
+      ms = new SimpleMessageStore();      
    }
    
    protected JDBCPersistenceManager createPM() throws Throwable
@@ -117,743 +118,20 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       super.tearDown();
    }
    
-   public void testGetMinOrdering() throws Throwable
-   {
-      doSetup(false);
-      
-      Channel channel = new SimpleChannel(0, ms);
-      
-      Message[] m = createMessages(10);
-      
-      List refs = new ArrayList();
-      
-      MessageReference ref1 = ms.reference(m[0]);
-      ref1.setOrdering(11);
-      MessageReference ref2 = ms.reference(m[1]);
-      ref2.setOrdering(23);
-      MessageReference ref3 = ms.reference(m[2]);
-      ref3.setOrdering(27);
-      MessageReference ref4 = ms.reference(m[3]);
-      ref4.setOrdering(30);
-      MessageReference ref5 = ms.reference(m[4]);
-      ref5.setOrdering(89);
-      MessageReference ref6 = ms.reference(m[5]);
-      ref6.setOrdering(101);
-      MessageReference ref7 = ms.reference(m[6]);
-      ref7.setOrdering(123);
-      MessageReference ref8 = ms.reference(m[7]);
-      ref8.setOrdering(345);
-      MessageReference ref9 = ms.reference(m[8]);
-      ref9.setOrdering(678);
-      MessageReference ref10 = ms.reference(m[9]);
-      ref10.setOrdering(890);
-      
-      refs.add(ref1);
-      refs.add(ref2);
-      refs.add(ref3);
-      refs.add(ref4);
-      refs.add(ref5);
-      refs.add(ref6);
-      refs.add(ref7);
-      refs.add(ref8);
-      refs.add(ref9);
-      refs.add(ref10);
-      
-      pm.addReferences(channel.getChannelID(), refs, false);
-         
-      List refIds = getReferenceIds(channel.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-      
-      List msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      
-      long minOrdering = pm.getMinOrdering(channel.getChannelID());
-      
-      assertEquals(11, minOrdering);
-           
-      pm.removeReferences(channel.getChannelID(), refs);
- 
-      pm.addReferences(channel.getChannelID(), refs, true);
-      
-      refIds = getReferenceIds(channel.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-      
-      msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      
-      minOrdering = pm.getMinOrdering(channel.getChannelID());
-      
-      assertEquals(0, minOrdering);
-        
-   }
    
-   public void testGetNumberOfReferences() throws Throwable
-   {
-      doSetup(false);
-      
-      Channel channel = new SimpleChannel(0, ms);
-      
-      Message m0 = this.createMessage((byte)0, false);
-      Message m1 = this.createMessage((byte)1, false);
-      Message m2 = this.createMessage((byte)2, false);
-      Message m3 = this.createMessage((byte)3, false);
-      Message m4 = this.createMessage((byte)4, false);
-      Message m5 = this.createMessage((byte)5, false);
-      Message m6 = this.createMessage((byte)6, false);
-      Message m7 = this.createMessage((byte)7, false);
-      Message m8 = this.createMessage((byte)8, false);
-      Message m9 = this.createMessage((byte)9, false);
-      
-      Message m10 = this.createMessage((byte)10, true);
-      Message m11 = this.createMessage((byte)11, true);
-      Message m12 = this.createMessage((byte)12, true);
-      Message m13 = this.createMessage((byte)13, true);
-      Message m14 = this.createMessage((byte)14, true);
-      
-      MessageReference ref1 = ms.reference(m0);      
-      ref1.setOrdering(0);
-      MessageReference ref2 = ms.reference(m1);
-      ref2.setOrdering(1);
-      MessageReference ref3 = ms.reference(m2);
-      ref3.setOrdering(2);
-      MessageReference ref4 = ms.reference(m3);
-      ref4.setOrdering(3);
-      MessageReference ref5 = ms.reference(m4);
-      ref5.setOrdering(4);
-      MessageReference ref6 = ms.reference(m5);
-      ref6.setOrdering(5);
-      MessageReference ref7 = ms.reference(m6);
-      ref7.setOrdering(6);
-      MessageReference ref8 = ms.reference(m7);
-      ref8.setOrdering(7);
-      MessageReference ref9 = ms.reference(m8);
-      ref9.setOrdering(8);
-      MessageReference ref10 = ms.reference(m9);
-      ref10.setOrdering(9);
-      
-      MessageReference ref11 = ms.reference(m10);
-      ref11.setOrdering(10);
-      MessageReference ref12 = ms.reference(m11);
-      ref12.setOrdering(11);
-      MessageReference ref13 = ms.reference(m12);
-      ref13.setOrdering(12);
-      MessageReference ref14 = ms.reference(m13);
-      ref14.setOrdering(13);
-      MessageReference ref15 = ms.reference(m14);
-      ref15.setOrdering(14);
-      
-      
-      pm.addReference(channel.getChannelID(), ref1, null);
-      pm.addReference(channel.getChannelID(), ref2, null);
-      pm.addReference(channel.getChannelID(), ref3, null);
-      pm.addReference(channel.getChannelID(), ref4, null);
-      pm.addReference(channel.getChannelID(), ref5, null);
-      pm.addReference(channel.getChannelID(), ref6, null);
-      pm.addReference(channel.getChannelID(), ref7, null);
-      pm.addReference(channel.getChannelID(), ref8, null);
-      pm.addReference(channel.getChannelID(), ref9, null);
-      pm.addReference(channel.getChannelID(), ref10, null);
-      pm.addReference(channel.getChannelID(), ref11, null);
-      pm.addReference(channel.getChannelID(), ref12, null);
-      pm.addReference(channel.getChannelID(), ref13, null);
-      pm.addReference(channel.getChannelID(), ref14, null);
-      pm.addReference(channel.getChannelID(), ref15, null);
-      
-      List refIds = getReferenceIds(channel.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(15, refIds.size());
-      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref11.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref12.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref13.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref14.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref15.getMessageID())));
-      
-      List msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(15, msgs.size());
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref11.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref12.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref13.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref14.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref15.getMessageID())));
-      
-      int numberOfReferences = pm.getNumberOfUnloadedReferences(channel.getChannelID());
-      
-      //getNumberOfReferences only returns refs with loaded = 'N' - these will be 'Y'
-      assertEquals(0, numberOfReferences);
-      
-      List refs = new ArrayList();
-      
-      refs.add(ref8);
-      refs.add(ref9);
-      refs.add(ref10);
-      refs.add(ref11);
-      refs.add(ref12);
-      refs.add(ref13);
-      
-      pm.updateReferencesNotLoaded(channel.getChannelID(), refs);
-      
-      numberOfReferences = pm.getNumberOfUnloadedReferences(channel.getChannelID());
-      
-      assertEquals(6, numberOfReferences);
-      
-      pm.updateReliableReferencesLoadedInRange(channel.getChannelID(), 8, 11);
-      
-      numberOfReferences = pm.getNumberOfUnloadedReferences(channel.getChannelID());
-      
-      assertEquals(4, numberOfReferences);    
-   }
-   
-   public void testGetReferenceInfos() throws Throwable
-   {
-      doSetup(false);
-      
-      Channel channel = new SimpleChannel(0, ms);
-      
-      Message[] m = createMessages(10);
-      
-      MessageReference ref1 = ms.reference(m[0]);
-      ref1.setOrdering(0);
-      MessageReference ref2 = ms.reference(m[1]);
-      ref2.setOrdering(1);
-      MessageReference ref3 = ms.reference(m[2]);
-      ref3.setOrdering(2);
-      MessageReference ref4 = ms.reference(m[3]);
-      ref4.setOrdering(11);
-      MessageReference ref5 = ms.reference(m[4]);
-      ref5.setOrdering(22);
-      MessageReference ref6 = ms.reference(m[5]);
-      ref6.setOrdering(100);
-      MessageReference ref7 = ms.reference(m[6]);
-      ref7.setOrdering(303);
-      MessageReference ref8 = ms.reference(m[7]);
-      ref8.setOrdering(1000);
-      MessageReference ref9 = ms.reference(m[8]);
-      ref9.setOrdering(1001);
-      MessageReference ref10 = ms.reference(m[9]);
-      ref10.setOrdering(1002);
-      
-      List refs = new ArrayList();
-      
-      refs.add(ref1);
-      refs.add(ref2);
-      refs.add(ref3);
-      refs.add(ref4);
-      refs.add(ref5);
-      refs.add(ref6);
-      refs.add(ref7);
-      refs.add(ref8);
-      refs.add(ref9);
-      refs.add(ref10);
-      
-      pm.addReferences(channel.getChannelID(), refs, false);
-      
-      List refIds = getReferenceIds(channel.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(10, refIds.size());
-           
-      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-      
-      List msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      
-      List refInfos = pm.getReferenceInfos(channel.getChannelID(), 0, 0);
-      
-      assertNotNull(refInfos);
-      assertEquals(0, refInfos.size());
-      
-      refInfos = pm.getReferenceInfos(channel.getChannelID(), 0, 3);
-      assertNotNull(refInfos);
-      assertEquals(3, refInfos.size());
-      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      
-      refInfos = pm.getReferenceInfos(channel.getChannelID(), 0, 10);
-      assertNotNull(refInfos);
-      assertEquals(10, refInfos.size());
-      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
-      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
-      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
-      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
-      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());
-
-      refInfos = pm.getReferenceInfos(channel.getChannelID(), 2, 6);
-      assertNotNull(refInfos);
-      assertEquals(6, refInfos.size());     
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
-      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
-
-      try
-      {
-         refInfos = pm.getReferenceInfos(channel.getChannelID(), 0, 19);
-         fail();
-      }
-      catch (IllegalStateException e)
-      {
-         //ok - there are not this many refs
-      }
-   }
-   
-   
-   public void testGetMessages() throws Throwable
-   {
-      doSetup(false);
-      
-      Channel channel = new SimpleChannel(0, ms);
-      
-      Message[] m = createMessages(10);
-      
-      MessageReference ref1 = ms.reference(m[0]);
-      MessageReference ref2 = ms.reference(m[1]);
-      MessageReference ref3 = ms.reference(m[2]);
-      MessageReference ref4 = ms.reference(m[3]);
-      MessageReference ref5 = ms.reference(m[4]);
-      MessageReference ref6 = ms.reference(m[5]);
-      MessageReference ref7 = ms.reference(m[6]);
-      MessageReference ref8 = ms.reference(m[7]);
-      MessageReference ref9 = ms.reference(m[8]);
-      MessageReference ref10 = ms.reference(m[9]);
-      
-      pm.addReference(channel.getChannelID(), ref1, null);
-      pm.addReference(channel.getChannelID(), ref2, null);
-      pm.addReference(channel.getChannelID(), ref3, null);
-      pm.addReference(channel.getChannelID(), ref4, null);
-      pm.addReference(channel.getChannelID(), ref5, null);
-      pm.addReference(channel.getChannelID(), ref6, null);
-      pm.addReference(channel.getChannelID(), ref7, null);
-      pm.addReference(channel.getChannelID(), ref8, null);
-      pm.addReference(channel.getChannelID(), ref9, null);
-      pm.addReference(channel.getChannelID(), ref10, null);
-      
-      List refIds = getReferenceIds(channel.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-      
-      List msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      
-      List msgIds = new ArrayList();
-      msgIds.add(new Long(ref3.getMessageID()));
-      msgIds.add(new Long(ref4.getMessageID()));
-      msgIds.add(new Long(ref7.getMessageID()));
-      msgIds.add(new Long(ref9.getMessageID()));
-      msgIds.add(new Long(ref1.getMessageID()));
-      
-      List ms = pm.getMessages(msgIds);
-      assertNotNull(ms);
-      assertEquals(5, ms.size());
-        
-      assertTrue(containsMessage(ms, ref3.getMessageID()));
-      assertTrue(containsMessage(ms, ref4.getMessageID()));
-      assertTrue(containsMessage(ms, ref7.getMessageID()));
-      assertTrue(containsMessage(ms, ref9.getMessageID()));
-      assertTrue(containsMessage(ms, ref1.getMessageID()));
-        
-   }
-   
-   protected boolean containsMessage(List msgs, long msgId)
-   {
-      Iterator iter = msgs.iterator();
-      while (iter.hasNext())
-      {
-         Message m = (Message)iter.next();
-         if (m.getMessageID() == msgId)
-         {
-            return true;
-         }           
-      }
-      return false;
-   }
-   
-   public void testGetMessagesMaxParams() throws Throwable
-   {
-      doSetup(false);
-      
-      pm.setMaxParams(5);
-      
-      Channel channel = new SimpleChannel(0, ms);
-      
-      Message[] m = createMessages(10);
-      
-      MessageReference ref1 = ms.reference(m[0]);
-      MessageReference ref2 = ms.reference(m[1]);
-      MessageReference ref3 = ms.reference(m[2]);
-      MessageReference ref4 = ms.reference(m[3]);
-      MessageReference ref5 = ms.reference(m[4]);
-      MessageReference ref6 = ms.reference(m[5]);
-      MessageReference ref7 = ms.reference(m[6]);
-      MessageReference ref8 = ms.reference(m[7]);
-      MessageReference ref9 = ms.reference(m[8]);
-      MessageReference ref10 = ms.reference(m[9]);
-      
-      pm.addReference(channel.getChannelID(), ref1, null);
-      pm.addReference(channel.getChannelID(), ref2, null);
-      pm.addReference(channel.getChannelID(), ref3, null);
-      pm.addReference(channel.getChannelID(), ref4, null);
-      pm.addReference(channel.getChannelID(), ref5, null);
-      pm.addReference(channel.getChannelID(), ref6, null);
-      pm.addReference(channel.getChannelID(), ref7, null);
-      pm.addReference(channel.getChannelID(), ref8, null);
-      pm.addReference(channel.getChannelID(), ref9, null);
-      pm.addReference(channel.getChannelID(), ref10, null);
-      
-      List refIds = getReferenceIds(channel.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-      
-      List msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      
-      List msgIds = new ArrayList();
-      msgIds.add(new Long(ref3.getMessageID()));
-      msgIds.add(new Long(ref4.getMessageID()));
-      msgIds.add(new Long(ref7.getMessageID()));
-      msgIds.add(new Long(ref9.getMessageID()));
-      msgIds.add(new Long(ref1.getMessageID()));
-      
-      List ms = pm.getMessages(msgIds);
-      assertNotNull(ms);
-      assertEquals(5, ms.size());
-      assertTrue(containsMessage(ms, ref3.getMessageID()));
-      assertTrue(containsMessage(ms, ref4.getMessageID()));
-      assertTrue(containsMessage(ms, ref7.getMessageID()));
-      assertTrue(containsMessage(ms, ref9.getMessageID()));
-      assertTrue(containsMessage(ms, ref1.getMessageID()));   
-   }
-   
-   public void testaddRemoveGetReferences_Batch() throws Throwable
+   public void testAddRemoveGetReferences_Batch() throws Throwable
    {
       addRemoveGetReferences(true);
    }
    
-   public void testaddRemoveGetReferences_NoBatch() throws Throwable
+   public void testAddRemoveGetReferences_NoBatch() throws Throwable
    {
       addRemoveGetReferences(false);
    }
    
-   protected void addRemoveGetReferences(boolean batch) throws Throwable
-   {
-      doSetup(false);
-      
-      Channel channel1 = new SimpleChannel(0, ms);
-      
-      Channel channel2 = new SimpleChannel(1, ms);
-      
-      Message[] m = createMessages(10);
-      
-      MessageReference ref1 = ms.reference(m[0]);
-      MessageReference ref2 = ms.reference(m[1]);
-      MessageReference ref3 = ms.reference(m[2]);
-      MessageReference ref4 = ms.reference(m[3]);
-      MessageReference ref5 = ms.reference(m[4]);
-      MessageReference ref6 = ms.reference(m[5]);
-      MessageReference ref7 = ms.reference(m[6]);
-      MessageReference ref8 = ms.reference(m[7]);
-      MessageReference ref9 = ms.reference(m[8]);
-      MessageReference ref10 = ms.reference(m[9]);
-      
-      MessageReference ref11 = ms.reference(m[0]);
-      MessageReference ref12 = ms.reference(m[1]);
-      MessageReference ref13 = ms.reference(m[2]);
-      MessageReference ref14 = ms.reference(m[3]);
-      MessageReference ref15 = ms.reference(m[4]);
-      
-      List refs = new ArrayList();
-      refs.add(ref1);
-      refs.add(ref2);
-      refs.add(ref3);
-      refs.add(ref4);
-      refs.add(ref5);
-      refs.add(ref6);
-      refs.add(ref7);
-      refs.add(ref8);
-      refs.add(ref9);
-      refs.add(ref10);
-      
-      pm.addReferences(channel1.getChannelID(), refs, true);
-      
-      refs = new ArrayList();
-      refs.add(ref11);
-      refs.add(ref12);
-      refs.add(ref13);
-      refs.add(ref14);
-      refs.add(ref15);
-    
-      pm.addReferences(channel2.getChannelID(), refs, true);
-                  
-      List refIds = getReferenceIds(channel1.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(10, refIds.size());
-      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-      
-      refIds = getReferenceIds(channel2.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(5, refIds.size());
-      assertTrue(refIds.contains(new Long(ref11.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref12.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref13.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref14.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref15.getMessageID())));
-     
-      
-      List msgs = getMessageIds();
-      assertNotNull(msgs);
-      assertEquals(10, msgs.size());
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      
-      List msgIds = new ArrayList();
-      msgIds.add(new Long(ref3.getMessageID()));
-      msgIds.add(new Long(ref4.getMessageID()));
-      msgIds.add(new Long(ref7.getMessageID()));
-      msgIds.add(new Long(ref9.getMessageID()));
-      msgIds.add(new Long(ref1.getMessageID()));
-      
-      List ms = pm.getMessages(msgIds);
-      assertNotNull(ms);
-      assertEquals(5, ms.size());
-      assertTrue(containsMessage(ms, ref3.getMessageID()));
-      assertTrue(containsMessage(ms, ref4.getMessageID()));
-      assertTrue(containsMessage(ms, ref7.getMessageID()));
-      assertTrue(containsMessage(ms, ref9.getMessageID()));
-      assertTrue(containsMessage(ms, ref1.getMessageID()));
-      
-      refs = new ArrayList();
-      refs.add(ref12);
-      refs.add(ref13);
-      refs.add(ref14);
-      refs.add(ref15);
-      pm.removeReferences(channel2.getChannelID(), refs);
-      
-      refIds = getReferenceIds(channel2.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(1, refIds.size());
-      assertTrue(refIds.contains(new Long(ref11.getMessageID())));
-      
-      ms = getMessageIds();
-
-      assertNotNull(ms);
-      assertEquals(10, ms.size());
-      
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-     
-      
-      refs = new ArrayList();
-      refs.add(ref1);
-      refs.add(ref2);
-      refs.add(ref3);
-      pm.removeReferences(channel1.getChannelID(), refs);
-      
-      refIds = getReferenceIds(channel1.getChannelID());
-      assertNotNull(refIds);
-      assertEquals(7, refIds.size());
-      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
-      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
-     
-      
-      ms = getMessageIds();
-        
-      assertNotNull(ms);
-      assertEquals(8, ms.size());
-      
-      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
-      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
-      
-      refs = new ArrayList();
-      refs.add(ref11);
-      pm.removeReferences(channel2.getChannelID(), refs);
-      
-      refs = new ArrayList();
-      refs.add(ref4);
-      refs.add(ref5);
-      refs.add(ref6);
-      refs.add(ref7);
-      refs.add(ref8);
-      refs.add(ref9);
-      refs.add(ref10);
-      pm.removeReferences(channel1.getChannelID(), refs);
-      
-      ms = getMessageIds();
-      assertNotNull(ms);
-      assertEquals(0, ms.size());
-   }
    
    
-   
-   
+         
    public void testAddRemoveReference() throws Throwable
    {
       doSetup(false);
@@ -1016,6 +294,634 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       doTransactionRollback(true, true);
    }
    
+   protected void addRemoveGetReferences(boolean batch) throws Throwable
+   {
+      doSetup(false);
+      
+      Channel channel1 = new SimpleChannel(0, ms);
+      
+      Channel channel2 = new SimpleChannel(1, ms);
+      
+      Message[] m = createMessages(10);
+      
+      MessageReference ref1 = ms.reference(m[0]);
+      MessageReference ref2 = ms.reference(m[1]);
+      MessageReference ref3 = ms.reference(m[2]);
+      MessageReference ref4 = ms.reference(m[3]);
+      MessageReference ref5 = ms.reference(m[4]);
+      MessageReference ref6 = ms.reference(m[5]);
+      MessageReference ref7 = ms.reference(m[6]);
+      MessageReference ref8 = ms.reference(m[7]);
+      MessageReference ref9 = ms.reference(m[8]);
+      MessageReference ref10 = ms.reference(m[9]);
+      
+      MessageReference ref11 = ms.reference(m[0]);
+      MessageReference ref12 = ms.reference(m[1]);
+      MessageReference ref13 = ms.reference(m[2]);
+      MessageReference ref14 = ms.reference(m[3]);
+      MessageReference ref15 = ms.reference(m[4]);
+      
+      List refs = new ArrayList();
+      refs.add(ref1);
+      refs.add(ref2);
+      refs.add(ref3);
+      refs.add(ref4);
+      refs.add(ref5);
+      refs.add(ref6);
+      refs.add(ref7);
+      refs.add(ref8);
+      refs.add(ref9);
+      refs.add(ref10);
+      
+      pm.addReferences(channel1.getChannelID(), refs);
+      
+      refs = new ArrayList();
+      refs.add(ref11);
+      refs.add(ref12);
+      refs.add(ref13);
+      refs.add(ref14);
+      refs.add(ref15);
+    
+      pm.addReferences(channel2.getChannelID(), refs);
+                  
+      List refIds = getReferenceIds(channel1.getChannelID());
+      assertNotNull(refIds);
+      assertEquals(10, refIds.size());
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
+      
+      refIds = getReferenceIds(channel2.getChannelID());
+      assertNotNull(refIds);
+      assertEquals(5, refIds.size());
+      assertTrue(refIds.contains(new Long(ref11.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref12.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref13.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref14.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref15.getMessageID())));
+     
+      
+      List msgs = getMessageIds();
+      assertNotNull(msgs);
+      assertEquals(10, msgs.size());
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
+      
+      List msgIds = new ArrayList();
+      msgIds.add(new Long(ref3.getMessageID()));
+      msgIds.add(new Long(ref4.getMessageID()));
+      msgIds.add(new Long(ref7.getMessageID()));
+      msgIds.add(new Long(ref9.getMessageID()));
+      msgIds.add(new Long(ref1.getMessageID()));
+      
+      List ms = pm.getMessages(msgIds);
+      assertNotNull(ms);
+      assertEquals(5, ms.size());
+      assertTrue(containsMessage(ms, ref3.getMessageID()));
+      assertTrue(containsMessage(ms, ref4.getMessageID()));
+      assertTrue(containsMessage(ms, ref7.getMessageID()));
+      assertTrue(containsMessage(ms, ref9.getMessageID()));
+      assertTrue(containsMessage(ms, ref1.getMessageID()));
+      
+      refs = new ArrayList();
+      refs.add(ref12);
+      refs.add(ref13);
+      refs.add(ref14);
+      refs.add(ref15);
+      pm.removeReferences(channel2.getChannelID(), refs);
+      
+      refIds = getReferenceIds(channel2.getChannelID());
+      assertNotNull(refIds);
+      assertEquals(1, refIds.size());
+      assertTrue(refIds.contains(new Long(ref11.getMessageID())));
+      
+      ms = getMessageIds();
+
+      assertNotNull(ms);
+      assertEquals(10, ms.size());
+      
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
+     
+      
+      refs = new ArrayList();
+      refs.add(ref1);
+      refs.add(ref2);
+      refs.add(ref3);
+      pm.removeReferences(channel1.getChannelID(), refs);
+      
+      refIds = getReferenceIds(channel1.getChannelID());
+      assertNotNull(refIds);
+      assertEquals(7, refIds.size());
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
+     
+      
+      ms = getMessageIds();
+        
+      assertNotNull(ms);
+      assertEquals(8, ms.size());
+      
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
+      
+      refs = new ArrayList();
+      refs.add(ref11);
+      pm.removeReferences(channel2.getChannelID(), refs);
+      
+      refs = new ArrayList();
+      refs.add(ref4);
+      refs.add(ref5);
+      refs.add(ref6);
+      refs.add(ref7);
+      refs.add(ref8);
+      refs.add(ref9);
+      refs.add(ref10);
+      pm.removeReferences(channel1.getChannelID(), refs);
+      
+      ms = getMessageIds();
+      assertNotNull(ms);
+      assertEquals(0, ms.size());
+   }
+   
+   public void testPageOrders() throws Throwable
+   {
+      doSetup(false);
+      
+      Channel channel = new SimpleChannel(0, ms);
+      
+      Message[] m = createMessages(10);
+      
+      List refs = new ArrayList();
+      
+      MessageReference ref1 = ms.reference(m[0]);
+      MessageReference ref2 = ms.reference(m[1]);
+      MessageReference ref3 = ms.reference(m[2]);
+      MessageReference ref4 = ms.reference(m[3]);
+      MessageReference ref5 = ms.reference(m[4]);
+      MessageReference ref6 = ms.reference(m[5]);
+      MessageReference ref7 = ms.reference(m[6]);
+      MessageReference ref8 = ms.reference(m[7]);
+      MessageReference ref9 = ms.reference(m[8]);
+      MessageReference ref10 = ms.reference(m[9]);
+      
+      refs.add(ref1);
+      refs.add(ref2);
+      refs.add(ref3);
+      refs.add(ref4);
+      refs.add(ref5);
+      refs.add(ref6);
+      refs.add(ref7);
+      refs.add(ref8);
+      refs.add(ref9);
+      refs.add(ref10);
+      
+      pm.addReferences(channel.getChannelID(), refs); 
+      
+      ref1.setPagingOrder(0);
+      ref2.setPagingOrder(1);
+      ref3.setPagingOrder(2);
+      ref4.setPagingOrder(3);
+      ref5.setPagingOrder(4);
+      ref6.setPagingOrder(5);
+      ref7.setPagingOrder(6);
+      ref8.setPagingOrder(7);
+      ref9.setPagingOrder(8);
+      ref10.setPagingOrder(9);
+      
+      pm.updatePageOrder(channel.getChannelID(), refs);
+      
+      List refInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 0, 10);
+      
+      assertNotNull(refInfos);
+      
+      assertEquals(10, refInfos.size());
+      
+      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());
+      
+      refInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 3, 5);
+      
+      assertNotNull(refInfos);
+      
+      assertEquals(5, refInfos.size());
+      
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+    
+      pm.updateReliableReferencesNotPagedInRange(channel.getChannelID(), 0, 4);
+      
+      refInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 5, 5);
+      
+      assertNotNull(refInfos);
+      
+      assertEquals(5, refInfos.size());
+          
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());                
+   }
+     
+   public void testGetMessages() throws Throwable
+   {
+      doSetup(false);
+      
+      Channel channel = new SimpleChannel(0, ms);
+      
+      Message[] m = createMessages(10);
+      
+      MessageReference ref1 = ms.reference(m[0]);
+      MessageReference ref2 = ms.reference(m[1]);
+      MessageReference ref3 = ms.reference(m[2]);
+      MessageReference ref4 = ms.reference(m[3]);
+      MessageReference ref5 = ms.reference(m[4]);
+      MessageReference ref6 = ms.reference(m[5]);
+      MessageReference ref7 = ms.reference(m[6]);
+      MessageReference ref8 = ms.reference(m[7]);
+      MessageReference ref9 = ms.reference(m[8]);
+      MessageReference ref10 = ms.reference(m[9]);
+      
+      pm.addReference(channel.getChannelID(), ref1, null);
+      pm.addReference(channel.getChannelID(), ref2, null);
+      pm.addReference(channel.getChannelID(), ref3, null);
+      pm.addReference(channel.getChannelID(), ref4, null);
+      pm.addReference(channel.getChannelID(), ref5, null);
+      pm.addReference(channel.getChannelID(), ref6, null);
+      pm.addReference(channel.getChannelID(), ref7, null);
+      pm.addReference(channel.getChannelID(), ref8, null);
+      pm.addReference(channel.getChannelID(), ref9, null);
+      pm.addReference(channel.getChannelID(), ref10, null);
+      
+      List refIds = getReferenceIds(channel.getChannelID());
+      assertNotNull(refIds);
+      assertEquals(10, refIds.size());
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
+      
+      List msgs = getMessageIds();
+      assertNotNull(msgs);
+      assertEquals(10, msgs.size());
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
+      
+      List msgIds = new ArrayList();
+      msgIds.add(new Long(ref3.getMessageID()));
+      msgIds.add(new Long(ref4.getMessageID()));
+      msgIds.add(new Long(ref7.getMessageID()));
+      msgIds.add(new Long(ref9.getMessageID()));
+      msgIds.add(new Long(ref1.getMessageID()));
+      
+      List ms = pm.getMessages(msgIds);
+      assertNotNull(ms);
+      assertEquals(5, ms.size());
+        
+      assertTrue(containsMessage(ms, ref3.getMessageID()));
+      assertTrue(containsMessage(ms, ref4.getMessageID()));
+      assertTrue(containsMessage(ms, ref7.getMessageID()));
+      assertTrue(containsMessage(ms, ref9.getMessageID()));
+      assertTrue(containsMessage(ms, ref1.getMessageID()));
+        
+   }
+   
+   public void testGetInitialRefInfos() throws Throwable
+   {
+      doSetup(false);
+      
+      Channel channel = new SimpleChannel(0, ms);
+      
+      Message[] m = createMessages(10);
+      
+      List refs = new ArrayList();
+      
+      MessageReference ref1 = ms.reference(m[0]);
+      MessageReference ref2 = ms.reference(m[1]);
+      MessageReference ref3 = ms.reference(m[2]);
+      MessageReference ref4 = ms.reference(m[3]);
+      MessageReference ref5 = ms.reference(m[4]);
+      MessageReference ref6 = ms.reference(m[5]);
+      MessageReference ref7 = ms.reference(m[6]);
+      MessageReference ref8 = ms.reference(m[7]);
+      MessageReference ref9 = ms.reference(m[8]);
+      MessageReference ref10 = ms.reference(m[9]);
+      
+      refs.add(ref1);
+      refs.add(ref2);
+      refs.add(ref3);
+      refs.add(ref4);
+      refs.add(ref5);
+      refs.add(ref6);
+      refs.add(ref7);
+      refs.add(ref8);
+      refs.add(ref9);
+      refs.add(ref10);
+      
+      pm.addReferences(channel.getChannelID(), refs); 
+      
+      //First load exactly 10
+      PersistenceManager.InitialLoadInfo info = pm.getInitialReferenceInfos(channel.getChannelID(), 10);
+      
+      assertEquals(-1, info.getMinPageOrdering());
+      assertEquals(-1, info.getMaxPageOrdering());
+      
+      List refInfos = info.getRefInfos();
+      
+      assertNotNull(refInfos);
+      assertEquals(10, refInfos.size());
+      
+      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());
+      
+      //fullSize has increased to 15 - only 10 should be loadeed still
+      info = pm.getInitialReferenceInfos(channel.getChannelID(), 15);
+      
+      assertEquals(-1, info.getMinPageOrdering());
+      assertEquals(-1, info.getMaxPageOrdering());
+      
+      refInfos = info.getRefInfos();
+      assertNotNull(refInfos);
+      assertEquals(10, refInfos.size());
+      
+      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());
+      
+      //fullSize has gone down to 7 - 7 should be loaded and the other 3 marked as paged
+      info = pm.getInitialReferenceInfos(channel.getChannelID(), 7);
+      
+      assertEquals(0, info.getMinPageOrdering());
+      assertEquals(2, info.getMaxPageOrdering());
+      
+      refInfos = info.getRefInfos();
+      assertNotNull(refInfos);
+      assertEquals(7, refInfos.size());
+      
+      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
+      
+      List pagedInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 0, 3);
+      assertNotNull(pagedInfos);
+      assertEquals(3, pagedInfos.size());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(0)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(1)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(2)).getMessageId());
+            
+      //fullSize gone down even further to 4 - 4 should be loaded and othe others re-ordered from zero
+      
+      info = pm.getInitialReferenceInfos(channel.getChannelID(), 4);
+      
+      assertEquals(0, info.getMinPageOrdering());
+      assertEquals(5, info.getMaxPageOrdering());
+      
+      refInfos = info.getRefInfos();
+      assertNotNull(refInfos);
+      assertEquals(4, refInfos.size());
+      
+      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+         
+      pagedInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 0, 6);
+      assertNotNull(pagedInfos);
+      assertEquals(6, pagedInfos.size());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(0)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(1)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(2)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(3)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(4)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(5)).getMessageId());
+      
+      //fullSize back up to 6 - 6 should be loaded and the others shifted
+      
+      info = pm.getInitialReferenceInfos(channel.getChannelID(), 6);
+      
+      assertEquals(2, info.getMinPageOrdering());
+      assertEquals(5, info.getMaxPageOrdering());
+      
+      refInfos = info.getRefInfos();
+      assertNotNull(refInfos);
+      assertEquals(6, refInfos.size());
+      
+      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
+      
+      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
+              
+      pagedInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 2, 4);
+      assertNotNull(pagedInfos);
+      assertEquals(4, pagedInfos.size());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(0)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(1)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(2)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(3)).getMessageId());
+              
+      //fullSize up to 12
+      
+      info = pm.getInitialReferenceInfos(channel.getChannelID(), 12);
+      
+      assertEquals(-1, info.getMinPageOrdering());
+      assertEquals(-1, info.getMaxPageOrdering());
+      
+      refInfos = info.getRefInfos();
+      assertNotNull(refInfos);
+      assertEquals(10, refInfos.size());
+      
+      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
+      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
+      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
+      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
+      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
+      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
+      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
+      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
+      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());                              
+   }
+      
+   
+   protected boolean containsMessage(List msgs, long msgId)
+   {
+      Iterator iter = msgs.iterator();
+      while (iter.hasNext())
+      {
+         Message m = (Message)iter.next();
+         if (m.getMessageID() == msgId)
+         {
+            return true;
+         }           
+      }
+      return false;
+   }
+   
+   public void testGetMessagesMaxParams() throws Throwable
+   {
+      doSetup(false);
+      
+      pm.setMaxParams(5);
+      
+      Channel channel = new SimpleChannel(0, ms);
+      
+      Message[] m = createMessages(10);
+      
+      MessageReference ref1 = ms.reference(m[0]);
+      MessageReference ref2 = ms.reference(m[1]);
+      MessageReference ref3 = ms.reference(m[2]);
+      MessageReference ref4 = ms.reference(m[3]);
+      MessageReference ref5 = ms.reference(m[4]);
+      MessageReference ref6 = ms.reference(m[5]);
+      MessageReference ref7 = ms.reference(m[6]);
+      MessageReference ref8 = ms.reference(m[7]);
+      MessageReference ref9 = ms.reference(m[8]);
+      MessageReference ref10 = ms.reference(m[9]);
+      
+      pm.addReference(channel.getChannelID(), ref1, null);
+      pm.addReference(channel.getChannelID(), ref2, null);
+      pm.addReference(channel.getChannelID(), ref3, null);
+      pm.addReference(channel.getChannelID(), ref4, null);
+      pm.addReference(channel.getChannelID(), ref5, null);
+      pm.addReference(channel.getChannelID(), ref6, null);
+      pm.addReference(channel.getChannelID(), ref7, null);
+      pm.addReference(channel.getChannelID(), ref8, null);
+      pm.addReference(channel.getChannelID(), ref9, null);
+      pm.addReference(channel.getChannelID(), ref10, null);
+      
+      List refIds = getReferenceIds(channel.getChannelID());
+      assertNotNull(refIds);
+      assertEquals(10, refIds.size());
+      assertTrue(refIds.contains(new Long(ref1.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref2.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref3.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref4.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref5.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref6.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref7.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref8.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref9.getMessageID())));
+      assertTrue(refIds.contains(new Long(ref10.getMessageID())));
+      
+      List msgs = getMessageIds();
+      assertNotNull(msgs);
+      assertEquals(10, msgs.size());
+      assertTrue(msgs.contains(new Long(ref1.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref2.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref3.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref4.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref5.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref6.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref7.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref8.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref9.getMessageID())));
+      assertTrue(msgs.contains(new Long(ref10.getMessageID())));
+      
+      List msgIds = new ArrayList();
+      msgIds.add(new Long(ref3.getMessageID()));
+      msgIds.add(new Long(ref4.getMessageID()));
+      msgIds.add(new Long(ref7.getMessageID()));
+      msgIds.add(new Long(ref9.getMessageID()));
+      msgIds.add(new Long(ref1.getMessageID()));
+      
+      List ms = pm.getMessages(msgIds);
+      assertNotNull(ms);
+      assertEquals(5, ms.size());
+      assertTrue(containsMessage(ms, ref3.getMessageID()));
+      assertTrue(containsMessage(ms, ref4.getMessageID()));
+      assertTrue(containsMessage(ms, ref7.getMessageID()));
+      assertTrue(containsMessage(ms, ref9.getMessageID()));
+      assertTrue(containsMessage(ms, ref1.getMessageID()));   
+   }
+   
 
    public void testRetrievePreparedTransactions() throws Throwable
    {
@@ -1024,7 +930,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       Channel channel = new SimpleChannel(0, ms);
       
       TransactionRepository txRep = new TransactionRepository();
-      txRep.start(pm);
+      IdManager idMgr = new IdManager("TRANSCTION_ID", 10, pm);
+      txRep.injectAttributes(pm, idMgr);
 
       Message[] messages = createMessages(10);
       
@@ -1378,7 +1285,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
       Channel channel = new SimpleChannel(0, ms);
       TransactionRepository txRep = new TransactionRepository();
-      txRep.start(pm);
+      IdManager idMgr = new IdManager("TRANSCTION_ID", 10, pm);
+      txRep.injectAttributes(pm, idMgr);
 
       log.debug("transaction log started");
 
@@ -1474,7 +1382,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
       Channel channel = new SimpleChannel(0, ms);
       TransactionRepository txRep = new TransactionRepository();
-      txRep.start(pm);
+      IdManager idMgr = new IdManager("TRANSCTION_ID", 10, pm);
+      txRep.injectAttributes(pm, idMgr);
  
       Message[] messages = createMessages(10);     
       
@@ -1557,6 +1466,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(msgs.contains(new Long(ref1.getMessageID())));
       assertTrue(msgs.contains(new Long(ref2.getMessageID())));          
    }
+   
    
    protected List getReferenceIds(long channelId) throws Throwable
    {

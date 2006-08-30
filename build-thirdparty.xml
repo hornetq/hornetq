@@ -78,7 +78,7 @@
 
 
       <!--
-           Dependencies requrired to build the project.
+           Dependencies required to build the project.
       -->
       <componentref name="retrotranslator" version="0.9.6jboss"/>
       <componentref name="sun-javacc" version="3.2"/>

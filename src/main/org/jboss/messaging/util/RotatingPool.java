@@ -21,10 +21,6 @@
  */
 package org.jboss.messaging.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.logging.Logger;
 
 /**
  * A RotatingPool
@@ -41,57 +37,40 @@ import org.jboss.logging.Logger;
  */
 public abstract class RotatingPool
 {
-   private static final Logger log = Logger.getLogger(RotatingPool.class);
-   
    protected int maxSize;
    
    protected int pos;
    
    protected Object[] entries;
    
-   protected Map keyMappings;
-   
    public RotatingPool(int maxSize)
    { 
       this.maxSize = maxSize;
       
       this.entries = new Object[maxSize];
-      
-      this.keyMappings = new HashMap();
    }
    
-   public synchronized Object get(Object key)
+   public synchronized Object get()
    {    
-      //Does the mapping already exist?
-      Object entry = keyMappings.get(key);
+      Object entry = entries[pos];
       
       if (entry == null)
       {
-         //Create a new entry allocating from the rotating pool
-         entry = entries[pos];
+         entry = createEntry();
          
-         if (entry == null)
-         {
-            entry = createEntry();
-            
-            entries[pos] = entry;
-         }
-         
-         keyMappings.put(key, entry);
-         
-         pos++;
-         
-         if (pos == maxSize)
-         {
-            pos = 0;
-         }
+         entries[pos] = entry;
       }
+       
+      pos++;
       
+      if (pos == maxSize)
+      {
+         pos = 0;
+      }
+            
       return entry;
    }
    
-   
-   
-   protected abstract Object createEntry();
-   
+
+   protected abstract Object createEntry();   
 }

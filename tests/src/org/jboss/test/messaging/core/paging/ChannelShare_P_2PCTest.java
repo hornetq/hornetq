@@ -23,10 +23,9 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.MessageQueue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
@@ -34,6 +33,16 @@ import org.jboss.messaging.core.tx.Transaction;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 
+/**
+ * 
+ * A ChannelShare_P_2PCTest
+
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision: 1.1 $</tt>
+ *
+ * $Id$
+ *
+ */
 public class ChannelShare_P_2PCTest extends PagingStateTestBase
 {
    public ChannelShare_P_2PCTest(String name)
@@ -50,10 +59,10 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      ChannelSupport queue1 = new Queue(1, ms, pm, null, true, 100, 20, 10, new QueuedExecutor());
+      MessageQueue queue1 = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
       
-      ChannelSupport queue2 = new Queue(2, ms, pm, null, true, 50, 10, 5, new QueuedExecutor());
-                       
+      MessageQueue queue2 = new MessageQueue(2, ms, pm, true, true, 50, 10, 5, new QueuedExecutor(), null);
+                            
       Message[] msgs = new Message[150];
       
       MessageReference[] refs1 = new MessageReference[150];

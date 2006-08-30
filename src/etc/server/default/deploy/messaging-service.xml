@@ -22,8 +22,9 @@
       </constructor>
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
-      <depends optional-attribute-name="MessageStore">jboss.messaging:service=MessageStore</depends>
-      <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
+      <depends optional-attribute-name="DirectExchange">jboss.messaging:service=DirectExchange</depends>
+      <depends optional-attribute-name="TopicExchange">jboss.messaging:service=TopicExchange</depends>
+      <depends optional-attribute-name="JMSUserManager">jboss.messaging:service=JMSUserManager</depends>
 
       <!-- Set to -1 to completely disable client leasing -->
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
@@ -32,17 +33,6 @@
             <role name="guest" read="true" write="true" create="true"/>
         </security>
       </attribute>
-   </mbean>
-
-   <!-- Plug-ins -->
-
-   <mbean code="org.jboss.messaging.core.plugin.SimpleMessageStore"
-      name="jboss.messaging:service=MessageStore"
-      xmbean-dd="xmdesc/SimpleMessageStore-xmbean.xml">
-      <constructor>
-         <!-- StoreID -->
-         <arg type="java.lang.String" value="store.0" />
-      </constructor>      
    </mbean>
 
 </server>

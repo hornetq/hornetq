@@ -71,7 +71,7 @@ public class SimpleMessageReferenceTest extends RoutableSupportTestBase
       Message m = MessageFactory.createCoreMessage(0);
       m.putHeader("headerName01", "headerValue01");
 
-      MessageStore ms = new SimpleMessageStore("0");
+      MessageStore ms = new SimpleMessageStore();
 
       rs = (RoutableSupport)ms.reference(m);
 

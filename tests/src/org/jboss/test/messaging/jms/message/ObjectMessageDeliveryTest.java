@@ -37,7 +37,16 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
+/**
+ * 
+ * A ObjectMessageDeliveryTest
 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ *
+ */
 public class ObjectMessageDeliveryTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------

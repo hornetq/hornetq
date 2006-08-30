@@ -29,16 +29,17 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.Topic;
 
+import junit.framework.TestCase;
+
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import junit.framework.TestCase;
 
 /**
  * The base case for messaging tests.
  *
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

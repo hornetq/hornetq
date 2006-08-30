@@ -36,7 +36,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.util.SafeUTF;
+import org.jboss.messaging.util.SafeUTF;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

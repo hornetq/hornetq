@@ -30,13 +30,7 @@
       <name>TransactionManager</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   
-   <attribute access="read-write" getMethod="getChannelMapper" setMethod="setChannelMapper">
-      <description>The ObjectName of the ChannelMapper used by this persistence manager</description>
-      <name>ChannelMapper</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>   
-    
+     
    <attribute access="read-write" getMethod="isCreateTablesOnStartup" setMethod="setCreateTablesOnStartup">
       <description>Should database tables be created on startup?</description>
       <name>CreateTablesOnStartup</name>

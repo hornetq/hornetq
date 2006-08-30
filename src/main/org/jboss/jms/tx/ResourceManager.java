@@ -50,9 +50,6 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  * by ResourceManagerFactory.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
- * 
- * Parts adapted from SpyXAResourceManager by:
- *
  * @author <a href="mailto:Cojonudo14@hotmail.com">Hiram Chirino</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @version $Revision$

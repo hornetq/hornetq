@@ -31,6 +31,7 @@ import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -46,9 +47,24 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    // Attributes ----------------------------------------------------
 
    protected String name;
+   
+   //TODO There is probably a better place to put these
+   protected transient int fullSize;
+   
+   protected transient int pageSize;
+   
+   protected transient int downCacheSize;
 
    // Constructors --------------------------------------------------
 
+   public JBossDestination(String name, int fullSize, int pageSize, int downCacheSize)
+   {
+      this(name);
+      this.fullSize = fullSize;
+      this.pageSize = pageSize;
+      this.downCacheSize = downCacheSize;
+   }
+   
    public JBossDestination(String name)
    {
       this.name = name;
@@ -81,7 +97,7 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
 
    public boolean equals(Object o)
    {
-      if(this == o)
+      if (this == o)
       {
          return true;
       }
@@ -92,19 +108,44 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
       JBossDestination that = (JBossDestination)o;
       if (name == null)
       {
-         return that.name == null && isTopic() == that.isTopic();
+         return isTopic() == that.isTopic() && that.name == null;
       }
-      return this.name.equals(that.name) && isTopic() == that.isTopic();
+      return isTopic() == that.isTopic() && this.name.equals(that.name);
    }
 
+   //Cache the hashCode
+   private int hash;
+   
    public int hashCode()
    {
-      int code = 0;
-      if (name != null)
+      if (hash != 0)
       {
-         code = name.hashCode();
+         return hash;
       }
-      return code + (isTopic() ? 10 : 20);
+      else
+      {
+         int code = 0;
+         if (name != null)
+         {
+            code = name.hashCode();
+         }
+         return code + (isTopic() ? 37 : 71);
+      }           
+   }
+   
+   public int getFullSize()
+   {
+      return fullSize;
+   }
+   
+   public int getPageSize()
+   {
+      return pageSize;
+   }
+   
+   public int getDownCacheSize()
+   {
+      return downCacheSize;
    }
 
    // Package protected ---------------------------------------------

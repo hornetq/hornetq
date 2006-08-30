@@ -69,17 +69,12 @@ public class TransactionRepository
    }
    
    // Public --------------------------------------------------------
-
-   public void start(PersistenceManager persistenceManager) throws Exception
+   
+   public void injectAttributes(PersistenceManager persistenceManager, IdManager idManager)
    {
       this.persistenceManager = persistenceManager;
       
-      //TODO make this configurable
-      idManager = new IdManager("TRANSACTION_ID", 4096, persistenceManager);
-   }
-
-   public void stop() throws Exception
-   {
+      this.idManager = idManager;
    }
 
    public List getPreparedTransactions()

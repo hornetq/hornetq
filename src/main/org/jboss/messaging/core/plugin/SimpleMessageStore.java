@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core.plugin;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,8 +30,6 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.util.Util;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * A MessageStore implementation.
@@ -43,7 +40,7 @@ import org.jboss.system.ServiceMBeanSupport;
  *
  * $Id$
  */
-public class SimpleMessageStore extends ServiceMBeanSupport implements MessageStore
+public class SimpleMessageStore implements MessageStore
 {
    // Constants -----------------------------------------------------
 
@@ -54,50 +51,17 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
    // Attributes ----------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
-
-   private Serializable storeID;
-   
-   private boolean acceptReliableMessages;
-
+ 
    // <messageID - MessageHolder>
    private Map messages;
 
    // Constructors --------------------------------------------------
 
-   /**
-    * @param storeID - if more than one message store is to be used in a distributed messaging
-    *        configuration, each store must have an unique store ID.
-    */
-   public SimpleMessageStore(String storeID)
-   {
-      this(storeID, true);
-   }
-
-   /**
-    * @param storeID - if more than one message store is to be used in a distributed messaging
-    *        configuration, each store must have an unique store ID.
-    */
-   public SimpleMessageStore(String storeID, boolean acceptReliableMessages)
-   {
-      this.storeID = storeID;
-      
-      this.acceptReliableMessages = acceptReliableMessages;
-      
+   public SimpleMessageStore()
+   {  
       messages = new HashMap();
 
       log.debug(this + " initialized");
-   }
-
-   // ServiceMBeanSupport overrides ---------------------------------
-
-   protected void startService() throws Exception
-   {
-      log.debug(this + " started");
-   }
-
-   protected void stopService() throws Exception
-   {
-      log.debug(this + " stopped");
    }
 
    // MessageStore implementation ---------------------------
@@ -107,33 +71,14 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
       return this;
    }
 
-   public Serializable getStoreID()
-   {
-      return storeID;
-   }
-
-   public boolean isRecoverable()
-   {
-      return false;
-   }
-
-   public boolean acceptReliableMessages()
-   {
-      return acceptReliableMessages;
-   }
-
    // TODO If we can assume that the message is not known to the store before
    // (true when sending messages)
    // Then we can avoid synchronizing on this and use a ConcurrentHashmap
    // Which will give us much better concurrency for many threads
    public MessageReference reference(Message m)
    {
-      if (m.isReliable() && !acceptReliableMessages)
-      {
-         throw new IllegalStateException(this + " does not accept reliable messages (" + m + ")");
-      }
-      
       MessageHolder holder;
+      
       synchronized (this)
       {         
          holder = (MessageHolder)messages.get(new Long(m.getMessageID()));
@@ -145,9 +90,10 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
       }
       holder.incrementInMemoryChannelCount();
       
-
       MessageReference ref = new SimpleMessageReference(holder, this);
+      
       if (trace) { log.trace(this + " generated " + ref + " for " + m); }
+      
       return ref;
    }
 
@@ -166,6 +112,7 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
       }
        
       MessageReference ref = new SimpleMessageReference(holder, this);
+      
       if (trace) { log.trace(this + " generates " + ref + " for " + messageID); }
       
       holder.incrementInMemoryChannelCount();
@@ -191,14 +138,9 @@ public class SimpleMessageStore extends ServiceMBeanSupport implements MessageSt
 
    // Public --------------------------------------------------------
    
-   public void setStoreID(String storeID)
-   {
-      this.storeID = storeID;
-   }
-
    public String toString()
    {
-      return "MemoryStore[" + Util.guidToString(storeID) + "]";
+      return "MemoryStore[" + System.identityHashCode(this) + "]";
    }
 
    // Package protected ---------------------------------------------

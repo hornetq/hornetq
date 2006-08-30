@@ -21,24 +21,23 @@
 */
 package org.jboss.test.messaging.core;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Channel;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.SingleReceiverDelivery;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
-import org.jboss.logging.Logger;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * A simple Receiver implementation that consumes undelivered by storing them internally. Used for
@@ -277,14 +276,14 @@ public class SimpleReceiver implements Receiver
       log.debug(this + " acknowledging "  + r);
 
       Object[] touple = null;
-      SingleReceiverDelivery d = null;
+      Delivery d = null;
       for (Iterator i = messages.iterator(); i.hasNext(); )
       {
          Object[] o = (Object[])i.next();
          Message m = (Message)o[0];
          if (m == r)
          {
-            d = (SingleReceiverDelivery)o[1];
+            d = (Delivery)o[1];
             touple = o;
             break;
          }
@@ -314,14 +313,14 @@ public class SimpleReceiver implements Receiver
    public void cancel(Routable r) throws Throwable
    {
       Object[] touple = null;
-      SingleReceiverDelivery d = null;
+      Delivery d = null;
       for (Iterator i = messages.iterator(); i.hasNext(); )
       {
          Object[] o = (Object[])i.next();
          Message m = (Message)o[0];
          if (m == r)
          {
-            d = (SingleReceiverDelivery)o[1];
+            d = (Delivery)o[1];
             touple = o;
             i.remove();
             break;

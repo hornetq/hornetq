@@ -27,7 +27,16 @@ import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
+/**
+ * 
+ * A SimpleConnectorManagerTest
 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision: 1.1 $</tt>
+ *
+ * $Id$
+ *
+ */
 public class SimpleConnectorManagerTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------

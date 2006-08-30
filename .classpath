@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="perf/src"/>
-	<classpathentry kind="src" path="docs/examples/bmt/src"/>
-	<classpathentry kind="src" path="docs/examples/common/src"/>
-	<classpathentry kind="src" path="docs/examples/ejb3mdb/src"/>
-	<classpathentry kind="src" path="docs/examples/http/src"/>
-	<classpathentry kind="src" path="docs/examples/mdb/src"/>
-	<classpathentry kind="src" path="docs/examples/queue/src"/>
-	<classpathentry kind="src" path="docs/examples/secure-socket/src"/>
-	<classpathentry kind="src" path="docs/examples/stateless/src"/>
-	<classpathentry kind="src" path="docs/examples/topic/src"/>
 	<classpathentry kind="src" path="output/gen-parsers"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>

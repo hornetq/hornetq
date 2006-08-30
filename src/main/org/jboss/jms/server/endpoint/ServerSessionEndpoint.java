@@ -38,25 +38,24 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
-import org.jboss.jms.server.plugin.contract.ChannelMapper;
 import org.jboss.jms.server.remoting.JMSDispatcher;
-import org.jboss.jms.server.subscription.DurableSubscription;
-import org.jboss.jms.server.subscription.Subscription;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.local.CoreDestination;
-import org.jboss.messaging.core.local.CoreSubscription;
-import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.memory.MemoryManager;
+import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.exchange.Binding;
+import org.jboss.util.id.GUID;
 
 /**
  * Concrete implementation of SessionEndpoint.
@@ -88,10 +87,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private Map consumers;
    private Map browsers;
 
-   private ChannelMapper cm;
    private PersistenceManager pm;
    private MessageStore ms;
-   private MemoryManager mm;
+   private DestinationManager dm;
+   private Exchange topicExchange;
+   private Exchange directExchange;
+   
    
    // Constructors --------------------------------------------------
 
@@ -103,10 +104,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       ServerPeer sp = connectionEndpoint.getServerPeer();
 
-      cm = sp.getChannelMapperDelegate();
       pm = sp.getPersistenceManagerDelegate();
-      ms = sp.getMessageStoreDelegate();
-      mm = sp.getMemoryManager();
+      ms = sp.getMessageStore();
+      dm = sp.getDestinationManager();
+      topicExchange = sp.getTopicExchangeDelegate();
+      directExchange = sp.getDirectExchangeDelegate();
 
       consumers = new HashMap();
 		browsers = new HashMap();  
@@ -115,7 +117,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // SessionDelegate implementation --------------------------------
 
 	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
-                                                  String selector,
+                                                  String selectorString,
                                                   boolean noLocal,
                                                   String subscriptionName,
                                                   boolean isCC) throws JMSException
@@ -127,13 +129,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Session is closed");
          }
          
-         if ("".equals(selector))
+         if ("".equals(selectorString))
          {
-            selector = null;
+            selectorString = null;
          }
          
-         log.debug("creating consumer for " + jmsDestination + ", selector " + selector + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
+         log.debug("creating consumer for " + jmsDestination + ", selector " + selectorString + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
    
+         //"Refresh" the destination - this will populate it with it's paging values
+         //TODO There's probably a better way of doing this
+         
+         if (!dm.destinationExists(jmsDestination))
+         {
+            throw new InvalidDestinationException("No such destination: " + jmsDestination);
+         } 
+         
+         jmsDestination = dm.getDestination(jmsDestination);
+         
          if (jmsDestination.isTemporary())
          {
             // Can only create a consumer for a temporary destination on the same connection
@@ -144,26 +156,33 @@ public class ServerSessionEndpoint implements SessionEndpoint
                             "to that which created the temporary destination";
                throw new IllegalStateException(msg);
             }
-         }
-         
-         CoreDestination coreDestination = cm.getCoreDestination(jmsDestination);
-         if (coreDestination == null)
-         {
-            throw new InvalidDestinationException("No such destination: " + jmsDestination);
-         }
+         }          
              
          int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
         
-         Subscription subscription = null;
+         Binding binding = null;
+         
+         //Always validate the selector first
+         Selector selector = null;
+         if (selectorString != null)
+         {
+            selector = new Selector(selectorString);
+         }
    
          if (jmsDestination.isTopic())
          {
             if (subscriptionName == null)
             {
                // non-durable subscription
-               if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + coreDestination); }
-               subscription =
-                  cm.createSubscription(jmsDestination.getName(), selector, noLocal, ms, pm, mm);
+               if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + jmsDestination); }
+                     
+               binding = topicExchange.bindQueue(new GUID().toString(), jmsDestination.getName(),
+                                                 selector, noLocal,
+                                                 false, ms, pm,
+                                                 jmsDestination.getFullSize(),
+                                                 jmsDestination.getPageSize(),
+                                                 jmsDestination.getDownCacheSize());
+               
             }
             else
             {
@@ -178,25 +197,34 @@ public class ServerSessionEndpoint implements SessionEndpoint
                {
                   throw new JMSException("Cannot create durable subscriber without a valid client ID");
                }
-   
-               subscription = cm.getDurableSubscription(clientID, subscriptionName, ms, pm, mm);
-   
-               if (subscription == null)
+               
+               //See if there any bindings with the same client_id.subscription_name name
+               
+               String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
+               
+               binding = topicExchange.getBindingForName(name);
+                  
+               if (binding == null)
                {
-                  if (trace) { log.trace("creating new durable subscription on " + coreDestination); }
-                  subscription = cm.createDurableSubscription(jmsDestination.getName(),
-                                                              clientID,
-                                                              subscriptionName,
-                                                              selector,
-                                                              noLocal,
-                                                              ms,
-                                                              pm,
-                                                              mm);
+                  //Does not already exist
+                  
+                  if (trace) { log.trace("creating new durable subscription on " + jmsDestination); }
+                  
+                  //Create a new binding for the durable subscription
+
+                  binding = topicExchange.bindQueue(name, jmsDestination.getName(),
+                                                  selector, noLocal,
+                                                  true, ms, pm,
+                                                  jmsDestination.getFullSize(),
+                                                  jmsDestination.getPageSize(),
+                                                  jmsDestination.getDownCacheSize());
                }
                else
                {
+                  //Durable sub already exists
+                  
                   if (trace) { log.trace("subscription " + subscriptionName + " already exists"); }
-   
+                  
                   // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                   // A client can change an existing durable subscription by creating a durable
                   // TopicSubscriber with the same name and a new topic and/or message selector.
@@ -204,67 +232,64 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   // one and creating a new one.
    
                   boolean selectorChanged =
-                     (selector == null && subscription.getSelector() != null) ||
-                     (subscription.getSelector() == null && selector != null) ||
-                     (subscription.getSelector() != null && selector != null &&
-                     !subscription.getSelector().equals(selector));
+                     (selectorString == null && binding.getSelector() != null) ||
+                     (binding.getSelector() == null && selectorString != null) ||
+                     (binding.getSelector() != null && selectorString != null &&
+                     !binding.getSelector().equals(selectorString));
                   
                   if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
    
-                  boolean topicChanged =  subscription.getTopic().getId() != coreDestination.getId();
+                  boolean topicChanged = !binding.getCondition().equals(jmsDestination.getName());
                   
                   if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
                   
-                  boolean noLocalChanged = noLocal != subscription.isNoLocal();
+                  boolean noLocalChanged = noLocal != binding.isNoLocal();
    
                   if (selectorChanged || topicChanged || noLocalChanged)
-                  {
+                  {    
                      if (trace) { log.trace("topic or selector or noLocal changed so deleting old subscription"); }
    
-                     boolean removed =
-                        cm.removeDurableSubscription(connectionEndpoint.getClientID(), subscriptionName);
-   
-                     if (!removed)
-                     {
-                        throw new InvalidDestinationException("Cannot find durable subscription " +
-                                                              subscriptionName + " to unsubscribe");
-                     }
-   
-                     //Remove data for the durable sub
-                     ((DurableSubscription)subscription).unsubscribe();
+                     // Unbind the durable subscription
+                     
+                     topicExchange.unbindQueue(name);
    
                      // create a fresh new subscription
-                     subscription = cm.createDurableSubscription(jmsDestination.getName(),
-                                                                 clientID,
-                                                                 subscriptionName,
-                                                                 selector,
-                                                                 noLocal,
-                                                                 ms,
-                                                                 pm,
-                                                                 mm);
+                     
+                     binding = topicExchange.bindQueue(name, jmsDestination.getName(),
+                                                     selector, noLocal,
+                                                     true, ms, pm,
+                                                     jmsDestination.getFullSize(),
+                                                     jmsDestination.getPageSize(),
+                                                     jmsDestination.getDownCacheSize());
                   }               
                }
+            }
+         }
+         else
+         {
+            //Consumer on a jms queue
+            
+            //Let's find the binding
+            binding = directExchange.getBindingForName(jmsDestination.getName());
+            
+            if (binding == null)
+            {
+               throw new IllegalStateException("Cannot find binding for jms queue: " + jmsDestination.getName());
             }
          }
          
          int prefetchSize = connectionEndpoint.getPrefetchSize();
          
          ServerConsumerEndpoint ep =
-            new ServerConsumerEndpoint(consumerID,
-                                       subscription == null ? (Channel)coreDestination : subscription,
-                                       this, selector, noLocal, jmsDestination, prefetchSize);
+            new ServerConsumerEndpoint(consumerID, binding.getQueue(), binding.getQueueName(),
+                                       this, selectorString, noLocal, jmsDestination, prefetchSize);
           
          JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
-            
-         
+                     
          ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, prefetchSize);
-         
-         if (subscription != null)
-         {
-            subscription.connect();
-         }
-               
+                       
          putConsumerEndpoint(consumerID, ep); // caching consumer locally
+         
          connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
          
          log.debug("created and registered " + ep);
@@ -291,23 +316,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	   {
    	      throw new InvalidDestinationException("null destination");
    	   }
+         
+         if (jmsDestination.isTopic())
+         {
+            throw new IllegalStateException("Cannot browse a topic");
+         }
    	   
-   	   CoreDestination destination = cm.getCoreDestination(jmsDestination);
-   	   
-   	   if (destination == null)
-   	   {
-   	      throw new InvalidDestinationException("No such destination: " + jmsDestination);
-   	   }
-   	   
-   	   if (!(destination instanceof Queue))
-   	   {
-   	      throw new IllegalStateException("Cannot browse a topic");
-   	   }
-   	   
+         if (!dm.destinationExists(jmsDestination))
+         {
+            throw new InvalidDestinationException("No such destination: " + jmsDestination);
+         }
+         
+         Binding binding = directExchange.getBindingForName(jmsDestination.getName());
+         
    	   int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
    	   
    	   ServerBrowserEndpoint ep =
-   	      new ServerBrowserEndpoint(this, browserID, (Channel)destination, messageSelector);
+   	      new ServerBrowserEndpoint(this, browserID, binding.getQueue(), messageSelector);
    	   
    	   putBrowserDelegate(browserID, ep);
    	   
@@ -334,12 +359,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Session is closed");
          }
          
-         CoreDestination coreDestination = cm.getCoreDestination(new JBossQueue(name));
-   
-         if (coreDestination == null)
+         if (!dm.destinationExists(new JBossQueue(name)))
          {
             throw new JMSException("There is no administratively defined queue with name:" + name);
-         }
+         }        
    
          return new JBossQueue(name);
       }
@@ -358,12 +381,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Session is closed");
          }
          
-         CoreDestination coreDestination = cm.getCoreDestination(new JBossTopic(name));
-   
-         if (coreDestination == null)
+         if (!dm.destinationExists(new JBossTopic(name)))
          {
             throw new JMSException("There is no administratively defined topic with name:" + name);
-         }
+         } 
    
          return new JBossTopic(name);
       }
@@ -509,13 +530,30 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          connectionEndpoint.addTemporaryDestination(dest);
          
-         //FIXME - Params should not be hardcoded
-         long id = connectionEndpoint.getServerPeer().getNextObjectID();
+         //Register with the destination manager
          
-         cm.deployTemporaryCoreDestination(dest.isQueue(), dest.getName(), id, ms, pm, mm,
-                                           connectionEndpoint.getDefaultTempQueueFullSize(),
-                                           connectionEndpoint.getDefaultTempQueuePageSize(),
-                                           connectionEndpoint.getDefaultTempQueueDownCacheSize());
+         if (dest.isTopic())
+         {
+            //TODO - we should find a better way of maintaining the paging params
+            dest = new JBossTemporaryTopic(dest.getName(),
+                     connectionEndpoint.getDefaultTempQueueFullSize(),
+                     connectionEndpoint.getDefaultTempQueuePageSize(),
+                     connectionEndpoint.getDefaultTempQueueDownCacheSize());
+         }
+         
+         dm.registerDestination(dest, null, null);
+         
+         if (dest.isQueue())
+         {
+            //Create a new binding
+
+            directExchange.bindQueue(dest.getName(), dest.getName(),
+                                     null, false,
+                                     false, ms, pm,
+                                     connectionEndpoint.getDefaultTempQueueFullSize(),
+                                     connectionEndpoint.getDefaultTempQueuePageSize(),
+                                     connectionEndpoint.getDefaultTempQueueDownCacheSize());        
+         }         
       }
       catch (Throwable t)
       {
@@ -537,35 +575,30 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
          }
          
-         //It is illegal to delete a temporary destination if there any active consumers on it
-         CoreDestination destination = cm.getCoreDestination(dest);
-         
-         if (destination == null)
+         if (!dm.destinationExists(dest))
          {
-            throw new InvalidDestinationException("Destination:" + dest + " does not exist");         
+            throw new InvalidDestinationException("Destination:" + dest + " does not exist");      
          }
-         
-         if (dest instanceof JBossQueue)
+                  
+         if (dest.isQueue())
          {
-            if (destination.iterator().hasNext())
+            //Unbind
+            directExchange.unbindQueue(dest.getName());
+         }
+         else
+         {
+            //Topic
+            
+            List bindings = topicExchange.listBindingsForWildcard(dest.getName());
+            
+            if (!bindings.isEmpty())
             {
                throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
             }
          }
-         else if (dest instanceof JBossTopic)
-         {
-            Iterator iter = destination.iterator();
-            while (iter.hasNext())
-            {
-               CoreSubscription sub = (CoreSubscription)iter.next();
-               if (sub.iterator().hasNext())
-               {
-                  throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
-               }
-            }
-         }
          
-         cm.undeployTemporaryCoreDestination(dest.isQueue(), dest.getName());
+         dm.unregisterDestination(dest);         
+            
          connectionEndpoint.removeTemporaryDestination(dest);
       }
       catch (Throwable t)
@@ -593,25 +626,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new JMSException("null clientID on connection");
          }
-   
-         DurableSubscription subscription =
-            cm.getDurableSubscription(clientID, subscriptionName, ms, pm, mm);
-   
-         if (subscription == null)
+         
+         String queueName = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
+         
+         Binding binding = topicExchange.getBindingForName(queueName);
+         
+         if (binding == null)
          {
             throw new InvalidDestinationException("Cannot find durable subscription with name " +
                                                   subscriptionName + " to unsubscribe");
          }
          
-         boolean removed =
-            cm.removeDurableSubscription(connectionEndpoint.getClientID(), subscriptionName);
-         
-         if (!removed)
-         {
-            throw new JMSException("Failed to remove durable subscription");
-         }
-         
-         subscription.unsubscribe();      
+         //Unbind it
+  
+         topicExchange.unbindQueue(queueName);
       }
       catch (Throwable t)
       {

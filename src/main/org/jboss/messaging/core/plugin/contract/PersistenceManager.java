@@ -37,39 +37,35 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public interface PersistenceManager extends ServerPlugin
 {
-   /*
-    * Currently unused but will be used for XA recovery
-    */
-   List retrievePreparedTransactions() throws Exception;
-      
-   void resetLoadedStatus(long channelID) throws Exception;
-      
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
    void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
+    
+   // XA Recovery functionality
+   
+   List retrievePreparedTransactions() throws Exception;
       
-
-   void addReferences(long channelID, List references, boolean loaded) throws Exception;
+   // Paging functionality - TODO we should split this out into its own interface
+   
+   void addReferences(long channelID, List references) throws Exception;
    
    void removeReferences(long channelID, List refs) throws Exception;
+    
+   void updatePageOrder(long channelID, List references) throws Exception;
    
-   long getMinOrdering(long channelID) throws Exception;
-   
-   
-   void updateReferencesNotLoaded(long channelID, List references) throws Exception;
-   
-   void updateReliableReferencesLoadedInRange(long channelID, long orderStart, long orderEnd) throws Exception;
+   void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd) throws Exception;
             
-   int getNumberOfUnloadedReferences(long channelID) throws Exception;
+   List getPagedReferenceInfos(long channelID, long orderStart, long number) throws Exception;
    
-   List getReferenceInfos(long channelID, long minOrdering, int number) throws Exception;
-   
+   InitialLoadInfo getInitialReferenceInfos(long channelID, int fullSize) throws Exception;
+      
    List getMessages(List messageIds) throws Exception;
+         
+   //Counter related functionality - TODO we should split this out into its own interface
    
    long reserveIDBlock(String counterName, int size) throws Exception;
    
-   
-   
+      
    // Interface value classes
    //---------------------------------------------------------------
    
@@ -77,17 +73,13 @@ public interface PersistenceManager extends ServerPlugin
    {
       private long messageId;
       
-      private long ordering;
-      
       private int deliveryCount;
       
       private boolean reliable;
       
-      public ReferenceInfo(long msgId, long ordering, int deliveryCount, boolean reliable)
+      public ReferenceInfo(long msgId, int deliveryCount, boolean reliable)
       {
          this.messageId = msgId;
-         
-         this.ordering = ordering;
          
          this.deliveryCount = deliveryCount;
          
@@ -98,12 +90,7 @@ public interface PersistenceManager extends ServerPlugin
       {
          return messageId;
       }
-      
-      public long getOrdering()
-      {
-         return ordering;
-      }
-      
+ 
       public int getDeliveryCount()
       {
          return deliveryCount;
@@ -112,6 +99,37 @@ public interface PersistenceManager extends ServerPlugin
       public boolean isReliable()
       {
          return reliable;
+      }
+   }
+   
+   class InitialLoadInfo
+   {
+      private long minPageOrdering;
+      
+      private long maxPageOrdering;
+      
+      private List refInfos;
+
+      public InitialLoadInfo(long minPageOrdering, long maxPageOrdering, List refInfos)
+      {
+         this.minPageOrdering = minPageOrdering;
+         this.maxPageOrdering = maxPageOrdering;
+         this.refInfos = refInfos;
+      }
+
+      public long getMaxPageOrdering()
+      {
+         return maxPageOrdering;
+      }
+
+      public long getMinPageOrdering()
+      {
+         return minPageOrdering;
+      }
+      
+      public List getRefInfos()
+      {
+         return refInfos;
       }
    }
    

@@ -37,10 +37,14 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
+ * 
+ * A JMSXDeliveryCountTest
+
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
+ *
  */
 public class JMSXDeliveryCountTest extends MessagingTestCase
 {

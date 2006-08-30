@@ -108,8 +108,10 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          // see if there is a preconfigured client id for the user
          if (username != null)
          {
+            
+            
             String preconfClientID =
-               serverPeer.getChannelMapperDelegate().getPreConfiguredClientID(username);
+               serverPeer.getJMSUserManagerDelegate().getPreConfiguredClientID(username);
             
             if (preconfClientID != null)
             {

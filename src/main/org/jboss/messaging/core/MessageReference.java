@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core;
 
-import java.io.Serializable;
 
 /**
  * A "lightweight" message representative.
@@ -34,13 +33,11 @@ import java.io.Serializable;
  */
 public interface MessageReference extends Routable
 {
-   Serializable getStoreID();
-   
    int getInMemoryChannelCount();
 
-   long getOrdering();
+   long getPagingOrder();
    
-   void setOrdering(long ordering);   
+   void setPagingOrder(long order);   
    
    void releaseMemoryReference();
    

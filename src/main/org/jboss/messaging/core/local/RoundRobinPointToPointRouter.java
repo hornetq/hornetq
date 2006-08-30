@@ -22,10 +22,7 @@
 package org.jboss.messaging.core.local;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.Collections;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
@@ -37,9 +34,7 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
- * 
- * This router deliver the reference to a maximum of one of the router's receivers.
- * 
+ *  
  * The router will always first try the next receiver in the list to the one it tried last time
  * This gives a more balanced distribution than the FirstReceiverPointToPointRouter and is
  * better suited when batching messages to consumers since we will end up with messages interleaved amongst
@@ -77,7 +72,7 @@ public class RoundRobinPointToPointRouter implements Router
 
    // Router implementation -----------------------------------------
    
-   public Set handle(DeliveryObserver observer, Routable routable, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
    {
       int initial, current;
       ArrayList receiversCopy;
@@ -86,7 +81,7 @@ public class RoundRobinPointToPointRouter implements Router
       {
          if (receivers.isEmpty())
          {
-            return Collections.EMPTY_SET;
+            return null;
          }
 
          // try to release the lock as quickly as possible and make a copy of the receivers array
@@ -98,7 +93,7 @@ public class RoundRobinPointToPointRouter implements Router
          current = initial;
       }
 
-      Set deliveries = new HashSet();;
+      Delivery del = null;
       boolean selectorRejected = false;
 
       while (true)
@@ -116,7 +111,7 @@ public class RoundRobinPointToPointRouter implements Router
                if (d.isSelectorAccepted())
                {
                   // deliver to the first receiver that accepts
-                  deliveries.add(d);
+                  del = d;
                   shiftTarget(current);
                   break;
                }
@@ -141,12 +136,12 @@ public class RoundRobinPointToPointRouter implements Router
          }
       }
 
-      if (deliveries.isEmpty() && selectorRejected)
+      if (del == null && selectorRejected)
       {
-         deliveries.add(new SimpleDelivery(null, null, true, false));
+         del = new SimpleDelivery(null, null, true, false);
       }
 
-      return deliveries;
+      return del;
    }
 
    public boolean add(Receiver r)

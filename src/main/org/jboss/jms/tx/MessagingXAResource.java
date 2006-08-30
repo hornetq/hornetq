@@ -38,9 +38,6 @@ import org.jboss.logging.Logger;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * 
- * Parts based on JBoss MQ XAResource implementation by:
- * 
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
@@ -161,10 +158,7 @@ public class MessagingXAResource implements XAResource
    public void rollback(Xid xid) throws XAException
    {
       if (trace) { log.trace(this + " rolling back " + xid); }
-
-      //TODO Hmmm on rollback should we also stop and start the consumers to remove any transient messages
-      //Like we do on local session rollback??
-      
+  
       rm.rollback(xid, connection);
    }
 
