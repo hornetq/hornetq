@@ -458,16 +458,11 @@ public class TransactedSessionTest extends MessagingTestCase
             conn.close();
          }
       }
-
    }
 
-
-
-   
-
-   
-   
-   /** Make sure redelivered flag is set on redelivery via rollback*/
+   /**
+    * Make sure redelivered flag is set on redelivery via rollback
+    */
    public void testRedeliveredQueue() throws Exception
    {
       Connection conn = null;
@@ -509,9 +504,119 @@ public class TransactedSessionTest extends MessagingTestCase
       }
 
    }
-   
-  
-   
+
+   /**
+    * Make sure redelivered flag is set on redelivery via rollback, different setup: we close the
+    * rolled back session and we receive the message whose acknowledgment was cancelled on a new
+    * session.
+    */
+   public void testRedeliveredQueue2() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+
+         Session sendSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sendSession.createProducer(queue);
+         prod.send(sendSession.createTextMessage("a message"));
+
+         log.debug("Message was sent to the queue");
+
+         conn.close();
+
+         conn = cf.createConnection();
+         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         MessageConsumer cons = sess.createConsumer(queue);
+
+         conn.start();
+
+         TextMessage tm = (TextMessage)cons.receive();
+
+         assertEquals("a message", tm.getText());
+         assertFalse(tm.getJMSRedelivered());
+
+         sess.rollback();
+         sess.close();
+
+         Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         cons = sess2.createConsumer(queue);
+
+         tm = (TextMessage)cons.receive();
+
+         assertEquals("a message", tm.getText());
+         assertTrue(tm.getJMSRedelivered());
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   /**
+    * Make sure redelivered flag is set on redelivery via rollback, different setup: we don't close
+    * the rolled back session and we receive the message whose acknowledgment was cancelled on a new
+    * session.
+    *
+    * TODO: Is this test semantically correct.
+    */
+   public void testRedeliveredQueue3() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+
+         Session sendSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sendSession.createProducer(queue);
+         prod.send(sendSession.createTextMessage("a message"));
+
+         log.debug("Message was sent to the queue");
+
+         conn.close();
+
+         conn = cf.createConnection();
+         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         MessageConsumer cons = sess.createConsumer(queue);
+
+         conn.start();
+
+         TextMessage tm = (TextMessage)cons.receive();
+
+         assertEquals("a message", tm.getText());
+         assertFalse(tm.getJMSRedelivered());
+
+         sess.rollback();
+
+         Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         cons = sess2.createConsumer(queue);
+
+         tm = (TextMessage)cons.receive(3000);
+
+         assertEquals("a message", tm.getText());
+         assertTrue(tm.getJMSRedelivered());
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+
    public void testReceivedRollbackQueue() throws Exception
    {
       Connection conn = cf.createConnection();

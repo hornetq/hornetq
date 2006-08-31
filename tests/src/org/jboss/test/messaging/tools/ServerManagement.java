@@ -368,79 +368,157 @@ public class ServerManagement
       return server.getDefaultSecurityConfig();
    }
 
+   /**
+    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+    */
    public static void deployTopic(String name) throws Exception
    {
       deployTopic(name, null);
    }
 
+   /**
+    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+    */
    public static void deployTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
       server.deployTopic(name, jndiName);
    }
 
-   public static void deployQueue(String name) throws Exception
-   {
-      deployQueue(name, null);
-   }
-
-   public static void deployQueue(String name, String jndiName) throws Exception
-   {
-      insureStarted();
-      server.deployQueue(name, jndiName);
-   }
-   
-   public static void deployTopic(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
+   /**
+    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+    */
+   public static void deployTopic(String name, int fullSize, int pageSize, int downCacheSize)
+      throws Exception
    {
       deployTopic(name, null, fullSize, pageSize, downCacheSize);
    }
 
-   public static void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   /**
+    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+    */
+   public static void deployTopic(String name, String jndiName, int fullSize, int pageSize,
+                                  int downCacheSize) throws Exception
    {
       insureStarted();
       server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
    }
 
-   public static void deployQueue(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
-   {
-      deployQueue(name, null, fullSize, pageSize, downCacheSize);
-   }
-
-   public static void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
-   {
-      insureStarted();
-      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
-   }
-
-   public static void undeployQueue(String name) throws Exception
-   {
-      undeployDestination(true, name);
-   }
-
+   /**
+    * Simulates a topic un-deployment (deleting the topic descriptor from the deploy directory).
+    */
    public static void undeployTopic(String name) throws Exception
    {
       undeployDestination(false, name);
    }
 
+   /**
+    * Creates a topic programatically.
+    */
+   public static void createTopic(String name, String jndiName) throws Exception
+   {
+      insureStarted();
+      server.createTopic(name, jndiName);
+   }
+
+   /**
+    * Destroys a programatically created topic.
+    */
+   public static boolean destroyTopic(String name) throws Exception
+   {
+      return server.destroyDestination(false, name);
+   }
+
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
+   public static void deployQueue(String name) throws Exception
+   {
+      deployQueue(name, null);
+   }
+
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
+   public static void deployQueue(String name, String jndiName) throws Exception
+   {
+      insureStarted();
+      server.deployQueue(name, jndiName);
+   }
+
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
+   public static void deployQueue(String name, int fullSize, int pageSize, int downCacheSize)
+      throws Exception
+   {
+      deployQueue(name, null, fullSize, pageSize, downCacheSize);
+   }
+
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
+   public static void deployQueue(String name, String jndiName, int fullSize, int pageSize,
+                                  int downCacheSize) throws Exception
+   {
+      insureStarted();
+      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
+   }
+
+   /**
+    * Simulates a queue un-deployment (deleting the queue descriptor from the deploy directory).
+    */
+   public static void undeployQueue(String name) throws Exception
+   {
+      undeployDestination(true, name);
+   }
+
+   /**
+    * Creates a queue programatically.
+    */
+   public static void createQueue(String name, String jndiName) throws Exception
+   {
+      insureStarted();
+      server.createQueue(name, jndiName);
+   }
+
+   /**
+    * Destroys a programatically created queue.
+    */
+   public static boolean destroyQueue(String name) throws Exception
+   {
+      return server.destroyDestination(true, name);
+   }
+
+   /**
+    * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
+    * directory).
+    */
    private static void undeployDestination(boolean isQueue, String name) throws Exception
    {
       insureStarted();
       server.undeployDestination(isQueue, name);
    }
-   
+
    public static void deployConnectionFactory(String objectName,
-                                             String[] jndiBindings, int prefetchSize,
-                                             int defaultTempQueueFullSize,
-                                             int defaultTempQueuePageSize,
-                                             int defaultTempQueueDownCacheSize)
-   throws Exception
+                                              String[] jndiBindings,
+                                              int prefetchSize,
+                                              int defaultTempQueueFullSize,
+                                              int defaultTempQueuePageSize,
+                                              int defaultTempQueueDownCacheSize)
+      throws Exception
    {
-      server.deployConnectionFactory(objectName, jndiBindings, prefetchSize,
-             defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
+      server.deployConnectionFactory(objectName,
+                                     jndiBindings,
+                                     prefetchSize,
+                                     defaultTempQueueFullSize,
+                                     defaultTempQueuePageSize,
+                                     defaultTempQueueDownCacheSize);
    }
 
    public static void deployConnectionFactory(String objectName,
-                                              String[] jndiBindings, int prefetchSize)
+                                              String[] jndiBindings,
+                                              int prefetchSize)
       throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings, prefetchSize);

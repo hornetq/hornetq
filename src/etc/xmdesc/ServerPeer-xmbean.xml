@@ -169,7 +169,9 @@
    </operation>
 
    <operation>
-      <description>Creates a queue with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started</description>
+      <description>
+         Creates a queue with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started.
+      </description>
       <name>createQueue</name>
       <parameter>
          <name>name</name>
@@ -183,8 +185,9 @@
    </operation>
    
    <operation>
-      <description>Creates a queue with the specified name/JNDI name and paging parameters
-         The corresponding destination service will be instantiated, created and started</description>
+      <description>
+         Creates a queue with the specified name/JNDI name and paging parameters. The corresponding destination service will be instantiated, created and started.
+      </description>
       <name>createQueue</name>
       <parameter>
          <name>name</name>
@@ -210,7 +213,9 @@
    </operation>   
 
    <operation>
-      <description>Stops and destroys the corresponding destination service. If the destination was created dynamically (via createQueue()), then the service is also unregistered from the MBean server.</description>
+      <description>
+         Stops, destroys and unregisters from the MBean server the corresponding destination service, but only if the destination in question was created programatically with createQueue(). Returns true on success. Returns false if the destination does not exist or was not created programatically. A deployed destination must be undeployed to achieve the same effect.
+      </description>
       <name>destroyQueue</name>
       <parameter>
          <name>name</name>
@@ -220,7 +225,9 @@
    </operation>
 
    <operation>
-      <description>Creates a topic with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started</description>
+      <description>
+         Creates a topic with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started.
+      </description>
       <name>createTopic</name>
       <parameter>
          <name>name</name>
@@ -246,8 +253,9 @@
    </operation>
    
    <operation>
-      <description>Creates a topic with the specified name/JNDI name and paging parameters
-         The corresponding destination service will be instantiated, created and started</description>
+      <description>
+         Creates a topic with the specified name/JNDI name and paging parameters. The corresponding destination service will be instantiated, created and started.
+      </description>
       <name>createTopic</name>
       <parameter>
          <name>name</name>
@@ -261,7 +269,9 @@
    </operation>   
 
    <operation>
-      <description>Stops and destroys the corresponding destination service. If can only destroy destinations that have been created programatically.</description>
+      <description>
+         Stops, destroys and unregisters from the MBean server the corresponding destination service, but only if the destination in question was created programatically with createTopic(). Returns true on success. Returns false if the destination does not exist or was not created programatically. A deployed destination must be undeployed to achieve the same effect.
+      </description>
       <name>destroyTopic</name>
       <parameter>
          <name>name</name>
@@ -269,6 +279,5 @@
       </parameter>
       <return-type>boolean</return-type>
    </operation>
-
 
 </mbean>

@@ -135,32 +135,52 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.deployTopic(name, jndiName);
    }
    
-   public void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   public void deployQueue(String name,
+                           String jndiName,
+                           int fullSize,
+                           int pageSize,
+                           int downCacheSize) throws Exception
    {
       server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
    }
 
-   public void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   public void createQueue(String name, String jndiName) throws Exception
+   {
+      server.createQueue(name, jndiName);
+   }
+
+   public void deployTopic(String name,
+                           String jndiName,
+                           int fullSize,
+                           int pageSize,
+                           int downCacheSize) throws Exception
    {
       server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
    }
 
-   public void deployConnectionFactory(String objectName, String[] jndiBindings) throws Exception
+   public void createTopic(String name, String jndiName) throws Exception
+   {
+      server.createTopic(name, jndiName);
+   }
+
+   public void deployConnectionFactory(String objectName, String[] jndiBindings)
+      throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings);
    }
    
-   public void deployConnectionFactory(String objectName, String[] jndiBindings, int prefetchSize) throws Exception
+   public void deployConnectionFactory(String objectName, String[] jndiBindings, int prefetchSize)
+      throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
-   
+
    public void deployConnectionFactory(String objectName,
-            String[] jndiBindings,
-            int prefetchSize,
-            int defaultTempQueueFullSize,
-            int defaultTempQueuePageSize,
-            int defaultTempQueueDownCacheSize) throws Exception
+                                       String[] jndiBindings,
+                                       int prefetchSize,
+                                       int defaultTempQueueFullSize,
+                                       int defaultTempQueuePageSize,
+                                       int defaultTempQueueDownCacheSize) throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings, prefetchSize,
                defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
@@ -312,6 +332,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void undeployDestination(boolean isQueue, String name) throws Exception
    {
       server.undeployDestination(isQueue, name);
+   }
+
+   public boolean destroyDestination(boolean isQueue, String name) throws Exception
+   {
+      return server.destroyDestination(isQueue, name);
    }
 
    public Object executeCommand(Command command) throws Exception

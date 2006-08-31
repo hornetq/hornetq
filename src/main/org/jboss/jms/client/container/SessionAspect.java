@@ -201,29 +201,33 @@ public class SessionAspect
       return null;  
    }
    
-   /*
+   /**
     * Redelivery occurs in two situations:
+    *
     * 1) When session.recover() is called (JMS1.1 4.4.11)
+    *
     * "A session's recover method is used to stop a session and restart it with its first
-    * unacknowledged message. In effect, the session's series of delivered messages
-    * is reset to the point after its last acknowledged message."
-    * An important note here is that session recovery is LOCAL to the session.
-    * Session recovery DOES NOT result in delivered messages being cancelled back
-    * to the channel where they can be redelivered - since that may result in them being
-    * picked up by another session, which would break the semantics of recovery as described
-    * in the spec.
-    * 2) When session rollback occurs (JMS1.1 4.4.7)
-    * On rollback of a session the spec is clear that session recovery occurs:
-    * "If a transaction rollback is done, its produced messages
-    * are destroyed and its consumed messages are automatically recovered. For
-    * more information on session recovery, see Section 4.4.11 'Message
-    * Acknowledgment.'"
-    * So on rollback we do session recovery (local redelivery) in the same as if 
-    * session.recover() was called.
+    * unacknowledged message. In effect, the session's series of delivered messages is reset to the
+    * point after its last acknowledged message."
+    *
+    * An important note here is that session recovery is LOCAL to the session. Session recovery DOES
+    * NOT result in delivered messages being cancelled back to the channel where they can be
+    * redelivered - since that may result in them being picked up by another session, which would
+    * break the semantics of recovery as described in the spec.
+    *
+    * 2) When session rollback occurs (JMS1.1 4.4.7). On rollback of a session the spec is clear
+    * that session recovery occurs:
+    *
+    * "If a transaction rollback is done, its produced messages are destroyed and its consumed
+    * messages are automatically recovered. For more information on session recovery, see Section
+    * 4.4.11 'Message Acknowledgment.'"
+    *
+    * So on rollback we do session recovery (local redelivery) in the same as if session.recover()
+    * was called.
     * 
-    * There is a conflict here though. It seems a CTS test requires messages to be available to OTHER
-    * sessions on rollback - see CTSMiscellaneousTest.testContestedQueueOnRollback()
-    * Which seems in direct contradiction to the spec.
+    * There is a conflict here though. It seems a CTS test requires messages to be available to
+    * OTHER sessions on rollback - see CTSMiscellaneousTest.testContestedQueueOnRollback(), which
+    * seems in direct contradiction to the spec.
     * 
     * In order to satisfy the test, on session recovery, if there are no local consumers available
     * to consume the message, we cancel the message back to the channel.
@@ -233,39 +237,32 @@ public class SessionAspect
       if (trace) { log.trace("redeliver called"); }
       
       MethodInvocation mi = (MethodInvocation)invocation;
-            
       SessionState state = getState(invocation);
             
-      //We put the messages back in the front of their appropriate consumer buffers and
-      //set JMSRedelivered to true
+      // We put the messages back in the front of their appropriate consumer buffers and set
+      // JMSRedelivered to true.
       
       List toRedeliver = (List)mi.getArguments()[0];
-       
       LinkedList toCancel = new LinkedList();
       
-      //Need to be recovered in reverse order
+      // Need to be recovered in reverse order.
       for (int i = toRedeliver.size() - 1; i >= 0; i--)
       {
          AckInfo info = (AckInfo)toRedeliver.get(i);
-         
          MessageProxy proxy = info.getMessage();
-         
          proxy.setJMSRedelivered(true);
          
-         //TODO delivery count although optional should be global
-         //so we need to send it back to the server
-         //but this has performance hit so perhaps we just don't support it?
+         //TODO delivery count although optional should be global so we need to send it back to the
+         //     server but this has performance hit so perhaps we just don't support it?
          proxy.incDeliveryCount();
          
          MessageCallbackHandler handler = state.getCallbackHandler(info.getConsumerID());
               
          if (handler == null)
          {
-            // This is ok.
-
-            // The original consumer has closed, this message wil get cancelled back to the channel.
-            
-            toCancel.addFirst(info);            
+            // This is ok. The original consumer has closed, this message wil get cancelled back
+            // to the channel.
+            toCancel.addFirst(info);
          }
          else
          {
@@ -275,10 +272,9 @@ public class SessionAspect
       
       if (!toCancel.isEmpty())
       {
-         //Cancel the messages that can't be redelivered locally
+         // Cancel the messages that can't be redelivered locally
          
          SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-         
          del.cancelDeliveries(toCancel);
       }
             

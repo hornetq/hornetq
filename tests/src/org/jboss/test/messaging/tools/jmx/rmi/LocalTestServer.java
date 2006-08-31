@@ -489,10 +489,22 @@ public class LocalTestServer implements Server
          getAttribute(serverPeerObjectName, "Instance");
    }
 
-
    public void deployTopic(String name, String jndiName) throws Exception
    {
       deployDestination(false, name, jndiName);
+   }
+
+   public void deployTopic(String name, String jndiName, int fullSize, int pageSize,
+                           int downCacheSize) throws Exception
+   {
+      deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
+   }
+
+   public void createTopic(String name, String jndiName) throws Exception
+   {
+      sc.invoke(serverPeerObjectName, "createTopic",
+                new Object[] { name, jndiName },
+                new String[] { "java.lang.String", "java.lang.String"} );
    }
 
    public void deployQueue(String name, String jndiName) throws Exception
@@ -500,14 +512,17 @@ public class LocalTestServer implements Server
       deployDestination(true, name, jndiName);
    }
    
-   public void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
-   {
-      deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
-   }
-
-   public void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   public void deployQueue(String name, String jndiName, int fullSize, int pageSize,
+                           int downCacheSize) throws Exception
    {
       deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
+   }
+
+   public void createQueue(String name, String jndiName) throws Exception
+   {
+      sc.invoke(serverPeerObjectName, "createQueue",
+                new Object[] { name, jndiName },
+                new String[] { "java.lang.String", "java.lang.String"} );
    }
 
    public void deployDestination(boolean isQueue, String name, String jndiName) throws Exception
@@ -527,7 +542,12 @@ public class LocalTestServer implements Server
       sc.invoke(deston, "start", new Object[0], new String[0]);
    }
    
-   public void deployDestination(boolean isQueue, String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   public void deployDestination(boolean isQueue,
+                                 String name,
+                                 String jndiName,
+                                 int fullSize,
+                                 int pageSize,
+                                 int downCacheSize) throws Exception
    {
       log.info("deploying queue, fullsize:" + fullSize + ", ps:" + pageSize + " dc size:" + downCacheSize);
       
@@ -569,8 +589,23 @@ public class LocalTestServer implements Server
       sc.invoke(destinationObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(destinationObjectName);
    }
-   
-   
+
+   public boolean destroyDestination(boolean isQueue, String name) throws Exception
+   {
+      if (isQueue)
+      {
+         return  ((Boolean)sc.invoke(serverPeerObjectName, "destroyQueue",
+                                    new Object[] { name },
+                                    new String[] { "java.lang.String"})).booleanValue();
+      }
+      else
+      {
+         return  ((Boolean)sc.invoke(serverPeerObjectName, "destroyTopic",
+                                    new Object[] { name },
+                                    new String[] { "java.lang.String"})).booleanValue();
+      }
+   }
+
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings,
                                        int prefetchSize) throws Exception

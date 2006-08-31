@@ -29,6 +29,7 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
 
 
@@ -57,56 +58,74 @@ public class JMSRemotingConnection
    // Attributes ----------------------------------------------------
 
    protected Client client;
+   protected boolean clientPing;
    protected Connector callbackServer;
    protected InvokerLocator serverLocator;
    protected CallbackManager callbackManager;
+
+   private InvokerCallbackHandler dummyCallbackHandler;
 
    // Constructors --------------------------------------------------
 
    public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Throwable
    { 
       serverLocator = new InvokerLocator(serverLocatorURI);
-            
-      // Enable client pinging
-      // Server leasing is enabled separately on the server side
-      Map config = new HashMap();
-
-      config.put(Client.ENABLE_LEASE, String.valueOf(clientPing));
-
-      client = new Client(serverLocator, config);
-      
-      client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
-
-      if (log.isTraceEnabled()) { log.trace("created client"); }
-            
-      // Get the callback server
-      
-      callbackServer = CallbackServerFactory.instance.getCallbackServer(serverLocator);
-      
-      callbackManager = (CallbackManager)callbackServer.getInvocationHandlers()[0];
-               
-      client.connect();
-      
-      // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
-      // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
-      // This can make a massive difference on performance. We also do this in
-      // ServerConnectionEndpoint.setCallbackClient.
-
-      client.setMarshaller(new JMSWireFormat());
-      client.setUnMarshaller(new JMSWireFormat());
-      
-      client.addListener(new DummyCallbackHandler(), callbackServer.getLocator());
+      this.clientPing = clientPing;
+      dummyCallbackHandler = new DummyCallbackHandler();
 
       log.debug(this + " created");
    }
 
    // Public --------------------------------------------------------
 
-   public void close() throws Throwable
+   public void start() throws Throwable
+   {
+      // Enable client pinging. Server leasing is enabled separately on the server side
+
+      Map config = new HashMap();
+      config.put(Client.ENABLE_LEASE, String.valueOf(clientPing));
+
+      client = new Client(serverLocator, config);
+
+      client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
+
+      if (log.isTraceEnabled()) { log.trace(this + " created client"); }
+
+      // Get the callback server
+
+      callbackServer = CallbackServerFactory.instance.getCallbackServer(serverLocator);
+      callbackManager = (CallbackManager)callbackServer.getInvocationHandlers()[0];
+
+      client.connect();
+
+      // We explicitly set the Marshaller since otherwise remoting tries to resolve the marshaller
+      // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
+      // This can make a massive difference on performance. We also do this in
+      // ServerConnectionEndpoint.setCallbackClient.
+
+      client.setMarshaller(new JMSWireFormat());
+      client.setUnMarshaller(new JMSWireFormat());
+
+      // We add a dummy callback handler only to trigger the addListener method on the
+      // JMSServerInvocationHandler to be called, which allows the server to get hold of a reference
+      // to the callback client so it can make callbacks
+
+      client.addListener(dummyCallbackHandler, callbackServer.getLocator());
+
+      log.debug(this + " started");
+   }
+
+   public void stop() throws Throwable
    {
       log.debug(this + " closing");
+
+      // explicitly remove the callback listener, to avoid race conditions on server
+      // (http://jira.jboss.org/jira/browse/JBMESSAGING-535)
+
+      client.removeListener(dummyCallbackHandler);
+      dummyCallbackHandler = null;
       
-      CallbackServerFactory.instance.returnCallbackServer(serverLocator.getProtocol());
+      CallbackServerFactory.instance.stopCallbackServer(serverLocator.getProtocol());
       
       client.disconnect();
       
@@ -121,6 +140,11 @@ public class JMSRemotingConnection
    public CallbackManager getCallbackManager()
    {
       return callbackManager;
+   }
+
+   public String toString()
+   {
+      return "JMSRemotingConnection[" + serverLocator.getLocatorURI() + "]";
    }
 
    // Package protected ---------------------------------------------

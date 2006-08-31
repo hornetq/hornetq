@@ -399,17 +399,25 @@
       <mkdir dir="${build.lib}"/>
       <jar jarfile="${build.lib}/jboss-${module.name}.jar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.classes}" includes="**"/>
-         <fileset dir="${build.jar}" includes="**"/>
+         <fileset dir="${build.jar}">
+            <exclude name="*-service.xml"/>
+            <exclude name="*-ds.xml"/>
+            <exclude name="messaging-*.properties"/>
+         </fileset>
       </jar>
    </target>
 
-   <target name="scoped-sar" depends="compile, scoped-sar-structure, extract-server-dependencies">
+   <target name="scoped-sar" depends="compile, jar, scoped-sar-structure, extract-server-dependencies">
 
       <mkdir dir="${build.lib}"/>
       <jar jarfile="${build.lib}/jboss-${module.name}-scoped.sar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.lib}" includes="jboss-${module.name}.jar"/>
          <fileset dir="${build.scoped-sar}" includes="**"/>
-         <fileset dir="${build.jar}" includes="**"/>
+         <fileset dir="${build.jar}">
+            <exclude name="aop-messaging-*.xml"/>
+            <exclude name="VERSION"/>
+            <exclude name="xmdesc/**"/>
+         </fileset>
       </jar>
    </target>
 
@@ -434,7 +442,6 @@
    </target>
 
    <target name="scoped-sar-structure" depends="jar-structure, extract-server-dependencies">
-
       <copy todir="${build.scoped-sar}/META-INF" file="${source.etc}/server/default/deploy/jboss-service.xml"/>
    </target>
 

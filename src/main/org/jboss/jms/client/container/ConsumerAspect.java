@@ -101,18 +101,17 @@ public class ConsumerAspect
    
    public Object handleClosing(Invocation invocation) throws Throwable
    {      
-      //First we make sure closing is called on the ServerConsumerEndpoint
-      //This ensures that any in transit messages are flushed out to the client side
+      // First we make sure closing is called on the ServerConsumerEndpoint. This ensures that any
+      // in-transit messages are flushed out to the client side.
+
       Object res = invocation.invokeNext();
       
       ConsumerState consumerState = getState(invocation);
-      
       SessionState sessionState = (SessionState)consumerState.getParent();
-      
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
             
-      //Then we call close on the messagecallbackhandler which waits for onMessage invocations
-      //to complete and then cancels anything in the client buffer
+      // Then we call close on the messagecallbackhandler which waits for onMessage invocations
+      // to complete and then cancels anything in the client buffer.
       consumerState.getMessageCallbackHandler().close();
       
       sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());

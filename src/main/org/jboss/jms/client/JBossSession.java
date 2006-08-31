@@ -297,9 +297,22 @@ public class JBossSession implements
       {
          throw new InvalidDestinationException("Not a JBossTopic:" + topic);
       }
-      ConsumerDelegate consumerDelegate =
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         ConsumerDelegate consumerDelegate =
             delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false);
-      return new JBossMessageConsumer(consumerDelegate);
+
+         return new JBossMessageConsumer(consumerDelegate);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,

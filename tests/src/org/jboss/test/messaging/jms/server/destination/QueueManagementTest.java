@@ -226,7 +226,53 @@ public class QueueManagementTest extends DestinationManagementTestBase
          ServerManagement.undeployQueue("QueueMessageCount");
       }
    }
-   
+
+   public void testMessageCountOverFullSize() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      Connection conn = null;
+
+      int fullSize = 10;
+
+      ServerManagement.deployQueue("QueueMessageCount2", fullSize, fullSize / 2, fullSize / 2 - 1);
+
+      ObjectName destObjectName =
+         new ObjectName("jboss.messaging.destination:service=Queue,name=QueueMessageCount2");
+
+      try
+      {
+         Queue queue = (Queue)ic.lookup("/queue/QueueMessageCount2");
+
+         conn = cf.createConnection();
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         // Send 20 message to the queue
+
+         for(int i = 0; i < 20; i++)
+         {
+            TextMessage m = session.createTextMessage("message" + i);
+            prod.send(m);
+         }
+
+         int mc =
+            ((Integer)ServerManagement.getAttribute(destObjectName, "MessageCount")).intValue();
+
+         assertEquals(20, mc);
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("QueueMessageCount2");
+
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    // TODO this test should be done in DestinationManagementTestBase, once implemented in Topic
    // TODO this only tests reliable non-tx messages
    public void testRemoveAllMessages() throws Exception

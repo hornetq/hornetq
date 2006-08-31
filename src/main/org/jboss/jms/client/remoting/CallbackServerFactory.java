@@ -96,7 +96,7 @@ public class CallbackServerFactory
       return h.server;
    }
    
-   public synchronized void returnCallbackServer(String protocol)
+   public synchronized void stopCallbackServer(String protocol)
    {
       Holder h = (Holder)holders.get(protocol);
       
@@ -200,6 +200,7 @@ public class CallbackServerFactory
    
    protected void stopCallbackServer(Connector server)
    {
+      log.debug("Stopping and destroying callback server " + server.getLocator().getLocatorURI());
       server.stop();
       server.destroy();
    }

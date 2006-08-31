@@ -170,13 +170,13 @@ public class ConnectionAspect implements ConnectionListener
       
       ConnectionState state = getState(invocation);
       
-      //Finished with the connection - we need to shutdown callback server
-      state.getRemotingConnection().close();
+      // Finished with the connection - we need to shutdown callback server
+      state.getRemotingConnection().stop();
       
-      //Remove reference to resource manager
+      // Remove reference to resource manager
       ResourceManagerFactory.instance.returnResourceManager(state.getServerID());
       
-      //Remove reference to message id generator
+      // Remove reference to message id generator
       MessageIdGeneratorFactory.instance.returnGenerator(state.getServerID());
       
       return ret;

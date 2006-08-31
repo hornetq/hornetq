@@ -48,7 +48,7 @@ public class AckInfo implements Externalizable
    
    protected int consumerID;
    
-   //The actual proxy must not get serialized
+   // The actual proxy must not get serialized
    protected transient MessageProxy msg;
    
    // Static --------------------------------------------------------

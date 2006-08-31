@@ -27,9 +27,9 @@
 	<classpathentry kind="lib" path="perf/resources/jcommon-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="perf/resources/jfreechart-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
-	<classpathentry kind="lib" path="lib/jboss-remoting.jar"/>
+	<classpathentry kind="lib" path="C:/dev/messaging/trunk/thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
-	<classpathentry kind="lib" path="lib/jboss-serialization.jar"/>
+	<classpathentry kind="lib" path="C:/dev/messaging/trunk/thirdparty/jboss/serialization/lib/jboss-serialization.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
 	<classpathentry kind="lib" path="thirdparty/hsqldb/lib/hsqldb.jar"/>

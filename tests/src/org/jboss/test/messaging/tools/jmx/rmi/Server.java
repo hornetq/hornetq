@@ -130,11 +130,48 @@ public interface Server extends Remote
     */
    ServerPeer getServerPeer() throws Exception;
 
+   /**
+    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+    */
    void deployTopic(String name, String jndiName) throws Exception;
+
+   /**
+    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+    */
+   void deployTopic(String name, String jndiName, int fullSize, int pageSize,
+                    int downCacheSize) throws Exception;
+
+   /**
+    * Creates a topic programatically.
+    */
+   void createTopic(String name, String jndiName) throws Exception;
+
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
    void deployQueue(String name, String jndiName) throws Exception;
-   void deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception;
-   void deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception;
+
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
+   void deployQueue(String name, String jndiName, int fullSize, int pageSize,
+                    int downCacheSize) throws Exception;
+
+   /**
+    * Creates a queue programatically.
+    */
+   void createQueue(String name, String jndiName) throws Exception;
+
+   /**
+    * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
+    * directory).
+    */
    void undeployDestination(boolean isQueue, String name) throws Exception;
+
+   /**
+    * Destroys a programatically created destination.
+    */
+   boolean destroyDestination(boolean isQueue, String name) throws Exception;
 
    void deployConnectionFactory(String objectName,
             String[] jndiBindings,
@@ -142,11 +179,14 @@ public interface Server extends Remote
             int defaultTempQueueFullSize,
             int defaultTempQueuePageSize,
             int defaultTempQueueDownCacheSize) throws Exception;
+
    void deployConnectionFactory(String objectName,
                                 String[] jndiBindings,
                                 int prefetchSize) throws Exception;
+
    void deployConnectionFactory(String objectName,
-                                String[] jndiBindings) throws Exception;   
+                                String[] jndiBindings) throws Exception;
+
    void undeployConnectionFactory(ObjectName objectName) throws Exception;
 
    /**

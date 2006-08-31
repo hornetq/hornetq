@@ -743,7 +743,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
             try
             {
-               if (trace) { log.trace("handing " + list.size() + " message(s) over to the remoting layer"); }
+               if (trace) { log.trace(ServerConsumerEndpoint.this + "handing " + list.size() + " message(s) over to the remoting layer"); }
             
                ClientDelivery del = new ClientDelivery(list, id);
                
@@ -753,7 +753,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                
                MessagingMarshallable resp = (MessagingMarshallable)connection.getCallbackClient().invoke(mm);
 
-               if (trace) { log.trace("handed messages over to the remoting layer"); }
+               if (trace) { log.trace(ServerConsumerEndpoint.this + "handed messages over to the remoting layer"); }
                 
                HandleMessageResponse result = (HandleMessageResponse)resp.getLoad();
 
@@ -768,8 +768,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             }
             catch(Throwable t)
             {
-               log.warn("Failed to deliver the message to the client. See the server log for more details");
-               log.debug("Failed to deliver the message to the client.", t);
+               log.warn("Failed to deliver the message to the client. See the server log for more details.");
+               log.debug(ServerConsumerEndpoint.this + " failed to deliver the message to the client.", t);
                
                ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
                

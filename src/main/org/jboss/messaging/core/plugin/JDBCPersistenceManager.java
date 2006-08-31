@@ -1734,67 +1734,6 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       }
    }
    
-//   public void resetPagedStatus(long channelID) throws Exception
-//   {
-//      if (trace) { log.trace("resetting paged status for channel " + channelID); }
-//      
-//      Connection conn = null;
-//      PreparedStatement ps = null;
-//      TransactionWrapper wrap = new TransactionWrapper();
-//      
-//      log.trace("Resetting paged status. This may take several minutes for large queues/subscriptions...");
-//      
-//      try
-//      {
-//         conn = ds.getConnection();
-//         
-//         log.debug("Updating all page ordering to null");
-//                  
-//         ps = conn.prepareStatement(getSQLStatement("RESET_PAGED_STATUS"));
-//         
-//         ps.setLong(1, channelID);
-//         
-//         int rows = ps.executeUpdate();
-//         
-//         if (trace)
-//         {
-//            log.trace(JDBCUtil.statementToString(getSQLStatement("RESET_PAGED_STATUS"))
-//                  + " updated " + rows + " rows");
-//         }
-//               
-//         ps.close();
-//         
-//      }
-//      catch (Exception e)
-//      {
-//         wrap.exceptionOccurred();
-//         throw e;
-//      }
-//      finally
-//      {
-//         if (ps != null)
-//         {
-//            try
-//            {
-//               ps.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         if (conn != null)
-//         {
-//            try
-//            {
-//               conn.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         wrap.end();
-//      }
-//   }
      
    public List retrievePreparedTransactions() throws Exception
    {

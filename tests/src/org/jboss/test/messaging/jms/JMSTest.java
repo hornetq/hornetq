@@ -29,10 +29,12 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Message;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * The most comprehensive, yet simple, unit test.
@@ -47,7 +49,7 @@ public class JMSTest extends MessagingTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    InitialContext ic;
@@ -66,9 +68,9 @@ public class JMSTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
-           
+
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      
+
       ServerManagement.deployQueue("JMSTestQueue");
 
       log.debug("setup done");
@@ -185,6 +187,59 @@ public class JMSTest extends MessagingTestCase
       assertEquals("message one", rm.getText());
       rm = (TextMessage)cons.receive();
       assertEquals("message two", rm.getText());
+
+      conn.close();
+   }
+
+   public void test_NonPersistent_NonTransactional_Asynchronous_to_Client() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
+
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      final MessageConsumer cons = session.createConsumer(queue);
+
+      conn.start();
+
+      final Slot slot = new Slot();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               Message m = cons.receive(5000);
+               if (m != null)
+               {
+                  slot.put(m);
+               }
+            }
+            catch(Exception e)
+            {
+               log.error("receive failed", e);
+            }
+
+         }
+      }, "Receiving Thread").start();
+
+
+      Thread.sleep(500);
+
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      TextMessage m = session.createTextMessage("message one");
+
+      prod.send(m);
+
+      TextMessage rm = (TextMessage)slot.poll(5000);
+
+      assertEquals("message one", rm.getText());
 
       conn.close();
    }

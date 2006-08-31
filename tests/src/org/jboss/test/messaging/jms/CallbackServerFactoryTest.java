@@ -85,19 +85,19 @@ public class CallbackServerFactoryTest extends MessagingTestCase
       assertFalse(server1 == server3);
       
       
-      CallbackServerFactory.instance.returnCallbackServer(locator1.getProtocol());
+      CallbackServerFactory.instance.stopCallbackServer(locator1.getProtocol());
       
       assertTrue(CallbackServerFactory.instance.containsCallbackServer(locator1.getProtocol()));
       
-      CallbackServerFactory.instance.returnCallbackServer(locator2.getProtocol());
+      CallbackServerFactory.instance.stopCallbackServer(locator2.getProtocol());
       
       assertTrue(CallbackServerFactory.instance.containsCallbackServer(locator2.getProtocol()));
       
-      CallbackServerFactory.instance.returnCallbackServer(locator1.getProtocol());
+      CallbackServerFactory.instance.stopCallbackServer(locator1.getProtocol());
       
       assertFalse(CallbackServerFactory.instance.containsCallbackServer(locator1.getProtocol()));
       
-      CallbackServerFactory.instance.returnCallbackServer(locator2.getProtocol());
+      CallbackServerFactory.instance.stopCallbackServer(locator2.getProtocol());
       
       assertFalse(CallbackServerFactory.instance.containsCallbackServer(locator2.getProtocol()));
       

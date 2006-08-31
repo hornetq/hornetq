@@ -163,19 +163,19 @@ public class ResourceManager
    {
       if (trace) { log.trace("rolling back local xid " + xid); }
       
-      TxState tx = removeTx(xid);
+      TxState ts = removeTx(xid);
       
-      if (tx == null)
+      if (ts == null)
       {      
          throw new IllegalStateException("Cannot find transaction with xid:" + xid);         
       }
       
-      //Don't need messages for rollback
-      tx.clearMessages();
+      // don't need messages for rollback
+      ts.clearMessages();
       
-      //For one phase rollback there is nothing to do on the server
+      // for one phase rollback there is nothing to do on the server
       
-      redeliverMessages(tx);
+      redeliverMessages(ts);
    }
    
    public void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
@@ -272,59 +272,45 @@ public class ResourceManager
    
    /*
     * Rollback has occurred so we need to redeliver any unacked messages corresponding to the acks
-    * is in the transaction
+    * is in the transaction.
     */
-   private void redeliverMessages(TxState tx) throws JMSException
+   private void redeliverMessages(TxState ts) throws JMSException
    {
-      Iterator iter = tx.getAcks().iterator();
-      
-      //Sort them into lists - one for each session
-        
-      //We use a LinkedHashMap since we need to preserve the order of the sessions
+      // Sort messages into lists, one for each session. We use a LinkedHashMap since we need to
+      // preserve the order of the sessions.
+
       Map toAck = new LinkedHashMap();
-      
-      while (iter.hasNext())
+
+      for(Iterator i = ts.getAcks().iterator(); i.hasNext(); )
       {
-         AckInfo ack = (AckInfo)iter.next();
-         
+         AckInfo ack = (AckInfo)i.next();
          SessionDelegate del = ack.msg.getSessionDelegate();
          
          List acks = (List)toAck.get(del);
-         
          if (acks == null)
          {
             acks = new ArrayList();
-            
             toAck.put(del, acks);
          }
-         
          acks.add(ack);
       }
       
-      //Now tell each session to redeliver
+      // Now tell each session to redeliver.
       
       LinkedList l = new LinkedList();
       
-      iter = toAck.entrySet().iterator();
-                  
-      //need to reverse the order
-      while (iter.hasNext())
+      for(Iterator i = toAck.entrySet().iterator(); i.hasNext();)
       {
-         Object entry = iter.next();
-         
-         l.addFirst(entry);         
+         // need to reverse the order
+         Object entry = i.next();
+         l.addFirst(entry);
       }
       
-      iter = l.iterator();
-      
-      while (iter.hasNext())
+      for(Iterator i = l.iterator(); i.hasNext();)
       {
-         Map.Entry entry = (Map.Entry)iter.next();
-         
+         Map.Entry entry = (Map.Entry)i.next();
          SessionDelegate sess = (SessionDelegate)entry.getKey();
-         
          List acks = (List)entry.getValue();
-         
          sess.redeliver(acks);
       }  
    }

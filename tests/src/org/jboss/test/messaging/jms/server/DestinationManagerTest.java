@@ -84,7 +84,7 @@ public class DestinationManagerTest extends MessagingTestCase
       super.tearDown();
    }
 
-   public void testCreateQueue() throws Exception
+   public void testDeployQueue() throws Exception
    {
       String name = "testQueue";
 
@@ -95,7 +95,7 @@ public class DestinationManagerTest extends MessagingTestCase
       assertEquals(name, q.getQueueName());
    }
 
-   public void testCreateTopic() throws Exception
+   public void testDeployTopic() throws Exception
    {
       String name = "testQueue";
 
@@ -106,7 +106,7 @@ public class DestinationManagerTest extends MessagingTestCase
       assertEquals(name, t.getTopicName());
    }
 
-   public void testCreateQueueDifferentJNDIName() throws Exception
+   public void testDeployQueueDifferentJNDIName() throws Exception
    {
       String name = "testQueue";
       String jndiName = "/a/b/c/testQueue2";
@@ -117,7 +117,7 @@ public class DestinationManagerTest extends MessagingTestCase
       assertEquals(name, q.getQueueName());
    }
 
-   public void testCreateQueueDifferentJNDIName2() throws Exception
+   public void testDeployQueueDifferentJNDIName2() throws Exception
    {
       String name = "testQueue";
       String jndiName = "testQueue";
@@ -129,7 +129,7 @@ public class DestinationManagerTest extends MessagingTestCase
    }
 
 
-   public void testCreateTopicDifferrentJNDIName() throws Exception
+   public void testDeployTopicDifferrentJNDIName() throws Exception
    {
       String name = "testTopic";
       String jndiName = "/a/b/c/testTopic2";
@@ -140,7 +140,7 @@ public class DestinationManagerTest extends MessagingTestCase
       assertEquals(name, t.getTopicName());
    }
 
-   public void testCreateDuplicateQueue() throws Exception
+   public void testDeployDuplicateQueue() throws Exception
    {
       String name = "testQueue";
 
@@ -157,7 +157,7 @@ public class DestinationManagerTest extends MessagingTestCase
       }
    }
 
-   public void testCreateDuplicateTopic() throws Exception
+   public void testDeployDuplicateTopic() throws Exception
    {
       String name = "testTopic";
 
@@ -174,7 +174,7 @@ public class DestinationManagerTest extends MessagingTestCase
       }
    }
 
-   public void testCreateDuplicateQueueDifferentJNDIName() throws Exception
+   public void testDeployDuplicateQueueDifferentJNDIName() throws Exception
    {
       String name = "testQueue";
 
@@ -192,7 +192,7 @@ public class DestinationManagerTest extends MessagingTestCase
       }
    }
 
-   public void testCreateDuplicateTopicDifferentJNDIName() throws Exception
+   public void testDeployDuplicateTopicDifferentJNDIName() throws Exception
    {
       String name = "testTopic";
 
@@ -209,7 +209,7 @@ public class DestinationManagerTest extends MessagingTestCase
       }
    }
 
-   public void testCreateQueueAndTopicWithTheSameName() throws Exception
+   public void testDeployQueueAndTopicWithTheSameName() throws Exception
    {
       String name = "SomeName";
 
@@ -224,17 +224,7 @@ public class DestinationManagerTest extends MessagingTestCase
       assertEquals(name, t.getTopicName());
    }
 
-   public void testDestroyInexistentQueue() throws Exception
-   {
-      ServerManagement.undeployQueue("there is not such a queue");
-   }
-
-   public void testDestroyInexistentTopic() throws Exception
-   {
-      ServerManagement.undeployTopic("there is not such a topic");
-   }
-
-   public void testDestroyQueue() throws Exception
+   public void testUndeployQueue() throws Exception
    {
       String name = "testQueue";
 
@@ -245,8 +235,6 @@ public class DestinationManagerTest extends MessagingTestCase
       assertEquals(name, q.getQueueName());
 
       ServerManagement.undeployQueue(name);
-
-      //assertNull(((DestinationManager)destinationManager).getCoreDestination(q));
 
       try
       {
@@ -259,7 +247,7 @@ public class DestinationManagerTest extends MessagingTestCase
       }
    }
 
-   public void testDestroyTopic() throws Exception
+   public void testUndeployTopic() throws Exception
    {
       String name = "testTopic";
 
@@ -271,8 +259,6 @@ public class DestinationManagerTest extends MessagingTestCase
 
       ServerManagement.undeployTopic(name);
 
-      //assertNull(((DestinationManager)destinationManager).getCoreDestination(t));
-
       try
       {
          Object o = initialContext.lookup(ServerManagement.DEFAULT_TOPIC_CONTEXT + "/" + name);
@@ -283,6 +269,106 @@ public class DestinationManagerTest extends MessagingTestCase
          // OK
       }
    }
+
+   public void testCreateQueueProgramatically() throws Exception
+   {
+      String name = "SomeQueue";
+
+      ServerManagement.createQueue(name, null);
+      Queue q = (Queue)initialContext.lookup(ServerManagement.DEFAULT_QUEUE_CONTEXT + "/" + name);
+
+      assertEquals(name, q.getQueueName());
+   }
+
+   public void testCreateTopicProgramatically() throws Exception
+   {
+      String name = "SomeTopic";
+
+      ServerManagement.createTopic(name, null);
+      Topic t = (Topic)initialContext.lookup(ServerManagement.DEFAULT_TOPIC_CONTEXT + "/" + name);
+
+      assertEquals(name, t.getTopicName());
+   }
+
+   public void testUndeployInexistentQueue() throws Exception
+   {
+      ServerManagement.undeployQueue("there is not such a queue");
+   }
+
+   public void testUndeployInexistentTopic() throws Exception
+   {
+      ServerManagement.undeployTopic("there is not such a topic");
+   }
+
+   public void testDestroyQueue() throws Exception
+   {
+      String name = "AnotherQueue";
+      ServerManagement.createQueue(name, null);
+      assertTrue(ServerManagement.destroyQueue(name));
+
+      try
+      {
+         initialContext.lookup(ServerManagement.DEFAULT_QUEUE_CONTEXT + "/" + name);
+         fail("should have failed");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+   }
+
+   public void testDestroyTopic() throws Exception
+   {
+      String name = "AnotherTopic";
+      ServerManagement.createTopic(name, null);
+      assertTrue(ServerManagement.destroyTopic(name));
+
+      try
+      {
+         initialContext.lookup(ServerManagement.DEFAULT_TOPIC_CONTEXT + "/" + name);
+         fail("should have failed");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+   }
+
+   public void testDestroyInexistentQueue() throws Exception
+   {
+      assertFalse(ServerManagement.destroyQueue("NoSuchQueue"));
+   }
+
+   public void testDestroyInexistentTopic() throws Exception
+   {
+      assertFalse(ServerManagement.destroyTopic("NoSuchTopic"));
+   }
+
+   public void testDestroyDeployedQueue() throws Exception
+   {
+      String name = "ADeployedQueue";
+      ServerManagement.deployQueue(name, null);
+      assertFalse(ServerManagement.destroyQueue("ADeployedQueue"));
+
+      // the queue must not be destroyed
+
+      Queue q = (Queue)initialContext.lookup(ServerManagement.DEFAULT_QUEUE_CONTEXT + "/" + name);
+      assertEquals(name, q.getQueueName());
+   }
+
+   public void testDestroyDeployedTopic() throws Exception
+   {
+      String name = "ADeployedTopic";
+      ServerManagement.deployTopic(name, null);
+      assertFalse(ServerManagement.destroyTopic("ADeployedTopic"));
+
+      // the queue must not be destroyed
+
+      Topic q = (Topic)initialContext.lookup(ServerManagement.DEFAULT_TOPIC_CONTEXT + "/" + name);
+      assertEquals(name, q.getTopicName());      
+   }
+
+
 
    // Package protected ---------------------------------------------
    

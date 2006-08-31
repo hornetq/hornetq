@@ -270,6 +270,7 @@
       </replaceregexp>
 
       <!-- mute org.jboss.serial DEBUG -->
+
       <replaceregexp file="${jboss.home}/server/${standalone.messaging.config.name}/conf/log4j.xml" flags="s">
          <regexp pattern="(\x3croot\x3e)"/>
          <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
@@ -299,6 +300,7 @@
 
       <move todir="${jboss.home}/server/${standalone.messaging.config.name}/lib">
          <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging">
+            <include name="jboss-messaging.jar"/>
             <include name="javassist.jar"/>
             <include name="jboss-aop.jar"/>
             <include name="jboss-aspect-library.jar"/>
@@ -311,31 +313,21 @@
          </fileset>
       </move>
 
-      <jar jarfile="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/jboss-messaging.jar"
-           manifest="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/META-INF/MANIFEST.MF">
-         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging" includes="org/**,VERSION,aop-messaging*.xml"/>
-      </jar>
-      <delete>
-         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging">
-            <include name="VERSION"/>
-            <include name="aop-messaging*.xml"/>
-         </fileset>
-      </delete>
-      <delete dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/org"/>
-      <delete dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/META-INF"/>
-      <move file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/jboss-messaging.jar"
-            todir="${jboss.home}/server/${standalone.messaging.config.name}/lib"/>
-      <move todir="${jboss.home}/server/${standalone.messaging.config.name}/conf/xmdesc">
-         <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/xmdesc">
-            <include name="*.xml"/>
-         </fileset>
-      </move>
+      <unjar src="${jboss.home}/server/${standalone.messaging.config.name}/lib/jboss-messaging.jar"
+             dest="${jboss.home}/server/${standalone.messaging.config.name}/conf">
+         <patternset>
+            <include name="xmdesc/**"/>
+         </patternset>
+      </unjar>
+
       <move todir="${jboss.home}/server/${standalone.messaging.config.name}/conf">
          <fileset dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging">
             <include name="messaging-*.properties"/>
          </fileset>
       </move>
+
       <delete dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/xmdesc"/>
+      <delete dir="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/META-INF"/>
       <delete file="${jboss.home}/server/${standalone.messaging.config.name}/deploy/jboss-messaging/jms-ds.xml"/>
 
    </target>

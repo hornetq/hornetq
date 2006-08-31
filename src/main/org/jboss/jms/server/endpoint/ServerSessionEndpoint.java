@@ -478,7 +478,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       try
       {
-         //Deliveries must be cancelled in reverse order
+         // deliveries must be cancelled in reverse order
           
          Set consumers = new HashSet();
          
@@ -486,8 +486,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             AckInfo ack = (AckInfo)ackInfos.get(i);
             
-            //We look in the global map since the message might have come from connection consumer
-            ServerConsumerEndpoint consumer = this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
+            // We look in the global map since the message might have come from connection consumer
+            ServerConsumerEndpoint consumer =
+               this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
    
             if (consumer == null)
             {
@@ -495,18 +496,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
             
             consumer.cancelDelivery(new Long(ack.getMessageID()));
-            
             consumers.add(consumer);
          }
          
-         //Need to prompt delivery for all consumers
+         // need to prompt delivery for all consumers
          
-         Iterator iter = consumers.iterator();
-         
-         while (iter.hasNext())
+         for(Iterator i = consumers.iterator(); i.hasNext(); )
          {
-            ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)iter.next();
-            
+            ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)i.next();
             consumer.promptDelivery();
          }
       }

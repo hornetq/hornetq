@@ -168,12 +168,21 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jboss-remoting.jar!/" />
+          <root url="jar://$MODULE_DIR$/thirdparty/jboss/remoting/lib/jboss-remoting.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="file://$MODULE_DIR$/../../cvs/JBossRemoting/src/main" />
+          <root url="file://$MODULE_DIR$/../../cvs/JBossRemoting-2.0.0.GA/src/main" />
         </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/thirdparty/jboss/serialization/lib/jboss-serialization.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntryProperties />

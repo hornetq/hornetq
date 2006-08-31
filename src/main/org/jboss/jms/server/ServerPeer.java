@@ -861,7 +861,11 @@ public class ServerPeer extends ServiceMBeanSupport
 
       MBeanServer mbeanServer = getServer();
 
-      // we can only destroy destinations that have been created programatically
+      // we can only destroy destinations that exist AND that have been created programatically
+      if (!mbeanServer.isRegistered(on))
+      {
+         return false;
+      }
       Boolean b = (Boolean)mbeanServer.getAttribute(on, "CreatedProgrammatically");
       if (!b.booleanValue())
       {

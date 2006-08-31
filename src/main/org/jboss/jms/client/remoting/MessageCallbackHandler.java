@@ -311,29 +311,25 @@ public class MessageCallbackHandler
          
       waitForOnMessageToComplete();
       
-      //Now we cancel anything left in the buffer
-      //The reason we do this now is that otherwise the deliveries wouldn't get cancelled
-      //until session close (since we don't cancel consumer's deliveries until then)
-      //which is too late - since we need to preserve the order of messages delivered in a session.
+      // Now we cancel anything left in the buffer. The reason we do this now is that otherwise the
+      // deliveries wouldn't get cancelled until session close (since we don't cancel consumer's
+      // deliveries until then), which is too late - since we need to preserve the order of messages
+      // delivered in a session.
       
       if (!buffer.isEmpty())
       {            
-         //Now we cancel any deliveries that might be waiting in our buffer
-         //This is because, otherwise the messages wouldn't get cancelled until
-         //the corresponding session died.
-         //So if another consumer in another session tried to consume from the channel
-         //before that session died it wouldn't receive those messages
-         Iterator iter = buffer.iterator();
-         
+         // Now we cancel any deliveries that might be waiting in our buffer. This is because
+         // otherwise the messages wouldn't get cancelled until the corresponding session died.
+         // So if another consumer in another session tried to consume from the channel before that
+         // session died it wouldn't receive those messages.
+
          List ackInfos = new ArrayList();
-         while (iter.hasNext())
-         {                        
-            MessageProxy mp = (MessageProxy)iter.next();
-            
+
+         for(Iterator i = buffer.iterator(); i.hasNext();)
+         {
+            MessageProxy mp = (MessageProxy)i.next();
             AckInfo ack = new AckInfo(mp, consumerID);
-            
             ackInfos.add(ack);
-            
          }
                
          sessionDelegate.cancelDeliveries(ackInfos);
@@ -346,7 +342,7 @@ public class MessageCallbackHandler
    
    private void waitForOnMessageToComplete()
    {
-      //Wait for any on message executions to complete
+      // Wait for any on message executions to complete
       
       Future result = new Future();
       

@@ -112,6 +112,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          if (callbackHandler != null)
          {
             log.debug("found calllback handler for remoting session " + Util.guidToString(s));
+            
             i.getMetaData().addMetaData(MetaDataConstants.JMS,
                                         MetaDataConstants.CALLBACK_HANDLER,
                                         callbackHandler, PayloadKey.TRANSIENT);

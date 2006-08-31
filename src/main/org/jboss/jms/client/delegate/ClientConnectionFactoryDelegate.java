@@ -156,6 +156,7 @@ public class ClientConnectionFactoryDelegate
          // Create a new connection
          
          remotingConnection = new JMSRemotingConnection(serverLocatorURI, clientPing);
+         remotingConnection.start();
          
          client = remotingConnection.getInvokingClient();
          
@@ -208,7 +209,7 @@ public class ClientConnectionFactoryDelegate
          {
             try
             {
-               remotingConnection.close();
+               remotingConnection.stop();
             }
             catch (Throwable ignore)
             {               
