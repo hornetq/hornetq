@@ -31,6 +31,7 @@ import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.exchange.Binding;
 import org.jboss.messaging.core.plugin.exchange.DirectExchange;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.plugin.base.ExchangeTestBase;
 
 /**
@@ -71,7 +72,7 @@ public class DirectExchangeTest extends ExchangeTestBase
       super.tearDown();
    }
    
-   public void testRoute() throws Throwable
+   public final void testRoute() throws Throwable
    {
       Exchange exchange = createExchange();
       
@@ -82,6 +83,10 @@ public class DirectExchangeTest extends ExchangeTestBase
       
       MessageQueue queue1 = binding1.getQueue();      
       MessageQueue queue2 = binding2.getQueue();
+      SimpleReceiver receiver1 = new SimpleReceiver(SimpleReceiver.ACCEPTING);
+      queue1.add(receiver1);
+      SimpleReceiver receiver2 = new SimpleReceiver(SimpleReceiver.ACCEPTING);
+      queue1.add(receiver2);
       
       assertTrue(binding1.isActive());      
       assertTrue(binding2.isActive());
@@ -92,16 +97,22 @@ public class DirectExchangeTest extends ExchangeTestBase
       boolean routed = exchange.route(ref1, "queue1", null);      
       assertTrue(routed);
       
-      List msgs = queue1.browse();
+      List msgs = receiver1.getMessages();
       assertNotNull(msgs);
       assertEquals(1, msgs.size());
       Message msgRec = (Message)msgs.get(0);
-      assertEquals(msgRec.getMessageID(), msg1.getMessageID());
-      queue1.removeAllReferences();
-      
-      msgs = queue2.browse();
+      assertTrue(msg1 == msgRec);
+      receiver1.acknowledge(msgRec, null);
+      msgs = queue1.browse();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size());
+      assertTrue(msgs.isEmpty());      
+      
+      msgs = receiver2.getMessages();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());
+      
+      receiver1.clear();
+      receiver2.clear();
       
       Message msg2 = MessageFactory.createCoreMessage(2);      
       MessageReference ref2 = ms.reference(msg2);
@@ -109,19 +120,22 @@ public class DirectExchangeTest extends ExchangeTestBase
       routed = exchange.route(ref2, "queue2", null);      
       assertTrue(routed);
       
-      msgs = queue2.browse();
+      msgs = receiver2.getMessages();
       assertNotNull(msgs);
       assertEquals(1, msgs.size());
       msgRec = (Message)msgs.get(0);
-      assertEquals(msgRec.getMessageID(), msg2.getMessageID());
-      queue2.removeAllReferences();
-      
-      msgs = queue1.browse();
+      assertTrue(msg2 == msgRec);
+      receiver2.acknowledge(msgRec, null);
+      msgs = queue2.browse();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size());
+      assertTrue(msgs.isEmpty());
+      
+      msgs = receiver1.getMessages();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());
    }
    
-   public void testRouteInactive() throws Throwable
+   public final void testRouteInactive() throws Throwable
    {
       Exchange exchange = createExchange();
       
@@ -132,10 +146,13 @@ public class DirectExchangeTest extends ExchangeTestBase
       
       MessageQueue queue1 = binding1.getQueue();
       MessageQueue queue2 = binding2.getQueue();
+      SimpleReceiver receiver1 = new SimpleReceiver(SimpleReceiver.ACCEPTING);
+      queue1.add(receiver1);
+      SimpleReceiver receiver2 = new SimpleReceiver(SimpleReceiver.ACCEPTING);
+      queue1.add(receiver2);
       
-      //Now make bindings inactive
+      //Now make one bindings inactive
       binding1.deactivate();
-      binding2.deactivate();
       
       assertFalse(binding1.isActive());
       assertFalse(binding2.isActive());
@@ -146,23 +163,37 @@ public class DirectExchangeTest extends ExchangeTestBase
       boolean routed = exchange.route(ref1, "queue1", null);      
       assertFalse(routed);
       
+      List msgs = receiver1.getMessages();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());
+      
+      msgs = receiver2.getMessages();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());
+                  
       Message msg2 = MessageFactory.createCoreMessage(2);      
       MessageReference ref2 = ms.reference(msg2);
       
-      routed = exchange.route(ref1, "queue2", null);      
-      assertFalse(routed);
+      routed = exchange.route(ref2, "queue2", null);      
+      assertTrue(routed);
       
-      List msgs = queue1.browse();
+      msgs = receiver2.getMessages();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size());     
-      
+      assertEquals(1, msgs.size());
+      Message msgRec = (Message)msgs.get(0);
+      assertTrue(msg2 == msgRec);
+      receiver2.acknowledge(msgRec, null);
       msgs = queue2.browse();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size());     
+      assertTrue(msgs.isEmpty());    
+      
+      msgs = receiver1.getMessages();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());     
    
    }
    
-   public void testRouteNoBinding() throws Throwable
+   public final void testRouteNoBinding() throws Throwable
    {
       Exchange exchange = createExchange();
       
@@ -170,6 +201,8 @@ public class DirectExchangeTest extends ExchangeTestBase
          exchange.bindQueue("queue1", "queue1", null, false, true, ms, pm, 1000, 20, 20);      
 
       MessageQueue queue1 = binding1.getQueue();
+      SimpleReceiver receiver1 = new SimpleReceiver(SimpleReceiver.ACCEPTING);
+      queue1.add(receiver1);
 
       assertTrue(binding1.isActive());
 
@@ -183,10 +216,10 @@ public class DirectExchangeTest extends ExchangeTestBase
             
       List msgs = queue1.browse();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size());             
+      assertTrue(msgs.isEmpty());             
    }
    
-   public void testRouteTransactional() throws Throwable
+   public final void testRouteTransactional() throws Throwable
    {
       Exchange exchange = createExchange();
       
@@ -194,6 +227,8 @@ public class DirectExchangeTest extends ExchangeTestBase
          exchange.bindQueue("queue1", "queue1", null, false, true, ms, pm, 1000, 20, 20);      
 
       MessageQueue queue1 = binding1.getQueue();
+      SimpleReceiver receiver1 = new SimpleReceiver(SimpleReceiver.ACCEPTING);
+      queue1.add(receiver1);
 
       assertTrue(binding1.isActive());
 
@@ -209,23 +244,32 @@ public class DirectExchangeTest extends ExchangeTestBase
       assertTrue(routed);
       routed = exchange.route(ref2, "queue1", tx);            
       assertTrue(routed);
-            
+      
+      
       List msgs = queue1.browse();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size()); 
+      assertTrue(msgs.isEmpty());
       
       tx.commit();
       
-      msgs = queue1.browse();
+      msgs = receiver1.getMessages();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
       Message msgRec1 = (Message)msgs.get(0);
-      Message msgRec2 = (Message)msgs.get(0);
-      assertEquals(msg1.getMessageID(), msgRec1.getMessageID());
-      assertEquals(msg2.getMessageID(), msgRec2.getMessageID());
+      Message msgRec2 = (Message)msgs.get(1);
+      assertTrue(msgRec1 == msg1);
+      assertTrue(msgRec2 == msg2);
       
-      queue1.removeAllReferences();
+      //Acknowledge non transactionally
+      receiver1.acknowledge(msgRec1, null);
+      receiver1.acknowledge(msgRec2, null);
+
+      msgs = queue1.browse();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty()); 
       
+      receiver1.clear();
+           
       Message msg3 = MessageFactory.createCoreMessage(3);      
       MessageReference ref3 = ms.reference(msg3);
       
@@ -241,13 +285,104 @@ public class DirectExchangeTest extends ExchangeTestBase
             
       msgs = queue1.browse();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size()); 
+      assertTrue(msgs.isEmpty()); 
+      
+      tx.rollback();
+      
+      msgs = receiver1.getMessages();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());
+      
+      receiver1.clear();
+      
+      
+      Message msg5 = MessageFactory.createCoreMessage(5);      
+      MessageReference ref5 = ms.reference(msg5);
+      
+      Message msg6 = MessageFactory.createCoreMessage(6);      
+      MessageReference ref6 = ms.reference(msg6);
+            
+      routed = exchange.route(ref5, "queue1", null);            
+      assertTrue(routed);
+      routed = exchange.route(ref6, "queue1", null);            
+      assertTrue(routed);
+      
+      msgs = receiver1.getMessages();
+      assertNotNull(msgs);
+      assertEquals(2, msgs.size());
+      msgRec1 = (Message)msgs.get(0);
+      msgRec2 = (Message)msgs.get(1);
+      assertTrue(msgRec1 == msg5);
+      assertTrue(msgRec2 == msg6);
+      
+      //Acknowledge transactionally
+      
+      tx = tr.createTransaction();
+      
+      receiver1.acknowledge(msgRec1, tx);
+      receiver1.acknowledge(msgRec2, tx);
+      
+      msgs = queue1.browse();
+      assertNotNull(msgs);
+      assertEquals(2, msgs.size());
+      msgRec1 = (Message)msgs.get(0);
+      msgRec2 = (Message)msgs.get(1);
+      assertTrue(msgRec1 == msg5);
+      assertTrue(msgRec2 == msg6);
+      
+      tx.commit();
+      
+      msgs = queue1.browse();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());
+      
+      
+      receiver1.clear();
+      
+      Message msg7 = MessageFactory.createCoreMessage(7);      
+      MessageReference ref7 = ms.reference(msg7);
+      
+      Message msg8 = MessageFactory.createCoreMessage(8);      
+      MessageReference ref8 = ms.reference(msg8);
+            
+      routed = exchange.route(ref7, "queue1", null);            
+      assertTrue(routed);
+      routed = exchange.route(ref8, "queue1", null);            
+      assertTrue(routed);
+      
+      msgs = receiver1.getMessages();
+      assertNotNull(msgs);
+      assertEquals(2, msgs.size());
+      msgRec1 = (Message)msgs.get(0);
+      msgRec2 = (Message)msgs.get(1);
+      assertTrue(msgRec1 == msg7);
+      assertTrue(msgRec2 == msg8);
+      
+      //Acknowledge transactionally
+      
+      tx = tr.createTransaction();
+      
+      receiver1.acknowledge(msgRec1, tx);
+      receiver1.acknowledge(msgRec2, tx);
+      
+      msgs = queue1.browse();
+      assertNotNull(msgs);
+      assertEquals(2, msgs.size());
+      msgRec1 = (Message)msgs.get(0);
+      msgRec2 = (Message)msgs.get(1);
+      assertTrue(msgRec1 == msg7);
+      assertTrue(msgRec2 == msg8);
       
       tx.rollback();
       
       msgs = queue1.browse();
       assertNotNull(msgs);
-      assertEquals(0, msgs.size());
+      assertEquals(2, msgs.size());
+      msgRec1 = (Message)msgs.get(0);
+      msgRec2 = (Message)msgs.get(1);
+      assertTrue(msgRec1 == msg7);
+      assertTrue(msgRec2 == msg8);
+
    }
    
 

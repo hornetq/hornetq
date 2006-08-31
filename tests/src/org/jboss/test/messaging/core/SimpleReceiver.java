@@ -56,9 +56,10 @@ public class SimpleReceiver implements Receiver
    private static final Logger log = Logger.getLogger(SimpleReceiver.class);
 
    public static final String ACKING = "ACKING";
-   public static final String NACKING = "NACKING";
+   public static final String ACCEPTING = "ACCEPTING";
    public static final String BROKEN = "BROKEN";
    public static final String REJECTING = "REJECTING";
+   public static final String SELECTOR_REJECTING = "SELECTOR_REJECTING";
 
    private static final String INVOCATION_COUNT = "INVOCATION_COUNT";
 
@@ -126,6 +127,12 @@ public class SimpleReceiver implements Receiver
          {
             log.info("Receiver [" + name + "] is rejecting a null message");
             return null;
+         }
+         
+         if (SELECTOR_REJECTING.equals(state))
+         {
+            log.info(this + " is rejecting message since doesn't match selector");
+            return new SimpleDelivery(null, null, true, false);
          }
 
          if (REJECTING.equals(state))
@@ -379,9 +386,10 @@ public class SimpleReceiver implements Receiver
    private static void checkValid(String state)
    {
       if (!ACKING.equals(state) &&
-          !NACKING.equals(state) &&
+          !ACCEPTING.equals(state) &&
           !BROKEN.equals(state) &&
-          !REJECTING.equals(state))
+          !REJECTING.equals(state) &&
+          !SELECTOR_REJECTING.equals(state))
       {
          throw new IllegalArgumentException("Unknown receiver state: " + state);
       }
@@ -409,7 +417,7 @@ public class SimpleReceiver implements Receiver
       
       public void afterCommit()
       {
-//       clear the delivery
+         // clear the delivery
          touple[1] = null;
       }
 

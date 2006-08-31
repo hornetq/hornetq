@@ -27,11 +27,7 @@ import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.MessageQueue;
-import org.jboss.messaging.core.memory.MemoryManager;
-import org.jboss.messaging.core.memory.SimpleMemoryManager;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
@@ -39,8 +35,10 @@ import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.exchange.Binding;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
@@ -122,7 +120,7 @@ public abstract class ExchangeTestBase extends MessagingTestCase
    
    // Public --------------------------------------------------------
    
-   public void testBind() throws Throwable
+   public final void testBind() throws Throwable
    {
       Exchange exchange1 = createExchange();
       
@@ -154,11 +152,7 @@ public abstract class ExchangeTestBase extends MessagingTestCase
       Binding binding3 = exchange1.getBindingForName("durableQueue");
       assertNotNull(binding3);
       assertTrue(binding1 == binding3);
-      assertEquals("durableQueue", binding3.getQueueName());
-      assertEquals("condition1", binding3.getCondition());
-      assertEquals(filter1.getFilterString(), binding3.getSelector());
-      assertEquals(true, binding3.isNoLocal());
-      assertEquals(true, binding3.isDurable());
+      assertEquivalent(binding1, binding3);
       assertNotNull(binding3.getQueue());
       assertEquals(true, binding3.getQueue().isRecoverable());
       
@@ -166,11 +160,7 @@ public abstract class ExchangeTestBase extends MessagingTestCase
       Binding binding4 = exchange1.getBindingForName("nonDurableQueue");
       assertNotNull(binding4);
       assertTrue(binding2 == binding4);
-      assertEquals("nonDurableQueue", binding4.getQueueName());
-      assertEquals("condition2", binding4.getCondition());
-      assertEquals(filter2.getFilterString(), binding4.getSelector());
-      assertEquals(true, binding4.isNoLocal());
-      assertEquals(false, binding4.isDurable());
+      assertEquivalent(binding2, binding4);
       assertNotNull(binding4.getQueue());
       assertEquals(false, binding4.getQueue().isRecoverable());
       
@@ -180,11 +170,7 @@ public abstract class ExchangeTestBase extends MessagingTestCase
       //Only one binding should be there
       Binding binding5 = exchange2.getBindingForName("durableQueue");
       assertNotNull(binding5);
-      assertEquals("durableQueue", binding5.getQueueName());
-      assertEquals("condition1", binding5.getCondition());
-      assertEquals(filter1.getFilterString(), binding5.getSelector());
-      assertEquals(true, binding5.isNoLocal());
-      assertEquals(true, binding5.isDurable());
+      assertEquivalent(binding1, binding5);
       //Should be unloaded
       assertNull(binding5.getQueue());
       
@@ -197,11 +183,7 @@ public abstract class ExchangeTestBase extends MessagingTestCase
       //Unbind the binding
       Binding binding7 = exchange2.unbindQueue("durableQueue");
       assertNotNull(binding7);
-      assertEquals("durableQueue", binding7.getQueueName());
-      assertEquals("condition1", binding7.getCondition());
-      assertEquals(filter1.getFilterString(), binding7.getSelector());
-      assertEquals(true, binding7.isNoLocal());
-      assertEquals(true, binding7.isDurable());
+      assertEquivalent(binding1, binding7);
       
       //Make sure no longer there
       Binding binding8 = exchange2.getBindingForName("durableQueue");
@@ -216,7 +198,7 @@ public abstract class ExchangeTestBase extends MessagingTestCase
             
    }
    
-   public void testListBindings() throws Throwable
+   public final void testListBindings() throws Throwable
    {
       Exchange exchange = createExchange();
       
@@ -272,7 +254,7 @@ public abstract class ExchangeTestBase extends MessagingTestCase
          
    }
    
-   public void testUnloadReload() throws Exception
+   public final void testUnloadReload() throws Exception
    {
       Exchange exchange = createExchange();
       
@@ -402,12 +384,52 @@ public abstract class ExchangeTestBase extends MessagingTestCase
    
    protected void assertEquivalent(Binding binding1, Binding binding2)
    {
+      assertEquals(binding1.getNodeId(), binding2.getNodeId());
       assertEquals(binding1.getQueueName(), binding2.getQueueName());
-      assertEquals(binding1.getCondition(), binding2.getCondition());
       assertEquals(binding1.getSelector(), binding2.getSelector());
-      assertEquals(binding1.isNoLocal(), binding2.isNoLocal());
+      assertEquals(binding1.getChannelId(), binding2.getChannelId());
       assertEquals(binding1.isDurable(), binding2.isDurable());
+      assertEquals(binding1.isNoLocal(), binding2.isNoLocal());
    }
+   
+//   protected void checkHasMessages(Message[] msgArray, MessageQueue queue, SimpleReceiver receiver)
+//   {
+//      List msgs = receiver.getMessages();
+//      
+//      assertNotNull(msgs);
+//      assertEquals(msgArray.length, msgs.size());
+//      for (int i = 0; i < msgArray.length; i++)
+//      {
+//         assertEquals(msgArray[i].getMessageID(), ((Message)msgs.get(i)).getMessageID());
+//      }
+//      
+//      msgs = queue.browse();
+//      assertNotNull(msgs);
+//      assertEquals(msgArray.length, msgs.size());
+//      for (int i = 0; i < msgArray.length; i++)
+//      {
+//         assertEquals(msgArray[i].getMessageID(), ((Message)msgs.get(i)).getMessageID());
+//      }
+//   }
+//   
+//   protected void ackMessages(Message[] msgArray, SimpleReceiver receiver, Transaction tx) throws Throwable
+//   {
+//      for (int i = 0; i < msgArray.length; i++)
+//      {
+//         receiver.acknowledge(msgArray[i], tx);
+//      }
+//   }
+//   
+//   protected void checkHasntMessages(MessageQueue queue, SimpleReceiver receiver)
+//   {
+//      List msgs = receiver.getMessages();      
+//      assertNotNull(msgs);
+//      assertTrue(msgs.isEmpty());
+//      
+//      msgs = queue.browse();
+//      assertNotNull(msgs);
+//      assertTrue(msgs.isEmpty());
+//   }
 
    // Private -------------------------------------------------------
 

@@ -2257,7 +2257,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -2299,7 +2299,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       r.setImmediateAsynchronousAcknowledgment(true);
       assertTrue(messageQueue.add(r));
 
@@ -2339,7 +2339,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -2387,7 +2387,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -2446,7 +2446,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -2489,7 +2489,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -2538,7 +2538,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -2614,7 +2614,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, true, "payload");
@@ -2649,7 +2649,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, true, "payload");
@@ -2709,7 +2709,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, true, "payload");
@@ -2774,7 +2774,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -2814,7 +2814,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -2873,7 +2873,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -2928,7 +2928,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -2976,7 +2976,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -3041,7 +3041,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -3096,7 +3096,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -3154,7 +3154,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -3212,7 +3212,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -3273,7 +3273,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -3320,7 +3320,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -3374,7 +3374,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -3417,7 +3417,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -3466,7 +3466,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -3507,7 +3507,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -3553,7 +3553,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -4832,7 +4832,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -4874,7 +4874,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       r.setImmediateAsynchronousAcknowledgment(true);
       assertTrue(messageQueue.add(r));
 
@@ -4914,7 +4914,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -4962,7 +4962,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -5021,7 +5021,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5064,7 +5064,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5113,7 +5113,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5180,7 +5180,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, true, "payload");
@@ -5222,7 +5222,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       r.setImmediateAsynchronousAcknowledgment(true);
       assertTrue(messageQueue.add(r));
 
@@ -5263,7 +5263,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, true, "payload");
@@ -5312,7 +5312,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, true, "payload");
@@ -5372,7 +5372,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5415,7 +5415,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5464,7 +5464,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5532,7 +5532,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       Message m = MessageFactory.createCoreMessage(0, false, "payload");
@@ -5581,7 +5581,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5637,7 +5637,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -5686,7 +5686,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5737,7 +5737,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
 
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -5799,7 +5799,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -5842,7 +5842,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
@@ -5891,7 +5891,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -5932,7 +5932,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -5977,7 +5977,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       }
 
       // add an NACKING receiver to the channel
-      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.NACKING);
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
       assertTrue(messageQueue.add(r));
 
 
@@ -6132,7 +6132,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       assertEquals(1, stored.size());
 
       SimpleReceiver receiver =
-            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, messageQueue);
+            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.ACCEPTING, messageQueue);
       assertTrue(messageQueue.add(receiver));
 
       assertEquals(1, messageQueue.browse().size());
@@ -6268,7 +6268,7 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       assertEquals(1, stored.size());
 
       SimpleReceiver receiver =
-            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.NACKING, messageQueue);
+            new SimpleReceiver("NACKINGReceiver", SimpleReceiver.ACCEPTING, messageQueue);
       assertTrue(messageQueue.add(receiver));
 
       assertEquals(1, messageQueue.browse().size());
