@@ -100,8 +100,6 @@ public class TopicExchange extends ExchangeSupport
                 
       try
       {                 
-         log.info("Routing message with key: " + routingKey);
-         
          //We route on the condition
          List bindings = (List)conditionMap.get(routingKey);
          

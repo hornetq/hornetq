@@ -91,8 +91,6 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements 
    {
       this();
       
-      log.info(this + " being created, tx mgr is " + tm);
-      
       this.ds = ds;
       
       this.tm = tm;
@@ -110,8 +108,6 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements 
    
    protected void startService() throws Exception
    {
-      log.info(this + " startService");
-      
       try
       {
          if (ds == null)
@@ -298,8 +294,6 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements 
    {      
       Connection conn = null;      
       TransactionWrapper tx = new TransactionWrapper();
-      
-      log.info(this + " createSchema");
       
       try
       {

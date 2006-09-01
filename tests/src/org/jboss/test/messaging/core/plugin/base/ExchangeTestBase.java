@@ -440,7 +440,6 @@ public abstract class ExchangeTestBase extends MessagingTestCase
    protected void assertEquivalent(Binding binding1, Binding binding2)
    {
       assertEquals(binding1.getNodeId(), binding2.getNodeId());
-      log.info("b1:" + binding1.getQueueName() + " b2:" + binding2.getQueueName());
       assertEquals(binding1.getQueueName(), binding2.getQueueName());      
       assertEquals(binding1.getSelector(), binding2.getSelector());
       assertEquals(binding1.getChannelId(), binding2.getChannelId());

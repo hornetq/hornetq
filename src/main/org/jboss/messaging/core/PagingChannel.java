@@ -195,8 +195,6 @@ public class PagingChannel extends ChannelSupport
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
 
-      log.info(this + " cancelling " + del + " in memory");
-      
       boolean removed;
 
       synchronized (deliveryLock)
@@ -225,9 +223,7 @@ public class PagingChannel extends ChannelSupport
                // preserve the number of refs in the queue
 
                MessageReference ref = (MessageReference)messageRefs.removeLast();
-
-               log.info("Adding ref to downcache");
-               
+ 
                addToDownCache(ref, true);
             }
          }
@@ -316,15 +312,11 @@ public class PagingChannel extends ChannelSupport
       {
          ref.setPagingOrder(firstPagingOrder - 1);
          
-         log.info("Cancelling so set paging order to: " + (firstPagingOrder - 1));
-         
          firstPagingOrder--;
       }
       else
       {
          ref.setPagingOrder(nextPagingOrder);
-         
-         log.info("Adding so set paging order to: " + nextPagingOrder);
          
          nextPagingOrder++;
       }
@@ -333,14 +325,10 @@ public class PagingChannel extends ChannelSupport
 
       if (trace) { log.trace(ref + " sent to downcache"); }
       
-      log.info("Added to down cache, down cache size:" + downCache.size());
-
       if (downCache.size() == downCacheSize)
       {
          if (trace) { log.trace(this + "'s downcache is full (" + downCache.size() + " messages)"); }
-         
-         log.info("flushing down cache");
-         
+               
          flushDownCache();
       }
    }
@@ -375,12 +363,10 @@ public class PagingChannel extends ChannelSupport
 
       if (!toAdd.isEmpty())
       {
-         log.info("Adding refs: " + toAdd.size());
          pm.addReferences(channelID, toAdd);
       }
       if (!toUpdate.isEmpty())
       {
-         log.info("Updating refs: " + toAdd.size());
          pm.updatePageOrder(channelID, toUpdate);
       }
 

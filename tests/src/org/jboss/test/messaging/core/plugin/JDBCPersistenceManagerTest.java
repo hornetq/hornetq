@@ -785,13 +785,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertNotNull(refInfos);
       assertEquals(6, refInfos.size());
       
-      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
-      log.info("msg id: " + ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
-      
       assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
       assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
       assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());

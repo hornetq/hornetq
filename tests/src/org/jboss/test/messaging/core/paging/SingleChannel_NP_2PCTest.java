@@ -888,15 +888,10 @@ public class SingleChannel_NP_2PCTest extends PagingStateTestBase
       
       //Cancel the last 10
       
-      log.info("**** cancelling");
-      
       for (int i = 9; i >= 0; i--)
       {
          dels[i].cancel();
       }
-      
-      log.info("**** cancelled");
-      
       
       //This should cause the down cache to be flushed
       

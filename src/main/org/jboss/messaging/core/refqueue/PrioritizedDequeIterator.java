@@ -60,15 +60,12 @@ class PrioritizedDequeIterator implements ListIterator
    {
       if (currentIter.hasNext())
       {
-    //     log.info("has next");
          return true;
       }
       while (index >= 0)
-      {         
-         //log.info("doesn't has next, index is:" + index);         
+      {                 
          if (index == 0 || currentIter.hasNext())
          {
-           // log.info("breaking, current has next:" + currentIter.hasNext());
             break;
          }                 
          index--;

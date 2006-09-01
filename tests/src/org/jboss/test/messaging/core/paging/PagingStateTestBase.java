@@ -128,8 +128,6 @@ public class PagingStateTestBase extends MessagingTestCase
 
    protected void assertSameIds(List ids, MessageReference[] refs, int start, int end)
    {
-      log.info("&&&&&& size is " + ids.size());
-      
       assertNotNull(ids);
       assertEquals(ids.size(), end - start + 1);
       Iterator iter = ids.iterator();
@@ -137,12 +135,9 @@ public class PagingStateTestBase extends MessagingTestCase
       while (iter.hasNext())
       {
          Long id = (Long)iter.next();
-         log.info("id is:" + id);
          assertEquals(refs[i].getMessageID(), id.longValue());
          i++;
       }
-      
-      log.info("&&& done");
    }
    
    class ConsumingReceiver implements Receiver
@@ -442,12 +437,6 @@ public class PagingStateTestBase extends MessagingTestCase
          long msgId = rs.getLong(1);
          long ord = rs.getLong(2);
          long pageOrd = rs.getLong(3);
-         if (rs.wasNull())
-         {
-            log.info("!NULL");
-         }
-         
-         log.info("msgId: " + msgId + " ord: " + ord + " pageOrd: " + pageOrd);
          
          msgIds.add(new Long(msgId));
       }

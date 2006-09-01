@@ -168,9 +168,7 @@ public class ClusteredTopicExchangeTest extends TopicExchangeTest
          //Add another binding on node 1
          
          Binding binding4 = exchange2.bindQueue("sub4", "topic1", null, false, false, ms, pm, 20000, 100, 100);
-         
-         log.info("here 1");
-         
+            
          // Make sure both nodes pick it up
          
          bindings = exchange1.listBindingsForWildcard("topic1");
@@ -292,11 +290,9 @@ public class ClusteredTopicExchangeTest extends TopicExchangeTest
          assertEquivalent(binding6, (Binding)bindings.get(3));
          assertEquivalent(binding7, (Binding)bindings.get(4));
                
-         log.info("Stopping exchange 1");
          //Stop exchange 1
          exchange1.stop();
-         log.info("Stopped exchange 1");
-         
+  
          //Need to sleep since it may take some time for the view changed request to reach the
          //members which causes the bindings to be removed
          
@@ -305,7 +301,6 @@ public class ClusteredTopicExchangeTest extends TopicExchangeTest
          //All it's non durable bindings should be removed from the other nodes
          //Durable bindings should remain
          
-         log.info("getting bindingd for wildcard");
          bindings = exchange2.listBindingsForWildcard("topic1");
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
@@ -646,7 +641,6 @@ public class ClusteredTopicExchangeTest extends TopicExchangeTest
          
          for (int i = 0; i < 16; i++)
          {
-            log.info("i is: " + i);
             List msgs = receivers[i].getMessages();
             assertNotNull(msgs);
             assertTrue(msgs.isEmpty());
@@ -780,9 +774,7 @@ public class ClusteredTopicExchangeTest extends TopicExchangeTest
             assertTrue(msgs.isEmpty());
          }
          
-         log.info("*** COMMITTING THE TX");
          tx.commit();
-         log.info("*** COMMITTED THE TX");
          
          for (int i = 0; i < 16; i++)
          {

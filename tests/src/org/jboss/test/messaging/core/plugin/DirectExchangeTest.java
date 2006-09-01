@@ -399,12 +399,7 @@ public class DirectExchangeTest extends ExchangeTestBase
       assertEquals(1, msgs.size());
       Message msgRec = (Message)msgs.get(0);
       assertTrue(msg1 == msgRec);
-      
-      if (msg1 == msgRec)
-      {
-         log.info("&&&&&&&&&&&&&& THEY ARE ONE AND THE SAME");
-      }
-      
+           
       receiver1.acknowledge(msgRec, null);
       msgs = queue1.browse();
       assertNotNull(msgs);

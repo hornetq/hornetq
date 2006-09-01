@@ -147,15 +147,11 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    protected void startService() throws Exception
    {
       controlChannel.connect(groupName);
-      log.info("Connected to control channel");
       
       dataChannel.connect(groupName);
-      log.info("Connected to data channel");
-      
+
       currentAddress = controlChannel.getLocalAddress();
-      
-      log.info("My address is: " + currentAddress);
-      
+       
       super.startService();  
       
       handleAddressNodeMapping(currentAddress, nodeId);
@@ -202,15 +198,11 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    {
       // TODO I need to know whether this call times out - how do I know this??
       boolean isState = controlChannel.getState(null, GET_STATE_TIMEOUT);
-      
-      log.info(this + " load bindings, isState=" + isState);
-                            
+                              
       if (!isState)
       {       
          //Must be first member in group or non clustered- we load the state ourself from the database
-         log.info("loading bindings from db");
          super.loadBindings();      
-         log.info("loaded bindings from db");
       }
       else
       {
@@ -221,13 +213,10 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
             //TODO we should implement a timeout on this
             while (!stateSet)
             {
-               log.info("Waiting for state to arrive");
                setStateLock.wait();
             } 
          }
       }
-      
-      log.info(this + " loadBindings complete");
    }
    
    // Protected ---------------------------------------------------------------------------------------
@@ -259,8 +248,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    {
       lock.writeLock().acquire();
       
-      log.info("node " + this.nodeId + " received request to add binding from node " + nodeId);
-      
       try
       {                     
          //Sanity
@@ -287,13 +274,9 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          binding = new SimpleBinding(nodeId, queueName, condition, filterString,
                                      noLocal, channelID, durable); 
          
-         log.info("Created binding");
-         
          binding.activate();
          
          addBinding(binding);         
-         
-         log.info("Added it");
       }
       finally
       {
@@ -306,8 +289,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
     */
    private void removeBindingFromCluster(String nodeId, String queueName) throws Exception
    {
-      log.info(this.nodeId + " removing binding from cluster for nodeId: " + nodeId + " and queuename: " + queueName);
-      
       lock.writeLock().acquire();
       
       try
@@ -332,7 +313,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       
       try
       { 
-         log.info("Handling node address mapping for: " + address + " and " + nodeId);
          nodeIdAddressMap.put(nodeId, address.toString());
       }
       finally
@@ -344,8 +324,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    private void removeBindingsForAddress(String address) throws Exception
    {
       lock.writeLock().acquire();
-      
-      log.info("Removing bindings for address: " + address);
       
       try
       { 
@@ -369,13 +347,10 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
             throw new IllegalStateException("Cannot find node id for address: " + address);
          }
          
-         log.info("This address corresponds to node id: " + nodeId);
-         
          Map nameMap = (Map)nameMaps.get(nodeId);
 
          if (nameMap != null)
          {
-            log.info("Found the name map");
             List toRemove = new ArrayList();
             
             iter = nameMap.values().iterator();
@@ -384,16 +359,9 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
             {
                Binding binding = (Binding)iter.next();
                
-               log.info("Got a binding");
-               
                if (!binding.isDurable())
                {
-                  log.info("It's not - durable");
                   toRemove.add(binding);
-               }
-               else
-               {
-                  log.info("It IS durable - not removing it");
                }
             }
             
@@ -404,7 +372,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
                Binding binding = (Binding)iter.next();
                
                removeBinding(nodeId, binding.getQueueName());
-               log.info("removed binding");
             }
          }
       }
@@ -529,7 +496,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    {
       public byte[] getState()
       {     
-         log.info(this + " getState called");
          try
          {
             lock.writeLock().acquire();
@@ -561,9 +527,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       
       public void setState(byte[] bytes)
       {
-         log.info(this + " setState called");
-         log.info("state is: " + bytes);
-         
          if (bytes != null)
          {
             
@@ -590,17 +553,12 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
                lock.writeLock().release();
             }
          }
-         
-         log.info("Set the state");
-         
+               
          synchronized (setStateLock)
          {
             stateSet = true;
             setStateLock.notify();
          }
-         
-         log.info("Notified");
-         
       }      
    }
    
@@ -635,13 +593,9 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       {
          try
          {
-            log.info("Received message:" + message);
-            
             //TODO handle deserialization more efficiently
             
             Object object = message.getObject();
-            
-            log.info("Object is: " + object);
             
             if (object instanceof MessageRequest)
             {
@@ -653,7 +607,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
                {
                   ref = ms.reference(request.getMessage());
                   
-                  log.info("Routing it internally");
                   routeFromCluster(ref, request.getRoutingKey());
                }
                finally
@@ -697,8 +650,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
 
       public void viewAccepted(View view)
       {
-         log.info(" *****************************New view" + view);
-        
          if (currentView != null)
          {
             Iterator iter = currentView.getMembers().iterator();
@@ -710,7 +661,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
                if (!view.containsMember(address))
                {
                   //Member must have left
-                  log.info(nodeId + " The following member has left: " + address);
                   
                   //We don't remove bindings for ourself
                   
@@ -753,9 +703,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          //TODO handle deserialization more efficiently
          
          Object request = message.getObject();
-         
-         log.info("Received request: " + request);
-            
+              
          if (request instanceof BindRequest)
          {
             BindRequest br = (BindRequest)request;

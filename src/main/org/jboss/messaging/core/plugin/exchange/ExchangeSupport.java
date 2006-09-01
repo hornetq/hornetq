@@ -118,9 +118,7 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
    protected void startService() throws Exception
    {
       super.startService();
-      
-      log.info(this + " starting");
-      
+       
       loadBindings();
    }
    

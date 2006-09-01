@@ -224,9 +224,7 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
                      
                      tx.addKeyedCallback(callback, this);
                   }
-                  
-                  log.info("Got callback:" + callback);
-                  
+                      
                   callback.addMessage(routingKey, ref.getMessage());                  
                }
             }
@@ -304,7 +302,6 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
       
       private void addMessage(String routingKey, Message message)
       {
-         log.info("Adding message");
          messages.add(new MessageHolder(routingKey, message));
       }
       

@@ -434,7 +434,6 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
 
    protected void checkReceiverGotRef(SimpleReceiver[] receivers, int pos)
    {
-      log.info("checkReceiverGotRef:" + pos);
       for (int i = 0; i < receivers.length; i++)
       {
          SimpleReceiver r = receivers[i];
