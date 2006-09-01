@@ -617,7 +617,7 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
             }
             
             //Now store the reference
-            addReference(channelID, ref, psInsertReference);
+            addReference(channelID, ref, psInsertReference, true);
                         
             if (usingBatchUpdates)
             {
@@ -1167,24 +1167,22 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
                   
          rs.next();
          
-         long minOrdering = rs.getLong(1);
+         Long minOrdering = new Long(rs.getLong(1));
          
          if (rs.wasNull())
          {
-            minOrdering = -1;
+            minOrdering = null;
          }
          
-         long maxOrdering = rs.getLong(2);
+         Long maxOrdering = new Long(rs.getLong(2));
          
          if (rs.wasNull())
          {
-            maxOrdering = -1;
+            maxOrdering = null;
          }
          
          //Must cope with the possibility that fullSize has changed for the channel since last
          //restart
-         
-         conn = ds.getConnection();
          
          ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
          
@@ -1222,30 +1220,29 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
             
             if (count < fullSize)
             {
-               if (minOrdering != -1)
+               if (minOrdering != null)
                {
                   //This means that fullSize is now greater and we have some paged refs
                   //We need to convert some of the paged refs into non paged refs before loading               
                   
                   //We can do this by setting page_ord = null for the first x paged refs                  
                   
-                  long numberPaged = 1 + maxOrdering - minOrdering;
+                  long numberPaged = 1 + maxOrdering.longValue() - minOrdering.longValue();
                   
                   long numberToConvert = Math.min(numberPaged, fullSize - count);
                                     
                   ps = conn.prepareStatement(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
                   
-                  ps.setLong(1, minOrdering);
-                  ps.setLong(2, minOrdering + numberToConvert - 1);
+                  ps.setLong(1, minOrdering.longValue());
+                  ps.setLong(2, minOrdering.longValue() + numberToConvert - 1);
                   ps.setLong(3, channelID);
                   
                   ps.executeUpdate();
                   
-                  minOrdering += numberToConvert;      
-                  
-                  if (minOrdering == maxOrdering + 1)
+                  minOrdering = new Long(minOrdering.longValue() + numberToConvert);
+                  if (minOrdering.longValue() == maxOrdering.longValue() + 1)
                   {
-                     minOrdering = maxOrdering = -1;
+                     minOrdering = maxOrdering = null;
                   }
                   
                   ps.close();
@@ -1299,23 +1296,23 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
                ps = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
                                              
                long c;
-               if (minOrdering == -1)
+               if (minOrdering == null)
                {
                   c = 0;
-                  minOrdering = 0;
+                  minOrdering = new Long(0);
                }
                else
                {
-                  c = minOrdering;
+                  c = minOrdering.longValue();
                }
                
-               if (maxOrdering == -1)
+               if (maxOrdering == null)
                {
-                  maxOrdering = numberToConvert - 1;
+                  maxOrdering = new Long(numberToConvert - 1);
                }
                else
                {
-                  maxOrdering += numberToConvert;
+                  maxOrdering = new Long(maxOrdering.longValue() + numberToConvert);
                }
                
                Iterator iter = extraRefs.iterator();
@@ -1513,7 +1510,7 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
             psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             
             // Add the reference
-            addReference(channelID, ref, psReference);
+            addReference(channelID, ref, psReference, false);
             
             int rows = psReference.executeUpdate();            
             
@@ -2081,7 +2078,7 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
             }
             
             //Now store the reference
-            addReference(pair.channelId, ref, psReference);
+            addReference(pair.channelId, ref, psReference, false);
               
             if (batch)
             {
@@ -3219,7 +3216,7 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       }
    }  
    
-   protected void addReference(long channelID, MessageReference ref, PreparedStatement ps) throws Exception
+   protected void addReference(long channelID, MessageReference ref, PreparedStatement ps, boolean paged) throws Exception
    {
       if (trace)
       {
@@ -3230,13 +3227,13 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       ps.setLong(2, ref.getMessageID());
       ps.setNull(3, Types.BIGINT);
       ps.setString(4, "C");
-      if (ref.getPagingOrder() == -1)
+      if (paged)
       {
-         ps.setNull(5, Types.BIGINT);
+         ps.setLong(5, ref.getPagingOrder());
       }
       else
       {
-         ps.setLong(5, ref.getPagingOrder());
+         ps.setNull(5, Types.BIGINT);
       }
       ps.setInt(6, ref.getDeliveryCount());
       ps.setString(7, ref.isReliable() ? "Y" : "N");

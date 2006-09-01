@@ -104,25 +104,25 @@ public interface PersistenceManager extends ServerPlugin
    
    class InitialLoadInfo
    {
-      private long minPageOrdering;
+      private Long minPageOrdering;
       
-      private long maxPageOrdering;
+      private Long maxPageOrdering;
       
       private List refInfos;
 
-      public InitialLoadInfo(long minPageOrdering, long maxPageOrdering, List refInfos)
+      public InitialLoadInfo(Long minPageOrdering, Long maxPageOrdering, List refInfos)
       {
          this.minPageOrdering = minPageOrdering;
          this.maxPageOrdering = maxPageOrdering;
          this.refInfos = refInfos;
       }
 
-      public long getMaxPageOrdering()
+      public Long getMaxPageOrdering()
       {
          return maxPageOrdering;
       }
 
-      public long getMinPageOrdering()
+      public Long getMinPageOrdering()
       {
          return minPageOrdering;
       }

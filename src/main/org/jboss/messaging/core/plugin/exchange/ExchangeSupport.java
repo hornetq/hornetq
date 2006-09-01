@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -156,7 +157,7 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
          
          if (binding != null)
          {
-            throw new Exception("Binding already exists for name " + queueName);
+            throw new IllegalArgumentException("Binding already exists for name " + queueName);
          }
          
          long id = idManager.getId();         
@@ -196,6 +197,8 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
          lock.writeLock().release();
       }
    }
+   
+   
       
    public Binding unbindQueue(String queueName) throws Throwable
    {
@@ -208,53 +211,7 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
       
       try
       {         
-         Map nameMap = (Map)nameMaps.get(this.nodeId);
-         
-         Binding binding = null;
-         
-         if (nameMap != null)
-         {
-            binding = (Binding)nameMap.remove(queueName);
-         }
-         
-         if (binding == null)
-         {
-            throw new IllegalStateException("Name map does not contain binding for " + queueName);
-         }
-         
-         if (binding.getQueue() == null)
-         {
-            throw new IllegalStateException("Need to reload the queue before unbinding");
-         }
-         
-         List bindings = (List)conditionMap.get(binding.getCondition());
-         
-         if (bindings == null)
-         {
-            throw new IllegalStateException("Cannot find condition bindings for " + binding.getCondition());
-         }
-         
-         boolean removed = bindings.remove(binding);
-         
-         if (!removed)
-         {
-            throw new IllegalStateException("Cannot find binding in condition binding list");
-         }
-         
-         if (binding == null)
-         {
-            throw new IllegalStateException("Channel id map does not contain binding for " + binding.getChannelId());
-         }
-         
-         if (!removed)
-         {
-            throw new IllegalStateException("Cannot find binding in condition binding list");
-         }
-         
-         if (bindings.isEmpty())
-         {
-            conditionMap.remove(binding.getCondition());
-         }
+         Binding binding = removeBinding(this.nodeId, queueName);
       
          if (binding.isDurable())
          {
@@ -586,13 +543,13 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
    
    protected void addBinding(Binding binding)
    {
-      Map nameMap = (Map)nameMaps.get(this.nodeId);
+      Map nameMap = (Map)nameMaps.get(binding.getNodeId());
       
       if (nameMap == null)
       {
-         nameMap = new HashMap();
+         nameMap = new LinkedHashMap();
          
-         nameMaps.put(this.nodeId, nameMap);
+         nameMaps.put(binding.getNodeId(), nameMap);
       }
       
       nameMap.put(binding.getQueueName(), binding);
@@ -610,6 +567,70 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
       
       bindings.add(binding);
    }   
+   
+   protected Binding removeBinding(String nodeId, String queueName)
+   {
+      if (queueName == null)
+      {
+         throw new IllegalArgumentException("Queue name is null");
+      }
+             
+      Map nameMap = (Map)nameMaps.get(nodeId);
+      
+      Binding binding = null;
+      
+      if (nameMap != null)
+      {
+         binding = (Binding)nameMap.remove(queueName);
+      }
+      
+      if (binding == null)
+      {
+         throw new IllegalStateException("Name map does not contain binding for " + queueName);
+      }
+      
+      if (nameMap.isEmpty())
+      {
+         nameMaps.remove(nodeId);
+      }
+      
+      if (binding.getQueue() == null && nodeId.equals(this.nodeId))
+      {
+         //Otherwise the data won't get deleted from the database
+         throw new IllegalStateException("Need to reload the queue before unbinding");
+      }
+      
+      List bindings = (List)conditionMap.get(binding.getCondition());
+      
+      if (bindings == null)
+      {
+         throw new IllegalStateException("Cannot find condition bindings for " + binding.getCondition());
+      }
+      
+      boolean removed = bindings.remove(binding);
+      
+      if (!removed)
+      {
+         throw new IllegalStateException("Cannot find binding in condition binding list");
+      }
+      
+      if (binding == null)
+      {
+         throw new IllegalStateException("Channel id map does not contain binding for " + binding.getChannelId());
+      }
+      
+      if (!removed)
+      {
+         throw new IllegalStateException("Cannot find binding in condition binding list");
+      }
+      
+      if (bindings.isEmpty())
+      {
+         conditionMap.remove(binding.getCondition());
+      }        
+      
+      return binding;
+   }
    
    // PersistentServiceSupport overrides ----------------------------
    
@@ -676,9 +697,9 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
    {
       lock = new WriterPreferenceReadWriteLock();
       
-      nameMaps = new HashMap();
+      nameMaps = new LinkedHashMap();
        
-      conditionMap = new HashMap();   
+      conditionMap = new LinkedHashMap();   
    }
                   
    // Inner classes -------------------------------------------------            

@@ -38,7 +38,7 @@ public class JGroupsUtil
 
    
    public static String getDataStackProperties(int PING_timeout,
-                                                       int PING_num_initial_members)
+                                               int PING_num_initial_members)
    {
       String host = System.getProperty("test.bind.address");
       if (host == null)

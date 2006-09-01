@@ -128,6 +128,8 @@ public class PagingStateTestBase extends MessagingTestCase
 
    protected void assertSameIds(List ids, MessageReference[] refs, int start, int end)
    {
+      log.info("&&&&&& size is " + ids.size());
+      
       assertNotNull(ids);
       assertEquals(ids.size(), end - start + 1);
       Iterator iter = ids.iterator();
@@ -135,9 +137,12 @@ public class PagingStateTestBase extends MessagingTestCase
       while (iter.hasNext())
       {
          Long id = (Long)iter.next();
-         assertEquals(id.longValue(), refs[i].getMessageID());
+         log.info("id is:" + id);
+         assertEquals(refs[i].getMessageID(), id.longValue());
          i++;
       }
+      
+      log.info("&&& done");
    }
    
    class ConsumingReceiver implements Receiver
@@ -424,7 +429,7 @@ public class PagingStateTestBase extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID, ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY ORD";
+      String sql = "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY PAGE_ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    
@@ -435,6 +440,15 @@ public class PagingStateTestBase extends MessagingTestCase
       while (rs.next())
       {
          long msgId = rs.getLong(1);
+         long ord = rs.getLong(2);
+         long pageOrd = rs.getLong(3);
+         if (rs.wasNull())
+         {
+            log.info("!NULL");
+         }
+         
+         log.info("msgId: " + msgId + " ord: " + ord + " pageOrd: " + pageOrd);
+         
          msgIds.add(new Long(msgId));
       }
       rs.close();
@@ -451,7 +465,7 @@ public class PagingStateTestBase extends MessagingTestCase
       return msgIds;
    }
    
-   protected List getUnloadedReferenceIds(long channelId) throws Exception
+   protected List getPagedReferenceIds(long channelId) throws Exception
    {
       InitialContext ctx = new InitialContext();
 
@@ -462,7 +476,7 @@ public class PagingStateTestBase extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID, ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? AND LOADED='N' ORDER BY ORD";
+      String sql = "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? AND PAGE_ORD IS NOT NULL ORDER BY PAGE_ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    

@@ -326,6 +326,12 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertEquals(0, queue.memoryDeliveryCount());
       
+      //Also we cancel some so we make sure that we have some negative page orders
+      
+      //cancel 10
+      
+      this.cancelDeliveries(queue, 10);
+      
       //Stop and restart the persistence manager
 
       pm.stop();
@@ -413,6 +419,12 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       assertEquals(0, queue.memoryDeliveryCount());
+      
+      //Also we cancel some so we make sure that we have some negative page orders
+      
+      //cancel 10
+      
+      this.cancelDeliveries(queue, 10);
       
       //Stop and restart the persistence manager
 

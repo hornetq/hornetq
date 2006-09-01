@@ -94,7 +94,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      List refIds = getUnloadedReferenceIds(queue1.getChannelID());
+      List refIds = getPagedReferenceIds(queue1.getChannelID());
       assertEquals(0, refIds.size());
       
       refIds = getReferenceIds(queue1.getChannelID());
@@ -110,7 +110,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
+      refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(0, refIds.size());
       
       refIds = getReferenceIds(queue2.getChannelID());
@@ -152,7 +152,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getUnloadedReferenceIds(queue1.getChannelID());
+      refIds = getPagedReferenceIds(queue1.getChannelID());
               
       assertEquals(0, refIds.size());
       
@@ -169,7 +169,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
+      refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(25, refIds.size());
       
       refIds = getReferenceIds(queue2.getChannelID());
@@ -213,7 +213,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getUnloadedReferenceIds(queue1.getChannelID());
+      refIds = getPagedReferenceIds(queue1.getChannelID());
                 
       assertEquals(0, refIds.size());
       
@@ -230,7 +230,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
+      refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(50, refIds.size());
       
       refIds = getReferenceIds(queue2.getChannelID());
@@ -273,7 +273,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getUnloadedReferenceIds(queue1.getChannelID());
+      refIds = getPagedReferenceIds(queue1.getChannelID());
                 
       assertEquals(50, refIds.size());
       
@@ -290,7 +290,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getUnloadedReferenceIds(queue2.getChannelID());
+      refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(100, refIds.size());
       
       refIds = getReferenceIds(queue2.getChannelID());

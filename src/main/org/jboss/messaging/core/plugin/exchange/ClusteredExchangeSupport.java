@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.plugin.exchange;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +39,11 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.exchange.request.BindRequest;
 import org.jboss.messaging.core.plugin.exchange.request.MessageRequest;
+import org.jboss.messaging.core.plugin.exchange.request.SendNodeIdRequest;
 import org.jboss.messaging.core.plugin.exchange.request.UnbindRequest;
 import org.jgroups.Address;
 import org.jgroups.Channel;
+import org.jgroups.MembershipListener;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
 import org.jgroups.Receiver;
@@ -78,6 +81,8 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    
    private Receiver dataReceiver;
    
+   private MembershipListener controlMembershipListener;
+   
    private RequestHandler requestHandler;
    
    private Object setStateLock = new Object();
@@ -86,7 +91,13 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    
    private String groupName;
    
-   //protected boolean clustered;
+   private View currentView;
+   
+   private Address currentAddress;
+   
+   //Map < Address, node id>
+   private Map nodeIdAddressMap;
+   
    
    public ClusteredExchangeSupport() throws Exception
    {                  
@@ -112,6 +123,8 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       
       this.groupName = groupName;
       
+      this.nodeIdAddressMap = new HashMap();
+      
       //We don't want to receive local messages on any of the channels
       controlChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
       dataChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
@@ -120,11 +133,13 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
         
       this.requestHandler = new ExchangeRequestHandler();
       
-      this.controlMessageDispatcher = new MessageDispatcher(controlChannel, controlMessageListener,
-                                                            null, requestHandler, true);      
-      this.dataReceiver = new DataMessageListener();
+      this.controlMembershipListener = new ControlMembershipListener();
       
-      dataChannel.setReceiver(dataReceiver);
+      this.controlMessageDispatcher = new MessageDispatcher(controlChannel, controlMessageListener,
+                                                            controlMembershipListener, requestHandler, true);      
+      this.dataReceiver = new DataReceiver();
+      
+      dataChannel.setReceiver(dataReceiver);                  
    }
    
    // ServiceMBeanSupport overrides ---------------------------------
@@ -137,7 +152,15 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       dataChannel.connect(groupName);
       log.info("Connected to data channel");
       
-      super.startService();            
+      currentAddress = controlChannel.getLocalAddress();
+      
+      log.info("My address is: " + currentAddress);
+      
+      super.startService();  
+      
+      handleAddressNodeMapping(currentAddress, nodeId);
+      
+      sendNodeIdRequest(currentAddress, nodeId);      
    }
    
    protected void stopService() throws Exception
@@ -154,7 +177,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    public Binding bindQueue(String queueName, String condition, Filter filter, boolean noLocal, boolean durable,
                             MessageStore ms, PersistenceManager pm,
                             int fullSize, int pageSize, int downCacheSize) throws Exception
-   {
+   {           
       Binding binding = super.bindQueue(queueName, condition, filter, noLocal, durable,
                                         ms, pm, fullSize, pageSize, downCacheSize);
       
@@ -224,8 +247,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    }
    
    protected abstract void routeFromCluster(MessageReference ref, String routingKey) throws Exception;
-   
-   
+      
    // Private ------------------------------------------------------------------------------------------
       
    /*
@@ -240,7 +262,13 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       log.info("node " + this.nodeId + " received request to add binding from node " + nodeId);
       
       try
-      {         
+      {                     
+         //Sanity
+         if (!nodeIdAddressMap.containsKey(nodeId))
+         {
+            throw new IllegalStateException("Cannot find address for node: " + nodeId);
+         }
+         
          // We currently only allow one binding per name per node
          Map nameMap = (Map)nameMaps.get(nodeId);
          
@@ -253,7 +281,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          
          if (binding != null)
          {
-            throw new IllegalArgumentException("Binding already exists for node Id " + nodeId + " queue name " + queueName);
+            throw new IllegalArgumentException(this.nodeId + "Binding already exists for node Id " + nodeId + " queue name " + queueName);
          }
          
          binding = new SimpleBinding(nodeId, queueName, condition, filterString,
@@ -278,25 +306,107 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
     */
    private void removeBindingFromCluster(String nodeId, String queueName) throws Exception
    {
+      log.info(this.nodeId + " removing binding from cluster for nodeId: " + nodeId + " and queuename: " + queueName);
+      
       lock.writeLock().acquire();
       
       try
       {         
-         // We currently only allow one binding per name per node
+         // Sanity
+         if (!nodeIdAddressMap.containsKey(nodeId))
+         {
+            throw new IllegalStateException("Cannot find address for node: " + nodeId);
+         }
+         
+         removeBinding(nodeId, queueName);         
+      }
+      finally
+      {
+         lock.writeLock().release();
+      }
+   }
+   
+   private void handleAddressNodeMapping(Address address, String nodeId) throws Exception
+   {
+      lock.writeLock().acquire();
+      
+      try
+      { 
+         log.info("Handling node address mapping for: " + address + " and " + nodeId);
+         nodeIdAddressMap.put(nodeId, address.toString());
+      }
+      finally
+      {
+         lock.writeLock().release();
+      }
+   }
+      
+   private void removeBindingsForAddress(String address) throws Exception
+   {
+      lock.writeLock().acquire();
+      
+      log.info("Removing bindings for address: " + address);
+      
+      try
+      { 
+         Iterator iter = nodeIdAddressMap.entrySet().iterator();
+         
+         String nodeId = null;
+         while (iter.hasNext())
+         {
+            Map.Entry entry = (Map.Entry)iter.next();
+            
+            String str = (String)entry.getValue();
+            
+            if (str.equals(address))
+            {
+               nodeId = (String)entry.getKey();
+            }
+         }
+         
+         if (nodeId == null)
+         {
+            throw new IllegalStateException("Cannot find node id for address: " + address);
+         }
+         
+         log.info("This address corresponds to node id: " + nodeId);
+         
          Map nameMap = (Map)nameMaps.get(nodeId);
-         
-         Binding binding = null;
-         
+
          if (nameMap != null)
          {
-            binding = (Binding)nameMap.remove(queueName);
+            log.info("Found the name map");
+            List toRemove = new ArrayList();
+            
+            iter = nameMap.values().iterator();
+            
+            while (iter.hasNext())
+            {
+               Binding binding = (Binding)iter.next();
+               
+               log.info("Got a binding");
+               
+               if (!binding.isDurable())
+               {
+                  log.info("It's not - durable");
+                  toRemove.add(binding);
+               }
+               else
+               {
+                  log.info("It IS durable - not removing it");
+               }
+            }
+            
+            iter = toRemove.iterator();
+            
+            while (iter.hasNext())
+            {
+               Binding binding = (Binding)iter.next();
+               
+               removeBinding(nodeId, binding.getQueueName());
+               log.info("removed binding");
+            }
          }
-         
-         if (binding == null)
-         {
-            throw new IllegalArgumentException("Cannot find binding with node Id " + nodeId + " queue name: " + queueName);
-         }
-         
       }
       finally
       {
@@ -345,13 +455,21 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       //so we ignore the return value
       
       //TODO - How do we know if the call timed out???
-      //We need to handle this
+      //We need to handle this      
+   }
+   
+   private void sendNodeIdRequest(Address address, String nodeId) throws Exception
+   {
+      SendNodeIdRequest request = new SendNodeIdRequest(address, nodeId);
       
+      Message message = new Message(null, null, request);
+      
+      controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, CAST_TIMEOUT);      
    }
    
    //TODO - Sort out serialization properly
    
-   private byte[] getBindingListAsBytes() throws Exception
+   private byte[] getStateAsBytes() throws Exception
    {
       List bindings = new ArrayList();
       
@@ -369,18 +487,22 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          }
       }
       
-      byte[] bytes = Util.objectToByteBuffer(bindings);
+      SharedState state = new SharedState(bindings, nodeIdAddressMap);
+      
+      byte[] bytes = Util.objectToByteBuffer(state);
       
       return bytes;
    }
    
-   private void processBindingListBytes(byte[] bytes) throws Exception
+   private void processStateBytes(byte[] bytes) throws Exception
    {
+      SharedState state = (SharedState)Util.objectFromByteBuffer(bytes);
+      
       nameMaps.clear();
       
       conditionMap.clear();
-      
-      List bindings = (List)Util.objectFromByteBuffer(bytes);
+                 
+      List bindings = state.getBindings();
       
       Iterator iter = bindings.iterator();
       
@@ -390,7 +512,13 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          
          addBinding(binding);
       }
+      
+      this.nodeIdAddressMap.clear();
+      
+      this.nodeIdAddressMap.putAll(state.getNodeIdAddressMap());
    }
+   
+
    
    // Inner classes -------------------------------------------------------------------
     
@@ -400,9 +528,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    private class ControlMessageListener implements MessageListener
    {
       public byte[] getState()
-      {
-         //TODO should we propagate the exceptions up??
-         
+      {     
          log.info(this + " getState called");
          try
          {
@@ -414,12 +540,13 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          }
          try
          {
-            return getBindingListAsBytes();
+            return getStateAsBytes();
          }
          catch (Exception e)
          {
-            log.error("Failed to get state", e);
-            return null;
+            IllegalStateException e2 = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
          }     
          finally
          {
@@ -434,8 +561,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       
       public void setState(byte[] bytes)
       {
-         // TODO should we propagate the exceptions up??
-         
          log.info(this + " setState called");
          log.info("state is: " + bytes);
          
@@ -452,11 +577,13 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
             }
             try
             {
-               processBindingListBytes(bytes);               
+               processStateBytes(bytes);               
             }
             catch (Exception e)
             {
-               log.error("Failed to deserialize", e);
+               IllegalStateException e2 = new IllegalStateException(e.getMessage());
+               e2.setStackTrace(e.getStackTrace());
+               throw e2;
             }
             finally
             {
@@ -481,7 +608,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    /*
     * This class is used to listen for messages on the data channel
     */
-   private class DataMessageListener implements Receiver
+   private class DataReceiver implements Receiver
    {
       public void block()
       {   
@@ -540,8 +667,9 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          }
          catch (Exception e)
          {
-            log.error("Failed to route from cluster", e);
-            //TODO should we propagate exceptions up?
+            IllegalStateException e2 = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
          }
          
       }
@@ -550,6 +678,67 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       {
          //NOOP         
       }      
+   }
+     
+   /*
+    * We use this class so we notice when members leave the group
+    */
+   private class ControlMembershipListener implements MembershipListener
+   {
+      public void block()
+      {
+         //NOOP
+      }
+
+      public void suspect(Address address)
+      {
+         //NOOP
+      }
+
+      public void viewAccepted(View view)
+      {
+         log.info(" *****************************New view" + view);
+        
+         if (currentView != null)
+         {
+            Iterator iter = currentView.getMembers().iterator();
+            
+            while (iter.hasNext())
+            {
+               Address address = (Address)iter.next();
+               
+               if (!view.containsMember(address))
+               {
+                  //Member must have left
+                  log.info(nodeId + " The following member has left: " + address);
+                  
+                  //We don't remove bindings for ourself
+                  
+                  if (!address.equals(currentAddress))
+                  {                  
+                     try
+                     {
+                        removeBindingsForAddress(address.toString());
+                     }               
+                     catch (Exception e)
+                     {
+                        IllegalStateException e2 = new IllegalStateException(e.getMessage());
+                        e2.setStackTrace(e.getStackTrace());
+                        throw e2;
+                     }
+                  }
+               }
+            }
+         }
+         
+         currentView = view;
+      }
+
+      public byte[] getState()
+      {        
+         //NOOP
+         return null;
+      }     
    }
    
    /*
@@ -566,7 +755,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          Object request = message.getObject();
          
          log.info("Received request: " + request);
-         
+            
          if (request instanceof BindRequest)
          {
             BindRequest br = (BindRequest)request;
@@ -578,7 +767,9 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
             }
             catch (Exception e)
             {
-               log.error("Failed to add binding from cluster", e);
+               IllegalStateException e2 = new IllegalStateException(e.getMessage());
+               e2.setStackTrace(e.getStackTrace());
+               throw e2;
             }
          }
          else if (request instanceof UnbindRequest)
@@ -591,7 +782,24 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
             }
             catch (Exception e)
             {
-               log.error("Failed to remove binding from cluster", e);
+               IllegalStateException e2 = new IllegalStateException(e.getMessage());
+               e2.setStackTrace(e.getStackTrace());
+               throw e2;
+            }
+         }
+         else if (request instanceof SendNodeIdRequest)
+         {
+            SendNodeIdRequest snr = (SendNodeIdRequest)request;
+            
+            try
+            {
+               handleAddressNodeMapping(snr.getAddress(), snr.getNodeId());
+            }
+            catch (Exception e)
+            {
+               IllegalStateException e2 = new IllegalStateException(e.getMessage());
+               e2.setStackTrace(e.getStackTrace());
+               throw e2;
             }
          }
          else

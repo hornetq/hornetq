@@ -88,6 +88,11 @@ public class PagingChannel extends ChannelSupport
    protected long nextPagingOrder;
    
    /**
+    * Are there any paged references in storage?
+    */
+   //protected boolean refsInStorage;
+   
+   /**
     * @param channelID
     * @param ms
     * @param pm
@@ -135,14 +140,24 @@ public class PagingChannel extends ChannelSupport
    public void load() throws Exception
    {
       if (trace) { log.trace(this + " loading channel state"); }
-      
       synchronized (refLock)
       {
          InitialLoadInfo ili = pm.getInitialReferenceInfos(channelID, fullSize);
-         
-         firstPagingOrder = ili.getMinPageOrdering();
-         
-         nextPagingOrder = ili.getMaxPageOrdering();
+
+         if (ili.getMaxPageOrdering() != null)            
+         {
+            //refsInStorage = true;
+            
+            firstPagingOrder = ili.getMinPageOrdering().longValue();
+            
+            nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
+         }
+         else
+         {
+            //refsInStorage = false;
+            
+            firstPagingOrder = nextPagingOrder = 0;
+         }
          
          Map refMap = processReferences(ili.getRefInfos());
          
@@ -180,6 +195,8 @@ public class PagingChannel extends ChannelSupport
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
 
+      log.info(this + " cancelling " + del + " in memory");
+      
       boolean removed;
 
       synchronized (deliveryLock)
@@ -209,7 +226,9 @@ public class PagingChannel extends ChannelSupport
 
                MessageReference ref = (MessageReference)messageRefs.removeLast();
 
-               addToDownCache(ref);
+               log.info("Adding ref to downcache");
+               
+               addToDownCache(ref, true);
             }
          }
 
@@ -258,7 +277,7 @@ public class PagingChannel extends ChannelSupport
       {
          if (paging)
          {
-            addToDownCache(ref);
+            addToDownCache(ref, false);
          }
          else
          {
@@ -277,7 +296,7 @@ public class PagingChannel extends ChannelSupport
       }
    }
    
-   protected void addToDownCache(MessageReference ref) throws Exception
+   protected void addToDownCache(MessageReference ref, boolean cancelling) throws Exception
    {
       // If the down cache exists then refs are not spilled over immediately,
       // but store in the cache and spilled over in one go when the next load is requested,
@@ -288,13 +307,39 @@ public class PagingChannel extends ChannelSupport
       // references actually get added to storage, reliable references instead
       // just get their page ordering column updated since they will already be in storage
 
+      //If cancelling then the ref is supposed to go back on the front of the queue segment in storage
+      //so we set the page ordering to be firstPageOrdering - 1
+      //If not cancelling, then the ref should go on the end of the quueue in storage so
+      //we set the page ordering to be nextPageOrdering
+      
+      if (cancelling)
+      {
+         ref.setPagingOrder(firstPagingOrder - 1);
+         
+         log.info("Cancelling so set paging order to: " + (firstPagingOrder - 1));
+         
+         firstPagingOrder--;
+      }
+      else
+      {
+         ref.setPagingOrder(nextPagingOrder);
+         
+         log.info("Adding so set paging order to: " + nextPagingOrder);
+         
+         nextPagingOrder++;
+      }
+      
       downCache.add(ref);
 
       if (trace) { log.trace(ref + " sent to downcache"); }
+      
+      log.info("Added to down cache, down cache size:" + downCache.size());
 
       if (downCache.size() == downCacheSize)
       {
          if (trace) { log.trace(this + "'s downcache is full (" + downCache.size() + " messages)"); }
+         
+         log.info("flushing down cache");
          
          flushDownCache();
       }
@@ -314,16 +359,10 @@ public class PagingChannel extends ChannelSupport
 
       Iterator iter = downCache.iterator();
       
-      //It's important that we don't actually increment nextPagingOrder in the loop
-      //in case of failure
-      int count = 0;
-
       while (iter.hasNext())
       {
          MessageReference ref = (MessageReference) iter.next();
          
-         ref.setPagingOrder(nextPagingOrder + count++);
-
          if (ref.isReliable() && recoverable)
          {
             toUpdate.add(ref);
@@ -336,10 +375,12 @@ public class PagingChannel extends ChannelSupport
 
       if (!toAdd.isEmpty())
       {
+         log.info("Adding refs: " + toAdd.size());
          pm.addReferences(channelID, toAdd);
       }
       if (!toUpdate.isEmpty())
       {
+         log.info("Updating refs: " + toAdd.size());
          pm.updatePageOrder(channelID, toUpdate);
       }
 
@@ -355,14 +396,7 @@ public class PagingChannel extends ChannelSupport
          ref.releaseMemoryReference();
       }
 
-      downCache.clear();
-      
-      //If we get this far then the database operations succeeded so we can update nextPagingOrder
-      //We don't do this before the database updates since otherwise we will end up with gaps
-      //in page ordering in the database if the db temporarily fails then comes back to life without
-      //restarting the server.
-      
-      nextPagingOrder += count;      
+      downCache.clear();         
 
       if (trace) { log.trace(this + " cleared downcache"); }
    }

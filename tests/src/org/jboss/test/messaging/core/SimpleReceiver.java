@@ -149,6 +149,8 @@ public class SimpleReceiver implements Receiver
                                        "THE BEHAVIOUR OF A BROKEN RECEIVER");
          }
 
+        log.info("State is:" + state);
+         
          boolean done = ACKING.equals(state) ? true : false;
          log.info(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + r);
          
@@ -290,6 +292,7 @@ public class SimpleReceiver implements Receiver
          Message m = (Message)o[0];
          if (m == r)
          {
+            log.info("*** found it");
             d = (Delivery)o[1];
             touple = o;
             break;

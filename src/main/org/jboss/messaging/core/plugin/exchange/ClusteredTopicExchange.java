@@ -217,6 +217,16 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
                else
                {
                   CastingCallback callback = (CastingCallback)tx.getKeyedCallback(this);
+                  
+                  if (callback == null)
+                  {
+                     callback = new CastingCallback();
+                     
+                     tx.addKeyedCallback(callback, this);
+                  }
+                  
+                  log.info("Got callback:" + callback);
+                  
                   callback.addMessage(routingKey, ref.getMessage());                  
                }
             }
@@ -262,19 +272,18 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
                {            
                   if (binding.getNodeId().equals(this.nodeId))
                   {
-                     //When receiving a reliable message from the network and routing to
-                     //a durable subscription, then the message has always been persisted
-                     //before the send, so we route the message as an unreliable message
-                     //to prevent it being persisted again
-                     if (ref.isReliable() && binding.isDurable())
-                     {
-                        ref.setReliable(false);
-                     }
+//                     //When receiving a reliable message from the network and routing to
+//                     //a durable subscription, then the message has always been persisted
+//                     //before the send
+//                     if (ref.isReliable() && binding.isDurable())
+//                     {
+//                        //Do what?
+//                     }
                      
                      //It's a local binding so we pass the message on to the subscription
                      MessageQueue subscription = binding.getQueue();
                   
-                     subscription.handle(null, ref, null);
+                     subscription.handleDontPersist(null, ref, null);
                   }                               
                }
             }                          
@@ -291,10 +300,11 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
     */
    private class CastingCallback implements TxCallback
    {           
-      private List messages;
+      private List messages = new ArrayList();
       
       private void addMessage(String routingKey, Message message)
       {
+         log.info("Adding message");
          messages.add(new MessageHolder(routingKey, message));
       }
       

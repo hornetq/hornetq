@@ -683,8 +683,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       //First load exactly 10
       PersistenceManager.InitialLoadInfo info = pm.getInitialReferenceInfos(channel.getChannelID(), 10);
       
-      assertEquals(-1, info.getMinPageOrdering());
-      assertEquals(-1, info.getMaxPageOrdering());
+      assertNull(info.getMinPageOrdering());
+      assertNull(info.getMaxPageOrdering());
       
       List refInfos = info.getRefInfos();
       
@@ -705,8 +705,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       //fullSize has increased to 15 - only 10 should be loadeed still
       info = pm.getInitialReferenceInfos(channel.getChannelID(), 15);
       
-      assertEquals(-1, info.getMinPageOrdering());
-      assertEquals(-1, info.getMaxPageOrdering());
+      assertNull(info.getMinPageOrdering());
+      assertNull(info.getMaxPageOrdering());
       
       refInfos = info.getRefInfos();
       assertNotNull(refInfos);
@@ -726,8 +726,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       //fullSize has gone down to 7 - 7 should be loaded and the other 3 marked as paged
       info = pm.getInitialReferenceInfos(channel.getChannelID(), 7);
       
-      assertEquals(0, info.getMinPageOrdering());
-      assertEquals(2, info.getMaxPageOrdering());
+      assertEquals(0, info.getMinPageOrdering().longValue());
+      assertEquals(2, info.getMaxPageOrdering().longValue());
       
       refInfos = info.getRefInfos();
       assertNotNull(refInfos);
@@ -752,8 +752,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       info = pm.getInitialReferenceInfos(channel.getChannelID(), 4);
       
-      assertEquals(0, info.getMinPageOrdering());
-      assertEquals(5, info.getMaxPageOrdering());
+      assertEquals(0, info.getMinPageOrdering().longValue());
+      assertEquals(5, info.getMaxPageOrdering().longValue());
       
       refInfos = info.getRefInfos();
       assertNotNull(refInfos);
@@ -778,8 +778,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       info = pm.getInitialReferenceInfos(channel.getChannelID(), 6);
       
-      assertEquals(2, info.getMinPageOrdering());
-      assertEquals(5, info.getMaxPageOrdering());
+      assertEquals(2, info.getMinPageOrdering().longValue());
+      assertEquals(5, info.getMaxPageOrdering().longValue());
       
       refInfos = info.getRefInfos();
       assertNotNull(refInfos);
@@ -811,8 +811,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       info = pm.getInitialReferenceInfos(channel.getChannelID(), 12);
       
-      assertEquals(-1, info.getMinPageOrdering());
-      assertEquals(-1, info.getMaxPageOrdering());
+      assertNull(info.getMinPageOrdering());
+      assertNull(info.getMaxPageOrdering());
       
       refInfos = info.getRefInfos();
       assertNotNull(refInfos);
@@ -827,7 +827,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
       assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
       assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());                              
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());            
    }
       
    

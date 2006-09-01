@@ -154,7 +154,7 @@ public abstract class ChannelSupport implements Channel
             // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
             // result, but when remoting does, we can use a full SEDA approach and get even better
             // throughput.
-            this.executor.execute(new HandleRunnable(result, sender, r));
+            this.executor.execute(new HandleRunnable(result, sender, r, true));
          }
          catch (InterruptedException e)
          {
@@ -165,7 +165,36 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         return handleInternal(sender, r, tx);
+         return handleInternal(sender, r, tx, true);
+      }
+   }
+   
+   public Delivery handleDontPersist(DeliveryObserver sender, Routable r, Transaction tx)
+   {
+      checkClosed();
+      
+      Future result = new Future();
+
+      if (tx == null)
+      {         
+         try
+         {
+            // Instead of executing directly, we add the handle request to the event queue.
+            // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
+            // result, but when remoting does, we can use a full SEDA approach and get even better
+            // throughput.
+            this.executor.execute(new HandleRunnable(result, sender, r, false));
+         }
+         catch (InterruptedException e)
+         {
+            log.warn("Thread interrupted", e);
+         }
+   
+         return (Delivery)result.getResult();
+      }
+      else
+      {
+         return handleInternal(sender, r, tx, false);
       }
    }
       
@@ -642,7 +671,7 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected Delivery handleInternal(DeliveryObserver sender, Routable r, Transaction tx)
+   protected Delivery handleInternal(DeliveryObserver sender, Routable r, Transaction tx, boolean persist)
    {
       if (r == null)
       {
@@ -683,7 +712,7 @@ public abstract class ChannelSupport implements Channel
                return null;
             }
         
-            if (ref.isReliable() && recoverable)
+            if (persist && ref.isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
                if (trace) { log.trace(this + "adding " + ref + " to database non-transactionally"); }
@@ -724,7 +753,7 @@ public abstract class ChannelSupport implements Channel
                if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
             }
 
-            if (ref.isReliable() && recoverable)
+            if (persist && ref.isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
                if (trace) { log.trace(this + "adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
@@ -1084,17 +1113,20 @@ public abstract class ChannelSupport implements Channel
       DeliveryObserver sender;
 
       Routable routable;
+      
+      boolean persist;
 
-      HandleRunnable(Future result, DeliveryObserver sender, Routable routable)
+      HandleRunnable(Future result, DeliveryObserver sender, Routable routable, boolean persist)
       {
          this.result = result;
          this.sender = sender;
          this.routable = routable;
+         this.persist = persist;
       }
 
       public void run()
       {
-         Delivery d = handleInternal(sender, routable, null);
+         Delivery d = handleInternal(sender, routable, null, persist);
          result.setResult(d);
       }
    }   
