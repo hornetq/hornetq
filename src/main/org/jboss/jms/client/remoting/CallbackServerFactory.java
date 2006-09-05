@@ -125,7 +125,7 @@ public class CallbackServerFactory
       String serializationType = null;
       int count = 0;
 
-      String thisAddress = InetAddress.getLocalHost().getHostAddress();
+      String thisAddress = serverLocator.getHost();
       boolean isSSL = serverLocator.getProtocol().equals("sslsocket");
       Map params = serverLocator.getParameters();
 
@@ -138,7 +138,7 @@ public class CallbackServerFactory
       {
          try
          {      
-            int bindPort = PortUtil.findFreePort("localhost");
+            int bindPort = PortUtil.findFreePort(thisAddress);
       
             String callbackServerURI;
       
