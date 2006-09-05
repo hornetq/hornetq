@@ -145,7 +145,6 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
    }
    
    // PersistenceManager implementation -------------------------
-
    
    // Related to counters
    // ==================
@@ -1801,6 +1800,74 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
          wrap.end();
       }
    }
+   
+   public boolean referenceExists(long channelID, long messageID) throws Exception
+   {
+      Connection conn = null;
+      PreparedStatement st = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      try
+      {
+         conn = ds.getConnection();
+         
+         st = conn.prepareStatement(getSQLStatement("SELECT_EXISTS_REF"));
+         st.setLong(1, channelID);
+         st.setLong(2, messageID);
+         
+         rs = st.executeQuery();
+         
+         if (rs.next())
+         {
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (rs != null)
+         {
+            try
+            {
+               rs.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         wrap.end();
+      }
+   }
+   
   
    // Public --------------------------------------------------------
    
@@ -1843,13 +1910,13 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       
    protected TransactionCallback getCallback(Transaction tx)
    {
-      TransactionCallback callback = (TransactionCallback) tx.getKeyedCallback(this);
+      TransactionCallback callback = (TransactionCallback) tx.getCallback(this);
 
       if (callback == null)
       {
          callback = new TransactionCallback(tx);
 
-         tx.addKeyedCallback(callback, this);
+         tx.addCallback(callback, this);
       }
 
       return callback;
@@ -3782,6 +3849,7 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       map.put("DELETE_UNRELIABLE_REFS", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE = 'N'");
       map.put("SHIFT_PAGE_ORDER", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = PAGE_ORD + ? WHERE CHANNELID = ?");
       map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ?");
+      map.put("SELECT_EXISTS_REF", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ? AND MESSAGEID = ?");
       //Message
       map.put("LOAD_MESSAGES",
               "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, " +
@@ -3811,7 +3879,7 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       map.put("SELECT_COUNTER", "SELECT NEXT_ID FROM JMS_COUNTER WHERE NAME=?");
       map.put("INSERT_COUNTER", "INSERT INTO JMS_COUNTER (NAME, NEXT_ID) VALUES (?, ?)");
       //Other
-      map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNELID) FROM JMS_MESSAGE_REFERENCE");
+      map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNELID) FROM JMS_MESSAGE_REFERENCE");      
       return map;
    }
    

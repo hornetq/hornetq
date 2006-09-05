@@ -65,7 +65,10 @@ public interface PersistenceManager extends ServerPlugin
    
    long reserveIDBlock(String counterName, int size) throws Exception;
    
-      
+   // Clustering recovery related functionality
+   
+   boolean referenceExists(long channelID, long messageID) throws Exception;
+     
    // Interface value classes
    //---------------------------------------------------------------
    

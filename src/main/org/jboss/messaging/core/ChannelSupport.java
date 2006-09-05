@@ -841,13 +841,13 @@ public abstract class ChannelSupport implements Channel
 
    protected InMemoryCallback getCallback(Transaction tx)
    {
-      InMemoryCallback callback = (InMemoryCallback) tx.getKeyedCallback(this);
+      InMemoryCallback callback = (InMemoryCallback) tx.getCallback(this);
 
       if (callback == null)
       {
          callback = new InMemoryCallback();
 
-         tx.addKeyedCallback(callback, this);
+         tx.addCallback(callback, this);
       }
 
       return callback;
@@ -869,8 +869,6 @@ public abstract class ChannelSupport implements Channel
 
       private List deliveriesToRemove;
 
-      private long minOrder;
-
       private InMemoryCallback()
       {
          refsToAdd = new ArrayList();
@@ -881,8 +879,6 @@ public abstract class ChannelSupport implements Channel
       private void addRef(MessageReference ref)
       {
          refsToAdd.add(ref);
-
-         minOrder = Math.min(minOrder, ref.getPagingOrder());
       }
 
       private void addDelivery(Delivery del)

@@ -19,9 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.exchange;
+package org.jboss.messaging.core.plugin.exchange.cluster;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,21 +29,20 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.MessageQueue;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.exchange.Binding;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.tx.TxCallback;
 import org.jgroups.Channel;
 
 /**
  * A Clustered TopicExchange
  * 
- * Roughly based on the AMQP topic exchange
+ * Similar in some ways to the AMQP topic exchange
  *
  * Currently we don't support hierarchies of topics, but it should be fairly
  * straightforward to extend this class to support them.
@@ -64,15 +62,7 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
    private static final Logger log = Logger.getLogger(ClusteredTopicExchange.class);     
    
    protected TransactionRepository tr;  
-   
-   protected PersistenceManager pm;
-   
-   protected boolean strictPersistentMessageReliability;
-      
-   public ClusteredTopicExchange() throws Exception
-   { 
-   }      
-   
+    
    /*
     * This constructor should only be used for testing
     */
@@ -87,11 +77,9 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
                                 TransactionRepository tr, PersistenceManager pm) throws Exception
    {
       super.injectAttributes(controlChannel, dataChannel,
-                             groupName, exchangeName, nodeID, ms, im, pool);
+                             groupName, exchangeName, nodeID, ms, im, pool, pm);
       
       this.tr = tr;
-      
-      this.pm = pm;
    }     
    
    public boolean route(MessageReference ref, String routingKey, Transaction tx) throws Exception
@@ -115,14 +103,22 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
       
          if (bindings != null)
          {                
-            //When routing a reliable message to multiple durable subscriptions we
-            //must ensure that the message is persisted in all durable subscriptions
-            //Therefore if the message is reliable and there is more than one durable subscription
-            //Then we create an internal transaction and route the message in the context of that
-            
+            // When routing a persistent message without a transaction then we may need to start an 
+            // internal transaction in order to route it.
+            // We do this if the message is reliable AND:
+            // (
+            // a) The message needs to be routed to more than one durable subscription. This is so we
+            // can guarantee the message is persisted on all the durable subscriptions or none if failure
+            // occurs - i.e. the persistence is transactional
+            // OR
+            // b) There is at least one durable subscription on a different node.
+            // In this case we need to start a transaction since we want to add a callback on the transaction
+            // to cast the message to other nodes
+            // )
+                        
             //TODO we can optimise this out by storing this as a flag somewhere
             boolean startInternalTx = false;
-            
+      
             if (tx == null)
             {
                if (ref.isReliable())
@@ -139,7 +135,7 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
                      {
                         count++;
                         
-                        if (count == 2)
+                        if (count == 2 || !binding.getNodeId().equals(this.nodeId))
                         {
                            startInternalTx = true;
                            
@@ -176,14 +172,7 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
                   {
                      //It's a binding on a different exchange instance on the cluster
                      sendRemotely = true;                     
-                     
-                     //For remote durable subscriptions we persist the message *before* sending
-                     //it to the remote node. We do this for two reasons
-                     //1) For reliable messages we must ensure that the message is persisted in all durable subscriptions
-                     // and not a subset in case of failure - if we were persisting on receipt at the remote
-                     // durable sub then we would have to use expensive 2PC to ensure this
-                     //2) We can insert in all the durable subs in a single JDBC tx rather than many
-                     
+                      
                      if (ref.isReliable() && binding.isDurable())
                      {
                         //Insert the reference into the database
@@ -200,29 +189,19 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
             {
                if (tx == null)
                {
-                  //We just throw the message on the network - no need to wait for any reply                     
-                  asyncCastMessage(routingKey, ref.getMessage());               
-                  
-                  //Big TODO - is this ok for reliable messages ?????????
-                  //What if this node fails and the other nodes don't receive the cast?
-                  //We have already persisted the message so we won't lose it
-                  //but the message won't be available to be consumed on the other node
-                  //until that node restarts - which might be 10 years from now.
-                  //What we should really do is, for persistent messages, save and cast them as 2 participants
-                  //in a fully recoverable 2pc transaction - but this is going to be a performance hit                                    
-                  //
-                  //Need to think about this some more
-                  
+                  //We just throw the message on the network - no need to wait for any reply            
+                  asyncSendRequest(new MessageRequest(routingKey, ref.getMessage()));               
                }
                else
                {
-                  CastingCallback callback = (CastingCallback)tx.getKeyedCallback(this);
+                  CastMessagesCallback callback = (CastMessagesCallback)tx.getCallback(this);
                   
                   if (callback == null)
                   {
-                     callback = new CastingCallback();
+                     callback = new CastMessagesCallback(nodeId, tx.getId(), ClusteredTopicExchange.this);
                      
-                     tx.addKeyedCallback(callback, this);
+                     //This callback must be executed first
+                     tx.addFirstCallback(callback, this);
                   }
                       
                   callback.addMessage(routingKey, ref.getMessage());                  
@@ -269,18 +248,12 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
                if (binding.isActive())
                {            
                   if (binding.getNodeId().equals(this.nodeId))
-                  {
-//                     //When receiving a reliable message from the network and routing to
-//                     //a durable subscription, then the message has always been persisted
-//                     //before the send
-//                     if (ref.isReliable() && binding.isDurable())
-//                     {
-//                        //Do what?
-//                     }
-                     
+                  {  
                      //It's a local binding so we pass the message on to the subscription
                      MessageQueue subscription = binding.getQueue();
                   
+                     //TODO instead of adding a new method on the channel
+                     //we should set a header and use the same method
                      subscription.handleDontPersist(null, ref, null);
                   }                               
                }
@@ -291,81 +264,5 @@ public class ClusteredTopicExchange extends ClusteredExchangeSupport
       {                  
          lock.readLock().release();
       }
-   }
-   
-   /*
-    * This class casts messages across the cluster on commit of a transaction
-    */
-   private class CastingCallback implements TxCallback
-   {           
-      private List messages = new ArrayList();
-      
-      private void addMessage(String routingKey, Message message)
-      {
-         messages.add(new MessageHolder(routingKey, message));
-      }
-      
-      private CastingCallback()
-      {
-         messages = new ArrayList();
-      }
-
-      public void afterCommit(boolean onePhase) throws Exception
-      {
-         //Cast the messages
-         //TODO - would it be any more performant if we cast them in a single jgroups message?
-         Iterator iter = messages.iterator();
-         
-         while (iter.hasNext())
-         {
-            MessageHolder holder = (MessageHolder)iter.next();
-            
-            asyncCastMessage(holder.getRoutingKey(), holder.getMessage());
-         }
-      }
-
-      public void afterPrepare() throws Exception
-      { 
-      }
-
-      public void afterRollback(boolean onePhase) throws Exception
-      {
-      }
-
-      public void beforeCommit(boolean onePhase) throws Exception
-      {
-      }
-
-      public void beforePrepare() throws Exception
-      {
-      }
-
-      public void beforeRollback(boolean onePhase) throws Exception
-      {
-      }
-      
-      private class MessageHolder
-      {
-         String routingKey;
-         
-         Message message;
-         
-         private MessageHolder(String routingKey, Message message)
-         {
-            this.routingKey = routingKey;
-            this.message = message;
-         }
-         
-         private String getRoutingKey()
-         {
-            return routingKey;
-         }
-         
-         private Message getMessage()
-         {
-            return message;
-         }
-      }
-     
-   }    
+   }            
 }

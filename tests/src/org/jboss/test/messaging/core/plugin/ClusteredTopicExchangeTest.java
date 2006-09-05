@@ -30,7 +30,7 @@ import org.jboss.messaging.core.local.MessageQueue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.exchange.Binding;
-import org.jboss.messaging.core.plugin.exchange.ClusteredTopicExchange;
+import org.jboss.messaging.core.plugin.exchange.cluster.ClusteredTopicExchange;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jgroups.Channel;
@@ -1156,11 +1156,10 @@ public class ClusteredTopicExchangeTest extends TopicExchangeTest
       
       Channel controlChannel = new JChannel(JGroupsUtil.getControlStackProperties(50, 1));
       Channel dataChannel = new JChannel(JGroupsUtil.getDataStackProperties(50, 1));
-      
-      ((ClusteredTopicExchange)exchange).injectAttributes(controlChannel, dataChannel, "group1", "Topic", "node1", ms, im, pool, tr, pm);
-      
       exchange.start();
       
+      ((ClusteredTopicExchange)exchange).injectAttributes(controlChannel, dataChannel, "group1", "Topic", "node1", ms, im, pool, tr, pm);
+                  
       return exchange;
    }
    
@@ -1171,10 +1170,10 @@ public class ClusteredTopicExchangeTest extends TopicExchangeTest
       Channel controlChannel = new JChannel(JGroupsUtil.getControlStackProperties(50, 1));
       Channel dataChannel = new JChannel(JGroupsUtil.getDataStackProperties(50, 1));
       
+      exchange.start();      
+      
       ((ClusteredTopicExchange)exchange).injectAttributes(controlChannel, dataChannel, groupName, "Topic", nodeId, ms, im, pool, tr, pm);
-      
-      exchange.start();
-      
+            
       return exchange;
    }
 

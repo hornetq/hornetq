@@ -33,13 +33,14 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.MessageQueue;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.exchange.cluster.ClusteredTopicExchange;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
  * A non-clustered TopicExchange
  * 
- * Roughly based on the AMQP topic exchange
+ * Similar in some ways to the AMQP topic exchange
  *
  * Currently we don't support hierarchies of topics, but it should be fairly
  * straightforward to extend this class to support them.

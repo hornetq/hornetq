@@ -474,12 +474,12 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          d = (Delivery)deliveries.get(new Long(messageID));
       }
       
-      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getKeyedCallback(this);
+      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getCallback(this);
             
       if (deliveryCallback == null)
       {
          deliveryCallback = new DeliveryCallback();
-         tx.addKeyedCallback(deliveryCallback, this);
+         tx.addCallback(deliveryCallback, this);
       }
       deliveryCallback.addMessageID(messageID);
          

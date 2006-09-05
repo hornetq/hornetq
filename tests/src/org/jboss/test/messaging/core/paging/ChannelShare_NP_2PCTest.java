@@ -95,7 +95,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      List refIds = getReferenceIds(queue1.getChannelID());
+      List refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
       assertEquals(0, refIds.size());
                                     
       assertEquals(50, queue1.memoryRefCount());
@@ -108,7 +108,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(0, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -149,7 +149,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
               
       assertEquals(0, refIds.size());
                                     
@@ -163,7 +163,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(25, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -205,7 +205,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
                 
       assertEquals(0, refIds.size());
                                     
@@ -219,7 +219,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(50, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -260,7 +260,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       tx.commit();
       
       //Queue1
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
                 
       assertEquals(50, refIds.size());
                                     
@@ -274,7 +274,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(100, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -303,7 +303,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       this.consumeIn2PCTx(queue2, 0, refs2, 150);
       
       //    Queue1
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
                 
       assertEquals(0, refIds.size());
                                     
@@ -317,7 +317,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(0, refIds.size());
                               
       assertEquals(0, queue2.memoryRefCount());

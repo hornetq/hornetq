@@ -19,12 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.exchange.request;
-
-import java.io.Serializable;
+package org.jboss.messaging.core.plugin.exchange.cluster;
 
 /**
- * A BindRequest
+ * A Transactionid
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,62 +30,66 @@ import java.io.Serializable;
  * $Id$
  *
  */
-public class BindRequest implements Serializable
+class TransactionId
 {
-   private static final long serialVersionUID = 6567558817192367353L;
-
-   private String nodeId;   
-   private String queueName;   
-   private String condition;   
-   private String filterString;   
-   private boolean noLocal;   
-   private long channelId;   
-   private boolean durable;
+   private String nodeId;
    
-   public BindRequest(String nodeId, String queueName, String condition, String filterString,
-                      boolean noLocal, long channelId, boolean durable)
+   private long txId;
+   
+   private int hash;
+   
+   TransactionId(String nodeId, long txId)
    {
       this.nodeId = nodeId;
-      this.queueName = queueName;
-      this.condition = condition;
-      this.filterString = filterString;
-      this.noLocal = noLocal;
-      this.channelId = channelId;
-      this.durable = durable;
+      
+      this.txId = txId;
+      
+      calculateHash();
    }
-
-   public String getCondition()
-   {
-      return condition;
-   }
-
-   public boolean isDurable()
-   {
-      return durable;
-   }
-
-   public String getFilterString()
-   {
-      return filterString;
-   }
-
-   public String getNodeId()
+   
+   String getNodeId()
    {
       return nodeId;
    }
-
-   public boolean isNoLocal()
+   
+   long getTxId()
    {
-      return noLocal;
-   }
-
-   public String getQueueName()
-   {
-      return queueName;
+      return txId;
    }
    
-   public long getChannelId()
+   public int hashCode()
    {
-      return channelId;
+      return hash;
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (other == this)
+      {
+         return true;
+      }
+      
+      if (!(other instanceof TransactionId))
+      {
+         return false;
+      }
+      
+      TransactionId tother = (TransactionId)other;
+      
+      return tother.txId == this.txId && tother.nodeId.equals(this.nodeId);
+   }
+   
+   public String toString()
+   {
+      return "TransactionId [" + System.identityHashCode(this) + "] nodeId: " + nodeId + " txId: " + txId;
+   }
+   
+   private void calculateHash()
+   {
+      hash = 17;
+      
+      hash = 37 * hash + (int)(txId ^ (txId >>> 32));
+      
+      hash = 37 * hash + nodeId.hashCode();
    }
 }

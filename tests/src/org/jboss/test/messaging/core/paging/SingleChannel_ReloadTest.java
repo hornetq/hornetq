@@ -95,7 +95,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i].releaseMemoryReference();
       }
 
-      List refIds = getReferenceIds(queue.getChannelID());
+      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(100, refIds.size());
                                                 
       assertEquals(100, queue.memoryRefCount());
@@ -125,12 +125,12 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       queue2.load();
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(50, refIds.size());
                    
       this.consume(queue2, 150, refs, 50);
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(0, refIds.size());
                                                 
       assertEquals(0, queue2.memoryRefCount());
@@ -180,7 +180,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i].releaseMemoryReference();
       }
 
-      List refIds = getReferenceIds(queue.getChannelID());
+      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(100, refIds.size());
                                                 
       assertEquals(100, queue.memoryRefCount());
@@ -210,7 +210,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       queue2.load();
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       List msgIds = getMessageIds();
@@ -263,7 +263,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i].releaseMemoryReference();
       }
 
-      List refIds = getReferenceIds(queue.getChannelID());
+      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(100, refIds.size());
                                                 
       assertEquals(100, queue.memoryRefCount());
@@ -276,7 +276,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       queue.removeAllReferences();
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       List msgIds = getMessageIds();
@@ -315,7 +315,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i].releaseMemoryReference();
       }
 
-      List refIds = getReferenceIds(queue.getChannelID());
+      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(150, refIds.size());
                                                 
       assertEquals(100, queue.memoryRefCount());
@@ -351,7 +351,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       queue2.load();
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(150, refIds.size());
       
       List msgIds = getMessageIds();
@@ -370,7 +370,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Consume all the messages
       this.consume(queue2, 0, refs, 150);
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       msgIds = getMessageIds();
@@ -409,7 +409,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i].releaseMemoryReference();
       }
 
-      List refIds = getReferenceIds(queue.getChannelID());
+      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(150, refIds.size());
                                                 
       assertEquals(100, queue.memoryRefCount());
@@ -445,7 +445,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       queue2.load();
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(150, refIds.size());
       
       List msgIds = getMessageIds();
@@ -464,7 +464,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Consume all the messages
       this.consume(queue2, 0, refs, 150);
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       msgIds = getMessageIds();

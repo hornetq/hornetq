@@ -437,10 +437,10 @@ public class DirectExchangeTest extends ExchangeTestBase
    {
       DirectExchange exchange = new DirectExchange(sc.getDataSource(), sc.getTransactionManager());
       
+      exchange.start();            
+      
       ((DirectExchange)exchange).injectAttributes("Direct", "node1", ms, im, pool);
-      
-      exchange.start();      
-      
+            
       return exchange;
    }
 

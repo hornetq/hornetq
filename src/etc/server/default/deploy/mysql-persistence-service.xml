@@ -110,6 +110,18 @@ SELECT_SUBSCRIPTIONS_FOR_TOPIC=SELECT ID, CLIENT_ID, JMS_SUB_NAME, SELECTOR, NO_
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
-   </mbean>    
+   </mbean> 
+   
+   <mbean code="org.jboss.jms.server.plugin.JDBCShutdownLogger"
+      name="jboss.messaging:service=ShutdownLogger"
+      xmbean-dd="xmdesc/JDBCShutdownLogger-xmbean.xml">
+      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
+           the DataSource JNDI name in order to actually get a reference to it. Fix this.
+      -->   
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <attribute name="CreateTablesOnStartup">true</attribute>
+   </mbean>       
       
 </server>

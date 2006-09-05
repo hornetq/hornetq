@@ -19,12 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.exchange.request;
-
-import java.io.Serializable;
+package org.jboss.messaging.core.plugin.exchange.cluster;
 
 /**
- * A UnbindRequest
+ * A BindRequest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,26 +30,46 @@ import java.io.Serializable;
  * $Id$
  *
  */
-public class UnbindRequest implements Serializable
+class BindRequest implements ExchangeRequest
 {
-   private static final long serialVersionUID = 6597644036507360965L;
-
+   private static final long serialVersionUID = -2881616453863261327L;
+   
    private String nodeId;   
-   private String queueName;
-
-   public UnbindRequest(String nodeId, String queueName)
+   
+   private String queueName;   
+   
+   private String condition;   
+   
+   private String filterString; 
+   
+   private boolean noLocal;   
+   
+   private long channelId;   
+   
+   private boolean durable;
+   
+   BindRequest(String nodeId, String queueName, String condition, String filterString,
+               boolean noLocal, long channelId, boolean durable)
    {
       this.nodeId = nodeId;
+      
       this.queueName = queueName;
+      
+      this.condition = condition;
+      
+      this.filterString = filterString;
+      
+      this.noLocal = noLocal;
+      
+      this.channelId = channelId;
+      
+      this.durable = durable;
    }
 
-   public String getNodeId()
+   public void execute(ExchangeInternal exchange) throws Exception
    {
-      return nodeId;
+      exchange.addBindingFromCluster(nodeId, queueName, condition,
+                                     filterString, noLocal, channelId, durable);
+      
    }
-
-   public String getQueueName()
-   {
-      return queueName;
-   }      
 }

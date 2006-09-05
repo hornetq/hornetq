@@ -73,6 +73,7 @@ public class LocalTestServer implements Server
    private ObjectName directExchangeObjectName;
    private ObjectName topicExchangeObjectName;
    private ObjectName jmsUserManagerObjectName;
+   private ObjectName shutdownLoggerObjectName;
 
    // the server MBean itself
    private ObjectName serverPeerObjectName;
@@ -269,7 +270,13 @@ public class LocalTestServer implements Server
          (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
       jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
       sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);      
+      sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);  
+      
+      MBeanConfigurationElement shutdownLoggerConfig =
+         (MBeanConfigurationElement)pdd.query("service", "ShutdownLogger").iterator().next();
+      shutdownLoggerObjectName = sc.registerAndConfigureService(shutdownLoggerConfig);
+      sc.invoke(shutdownLoggerObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(shutdownLoggerObjectName, "start", new Object[0], new String[0]); 
 
       // register server peer as a service, dependencies are injected automatically
       MBeanConfigurationElement serverPeerConfig =

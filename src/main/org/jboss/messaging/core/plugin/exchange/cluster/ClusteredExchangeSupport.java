@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.exchange;
+package org.jboss.messaging.core.plugin.exchange.cluster;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,10 +37,9 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.exchange.request.BindRequest;
-import org.jboss.messaging.core.plugin.exchange.request.MessageRequest;
-import org.jboss.messaging.core.plugin.exchange.request.SendNodeIdRequest;
-import org.jboss.messaging.core.plugin.exchange.request.UnbindRequest;
+import org.jboss.messaging.core.plugin.exchange.Binding;
+import org.jboss.messaging.core.plugin.exchange.DefaultBinding;
+import org.jboss.messaging.core.plugin.exchange.ExchangeSupport;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.MembershipListener;
@@ -53,6 +52,9 @@ import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
 import org.jgroups.util.Util;
 
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+
 /**
  * A ClusteredExchangeSupport
  *
@@ -62,7 +64,7 @@ import org.jgroups.util.Util;
  * $Id$
  *
  */
-public abstract class ClusteredExchangeSupport extends ExchangeSupport
+public abstract class ClusteredExchangeSupport extends ExchangeSupport implements ExchangeInternal
 {
    private static final Logger log = Logger.getLogger(ClusteredExchangeSupport.class);
       
@@ -71,9 +73,9 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    
    private static final int CAST_TIMEOUT = 5000;
                     
-   protected Channel controlChannel;
+   protected Channel syncChannel;
    
-   protected Channel dataChannel;
+   protected Channel asyncChannel;
    
    private MessageDispatcher controlMessageDispatcher;
    
@@ -89,8 +91,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    
    private boolean stateSet;
    
-   private String groupName;
-   
    private View currentView;
    
    private Address currentAddress;
@@ -98,9 +98,12 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    //Map < Address, node id>
    private Map nodeIdAddressMap;
    
+   private Map holdingArea;
+   
+   protected PersistenceManager pm;
    
    public ClusteredExchangeSupport() throws Exception
-   {                  
+   {          
    }
    
    /*
@@ -111,23 +114,27 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       super(ds, tm);
    }
    
-   protected void injectAttributes(Channel controlChannel, Channel dataChannel,
+   //TODO - this is a bit of a mess - this stuff should go into startService
+   //but we can't currently do that since startService will get called
+   //before we get a chance to inject the attributes
+   protected void injectAttributes(Channel syncChannel, Channel asynchChannel,
                                    String groupName, String exchangeName, String nodeID,
-                                   MessageStore ms, IdManager im, QueuedExecutorPool pool) throws Exception
-   {
-      super.injectAttributes(exchangeName, nodeID, ms, im, pool);
+                                   MessageStore ms, IdManager im, QueuedExecutorPool pool,
+                                   PersistenceManager pm) throws Exception
+   { 
+      this.syncChannel = syncChannel;
       
-      this.controlChannel = controlChannel;
-      
-      this.dataChannel = dataChannel;
-      
-      this.groupName = groupName;
-      
+      this.asyncChannel = asynchChannel;
+       
       this.nodeIdAddressMap = new HashMap();
       
+      this.holdingArea = new HashMap();
+      
+      this.pm = pm;
+             
       //We don't want to receive local messages on any of the channels
-      controlChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
-      dataChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
+      syncChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
+      asynchChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
 
       this.controlMessageListener = new ControlMessageListener();
         
@@ -135,37 +142,39 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       
       this.controlMembershipListener = new ControlMembershipListener();
       
-      this.controlMessageDispatcher = new MessageDispatcher(controlChannel, controlMessageListener,
+      this.controlMessageDispatcher = new MessageDispatcher(syncChannel, controlMessageListener,
                                                             controlMembershipListener, requestHandler, true);      
       this.dataReceiver = new DataReceiver();
       
-      dataChannel.setReceiver(dataReceiver);                  
+      asyncChannel.setReceiver(dataReceiver);               
+      
+      syncChannel.connect(groupName);
+      
+      asynchChannel.connect(groupName);
+
+      currentAddress = syncChannel.getLocalAddress();
+      
+      super.injectAttributes(exchangeName, nodeID, ms, im, pool);      
+        
+      handleAddressNodeMapping(currentAddress, nodeId);
+      
+      syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));
    }
    
    // ServiceMBeanSupport overrides ---------------------------------
    
    protected void startService() throws Exception
-   {
-      controlChannel.connect(groupName);
-      
-      dataChannel.connect(groupName);
-
-      currentAddress = controlChannel.getLocalAddress();
-       
-      super.startService();  
-      
-      handleAddressNodeMapping(currentAddress, nodeId);
-      
-      sendNodeIdRequest(currentAddress, nodeId);      
+   {      
+      super.startService();
    }
    
    protected void stopService() throws Exception
    {
       super.stopService();
       
-      controlChannel.close();
+      syncChannel.close();
       
-      dataChannel.close();
+      asyncChannel.close();
    }
    
    // Exchange implementation ---------------------------------------        
@@ -177,9 +186,12 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       Binding binding = super.bindQueue(queueName, condition, filter, noLocal, durable,
                                         ms, pm, fullSize, pageSize, downCacheSize);
       
-      sendBindMessage(queueName, condition, filter == null ? null : filter.getFilterString(), noLocal,
-                      binding.getChannelId(), durable);
-
+      BindRequest request =
+         new BindRequest(nodeId, queueName, condition, filter == null ? null : filter.getFilterString(),
+                         noLocal, binding.getChannelId(), durable);
+      
+      syncSendRequest(request);
+      
       return binding;
    }
    
@@ -187,62 +199,28 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    {
       Binding binding = super.unbindQueue(queueName);
       
-      sendUnbindMessage(binding.getQueueName());
-    
+      UnbindRequest request = new UnbindRequest(nodeId, queueName);
+      
+      syncSendRequest(request);
+      
       return binding;
    }
    
-   //ExchangeSupport overrides -------------------------------------------------
-   
-   protected void loadBindings() throws Exception
-   {
-      // TODO I need to know whether this call times out - how do I know this??
-      boolean isState = controlChannel.getState(null, GET_STATE_TIMEOUT);
-                              
-      if (!isState)
-      {       
-         //Must be first member in group or non clustered- we load the state ourself from the database
-         super.loadBindings();      
-      }
-      else
-      {
-         //The state will be set in due course via the MessageListener - we must wait until this happens
-         
-         synchronized (setStateLock)
-         {
-            //TODO we should implement a timeout on this
-            while (!stateSet)
-            {
-               setStateLock.wait();
-            } 
-         }
-      }
-   }
-   
-   // Protected ---------------------------------------------------------------------------------------
-   
    /*
-    * Asynchronously cast the message.
-    * I.e. we just hand the message to JGroups and return immediately
-    * JGroups will then take care of delivering the message
+    * This is called by the server peer if it determines that the server crashed last time it was run
     */
-   protected void asyncCastMessage(String routingKey, org.jboss.messaging.core.Message msg) throws Exception
-   {            
-      MessageRequest request = new MessageRequest(routingKey, msg);
-      
-      //TODO - handle serialization more efficiently
-
-      dataChannel.send(new Message(null, null, request));
+   public void recover() throws Exception
+   {
+      //We send a "check" message to all nodes of the cluster
+      this.asyncSendRequest(new CheckMessage(nodeId));
    }
    
-   protected abstract void routeFromCluster(MessageReference ref, String routingKey) throws Exception;
-      
-   // Private ------------------------------------------------------------------------------------------
-      
+   // ExchangeInternal implementation ------------------------------------------------------------------
+   
    /*
     * Called when another node adds a binding
     */
-   private void addBindingFromCluster(String nodeId, String queueName, String condition,
+   public void addBindingFromCluster(String nodeId, String queueName, String condition,
                                       String filterString, boolean noLocal, long channelID, boolean durable)
       throws Exception
    {
@@ -271,7 +249,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
             throw new IllegalArgumentException(this.nodeId + "Binding already exists for node Id " + nodeId + " queue name " + queueName);
          }
          
-         binding = new SimpleBinding(nodeId, queueName, condition, filterString,
+         binding = new DefaultBinding(nodeId, queueName, condition, filterString,
                                      noLocal, channelID, durable); 
          
          binding.activate();
@@ -287,7 +265,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    /*
     * Called when another node removes a binding
     */
-   private void removeBindingFromCluster(String nodeId, String queueName) throws Exception
+   public void removeBindingFromCluster(String nodeId, String queueName) throws Exception
    {
       lock.writeLock().acquire();
       
@@ -307,7 +285,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       }
    }
    
-   private void handleAddressNodeMapping(Address address, String nodeId) throws Exception
+   public void handleAddressNodeMapping(Address address, String nodeId) throws Exception
    {
       lock.writeLock().acquire();
       
@@ -320,7 +298,213 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          lock.writeLock().release();
       }
    }
+   
+   public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKey) throws Exception
+   {
+      // Need to reference the message
+      MessageReference ref = null;
+      try
+      {
+         ref = ms.reference(message);
+         
+         //Route immediately
+         routeFromCluster(ref, routingKey); 
+      }
+      finally
+      {
+         if (ref != null)
+         {
+            ref.releaseMemoryReference();
+         }
+      }
+   }
+   
+   public void asyncSendRequest(ExchangeRequest request) throws Exception
+   {            
+      //TODO - handle serialization more efficiently
+      asyncChannel.send(new Message(null, null, request));
+   }
+   
+   public void addToHoldingArea(TransactionId id, List messageHolders) throws Exception
+   {
+      synchronized (holdingArea)
+      {
+         holdingArea.put(id, messageHolders);
+      }      
+   }
+         
+   public void commitTransaction(TransactionId id) throws Exception
+   {
+      List messageHolders = null;
       
+      synchronized (holdingArea)
+      {
+         messageHolders = (List)holdingArea.remove(id);
+      }
+      
+      if (messageHolders == null)
+      {
+         throw new IllegalStateException("Cannot find messages for transaction id: " + id);
+      }
+      
+      Iterator iter = messageHolders.iterator();
+      
+      while (iter.hasNext())
+      {
+         MessageHolder holder = (MessageHolder)iter.next();
+         
+         routeFromCluster(holder.getMessage(), holder.getRoutingKey());
+      }
+   }
+   
+   /*
+    * Called by a node if it starts and it detects that it crashed since it's last start-up.
+    * This method then checks to see if there any messages from that node in the holding area
+    * and if they are also in the database they will be processed
+    */
+   public void check(String nodeId) throws Exception
+   {
+      synchronized (holdingArea)
+      {
+         Iterator iter = holdingArea.entrySet().iterator();
+         
+         List toRemove = new ArrayList();
+         
+         while (iter.hasNext())
+         {
+            Map.Entry entry = (Map.Entry)iter.next();
+            
+            TransactionId id = (TransactionId)entry.getKey();
+            
+            if (id.getNodeId().equals(nodeId))
+            {
+               List holders = (List)entry.getValue();
+               
+               boolean wasCommitted = checkTransaction(holders);               
+               
+               if (wasCommitted)
+               {
+                  //We can process the transaction
+                  Iterator iter2 = holders.iterator();
+                  
+                  while (iter2.hasNext())
+                  {
+                     MessageHolder holder = (MessageHolder)iter2.next();
+                     
+                     routeFromCluster(holder.getMessage(), holder.getRoutingKey());
+                  }
+                  
+                  toRemove.add(id);
+               }
+            }
+         }
+         
+         //Remove the transactions from the holding area
+         
+         iter = toRemove.iterator();
+         
+         while (iter.hasNext())
+         {
+            TransactionId id = (TransactionId)iter.next();
+            
+            holdingArea.remove(id);
+         }
+      }
+   }
+   
+   private boolean checkTransaction(List messageHolders) throws Exception
+   {
+      Iterator iter = messageHolders.iterator();
+      
+      //We only need to check that one of the refs made it to the database - the refs would have
+      //been inserted into the db transactionally, so either they're all there or none are
+      MessageHolder holder = (MessageHolder)iter.next();
+      
+      List bindings = listBindingsForWildcard(holder.getRoutingKey());
+      
+      if (bindings == null)
+      {
+         throw new IllegalStateException("Cannot find bindings for key: " + holder.getRoutingKey());
+      }
+      
+      Iterator iter2 = bindings.iterator();
+      
+      long channelID = -1;
+      boolean found = false;
+      
+      while (iter2.hasNext())
+      {
+         Binding binding = (Binding)iter2.next();
+         
+         if (binding.isDurable())
+         {
+            found = true;
+            
+            channelID = binding.getChannelId();
+         }
+      }
+      
+      if (!found)
+      {
+         throw new IllegalStateException("Cannot find bindings");
+      }
+      
+      if (pm.referenceExists(channelID, holder.getMessage().getMessageID()))
+      {
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+   
+   //ExchangeSupport overrides -------------------------------------------------
+   
+   protected void loadBindings() throws Exception
+   {
+      // TODO I need to know whether this call times out - how do I know this??
+      boolean isState = syncChannel.getState(null, GET_STATE_TIMEOUT);
+                              
+      if (!isState)
+      {       
+         //Must be first member in group or non clustered- we load the state ourself from the database
+         super.loadBindings();      
+      }
+      else
+      {
+         //The state will be set in due course via the MessageListener - we must wait until this happens
+         
+         synchronized (setStateLock)
+         {
+            //TODO we should implement a timeout on this
+            while (!stateSet)
+            {
+               setStateLock.wait();
+            } 
+         }
+      }
+   }
+   
+   // Public ------------------------------------------------------------------------------------------
+   
+   
+   // Protected ---------------------------------------------------------------------------------------
+   
+   
+   protected void syncSendRequest(ExchangeRequest request) throws Exception
+   {            
+      //TODO - handle serialization more efficiently
+      
+      Message message = new Message(null, null, request);      
+      
+      controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, CAST_TIMEOUT);
+   }
+   
+   protected abstract void routeFromCluster(MessageReference ref, String routingKey) throws Exception;      
+       
+   // Private ------------------------------------------------------------------------------------------
+             
    private void removeBindingsForAddress(String address) throws Exception
    {
       lock.writeLock().acquire();
@@ -374,66 +558,16 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
                removeBinding(nodeId, binding.getQueueName());
             }
          }
+         
+         //Remove the address mapping
+         nodeIdAddressMap.remove(nodeId);
       }
       finally
       {
          lock.writeLock().release();
       }
    }
-   
-   /*
-    * Multicast a bind request to all clustered exchange instances in the group
-    */
-   private void sendBindMessage(String queueName, String condition,
-                                String filterString, boolean noLocal,
-                                long channelId, boolean durable) throws Exception
-   {
-      // TODO handle serialization more efficiently
       
-      BindRequest request =
-         new BindRequest(nodeId, queueName, condition, filterString, noLocal, channelId, durable);
-      
-      Message message = new Message(null, null, request);
-      
-      controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, CAST_TIMEOUT);
-      
-      //We don't actually care if some of the members didn't receive the message (e.g. by crashing)
-      //so we ignore the return value
-      
-      // TODO - How do we know if the call timed out???
-      //We need to handle this
-      
-   }
-   
-   /*
-    * Multicast a unbind request to all clustered exchange instances in the group
-    */
-   private void sendUnbindMessage(String queueName) throws Exception
-   {
-      //TODO handle serialization more efficiently
-      
-      UnbindRequest request = new UnbindRequest(nodeId, queueName);
-      
-      Message message = new Message(null, null, request);
-      
-      controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, CAST_TIMEOUT);
-      
-      //We don't actually care if some of the members didn't receive the message (e.g. by crashing)
-      //so we ignore the return value
-      
-      //TODO - How do we know if the call timed out???
-      //We need to handle this      
-   }
-   
-   private void sendNodeIdRequest(Address address, String nodeId) throws Exception
-   {
-      SendNodeIdRequest request = new SendNodeIdRequest(address, nodeId);
-      
-      Message message = new Message(null, null, request);
-      
-      controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, CAST_TIMEOUT);      
-   }
-   
    //TODO - Sort out serialization properly
    
    private byte[] getStateAsBytes() throws Exception
@@ -484,8 +618,6 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       
       this.nodeIdAddressMap.putAll(state.getNodeIdAddressMap());
    }
-   
-
    
    // Inner classes -------------------------------------------------------------------
     
@@ -562,6 +694,63 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       }      
    }
    
+   /*
+    * We use this class so we notice when members leave the group
+    */
+   private class ControlMembershipListener implements MembershipListener
+   {
+      public void block()
+      {
+         //NOOP
+      }
+
+      public void suspect(Address address)
+      {
+         //NOOP
+      }
+
+      public void viewAccepted(View view)
+      {
+         if (currentView != null)
+         {
+            Iterator iter = currentView.getMembers().iterator();
+            
+            while (iter.hasNext())
+            {
+               Address address = (Address)iter.next();
+               
+               if (!view.containsMember(address))
+               {
+                  //Member must have left                  
+                  //We don't remove bindings for ourself
+                  
+                  if (!address.equals(currentAddress))
+                  {                  
+                     try
+                     {
+                        removeBindingsForAddress(address.toString());
+                     }               
+                     catch (Exception e)
+                     {
+                        IllegalStateException e2 = new IllegalStateException(e.getMessage());
+                        e2.setStackTrace(e.getStackTrace());
+                        throw e2;
+                     }
+                  }
+               }
+            }
+         }
+         
+         currentView = view;
+      }
+
+      public byte[] getState()
+      {        
+         //NOOP
+         return null;
+      }     
+   }
+   
    
    /*
     * This class is used to listen for messages on the data channel
@@ -593,38 +782,17 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
       {
          try
          {
-            //TODO handle deserialization more efficiently
+            //TODO handle deserialization more efficiently            
+            MessageRequest request = (MessageRequest)message.getObject();
             
-            Object object = message.getObject();
-            
-            if (object instanceof MessageRequest)
-            {
-               MessageRequest request = (MessageRequest)object;
-               
-               //Need to reference the message
-               MessageReference ref = null;
-               try
-               {
-                  ref = ms.reference(request.getMessage());
-                  
-                  routeFromCluster(ref, request.getRoutingKey());
-               }
-               finally
-               {
-                  if (ref != null)
-                  {
-                     ref.releaseMemoryReference();
-                  }
-               }
-            }
+            request.execute(ClusteredExchangeSupport.this);
          }
          catch (Exception e)
          {
             IllegalStateException e2 = new IllegalStateException(e.getMessage());
             e2.setStackTrace(e.getStackTrace());
             throw e2;
-         }
-         
+         }         
       }
       
       public void setState(byte[] bytes)
@@ -632,65 +800,7 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
          //NOOP         
       }      
    }
-     
-   /*
-    * We use this class so we notice when members leave the group
-    */
-   private class ControlMembershipListener implements MembershipListener
-   {
-      public void block()
-      {
-         //NOOP
-      }
-
-      public void suspect(Address address)
-      {
-         //NOOP
-      }
-
-      public void viewAccepted(View view)
-      {
-         if (currentView != null)
-         {
-            Iterator iter = currentView.getMembers().iterator();
-            
-            while (iter.hasNext())
-            {
-               Address address = (Address)iter.next();
-               
-               if (!view.containsMember(address))
-               {
-                  //Member must have left
-                  
-                  //We don't remove bindings for ourself
-                  
-                  if (!address.equals(currentAddress))
-                  {                  
-                     try
-                     {
-                        removeBindingsForAddress(address.toString());
-                     }               
-                     catch (Exception e)
-                     {
-                        IllegalStateException e2 = new IllegalStateException(e.getMessage());
-                        e2.setStackTrace(e.getStackTrace());
-                        throw e2;
-                     }
-                  }
-               }
-            }
-         }
-         
-         currentView = view;
-      }
-
-      public byte[] getState()
-      {        
-         //NOOP
-         return null;
-      }     
-   }
-   
+          
    /*
     * This class is used to handle synchronous requests
     */
@@ -698,65 +808,21 @@ public abstract class ClusteredExchangeSupport extends ExchangeSupport
    {
       public Object handle(Message message)
       {
-         //TODO should we propagate the exceptions up??
-         
          //TODO handle deserialization more efficiently
          
-         Object request = message.getObject();
+         MessageRequest request = (MessageRequest)message.getObject();
               
-         if (request instanceof BindRequest)
-         {
-            BindRequest br = (BindRequest)request;
-            
-            try
-            {            
-               addBindingFromCluster(br.getNodeId(), br.getQueueName(), br.getCondition(),
-                                     br.getFilterString(), br.isNoLocal(), br.getChannelId(), br.isDurable());
-            }
-            catch (Exception e)
-            {
-               IllegalStateException e2 = new IllegalStateException(e.getMessage());
-               e2.setStackTrace(e.getStackTrace());
-               throw e2;
-            }
+         try
+         {            
+            request.execute(ClusteredExchangeSupport.this);
          }
-         else if (request instanceof UnbindRequest)
+         catch (Exception e)
          {
-            UnbindRequest ubr = (UnbindRequest)request;
-            
-            try
-            {
-               removeBindingFromCluster(ubr.getNodeId(), ubr.getQueueName());
-            }
-            catch (Exception e)
-            {
-               IllegalStateException e2 = new IllegalStateException(e.getMessage());
-               e2.setStackTrace(e.getStackTrace());
-               throw e2;
-            }
+            IllegalStateException e2 = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
          }
-         else if (request instanceof SendNodeIdRequest)
-         {
-            SendNodeIdRequest snr = (SendNodeIdRequest)request;
-            
-            try
-            {
-               handleAddressNodeMapping(snr.getAddress(), snr.getNodeId());
-            }
-            catch (Exception e)
-            {
-               IllegalStateException e2 = new IllegalStateException(e.getMessage());
-               e2.setStackTrace(e.getStackTrace());
-               throw e2;
-            }
-         }
-         else
-         {
-            throw new IllegalArgumentException("Invalid request: " + request);
-         }
-            
          return null;
-      }
-      
+      }      
    }   
 }

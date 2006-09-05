@@ -97,7 +97,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       List refIds = getPagedReferenceIds(queue1.getChannelID());
       assertEquals(0, refIds.size());
       
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue1.getChannelID());
       assertEquals(50, refIds.size());
                                     
       assertEquals(50, queue1.memoryRefCount());
@@ -113,7 +113,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(0, refIds.size());
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue2.getChannelID());
       assertEquals(50, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -156,7 +156,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
               
       assertEquals(0, refIds.size());
       
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue1.getChannelID());
       assertEquals(75, refIds.size());
                                     
       assertEquals(75, queue1.memoryRefCount());
@@ -172,7 +172,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(25, refIds.size());
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue2.getChannelID());
       assertEquals(75, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -217,7 +217,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
                 
       assertEquals(0, refIds.size());
       
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue1.getChannelID());
       assertEquals(100, refIds.size());
                                     
       assertEquals(100, queue1.memoryRefCount());
@@ -233,7 +233,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(50, refIds.size());
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue2.getChannelID());
       assertEquals(100, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -277,7 +277,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
                 
       assertEquals(50, refIds.size());
       
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue1.getChannelID());
       assertEquals(150, refIds.size());
                                     
       assertEquals(100, queue1.memoryRefCount());
@@ -293,7 +293,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       refIds = getPagedReferenceIds(queue2.getChannelID());
       assertEquals(100, refIds.size());
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue2.getChannelID());
       assertEquals(150, refIds.size());
                               
       assertEquals(50, queue2.memoryRefCount());
@@ -323,7 +323,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       this.consumeInTx(queue2, 0, refs2, 150);
       
       //    Queue1
-      refIds = getReferenceIds(queue1.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue1.getChannelID());
                 
       assertEquals(0, refIds.size());
                                     
@@ -337,7 +337,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       
       //Queue2
       
-      refIds = getReferenceIds(queue2.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue2.getChannelID());
       assertEquals(0, refIds.size());
                               
       assertEquals(0, queue2.memoryRefCount());

@@ -100,7 +100,7 @@ public class JDBCJMSUserManager extends JDBCServiceSupport implements JMSUserMan
       {
          conn = ds.getConnection();
          
-         ps = conn.prepareStatement(getSQLStatement("GET_PRECONF_CLIENTID"));
+         ps = conn.prepareStatement(getSQLStatement("SELECT_PRECONF_CLIENTID"));
          
          ps.setString(1, username);
          

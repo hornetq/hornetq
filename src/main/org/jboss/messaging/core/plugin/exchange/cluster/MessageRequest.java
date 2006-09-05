@@ -19,14 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.exchange.request;
-
-import java.io.Serializable;
+package org.jboss.messaging.core.plugin.exchange.cluster;
 
 import org.jboss.messaging.core.Message;
 
 /**
  * A MessageRequest
+ * 
+ * Used when sending a single message non reliably across the group
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -34,28 +34,23 @@ import org.jboss.messaging.core.Message;
  * $Id$
  *
  */
-public class MessageRequest implements Serializable
+class MessageRequest implements ExchangeRequest
 {
-   private static final long serialVersionUID = 644500948910063649L;
-
+   private static final long serialVersionUID = 6681458404259394725L;
+   
    private String routingKey;   
+   
    private Message message;
    
-   public MessageRequest(String routingKey, Message message)
+   MessageRequest(String routingKey, Message message)
    {
       this.routingKey = routingKey;
       
       this.message = message;
    }
    
-   public String getRoutingKey()
+   public void execute(ExchangeInternal exchange) throws Exception
    {
-      return routingKey;
-   }
-   
-   public Message getMessage()
-   {
-      return message;
-   }
-
+      exchange.routeFromCluster(message, routingKey);      
+   }   
 }

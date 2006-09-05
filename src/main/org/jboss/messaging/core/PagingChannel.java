@@ -88,11 +88,6 @@ public class PagingChannel extends ChannelSupport
    protected long nextPagingOrder;
    
    /**
-    * Are there any paged references in storage?
-    */
-   //protected boolean refsInStorage;
-   
-   /**
     * @param channelID
     * @param ms
     * @param pm
@@ -146,16 +141,14 @@ public class PagingChannel extends ChannelSupport
 
          if (ili.getMaxPageOrdering() != null)            
          {
-            //refsInStorage = true;
-            
             firstPagingOrder = ili.getMinPageOrdering().longValue();
             
             nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
+            
+            paging = true;
          }
          else
          {
-            //refsInStorage = false;
-            
             firstPagingOrder = nextPagingOrder = 0;
          }
          

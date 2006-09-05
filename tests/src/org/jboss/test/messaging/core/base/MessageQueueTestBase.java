@@ -5243,6 +5243,9 @@ public abstract class MessageQueueTestBase extends MessagingTestCase
       assertEquals(0, ackm.getMessageID());
 
       // an extra acknowledgment should be discarded
+      
+      //TODO - why should it be discarded?
+      //If you acknowledge twice surely this is a usage error?
       r.acknowledge(ackm, null);
 
       assertTrue(messageQueue.browse().isEmpty());

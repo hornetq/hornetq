@@ -100,8 +100,7 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
    protected void injectAttributes(String exchangeName, String nodeID,
                                    MessageStore ms, IdManager im, QueuedExecutorPool pool)
       throws Exception
-   {
-            
+   {            
       this.exchangeName = exchangeName;
       
       this.nodeId = nodeID;
@@ -111,16 +110,12 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
       this.idManager = im;
       
       this.queuedExecutorPool = pool;            
-   }
-   
-   // ServiceMBeanSupport overrides ---------------------------------
-   
-   protected void startService() throws Exception
-   {
-      super.startService();
-       
+      
+      //We can't load the bindings until attributes have been set - so we can't do it in
+      //startService()
       loadBindings();
    }
+   
    
    // Exchange implementation ---------------------------------------        
       
@@ -167,17 +162,17 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
                                                (QueuedExecutor)queuedExecutorPool.get(),
                                                filter);
             
-         binding = new SimpleBinding(nodeId, queueName, condition, filter == null ? null : filter.getFilterString(),
+         binding = new DefaultBinding(nodeId, queueName, condition, filter == null ? null : filter.getFilterString(),
                                      noLocal, queue.getChannelID(), durable);         
          
          binding.setQueue(queue);
          
          binding.activate();
          
-         if (durable)
-         {
-            queue.load();
-         }
+//         if (durable)
+//         {
+//            queue.load();
+//         }
          
          addBinding(binding);
                
@@ -185,7 +180,8 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
          {
             //Need to write the binding to the db
             
-            insertBinding(binding);            
+            insertBinding(binding);       
+            log.info("Inserted binding");
          }
                            
          return binding;   
@@ -375,12 +371,19 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
          lock.writeLock().release();
       }
    }
+   
+   public void recover() throws Exception
+   {
+      //NOOP
+   }
      
    // Protected -----------------------------------------------------
    
    protected void loadBindings() throws Exception
    {
       lock.writeLock().acquire();
+      
+      log.info(this + " loading bindings");
       
       try
       {
@@ -392,7 +395,9 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
          {
             Binding binding = (Binding)iter.next();
             
-            addBinding(binding);                        
+            addBinding(binding);              
+            
+            log.info(this + "added binding: " + binding.getQueueName());
          }
       }
       finally
@@ -414,6 +419,10 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
          conn = ds.getConnection();
          
          ps = conn.prepareStatement(getSQLStatement("INSERT_BINDING"));
+         
+         log.info("SQL:" + getSQLStatement("INSERT_BINDING"));
+         log.info(binding.getQueueName());
+         log.info(exchangeName);
           
          ps.setString(1, this.exchangeName);
          ps.setString(2, this.nodeId);
@@ -444,6 +453,8 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
       Connection conn = null;
       PreparedStatement ps  = null;
       TransactionWrapper wrap = new TransactionWrapper();
+      
+      log.info("deleting binding: " + queueName);
       
       try
       {
@@ -491,7 +502,26 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
       {
          conn = ds.getConnection();
          
-         ps = conn.prepareStatement(this.getSQLStatement("LOAD_BINDINGS"));
+         
+         ps = conn.prepareStatement("SELECT EXCHANGE_NAME FROM JMS_EXCHANGE_BINDING");
+         rs = ps.executeQuery();
+         if (rs.next())
+         {
+            String exchangeName = rs.getString(1);
+            log.info("*************** THERE IS " + exchangeName + " ROWS");
+         }
+         else
+         {
+            log.info("************ NO ROWS");
+         }
+         rs.close();
+         ps.close();
+         
+         ps = conn.prepareStatement(getSQLStatement("LOAD_BINDINGS"));
+         
+         log.info("SQL:" + getSQLStatement("LOAD_BINDINGS"));
+         
+         log.info("exchange name:" + this.exchangeName);
          
          ps.setString(1, this.exchangeName);
 
@@ -514,10 +544,12 @@ public abstract class ExchangeSupport extends JDBCServiceSupport implements Exch
             //We don't load the actual queue - this is because we don't know the paging params until
             //activation time
                     
-            Binding binding = new SimpleBinding(nodeId, queueName, condition, selector, noLocal, channelId, true);
+            Binding binding = new DefaultBinding(nodeId, queueName, condition, selector, noLocal, channelId, true);
             
             list.add(binding);
          }
+         
+         log.info("Loaded: " + list.size() + " bindings");
              
          return list;
       }

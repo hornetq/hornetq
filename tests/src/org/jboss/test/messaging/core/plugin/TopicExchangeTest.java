@@ -701,9 +701,9 @@ public class TopicExchangeTest extends ExchangeTestBase
    {
       TopicExchange exchange = new TopicExchange(sc.getDataSource(), sc.getTransactionManager());      
       
-      ((TopicExchange)exchange).injectAttributes("Topic", "node1", ms, im, pool, tr);
+      exchange.start();      
       
-      exchange.start();
+      ((TopicExchange)exchange).injectAttributes("Topic", "node1", ms, im, pool, tr);
       
       return exchange;
    }

@@ -32,7 +32,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.MessageQueue;
 
 /**
- * A SimpleBinding
+ * A DefaultBinding
  * 
  * Inspired from an AMQP binding
  * 
@@ -56,11 +56,11 @@ import org.jboss.messaging.core.local.MessageQueue;
  * $Id$
  *
  */
-public class SimpleBinding implements Binding, Externalizable
+public class DefaultBinding implements Binding, Externalizable
 {
    private static final long serialVersionUID = -5518552214992031242L;
 
-   private static final Logger log = Logger.getLogger(SimpleBinding.class);
+   private static final Logger log = Logger.getLogger(DefaultBinding.class);
    
    private static final byte NULL = 0;
    
@@ -84,11 +84,11 @@ public class SimpleBinding implements Binding, Externalizable
      
    private boolean durable;
    
-   public SimpleBinding()
+   public DefaultBinding()
    {      
    }
 
-   public SimpleBinding(String nodeId, String queueName, String condition, String selector,
+   public DefaultBinding(String nodeId, String queueName, String condition, String selector,
                         boolean noLocal, long channelId, boolean durable)
    {
       this.nodeId = nodeId;

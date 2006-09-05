@@ -379,13 +379,13 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       MessageReference ref = new SimpleMessageReference();
       
       Delivery del = router.handle(null, ref, null);
-      assertNotNull(del);
+      assertNull(del);
       
       del = router.handle(null, ref, null);
-      assertNotNull(del);
+      assertNull(del);
       
       del = router.handle(null, ref, null);
-      assertNotNull(del);    
+      assertNull(del);    
    }
 
 

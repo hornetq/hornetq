@@ -338,16 +338,11 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <!--
-               <include name="org/jboss/test/messaging/jms/JMSTest.class"/>
-               -->
                <include name="**/messaging/core/**/*Test.class"/>
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
-               <!-- TODO Exclude all distributed tests until after 1.0 release -->
-               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -385,10 +380,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <!-- <include name="org/jboss/test/messaging/jms/JMSTest.class"/> -->
                <include name="**/jms/MemLeakTest.class"/>
-               <!-- TODO Exclude all distributed tests until after 1.0 release -->
-               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -428,8 +420,6 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
-               <!-- TODO Exclude all distributed tests until after 1.0 release -->
-               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

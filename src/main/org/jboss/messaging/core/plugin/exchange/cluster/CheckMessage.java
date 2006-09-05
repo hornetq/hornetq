@@ -19,14 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.exchange.request;
-
-import java.io.Serializable;
-
-import org.jgroups.Address;
+package org.jboss.messaging.core.plugin.exchange.cluster;
 
 /**
- * A SendNodeIdRequest
+ * A CheckMessage
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -34,27 +30,19 @@ import org.jgroups.Address;
  * $Id$
  *
  */
-public class SendNodeIdRequest implements Serializable
+class CheckMessage implements ExchangeRequest
 {
-   private static final long serialVersionUID = -122859945318661852L;
-
-   private Address address;
+   private static final long serialVersionUID = 6254127318656179872L;
    
    private String nodeId;
    
-   public SendNodeIdRequest(Address address, String nodeId)
+   CheckMessage(String nodeId)
    {
-      this.address = address;
-      this.nodeId = nodeId;      
+      this.nodeId = nodeId;
    }
    
-   public Address getAddress()
+   public void execute(ExchangeInternal exchange) throws Exception
    {
-      return address;
-   }
-   
-   public String getNodeId()
-   {
-      return nodeId;
+      exchange.check(nodeId);
    }
 }

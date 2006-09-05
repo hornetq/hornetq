@@ -88,7 +88,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify no refs in storage
             
-      List refIds = getReferenceIds(queue.getChannelID());
+      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertTrue(refIds.isEmpty());
       
       //Verify no msgs in storage
@@ -124,7 +124,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify no refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertTrue(refIds.isEmpty());
       
       //Verify no msgs in storage
@@ -161,7 +161,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify no refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertTrue(refIds.isEmpty());
       
       //Verify no msgs in storage
@@ -197,7 +197,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 10 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(10, refIds.size());
       assertSameIds(refIds, refs, 100, 109);
       
@@ -234,7 +234,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 10 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(10, refIds.size());
       assertSameIds(refIds, refs, 100, 109);
       
@@ -274,7 +274,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 20 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(20, refIds.size());
       assertSameIds(refIds, refs, 100, 119);
       
@@ -325,7 +325,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 30 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(30, refIds.size());
       assertSameIds(refIds, refs, 100, 129);
       
@@ -366,7 +366,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 40 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
@@ -404,7 +404,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 40 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
@@ -438,7 +438,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 40 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
@@ -475,7 +475,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 40 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(40, refIds.size());
       assertSameIds(refIds, refs, 100, 139);
       
@@ -511,7 +511,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 21 refs in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(21, refIds.size());
       assertSameIds(refIds, refs, 120, 140);
       
@@ -545,7 +545,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 1 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(1, refIds.size());
       assertSameIds(refIds, refs, 140, 140);
       
@@ -579,7 +579,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       //Verify 0 msgs in storage
@@ -611,7 +611,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       //Verify 0 msgs in storage
@@ -643,7 +643,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       //Verify 0 msgs in storage
@@ -680,7 +680,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       //Verify 0 msgs in storage
@@ -718,7 +718,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       //Verify 0 msgs in storage
@@ -755,7 +755,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 20 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(20, refIds.size());
       assertSameIds(refIds, refs, 221, 240);
       
@@ -791,7 +791,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       //Verify 0 msgs in storage
@@ -823,7 +823,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
       //Verify 0 msgs in storage
@@ -855,7 +855,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 10 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(10, refIds.size());
       assertSameIds(refIds, refs, 231, 240);
       
@@ -890,7 +890,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 20 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(20, refIds.size());
       assertSameIds(refIds, refs, 221, 240);
       
@@ -921,7 +921,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());     
       
       //Verify 0 msgs in storage
@@ -948,7 +948,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       //verify 0 ref in storage
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());     
       
       //Verify 0 msgs in storage

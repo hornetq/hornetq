@@ -52,8 +52,10 @@ import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.exchange.ClusteredTopicExchange;
+import org.jboss.messaging.core.plugin.contract.ShutdownLogger;
 import org.jboss.messaging.core.plugin.exchange.DirectExchange;
+import org.jboss.messaging.core.plugin.exchange.TopicExchange;
+import org.jboss.messaging.core.plugin.exchange.cluster.ClusteredTopicExchange;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
@@ -103,6 +105,8 @@ public class ServerPeer extends ServiceMBeanSupport
    private boolean started;
 
    private int objectIDSequence = Integer.MIN_VALUE + 1;
+   
+   private boolean crashed;
 
    // wired components
 
@@ -129,6 +133,8 @@ public class ServerPeer extends ServiceMBeanSupport
    protected Exchange topicExchangeDelegate;
    protected ObjectName JMSUserManagerObjectName;
    protected JMSUserManager JMSUserManagerDelegate;
+   protected ObjectName shutdownLoggerObjectName;
+   protected ShutdownLogger shutdownLoggerDelegate;
 
    private JMSServerInvocationHandler handler;
 
@@ -210,6 +216,12 @@ public class ServerPeer extends ServiceMBeanSupport
          
          JMSUserManagerDelegate = (JMSUserManager)mbeanServer.
             getAttribute(JMSUserManagerObjectName, "Instance");
+         
+         shutdownLoggerDelegate = (ShutdownLogger)mbeanServer.
+            getAttribute(shutdownLoggerObjectName, "Instance");
+         
+         //Did the server crash last time?
+         crashed = shutdownLoggerDelegate.startup(serverPeerID);
                   
          //TODO Make block size configurable
          messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
@@ -223,12 +235,23 @@ public class ServerPeer extends ServiceMBeanSupport
                                                                     channelIdManager,
                                                                     queuedExecutorPool);
                            
-         ((ClusteredTopicExchange)topicExchangeDelegate).injectAttributes(null, null, null, "Topic", serverPeerID,
-                                                                   messageStore, 
-                                                                   channelIdManager,
-                                                                   queuedExecutorPool,
-                                                                   txRepository,
-                                                                   persistenceManagerDelegate);
+//         ((ClusteredTopicExchange)topicExchangeDelegate).injectAttributes(null, null, null, "Topic", serverPeerID,
+//                                                                   messageStore, 
+//                                                                   channelIdManager,
+//                                                                   queuedExecutorPool,
+//                                                                   txRepository,
+//                                                                   persistenceManagerDelegate);
+         
+         ((TopicExchange)topicExchangeDelegate).injectAttributes("Topic", serverPeerID,
+                                                                messageStore, 
+                                                                channelIdManager,
+                                                                queuedExecutorPool,
+                                                                txRepository);
+         
+         if (crashed)
+         {
+            topicExchangeDelegate.recover();
+         }
          
          txRepository.injectAttributes(persistenceManagerDelegate, transactionIdManager);
          
@@ -284,6 +307,8 @@ public class ServerPeer extends ServiceMBeanSupport
          // TODO unloadClientAOPConfig();
          
          queuedExecutorPool.shutdown();
+         
+         shutdownLoggerDelegate.shutdown(serverPeerID);         
    
          log.info("JMS " + this + " stopped");
       }
@@ -333,6 +358,16 @@ public class ServerPeer extends ServiceMBeanSupport
    public void setJMSUserManager(ObjectName on)
    {
       JMSUserManagerObjectName = on;
+   }
+   
+   public ObjectName getShutdownLogger()
+   {
+      return shutdownLoggerObjectName;
+   }
+
+   public void setShutdownLogger(ObjectName on)
+   {
+      shutdownLoggerObjectName = on;
    }
 
    public Object getInstance()
@@ -542,6 +577,11 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return version;
    }
+   
+   public boolean crashedLastTime()
+   {
+      return crashed;
+   }
 
    // access to hard-wired server extensions
 
@@ -600,6 +640,11 @@ public class ServerPeer extends ServiceMBeanSupport
    public Exchange getTopicExchangeDelegate()
    {
       return topicExchangeDelegate;
+   }
+   
+   public ShutdownLogger getShutdownLoggerDelegate()
+   {
+      return shutdownLoggerDelegate;
    }
    
    

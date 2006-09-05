@@ -115,17 +115,26 @@ public class Queue extends DestinationServiceSupport
          MessageStore ms = serverPeer.getMessageStore();
          PersistenceManager pm = serverPeer.getPersistenceManagerDelegate(); 
          //Binding might already exist
+         
+         log.info("Deploying queue");
+         
          Binding binding = exchange.getBindingForName(name);
+         
+         log.info("binding is: " + binding);
          
          if (binding != null)
          {
             //Reload the queue for the binding
+            log.info("reloading queue");
             exchange.reloadQueues(name, ms, pm, fullSize, pageSize, downCacheSize);
+            log.info("reloaded queue");
          }
          else
          {         
             //Make a binding for this queue
+            log.info("bidning queue");
             exchange.bindQueue(name, name, null, false, true, ms, pm, fullSize, pageSize, downCacheSize);
+            log.info("bound queue");
          }
          
          JBossQueue q = new JBossQueue(name, fullSize, pageSize, downCacheSize);

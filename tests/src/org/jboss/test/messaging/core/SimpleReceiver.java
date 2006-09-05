@@ -38,6 +38,7 @@ import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
+import org.jboss.util.id.GUID;
 
 /**
  * A simple Receiver implementation that consumes undelivered by storing them internally. Used for
@@ -316,7 +317,7 @@ public class SimpleReceiver implements Receiver
       // make sure I get rid of message if the transaction is rolled back
       if (tx != null)
       {
-         tx.addCallback(new PostAcknowledgeCommitCallback(touple));
+         tx.addCallback(new PostAcknowledgeCommitCallback(touple), new GUID().toString());
       }
    }
 

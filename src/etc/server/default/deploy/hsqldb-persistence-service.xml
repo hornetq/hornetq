@@ -21,7 +21,7 @@
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.DirectExchange"
+   <mbean code="org.jboss.messaging.core.plugin.exchange.DirectExchange"
       name="jboss.messaging:service=DirectExchange"
       xmbean-dd="xmdesc/Exchange-xmbean.xml">
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
@@ -33,7 +33,7 @@
       <attribute name="CreateTablesOnStartup">true</attribute>
    </mbean>
    
-	<mbean code="org.jboss.messaging.core.plugin.TopicExchange"
+	<mbean code="org.jboss.messaging.core.plugin.exchange.TopicExchange"
       name="jboss.messaging:service=TopicExchange"
       xmbean-dd="xmdesc/Exchange-xmbean.xml">
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy

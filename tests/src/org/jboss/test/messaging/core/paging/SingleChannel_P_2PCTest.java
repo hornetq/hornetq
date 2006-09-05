@@ -91,7 +91,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertTrue(refIds.isEmpty());
       
       //verify 99 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(99, refIds.size());
       assertSameIds(refIds, refs, 0, 98);
       
@@ -132,7 +132,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertTrue(refIds.isEmpty());
       
       //verify 100 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(100, refIds.size());
       assertSameIds(refIds, refs, 0, 99);
       
@@ -176,7 +176,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertTrue(refIds.isEmpty());
       
       //verify 109 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(109, refIds.size());
       assertSameIds(refIds, refs, 0, 108);      
       
@@ -220,7 +220,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 109);
       
       //verify 110 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(110, refIds.size());
       assertSameIds(refIds, refs, 0, 109);
       
@@ -262,7 +262,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 109);
       
       //verify 111 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(111, refIds.size());
       assertSameIds(refIds, refs, 0, 110);
       
@@ -307,7 +307,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 119);
       
       //verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(120, refIds.size());
       assertSameIds(refIds, refs, 0, 119);
       
@@ -363,7 +363,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 129);
       
       //verify 130 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(130, refIds.size());
       assertSameIds(refIds, refs, 0, 129);
       
@@ -409,7 +409,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 139);
       
       //verify 140 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(140, refIds.size());
       assertSameIds(refIds, refs, 0, 139);
       
@@ -452,7 +452,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 139);
       
       //verify 141 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(141, refIds.size());
       assertSameIds(refIds, refs, 0, 140);
       
@@ -490,7 +490,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 139);
       
       //verify 140 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(140, refIds.size());
       assertSameIds(refIds, refs, 1, 140);      
       
@@ -532,7 +532,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 100, 139);
       
       //Verify 122 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(122, refIds.size()); 
       assertSameIds(refIds, refs, 19, 140);
       
@@ -573,7 +573,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 120, 140);
       
       //Verify 121 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(121, refIds.size()); 
       assertSameIds(refIds, refs, 20, 140);
       
@@ -612,7 +612,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 140, 140);
       
       //Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(101, refIds.size()); 
       assertSameIds(refIds, refs, 40, 140);
       
@@ -650,7 +650,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());
       
       //Verify 100 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(100, refIds.size()); 
       assertSameIds(refIds, refs, 41, 140);
       
@@ -688,7 +688,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());
       
       //Verify 80 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(80, refIds.size()); 
       assertSameIds(refIds, refs, 61, 140);
       
@@ -726,7 +726,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());
       
       //Verify 20 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(20, refIds.size()); 
       assertSameIds(refIds, refs, 121, 140);
       
@@ -768,7 +768,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());
       
       //Verify 40 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(40, refIds.size()); 
       assertSameIds(refIds, refs, 121, 160);
       
@@ -811,7 +811,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());
       
       //Verify 60 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(60, refIds.size()); 
       assertSameIds(refIds, refs, 121, 180);
       
@@ -856,7 +856,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 221, 240);
       
       // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(120, refIds.size()); 
       assertSameIds(refIds, refs, 121, 240);
       
@@ -896,7 +896,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());
       
       // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(120, refIds.size()); 
       assertSameIds(refIds, refs, 121, 240);
       
@@ -934,7 +934,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());
       
       // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(120, refIds.size()); 
       assertSameIds(refIds, refs, 121, 240);
       
@@ -973,7 +973,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 231, 240);
       
       // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(120, refIds.size()); 
       assertSameIds(refIds, refs, 121, 240);
       
@@ -1014,7 +1014,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 221, 240);
       
       // Verify 120 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(120, refIds.size()); 
       assertSameIds(refIds, refs, 121, 240);
       
@@ -1051,7 +1051,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       assertEquals(0, refIds.size());     
       
       // Verify 70 refs in storage
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(70, refIds.size()); 
       assertSameIds(refIds, refs, 171, 240);
       
@@ -1085,7 +1085,7 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       refIds = getPagedReferenceIds(queue.getChannelID());
       assertEquals(0, refIds.size());     
       
-      refIds = getReferenceIds(queue.getChannelID());
+      refIds = getReferenceIdsOrderedByOrd(queue.getChannelID());
       assertEquals(0, refIds.size());     
       
       //Verify 0 msgs in storage

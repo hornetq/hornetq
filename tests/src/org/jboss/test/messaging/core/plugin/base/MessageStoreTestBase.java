@@ -124,10 +124,6 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       super.tearDown();
    }
 
-   //
-   // Non-recoverable message store
-   //
-
    ////
    //// Non-reliable message
    ////
@@ -140,240 +136,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    //////// One strong reference
    ////////
 
-   public void testNonRecoverableMessageStore_1() throws Exception
-   {
-      Message m =
-         MessageFactory.createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
-
-      // non-recoverable store, non-reliable message, one message
-      MessageReference ref = ms.reference(m);
-      assertCorrectReference(ref, m);
-
-      assertCorrectReference(ref, m);
-  
-      ref.releaseMemoryReference();
-
-      // the message store should be cleaned of everything that pertains to that message
-
-      ref = ms.reference(m.getMessageID());
-      assertNull(ref);
-   }
-
-   ////////
-   //////// Two strong references
-   ////////
-
-   public void testNonRecoverableMessageStore_1_1() throws Exception
-   {
-      Message m =
-         MessageFactory.createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
-
-      // non-recoverable store, non-reliable message, one message
-      MessageReference ref = ms.reference(m);
-      assertCorrectReference(ref, m);
-
-      MessageReference ref2 = ms.reference(m);
-
-      assertCorrectReference(ref2, m);
-   }
-
-   //////
-   ////// Multiple messages
-   //////
-
-   public void testNonRecoverableMessageStore_2() throws Exception
-   {
-      Message[] m = new Message[NUMBER_OF_MESSAGES];
-      MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
-      {
-         m[i] = MessageFactory.createCoreMessage(i, false, 700 + i, 800 + i,
-                                             (byte)(i % 10), headers, "payload" + i);
-
-         // non-recoverable store, non-reliable message, one message
-         refs[i] = ms.reference(m[i]);
-         assertCorrectReference(refs[i], m[i]);
-      }
-
-      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {         
-         assertCorrectReference(refs[i], m[i]);
-         refs[i].releaseMemoryReference();
-      }
-
-      // there are no strong references to the message reference anymore, so the message store
-      // should be cleaned of everything that pertains to those message
-
-      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         assertNull(ms.reference(m[i].getMessageID()));
-      }
-   }
-
-   ////
-   //// Reliable message
-   ////
-
-   //////
-   ////// The non-reliable store does NOT accept reliable messages
-   //////
-
-   //////
-   ////// One message
-   //////
-
-   public void testNonRecoverableMessageStore_3() throws Exception
-   {
-      Message m = MessageFactory.
-      createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
-
-      // non-recoverable store, reliable message, one message
-      try
-      {
-         ms.reference(m);
-         fail("should throw IllegalStateException");
-      }
-      catch(IllegalStateException e)
-      {
-         // OK
-      }
-   }
-
-   //////
-   ////// The non-reliable store accepts reliable messages
-   //////
-
-   ////////
-   //////// One message
-   ////////
-
-   public void testNonRecoverableMessageStore_4() throws Exception
-   {
-      Message m = MessageFactory.
-      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
-
-      // non-recoverable store, non-reliable message, one message
-      MessageReference ref = ms.reference(m);
-      assertCorrectReference(ref, m);
-      
-      ref.releaseMemoryReference();
-
-      // there's no strong reference to the unique message reference anymore, so the message store
-      // should be cleaned of everything that pertains to that message
-
-      ref = ms.reference(m.getMessageID());
-      assertNull(ref);
-   }
-
-   ////////
-   //////// Multiple messages
-   ////////
-
-   public void testNonRecoverableMessageStore_5() throws Exception
-   {
-      Message[] m = new Message[NUMBER_OF_MESSAGES];
-      MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
-      for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
-      {
-         m[i] = MessageFactory.createCoreMessage(i, false, 700 + i, 800 + i,
-                                             (byte)(i % 10), headers, "payload" + i);
-
-         // non-recoverable store, non-reliable message, one message
-         refs[i] = ms.reference(m[i]);
-         assertCorrectReference(refs[i], m[i]);
-      }
-
-      // get reachable reference
-
-      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {         
-         assertCorrectReference(refs[i], m[i]);
-         refs[i].releaseMemoryReference();
-      }
-
-      // there are no strong references to the message reference anymore, so the message store
-      // should be cleaned of everything that pertains to those message
-
-      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-      {
-         assertNull(ms.reference(m[i].getMessageID()));
-      }
-   }
-   
-   public void testNonRecoverableMessageStore_6() throws Exception
-   {
-      Message m = MessageFactory.
-      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
-
-      // non-recoverable store, non-reliable message, one message
-      MessageReference ref = ms.reference(m);
-      assertCorrectReference(ref, m);
-      
-      //Create another reference from that reference
-      MessageReference ref2 = ms.reference(m.getMessageID());
-      
-      ref.releaseMemoryReference();
-      
-      MessageReference ref3 = ms.reference(m.getMessageID());
-      assertNotNull(ref3);
-      
-      assertCorrectReference(ref3, m);
-      
-      ref2.releaseMemoryReference();
-      
-      ref3.releaseMemoryReference();
-
-      // there's no strong reference to the unique message reference anymore, so the message store
-      // should be cleaned of everything that pertains to that message
-
-      ref3 = ms.reference(m.getMessageID());
-      assertNull(ref3);
-   }
-   
-   public void testNonRecoverableMessageStore_7() throws Exception
-   {
-      Message m = MessageFactory.
-      createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
-
-      // non-recoverable store, non-reliable message, one message
-      MessageReference ref = ms.reference(m);
-      assertCorrectReference(ref, m);
-      
-      MessageReference ref2 = ms.reference(ref.getMessageID());
-      assertNotNull(ref2);      
-      assertCorrectReference(ref2, m);
-        
-      MessageReference ref3 = ms.reference(ref.getMessageID());
-      assertNotNull(ref3);      
-      assertCorrectReference(ref3, m);
-      
-      ref.releaseMemoryReference();
-      ref2.releaseMemoryReference();
-      ref3.releaseMemoryReference();
-      
-      MessageReference ref4 = ms.reference(ref.getMessageID());
- 
-      assertNull(ref4);    
-      
-   }
-
-   //
-   // Recoverable message store
-   //
-
-   ////
-   //// Non-reliable message
-   ////
-
-   //////
-   ////// One message
-   //////
-
-   ////////
-   //////// One strong reference
-   ////////
-
-   public void testRecoverableMessageStore_1() throws Exception
+   public void testMessageStore_1() throws Exception
    {
       Message m = MessageFactory.
       createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
@@ -391,7 +154,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    //////// Two strong references
    ////////
 
-   public void testRecoverableMessageStore_1_1() throws Exception
+   public void testMessageStore_1_1() throws Exception
    {
 
       Message m = MessageFactory.
@@ -410,7 +173,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    ////// Multiple messages
    //////
 
-   public void testRecoverableMessageStore_2() throws Exception
+   public void testMessageStore_2() throws Exception
    {
       Message[] m = new Message[NUMBER_OF_MESSAGES];
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
@@ -450,7 +213,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    //////// One strong reference
    ////////
 
-   public void testRecoverableMessageStore_3() throws Exception
+   public void testMessageStore_3() throws Exception
    {
       Message m = MessageFactory.
       createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
@@ -472,7 +235,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    //////// Two strong references
    ////////
 
-   public void testRecoverableMessageStore_3_1() throws Exception
+   public void testMessageStore_3_1() throws Exception
    {
       Message m = MessageFactory.
       createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
@@ -490,7 +253,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    ////// Multiple messages
    //////
 
-   public void testRecoverableMessageStore_4() throws Exception
+   public void testMessageStore_4() throws Exception
    {
       Message[] m = new Message[NUMBER_OF_MESSAGES];
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
@@ -520,7 +283,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       }
    }
    
-   public void testRecoverableMessageStore_6() throws Exception
+   public void testMessageStore_6() throws Exception
    {
 
       Message m = MessageFactory.
@@ -550,7 +313,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       assertNull(ref3);
    }
    
-   public void testRecoverableMessageStore_7() throws Exception
+   public void testMessageStore_7() throws Exception
    {
       Message m = MessageFactory.
       createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");

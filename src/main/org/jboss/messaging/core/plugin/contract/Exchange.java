@@ -139,4 +139,10 @@ public interface Exchange extends ServerPlugin
     * @throws Exception
     */
    boolean route(MessageReference ref, String routingKey, Transaction tx) throws Exception;   
+   
+   /**
+    * Recover the exchange
+    * @throws Exception
+    */
+   void recover() throws Exception;
 }

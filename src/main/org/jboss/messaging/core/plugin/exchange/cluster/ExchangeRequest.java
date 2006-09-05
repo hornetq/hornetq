@@ -19,14 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.exchange;
+package org.jboss.messaging.core.plugin.exchange.cluster;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+
 
 /**
- * A SharedState
+ * A ExchangeRequest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -34,28 +33,7 @@ import java.util.Map;
  * $Id$
  *
  */
-public class SharedState implements Serializable
+interface ExchangeRequest extends Serializable
 {
-   private static final long serialVersionUID = 7782131373080845107L;
-
-   private List bindings;
-   
-   private Map nodeIdAddressMap;
-   
-   public SharedState(List bindings, Map nodeIdAddressMap)
-   {
-      this.bindings = bindings;
-      
-      this.nodeIdAddressMap = nodeIdAddressMap;
-   }
-   
-   public List getBindings()
-   {
-      return bindings;
-   }
-   
-   public Map getNodeIdAddressMap()
-   {
-      return nodeIdAddressMap;
-   }
+   void execute(ExchangeInternal exchange) throws Exception;
 }

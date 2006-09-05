@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.QueuedExecutorPool;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.MessageQueue;
@@ -50,6 +51,8 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public class DirectExchange extends ExchangeSupport
 {
+   private static final Logger log = Logger.getLogger(DirectExchange.class);
+      
    //To avoid having to lookup the name map based on the node id every time we route a message
    //we store a reference here
    private Map shortcutNameMap;
@@ -65,7 +68,8 @@ public class DirectExchange extends ExchangeSupport
    {
       super(ds, tm);
    }
-      
+   
+     
    /*
     * Direct exchanges aren't clustered
     *

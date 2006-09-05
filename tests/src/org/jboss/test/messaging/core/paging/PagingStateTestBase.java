@@ -413,7 +413,7 @@ public class PagingStateTestBase extends MessagingTestCase
    }
    
    
-   protected List getReferenceIds(long channelId) throws Exception
+   protected List getReferenceIdsOrderedByOrd(long channelId) throws Exception
    {
       InitialContext ctx = new InitialContext();
 
@@ -424,24 +424,71 @@ public class PagingStateTestBase extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY PAGE_ORD";
+      
+      List msgIds = new ArrayList();
+
+      String sql = "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    
+      log.info("************* refs");
+      
       ResultSet rs = ps.executeQuery();
-      
-      List msgIds = new ArrayList();
-      
+            
       while (rs.next())
       {
          long msgId = rs.getLong(1);
-         long ord = rs.getLong(2);
-         long pageOrd = rs.getLong(3);
+         long ord = rs.getLong(2);         
+         
+         log.info("msgid:" + msgId + " ord:" + ord + " pageord: null");
          
          msgIds.add(new Long(msgId));
       }
       rs.close();
       ps.close();
+       
+      conn.close();
+      
+      log.info("*************** end refs");
+
+      mgr.commit();
+
+      if (txOld != null)
+      {
+         mgr.resume(txOld);
+      }
+      
+      return msgIds;
+   }
+   
+   protected List getReferenceIdsOrderedByPageOrd(long channelId) throws Exception
+   {
+      InitialContext ctx = new InitialContext();
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+      
+      javax.transaction.Transaction txOld = mgr.suspend();
+      mgr.begin();
+
+      Connection conn = ds.getConnection();
+      
+      List msgIds = new ArrayList();
+
+      String sql = "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY PAGE_ORD";
+      PreparedStatement ps = conn.prepareStatement(sql);
+      ps.setLong(1, channelId);
+   
+      ResultSet rs = ps.executeQuery();
+            
+      while (rs.next())
+      {
+         long msgId = rs.getLong(1);           
+         msgIds.add(new Long(msgId));
+      }
+      rs.close();
+      ps.close();
+       
       conn.close();
 
       mgr.commit();
