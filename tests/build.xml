@@ -880,7 +880,7 @@
    <property name="test.execution.classpath.file" value=".test.execution.classpath"/>
 
    <target name="get-test-execution-classpath" depends="init">
-      <pathconvert refid="test.execution.classpath" targetos="windows"
+      <pathconvert refid="test.execution.classpath" 
                    property="test.execution.classpath.unix"/>
       <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
    </target>
