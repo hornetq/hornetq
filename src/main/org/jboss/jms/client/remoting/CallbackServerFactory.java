@@ -60,6 +60,8 @@ public class CallbackServerFactory
    
    public static final String JMS_CALLBACK_SUBSYSTEM = "CALLBACK";
    
+   public static final String CLIENT_HOST = System.getProperty("jboss.messaging.callback.bind.address");
+   
    public static CallbackServerFactory instance = new CallbackServerFactory();
    
    private Map holders;
@@ -125,7 +127,13 @@ public class CallbackServerFactory
       String serializationType = null;
       int count = 0;
 
-      String thisAddress = serverLocator.getHost();
+      String thisAddress = CLIENT_HOST;
+      
+      if (thisAddress==null)
+      {
+    	  thisAddress = InetAddress.getLocalHost().getHostAddress();
+      }
+    	  
       boolean isSSL = serverLocator.getProtocol().equals("sslsocket");
       Map params = serverLocator.getParameters();
 
