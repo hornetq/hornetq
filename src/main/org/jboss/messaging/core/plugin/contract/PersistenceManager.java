@@ -35,7 +35,7 @@ import org.jboss.messaging.core.tx.Transaction;
  *
  * PersistenceManager.java,v 1.1 2006/02/22 17:33:42 timfox Exp
  */
-public interface PersistenceManager extends ServerPlugin
+public interface PersistenceManager extends MessagingComponent
 {
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 

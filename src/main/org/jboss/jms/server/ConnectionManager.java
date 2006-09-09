@@ -22,6 +22,7 @@
 package org.jboss.jms.server;
 
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 
 /**
@@ -31,7 +32,7 @@ import org.jboss.jms.server.endpoint.ConnectionEndpoint;
  *
  * $Id$
  */
-public interface ConnectionManager
+public interface ConnectionManager extends MessagingComponent
 {
    void registerConnection(String jmsClientVMId, String remotingClientSessionID, ConnectionEndpoint endpoint);
 

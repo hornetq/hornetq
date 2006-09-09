@@ -66,7 +66,10 @@ public class IdManagerTest extends MessagingTestCase
       sc = new ServiceContainer("all");
       sc.start();                
       
-      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
+      pm.start();
       
       pm.start();
             

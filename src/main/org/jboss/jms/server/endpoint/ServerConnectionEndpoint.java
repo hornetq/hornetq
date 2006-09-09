@@ -52,8 +52,8 @@ import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.ConcurrentReaderHashSet;
@@ -108,9 +108,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private ServerPeer serverPeer;
 
    // access to server's extensions
-   private Exchange directExchange;
+   private PostOffice queuePostOffice;
    
-   private Exchange topicExchange;
+   private PostOffice topicPostOffice;
    
    private SecurityManager sm;
    
@@ -138,7 +138,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                                       String username, String password, int prefetchSize,
                                       int defaultTempQueueFullSize,
                                       int defaultTempQueuePageSize,
-                                      int defaultTempQueueDownCacheSize)
+                                      int defaultTempQueueDownCacheSize) throws Exception
    {
       this.serverPeer = serverPeer;
       
@@ -146,9 +146,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       tr = serverPeer.getTxRepository();
       cm = serverPeer.getConnectionManager();
       ms = serverPeer.getMessageStore();
-      directExchange = serverPeer.getDirectExchangeDelegate();
-      topicExchange = serverPeer.getTopicExchangeDelegate();
-
+      queuePostOffice = serverPeer.getQueuePostOfficeInstance();
+      topicPostOffice = serverPeer.getTopicPostOfficeInstance();
+      
       started = false;
 
       this.connectionID = serverPeer.getNextObjectID();
@@ -308,17 +308,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             JBossDestination dest = (JBossDestination)i.next();
 
             if (dest.isQueue())
-            {
-//               //Unbind
-//               Binding binding = directExchange.unbind(dest.getName());
-//               
-//               //Remove all data for queue - even though it is a temporary queue it may have data in the
-//               //db since it might have gone into paging
-//               
-//               binding.getQueue().removeAllReferences();
-               
-               directExchange.unbindQueue(dest.getName());
-               
+            {     
+               queuePostOffice.unbindQueue(dest.getName());               
             }
             else
             {
@@ -650,7 +641,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
-      //We must reference the message *before* we send it the destination to be handled. This is
+      // We must reference the message *before* we send it the destination to be handled. This is
       // so we can guarantee that the message doesn't disappear from the store before the
       // handling is complete. Each channel then takes copies of the reference if they decide to
       // maintain it internally
@@ -663,14 +654,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          if (dest.isQueue())
          {
-            if (!directExchange.route(ref, dest.getName(), tx))
+            if (!queuePostOffice.route(ref, dest.getName(), tx))
             {
                throw new JMSException("Failed to route message");
             }
          }
          else
-         {                                
-            topicExchange.route(ref, dest.getName(), tx);           
+         {
+            topicPostOffice.route(ref, dest.getName(), tx);   
          }
       }
       finally

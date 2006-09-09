@@ -25,7 +25,6 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.RoundRobinPointToPointRouter;
@@ -473,7 +472,7 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       boolean gotRef;
 
-      public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+      public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
       {
          if (closed)
          {
@@ -502,7 +501,7 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
          lock = new Object();
       }
 
-      public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+      public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
       {
          // The delivering thread needs to grab the receiver's lock to complete delivery; this
          // is how Messaging receivers are written, anyway. We simulate the race condition by

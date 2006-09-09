@@ -22,8 +22,8 @@
       </constructor>
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
-      <depends optional-attribute-name="DirectExchange">jboss.messaging:service=DirectExchange</depends>
-      <depends optional-attribute-name="TopicExchange">jboss.messaging:service=TopicExchange</depends>
+      <depends optional-attribute-name="QueuePostOffice">jboss.messaging:service=QueuePostOffice</depends>
+      <depends optional-attribute-name="TopicPostOffice">jboss.messaging:service=TopicPostOffice</depends>     
       <depends optional-attribute-name="JMSUserManager">jboss.messaging:service=JMSUserManager</depends>
 	   <depends optional-attribute-name="ShutdownLogger">jboss.messaging:service=ShutdownLogger</depends>
 

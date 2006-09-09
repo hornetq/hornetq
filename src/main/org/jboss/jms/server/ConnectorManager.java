@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server;
 
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 /**
  * 
@@ -31,10 +32,9 @@ package org.jboss.jms.server;
  *
  * ConnectorManager.java,v 1.1 2006/04/13 19:43:05 timfox Exp
  */
-public interface ConnectorManager
+public interface ConnectorManager extends MessagingComponent
 {
    int registerConnector(String connectorName) throws Exception;
    
    void unregisterConnector(String connectorName) throws Exception;
-   
 }

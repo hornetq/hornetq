@@ -22,23 +22,22 @@
 package org.jboss.test.messaging.core;
 
 
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.logging.Logger;
-
-import java.util.List;
-import java.util.ArrayList;
 
 
 /**
  * A simple Receiver that "breaks" after the
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -47,28 +46,26 @@ public class BrokenReceiver implements Receiver
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(BrokenReceiver.class);
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private int counter;
    private int failurePoint;
-   private List messages;
+   private List refs;
 
 
    // Constructors --------------------------------------------------
 
    public BrokenReceiver(int failurePoint)
    {
-      messages = new ArrayList();
+      refs = new ArrayList();
       this.failurePoint = failurePoint;
    }
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable r, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
       counter++;
 
@@ -77,15 +74,15 @@ public class BrokenReceiver implements Receiver
          throw new RuntimeException("I AM BROKEN!");
       }
 
-      messages.add(r);
-      return new SimpleDelivery(observer, (MessageReference)r, true);
+      refs.add(ref);
+      return new SimpleDelivery(observer, ref, true);
    }
 
    // Public --------------------------------------------------------
 
    public List getMessages()
    {
-      return messages;
+      return refs;
    }
 
    public String toString()

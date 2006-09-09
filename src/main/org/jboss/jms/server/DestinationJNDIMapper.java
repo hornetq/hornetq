@@ -34,11 +34,13 @@ import javax.naming.NameNotFoundException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTemporaryQueue;
+import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
 /**
  * Keeps track of destinations - including temporary destinations
@@ -60,32 +62,37 @@ class DestinationJNDIMapper implements DestinationManager
    
    // Attributes ----------------------------------------------------
 
-   protected ServerPeer serverPeer;
-   protected Context initialContext;
+   private Context initialContext;
 
    // Map <name , destination holder>
-   protected Map queueMap;
-   protected Map topicMap;
-      
+   private Map queueMap;
+   private Map topicMap;
+   
+   private ServerPeer serverPeer;
+         
    // Constructors --------------------------------------------------
 
    public DestinationJNDIMapper(ServerPeer serverPeer) throws Exception
    {
-      this.serverPeer = serverPeer;
+     // this.serverPeer = serverPeer;
       queueMap = new HashMap();
       topicMap = new HashMap();
+      this.serverPeer = serverPeer;
    }
    
    // DestinationManager implementation -----------------------------
    
-   public synchronized String registerDestination(JBossDestination destination, String jndiName,
-                                                  Element securityConfiguration) throws Exception
-   {            
+   public synchronized void registerDestination(ManagedDestination destination) throws Exception
+   {        
+      log.info("^^^ REGISTERING DESTINATION: " + destination.getName());
+      
+      String jndiName = destination.getJndiName();
+      
       if (!destination.isTemporary())
       {
          String parentContext;
          String jndiNameInContext;
-   
+            
          if (jndiName == null)
          {
             parentContext = destination.isQueue() ?
@@ -108,6 +115,10 @@ class DestinationJNDIMapper implements DestinationManager
             }
             jndiNameInContext = jndiName.substring(sepIndex + 1);
          }
+         
+         destination.setJndiName(jndiName);
+         
+         log.info("JNDI NAME:" + jndiName);
    
          try
          {
@@ -119,53 +130,67 @@ class DestinationJNDIMapper implements DestinationManager
             // OK
          }      
 
-         Context c = JNDIUtil.createContext(initialContext, parentContext);
+         Context c = JNDIUtil.createContext(initialContext, parentContext);         
          
-         c.rebind(jndiNameInContext, destination);
+         JBossDestination jbDest;
          
-         //if the destination has no security configuration, then the security manager will always
-         // use its current default security configuration when requested to authorize requests for
-         // that destination
-         if (securityConfiguration != null)
+         if (destination.isQueue())
          {
-            serverPeer.getSecurityManager().setSecurityConfig(destination.isQueue(),
-                                                              destination.getName(),
-                                                              securityConfiguration);
+            if (destination.isTemporary())
+            {
+               jbDest = new JBossTemporaryQueue(destination.getName());
+            }
+            else
+            {
+               jbDest = new JBossQueue(destination.getName());
+            }
          }
+         else
+         {
+            if (destination.isTemporary())
+            {
+               jbDest = new JBossTemporaryTopic(destination.getName());
+            }
+            else
+            {
+               jbDest = new JBossTopic(destination.getName());
+            }
+         }
+         
+         c.rebind(jndiNameInContext, jbDest);         
+         log.info("Bound it in jndi");
       }
             
       if (destination.isQueue())
       {
-         queueMap.put(destination.getName(), new DestinationHolder(destination, jndiName));
+         queueMap.put(destination.getName(), destination);
       }
       else
       {
-         topicMap.put(destination.getName(), new DestinationHolder(destination, jndiName));
+         topicMap.put(destination.getName(), destination);
       }      
       
       log.debug((destination.isQueue() ? "queue" : "topic") + " " + destination.getName() + " registered ");
       log.debug((destination.isQueue() ? "queue" : "topic") + " bound in JNDI as " + jndiName);
-      
-      return jndiName;
    }
 
-   public synchronized void unregisterDestination(JBossDestination destination) throws Exception
+   public synchronized void unregisterDestination(ManagedDestination destination) throws Exception
    {
       String jndiName = null;
       if (destination.isQueue())
       {
-         DestinationHolder holder = (DestinationHolder)queueMap.remove(destination.getName());
-         if (holder != null)
+         ManagedDestination dest = (ManagedDestination)queueMap.remove(destination.getName());
+         if (dest != null)
          {
-            jndiName = holder.jndiName;
+            jndiName = dest.getJndiName();
          }
       }
       else
       {
-         DestinationHolder holder = (DestinationHolder)topicMap.remove(destination.getName());
-         if (holder != null)
+         ManagedDestination dest = (ManagedDestination)topicMap.remove(destination.getName());
+         if (dest != null)
          {
-            jndiName = holder.jndiName;
+            jndiName = dest.getJndiName();
          }
       }
       if (jndiName == null)
@@ -183,43 +208,29 @@ class DestinationJNDIMapper implements DestinationManager
       log.debug("unregistered " + (destination.isQueue() ? "queue " : "topic ") + destination.getName());
    }
    
-   public synchronized boolean destinationExists(JBossDestination dest)
+   public synchronized ManagedDestination getDestination(String name, boolean isQueue)
    {
-      return getDestination(dest) != null;
-   }
-   
-   public synchronized JBossDestination getDestination(JBossDestination dest)
-   {
-      Map m = dest.isTopic() ? topicMap : queueMap;
+      Map m = isQueue ? queueMap : topicMap;
       
-      DestinationHolder holder = (DestinationHolder)m.get(dest.getName());
+      ManagedDestination holder = (ManagedDestination)m.get(name);
       
-      return holder == null ? null : holder.destination;
+      return holder;
    }
    
    public synchronized Set getDestinations()
    {
       Set destinations = new HashSet();
       
-      for(Iterator i = queueMap.values().iterator(); i.hasNext(); )
-      {
-         DestinationHolder holder = (DestinationHolder)i.next();
-         destinations.add(holder.destination);
-      }
-      for(Iterator i = topicMap.values().iterator(); i.hasNext(); )
-      {
-         DestinationHolder holder = (DestinationHolder)i.next();
-         destinations.add(holder.destination);
-      }
+      destinations.addAll(queueMap.values());
+      
+      destinations.addAll(topicMap.values());
+      
       return destinations;
    }
    
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   void start() throws Exception
+   // MessagingComponent implementation -----------------------------
+   
+   public void start() throws Exception
    {
       initialContext = new InitialContext();
 
@@ -228,7 +239,7 @@ class DestinationJNDIMapper implements DestinationManager
       createContext(serverPeer.getDefaultTopicJNDIContext());
    }
 
-   void stop() throws Exception
+   public void stop() throws Exception
    {
       Set queues = new HashSet(queueMap.keySet());
       
@@ -237,12 +248,12 @@ class DestinationJNDIMapper implements DestinationManager
       // remove all destinations from JNDI
       for(Iterator i = queues.iterator(); i.hasNext(); )
       {
-         unregisterDestination(new JBossQueue((String)i.next()));         
+         unregisterDestination((ManagedDestination)i.next());         
       }
 
       for(Iterator i = topics.iterator(); i.hasNext(); )
       {
-         unregisterDestination(new JBossTopic((String)i.next()));
+         unregisterDestination((ManagedDestination)i.next());
       }
 
       initialContext.unbind(serverPeer.getDefaultQueueJNDIContext());
@@ -250,8 +261,11 @@ class DestinationJNDIMapper implements DestinationManager
 
       initialContext.close();
    }
+  
+   // Public --------------------------------------------------------
 
-
+   // Package protected ---------------------------------------------
+  
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
@@ -278,16 +292,4 @@ class DestinationJNDIMapper implements DestinationManager
 
    // Inner classes -------------------------------------------------
    
-   private class DestinationHolder
-   {
-      DestinationHolder(JBossDestination destination, String jndiName)
-      {
-         this.destination = destination;
-         this.jndiName = jndiName;
-      }
-      
-      JBossDestination destination;
-      
-      String jndiName;
-   }
 }

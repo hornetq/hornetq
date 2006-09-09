@@ -22,6 +22,7 @@
 package org.jboss.jms.server;
 
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -30,7 +31,7 @@ import org.jboss.jms.server.connectionfactory.JNDIBindings;
  *
  * $Id$
  */
-public interface ConnectionFactoryManager
+public interface ConnectionFactoryManager extends MessagingComponent
 {
    /**
     * @param jndiBindings - if null, the connection factory will be created and registered with the

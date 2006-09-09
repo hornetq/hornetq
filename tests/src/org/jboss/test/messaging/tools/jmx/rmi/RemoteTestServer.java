@@ -22,9 +22,9 @@
 package org.jboss.test.messaging.tools.jmx.rmi;
 
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 
 /**
  *
@@ -74,7 +74,7 @@ public class RemoteTestServer extends LocalTestServer
    /**
     * Only for in-VM use!
     */
-   public Exchange getDirectExchange() throws Exception
+   public PostOffice getDirectExchange() throws Exception
    {
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
    }
@@ -82,7 +82,7 @@ public class RemoteTestServer extends LocalTestServer
    /**
     * Only for in-VM use!
     */
-   public Exchange getTopicExchange() throws Exception
+   public PostOffice getTopicExchange() throws Exception
    {
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
    }

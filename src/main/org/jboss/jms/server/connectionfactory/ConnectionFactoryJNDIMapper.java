@@ -139,9 +139,9 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
    {
       return (javax.jms.ConnectionFactory)factories.get(new Integer(connectionFactoryID));
    }
-
-   // Public --------------------------------------------------------
-
+   
+   // MessagingComponent implementation -----------------------------
+   
    public void start() throws Exception
    {
       initialContext = new InitialContext();
@@ -154,18 +154,13 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       log.debug("stopped");
    }
 
+   // Public --------------------------------------------------------
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
- //  private long connFactoryIDSequence = 0;
-
-//   private synchronized String generateConnectionFactoryID()
-//   {
-//      return "CONNFACTORY_" + connFactoryIDSequence++;
-//   }
-
+   
    // Inner classes -------------------------------------------------
 }

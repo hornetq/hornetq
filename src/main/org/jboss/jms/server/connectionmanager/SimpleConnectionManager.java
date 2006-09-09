@@ -209,7 +209,17 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       }
    }
    
+   // MessagingComponent implementation --------------------------------
    
+   public void start() throws Exception
+   {
+      //NOOP
+   }
+   
+   public void stop() throws Exception
+   {
+      //NOOP
+   }
 
    // Public --------------------------------------------------------
 

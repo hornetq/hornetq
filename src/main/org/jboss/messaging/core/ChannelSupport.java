@@ -140,7 +140,7 @@ public abstract class ChannelSupport implements Channel
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver sender, Routable r, Transaction tx)
+   public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
       checkClosed();
       
@@ -154,7 +154,7 @@ public abstract class ChannelSupport implements Channel
             // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
             // result, but when remoting does, we can use a full SEDA approach and get even better
             // throughput.
-            this.executor.execute(new HandleRunnable(result, sender, r, true));
+            this.executor.execute(new HandleRunnable(result, sender, ref, true));
          }
          catch (InterruptedException e)
          {
@@ -165,11 +165,11 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         return handleInternal(sender, r, tx, true);
+         return handleInternal(sender, ref, tx, true);
       }
    }
    
-   public Delivery handleDontPersist(DeliveryObserver sender, Routable r, Transaction tx)
+   public Delivery handleDontPersist(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
       checkClosed();
       
@@ -183,7 +183,7 @@ public abstract class ChannelSupport implements Channel
             // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
             // result, but when remoting does, we can use a full SEDA approach and get even better
             // throughput.
-            this.executor.execute(new HandleRunnable(result, sender, r, false));
+            this.executor.execute(new HandleRunnable(result, sender, ref, false));
          }
          catch (InterruptedException e)
          {
@@ -194,7 +194,7 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         return handleInternal(sender, r, tx, false);
+         return handleInternal(sender, ref, tx, false);
       }
    }
       
@@ -671,16 +671,18 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected Delivery handleInternal(DeliveryObserver sender, Routable r, Transaction tx, boolean persist)
+   protected Delivery handleInternal(DeliveryObserver sender, MessageReference ref,
+                                     Transaction tx, boolean persist)
    {
-      if (r == null)
+      if (ref == null)
       {
          return null;
       }
 
-      if (trace) { log.trace(this + " handles " + r + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
+      if (trace) { log.trace(this + " handles " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
  
-      MessageReference ref = obtainReference(r);
+      //Each channel has its own copy of the reference
+      ref = ref.copy();
 
       try
       {
@@ -705,9 +707,9 @@ public abstract class ChannelSupport implements Channel
             // delivery of a reliable
             // message, which in these conditions cannot be done.
 
-            if (r.isReliable() && !acceptReliableMessages)
+            if (ref.isReliable() && !acceptReliableMessages)
             {
-               log.error("Cannot handle reliable message " + r
+               log.error("Cannot handle reliable message " + ref
                         + " because the channel has a non-recoverable state!");
                return null;
             }
@@ -739,11 +741,9 @@ public abstract class ChannelSupport implements Channel
                // this transaction has no chance to succeed, since a reliable
                // message cannot be
                // safely stored by a non-recoverable state, so doom the
-               // transaction
-               if (trace)
-               {
-                  log.trace(this + " cannot handle reliable messages, dooming the transaction");
-               }
+               // transaction               
+               log.warn(this + " cannot handle reliable messages, dooming the transaction");
+               
                tx.setRollbackOnly();
             } 
             else
@@ -805,39 +805,7 @@ public abstract class ChannelSupport implements Channel
       if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); }
       
       return removed;
-   }
-   
-   protected MessageReference obtainReference(Routable r)
-   {
-      MessageReference ref = null;
-
-      // Convert to reference
-      try
-      {
-         if (!r.isReference())
-         {
-            // We should only handle references in core.
-            // TODO enforce this in the signature of handle method
-            // See http://jira.jboss.com/jira/browse/JBMESSAGING-255
-            log.warn("Should only handle references");
-            // Remove this when this is enforced
-            ref = ms.reference((Message) r);
-         }
-         else
-         {
-            // Each channel has its own copy of the reference
-            ref = ((MessageReference) r).copy();
-         }
-
-         return ref;
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to reference routable", e);
-         // FIXME - Swallowing exceptions
-         return null;
-      }
-   }
+   }     
 
    protected InMemoryCallback getCallback(Transaction tx)
    {
@@ -1108,21 +1076,21 @@ public abstract class ChannelSupport implements Channel
 
       DeliveryObserver sender;
 
-      Routable routable;
+      MessageReference ref;
       
       boolean persist;
 
-      HandleRunnable(Future result, DeliveryObserver sender, Routable routable, boolean persist)
+      HandleRunnable(Future result, DeliveryObserver sender, MessageReference ref, boolean persist)
       {
          this.result = result;
          this.sender = sender;
-         this.routable = routable;
+         this.ref = ref;
          this.persist = persist;
       }
 
       public void run()
       {
-         Delivery d = handleInternal(sender, routable, null, persist);
+         Delivery d = handleInternal(sender, ref, null, persist);
          result.setResult(d);
       }
    }   

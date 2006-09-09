@@ -32,9 +32,9 @@ import javax.transaction.UserTransaction;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.remoting.ServerInvocationHandler;
 
 /**
@@ -247,12 +247,12 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getPersistenceManager();
    }
    
-   public Exchange getDirectExchange() throws Exception
+   public PostOffice getDirectExchange() throws Exception
    {
       return server.getDirectExchange();
    }
    
-   public Exchange getTopicExchange() throws Exception
+   public PostOffice getTopicExchange() throws Exception
    {
       return server.getTopicExchange();
    }

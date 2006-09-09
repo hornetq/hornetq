@@ -44,7 +44,7 @@ import java.util.List;
  *
  * $Id$
  */
-public interface Channel extends DeliveryObserver, Receiver, Distributor
+public interface Channel extends DeliveryObserver, Distributor, Receiver
 {
 
    /**    

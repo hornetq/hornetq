@@ -30,6 +30,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -43,7 +44,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-public class TransactionRepository
+public class TransactionRepository implements MessagingComponent
 {
    // Constants -----------------------------------------------------
 
@@ -63,19 +64,28 @@ public class TransactionRepository
    
    // Constructors --------------------------------------------------
    
-   public TransactionRepository() throws Exception
-   {
-      globalToLocalMap = new ConcurrentReaderHashMap();           
-   }
-   
-   // Public --------------------------------------------------------
-   
-   public void injectAttributes(PersistenceManager persistenceManager, IdManager idManager)
+   public TransactionRepository(PersistenceManager persistenceManager, IdManager idManager)
    {
       this.persistenceManager = persistenceManager;
       
       this.idManager = idManager;
+   
+      globalToLocalMap = new ConcurrentReaderHashMap();           
    }
+   
+   // MessagingComponent implementation --------------------------------
+   
+   public void start() throws Exception
+   {
+      //NOOP
+   }
+   
+   public void stop() throws Exception
+   {
+      //NOOP
+   }
+   
+   // Public --------------------------------------------------------   
 
    public List getPreparedTransactions()
    {

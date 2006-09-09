@@ -26,7 +26,7 @@ import java.util.List;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.local.MessageQueue;
+import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.LockMap;
 
@@ -65,7 +65,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      MessageQueue queue = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
                            
       Message[] msgs = new Message[241];
       

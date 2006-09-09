@@ -30,10 +30,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.JDBCServiceSupport;
+import org.jboss.messaging.core.plugin.JDBCSupport;
 
 /**
  * A JDBCJMSUserManager
@@ -47,11 +51,19 @@ import org.jboss.messaging.core.plugin.JDBCServiceSupport;
  * $Id$
  *
  */
-public class JDBCJMSUserManager extends JDBCServiceSupport implements JMSUserManager
+public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
 {
    private static final Logger log = Logger.getLogger(JDBCJMSUserManager.class);
+   
+   // Constructors ----------------------------------------------------
+   
+   public JDBCJMSUserManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
+                             boolean createTablesOnStartup)
+   {
+      super(ds, tm, sqlProperties, createTablesOnStartup);
+   }
       
-   // PersistentServiceSupport overrides ----------------------------
+   // JDBCSupport overrides ----------------------------
    
    protected Map getDefaultDMLStatements()
    {                
@@ -72,23 +84,22 @@ public class JDBCJMSUserManager extends JDBCServiceSupport implements JMSUserMan
       return map;
    }
    
-   // ServiceMBeanSupport overrides ---------------------------------
+   // MessagingComponent overrides ---------------------------------
    
-   protected void startService() throws Exception
+   public void start() throws Exception
    {
-      super.startService();
+      super.start();
       
       insertUserRoleData();
    }
+   
+   public void stop() throws Exception
+   {
+      super.stop();
+   }
 
-   // MBean operations ----------------------------------------------
-   
-   // MBean attributes --------------------------------------------------------
-   
    // JMSUserManager implementation -------------------------------------
 
-   //TODO There is no reason why this class should implement ClientIDRetriever
-   //the implementation should be moved out into a completely different service
    public String getPreConfiguredClientID(String username) throws Exception
    {
       Connection conn = null;
@@ -137,6 +148,8 @@ public class JDBCJMSUserManager extends JDBCServiceSupport implements JMSUserMan
          wrap.end();
       }     
    }
+   
+   // Private ----------------------------------------------------------------------
    
    private void insertUserRoleData() throws Exception
    {

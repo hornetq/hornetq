@@ -112,12 +112,12 @@ public class SimpleDeliveryTest extends MessagingTestCase
       sc.start();
       
       PersistenceManager pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
+      pm.start();
       
-      ((JDBCPersistenceManager)pm).start();
-      
-      TransactionRepository tr = new TransactionRepository();
-      tr.injectAttributes(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      TransactionRepository tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr.start();
       
       Transaction tx = tr.createTransaction();
       
@@ -126,6 +126,7 @@ public class SimpleDeliveryTest extends MessagingTestCase
       assertTrue(delivery.isDone());
       
       pm.stop();
+      tr.stop();
       
       sc.stop();
    }

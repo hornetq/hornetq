@@ -27,8 +27,8 @@ import java.util.Iterator;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.tx.Transaction;
@@ -72,7 +72,7 @@ public class RoundRobinPointToPointRouter implements Router
 
    // Router implementation -----------------------------------------
    
-   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
       int initial, current;
       ArrayList receiversCopy;
@@ -102,9 +102,9 @@ public class RoundRobinPointToPointRouter implements Router
 
          try
          {
-            Delivery d = r.handle(observer, routable, tx);
+            Delivery d = r.handle(observer, ref, tx);
 
-            if (trace) { log.trace("receiver " + r + " handled " + routable + " and returned " + d); }
+            if (trace) { log.trace("receiver " + r + " handled " + ref + " and returned " + d); }
 
             if (d != null && !d.isCancelled())
             {

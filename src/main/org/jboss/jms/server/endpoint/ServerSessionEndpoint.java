@@ -38,12 +38,15 @@ import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.destination.ManagedDestination;
+import org.jboss.jms.server.destination.ManagedQueue;
+import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
@@ -51,11 +54,15 @@ import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.Exchange;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.exchange.Binding;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.util.id.GUID;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * Concrete implementation of SessionEndpoint.
@@ -90,13 +97,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private PersistenceManager pm;
    private MessageStore ms;
    private DestinationManager dm;
-   private Exchange topicExchange;
-   private Exchange directExchange;
+   private IdManager idm;
+   private QueuedExecutorPool pool;
+   private PostOffice topicPostOffice;
+   private PostOffice queuePostOffice;
    
    
    // Constructors --------------------------------------------------
 
    protected ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
+      throws Exception
    {
       this.sessionID = sessionID;
       
@@ -104,11 +114,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       ServerPeer sp = connectionEndpoint.getServerPeer();
 
-      pm = sp.getPersistenceManagerDelegate();
+      pm = sp.getPersistenceManagerInstance();
       ms = sp.getMessageStore();
       dm = sp.getDestinationManager();
-      topicExchange = sp.getTopicExchangeDelegate();
-      directExchange = sp.getDirectExchangeDelegate();
+      topicPostOffice = sp.getTopicPostOfficeInstance();
+      queuePostOffice = sp.getQueuePostOfficeInstance();
+      idm = sp.getChannelIdManager();
+      pool = sp.getQueuedExecutorPool();
 
       consumers = new HashMap();
 		browsers = new HashMap();  
@@ -136,15 +148,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          log.debug("creating consumer for " + jmsDestination + ", selector " + selectorString + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
    
-         //"Refresh" the destination - this will populate it with it's paging values
-         //TODO There's probably a better way of doing this
+         ManagedDestination mDest = dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue());
          
-         if (!dm.destinationExists(jmsDestination))
+         if (jmsDestination == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
-         } 
-         
-         jmsDestination = dm.getDestination(jmsDestination);
+         }
          
          if (jmsDestination.isTemporary())
          {
@@ -176,13 +185,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
                // non-durable subscription
                if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + jmsDestination); }
                      
-               binding = topicExchange.bindQueue(new GUID().toString(), jmsDestination.getName(),
-                                                 selector, noLocal,
-                                                 false, ms, pm,
-                                                 jmsDestination.getFullSize(),
-                                                 jmsDestination.getPageSize(),
-                                                 jmsDestination.getDownCacheSize());
+               //Create the sub
+               QueuedExecutor executor = (QueuedExecutor)pool.get();
+               Queue q = 
+                  new Queue(idm.getId(), ms, pm, true, false,
+                           mDest.getFullSize(),
+                           mDest.getPageSize(),
+                           mDest.getDownCacheSize(),
+                           executor, selector);
                
+               //Make a binding for this queue
+               binding = topicPostOffice.bindQueue(new GUID().toString(), jmsDestination.getName(), false, q);               
             }
             else
             {
@@ -202,7 +215,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
                
-               binding = topicExchange.getBindingForName(name);
+               binding = topicPostOffice.getBindingForQueueName(name);
                   
                if (binding == null)
                {
@@ -210,14 +223,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   if (trace) { log.trace("creating new durable subscription on " + jmsDestination); }
                   
-                  //Create a new binding for the durable subscription
-
-                  binding = topicExchange.bindQueue(name, jmsDestination.getName(),
-                                                  selector, noLocal,
-                                                  true, ms, pm,
-                                                  jmsDestination.getFullSize(),
-                                                  jmsDestination.getPageSize(),
-                                                  jmsDestination.getDownCacheSize());
+                  QueuedExecutor executor = (QueuedExecutor)pool.get();
+                  Queue q = 
+                     new Queue(idm.getId(), ms, pm, true, true,
+                              mDest.getFullSize(),
+                              mDest.getPageSize(),
+                              mDest.getDownCacheSize(),
+                              executor, selector);
+                  
+                  //Make a binding for this queue
+                  binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), false, q);               
                }
                else
                {
@@ -251,16 +266,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
                      // Unbind the durable subscription
                      
-                     topicExchange.unbindQueue(name);
+                     topicPostOffice.unbindQueue(name);
    
                      // create a fresh new subscription
                      
-                     binding = topicExchange.bindQueue(name, jmsDestination.getName(),
-                                                     selector, noLocal,
-                                                     true, ms, pm,
-                                                     jmsDestination.getFullSize(),
-                                                     jmsDestination.getPageSize(),
-                                                     jmsDestination.getDownCacheSize());
+                     QueuedExecutor executor = (QueuedExecutor)pool.get();
+                     Queue q = 
+                        new Queue(idm.getId(), ms, pm, true, true,
+                                 mDest.getFullSize(),
+                                 mDest.getPageSize(),
+                                 mDest.getDownCacheSize(),
+                                 executor, selector);
+                     
+                     //Make a binding for this queue
+                     binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), false, q);  
                   }               
                }
             }
@@ -270,7 +289,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             //Consumer on a jms queue
             
             //Let's find the binding
-            binding = directExchange.getBindingForName(jmsDestination.getName());
+            binding = queuePostOffice.getBindingForQueueName(jmsDestination.getName());
             
             if (binding == null)
             {
@@ -322,12 +341,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Cannot browse a topic");
          }
    	   
-         if (!dm.destinationExists(jmsDestination))
+         if (dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue()) == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
          
-         Binding binding = directExchange.getBindingForName(jmsDestination.getName());
+         Binding binding = queuePostOffice.getBindingForQueueName(jmsDestination.getName());
          
    	   int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
    	   
@@ -359,12 +378,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Session is closed");
          }
          
-         if (!dm.destinationExists(new JBossQueue(name)))
+         ManagedDestination dest = (ManagedDestination)dm.getDestination(name, true);
+         
+         if (dest == null)
          {
             throw new JMSException("There is no administratively defined queue with name:" + name);
          }        
    
-         return new JBossQueue(name);
+         return new JBossQueue(dest.getName());
       }
       catch (Throwable t)
       {
@@ -381,10 +402,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Session is closed");
          }
          
-         if (!dm.destinationExists(new JBossTopic(name)))
+         ManagedDestination dest = (ManagedDestination)dm.getDestination(name, false);
+                  
+         if (dest == null)
          {
             throw new JMSException("There is no administratively defined topic with name:" + name);
-         } 
+         }        
    
          return new JBossTopic(name);
       }
@@ -529,27 +552,32 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          //Register with the destination manager
          
+         ManagedDestination mDest;
+         
+         int fullSize = connectionEndpoint.getDefaultTempQueueFullSize();
+         int pageSize = connectionEndpoint.getDefaultTempQueuePageSize();
+         int downCacheSize = connectionEndpoint.getDefaultTempQueueDownCacheSize();
+         
          if (dest.isTopic())
          {
-            //TODO - we should find a better way of maintaining the paging params
-            dest = new JBossTemporaryTopic(dest.getName(),
-                     connectionEndpoint.getDefaultTempQueueFullSize(),
-                     connectionEndpoint.getDefaultTempQueuePageSize(),
-                     connectionEndpoint.getDefaultTempQueueDownCacheSize());
+            mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize);
+         }
+         else
+         {
+            mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize);
          }
          
-         dm.registerDestination(dest, null, null);
+         dm.registerDestination(mDest);
          
          if (dest.isQueue())
          {
-            //Create a new binding
-
-            directExchange.bindQueue(dest.getName(), dest.getName(),
-                                     null, false,
-                                     false, ms, pm,
-                                     connectionEndpoint.getDefaultTempQueueFullSize(),
-                                     connectionEndpoint.getDefaultTempQueuePageSize(),
-                                     connectionEndpoint.getDefaultTempQueueDownCacheSize());        
+            QueuedExecutor executor = (QueuedExecutor)pool.get();
+            Queue q = 
+               new Queue(idm.getId(), ms, pm, true, true, fullSize, pageSize, downCacheSize,
+                         executor, null);
+            
+            //Make a binding for this queue
+            queuePostOffice.bindQueue(dest.getName(), dest.getName(), false, q);  
          }         
       }
       catch (Throwable t)
@@ -572,21 +600,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
          }
          
-         if (!dm.destinationExists(dest))
+         ManagedDestination mDest = dm.getDestination(dest.getName(), dest.isQueue());
+         
+         if (mDest == null)
          {
-            throw new InvalidDestinationException("Destination:" + dest + " does not exist");      
+            throw new InvalidDestinationException("No such destination: " + dest);
          }
                   
          if (dest.isQueue())
          {
             //Unbind
-            directExchange.unbindQueue(dest.getName());
+            queuePostOffice.unbindQueue(dest.getName());
          }
          else
          {
             //Topic
             
-            List bindings = topicExchange.listBindingsForWildcard(dest.getName());
+            List bindings = topicPostOffice.listBindingsForCondition(dest.getName());
             
             if (!bindings.isEmpty())
             {
@@ -594,7 +624,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
          }
          
-         dm.unregisterDestination(dest);         
+         dm.unregisterDestination(mDest);         
             
          connectionEndpoint.removeTemporaryDestination(dest);
       }
@@ -626,7 +656,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          String queueName = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
          
-         Binding binding = topicExchange.getBindingForName(queueName);
+         Binding binding = topicPostOffice.getBindingForQueueName(queueName);
          
          if (binding == null)
          {
@@ -636,7 +666,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          //Unbind it
   
-         topicExchange.unbindQueue(queueName);
+         topicPostOffice.unbindQueue(queueName);
       }
       catch (Throwable t)
       {

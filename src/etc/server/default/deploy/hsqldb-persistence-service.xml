@@ -8,7 +8,7 @@
 
 <server>
 
-   <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
+   <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManagerService"
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
       <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
@@ -21,36 +21,111 @@
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.exchange.DirectExchange"
-      name="jboss.messaging:service=DirectExchange"
-      xmbean-dd="xmdesc/Exchange-xmbean.xml">
-      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
-           the DataSource JNDI name in order to actually get a reference to it. Fix this.
-      -->   
+   <mbean code="org.jboss.messaging.core.plugin.SimplePostOfficeService"
+      name="jboss.messaging:service=QueuePostOffice"
+      xmbean-dd="xmdesc/SimplePostOffice-xmbean.xml"> 
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends> 
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="PostOfficeName">Queue</attribute>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
    </mbean>
    
-	<mbean code="org.jboss.messaging.core.plugin.exchange.TopicExchange"
-      name="jboss.messaging:service=TopicExchange"
-      xmbean-dd="xmdesc/Exchange-xmbean.xml">
-      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
-           the DataSource JNDI name in order to actually get a reference to it. Fix this.
-      -->   
+   <mbean code="org.jboss.messaging.core.plugin.SimplePostOfficeService"
+      name="jboss.messaging:service=TopicPostOffice"
+      xmbean-dd="xmdesc/SimplePostOffice-xmbean.xml"> 
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="PostOfficeName">Topic</attribute>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
    </mbean> 
    
-   <mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManager"
+   <!--
+   
+   Uncomment this and comment out the one above to enable clustered topics
+   
+   <mbean code="org.jboss.messaging.core.plugin.ClusteredTopicPostOfficeService"
+      name="jboss.messaging:service=TopicPostOffice"
+      xmbean-dd="xmdesc/ClusteredTopicPostOffice-xmbean.xml"> 
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="PostOfficeName">Clustered Topic</attribute>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <attribute name="CreateTablesOnStartup">true</attribute>      
+      <attribute name="GroupName">cluster1</attribute>
+      <attribute name="StateTimeout">5000</attribute>
+      <attribute name="CastTimeout">5000</attribute>
+      <attribute name="SyncChannelConfig">
+         <UDP mcast_addr="228.8.8.8" mcast_port="45568"
+              ip_ttl="8" ip_mcast="true"
+              mcast_send_buf_size="800000" mcast_recv_buf_size="150000"
+              ucast_send_buf_size="800000" ucast_recv_buf_size="150000"
+              loopback="false"/>
+         <PING timeout="2000" num_initial_members="3"
+              up_thread="true" down_thread="true"/>
+         <MERGE2 min_interval="10000" max_interval="20000"/>
+         <FD shun="true" up_thread="true" down_thread="true"
+              timeout="2500" max_tries="5"/>
+         <VERIFY_SUSPECT timeout="3000" num_msgs="3"
+              up_thread="true" down_thread="true"/>
+         <pbcast.NAKACK gc_lag="50" retransmit_timeout="300,600,1200,2400,4800"
+              max_xmit_size="8192"
+              up_thread="true" down_thread="true"/>
+         <pbcast.STABLE desired_avg_gossip="20000"
+              up_thread="true" down_thread="true"/>
+         <FRAG frag_size="8192"
+              down_thread="true" up_thread="true"/>
+         <pbcast.GMS join_timeout="5000" join_retry_timeout="2000"
+              shun="true" print_local_addr="true"/>
+         <pbcast.STATE_TRANSFER up_thread="true" down_thread="true"/>
+      </attribute>      
+      
+      TODO
+      Do we need failure detection and group management in this stack ?? 
+      
+      <attribute name="AsyncChannelConfig">
+         <UDP mcast_addr="228.8.8.8" mcast_port="45569"
+              ip_ttl="8" ip_mcast="true"
+              mcast_send_buf_size="800000" mcast_recv_buf_size="150000"
+              ucast_send_buf_size="800000" ucast_recv_buf_size="150000"
+              loopback="false"/>
+         <PING timeout="2000" num_initial_members="3"
+              up_thread="true" down_thread="true"/>
+         <MERGE2 min_interval="10000" max_interval="20000"/>
+         <FD shun="true" up_thread="true" down_thread="true"
+              timeout="2500" max_tries="5"/>
+         <VERIFY_SUSPECT timeout="3000" num_msgs="3"
+              up_thread="true" down_thread="true"/>
+         <pbcast.NAKACK gc_lag="50" retransmit_timeout="300,600,1200,2400,4800"
+              max_xmit_size="8192"
+              up_thread="true" down_thread="true"/>
+         <pbcast.STABLE desired_avg_gossip="20000"
+              up_thread="true" down_thread="true"/>
+         <FRAG frag_size="8192"
+              down_thread="true" up_thread="true"/>
+         <pbcast.GMS join_timeout="5000" join_retry_timeout="2000"
+              shun="true" print_local_addr="true"/>
+      </attribute>      
+   </mbean>
+   
+   -->
+   
+   <mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
       name="jboss.messaging:service=JMSUserManager"
       xmbean-dd="xmdesc/JMSUserManager-xmbean.xml">
-      <!-- TODO this insures the fact that dependency exists. However I need to redundantly specifiy
-           the DataSource JNDI name in order to actually get a reference to it. Fix this.
-      -->   
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <attribute name="CreateTablesOnStartup">true</attribute>
+   </mbean>    
+   
+	<mbean code="org.jboss.messaging.core.plugin.JDBCShutdownLoggerService"
+      name="jboss.messaging:service=ShutdownLogger"
+      xmbean-dd="xmdesc/JDBCShutdownLogger-xmbean.xml">
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <attribute name="DataSource">java:/DefaultDS</attribute>

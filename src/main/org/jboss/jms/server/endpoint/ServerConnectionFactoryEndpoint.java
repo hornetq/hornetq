@@ -111,7 +111,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
             
             
             String preconfClientID =
-               serverPeer.getJMSUserManagerDelegate().getPreConfiguredClientID(username);
+               serverPeer.getJmsUserManagerInstance().getPreConfiguredClientID(username);
             
             if (preconfClientID != null)
             {

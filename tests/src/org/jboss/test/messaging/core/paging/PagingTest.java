@@ -21,15 +21,15 @@
 */
 package org.jboss.test.messaging.core.paging;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
+import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.local.MessageQueue;
+import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.SimpleMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -63,15 +63,15 @@ public class PagingTest extends MessagingTestCase
 
    public void testPaging() throws Exception
    {
-      MessageQueue p = new MessageQueue(0, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue p = new Queue(0, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
 
       CoreMessage m = null;
 
       m = MessageFactory.createCoreMessage(0);
-      p.handle(null, m, null);
+      p.handle(null, ms.reference(m), null);
 
       m = MessageFactory.createCoreMessage(1);
-      p.handle(null, m, null);
+      p.handle(null, ms.reference(m), null);
 
    }
 
@@ -85,17 +85,21 @@ public class PagingTest extends MessagingTestCase
       sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
-      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+      pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
       pm.start();
+            
       ms = new SimpleMessageStore();
+      ms.start();
    }
 
    public void tearDown() throws Exception
    {
-      ms = null;
-      pm = null;
+      pm.stop();
+      ms.stop();
       sc.stop();
-      sc = null;
+
       super.tearDown();
    }
 

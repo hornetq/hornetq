@@ -93,16 +93,17 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doSetup(boolean batch) throws Throwable
+   protected void doSetup(boolean batch, int maxParams) throws Throwable
    {
-      pm = createPM();      
-      pm.setUsingBatchUpdates(batch);      
+      pm = createPM(batch, maxParams);         
       ms = new SimpleMessageStore();      
    }
    
-   protected JDBCPersistenceManager createPM() throws Throwable
-   {
-      JDBCPersistenceManager p = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
+   protected JDBCPersistenceManager createPM(boolean batch, int maxParams) throws Throwable
+   {      
+      JDBCPersistenceManager p =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, batch, true, maxParams);      
       p.start();
       return p;
    }
@@ -115,6 +116,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          sc = null;
       }
       pm.stop();
+      ms.stop();
       super.tearDown();
    }
    
@@ -134,7 +136,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
    public void testAddRemoveReference() throws Throwable
    {
-      doSetup(false);
+      doSetup(false, 100);
       
       Channel channel1 = new SimpleChannel(0, ms);
       Channel channel2 = new SimpleChannel(1, ms);
@@ -296,7 +298,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    protected void addRemoveGetReferences(boolean batch) throws Throwable
    {
-      doSetup(false);
+      doSetup(false, 100);
       
       Channel channel1 = new SimpleChannel(0, ms);
       
@@ -480,7 +482,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testPageOrders() throws Throwable
    {
-      doSetup(false);
+      doSetup(false, 100);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -571,7 +573,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
      
    public void testGetMessages() throws Throwable
    {
-      doSetup(false);
+      doSetup(false, 100);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -648,7 +650,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetInitialRefInfos() throws Throwable
    {
-      doSetup(false);
+      doSetup(false, 100);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -840,9 +842,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetMessagesMaxParams() throws Throwable
    {
-      doSetup(false);
-      
-      pm.setMaxParams(5);
+      doSetup(false, 5);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -918,13 +918,12 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
    public void testRetrievePreparedTransactions() throws Throwable
    {
-      doSetup(false);
+      doSetup(false, 100);
       
       Channel channel = new SimpleChannel(0, ms);
       
-      TransactionRepository txRep = new TransactionRepository();
-      IdManager idMgr = new IdManager("TRANSCTION_ID", 10, pm);
-      txRep.injectAttributes(pm, idMgr);
+      TransactionRepository txRep = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      txRep.start();
 
       Message[] messages = createMessages(10);
       
@@ -1274,12 +1273,11 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    protected void doTransactionCommit(boolean xa, boolean batch) throws Throwable
    {
-      doSetup(batch);
+      doSetup(batch, 100);
 
       Channel channel = new SimpleChannel(0, ms);
-      TransactionRepository txRep = new TransactionRepository();
-      IdManager idMgr = new IdManager("TRANSCTION_ID", 10, pm);
-      txRep.injectAttributes(pm, idMgr);
+      TransactionRepository txRep = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      txRep.start();
 
       log.debug("transaction log started");
 
@@ -1371,12 +1369,11 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
    protected void doTransactionRollback(boolean xa, boolean batch) throws Throwable
    {
-      doSetup(batch);
+      doSetup(batch, 100);
 
       Channel channel = new SimpleChannel(0, ms);
-      TransactionRepository txRep = new TransactionRepository();
-      IdManager idMgr = new IdManager("TRANSCTION_ID", 10, pm);
-      txRep.injectAttributes(pm, idMgr);
+      TransactionRepository txRep = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      txRep.start();
  
       Message[] messages = createMessages(10);     
       

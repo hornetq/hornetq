@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.memory;
 
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+
 /**
  * A MemoryManager
 
@@ -30,12 +32,7 @@ package org.jboss.messaging.core.memory;
  * $Id$
  *
  */
-public interface MemoryManager
+public interface MemoryManager extends MessagingComponent
 {
-   void start();
-   
-   void stop();
-   
-   boolean isMemoryLow();
-      
+   boolean isMemoryLow();    
 }

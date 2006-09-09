@@ -25,10 +25,12 @@ import java.util.Iterator;
 
 /**
  * An interface for Receiver management.
- *
+ * 
+ * Distributes a reference to a maximum of one of the attached receivers
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision$</tt>
- *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
  * $Id$
  */
 public interface Distributor

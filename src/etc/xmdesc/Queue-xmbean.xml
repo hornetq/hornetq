@@ -7,7 +7,7 @@
 
 <mbean>
    <description>A deployable JBoss Messaging Queue</description>
-   <class>org.jboss.jms.server.destination.Queue</class>
+   <class>org.jboss.jms.server.destination.QueueService</class>
 
    <!-- Managed constructors -->
 
@@ -95,6 +95,12 @@
       <name>DownCacheSize</name>
       <type>int</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="isClustered" setMethod="setClustered">
+      <description>Is this a clustered destination?</description>
+      <name>Clustered</name>
+      <type>boolean</type>
+   </attribute>   
    
    <!-- Managed operations -->
 

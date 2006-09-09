@@ -23,8 +23,8 @@ package org.jboss.jms.server;
 
 import java.util.Set;
 
-import org.jboss.jms.destination.JBossDestination;
-import org.w3c.dom.Element;
+import org.jboss.jms.server.destination.ManagedDestination;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public interface DestinationManager
+public interface DestinationManager extends MessagingComponent
 {
    /**
     * Method called by a destination service to register itself with the server peer. The server
@@ -42,19 +42,15 @@ public interface DestinationManager
     *
     * @return the name under which the destination was bound in JNDI.
     */
-   String registerDestination(JBossDestination destination,
-                              String jndiName, Element securityConfig) throws Exception;
+   void registerDestination(ManagedDestination destination) throws Exception;
 
    /**
     * Method called by a destination service to unregister itself from the server peer. The server
     * peer is supposed to clean up the state maintained on behalf of the unregistered destination.
     */
-   void unregisterDestination(JBossDestination destination) throws Exception;
+   void unregisterDestination(ManagedDestination destination) throws Exception;
    
-   boolean destinationExists(JBossDestination destination);
-   
-   //TODO There is probably a better way of doing this
-   JBossDestination getDestination(JBossDestination dest);
+   ManagedDestination getDestination(String name, boolean isQueue);
    
    Set getDestinations();   
 }

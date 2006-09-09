@@ -26,12 +26,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.ShutdownLogger;
 
 /**
- * A ShutdownLogger
+ * 
+ * A JDBCShutdownLogger
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -39,30 +44,20 @@ import org.jboss.messaging.core.plugin.contract.ShutdownLogger;
  * $Id$
  *
  */
-public class JDBCShutdownLogger extends JDBCServiceSupport implements ShutdownLogger
+public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
 {
    private static final Logger log = Logger.getLogger(JDBCShutdownLogger.class); 
    
-   protected Map getDefaultDDLStatements()
+   // Constructors ----------------------------------------------------
+   
+   public JDBCShutdownLogger(DataSource ds, TransactionManager tm, Properties sqlProperties,
+                             boolean createTablesOnStartup)
    {
-      Map sql = new HashMap();
-      
-      sql.put("CREATE_STARTUP", "CREATE TABLE JMS_STARTUP (NODE_ID CHAR(1) PRIMARY KEY)");
-      
-      return sql;
+      super(ds, tm, sqlProperties, createTablesOnStartup);
    }
-
-   protected Map getDefaultDMLStatements()
-   {
-      Map sql = new HashMap();
-      
-      sql.put("SELECT_STARTUP", "SELECT NODE_ID FROM JMS_STARTUP WHERE NODE_ID = ?");
-      sql.put("DELETE_STARTUP", "DELETE FROM JMS_STARTUP WHERE NODE_ID = ?");
-      sql.put("INSERT_STARTUP", "INSERT INTO JMS_STARTUP (NODE_ID) VALUES (?)");
-      
-      return sql;
-   }
-
+   
+   // ShutdownLogger implementation ---------------------------------------------
+   
    public boolean shutdown(String nodeId) throws Exception
    {
       boolean exists = existsStartup(nodeId);
@@ -207,6 +202,8 @@ public class JDBCShutdownLogger extends JDBCServiceSupport implements ShutdownLo
       }
    }
    
+   // Private ------------------------------------------------------------
+   
    private void insertStartup(String nodeId) throws Exception
    {
       Connection conn = null;
@@ -251,6 +248,26 @@ public class JDBCShutdownLogger extends JDBCServiceSupport implements ShutdownLo
          }
          wrap.end();
       }
+   }
+   
+   protected Map getDefaultDDLStatements()
+   {
+      Map sql = new HashMap();
+      
+      sql.put("CREATE_STARTUP", "CREATE TABLE JMS_STARTUP (NODE_ID CHAR(1) PRIMARY KEY)");
+      
+      return sql;
+   }
+
+   protected Map getDefaultDMLStatements()
+   {
+      Map sql = new HashMap();
+      
+      sql.put("SELECT_STARTUP", "SELECT NODE_ID FROM JMS_STARTUP WHERE NODE_ID = ?");
+      sql.put("DELETE_STARTUP", "DELETE FROM JMS_STARTUP WHERE NODE_ID = ?");
+      sql.put("INSERT_STARTUP", "INSERT INTO JMS_STARTUP (NODE_ID) VALUES (?)");
+      
+      return sql;
    }
 
 }

@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core;
 
-import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * 
@@ -33,7 +32,6 @@ import org.jboss.messaging.core.tx.Transaction;
  * 
  * $Id$
  */
-public interface Router extends Distributor
+public interface Router extends Distributor, Receiver
 {
-   Delivery handle(DeliveryObserver observer, Routable routable, Transaction transaction);
 }

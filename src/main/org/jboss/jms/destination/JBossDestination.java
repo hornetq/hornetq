@@ -48,23 +48,8 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
 
    protected String name;
    
-   //TODO There is probably a better place to put these
-   protected transient int fullSize;
-   
-   protected transient int pageSize;
-   
-   protected transient int downCacheSize;
-
    // Constructors --------------------------------------------------
 
-   public JBossDestination(String name, int fullSize, int pageSize, int downCacheSize)
-   {
-      this(name);
-      this.fullSize = fullSize;
-      this.pageSize = pageSize;
-      this.downCacheSize = downCacheSize;
-   }
-   
    public JBossDestination(String name)
    {
       this.name = name;
@@ -133,21 +118,6 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
       }           
    }
    
-   public int getFullSize()
-   {
-      return fullSize;
-   }
-   
-   public int getPageSize()
-   {
-      return pageSize;
-   }
-   
-   public int getDownCacheSize()
-   {
-      return downCacheSize;
-   }
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

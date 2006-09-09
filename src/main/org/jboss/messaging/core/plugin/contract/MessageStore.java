@@ -18,7 +18,7 @@ import org.jboss.messaging.core.MessageReference;
  *
  * $Id$
  */
-public interface MessageStore
+public interface MessageStore extends MessagingComponent
 {
    /**
     * Message m is stored in the store if it is not already known to the store, then

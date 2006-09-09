@@ -59,24 +59,25 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       super.setUp();              
    }
    
-   protected void doSetup(boolean batch) throws Throwable
+   protected void doSetup(boolean batch, int maxParams) throws Throwable
    {
-      super.doSetup(batch);
+      super.doSetup(batch, maxParams);
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
    }
-   
-   protected JDBCPersistenceManager createPM() throws Exception
-   {           
-      JDBCPersistenceManager pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-      
-      pm.start();                 
-                   
-      return pm;     
+       
+   protected JDBCPersistenceManager createPM(boolean batch, int maxParams) throws Throwable
+   {      
+      JDBCPersistenceManager p =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, batch, true, maxParams);      
+      p.start();
+      return p;
    }
+   
   
    protected void checkEquivalent(Message m1, Message m2) throws Throwable
    {

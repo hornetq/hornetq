@@ -118,15 +118,15 @@ public class SimpleReceiver implements Receiver
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable r, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
-      log.info(this + " got routable:" + r);
+      log.info(this + " got routable:" + ref);
       
       try
       {
-         if (r == null)
+         if (ref == null)
          {
-            log.info("Receiver [" + name + "] is rejecting a null message");
+            log.info("Receiver [" + name + "] is rejecting a null reference");
             return null;
          }
          
@@ -139,7 +139,7 @@ public class SimpleReceiver implements Receiver
          if (REJECTING.equals(state))
          {
 
-            log.info(this + " is rejecting message " + r);
+            log.info(this + " is rejecting reference " + ref);
             return null;
          }
 
@@ -153,9 +153,8 @@ public class SimpleReceiver implements Receiver
         log.info("State is:" + state);
          
          boolean done = ACKING.equals(state) ? true : false;
-         log.info(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + r);
+         log.info(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + ref);
          
-         MessageReference ref = (MessageReference)r;
          Message m = ref.getMessage();
          
          SimpleDelivery delivery = new SimpleDelivery(observer, ref, done);

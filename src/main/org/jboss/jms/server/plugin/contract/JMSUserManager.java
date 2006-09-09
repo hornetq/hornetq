@@ -21,17 +21,18 @@
  */
 package org.jboss.jms.server.plugin.contract;
 
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 /**
  * A JMSUserManager
-
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
  *
  */
-public interface JMSUserManager
+public interface JMSUserManager extends MessagingComponent
 {
    String getPreConfiguredClientID(String username) throws Exception;
 }

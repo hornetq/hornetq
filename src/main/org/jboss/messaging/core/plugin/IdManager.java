@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.plugin;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
@@ -33,7 +34,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
  *
  * IdManager.java,v 1.1 2006/03/07 17:11:15 timfox Exp
  */
-public class IdManager
+public class IdManager implements MessagingComponent
 {
    private static final Logger log = Logger.getLogger(IdManager.class);   
    
@@ -55,9 +56,17 @@ public class IdManager
       
       this.pm = pm;
       
-      this.counterName = counterName;
-      
+      this.counterName = counterName;           
+   }
+   
+   public void start() throws Exception
+   {
       getNextBigBlock();
+   }
+   
+   public void stop() throws Exception
+   {
+      //NOOP
    }
    
    public synchronized IdBlock getIdBlock(int size) throws Exception

@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
@@ -75,7 +76,7 @@ import org.jboss.serial.io.JBossObjectOutputStream;
  *
  * JDBCPersistenceManager.java,v 1.1 2006/02/22 17:33:41 timfox Exp
  */
-public class JDBCPersistenceManager extends JDBCServiceSupport implements PersistenceManager
+public class JDBCPersistenceManager extends JDBCSupport implements PersistenceManager
 {
    // Constants -----------------------------------------------------
    
@@ -87,33 +88,33 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
    
    private boolean trace = log.isTraceEnabled();
       
-   protected boolean usingBatchUpdates = false;
+   private boolean usingBatchUpdates = false;
    
-   protected boolean usingBinaryStream = true;
+   private boolean usingBinaryStream = true;
    
-   protected int maxParams = 100;
-   
-   protected int minOrdering;
+   private int maxParams;
    
    // Constructors --------------------------------------------------
-   
-   public JDBCPersistenceManager()
+    
+   public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
+                                 boolean createTablesOnStartup, boolean usingBatchUpdates,
+                                 boolean usingBinaryStream, int maxParams)
    {
-   }
-   
-   /*
-    * This constructor should only be used for testing
-    */
-   public JDBCPersistenceManager(DataSource ds, TransactionManager tm)
-   {
-      super(ds, tm);
-   }
+      super(ds, tm, sqlProperties, createTablesOnStartup);
       
-   // ServiceMBeanSupport overrides ---------------------------------
+      this.usingBatchUpdates = usingBatchUpdates;
+      
+      this.usingBinaryStream = usingBinaryStream;
+      
+      this.maxParams = maxParams;      
+   }
    
-   protected void startService() throws Exception
+   
+   // MessagingComponent overrides ---------------------------------
+   
+   public void start() throws Exception
    {
-      super.startService();
+      super.start();
 
       Connection conn = null;
       
@@ -142,6 +143,11 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       removeUnreliableMessageData();
         
       log.debug(this + " started");
+   }
+   
+   public void stop() throws Exception
+   {
+      super.stop();
    }
    
    // PersistenceManager implementation -------------------------
@@ -454,7 +460,7 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
                   byte[] payload = getBytes(rs, 7);
                   int persistentChannelCount = rs.getInt(8);
                   
-                  //FIXME - We are mixing concerns here
+                  //TODO - We are mixing concerns here
                   //The basic JDBCPersistencManager should *only* know about core messages - not 
                   //JBossMessages - we should subclass JBDCPersistenceManager and the JBossMessage
                   //specific code in a subclass
@@ -1868,41 +1874,12 @@ public class JDBCPersistenceManager extends JDBCServiceSupport implements Persis
       }
    }
    
-  
    // Public --------------------------------------------------------
-   
-   /**
-    * Managed attribute.
-    */
-   public boolean isUsingBatchUpdates() throws Exception
-   {
-      return usingBatchUpdates;
-   }
-   
-   /**
-    * Managed attribute.
-    */
-   public void setUsingBatchUpdates(boolean b) throws Exception
-   {
-      usingBatchUpdates = b;
-   }
-   
-   public int getMaxParams()
-   {
-      return maxParams;
-   }
-   
-   public void setMaxParams(int maxParams)
-   {
-      this.maxParams = maxParams;
-   }
    
    public String toString()
    {
       return "JDBCPersistenceManager[" + Integer.toHexString(hashCode()) + "]";
    }
-   
-   // Public --------------------------------------------------------
    
    // Package protected ---------------------------------------------
    

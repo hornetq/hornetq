@@ -135,6 +135,18 @@ public class SimpleMessageStore implements MessageStore
    {
       return new ArrayList(messages.keySet());
    }
+   
+   // MessagingComponent implementation --------------------------------
+   
+   public void start() throws Exception
+   {
+      //NOOP
+   }
+   
+   public void stop() throws Exception
+   {
+      //NOOP
+   }
 
    // Public --------------------------------------------------------
    

@@ -37,9 +37,9 @@ import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
@@ -70,8 +70,8 @@ public class LocalTestServer implements Server
 
    // service dependencies   
    private ObjectName persistenceManagerObjectName;
-   private ObjectName directExchangeObjectName;
-   private ObjectName topicExchangeObjectName;
+   private ObjectName queuePostOfficeObjectName;
+   private ObjectName topicPostOfficeObjectName;
    private ObjectName jmsUserManagerObjectName;
    private ObjectName shutdownLoggerObjectName;
 
@@ -248,30 +248,21 @@ public class LocalTestServer implements Server
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
       ServiceDeploymentDescriptor cfdd = new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
 
+      log.info("^^^^^^^^^^ STARTING PM");
       MBeanConfigurationElement persistenceManagerConfig =
          (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
       persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
       sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);    
-      
-      MBeanConfigurationElement directExchangeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "DirectExchange").iterator().next();
-      directExchangeObjectName = sc.registerAndConfigureService(directExchangeConfig);
-      sc.invoke(directExchangeObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(directExchangeObjectName, "start", new Object[0], new String[0]);
-      
-      MBeanConfigurationElement topicExchangeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "TopicExchange").iterator().next();
-      topicExchangeObjectName = sc.registerAndConfigureService(topicExchangeConfig);
-      sc.invoke(topicExchangeObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(topicExchangeObjectName, "start", new Object[0], new String[0]);
-      
+           
+      log.info("^^^^^^^^^^ STARTING JMS USER MANAGER");
       MBeanConfigurationElement jmsUserManagerConfig =
          (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
       jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
       sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);  
       
+      log.info("^^^^^^^^^^ STARTING SHUTDOWN LOGGER");
       MBeanConfigurationElement shutdownLoggerConfig =
          (MBeanConfigurationElement)pdd.query("service", "ShutdownLogger").iterator().next();
       shutdownLoggerObjectName = sc.registerAndConfigureService(shutdownLoggerConfig);
@@ -304,9 +295,24 @@ public class LocalTestServer implements Server
 
       log.debug("starting JMS server");
 
+      log.info("^^^^^^^^^^ STARTING SERVERPEER");
       sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
-
+      
+      log.info("^^^^^^^^^^ STARTING QUEUE POST OFFICE");
+      MBeanConfigurationElement queuePostOfficeConfig =
+         (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
+      queuePostOfficeObjectName = sc.registerAndConfigureService(queuePostOfficeConfig);
+      sc.invoke(queuePostOfficeObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(queuePostOfficeObjectName, "start", new Object[0], new String[0]);
+      
+      log.info("^^^^^^^^^^ STARTING TOPIC POST OFFICE");
+      MBeanConfigurationElement topicPostOfficeConfig =
+         (MBeanConfigurationElement)pdd.query("service", "TopicPostOffice").iterator().next();
+      topicPostOfficeObjectName = sc.registerAndConfigureService(topicPostOfficeConfig);
+      sc.invoke(topicPostOfficeObjectName, "create", new Object[0], new String[0]);
+      sc.invoke(topicPostOfficeObjectName, "start", new Object[0], new String[0]);
+ 
       log.debug("deploying connection factories");
 
       List connFactoryElements = cfdd.query("service", "ConnectionFactory");
@@ -387,13 +393,13 @@ public class LocalTestServer implements Server
       sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(jmsUserManagerObjectName);
 
-      sc.invoke(directExchangeObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(directExchangeObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(directExchangeObjectName);
+      sc.invoke(queuePostOfficeObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(queuePostOfficeObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(queuePostOfficeObjectName);
       
-      sc.invoke(topicExchangeObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(topicExchangeObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(topicExchangeObjectName);
+      sc.invoke(topicPostOfficeObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(topicPostOfficeObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(topicPostOfficeObjectName);
 
       sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
       sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
@@ -420,12 +426,12 @@ public class LocalTestServer implements Server
 
    public ObjectName getDirectExchangeObjectName()
    {
-      return directExchangeObjectName;
+      return queuePostOfficeObjectName;
    }
    
    public ObjectName getTopicExchangeObjectName()
    {
-      return topicExchangeObjectName;
+      return topicPostOfficeObjectName;
    }
 
    public Set getConnectorSubsystems() throws Exception
@@ -471,19 +477,19 @@ public class LocalTestServer implements Server
    public PersistenceManager getPersistenceManager() throws Exception
    {
       ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
-      return serverPeer.getPersistenceManagerDelegate();
+      return serverPeer.getPersistenceManagerInstance();
    }
    
-   public Exchange getDirectExchange() throws Exception
+   public PostOffice getDirectExchange() throws Exception
    {
-      return (Exchange)sc.
-         getAttribute(directExchangeObjectName, "Instance");
+      return (PostOffice)sc.
+         getAttribute(queuePostOfficeObjectName, "Instance");
    }
    
-   public Exchange getTopicExchange() throws Exception
+   public PostOffice getTopicExchange() throws Exception
    {
-      return (Exchange)sc.
-         getAttribute(topicExchangeObjectName, "Instance");
+      return (PostOffice)sc.
+         getAttribute(topicPostOfficeObjectName, "Instance");
    }
 
    
@@ -535,7 +541,7 @@ public class LocalTestServer implements Server
    public void deployDestination(boolean isQueue, String name, String jndiName) throws Exception
    {
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "Queue" : "Topic") + "\"" +
+         "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "QueueService" : "TopicService") + "\"" +
          "       name=\"jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + name + "\"" +
          "       xmbean-dd=\"xmdesc/" + (isQueue ? "Queue" : "Topic" ) + "-xmbean.xml\">" +
          (jndiName != null ? "    <attribute name=\"JNDIName\">" + jndiName + "</attribute>" : "") +

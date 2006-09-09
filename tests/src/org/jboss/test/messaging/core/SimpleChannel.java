@@ -16,8 +16,8 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
@@ -122,7 +122,7 @@ public class SimpleChannel implements Channel
 
    // Receiver implementation ---------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
       throw new NotYetImplementedException();
    }

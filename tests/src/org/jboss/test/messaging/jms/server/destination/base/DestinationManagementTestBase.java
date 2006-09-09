@@ -33,6 +33,7 @@ import javax.naming.NamingException;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -504,11 +505,11 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
          jbd2 = new JBossTopic("PageableAttributes");
       }
       
-      jbd2 = ServerManagement.getDestinationManager().getDestination(jbd2);
+      ManagedDestination mDest = ServerManagement.getDestinationManager().getDestination(jbd2.getName(), jbd2.isQueue());
        
-      assertEquals(fullSize, jbd2.getFullSize());
-      assertEquals(pageSize, jbd2.getPageSize());
-      assertEquals(downCacheSize, jbd2.getDownCacheSize());
+      assertEquals(fullSize, mDest.getFullSize());
+      assertEquals(pageSize, mDest.getPageSize());
+      assertEquals(downCacheSize, mDest.getDownCacheSize());
       
       // Try to change the values when destination lives, no effect
       ServerManagement.setAttribute(destObjectName, "FullSize", "1111");
@@ -530,12 +531,12 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       // Start the service again and test the value from core destination
       ServerManagement.invoke(destObjectName, "start", null, null);
       
-      jbd2 = ServerManagement.getDestinationManager().getDestination(jbd2);
+      mDest = ServerManagement.getDestinationManager().getDestination(jbd2.getName(), jbd2.isQueue());
       
       // Must get the new core destination!      
-      assertEquals(751119, jbd2.getFullSize());
-      assertEquals(20019, jbd2.getPageSize());
-      assertEquals(9999, jbd2.getDownCacheSize());
+      assertEquals(751119, mDest.getFullSize());
+      assertEquals(20019, mDest.getPageSize());
+      assertEquals(9999, mDest.getDownCacheSize());
 
       undeployDestination("PageableAttributes");
    }

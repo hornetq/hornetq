@@ -49,13 +49,11 @@ import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
-import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.contract.ShutdownLogger;
-import org.jboss.messaging.core.plugin.exchange.DirectExchange;
-import org.jboss.messaging.core.plugin.exchange.TopicExchange;
-import org.jboss.messaging.core.plugin.exchange.cluster.ClusteredTopicExchange;
+import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
@@ -126,16 +124,22 @@ public class ServerPeer extends ServiceMBeanSupport
    // plugins
 
    protected ObjectName persistenceManagerObjectName;
-   protected PersistenceManager persistenceManagerDelegate;
-   protected ObjectName directExchangeObjectName;
-   protected ObjectName topicExchangeObjectName;
-   protected Exchange directExchangeDelegate;
-   protected Exchange topicExchangeDelegate;
-   protected ObjectName JMSUserManagerObjectName;
-   protected JMSUserManager JMSUserManagerDelegate;
+   protected PersistenceManager persistenceManager;
+   
+   protected ObjectName queuePostOfficeObjectName;
+   protected PostOfficeImpl queuePostOffice;
+   
+   protected ObjectName topicPostOfficeObjectName;
+   protected PostOfficeImpl topicPostOffice;
+     
+   protected ObjectName jmsUserManagerObjectName;
+   protected JMSUserManager jmsUserManager;
+   
    protected ObjectName shutdownLoggerObjectName;
-   protected ShutdownLogger shutdownLoggerDelegate;
+   protected ShutdownLogger shutdownLogger;
 
+   //Other stuff
+   
    private JMSServerInvocationHandler handler;
 
    // We keep a map of consumers to prevent us to recurse through the attached session in order to
@@ -156,16 +160,9 @@ public class ServerPeer extends ServiceMBeanSupport
       this.defaultQueueJNDIContext = defaultQueueJNDIContext;
       this.defaultTopicJNDIContext = defaultTopicJNDIContext;
 
+      // Some wired components need to be started here
       securityStore = new SecurityMetadataStore();
-      txRepository = new TransactionRepository();
-
-      destinationJNDIMapper = new DestinationJNDIMapper(this);
-      connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
-      connectionManager = new SimpleConnectionManager();
-      connectorManager = new SimpleConnectorManager();
-      memoryManager = new SimpleMemoryManager();
-      messageStore = new SimpleMessageStore();
-
+      
       consumers = new ConcurrentReaderHashMap();
 
       version = Version.instance();
@@ -183,6 +180,8 @@ public class ServerPeer extends ServiceMBeanSupport
          {
             return;
          }
+         
+         log.info("******** STARTING SERVER PEER");
    
          log.debug(this + " starting");
          
@@ -191,8 +190,7 @@ public class ServerPeer extends ServiceMBeanSupport
             throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
          }
          queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
-         
-   
+            
          loadClientAOPConfig();
    
          loadServerAOPConfig();
@@ -203,64 +201,51 @@ public class ServerPeer extends ServiceMBeanSupport
          // circumventing the MBeanServer. However, they are installed as services to take advantage
          // of their automatically-creating management interface.
    
-         //FIXME - Why are these called xxxDelegate ??
-         //They're not delegates - this is confusing
-         persistenceManagerDelegate =
-            (PersistenceManager)mbeanServer.getAttribute(persistenceManagerObjectName, "Instance");
-   
-         directExchangeDelegate = (Exchange)mbeanServer.
-            getAttribute(directExchangeObjectName, "Instance");
+         persistenceManager = (PersistenceManager)mbeanServer.
+            getAttribute(persistenceManagerObjectName, "Instance");
+
+         jmsUserManager = (JMSUserManager)mbeanServer.
+            getAttribute(jmsUserManagerObjectName, "Instance");
          
-         topicExchangeDelegate = (Exchange)mbeanServer.
-            getAttribute(topicExchangeObjectName, "Instance");
-         
-         JMSUserManagerDelegate = (JMSUserManager)mbeanServer.
-            getAttribute(JMSUserManagerObjectName, "Instance");
-         
-         shutdownLoggerDelegate = (ShutdownLogger)mbeanServer.
+         shutdownLogger = (ShutdownLogger)mbeanServer.
             getAttribute(shutdownLoggerObjectName, "Instance");
          
+         //We get references to some plugins lazily to avoid problems with circular
+         //MBean dependencies
+            
+         // Create the wired components
+         messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManager);
+         channelIdManager = new IdManager("CHANNEL_ID", 10, persistenceManager);
+         transactionIdManager = new IdManager("TRANSACTION_ID", 4096, persistenceManager);
+         destinationJNDIMapper = new DestinationJNDIMapper(this);
+         connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
+         connectionManager = new SimpleConnectionManager();
+         connectorManager = new SimpleConnectorManager();
+         memoryManager = new SimpleMemoryManager();
+         messageStore = new SimpleMessageStore();         
+         txRepository = new TransactionRepository(persistenceManager, transactionIdManager);
+ 
+         // Start the wired components
+   
+         messageIdManager.start();
+         channelIdManager.start();
+         transactionIdManager.start();
+         destinationJNDIMapper.start();
+         connFactoryJNDIMapper.start();
+         connectionManager.start();
+         connectorManager.start();         
+         memoryManager.start();
+         messageStore.start();
+         securityStore.start();
+         txRepository.start();
+         
          //Did the server crash last time?
-         crashed = shutdownLoggerDelegate.startup(serverPeerID);
-                  
-         //TODO Make block size configurable
-         messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManagerDelegate);
-         channelIdManager = new IdManager("CHANNEL_ID", 10, persistenceManagerDelegate);
-         transactionIdManager = new IdManager("TRANSACTION_ID", 4096, persistenceManagerDelegate);
-         
-         //Inject attributes
-         
-         ((DirectExchange)directExchangeDelegate).injectAttributes("Direct", serverPeerID,
-                                                                    messageStore,
-                                                                    channelIdManager,
-                                                                    queuedExecutorPool);
-                           
-//         ((ClusteredTopicExchange)topicExchangeDelegate).injectAttributes(null, null, null, "Topic", serverPeerID,
-//                                                                   messageStore, 
-//                                                                   channelIdManager,
-//                                                                   queuedExecutorPool,
-//                                                                   txRepository,
-//                                                                   persistenceManagerDelegate);
-         
-         ((TopicExchange)topicExchangeDelegate).injectAttributes("Topic", serverPeerID,
-                                                                messageStore, 
-                                                                channelIdManager,
-                                                                queuedExecutorPool,
-                                                                txRepository);
-         
+         crashed = shutdownLogger.startup(serverPeerID);
+                            
          if (crashed)
          {
-            topicExchangeDelegate.recover();
+            topicPostOffice.recover();
          }
-         
-         txRepository.injectAttributes(persistenceManagerDelegate, transactionIdManager);
-         
-         // start the rest of the internal components
-   
-         memoryManager.start();
-         destinationJNDIMapper.start();
-         securityStore.start();
-         connFactoryJNDIMapper.start();   
 
          initializeRemoting(mbeanServer);
    
@@ -270,6 +255,8 @@ public class ServerPeer extends ServiceMBeanSupport
    
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
             getServerPeerID()+ "] started");      
+         
+         log.info("********** STARTED SERVER PEER");
       }
       catch (Throwable t)
       {
@@ -292,24 +279,39 @@ public class ServerPeer extends ServiceMBeanSupport
    
          removeRecoverable();
    
-         // stop the internal components
-         memoryManager.stop();
-         txRepository = null;
-         securityStore.stop();
-         securityStore = null;
-         connFactoryJNDIMapper.stop();
-         connFactoryJNDIMapper = null;
-         destinationJNDIMapper.stop();
+         shutdownLogger.shutdown(serverPeerID);         
+                  
+         // Stop the wired components         
+         
+         messageIdManager.start();
+         messageIdManager = null;
+         channelIdManager.start();
+         channelIdManager = null;
+         transactionIdManager.start();
+         transactionIdManager = null;
+         destinationJNDIMapper.start();
          destinationJNDIMapper = null;
+         connFactoryJNDIMapper.start();
+         connFactoryJNDIMapper = null;
+         connectionManager.start();
+         connectionManager = null;
+         connectorManager.start(); 
+         connectorManager = null;
+         memoryManager.start();
+         memoryManager = null;
+         messageStore.start();
+         messageStore = null;
+         securityStore.start();
+         securityStore = null;
+         txRepository.start();
+         txRepository = null;
    
          unloadServerAOPConfig();
    
          // TODO unloadClientAOPConfig();
          
          queuedExecutorPool.shutdown();
-         
-         shutdownLoggerDelegate.shutdown(serverPeerID);         
-   
+                  
          log.info("JMS " + this + " stopped");
       }
       catch (Throwable t)
@@ -330,34 +332,34 @@ public class ServerPeer extends ServiceMBeanSupport
       persistenceManagerObjectName = on;
    }
    
-   public ObjectName getDirectExchange()
+   public ObjectName getQueuePostOffice()
    {
-      return directExchangeObjectName;
+      return queuePostOfficeObjectName;
    }
 
-   public void setDirectExchange(ObjectName on)
+   public void setQueuePostOffice(ObjectName on)
    {
-      directExchangeObjectName = on;
+      queuePostOfficeObjectName = on;
    }
    
-   public ObjectName getTopicExchange()
+   public ObjectName getTopicPostOffice()
    {
-      return topicExchangeObjectName;
+      return topicPostOfficeObjectName;
    }
 
-   public void setTopicExchange(ObjectName on)
+   public void setTopicPostOffice(ObjectName on)
    {
-      topicExchangeObjectName = on;
+      topicPostOfficeObjectName = on;
    }
    
-   public ObjectName getJMSUserManager()
+   public ObjectName getJmsUserManager()
    {
-      return JMSUserManagerObjectName;
+      return jmsUserManagerObjectName;
    }
 
    public void setJMSUserManager(ObjectName on)
    {
-      JMSUserManagerObjectName = on;
+      jmsUserManagerObjectName = on;
    }
    
    public ObjectName getShutdownLogger()
@@ -425,9 +427,17 @@ public class ServerPeer extends ServiceMBeanSupport
       return defaultTopicJNDIContext;
    }
 
-   public void setSecurityDomain(String securityDomain)
+   public void setSecurityDomain(String securityDomain) throws Exception
    {
-      securityStore.setSecurityDomain(securityDomain);
+      try
+      {
+         log.info("&&&&&&&& setting security domain to: " + securityDomain);
+         securityStore.setSecurityDomain(securityDomain);      
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " setSecurityDomain");
+      } 
    }
 
    public String getSecurityDomain()
@@ -622,29 +632,41 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // access to plugin references
 
-   public PersistenceManager getPersistenceManagerDelegate()
+   public PersistenceManager getPersistenceManagerInstance()
    {
-      return persistenceManagerDelegate;
+      return persistenceManager;
    }
    
-   public JMSUserManager getJMSUserManagerDelegate()
+   public JMSUserManager getJmsUserManagerInstance()
    {
-      return JMSUserManagerDelegate;
+      return jmsUserManager;
    }
    
-   public Exchange getDirectExchangeDelegate()
+   public PostOffice getQueuePostOfficeInstance() throws Exception
    {
-      return directExchangeDelegate;
+      // We get the reference lazily to avoid problems with MBean circular dependencies
+      if (queuePostOffice == null)
+      {
+         queuePostOffice = (PostOfficeImpl)getServer().
+            getAttribute(queuePostOfficeObjectName, "Instance");
+      }
+      return queuePostOffice;
    }
-   
-   public Exchange getTopicExchangeDelegate()
+      
+   public PostOffice getTopicPostOfficeInstance() throws Exception
    {
-      return topicExchangeDelegate;
+      // We get the reference lazily to avoid problems with MBean circular dependencies
+      if (topicPostOffice == null)
+      {
+         topicPostOffice = (PostOfficeImpl)getServer().
+            getAttribute(topicPostOfficeObjectName, "Instance");
+      }
+      return topicPostOffice;        
    }
-   
-   public ShutdownLogger getShutdownLoggerDelegate()
+      
+   public ShutdownLogger getShutdownLoggerInstance()
    {
-      return shutdownLoggerDelegate;
+      return shutdownLogger;
    }
    
    

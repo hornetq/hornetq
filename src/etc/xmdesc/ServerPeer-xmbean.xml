@@ -34,23 +34,35 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getDirectExchange" setMethod="setDirectExchange">
-      <description>The ObjectName of the direct exchange</description>
-      <name>DirectExchange</name>
+   <attribute access="read-write" getMethod="getQueuePostOffice" setMethod="setQueuePostOffice">
+      <description>The ObjectName of the queue post office</description>
+      <name>QueuePostOffice</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    
-   <attribute access="read-write" getMethod="getTopicExchange" setMethod="setTopicExchange">
-      <description>The ObjectName of the topic exchange</description>
-      <name>TopicExchange</name>
+   <attribute access="read-write" getMethod="getTopicPostOffice" setMethod="setTopicPostOffice">
+      <description>The ObjectName of the topic post office</description>
+      <name>TopicPostOffice</name>
       <type>javax.management.ObjectName</type>
    </attribute>   
+   
+   <attribute access="read-write" getMethod="getClusteredTopicPostOffice" setMethod="setClusteredTopicPostOffice">
+      <description>The ObjectName of the clustered topic post office</description>
+      <name>ClusteredTopicPostOffice</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>    
    
    <attribute access="read-write" getMethod="getJMSUserManager" setMethod="setJMSUserManager">
       <description>The ObjectName of the jms user manager</description>
       <name>JMSUserManager</name>
       <type>javax.management.ObjectName</type>
    </attribute>   
+   
+   <attribute access="read-write" getMethod="getShutdownLogger" setMethod="setShutdownLogger">
+      <description>The ObjectName of the shutdown logger</description>
+      <name>ShutdownLogger</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>    
 
    <!-- instance access -->
 

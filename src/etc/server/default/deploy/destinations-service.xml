@@ -12,7 +12,7 @@
       The Dead Letter Queue. This destination is a dependency of an EJB MDB container.
    -->
 
-   <mbean code="org.jboss.jms.server.destination.Queue"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=DLQ"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
@@ -22,7 +22,7 @@
       Example destinations.
    -->
 
-   <mbean code="org.jboss.jms.server.destination.Topic"
+   <mbean code="org.jboss.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=testTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
@@ -35,7 +35,7 @@
       </attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Topic"
+   <mbean code="org.jboss.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=securedTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
@@ -46,7 +46,7 @@
       </attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Topic"
+   <mbean code="org.jboss.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=testDurableTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
@@ -59,7 +59,7 @@
       </attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Queue"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=testQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
@@ -72,37 +72,37 @@
       </attribute>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Queue"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=A"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Queue"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=B"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Queue"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=C"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Queue"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=D"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
 
-   <mbean code="org.jboss.jms.server.destination.Queue"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=ex"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
    </mbean>
    
-   <mbean code="org.jboss.jms.server.destination.Topic"
+   <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=openTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
@@ -112,5 +112,21 @@
          </security>
       </attribute>
    </mbean>
+   
+   <!-- Example clustered destinations -->
+   
+   <mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=ClusteredQueue1"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="Clustered">true</attribute>
+   </mbean>   
+   
+   <mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=ClusteredTopic1"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <attribute name="Clustered">true</attribute>
+   </mbean>   
 
 </server>

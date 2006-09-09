@@ -9,9 +9,14 @@ package org.jboss.jms.server.destination;
 import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.SecurityManager;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.messaging.core.plugin.contract.Exchange;
+import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
 
@@ -30,71 +35,91 @@ import org.w3c.dom.Element;
 public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
-   private static final int FULL_SIZE = 75000;
-   private static final int PAGE_SIZE = 2000;
-   private static final int DOWN_CACHE_SIZE = 2000;
+
 
    // Static --------------------------------------------------------
 
-   /**
-    * Destination implementations don't like empty string selectors, but this is how the jmx-console
-    * sends arguments that are not filled out. This method pre-processes the selector String and
-    * makes it a valid argument for destination methods.
-    */
-   static String trimSelector(String selector)
-   {
-      if (selector == null)
-      {
-         return null;
-      }
 
-      selector = selector.trim();
-
-      if (selector.length() == 0)
-      {
-         return null;
-      }
-
-      return selector;
-   }
-   
    // Attributes ----------------------------------------------------
 
-   protected ObjectName serverPeerObjectName;
-   protected DestinationManager dm;
-   protected SecurityManager sm;
-   protected Exchange exchange;
-   protected Element securityConfig;
-
-   protected String name;
-   protected String jndiName;
-
-   protected boolean started = false;
-   private boolean createdProgrammatically = false;
+   private ObjectName serverPeerObjectName;
    
-   // The following 3 attributes can only be changed when service is stopped.
-
-   // Default in memory message number limit
-   protected int fullSize = FULL_SIZE;
-
-   // Default paging size
-   protected int pageSize = PAGE_SIZE;
-
-   // Default down-cache size
-   protected int downCacheSize = DOWN_CACHE_SIZE;
-
+   protected boolean started = false;
+   
+   protected ManagedDestination destination;
+   
+   protected PostOffice postOffice;
+      
+   protected ServerPeer serverPeer;
+   
+   protected DestinationManager dm;
+   
+   protected SecurityManager sm;
+   
+   protected PersistenceManager pm;
+   
+   protected QueuedExecutorPool pool;
+   
+   protected MessageStore ms;
+   
+   protected IdManager idm;
+   
    // Constructors --------------------------------------------------
 
-   public DestinationServiceSupport(boolean createdProgrammatically)
+   // ServiceMBeanSupport overrides -----------------------------------
+   
+   public synchronized void startService() throws Exception
    {
-      this.createdProgrammatically = createdProgrammatically;
+      super.startService();
+      
+      try
+      {
+         serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+         
+         dm = serverPeer.getDestinationManager();
+         
+         sm = serverPeer.getSecurityManager();
+         
+         pm = serverPeer.getPersistenceManagerInstance(); 
+         
+         pool = serverPeer.getQueuedExecutorPool();
+         
+         ms = serverPeer.getMessageStore();
+         
+         idm = serverPeer.getChannelIdManager();
+         
+         String name = null;
+                  
+         if (serviceName != null)
+         {
+            name = serviceName.getKeyProperty("name");
+         }
+   
+         if (name == null || name.length() == 0)
+         {
+            throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") + " " +
+                                             "name was not properly set in the service's" +
+                                             "ObjectName");
+         }
+         
+         destination.setName(name);                   
+      }
+      catch (Throwable t)
+      {
+         ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      }     
    }
-
+   
+   public synchronized void stopService() throws Exception
+   {
+      super.stopService();    
+   }
+   
    // JMX managed attributes ----------------------------------------
 
    public String getJNDIName()
    {
-      return jndiName;
+      return destination.getJndiName();
    }
 
    public void setJNDIName(String jndiName)
@@ -105,7 +130,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          return;
       }
 
-      this.jndiName = jndiName;
+      destination.setJndiName(jndiName);
    }
 
    public void setServerPeer(ObjectName on)
@@ -129,13 +154,13 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    {
       try
       {
-         // push security update to the server
-         if (sm != null)
+         if (started)
          {
-            sm.setSecurityConfig(isQueue(), name, securityConfig);
+            // push security update to the server
+            sm.setSecurityConfig(isQueue(), destination.getName(), securityConfig);  
          }
    
-         this.securityConfig = securityConfig;
+         destination.setSecurityConfig(securityConfig);
       }
       catch (Throwable t)
       {
@@ -145,18 +170,14 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    public Element getSecurityConfig()
    {
-      return securityConfig;
+      return destination.getSecurityConfig();
    }
 
    public String getName()
    {
-      return name;
+      return destination.getName();
    }
 
-   public boolean isCreatedProgrammatically()
-   {
-      return createdProgrammatically;
-   }
 
    /**
     * Get in-memory message limit
@@ -164,8 +185,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
     */
    public int getFullSize()
    {
-      // XXX This value should be the same as getting from core destination
-      return fullSize;
+      return destination.getFullSize();
    }
 
    /**
@@ -179,7 +199,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("FullSize can only be changed when destination is stopped");
          return;
       }      
-      this.fullSize = fullSize;
+      destination.setFullSize(fullSize);
    }
 
    /**
@@ -188,8 +208,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
     */
    public int getPageSize()
    {
-      // XXX This value should be the same as getting from core destination
-      return pageSize;
+      return destination.getPageSize();
    }
 
    /**
@@ -203,7 +222,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("PageSize can only be changed when destination is stopped");
          return;
       }
-      this.pageSize = pageSize;
+      destination.setPageSize(pageSize);
    }
 
    /**
@@ -212,8 +231,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
     */
    public int getDownCacheSize()
    {
-      // XXX This value should be the same as getting from core destination
-      return downCacheSize;
+      return destination.getDownCacheSize();
    }
 
    /**
@@ -227,7 +245,22 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          log.warn("DownCacheSize can only be changed when destination is stopped");
          return;
       }
-      this.downCacheSize = downCacheSize;
+      destination.setDownCacheSize(downCacheSize);
+   }
+   
+   public boolean isClustered()
+   {
+      return destination.isClustered();
+   }
+   
+   public void setClustered(boolean clustered)
+   {
+      if (started)
+      {
+         log.warn("Clustered can only be changed when destination is stopped");
+         return;
+      }
+      destination.setClustered(clustered);
    }
 
    // JMX managed operations ----------------------------------------
@@ -280,15 +313,15 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 
    public String toString()
    {
-      String nameFromJNDI = jndiName;
+      String nameFromJNDI = destination.getJndiName();
       int idx = -1;
-      if (jndiName != null)
+      if (nameFromJNDI != null)
       {
-         idx = jndiName.lastIndexOf('/');
+         idx = nameFromJNDI.lastIndexOf('/');
       }
       if (idx != -1)
       {
-         nameFromJNDI = jndiName.substring(idx + 1);
+         nameFromJNDI = nameFromJNDI.substring(idx + 1);
       }
       StringBuffer sb = new StringBuffer();
       if (isQueue())
@@ -300,13 +333,13 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          sb.append("Topic");
       }
       sb.append('[');
-      if (name.equals(nameFromJNDI))
+      if (destination.getName().equals(nameFromJNDI))
       {
-         sb.append(jndiName);
+         sb.append(destination.getJndiName());
       }
       else
       {
-         sb.append(jndiName).append(", name=").append(name);
+         sb.append(destination.getJndiName()).append(", name=").append(destination.getName());
       }
       sb.append(']');
       return sb.toString();

@@ -37,7 +37,6 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
@@ -64,10 +63,8 @@ public class PagingStateTestBase extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
-
    // Static --------------------------------------------------------
-   
-      
+         
    // Attributes ----------------------------------------------------
 
    protected ServiceContainer sc;
@@ -96,25 +93,25 @@ public class PagingStateTestBase extends MessagingTestCase
       sc = new ServiceContainer("all,-remoting,-security");
       sc.start();
 
-      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());            
-        
-      ((JDBCPersistenceManager)pm).start();
-
+      pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
+      pm.start();
+      
+      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr.start();
+      
       ms = new SimpleMessageStore();
-      
-      tr = new TransactionRepository();      
-      
-      tr.injectAttributes(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      ms.start();
    }
    
    
    public void tearDown() throws Exception
    {
-      ((JDBCPersistenceManager)pm).stop();
-      pm = null;
+      pm.stop();
+      tr.stop();
+      ms.stop();
       sc.stop();
-      sc = null;
-      ms = null;
       
       super.tearDown();
    }
@@ -172,14 +169,12 @@ public class PagingStateTestBase extends MessagingTestCase
          this.dels = new SimpleDelivery[numToConsume];
       }
 
-      public synchronized Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+      public synchronized Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
       {  
          if (count >= numToConsume)
          {
             return null;
          }
-         
-         MessageReference ref = (MessageReference)routable;
          
          assertEquals(refs[consumeCount + count].getMessageID(), ref.getMessageID());
          
@@ -267,14 +262,12 @@ public class PagingStateTestBase extends MessagingTestCase
          
       }
 
-      public synchronized Delivery handle(DeliveryObserver observer, Routable routable, Transaction tx)
+      public synchronized Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
       {
          if (count == numToCancel)
          {
             return null;
          }
-         
-         MessageReference ref = (MessageReference)routable;
          
          SimpleDelivery del = new SimpleDelivery(observer, ref);
          

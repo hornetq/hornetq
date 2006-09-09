@@ -5,7 +5,7 @@
 
 <mbean>
    <description>A deployable JBoss Messaging Topic</description>
-   <class>org.jboss.jms.server.destination.Topic</class>
+   <class>org.jboss.jms.server.destination.TopicService</class>
 
    <!-- Managed constructors -->
 
@@ -86,6 +86,12 @@
       <description>The write-cache size, can only be set when topic is stopped</description>
       <name>DownCacheSize</name>
       <type>int</type>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="isClustered" setMethod="setClustered">
+      <description>Is this a clustered destination?</description>
+      <name>Clustered</name>
+      <type>boolean</type>
    </attribute>
 
    <!-- Managed operations -->

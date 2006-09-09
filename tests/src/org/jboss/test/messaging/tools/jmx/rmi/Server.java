@@ -29,9 +29,9 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.messaging.core.plugin.contract.Exchange;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.remoting.ServerInvocationHandler;
 
 /**
@@ -121,9 +121,9 @@ public interface Server extends Remote
    /**
     * Only for in-VM use!
     */
-   Exchange getDirectExchange() throws Exception;
+   PostOffice getDirectExchange() throws Exception;
    
-   Exchange getTopicExchange() throws Exception;
+   PostOffice getTopicExchange() throws Exception;
 
    /**
     * Only for in-VM use

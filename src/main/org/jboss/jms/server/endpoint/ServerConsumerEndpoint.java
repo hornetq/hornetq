@@ -49,9 +49,9 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.local.MessageQueue;
-import org.jboss.messaging.core.plugin.contract.Exchange;
-import org.jboss.messaging.core.plugin.exchange.Binding;
+import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
@@ -88,7 +88,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private int id;
 
-   private MessageQueue messageQueue;
+   private Queue messageQueue;
    
    private String queueName;
 
@@ -127,7 +127,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    // Constructors --------------------------------------------------
 
-   protected ServerConsumerEndpoint(int id, MessageQueue messageQueue, String queueName,
+   protected ServerConsumerEndpoint(int id, Queue messageQueue, String queueName,
                                     ServerSessionEndpoint sessionEndpoint,
                                     String selector, boolean noLocal, JBossDestination dest,
                                     int prefetchSize)
@@ -204,9 +204,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    /*
     * The queue ensures that handle is never called concurrently by more than one thread.
     */
-   public Delivery handle(DeliveryObserver observer, Routable reference, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
-      if (trace) { log.trace(this + " receives " + reference + " for delivery"); }
+      if (trace) { log.trace(this + " receives " + ref + " for delivery"); }
       
       // This is ok to have outside lock - is volatile
       if (bufferFull)
@@ -231,9 +231,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             log.debug(this + " NOT started yet!");
             return null;
          }
-            
-         MessageReference ref = (MessageReference)reference;
-                     
+                        
          JBossMessage message = (JBossMessage)ref.getMessage();
          
          boolean selectorRejected = !this.accept(message);
@@ -359,10 +357,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             
             if (destination.isTopic())
             {
-               Exchange topicExchange = 
-                  sessionEndpoint.getConnectionEndpoint().getServerPeer().getTopicExchangeDelegate();
+               PostOffice topicExchange = 
+                  sessionEndpoint.getConnectionEndpoint().getServerPeer().getTopicPostOfficeInstance();
                
-               Binding binding = topicExchange.getBindingForName(queueName);
+               Binding binding = topicExchange.getBindingForQueueName(queueName);
                
                if (binding == null)
                {

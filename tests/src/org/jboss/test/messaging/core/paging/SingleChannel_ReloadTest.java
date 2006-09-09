@@ -25,8 +25,9 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.MessageQueue;
+import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
@@ -65,7 +66,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testRecoverableQueueCrash() throws Throwable
    {
-      MessageQueue queue = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
       
       Message[] msgs = new Message[200];
       
@@ -111,17 +112,21 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //This is what would happen if the server crashed
        
       pm.stop();
+      tr.stop();
+      ms.stop();
       
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-
-      ((JDBCPersistenceManager)pm).start();
-
-      ms = new SimpleMessageStore();
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
+      pm.start();
       
-      tr = new TransactionRepository();
+      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr.start();
+      
+      ms = new SimpleMessageStore();
+      ms.start();
        
-      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
       
       queue2.load();
       
@@ -150,7 +155,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      MessageQueue queue = new MessageQueue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
 
       Message[] msgs = new Message[200];
       
@@ -196,17 +201,21 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //This is what would happen if the server crashed
 
       pm.stop();
+      tr.stop();
+      ms.stop();
       
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-
-      ((JDBCPersistenceManager)pm).start();
-
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
+      pm.start();
+      
+      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr.start();
+      
       ms = new SimpleMessageStore();
+      ms.start();
       
-      tr = new TransactionRepository();
-      
-      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
       
       queue2.load();
       
@@ -233,7 +242,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      MessageQueue queue = new MessageQueue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
       
       Message[] msgs = new Message[200];
       
@@ -297,7 +306,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testQueueReloadWithSmallerFullSize() throws Throwable
    {
-      MessageQueue queue = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
 
       Message[] msgs = new Message[150];
       
@@ -335,19 +344,23 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Stop and restart the persistence manager
 
       pm.stop();
+      tr.stop();
+      ms.stop();
       
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-
-      ((JDBCPersistenceManager)pm).start();
-
-      ms = new SimpleMessageStore();
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
+      pm.start();
       
-      tr = new TransactionRepository();
+      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr.start();
+      
+      ms = new SimpleMessageStore();
+      ms.start();
       
       //Reload the queue with a smaller fullSize
       
-      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, false, 50, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, false, 50, 20, 10, new QueuedExecutor(), null);
       
       queue2.load();
       
@@ -391,7 +404,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testReloadWithLargerFullSize() throws Throwable
    {
-      MessageQueue queue = new MessageQueue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
 
       Message[] msgs = new Message[150];
       
@@ -429,19 +442,23 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Stop and restart the persistence manager
 
       pm.stop();
+      tr.stop();
+      ms.stop();
       
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager());
-
-      ((JDBCPersistenceManager)pm).start();
-
-      ms = new SimpleMessageStore();
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
+                                    true, true, true, 100);      
+      pm.start();
       
-      tr = new TransactionRepository();
+      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr.start();
+      
+      ms = new SimpleMessageStore();
+      ms.start();
       
       //Reload the queue with a smaller fullSize
       
-      MessageQueue queue2 = new MessageQueue(1, ms, pm, true, false, 130, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, false, 130, 20, 10, new QueuedExecutor(), null);
       
       queue2.load();
       

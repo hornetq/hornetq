@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core;
 
-
 /**
  * A "lightweight" message representative.
  *

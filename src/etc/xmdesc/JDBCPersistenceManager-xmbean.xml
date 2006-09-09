@@ -3,11 +3,9 @@
       "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
       "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
 
-
-
 <mbean>
    <description>A JDBC persistence manager</description>
-   <class>org.jboss.messaging.core.plugin.JDBCPersistenceManager</class>
+   <class>org.jboss.messaging.core.plugin.JDBCPersistenceManagerService</class>
 
    <!-- Managed constructors -->
 
@@ -16,7 +14,7 @@
    <attribute access="read-only" getMethod="getInstance">
       <description>The instance to plug into the server peer</description>
       <name>Instance</name>
-      <type>java.lang.Object</type>
+      <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
    </attribute>
 
    <attribute access="read-write" getMethod="getDataSource" setMethod="setDataSource">
