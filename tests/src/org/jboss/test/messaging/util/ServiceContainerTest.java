@@ -110,8 +110,6 @@ public class ServiceContainerTest extends MessagingTestCase
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      log.info("connection factory is " + cf);
-
       ServerManagement.deployQueue("Queue");
       queue = (Queue)ic.lookup("/queue/Queue");
 

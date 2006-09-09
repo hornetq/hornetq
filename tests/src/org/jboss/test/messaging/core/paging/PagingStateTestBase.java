@@ -424,16 +424,12 @@ public class PagingStateTestBase extends MessagingTestCase
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    
-      log.info("************* refs");
-      
       ResultSet rs = ps.executeQuery();
             
       while (rs.next())
       {
          long msgId = rs.getLong(1);
          long ord = rs.getLong(2);         
-         
-         log.info("msgid:" + msgId + " ord:" + ord + " pageord: null");
          
          msgIds.add(new Long(msgId));
       }
@@ -442,8 +438,6 @@ public class PagingStateTestBase extends MessagingTestCase
        
       conn.close();
       
-      log.info("*************** end refs");
-
       mgr.commit();
 
       if (txOld != null)

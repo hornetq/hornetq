@@ -1085,8 +1085,6 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       {
          //TODO handle deserialization more efficiently
          
-         log.info("REquest is: " + message.getObject());
-         
          ClusterRequest request = (ClusterRequest)message.getObject();
               
          try

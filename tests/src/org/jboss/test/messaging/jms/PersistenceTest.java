@@ -126,8 +126,6 @@ public class PersistenceTest extends MessagingTestCase
       
       ServerManagement.stopServerPeer();
       
-      
-      log.info("******************** restarting");
       ServerManagement.startServerPeer();
       
       // Messaging server restart implies new ConnectionFactory lookup

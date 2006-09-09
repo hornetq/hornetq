@@ -195,22 +195,15 @@ public abstract class QueueTestBase extends MessagingTestCase
          return;
       }
 
-      log.info("starting");
-      
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
       
-      log.info("created");
       queue.add(r1);
       queue.add(r2);
       
-      log.info("handling");
-
       Delivery d = queue.handle(observer, createReference(0, false, "payload"), null);
       
-      log.info("handled");
-
       assertTrue(d.isDone());
       List l1 = r1.getMessages();
       List l2 = r2.getMessages();

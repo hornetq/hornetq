@@ -363,10 +363,8 @@ public class DurableSubscriberTest extends MessagingTestCase
       MessageConsumer ds = s.createDurableSubscriber(topic, "monicabelucci");
       conn.start();
 
-      log.info("&&&&&&&&&&&& sending messages");
       prod.send(s.createTextMessage("one"));
       prod.send(s.createTextMessage("two"));
-      log.info("&&&&&&&&&&&& sent messages");
       
       ServerManagement.undeployTopic("TopicToBeRedeployed");
       log.debug("topic undeployed");

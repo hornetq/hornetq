@@ -248,21 +248,18 @@ public class LocalTestServer implements Server
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
       ServiceDeploymentDescriptor cfdd = new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
 
-      log.info("^^^^^^^^^^ STARTING PM");
       MBeanConfigurationElement persistenceManagerConfig =
          (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
       persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
       sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);    
            
-      log.info("^^^^^^^^^^ STARTING JMS USER MANAGER");
       MBeanConfigurationElement jmsUserManagerConfig =
          (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
       jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
       sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);  
       
-      log.info("^^^^^^^^^^ STARTING SHUTDOWN LOGGER");
       MBeanConfigurationElement shutdownLoggerConfig =
          (MBeanConfigurationElement)pdd.query("service", "ShutdownLogger").iterator().next();
       shutdownLoggerObjectName = sc.registerAndConfigureService(shutdownLoggerConfig);
@@ -295,18 +292,15 @@ public class LocalTestServer implements Server
 
       log.debug("starting JMS server");
 
-      log.info("^^^^^^^^^^ STARTING SERVERPEER");
       sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
       sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
       
-      log.info("^^^^^^^^^^ STARTING QUEUE POST OFFICE");
       MBeanConfigurationElement queuePostOfficeConfig =
          (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
       queuePostOfficeObjectName = sc.registerAndConfigureService(queuePostOfficeConfig);
       sc.invoke(queuePostOfficeObjectName, "create", new Object[0], new String[0]);
       sc.invoke(queuePostOfficeObjectName, "start", new Object[0], new String[0]);
       
-      log.info("^^^^^^^^^^ STARTING TOPIC POST OFFICE");
       MBeanConfigurationElement topicPostOfficeConfig =
          (MBeanConfigurationElement)pdd.query("service", "TopicPostOffice").iterator().next();
       topicPostOfficeObjectName = sc.registerAndConfigureService(topicPostOfficeConfig);

@@ -94,8 +94,6 @@ public class JDBCSupport implements MessagingComponent
    
    public void start() throws Exception
    {
-      log.info("In jdbcsupport::start");
-      
       defaultDMLStatements.putAll(getDefaultDMLStatements());
       
       defaultDDLStatements.putAll(getDefaultDDLStatements());

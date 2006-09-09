@@ -121,7 +121,7 @@ public class ClientCrashNegativeLeaseTest extends MessagingTestCase
       // Now we should have a client connection from the remote server to the local server
       
       remoteServer.exit();
-      log.info("killed remote server");
+      log.trace("killed remote server");
         
       // Wait for connection resources to be cleared up
       Thread.sleep(15000);

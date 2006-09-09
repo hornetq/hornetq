@@ -70,7 +70,7 @@ public class ManifestTest extends MessagingTestCase
       Properties props = System.getProperties();
       String userDir = props.getProperty("build.lib");
       
-      log.info("userDir is " + userDir);
+      log.trace("userDir is " + userDir);
 
       // The jar must be there
       File file = new File(userDir, "jboss-messaging.jar");

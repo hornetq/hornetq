@@ -2094,7 +2094,6 @@ public class MessageConsumerTest extends MessagingTestCase
                try
                {
                   m = consumer.receive(1500);
-                  log.info(consumer + " received: " + m);
                }
                catch (Exception e)
                {

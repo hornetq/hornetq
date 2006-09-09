@@ -111,7 +111,6 @@ public class SimplePostOfficeService extends JDBCServiceSupport
       {  
          TransactionManager tm = getTransactionManagerReference();
          
-         log.info("SERVER PEER OBJECT NAME IS " + serverPeerObjectName);
          ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
          
          MessageStore ms = serverPeer.getMessageStore();

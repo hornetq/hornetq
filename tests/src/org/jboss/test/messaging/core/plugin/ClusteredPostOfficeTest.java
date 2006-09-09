@@ -532,7 +532,6 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          for (int i = 0; i < 8; i++)
          {         
-            log.info("is is: " + i);
             List msgs = receivers[i].getMessages();
             assertNotNull(msgs);
             assertEquals(1, msgs.size());

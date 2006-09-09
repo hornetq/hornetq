@@ -81,7 +81,7 @@ public class SimpleFilter implements Filter
             accepted = o.equals(headerValue);
          }
       }
-      log.info("the filter " + (accepted ? "accepted" : "rejected") + " the message " + r);
+      log.trace("the filter " + (accepted ? "accepted" : "rejected") + " the message " + r);
       return accepted;
    }
 

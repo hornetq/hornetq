@@ -50,7 +50,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
    public synchronized void acknowledge(Delivery d, Transaction tx)
    {
-      log.info("Delivery " + d + " was acknowledged");
       if (toBeAcknowledged == d)
       {
          toBeAcknowledged = null;
@@ -60,7 +59,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
    public synchronized void cancel(Delivery d)
    {
-      log.info("Delivery " + d + " was cancelled");
       if (toBeCancelled == d)
       {
          toBeCancelled = null;
@@ -86,7 +84,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       {
          if (delivery.isCancelled())
          {
-            log.info("the delivery already cancelled, exiting");
             return true;
          }
 
@@ -108,7 +105,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
          if (toBeCancelled == null)
          {
-            log.info("delivery was cancelled in time, no timeout");
             return true;
          }
          else
@@ -141,7 +137,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
       {
          if (delivery.isDone())
          {
-            log.info("the delivery already acknowledged, exiting");
             return true;
          }
 
@@ -163,7 +158,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
          if (toBeAcknowledged == null)
          {
-            log.info("delivery was acknowledged in time, no timeout");
             return true;
          }
          else
