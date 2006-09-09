@@ -41,8 +41,8 @@ class CheckMessage implements ClusterRequest
       this.nodeId = nodeId;
    }
    
-   public void execute(ExchangeInternal exchange) throws Exception
+   public void execute(PostOfficeInternal office) throws Exception
    {
-      exchange.check(nodeId);
+      office.check(nodeId);
    }
 }

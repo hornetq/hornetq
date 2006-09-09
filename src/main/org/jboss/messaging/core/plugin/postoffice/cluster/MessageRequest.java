@@ -49,8 +49,8 @@ class MessageRequest implements ClusterRequest
       this.message = message;
    }
    
-   public void execute(ExchangeInternal exchange) throws Exception
+   public void execute(PostOfficeInternal office) throws Exception
    {
-      exchange.routeFromCluster(message, routingKey);      
+      office.routeFromCluster(message, routingKey);      
    }   
 }

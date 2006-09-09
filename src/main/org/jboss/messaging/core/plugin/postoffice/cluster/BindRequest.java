@@ -66,9 +66,9 @@ class BindRequest implements ClusterRequest
       this.durable = durable;
    }
 
-   public void execute(ExchangeInternal exchange) throws Exception
+   public void execute(PostOfficeInternal office) throws Exception
    {
-      exchange.addBindingFromCluster(nodeId, queueName, condition,
+      office.addBindingFromCluster(nodeId, queueName, condition,
                                      filterString, noLocal, channelId, durable);
       
    }

@@ -121,9 +121,9 @@ public interface Server extends Remote
    /**
     * Only for in-VM use!
     */
-   PostOffice getDirectExchange() throws Exception;
+   PostOffice getQueuePostOffice() throws Exception;
    
-   PostOffice getTopicExchange() throws Exception;
+   PostOffice getTopicPostOffice() throws Exception;
 
    /**
     * Only for in-VM use

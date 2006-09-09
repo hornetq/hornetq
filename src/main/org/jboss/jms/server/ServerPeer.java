@@ -836,7 +836,7 @@ public class ServerPeer extends ServiceMBeanSupport
       //this should be combined
 
       String destType = isQueue ? "Queue" : "Topic";
-      String className = "org.jboss.jms.server.destination." + destType;
+      String className = "org.jboss.jms.server.destination." + destType + "Service";
       String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
       ObjectName on = new ObjectName(ons);
 
@@ -900,7 +900,9 @@ public class ServerPeer extends ServiceMBeanSupport
       //
 
       String destType = isQueue ? "Queue" : "Topic";
-      String className = "org.jboss.jms.server.destination." + destType;
+      String className = "org.jboss.jms.server.destination." + destType + "Service";
+      
+      log.info("class name is " + className);
       String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
       ObjectName on = new ObjectName(ons);
 
@@ -915,6 +917,8 @@ public class ServerPeer extends ServiceMBeanSupport
          "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
          "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
          "</mbean>";
+      
+      log.info(destinationMBeanConfig);
 
       return createDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize,
                                        pageSize, downCacheSize);

@@ -36,9 +36,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
 {
    // Constants -----------------------------------------------------
 
-
    // Static --------------------------------------------------------
-
 
    // Attributes ----------------------------------------------------
 
@@ -64,7 +62,18 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    protected IdManager idm;
    
+   private boolean createdProgrammatically;
+   
    // Constructors --------------------------------------------------
+   
+   public DestinationServiceSupport(boolean createdProgrammatically)
+   {
+      this.createdProgrammatically = createdProgrammatically;     
+   }
+   
+   public DestinationServiceSupport()
+   {
+   }
 
    // ServiceMBeanSupport overrides -----------------------------------
    
@@ -261,6 +270,11 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          return;
       }
       destination.setClustered(clustered);
+   }
+   
+   public boolean isCreatedProgrammatically()
+   {
+      return createdProgrammatically;
    }
 
    // JMX managed operations ----------------------------------------

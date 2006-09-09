@@ -34,6 +34,8 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.destination.ManagedDestination;
+import org.jboss.jms.server.destination.ManagedQueue;
+import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -89,7 +91,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
 
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@Service\" " +
          "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
          "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
@@ -111,13 +113,13 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       if (isQueue())
       {
-         Queue q = (Queue)destinations.iterator().next();
-         assertEquals("Kirkwood", q.getQueueName());
+         ManagedQueue q = (ManagedQueue)destinations.iterator().next();
+         assertEquals("Kirkwood", q.getName());
       }
       else
       {
-         Topic t = (Topic)destinations.iterator().next();
-         assertEquals("Kirkwood", t.getTopicName());
+         ManagedTopic t = (ManagedTopic)destinations.iterator().next();
+         assertEquals("Kirkwood", t.getName());
       }
 
       assertEquals(serverPeerObjectName,
@@ -144,7 +146,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       int downCacheSize = 789;
 
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@Service\" " +
          "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
          "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
@@ -169,14 +171,14 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       if (isQueue())
       {
-         Queue q = (Queue)destinations.iterator().next();
-         assertEquals("Kirkwood", q.getQueueName());
+         ManagedQueue q = (ManagedQueue)destinations.iterator().next();
+         assertEquals("Kirkwood", q.getName());
          
       }
       else
       {
-         Topic t = (Topic)destinations.iterator().next();
-         assertEquals("Kirkwood", t.getTopicName());
+         ManagedTopic t = (ManagedTopic)destinations.iterator().next();
+         assertEquals("Kirkwood", t.getName());
       }
 
       assertEquals(serverPeerObjectName,
@@ -199,7 +201,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    public void testDefaultSecurityConfiguration() throws Exception
    {
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@Service\" " +
          "       name=\"somedomain:service=@TOREPLACE@,name=DefaultSecurity\"" +
          "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
@@ -224,7 +226,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
          "        </security>";
 
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\"\n" +
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@Service\"\n" +
          "       name=\"somedomain:service=@TOREPLACE@,name=DefaultSecurity\"\n" +
          "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">\n" +
          "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
@@ -250,7 +252,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       String testJNDIName = "/a/totally/arbitrary/jndi/name/thisisthequeue";
 
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@Service\" " +
          "       name=\"somedomain:service=@TOREPLACE@,name=Kirkwood\"" +
          "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
@@ -448,7 +450,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       // deploy "classically"
 
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@Service\" " +
          "       name=\"jboss.messaging.destination:service=@TOREPLACE@,name=" + destinationName + "\" " +
          "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">" + serverPeerObjectName + "</depends>" +
@@ -476,7 +478,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       int downCacheSize = 56;
 
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.@TOREPLACE@Service\" " +
          "       name=\"somedomain:service=@TOREPLACE@,name=PageableAttributes\"" +
          "       xmbean-dd=\"xmdesc/@TOREPLACE@-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +

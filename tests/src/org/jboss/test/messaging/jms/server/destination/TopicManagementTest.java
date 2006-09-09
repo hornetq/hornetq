@@ -83,7 +83,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
    public void testReloadTopic() throws Exception
    {      
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.Topic\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.TopicService\" " +
          "       name=\"somedomain:service=Topic,name=ReloadTopic\"" +
          "       xmbean-dd=\"xmdesc/Topic-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +

@@ -67,7 +67,7 @@ class CastMessagesCallback implements TxCallback
    
    private long txId;
    
-   private ExchangeInternal exchange;
+   private PostOfficeInternal office;
    
    void addMessage(String routingKey, Message message)
    {
@@ -91,13 +91,13 @@ class CastMessagesCallback implements TxCallback
       }
    }
    
-   CastMessagesCallback(String nodeId, long txId, ExchangeInternal exchange)
+   CastMessagesCallback(String nodeId, long txId, PostOfficeInternal office)
    {
       this.nodeId = nodeId;
       
       this.txId = txId;
       
-      this.exchange = exchange;
+      this.office = office;
    }
 
    public void afterCommit(boolean onePhase) throws Exception
@@ -107,7 +107,7 @@ class CastMessagesCallback implements TxCallback
          // Cast the non persistent - this don't need to go into a holding area on the receiving node
          ClusterRequest req = new MessagesRequest(nonPersistent);
          
-         exchange.asyncSendRequest(req);
+         office.asyncSendRequest(req);
       }
       
       if (persistent != null)
@@ -116,7 +116,7 @@ class CastMessagesCallback implements TxCallback
          ClusterRequest req = new TransactionRequest(nodeId, txId);
          
          // Stack must be FIFO
-         exchange.asyncSendRequest(req);
+         office.asyncSendRequest(req);
       }
       
       nonPersistent = persistent = null;
@@ -139,7 +139,7 @@ class CastMessagesCallback implements TxCallback
          ClusterRequest req = new TransactionRequest(nodeId, txId, persistent);
          
          //Stack must be FIFO
-         exchange.asyncSendRequest(req);
+         office.asyncSendRequest(req);
       }
    }
 

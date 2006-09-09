@@ -66,7 +66,7 @@ import org.w3c.dom.Element;
  * $Id$
  *
  */
-public class ClusteredPostOfficeImpl extends PostOfficeImpl implements ClusteredPostOffice, ExchangeInternal
+public class ClusteredPostOfficeImpl extends PostOfficeImpl implements ClusteredPostOffice, PostOfficeInternal
 {
    private static final Logger log = Logger.getLogger(ClusteredPostOfficeImpl.class);
                        
@@ -209,7 +209,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
       this.controlMessageListener = new ControlMessageListener();
       
-      this.requestHandler = new ExchangeRequestHandler();
+      this.requestHandler = new PostOfficeRequestHandler();
       
       this.controlMembershipListener = new ControlMembershipListener();
       
@@ -370,7 +370,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                   }
                   else
                   {
-                     //It's a binding on a different exchange instance on the cluster
+                     //It's a binding on a different office instance on the cluster
                      sendRemotely = true;                     
                       
                      if (ref.isReliable() && binding.isDurable())
@@ -383,7 +383,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             } 
             
             //Now we've sent the message to all the local subscriptions, we might also need
-            //to multicast the message to the other exchange instances on the cluster if there are
+            //to multicast the message to the other office instances on the cluster if there are
             //subscriptions on those nodes that need to receive the message
             if (sendRemotely)
             {
@@ -424,7 +424,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       return true; 
    }
    
-   // ExchangeInternal implementation ------------------------------------------------------------------
+   // PostOfficeInternal implementation ------------------------------------------------------------------
    
    /*
     * Called when another node adds a binding
@@ -693,9 +693,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          return false;
       }
    }
-   
-   //ExchangeSupport overrides -------------------------------------------------
-   
+    
    protected void loadBindings() throws Exception
    {
       // TODO I need to know whether this call times out - how do I know this??
@@ -1081,7 +1079,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    /*
     * This class is used to handle synchronous requests
     */
-   private class ExchangeRequestHandler implements RequestHandler
+   private class PostOfficeRequestHandler implements RequestHandler
    {
       public Object handle(Message message)
       {

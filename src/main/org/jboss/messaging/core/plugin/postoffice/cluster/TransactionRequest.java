@@ -66,17 +66,17 @@ class TransactionRequest implements ClusterRequest
       tryTransaction = false;
    }
    
-   public void execute(ExchangeInternal exchange) throws Exception
+   public void execute(PostOfficeInternal office) throws Exception
    {
       TransactionId id = new TransactionId(nodeId, txId);
       
       if (tryTransaction)
       {
-         exchange.addToHoldingArea(id, messageHolders);
+         office.addToHoldingArea(id, messageHolders);
       }
       else
       {
-         exchange.commitTransaction(id);
+         office.commitTransaction(id);
       }
    }   
 }

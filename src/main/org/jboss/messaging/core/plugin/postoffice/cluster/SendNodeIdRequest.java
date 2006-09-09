@@ -48,8 +48,8 @@ class SendNodeIdRequest implements ClusterRequest
       this.nodeId = nodeId;      
    }
    
-   public void execute(ExchangeInternal exchange) throws Exception
+   public void execute(PostOfficeInternal office) throws Exception
    {
-      exchange.handleAddressNodeMapping(address, nodeId);
+      office.handleAddressNodeMapping(address, nodeId);
    }
 }

@@ -28,7 +28,6 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.selector.Selector;
 import org.jboss.messaging.core.plugin.contract.Binding;
-import org.w3c.dom.Element;
 
 /**
  * A ManagedQueue

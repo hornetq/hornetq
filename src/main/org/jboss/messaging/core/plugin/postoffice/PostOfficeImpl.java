@@ -114,7 +114,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       super.stop();
    }
      
-   // Exchange implementation ---------------------------------------        
+   // PostOffice implementation ---------------------------------------        
          
    public Binding bindQueue(String queueName, String condition, boolean noLocal,
                             Queue queue) throws Exception
@@ -567,21 +567,21 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    {                
       Map map = new HashMap();
       map.put("INSERT_BINDING",
-               "INSERT INTO JMS_EXCHANGE_BINDING (EXCHANGE_NAME, NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, NOLOCAL, CHANNEL_ID) " +
+               "INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, NOLOCAL, CHANNEL_ID) " +
                "VALUES (?, ?, ?, ?, ?, ?, ?)");
       map.put("DELETE_BINDING",
-              "DELETE FROM JMS_EXCHANGE_BINDING WHERE EXCHANGE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
+              "DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
       map.put("LOAD_BINDINGS",
-              "SELECT NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, NOLOCAL, CHANNEL_ID FROM JMS_EXCHANGE_BINDING " +
-              "WHERE EXCHANGE_NAME  = ?");
+              "SELECT NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, NOLOCAL, CHANNEL_ID FROM JMS_POSTOFFICE " +
+              "WHERE POSTOFFICE_NAME  = ?");
       return map;
    }
    
    protected Map getDefaultDDLStatements()
    {
       Map map = new HashMap();
-      map.put("CREATE_BINDING_TABLE",
-              "CREATE TABLE JMS_EXCHANGE_BINDING (EXCHANGE_NAME VARCHAR(256), NODE_ID VARCHAR(256)," +
+      map.put("CREATE_POSTOFFICE_TABLE",
+              "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(256), NODE_ID VARCHAR(256)," +
               "QUEUE_NAME VARCHAR(1024), CONDITION VARCHAR(1024), " +
               "SELECTOR VARCHAR(1024), NOLOCAL CHAR(1), CHANNEL_ID BIGINT)");
       return map;

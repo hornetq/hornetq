@@ -681,6 +681,8 @@ public abstract class ChannelSupport implements Channel
 
       if (trace) { log.trace(this + " handles " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
  
+      log.info("handleInternal");
+      
       //Each channel has its own copy of the reference
       ref = ref.copy();
 
@@ -723,13 +725,17 @@ public abstract class ChannelSupport implements Channel
             }
             
             addReferenceInMemory(ref);
+            
+            log.info("added in memory");
 
             // We only do delivery if there are receivers that haven't said they don't want
             // any more references.
             if (receiversReady)
             {
                // Prompt delivery
+               log.info("delivering");
                deliverInternal();
+               log.info("delivered");
             }
          }
          else

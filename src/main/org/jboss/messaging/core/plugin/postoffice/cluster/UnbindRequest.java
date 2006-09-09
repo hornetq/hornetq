@@ -46,8 +46,8 @@ class UnbindRequest implements ClusterRequest
       this.queueName = queueName;
    }
 
-   public void execute(ExchangeInternal exchange) throws Exception
+   public void execute(PostOfficeInternal office) throws Exception
    {
-      exchange.removeBindingFromCluster(nodeId, queueName);
+      office.removeBindingFromCluster(nodeId, queueName);
    }      
 }

@@ -186,7 +186,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          
          office1.stop();
          
-         //Throw away the exchange and create another
+         //Throw away the office and create another
          office2 = createPostOffice();
          
          //Only one binding should be there
@@ -210,7 +210,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          
          office2.stop();
          
-         //Throw away exchange and start another
+         //Throw away office and start another
          office3 = createPostOffice();
          
          //Make sure not there

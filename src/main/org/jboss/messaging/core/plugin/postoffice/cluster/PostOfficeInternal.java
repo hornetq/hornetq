@@ -27,7 +27,8 @@ import org.jboss.messaging.core.Message;
 import org.jgroups.Address;
 
 /**
- * A ExchangeInternal
+ * 
+ * A PostOfficeInternal
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -35,7 +36,7 @@ import org.jgroups.Address;
  * $Id$
  *
  */
-interface ExchangeInternal
+interface PostOfficeInternal
 {
    void addBindingFromCluster(String nodeId, String queueName, String condition,
                               String filterString, boolean noLocal, long channelId, boolean durable)

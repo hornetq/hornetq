@@ -74,7 +74,7 @@ public class RemoteTestServer extends LocalTestServer
    /**
     * Only for in-VM use!
     */
-   public PostOffice getDirectExchange() throws Exception
+   public PostOffice getQueuePostOffice() throws Exception
    {
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
    }
@@ -82,7 +82,7 @@ public class RemoteTestServer extends LocalTestServer
    /**
     * Only for in-VM use!
     */
-   public PostOffice getTopicExchange() throws Exception
+   public PostOffice getTopicPostOffice() throws Exception
    {
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
    }

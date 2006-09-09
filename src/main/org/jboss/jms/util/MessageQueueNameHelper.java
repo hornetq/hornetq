@@ -24,7 +24,7 @@ package org.jboss.jms.util;
 import java.util.StringTokenizer;
 
 /**
- * A JMSExchangeHelper
+ * A MessageQueueNameHelper
  *
  * By convention, we name durable topic message queue names in the following way:
  * 

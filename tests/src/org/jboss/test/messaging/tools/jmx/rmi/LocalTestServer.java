@@ -424,16 +424,6 @@ public class LocalTestServer implements Server
       return serverPeerObjectName;
    }
 
-   public ObjectName getDirectExchangeObjectName()
-   {
-      return queuePostOfficeObjectName;
-   }
-   
-   public ObjectName getTopicExchangeObjectName()
-   {
-      return topicPostOfficeObjectName;
-   }
-
    public Set getConnectorSubsystems() throws Exception
    {
       RemotingJMXWrapper remoting =
@@ -480,13 +470,13 @@ public class LocalTestServer implements Server
       return serverPeer.getPersistenceManagerInstance();
    }
    
-   public PostOffice getDirectExchange() throws Exception
+   public PostOffice getQueuePostOffice() throws Exception
    {
       return (PostOffice)sc.
          getAttribute(queuePostOfficeObjectName, "Instance");
    }
    
-   public PostOffice getTopicExchange() throws Exception
+   public PostOffice getTopicPostOffice() throws Exception
    {
       return (PostOffice)sc.
          getAttribute(topicPostOfficeObjectName, "Instance");
@@ -565,7 +555,7 @@ public class LocalTestServer implements Server
       log.info("deploying queue, fullsize:" + fullSize + ", ps:" + pageSize + " dc size:" + downCacheSize);
       
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "Queue" : "Topic") + "\"" +
+         "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "QueueService" : "TopicService") + "\"" +
          "       name=\"jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + name + "\"" +
          "       xmbean-dd=\"xmdesc/" + (isQueue ? "Queue" : "Topic" ) + "-xmbean.xml\">" +
          (jndiName != null ? "    <attribute name=\"JNDIName\">" + jndiName + "</attribute>" : "") +

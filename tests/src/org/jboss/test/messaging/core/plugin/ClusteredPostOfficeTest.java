@@ -37,7 +37,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
- * A ClusteredTopicExchangeTest
+ * A ClusteredPostOfficeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -125,7 +125,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
       
       try
       {         
-         //Start one exchange
+         //Start one office
          
          office1 = createClusteredPostOffice("node1", "testgroup");
          
@@ -138,7 +138,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          Binding binding2 =
             office1.bindClusteredQueue("sub2", "topic1", false, queue2);
          
-         //Start another exchange - make sure it picks up the bindings from the first node
+         //Start another office - make sure it picks up the bindings from the first node
          
          office2 = createClusteredPostOffice("node2", "testgroup");
          
@@ -219,7 +219,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          assertEquivalent(binding3, (Binding)bindings.get(0));
          assertEquivalent(binding4, (Binding)bindings.get(1));
          
-         //Add a third exchange
+         //Add a third office
                   
          office3 = createClusteredPostOffice("node3", "testgroup");
          
@@ -306,7 +306,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          assertEquivalent(binding6, (Binding)bindings.get(3));
          assertEquivalent(binding7, (Binding)bindings.get(4));
                
-         //Stop exchange 1
+         //Stop office 1
          office1.stop();
   
          //Need to sleep since it may take some time for the view changed request to reach the
@@ -335,7 +335,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          assertEquivalent(binding5, (Binding)bindings.get(2));
          assertEquivalent(binding6, (Binding)bindings.get(3));
          
-         //Stop exchange 2
+         //Stop office 2
          office2.stop();
          
          bindings = office3.listBindingsForCondition("topic1");
@@ -345,7 +345,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          assertEquivalent(binding5, (Binding)bindings.get(0));
          assertEquivalent(binding6, (Binding)bindings.get(1));
          
-         //Restart exchange 1 and exchange 2
+         //Restart office 1 and office 2
          office1 = createClusteredPostOffice("node1", "testgroup");
          
          office2 = createClusteredPostOffice("node2", "testgroup");
@@ -371,7 +371,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          assertEquivalent(binding5, (Binding)bindings.get(0));
          assertEquivalent(binding6, (Binding)bindings.get(1));
          
-         //Stop all exchanges
+         //Stop all offices
          
          office1.stop();
          office2.stop();

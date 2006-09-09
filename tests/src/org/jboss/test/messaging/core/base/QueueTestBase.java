@@ -31,6 +31,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
@@ -194,13 +195,21 @@ public abstract class QueueTestBase extends MessagingTestCase
          return;
       }
 
+      log.info("starting");
+      
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       SimpleReceiver r1 = new SimpleReceiver("ONE", SimpleReceiver.ACKING);
       SimpleReceiver r2 = new SimpleReceiver("TWO", SimpleReceiver.ACKING);
+      
+      log.info("created");
       queue.add(r1);
       queue.add(r2);
+      
+      log.info("handling");
 
       Delivery d = queue.handle(observer, createReference(0, false, "payload"), null);
+      
+      log.info("handled");
 
       assertTrue(d.isDone());
       List l1 = r1.getMessages();
@@ -6372,12 +6381,12 @@ public abstract class QueueTestBase extends MessagingTestCase
    
    private MessageReference createReference(long id, boolean reliable, Serializable payload)
    {
-      return createReference(id, reliable, payload);
+      return ms.reference(MessageFactory.createCoreMessage(id, reliable, payload));
    }
    
    private MessageReference createReference(long id)
    {
-      return createReference(id);
+      return ms.reference(MessageFactory.createCoreMessage(id));
    }
    
    // Inner classes -------------------------------------------------

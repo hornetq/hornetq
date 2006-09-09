@@ -46,7 +46,7 @@ class MessagesRequest implements ClusterRequest
       this.messageHolders = messageHolders;
    }
    
-   public void execute(ExchangeInternal exchange) throws Exception
+   public void execute(PostOfficeInternal office) throws Exception
    {
       Iterator iter = messageHolders.iterator();
       
@@ -54,7 +54,7 @@ class MessagesRequest implements ClusterRequest
       {
          MessageHolder holder = (MessageHolder)iter.next();
          
-         exchange.routeFromCluster(holder.getMessage(), holder.getRoutingKey());
+         office.routeFromCluster(holder.getMessage(), holder.getRoutingKey());
       }
    }   
 }

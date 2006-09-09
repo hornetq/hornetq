@@ -36,5 +36,5 @@ import java.io.Serializable;
  */
 interface ClusterRequest extends Serializable
 {
-   void execute(ExchangeInternal exchange) throws Exception;
+   void execute(PostOfficeInternal office) throws Exception;
 }

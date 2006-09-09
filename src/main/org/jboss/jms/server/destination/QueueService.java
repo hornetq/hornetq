@@ -40,6 +40,13 @@ public class QueueService extends DestinationServiceSupport
       destination = new ManagedQueue();      
    }
 
+   public QueueService(boolean createdProgrammatically)
+   {
+      super(createdProgrammatically);
+      
+      destination = new ManagedQueue();      
+   }
+   
    // JMX managed attributes ----------------------------------------
    
    public int getMessageCount() throws Exception

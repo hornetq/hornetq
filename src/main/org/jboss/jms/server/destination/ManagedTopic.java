@@ -31,7 +31,6 @@ import org.jboss.jms.selector.Selector;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.Binding;
-import org.w3c.dom.Element;
 
 /**
  * A ManagedTopic

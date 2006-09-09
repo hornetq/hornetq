@@ -79,7 +79,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
    public void testReloadQueue() throws Exception
    {      
       String config =
-         "<mbean code=\"org.jboss.jms.server.destination.Queue\" " +
+         "<mbean code=\"org.jboss.jms.server.destination.QueueService\" " +
          "       name=\"somedomain:service=Queue,name=ReloadQueue\"" +
          "       xmbean-dd=\"xmdesc/Queue-xmbean.xml\">" +
          "    <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
