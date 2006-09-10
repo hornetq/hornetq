@@ -73,48 +73,6 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
       super.tearDown();
    }
    
-   public final void testClusteredBindSameName() throws Throwable
-   {
-      ClusteredPostOffice office1 = null;
-      
-      ClusteredPostOffice office2 = null;
-      
-      try
-      {         
-         office1 = createClusteredPostOffice("node1", "testgroup");
-         
-         office2 = createClusteredPostOffice("node2", "testgroup");
-         
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);
-         
-         Binding binding1 =
-            office1.bindQueue("sub1", "topic1", queue1);
-                  
-         try
-         {
-            office2.bindQueue("sub1", "topic1", queue1);
-            fail();
-         }
-         catch (IllegalArgumentException e)
-         {
-            //OK - this should fail
-         }
-      }
-      finally
-      {
-         if (office1 != null)
-         {
-            office1.stop();
-         }
-         
-         if (office2 != null)
-         {
-            office2.stop();
-         }
-      }
-   }
-   
-   
    public final void testClusteredBindUnbind() throws Throwable
    {
       ClusteredPostOffice office1 = null;

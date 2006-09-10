@@ -35,6 +35,7 @@ import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.util.StreamUtils;
 import org.jboss.util.Primitives;
 
 /**
@@ -504,21 +505,14 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      writeMap(out, ((Map)getPayload()), true);
+      StreamUtils.writeMap(out, ((Map)getPayload()), true);
    }
 
    protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      Map m = readMap(in, true);
-      if (!(m instanceof HashMap))
-      {
-         return new HashMap(m);
-      }
-      else
-      {
-         return (HashMap)m;
-      }
+      HashMap m = StreamUtils.readMap(in, true);
+      return m;
    }
 
    // Private -------------------------------------------------------

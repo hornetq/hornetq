@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.util.StreamUtils;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
 
@@ -338,7 +339,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
     */
    protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      internalWriteObject(out, thePayload, true, true);
+      StreamUtils.writeObject(out, thePayload, true, true);
    }
 
    /**
@@ -347,7 +348,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      return internalReadObject(in, true);
+      return (Serializable)StreamUtils.readObject(in, true);
    }
 
    /**

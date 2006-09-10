@@ -54,12 +54,12 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.core.tx.XidImpl;
 import org.jboss.messaging.util.JDBCUtil;
+import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
@@ -3436,7 +3436,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          oos = new JBossObjectOutputStream(bos);
          
-         RoutableSupport.writeMap(oos, map, true);
+         StreamUtils.writeMap(oos, map, true);
          
          return bos.toByteArray();
       }
@@ -3464,7 +3464,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ois = new JBossObjectInputStream(bis);
          
-         Map m = RoutableSupport.readMap(ois, true);
+         Map m = StreamUtils.readMap(ois, true);
          HashMap map;
          if (!(m instanceof HashMap))
          {

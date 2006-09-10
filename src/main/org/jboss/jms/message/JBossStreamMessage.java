@@ -36,6 +36,7 @@ import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.util.StreamUtils;
 import org.jboss.util.Primitives;
 
 /**
@@ -695,21 +696,14 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
    {
-      writeList(out, (List)thePayload);
+      StreamUtils.writeList(out, (List)thePayload);
    }
 
    protected Serializable readPayloadExternal(ObjectInput in, int length)
       throws IOException, ClassNotFoundException
    {
-      List l = readList(in);
-      if (!(l instanceof ArrayList))
-      {
-         return new ArrayList(l);
-      }
-      else
-      {
-         return (ArrayList)l;
-      }
+      ArrayList l = StreamUtils.readList(in);
+      return l;
    }
 
    // Private -------------------------------------------------------

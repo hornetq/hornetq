@@ -32,7 +32,7 @@ import org.jboss.logging.Logger;
  * 
  * Counts how many bytes written, used as a diagnostic tool
  * during development when we want to see exactly what's being written,
- * typically to sockets OuputStreams.
+ * typically to socket output streams.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
