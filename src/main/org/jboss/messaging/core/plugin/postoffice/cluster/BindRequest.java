@@ -42,14 +42,12 @@ class BindRequest implements ClusterRequest
    
    private String filterString; 
    
-   private boolean noLocal;   
-   
    private long channelId;   
    
    private boolean durable;
    
    BindRequest(String nodeId, String queueName, String condition, String filterString,
-               boolean noLocal, long channelId, boolean durable)
+               long channelId, boolean durable)
    {
       this.nodeId = nodeId;
       
@@ -59,8 +57,6 @@ class BindRequest implements ClusterRequest
       
       this.filterString = filterString;
       
-      this.noLocal = noLocal;
-      
       this.channelId = channelId;
       
       this.durable = durable;
@@ -69,7 +65,7 @@ class BindRequest implements ClusterRequest
    public void execute(PostOfficeInternal office) throws Exception
    {
       office.addBindingFromCluster(nodeId, queueName, condition,
-                                     filterString, noLocal, channelId, durable);
+                                   filterString, channelId, durable);
       
    }
 }

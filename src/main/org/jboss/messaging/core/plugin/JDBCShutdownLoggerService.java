@@ -75,6 +75,8 @@ public class JDBCShutdownLoggerService extends JDBCServiceSupport
          shutdownLogger = new JDBCShutdownLogger(ds, tm, sqlProperties, createTablesOnStartup);
          
          shutdownLogger.start();
+         
+         started = true;
       }
       catch (Throwable t)
       {

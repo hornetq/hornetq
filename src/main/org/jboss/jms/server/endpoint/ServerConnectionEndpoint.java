@@ -641,6 +641,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
+      // This allows the no-local consumers to filter out the messages that come from the same
+      // connection
+      // TODO Do we want to set this for ALL messages. Optimisation is possible here.
+      msg.setConnectionID(connectionID);
+      
       // We must reference the message *before* we send it the destination to be handled. This is
       // so we can guarantee that the message doesn't disappear from the store before the
       // handling is complete. Each channel then takes copies of the reference if they decide to

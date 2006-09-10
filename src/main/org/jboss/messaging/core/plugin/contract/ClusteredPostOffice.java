@@ -45,7 +45,7 @@ public interface ClusteredPostOffice extends PostOffice
     * @return
     * @throws Exception
     */
-   Binding bindClusteredQueue(String queueName, String condition, boolean noLocal, Queue queue) throws Exception;
+   Binding bindClusteredQueue(String queueName, String condition, Queue queue) throws Exception;
    
    /**
     * Unbind a clustered queue from the post office

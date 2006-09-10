@@ -116,8 +116,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
      
    // PostOffice implementation ---------------------------------------        
          
-   public Binding bindQueue(String queueName, String condition, boolean noLocal,
-                            Queue queue) throws Exception
+   public Binding bindQueue(String queueName, String condition, Queue queue) throws Exception
    {
       if (queueName == null)
       {
@@ -153,7 +152,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          String filter = queue.getFilter() == null ? null : queue.getFilter().getFilterString();
                     
          binding = new BindingImpl(nodeId, queueName, condition, filter,
-                                   noLocal, queue.getChannelID(), durable);         
+                                   queue.getChannelID(), durable);         
          
          binding.setQueue(queue);
          
@@ -354,8 +353,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          ps.setString(3, binding.getQueueName());
          ps.setString(4, binding.getCondition());         
          ps.setString(5, binding.getSelector());
-         ps.setString(6, binding.isNoLocal() ? "Y" : "N");
-         ps.setLong(7, binding.getChannelId());
+         ps.setLong(6, binding.getChannelId());
 
          ps.executeUpdate();;
       }
@@ -441,14 +439,12 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
             
             String selector = rs.getString(4);
             
-            boolean noLocal = rs.getString(5).equals("Y");
-            
-            long channelId = rs.getLong(6);
+            long channelId = rs.getLong(5);
               
             //We don't load the actual queue - this is because we don't know the paging params until
             //activation time
                     
-            Binding binding = new BindingImpl(nodeId, queueName, condition, selector, noLocal, channelId, true);
+            Binding binding = new BindingImpl(nodeId, queueName, condition, selector, channelId, true);
             
             list.add(binding);
          }
@@ -567,12 +563,12 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    {                
       Map map = new HashMap();
       map.put("INSERT_BINDING",
-               "INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, NOLOCAL, CHANNEL_ID) " +
-               "VALUES (?, ?, ?, ?, ?, ?, ?)");
+               "INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, CHANNEL_ID) " +
+               "VALUES (?, ?, ?, ?, ?, ?)");
       map.put("DELETE_BINDING",
               "DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
       map.put("LOAD_BINDINGS",
-              "SELECT NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, NOLOCAL, CHANNEL_ID FROM JMS_POSTOFFICE " +
+              "SELECT NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, CHANNEL_ID FROM JMS_POSTOFFICE " +
               "WHERE POSTOFFICE_NAME  = ?");
       return map;
    }
@@ -583,7 +579,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       map.put("CREATE_POSTOFFICE_TABLE",
               "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(256), NODE_ID VARCHAR(256)," +
               "QUEUE_NAME VARCHAR(1024), CONDITION VARCHAR(1024), " +
-              "SELECTOR VARCHAR(1024), NOLOCAL CHAR(1), CHANNEL_ID BIGINT)");
+              "SELECTOR VARCHAR(1024), CHANNEL_ID BIGINT)");
       return map;
    }
    

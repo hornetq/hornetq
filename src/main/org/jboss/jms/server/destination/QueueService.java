@@ -74,9 +74,7 @@ public class QueueService extends DestinationServiceSupport
       super.startService();
       
       try
-      {
-         started = true;
-                                    
+      {                           
          postOffice = serverPeer.getQueuePostOfficeInstance();
          
          destination.setPostOffice(postOffice);
@@ -86,16 +84,13 @@ public class QueueService extends DestinationServiceSupport
          //while it is still being loaded
          
          //Binding might already exist
-         
-         log.info("Deploying queue: " + destination.getName());
-         
+            
          Binding binding = postOffice.getBindingForQueueName(destination.getName());
          
          QueuedExecutor executor = (QueuedExecutor)pool.get();
          
          if (binding != null)
          {
-            log.info("Binding already exists!");
             //Reload the queue for the binding
             if (binding.isActive())
             {
@@ -122,7 +117,7 @@ public class QueueService extends DestinationServiceSupport
                         executor, null);
             
             //Make a binding for this queue
-            postOffice.bindQueue(destination.getName(), destination.getName(), false, q);
+            postOffice.bindQueue(destination.getName(), destination.getName(), q);
          }
          
          //push security update to the server
@@ -132,6 +127,8 @@ public class QueueService extends DestinationServiceSupport
         
          log.debug(this + " security configuration: " + (destination.getSecurityConfig() == null ?
             "null" : "\n" + XMLUtil.elementToString(destination.getSecurityConfig())));
+         
+         started = true;         
 
          log.info(this + " started, fullSize=" + destination.getFullSize() +
                   ", pageSize=" + destination.getPageSize() + ", downCacheSize=" + destination.getDownCacheSize());
@@ -142,7 +139,7 @@ public class QueueService extends DestinationServiceSupport
       }
    }
 
-   public void stopService() throws Exception
+   public synchronized void stopService() throws Exception
    {
       try
       {

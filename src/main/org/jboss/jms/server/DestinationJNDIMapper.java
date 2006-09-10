@@ -83,9 +83,7 @@ class DestinationJNDIMapper implements DestinationManager
    // DestinationManager implementation -----------------------------
    
    public synchronized void registerDestination(ManagedDestination destination) throws Exception
-   {        
-      log.info("^^^ REGISTERING DESTINATION: " + destination.getName());
-      
+   {          
       String jndiName = destination.getJndiName();
       
       if (!destination.isTemporary())
@@ -118,8 +116,6 @@ class DestinationJNDIMapper implements DestinationManager
          
          destination.setJndiName(jndiName);
          
-         log.info("JNDI NAME:" + jndiName);
-   
          try
          {
             initialContext.lookup(jndiName);
@@ -158,7 +154,6 @@ class DestinationJNDIMapper implements DestinationManager
          }
          
          c.rebind(jndiNameInContext, jbDest);         
-         log.info("Bound it in jndi");
       }
             
       if (destination.isQueue())
@@ -221,9 +216,33 @@ class DestinationJNDIMapper implements DestinationManager
    {
       Set destinations = new HashSet();
       
-      destinations.addAll(queueMap.values());
+      Iterator iter = queueMap.values().iterator();
+      while (iter.hasNext())
+      {
+         ManagedDestination dest = (ManagedDestination)iter.next();
+         if (dest.isTemporary())
+         {
+            destinations.add(new JBossTemporaryQueue(dest.getName()));
+         }
+         else
+         {
+            destinations.add(new JBossQueue(dest.getName()));
+         }
+      }
       
-      destinations.addAll(topicMap.values());
+      iter = topicMap.values().iterator();
+      while (iter.hasNext())
+      {
+         ManagedDestination dest = (ManagedDestination)iter.next();
+         if (dest.isTemporary())
+         {
+            destinations.add(new JBossTemporaryTopic(dest.getName()));
+         }
+         else
+         {
+            destinations.add(new JBossTopic(dest.getName()));
+         }
+      }
       
       return destinations;
    }

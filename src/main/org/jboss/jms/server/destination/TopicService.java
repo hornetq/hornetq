@@ -43,6 +43,13 @@ public class TopicService extends DestinationServiceSupport
    {
       destination = new ManagedTopic();      
    }
+   
+   public TopicService(boolean createdProgrammatically)
+   {
+      super(createdProgrammatically);
+      
+      destination = new ManagedTopic();      
+   }
 
    // JMX managed attributes ----------------------------------------
 
@@ -89,6 +96,8 @@ public class TopicService extends DestinationServiceSupport
          
          log.debug(this + " security configuration: " + (destination.getSecurityConfig() == null ?
             "null" : "\n" + XMLUtil.elementToString(destination.getSecurityConfig())));
+         
+         started = true;
 
          log.info(this + " started, fullSize=" + destination.getFullSize() + ", pageSize=" + destination.getPageSize() + ", downCacheSize=" + destination.getDownCacheSize());
       }
@@ -98,7 +107,7 @@ public class TopicService extends DestinationServiceSupport
       }
    }
 
-   public void stopService() throws Exception
+   public synchronized void stopService() throws Exception
    {
       try
       {

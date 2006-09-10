@@ -150,7 +150,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
          ManagedDestination mDest = dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue());
          
-         if (jmsDestination == null)
+         if (mDest == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
@@ -195,7 +195,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                            executor, selector);
                
                //Make a binding for this queue
-               binding = topicPostOffice.bindQueue(new GUID().toString(), jmsDestination.getName(), false, q);               
+               binding = topicPostOffice.bindQueue(new GUID().toString(), jmsDestination.getName(), q);               
             }
             else
             {
@@ -232,7 +232,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                               executor, selector);
                   
                   //Make a binding for this queue
-                  binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), false, q);               
+                  binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), q);               
                }
                else
                {
@@ -258,11 +258,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
                   
-                  boolean noLocalChanged = noLocal != binding.isNoLocal();
-   
-                  if (selectorChanged || topicChanged || noLocalChanged)
+                  if (selectorChanged || topicChanged)
                   {    
-                     if (trace) { log.trace("topic or selector or noLocal changed so deleting old subscription"); }
+                     if (trace) { log.trace("topic or selector changed so deleting old subscription"); }
    
                      // Unbind the durable subscription
                      
@@ -279,7 +277,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                  executor, selector);
                      
                      //Make a binding for this queue
-                     binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), false, q);  
+                     binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), q);  
                   }               
                }
             }
@@ -573,11 +571,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             QueuedExecutor executor = (QueuedExecutor)pool.get();
             Queue q = 
-               new Queue(idm.getId(), ms, pm, true, true, fullSize, pageSize, downCacheSize,
+               new Queue(idm.getId(), ms, pm, true, false, fullSize, pageSize, downCacheSize,
                          executor, null);
             
             //Make a binding for this queue
-            queuePostOffice.bindQueue(dest.getName(), dest.getName(), false, q);  
+            queuePostOffice.bindQueue(dest.getName(), dest.getName(), q);  
          }         
       }
       catch (Throwable t)

@@ -57,8 +57,6 @@ public class BindingImpl implements Binding, Externalizable
    
    private Queue queue;
     
-   private boolean noLocal;
-   
    private boolean active;
    
    private String selector;
@@ -72,15 +70,13 @@ public class BindingImpl implements Binding, Externalizable
    }
 
    public BindingImpl(String nodeId, String queueName, String condition, String selector,
-                        boolean noLocal, long channelId, boolean durable)
+                      long channelId, boolean durable)
    {
       this.nodeId = nodeId;
       
       this.queueName = queueName;
       
       this.condition = condition;      
-      
-      this.noLocal = noLocal;
       
       this.selector = selector;
       
@@ -111,12 +107,7 @@ public class BindingImpl implements Binding, Externalizable
    {
       return queue;
    }
-
-   public boolean isNoLocal()
-   {
-      return noLocal;
-   }
-   
+ 
    public void activate()
    {
       active = true;
@@ -166,8 +157,6 @@ public class BindingImpl implements Binding, Externalizable
       
       condition = in.readUTF();
       
-      noLocal = in.readBoolean();
-      
       active = in.readBoolean();
       
       selector = readString(in);
@@ -184,8 +173,6 @@ public class BindingImpl implements Binding, Externalizable
       out.writeUTF(queueName);
       
       out.writeUTF(condition);
-      
-      out.writeBoolean(noLocal);
       
       out.writeBoolean(active);
       

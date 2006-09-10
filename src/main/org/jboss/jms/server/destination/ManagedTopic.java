@@ -29,6 +29,7 @@ import javax.jms.InvalidSelectorException;
 
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.Binding;
 
@@ -45,6 +46,9 @@ import org.jboss.messaging.core.plugin.contract.Binding;
  */
 public class ManagedTopic extends ManagedDestination
 {
+   private static final Logger log = Logger.getLogger(ManagedTopic.class);
+
+   
    public ManagedTopic()
    {      
    }
@@ -155,8 +159,6 @@ public class ManagedTopic extends ManagedDestination
             sb.append(helper.getClientId());
             sb.append("\", selector=\"");
             sb.append(binding.getSelector());
-            sb.append("\", noLocal=\"");
-            sb.append(binding.isNoLocal());
             sb.append("\"\n");
          }
          else if (!durable && !binding.isDurable())
@@ -165,8 +167,6 @@ public class ManagedTopic extends ManagedDestination
             sb.append(binding.getChannelId());
             sb.append("\", selector=\"");
             sb.append(binding.getSelector());
-            sb.append("\", noLocal=\"");
-            sb.append(binding.isNoLocal());
             sb.append("\"\n");
          }
       }

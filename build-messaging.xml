@@ -46,19 +46,19 @@
    -->
 
    <property name="messaging.version.major" value="1"/>
-   <property name="messaging.version.minor" value="0"/>
-   <property name="messaging.version.revision" value="1"/>
-   <property name="messaging.version.incrementing" value="5"/>
-   <property name="messaging.version.tag" value="CR5"/>
+   <property name="messaging.version.minor" value="2"/>
+   <property name="messaging.version.revision" value="0"/>
+   <property name="messaging.version.incrementing" value="6"/>
+   <property name="messaging.version.tag" value="Alpha"/>
    <property name="messaging.version.name" value=""/>
-   <property name="messaging.version.cvstag" value="JBossMessaging_1_0_1_CR5"/>
+   <property name="messaging.version.cvstag" value="JBossMessaging_1_2_0_Alpha"/>
    <property name="module.name" value="messaging"/>
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
 
    <property name="jms.version.major" value="1"/>
-   <property name="jms.version.minor" value="1"/>
-   <property name="jms.version" value="1.1"/>
+   <property name="jms.version.minor" value="2"/>
+   <property name="jms.version" value="1.2"/>
 
    <!--
         Jar manifest version information.

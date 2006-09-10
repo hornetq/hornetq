@@ -304,14 +304,14 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          if (noLocal)
          {
             int conId = ((JBossMessage)r).getConnectionID();
+            
             if (trace) { log.trace("message connection id: " + conId); }
 
             if (trace) { log.trace("current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }   
                  
             accept = conId != sessionEndpoint.getConnectionEndpoint().getConnectionID();
-            
-            if (trace) { log.trace("accepting? " + accept); }
-            
+                
+            if (trace) { log.trace("accepting? " + accept); }            
          }
       }
       return accept;
@@ -357,10 +357,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             
             if (destination.isTopic())
             {
-               PostOffice topicExchange = 
+               PostOffice topicPostOffice = 
                   sessionEndpoint.getConnectionEndpoint().getServerPeer().getTopicPostOfficeInstance();
                
-               Binding binding = topicExchange.getBindingForQueueName(queueName);
+               Binding binding = topicPostOffice.getBindingForQueueName(queueName);
                
                if (binding == null)
                {
@@ -369,7 +369,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                
                if (!binding.isDurable())
                {                 
-                  topicExchange.unbindQueue(queueName);
+                  topicPostOffice.unbindQueue(queueName);
                }
             }
                         

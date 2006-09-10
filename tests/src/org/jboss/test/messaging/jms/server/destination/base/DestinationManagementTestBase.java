@@ -113,13 +113,13 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       if (isQueue())
       {
-         ManagedQueue q = (ManagedQueue)destinations.iterator().next();
-         assertEquals("Kirkwood", q.getName());
+         Queue q = (Queue)destinations.iterator().next();
+         assertEquals("Kirkwood", q.getQueueName());
       }
       else
       {
-         ManagedTopic t = (ManagedTopic)destinations.iterator().next();
-         assertEquals("Kirkwood", t.getName());
+         Topic t = (Topic)destinations.iterator().next();
+         assertEquals("Kirkwood", t.getTopicName());
       }
 
       assertEquals(serverPeerObjectName,
@@ -171,14 +171,14 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       if (isQueue())
       {
-         ManagedQueue q = (ManagedQueue)destinations.iterator().next();
-         assertEquals("Kirkwood", q.getName());
+         Queue q = (Queue)destinations.iterator().next();
+         assertEquals("Kirkwood", q.getQueueName());
          
       }
       else
       {
-         ManagedTopic t = (ManagedTopic)destinations.iterator().next();
-         assertEquals("Kirkwood", t.getName());
+         Topic t = (Topic)destinations.iterator().next();
+         assertEquals("Kirkwood", t.getTopicName());
       }
 
       assertEquals(serverPeerObjectName,

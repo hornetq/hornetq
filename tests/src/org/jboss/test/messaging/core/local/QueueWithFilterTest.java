@@ -23,6 +23,7 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.CoreMessage;
@@ -146,8 +147,8 @@ public class QueueWithFilterTest extends MessagingTestCase
       }
       public boolean accept(Routable routable)
       {
-         CoreMessage msg = (CoreMessage)routable;
-         return msg.getMessageID() == value;
+         MessageReference ref = (MessageReference)routable;
+         return ref.getMessageID() == value;
       }
       public String getFilterString()
       {

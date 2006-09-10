@@ -243,11 +243,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    
    // PostOffice implementation ---------------------------------------        
    
-   public Binding bindClusteredQueue(String queueName, String condition, boolean noLocal,
-                                     Queue queue) throws Exception
+   public Binding bindClusteredQueue(String queueName, String condition, Queue queue) throws Exception
    {           
-      Binding binding = super.bindQueue(queueName, condition, noLocal,
-                                        queue);
+      Binding binding = super.bindQueue(queueName, condition, queue);
       
       boolean durable = queue.isRecoverable();
       
@@ -255,7 +253,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
       BindRequest request =
          new BindRequest(nodeId, queueName, condition, filter,
-                         noLocal, binding.getChannelId(), durable);
+                         binding.getChannelId(), durable);
       
       syncSendRequest(request);
       
@@ -430,7 +428,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
     * Called when another node adds a binding
     */
    public void addBindingFromCluster(String nodeId, String queueName, String condition,
-                                      String filterString, boolean noLocal, long channelID, boolean durable)
+                                      String filterString, long channelID, boolean durable)
       throws Exception
    {
       lock.writeLock().acquire();
@@ -459,7 +457,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          }
          
          binding = new BindingImpl(nodeId, queueName, condition, filterString,
-                                     noLocal, channelID, durable); 
+                                   channelID, durable); 
          
          binding.activate();
          

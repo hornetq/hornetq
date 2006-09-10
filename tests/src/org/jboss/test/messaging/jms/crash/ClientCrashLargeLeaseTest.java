@@ -28,7 +28,6 @@ import javax.naming.InitialContext;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.jms.CreateClientOnServerCommand;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;

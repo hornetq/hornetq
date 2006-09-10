@@ -164,6 +164,20 @@ public class PagingChannel extends ChannelSupport
       }
    }      
    
+   public int messageCount()
+   {   
+      int count = super.messageCount();
+      
+      //Also need to add the paged refs
+      
+      synchronized (refLock)
+      {      
+         count += nextPagingOrder - firstPagingOrder;
+      }
+      
+      return count;
+   }
+   
    // Public --------------------------------------------------------
 
    public int downCacheCount()

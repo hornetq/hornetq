@@ -48,8 +48,6 @@ public interface Binding
    
    boolean isDurable();
    
-   boolean isNoLocal();
-   
    boolean isActive();
    
    void activate();

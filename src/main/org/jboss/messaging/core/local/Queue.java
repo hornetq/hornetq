@@ -87,8 +87,6 @@ public class Queue extends PagingChannel
    
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    { 
-      log.info("handle:" + ref);
-      
       //If the queue has a Filter we do not accept any Message references that do not
       //match the Filter
       if (filter != null && !filter.accept(ref))

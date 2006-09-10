@@ -383,6 +383,10 @@ public class LocalTestServer implements Server
 
       log.debug("stopping ServerPeer's plug-in dependencies");
       
+      sc.invoke(shutdownLoggerObjectName, "stop", new Object[0], new String[0]);
+      sc.invoke(shutdownLoggerObjectName, "destroy", new Object[0], new String[0]);
+      sc.unregisterService(shutdownLoggerObjectName);
+      
       sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);
       sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
       sc.unregisterService(jmsUserManagerObjectName);

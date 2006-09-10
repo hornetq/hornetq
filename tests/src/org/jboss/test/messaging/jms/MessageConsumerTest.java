@@ -2036,15 +2036,10 @@ public class MessageConsumerTest extends MessagingTestCase
       consumerConnection.close();
    }
 
-
-
-
    //
    // NoLocal
    //
-
-
-
+   
    public void testNoLocal() throws Exception
    {
       if (log.isTraceEnabled()) log.trace("testNoLocal");
@@ -2068,7 +2063,7 @@ public class MessageConsumerTest extends MessagingTestCase
          assertEquals(Session.AUTO_ACKNOWLEDGE, sess2.getAcknowledgeMode());
          MessageConsumer consumer2 = sess2.createConsumer(topic, null, true);
 
-         // we need different session because we cannot access the same session from two different
+         // we need different session because we cannot access the same session from different
          // threads
          Session sess3 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          assertEquals(Session.AUTO_ACKNOWLEDGE, sess3.getAcknowledgeMode());

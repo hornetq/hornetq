@@ -110,7 +110,7 @@ public class DurableSubscriberTest extends MessagingTestCase
       ObjectName destObjectName = 
          new ObjectName("jboss.messaging.destination:service=Topic,name=Topic");
       String text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
-     
+       
       assertTrue(text.indexOf("monicabelucci") != -1);
 
       prod.send(s.createTextMessage("k"));

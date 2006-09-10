@@ -56,7 +56,7 @@ public interface PostOffice extends MessagingComponent
     * @return
     * @throws Exception
     */
-   Binding bindQueue(String queueName, String condition, boolean noLocal, Queue queue) throws Exception;
+   Binding bindQueue(String queueName, String condition, Queue queue) throws Exception;
    
    /**
     * Unbind a queue from the post office

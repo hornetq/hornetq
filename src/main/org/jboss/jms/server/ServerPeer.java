@@ -181,8 +181,6 @@ public class ServerPeer extends ServiceMBeanSupport
             return;
          }
          
-         log.info("******** STARTING SERVER PEER");
-   
          log.debug(this + " starting");
          
          if (queuedExecutorPoolSize < 1)
@@ -255,8 +253,6 @@ public class ServerPeer extends ServiceMBeanSupport
    
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
             getServerPeerID()+ "] started");      
-         
-         log.info("********** STARTED SERVER PEER");
       }
       catch (Throwable t)
       {
@@ -431,7 +427,6 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       try
       {
-         log.info("&&&&&&&& setting security domain to: " + securityDomain);
          securityStore.setSecurityDomain(securityDomain);      
       }
       catch (Throwable t)
@@ -902,7 +897,6 @@ public class ServerPeer extends ServiceMBeanSupport
       String destType = isQueue ? "Queue" : "Topic";
       String className = "org.jboss.jms.server.destination." + destType + "Service";
       
-      log.info("class name is " + className);
       String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
       ObjectName on = new ObjectName(ons);
 
@@ -918,8 +912,6 @@ public class ServerPeer extends ServiceMBeanSupport
          "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
          "</mbean>";
       
-      log.info(destinationMBeanConfig);
-
       return createDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize,
                                        pageSize, downCacheSize);
    }

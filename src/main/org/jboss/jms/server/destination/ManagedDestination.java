@@ -61,7 +61,7 @@ public abstract class ManagedDestination
    protected Element securityConfig;
    
    protected PostOffice postOffice;
-
+   
    public ManagedDestination()
    {      
    }

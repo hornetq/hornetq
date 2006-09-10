@@ -39,7 +39,7 @@ import org.jgroups.Address;
 interface PostOfficeInternal
 {
    void addBindingFromCluster(String nodeId, String queueName, String condition,
-                              String filterString, boolean noLocal, long channelId, boolean durable)
+                              String filterString, long channelId, boolean durable)
       throws Exception;
    
    void removeBindingFromCluster(String nodeId, String queueName)
