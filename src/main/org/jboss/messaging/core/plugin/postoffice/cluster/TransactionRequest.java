@@ -21,58 +21,40 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.util.List;
 
 /**
  * A TransactionRequest
  * 
- * Used for sending persistent messages transactionally across the network
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
  *
  */
-class TransactionRequest implements ClusterRequest
+abstract class TransactionRequest implements ClusterRequest, ClusterTransaction
 {
-   private static final long serialVersionUID = 644500948910063649L;
-
    private String nodeId;
    
    private long txId;
  
-   private List messageHolders;
-   
-   private boolean tryTransaction;
+   private boolean hold;
       
-   TransactionRequest(String nodeId, long txId, List messageHolders)
+   TransactionRequest(String nodeId, long txId, boolean hold)
    {
       this.nodeId = nodeId;
       
       this.txId= txId;
 
-      this.messageHolders = messageHolders;  
-      
-      tryTransaction = true;
-   }
-   
-   TransactionRequest(String nodeId, long txId)
-   {
-      this.nodeId = nodeId;
-      
-      this.txId= txId;
-      
-      tryTransaction = false;
+      this.hold = hold;
    }
    
    public void execute(PostOfficeInternal office) throws Exception
    {
       TransactionId id = new TransactionId(nodeId, txId);
       
-      if (tryTransaction)
+      if (hold)
       {
-         office.addToHoldingArea(id, messageHolders);
+         office.holdTransaction(id, this);
       }
       else
       {
@@ -80,4 +62,5 @@ class TransactionRequest implements ClusterRequest
       }
    }   
 }
+
 

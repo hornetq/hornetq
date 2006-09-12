@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.util.Primitives;
-
 /**
  * A StreamUtils
  *
@@ -101,7 +99,7 @@ public class StreamUtils
             value = new Double(in.readDouble());
             break;
          case BOOLEAN :
-            value = Primitives.valueOf(in.readBoolean());
+            value = in.readBoolean() ? Boolean.TRUE : Boolean.FALSE;
             break;
          case STRING :
             if (longStrings)

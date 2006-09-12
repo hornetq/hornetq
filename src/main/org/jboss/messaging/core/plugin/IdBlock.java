@@ -44,8 +44,7 @@ public class IdBlock implements Externalizable
    protected long high;
    
    public IdBlock()
-   {
-      
+   {      
    }
    
    public IdBlock(long low, long high)

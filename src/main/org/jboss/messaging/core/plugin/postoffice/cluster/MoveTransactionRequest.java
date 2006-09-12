@@ -22,17 +22,10 @@
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.util.List;
-import java.util.Map;
-
-import org.jboss.messaging.core.Message;
-import org.jgroups.Address;
 
 /**
  * 
- * A PostOfficeInternal
- * 
- * Extension to the ClusteredPostOffice interface that expose extra methods useful to
- * ClusteredRequests
+ * A MoveTransactionRequest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -40,27 +33,30 @@ import org.jgroups.Address;
  * $Id$
  *
  */
-interface PostOfficeInternal
+class MoveTransactionRequest extends TransactionRequest
 {
-   void addBindingFromCluster(String nodeId, String queueName, String condition,
-                              String filterString, long channelId, boolean durable)
-      throws Exception;
+   private List messages;
    
-   void removeBindingFromCluster(String nodeId, String queueName)
-      throws Exception;
+   private String queueName;
+     
+   MoveTransactionRequest(String nodeId, long txId, List messages, String queueName)
+   {
+      super(nodeId, txId, true);
+      
+      this.messages = messages;
+      
+      this.queueName = queueName;
+   }
    
-   void handleAddressNodeMapping(Address address, String nodeId)
-      throws Exception;
+   MoveTransactionRequest(String nodeId, long txId)
+   {
+      super(nodeId, txId, false);
+   }
    
-   void routeFromCluster(Message message, String routingKey, Map queueNameNodeIdMap) throws Exception;
-   
-   void addToQueue(String queueName, List messages) throws Exception;
-   
-   void asyncSendRequest(ClusterRequest request) throws Exception;
-   
-   void holdTransaction(TransactionId id, ClusterTransaction tx) throws Exception;
-   
-   void commitTransaction(TransactionId id) throws Exception;
-   
-   void check(String nodeId) throws Exception;
+   public void commit(PostOfficeInternal office) throws Exception
+   {
+      office.addToQueue(queueName, messages);  
+   }
 }
+
+

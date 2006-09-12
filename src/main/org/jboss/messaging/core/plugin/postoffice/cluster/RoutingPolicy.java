@@ -22,17 +22,11 @@
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.util.List;
-import java.util.Map;
 
-import org.jboss.messaging.core.Message;
-import org.jgroups.Address;
+import org.jboss.messaging.core.plugin.contract.Binding;
 
 /**
- * 
- * A PostOfficeInternal
- * 
- * Extension to the ClusteredPostOffice interface that expose extra methods useful to
- * ClusteredRequests
+ * A RoutingPolicy
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -40,27 +34,7 @@ import org.jgroups.Address;
  * $Id$
  *
  */
-interface PostOfficeInternal
+public interface RoutingPolicy
 {
-   void addBindingFromCluster(String nodeId, String queueName, String condition,
-                              String filterString, long channelId, boolean durable)
-      throws Exception;
-   
-   void removeBindingFromCluster(String nodeId, String queueName)
-      throws Exception;
-   
-   void handleAddressNodeMapping(Address address, String nodeId)
-      throws Exception;
-   
-   void routeFromCluster(Message message, String routingKey, Map queueNameNodeIdMap) throws Exception;
-   
-   void addToQueue(String queueName, List messages) throws Exception;
-   
-   void asyncSendRequest(ClusterRequest request) throws Exception;
-   
-   void holdTransaction(TransactionId id, ClusterTransaction tx) throws Exception;
-   
-   void commitTransaction(TransactionId id) throws Exception;
-   
-   void check(String nodeId) throws Exception;
+   Binding choose(List bindings); 
 }

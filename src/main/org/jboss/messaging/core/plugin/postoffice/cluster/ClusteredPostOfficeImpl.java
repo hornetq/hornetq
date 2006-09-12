@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -32,12 +33,14 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.postoffice.ConditionBindings;
 import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
 import org.jboss.messaging.core.tx.Transaction;
@@ -99,8 +102,6 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    
    private PersistenceManager pm;
    
-   private TransactionRepository tr;  
-   
    private Element syncChannelConfigE;
    
    private Element asyncChannelConfigE;
@@ -112,6 +113,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    private long stateTimeout;
    
    private long castTimeout;
+   
+   private RoutingPolicy routingPolicy;
       
    public ClusteredPostOfficeImpl()
    {        
@@ -136,10 +139,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                               Element asyncChannelConfig,
                               TransactionRepository tr,
                               PersistenceManager pm,
-                              long stateTimeout, long castTimeout) throws Exception
+                              long stateTimeout, long castTimeout,
+                              RoutingPolicy routingPolicy) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           groupName, tr, pm, stateTimeout, castTimeout);
+           groupName, tr, pm, stateTimeout, castTimeout, routingPolicy);
       
       this.syncChannelConfigE = syncChannelConfig;      
       this.asyncChannelConfigE = asyncChannelConfig;     
@@ -156,10 +160,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                               String asyncChannelConfig,
                               TransactionRepository tr,
                               PersistenceManager pm,
-                              long stateTimeout, long castTimeout) throws Exception
+                              long stateTimeout, long castTimeout,
+                              RoutingPolicy routingPolicy) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           groupName, tr, pm, stateTimeout, castTimeout);
+           groupName, tr, pm, stateTimeout, castTimeout, routingPolicy);
 
       this.syncChannelConfigS = syncChannelConfig;      
       this.asyncChannelConfigS = asyncChannelConfig;     
@@ -171,12 +176,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                                String groupName,
                                TransactionRepository tr,
                                PersistenceManager pm,
-                               long stateTimeout, long castTimeout)
+                               long stateTimeout, long castTimeout,
+                               RoutingPolicy routingPolicy)
    {
-      super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms);
+      super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, tr);
        
-      this.tr = tr;
-      
       this.pm = pm;
       
       this.groupName = groupName;
@@ -184,6 +188,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       this.stateTimeout = stateTimeout;
       
       this.castTimeout = castTimeout;
+      
+      this.routingPolicy = routingPolicy;
       
       init();
    }
@@ -277,7 +283,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    public void recover() throws Exception
    {
       //We send a "check" message to all nodes of the cluster
-      this.asyncSendRequest(new CheckMessage(nodeId));
+      asyncSendRequest(new CheckMessage(nodeId));
    }
    
    public boolean route(MessageReference ref, String condition, Transaction tx) throws Exception
@@ -292,103 +298,133 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          throw new IllegalArgumentException("Condition is null");
       }
       
+      boolean routed = false;
+      
       lock.readLock().acquire();
       
       try
       {      
-         // We route on the condition
-         List bindings = (List)conditionMap.get(condition);
-      
-         if (bindings != null)
-         {                
-            // When routing a persistent message without a transaction then we may need to start an 
-            // internal transaction in order to route it.
-            // We do this if the message is reliable AND:
-            // (
-            // a) The message needs to be routed to more than one durable subscription. This is so we
-            // can guarantee the message is persisted on all the durable subscriptions or none if failure
-            // occurs - i.e. the persistence is transactional
-            // OR
-            // b) There is at least one durable subscription on a different node.
-            // In this case we need to start a transaction since we want to add a callback on the transaction
-            // to cast the message to other nodes
-            // )
-                        
-            //TODO we can optimise this out by storing this as a flag somewhere
-            boolean startInternalTx = false;
-      
-            if (tx == null)
+         ConditionBindings cb = (ConditionBindings)conditionMap.get(condition);
+         
+         boolean startInternalTx = false;
+         
+         if (cb != null)
+         {
+            if (tx == null && ref.isReliable())
             {
-               if (ref.isReliable())
+               if (!(cb.getDurableCount() == 1 && cb.getLocalDurableCount() == 1))
                {
-                  Iterator iter = bindings.iterator();
-                  
-                  int count = 0;
-                  
-                  while (iter.hasNext())
-                  {
-                     Binding binding = (Binding)iter.next();
-                     
-                     if (binding.isDurable())
-                     {
-                        count++;
-                        
-                        if (count == 2 || !binding.getNodeId().equals(this.nodeId))
-                        {
-                           startInternalTx = true;
-                           
-                           break;
-                        }                          
-                     }
-                  }
-               }
-               
-               if (startInternalTx)
-               {
-                  tx = tr.createTransaction();
+                  // When routing a persistent message without a transaction then we may need to start an 
+                  // internal transaction in order to route it.
+                  // This is so we can guarantee the message is delivered to all or none of the subscriptions.
+                  // We need to do this if there is any other than a single local durable subscription
+                  startInternalTx = true;
                }
             }
-                       
-            Iterator iter = bindings.iterator();
             
-            boolean sendRemotely = false;
+            if (startInternalTx)
+            {
+               tx = tr.createTransaction();
+            }
+            
+            //There may be no transaction in the following cases
+            //1) No transaction specified in params and reference is unreliable
+            //2) No transaction specified in params and reference is reliable and there is only one
+            //   or less local durable subscription
+         
+            Collection bindingLists = cb.getBindingsByName();
 
+            Iterator iter = bindingLists.iterator();
+            
+            int numberRemote = 0;
+            
+            Map queueNameNodeIdMap = null;
+            
             while (iter.hasNext())
             {
-               Binding binding = (Binding)iter.next();
+               //Each list is the list of bindings which have the same queue name
+               List bindings = (List)iter.next();
                
-               if (binding.isActive())
-               {            
-                  if (binding.getNodeId().equals(this.nodeId))
-                  {
-                     //It's a local binding so we pass the message on to the subscription
-                     Queue subscription = binding.getQueue();
-                  
-                     subscription.handle(null, ref, tx);                    
-                  }
-                  else
-                  {
-                     //It's a binding on a different office instance on the cluster
-                     sendRemotely = true;                     
-                      
-                     if (ref.isReliable() && binding.isDurable())
-                     {
-                        //Insert the reference into the database
-                        pm.addReference(binding.getChannelId(), ref, tx);
-                     }
-                  }                     
+               //We may have more than one binding with the same queue name on different nodes in the
+               //following situations:
+               //1) When a point to point queue has been deployed across the cluster
+               //2) When a durable subscription has been created on multiple nodes to implement
+               // shared durable subscriptions.
+               //In both of these cases we only want one of the queues to receive the message, we choose which 
+               //one by asking the routing policy
+               Binding binding;
+               
+               if (bindings.size() == 1)
+               {
+                  binding = (Binding)bindings.get(0);
                }
-            } 
+               else if (bindings.size() > 1)
+               {
+                  binding = routingPolicy.choose(bindings); 
+                  
+                  if (queueNameNodeIdMap == null)
+                  {
+                     queueNameNodeIdMap = new HashMap();
+                  }
+                  
+                  if (!binding.getNodeId().equals(this.nodeId))
+                  {
+                     //Chose a remote node
+                     //We add the node id to the map against the name
+                     //This is used on receipt to work out if a particular queue should
+                     //accept the message, when multicasted
+                     queueNameNodeIdMap.put(binding.getQueueName(), binding.getNodeId());
+                  }
+               }
+               else
+               {
+                  throw new IllegalStateException("No bindings in list!");
+               }
+               
+               if (binding.getNodeId().equals(this.nodeId))
+               {
+                  //It's a local binding so we pass the message on to the queue
+                  Queue queue = binding.getQueue();
+               
+                  Delivery del = queue.handle(null, ref, tx);    
+                  
+                  if (del != null && del.isSelectorAccepted())
+                  {
+                     routed = true;
+                  }  
+               }
+               else
+               {
+                  //It's a binding on a different office instance on the cluster
+                  numberRemote++;                     
+                   
+                  if (ref.isReliable() && binding.isDurable())
+                  {
+                     //Insert the reference into the database
+                     
+                     //TODO perhaps we should do this via a stub queue class
+                     pm.addReference(binding.getChannelId(), ref, tx);
+                  }
+                  
+                  routed = true;
+               }                                                
+            }
+                                    
+            //Now we've sent the message to any local queues, we might also need
+            //to send the message to the other office instances on the cluster if there are
+            //queues on those nodes that need to receive the message
             
-            //Now we've sent the message to all the local subscriptions, we might also need
-            //to multicast the message to the other office instances on the cluster if there are
-            //subscriptions on those nodes that need to receive the message
-            if (sendRemotely)
+            if (numberRemote > 0)
             {
+               //TODO - If numberRemote == 1, we could do unicast rather than multicast
+               //This would avoid putting strain on nodes that don't need to receive the reference
+               //This would be the case for load balancing queues where the routing policy
+               //sometimes allows a remote queue to get the reference
+               
                if (tx == null)
                {
-                  //We just throw the message on the network - no need to wait for any reply            
-                  asyncSendRequest(new MessageRequest(condition, ref.getMessage()));               
+                  //We just throw the message on the network - no need to wait for any reply                  
+                  asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));               
                }
                else
                {
@@ -402,12 +438,13 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                      tx.addFirstCallback(callback, this);
                   }
                       
-                  callback.addMessage(condition, ref.getMessage());                  
+                  callback.addMessage(condition, ref.getMessage(), queueNameNodeIdMap);                  
                }
             }
             
             if (startInternalTx)
             {               
+               // TODO - do we need to rollback if an exception is thrown??
                tx.commit();
             }
          }
@@ -417,9 +454,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          lock.readLock().release();
       }
          
-      // We don't care if the individual subscriptions accepted the reference
-      // We always return true
-      return true; 
+      return routed; 
    }
    
    // PostOfficeInternal implementation ------------------------------------------------------------------
@@ -506,7 +541,53 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       }
    }
    
-   public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKey) throws Exception
+   public void addToQueue(String queueName, List messages) throws Exception
+   {
+      lock.readLock().acquire();      
+            
+      try
+      {
+         Binding binding = this.getBindingForQueueName(queueName);
+         
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue name " + queueName);
+         }
+         
+         Queue queue = binding.getQueue();
+         
+         Iterator iter = messages.iterator();
+         
+         while (iter.hasNext())
+         {
+            MessageReference ref = null;
+            
+            try
+            {
+               org.jboss.messaging.core.Message msg = (org.jboss.messaging.core.Message)iter.next();
+               
+               ref = ms.reference(msg);
+               
+               queue.handleDontPersist(null, ref, null);
+            }
+            finally
+            {
+               if (ref != null)
+               {
+                  ref.releaseMemoryReference();
+               }
+            }
+         }    
+      }
+      finally
+      {
+         
+         lock.readLock().release();
+      }
+   }
+   
+   public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKey,
+                                Map queueNameNodeIdMap) throws Exception
    {
       lock.readLock().acquire();      
       
@@ -517,26 +598,46 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          ref = ms.reference(message);
               
          // We route on the condition
-         List bindings = (List)conditionMap.get(routingKey);
+         ConditionBindings cb = (ConditionBindings)conditionMap.get(routingKey);
       
-         if (bindings != null)
+         if (cb != null)
          {                                
+            List bindings = cb.getAllBindings();
+            
             Iterator iter = bindings.iterator();
             
             while (iter.hasNext())
             {
                Binding binding = (Binding)iter.next();
-               
+                                             
                if (binding.isActive())
                {            
                   if (binding.getNodeId().equals(this.nodeId))
                   {  
-                     //It's a local binding so we pass the message on to the subscription
-                     Queue subscription = binding.getQueue();
-                  
-                     //TODO instead of adding a new method on the channel
-                     //we should set a header and use the same method
-                     subscription.handleDontPersist(null, ref, null);
+                     boolean handle = true;
+                     
+                     if (queueNameNodeIdMap != null)
+                     {
+                        String desiredNodeId = (String)queueNameNodeIdMap.get(binding.getQueueName());
+                        
+                        //When there are more than one queues with the same name across the cluster we only
+                        //want to chose one of them
+                        
+                        if (desiredNodeId != null)
+                        {
+                           handle = desiredNodeId.equals(nodeId);
+                        }
+                     }
+                     
+                     if (handle)
+                     {
+                        //It's a local binding so we pass the message on to the subscription
+                        Queue subscription = binding.getQueue();
+                     
+                        //TODO instead of adding a new method on the channel
+                        //we should set a header and use the same method
+                        subscription.handleDontPersist(null, ref, null);
+                     }
                   }                               
                }
             }                          
@@ -558,36 +659,32 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       asyncChannel.send(new Message(null, null, request));
    }
    
-   public void addToHoldingArea(TransactionId id, List messageHolders) throws Exception
+   /*
+    * We put the transaction in the holding area
+    */
+   public void holdTransaction(TransactionId id, ClusterTransaction tx) throws Exception
    {
       synchronized (holdingArea)
       {
-         holdingArea.put(id, messageHolders);
-      }      
+         holdingArea.put(id, tx);
+      } 
    }
-         
+   
    public void commitTransaction(TransactionId id) throws Exception
    {
-      List messageHolders = null;
+      ClusterTransaction tx = null;
       
       synchronized (holdingArea)
       {
-         messageHolders = (List)holdingArea.remove(id);
+         tx = (ClusterTransaction)holdingArea.remove(id);
       }
       
-      if (messageHolders == null)
+      if (tx == null)
       {
-         throw new IllegalStateException("Cannot find messages for transaction id: " + id);
+         throw new IllegalStateException("Cannot find transaction transaction id: " + id);
       }
       
-      Iterator iter = messageHolders.iterator();
-      
-      while (iter.hasNext())
-      {
-         MessageHolder holder = (MessageHolder)iter.next();
-         
-         routeFromCluster(holder.getMessage(), holder.getRoutingKey());
-      }
+      tx.commit(this);
    }
    
    /*
@@ -624,7 +721,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                   {
                      MessageHolder holder = (MessageHolder)iter2.next();
                      
-                     routeFromCluster(holder.getMessage(), holder.getRoutingKey());
+                     routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
                   }
                   
                   toRemove.add(id);
@@ -736,43 +833,45 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
     * We have received a reference cast from another node - and we need to route it to our local
     * subscriptions    
     */
-   protected void routeFromCluster(MessageReference ref, String routingKey) throws Exception
-   {
-      lock.readLock().acquire();
-      
-      try
-      {      
-         // We route on the condition
-         List bindings = (List)conditionMap.get(routingKey);
-      
-         if (bindings != null)
-         {                                
-            Iterator iter = bindings.iterator();
-            
-            while (iter.hasNext())
-            {
-               Binding binding = (Binding)iter.next();
-               
-               if (binding.isActive())
-               {            
-                  if (binding.getNodeId().equals(this.nodeId))
-                  {  
-                     //It's a local binding so we pass the message on to the subscription
-                     Queue subscription = binding.getQueue();
-                  
-                     //TODO instead of adding a new method on the channel
-                     //we should set a header and use the same method
-                     subscription.handleDontPersist(null, ref, null);
-                  }                               
-               }
-            }                          
-         }
-      }
-      finally
-      {                  
-         lock.readLock().release();
-      }
-   }            
+//   protected void routeFromCluster(MessageReference ref, String routingKey) throws Exception
+//   {
+//      lock.readLock().acquire();
+//      
+//      try
+//      {      
+//         // We route on the condition
+//         List bindings = (List)conditionMap.get(routingKey);
+//      
+//         if (bindings != null)
+//         {                                
+//            Iterator iter = bindings.iterator();
+//            
+//            while (iter.hasNext())
+//            {
+//               Binding binding = (Binding)iter.next();
+//               
+//               if (binding.isActive())
+//               {            
+//                  if (binding.getNodeId().equals(this.nodeId))
+//                  {  
+//                     //It's a local binding so we pass the message on to the subscription
+//                     Queue subscription = binding.getQueue();
+//                  
+//                     //TODO instead of adding a new method on the channel
+//                     //we should set a header and use the same method
+//                     subscription.handleDontPersist(null, ref, null);
+//                  }                               
+//               }
+//            }                          
+//         }
+//      }
+//      finally
+//      {                  
+//         lock.readLock().release();
+//      }
+//   }            
+//   
+  
        
    // Private ------------------------------------------------------------------------------------------
              

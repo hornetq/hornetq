@@ -45,6 +45,7 @@ import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionRepository;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
@@ -69,6 +70,8 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    
    protected MessageStore ms;     
    
+   protected TransactionRepository tr;
+   
    protected String nodeId;
    
    //Map <node id, Map < queue name, binding > >
@@ -82,8 +85,9 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    }
    
    public PostOfficeImpl(DataSource ds, TransactionManager tm, Properties sqlProperties,
-                           boolean createTablesOnStartup,
-                           String nodeId, String officeName, MessageStore ms)
+                         boolean createTablesOnStartup,
+                         String nodeId, String officeName, MessageStore ms,
+                         TransactionRepository tr)
    {            
       super (ds, tm, sqlProperties, createTablesOnStartup);
       
@@ -98,6 +102,8 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       this.officeName = officeName;
       
       this.ms = ms;
+      
+      this.tr = tr;
    }
    
    // MessagingComponent implementation --------------------------------
@@ -277,11 +283,31 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
                 
       try
       {                 
-         //We route on the condition
-         List bindings = (List)conditionMap.get(condition);
-           
-         if (bindings != null)
+         ConditionBindings cb = (ConditionBindings)conditionMap.get(condition);
+                             
+         if (cb != null)
          {            
+            boolean startInternalTx = false;
+            
+            if (tx == null && ref.isReliable())
+            {
+               if (cb.getDurableCount() > 1)
+               {
+                  // When routing a persistent message without a transaction then we may need to start an 
+                  // internal transaction in order to route it.
+                  // This is so we can guarantee the message is delivered to all or none of the subscriptions.
+                  // We need to do this if there is more than one durable sub
+                  startInternalTx = true;
+               }
+            }
+            
+            if (startInternalTx)
+            {
+               tx = tr.createTransaction();
+            }
+                        
+            List bindings = cb.getAllBindings();
+            
             Iterator iter = bindings.iterator();
             
             while (iter.hasNext())
@@ -300,7 +326,13 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
                      routed = true;
                   }                  
                }               
-            }                        
+            } 
+            
+            if (startInternalTx)
+            {
+               //TODO - do we need to rollback if an exception is thrown??
+               tx.commit();
+            }
          }
                  
          return routed;
@@ -484,16 +516,16 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       
       String condition = binding.getCondition();
             
-      List bindings = (List)conditionMap.get(condition);
+      ConditionBindings bindings = (ConditionBindings)conditionMap.get(condition);
       
       if (bindings == null)
       {
-         bindings = new ArrayList();
+         bindings = new ConditionBindings(this.nodeId);
          
          conditionMap.put(condition, bindings);
       }
       
-      bindings.add(binding);
+      bindings.addBinding(binding);
    }   
    
    protected Binding removeBinding(String nodeId, String queueName)
@@ -527,29 +559,19 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          nameMaps.remove(nodeId);
       }
                   
-      List bindings = (List)conditionMap.get(binding.getCondition());
+      ConditionBindings bindings = (ConditionBindings)conditionMap.get(binding.getCondition());
       
       if (bindings == null)
       {
          throw new IllegalStateException("Cannot find condition bindings for " + binding.getCondition());
       }
       
-      boolean removed = bindings.remove(binding);
+      boolean removed = bindings.removeBinding(binding);
       
       if (!removed)
       {
          throw new IllegalStateException("Cannot find binding in condition binding list");
-      }
-      
-      if (binding == null)
-      {
-         throw new IllegalStateException("Channel id map does not contain binding for " + binding.getChannelId());
-      }
-      
-      if (!removed)
-      {
-         throw new IllegalStateException("Cannot find binding in condition binding list");
-      }
+      }           
       
       if (bindings.isEmpty())
       {

@@ -972,7 +972,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
    {
       PostOfficeImpl postOffice = 
          new PostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),
-                              null, true, "node1", "Simple", ms);
+                              null, true, "node1", "Simple", ms, tr);
       
       postOffice.start();      
       

@@ -23,6 +23,7 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.tx.TxCallback;
@@ -69,9 +70,9 @@ class CastMessagesCallback implements TxCallback
    
    private PostOfficeInternal office;
    
-   void addMessage(String routingKey, Message message)
+   void addMessage(String routingKey, Message message, Map queueNameToNodeIdMap)
    {
-      MessageHolder holder = new MessageHolder(routingKey, message);
+      MessageHolder holder = new MessageHolder(routingKey, message, queueNameToNodeIdMap);
       
       if (message.isReliable())
       {
@@ -113,7 +114,7 @@ class CastMessagesCallback implements TxCallback
       if (persistent != null)
       {
          // Cast a commit message
-         ClusterRequest req = new TransactionRequest(nodeId, txId);
+         ClusterRequest req = new SendTransactionRequest(nodeId, txId);
          
          // Stack must be FIFO
          office.asyncSendRequest(req);
@@ -136,7 +137,7 @@ class CastMessagesCallback implements TxCallback
       {
          //We send the persistent messages which go into the "holding area" on
          //the receiving nodes
-         ClusterRequest req = new TransactionRequest(nodeId, txId, persistent);
+         ClusterRequest req = new SendTransactionRequest(nodeId, txId, persistent);
          
          //Stack must be FIFO
          office.asyncSendRequest(req);

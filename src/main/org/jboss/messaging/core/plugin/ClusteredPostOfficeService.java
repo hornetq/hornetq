@@ -30,6 +30,8 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRoutingPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RoutingPolicy;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -184,12 +186,15 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
          PersistenceManager pm = serverPeer.getPersistenceManagerInstance();
          
          String nodeId = serverPeer.getServerPeerID();
+         
+         RoutingPolicy policy = new FavourLocalRoutingPolicy(nodeId);
                   
          postOffice =  new ClusteredPostOfficeImpl(ds, tm, sqlProperties, createTablesOnStartup,
                                                nodeId, officeName, ms,
                                                groupName,
                                                syncChannelConfig, asyncChannelConfig,
-                                               tr, pm, stateTimeout, castTimeout);
+                                               tr, pm, stateTimeout, castTimeout,
+                                               policy);
          
          postOffice.start();
          

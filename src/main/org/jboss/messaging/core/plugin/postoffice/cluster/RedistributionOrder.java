@@ -21,18 +21,9 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.util.List;
-import java.util.Map;
-
-import org.jboss.messaging.core.Message;
-import org.jgroups.Address;
-
 /**
  * 
- * A PostOfficeInternal
- * 
- * Extension to the ClusteredPostOffice interface that expose extra methods useful to
- * ClusteredRequests
+ * A RedistributionOrder
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -40,27 +31,35 @@ import org.jgroups.Address;
  * $Id$
  *
  */
-interface PostOfficeInternal
+public class RedistributionOrder
 {
-   void addBindingFromCluster(String nodeId, String queueName, String condition,
-                              String filterString, long channelId, boolean durable)
-      throws Exception;
+   private int numberOfMessages;
    
-   void removeBindingFromCluster(String nodeId, String queueName)
-      throws Exception;
+   private String queueName;
    
-   void handleAddressNodeMapping(Address address, String nodeId)
-      throws Exception;
-   
-   void routeFromCluster(Message message, String routingKey, Map queueNameNodeIdMap) throws Exception;
-   
-   void addToQueue(String queueName, List messages) throws Exception;
-   
-   void asyncSendRequest(ClusterRequest request) throws Exception;
-   
-   void holdTransaction(TransactionId id, ClusterTransaction tx) throws Exception;
-   
-   void commitTransaction(TransactionId id) throws Exception;
-   
-   void check(String nodeId) throws Exception;
+   private String destinationNodeId;
+
+   public RedistributionOrder(int numberOfMessages, String queueName, String destinationNodeId)
+   {
+      this.numberOfMessages = numberOfMessages;
+      
+      this.queueName = queueName;
+      
+      this.destinationNodeId = destinationNodeId;
+   }
+
+   public String getDestinationNodeId()
+   {
+      return destinationNodeId;
+   }
+
+   public int getNumberOfMessages()
+   {
+      return numberOfMessages;
+   }
+
+   public String getQueueName()
+   {
+      return queueName;
+   }
 }

@@ -54,7 +54,7 @@ class MessagesRequest implements ClusterRequest
       {
          MessageHolder holder = (MessageHolder)iter.next();
          
-         office.routeFromCluster(holder.getMessage(), holder.getRoutingKey());
+         office.routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
       }
    }   
 }

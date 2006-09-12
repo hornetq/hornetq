@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.util.Map;
+
 import org.jboss.messaging.core.Message;
 
 /**
@@ -42,15 +44,19 @@ class MessageRequest implements ClusterRequest
    
    private Message message;
    
-   MessageRequest(String routingKey, Message message)
+   private Map queueNameNodeIdMap;
+   
+   MessageRequest(String routingKey, Message message, Map queueNameNodeIdMap)
    {
       this.routingKey = routingKey;
       
       this.message = message;
+      
+      this.queueNameNodeIdMap = queueNameNodeIdMap;
    }
    
    public void execute(PostOfficeInternal office) throws Exception
    {
-      office.routeFromCluster(message, routingKey);      
+      office.routeFromCluster(message, routingKey, queueNameNodeIdMap);      
    }   
 }

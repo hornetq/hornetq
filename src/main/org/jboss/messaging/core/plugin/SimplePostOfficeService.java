@@ -29,6 +29,7 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
+import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
  * A SimplePostOfficeService
@@ -115,11 +116,13 @@ public class SimplePostOfficeService extends JDBCServiceSupport
          
          MessageStore ms = serverPeer.getMessageStore();
          
+         TransactionRepository tr = serverPeer.getTxRepository();
+         
          String nodeId = serverPeer.getServerPeerID();
                   
          postOffice = new PostOfficeImpl(ds, tm, sqlProperties,
                                            createTablesOnStartup,
-                                           nodeId, officeName, ms);
+                                           nodeId, officeName, ms, tr);
          
          postOffice.start();
          

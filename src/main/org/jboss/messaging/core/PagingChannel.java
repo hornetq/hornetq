@@ -128,7 +128,7 @@ public class PagingChannel extends ChannelSupport
 
       this.downCacheSize = downCacheSize;      
    }
-   
+    
    // Channel implementation
    // ---------------------------------------------------------------
    

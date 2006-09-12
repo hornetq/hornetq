@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.jboss.messaging.core.Message;
 
@@ -36,15 +37,19 @@ import org.jboss.messaging.core.Message;
  */
 class MessageHolder implements Serializable
 {
-   String routingKey;
+   private String routingKey;
    
-   Message message;
+   private Message message;
    
-   MessageHolder(String routingKey, Message message)
+   private Map queueNameToNodeIdMap;
+   
+   MessageHolder(String routingKey, Message message, Map queueNameToNodeIdMap)
    {
       this.routingKey = routingKey;
       
       this.message = message;
+      
+      this.queueNameToNodeIdMap = queueNameToNodeIdMap;
    }
    
    String getRoutingKey()
@@ -55,5 +60,10 @@ class MessageHolder implements Serializable
    Message getMessage()
    {
       return message;
+   }
+   
+   Map getQueueNameToNodeIdMap()
+   {
+      return queueNameToNodeIdMap;
    }
 }     

@@ -137,7 +137,7 @@ public abstract class ChannelSupport implements Channel
 
       deliveryLock = new Object();
    }
-
+   
    // Receiver implementation ---------------------------------------
 
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
