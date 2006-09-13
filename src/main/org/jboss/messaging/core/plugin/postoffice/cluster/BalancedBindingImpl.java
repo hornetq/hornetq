@@ -21,10 +21,10 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
 
 /**
- * A BalancedBinding
+ * A BalancedBindingImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,13 +32,41 @@ import org.jboss.messaging.core.plugin.contract.Binding;
  * $Id$
  *
  */
-public interface BalancedBinding extends Binding
+public class BalancedBindingImpl extends BindingImpl implements BalancedBinding
 {
-   double getConsumptionRate();
+   private double consumptionRate;
    
-   int getMessageCount();
+   private int messageCount;
    
-   void setConsumptionRate(double rate);
-   
-   void setMessageCount(int count);
+   public BalancedBindingImpl()
+   {
+   }
+
+   public BalancedBindingImpl(String nodeId, String queueName, String condition, String selector, long channelId, boolean durable)
+   {
+      super(nodeId, queueName, condition, selector, channelId, durable);
+   }
+
+   public double getConsumptionRate()
+   {
+      return consumptionRate;
+   }
+
+   public int getMessageCount()
+   {
+      return messageCount;
+   }
+
+   public void setConsumptionRate(double consumptionRate)
+   {
+      this.consumptionRate = consumptionRate;
+   }
+
+   public void setMessageCount(int messageCount)
+   {
+      this.messageCount = messageCount;
+   }
+
+ 
+
 }

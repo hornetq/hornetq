@@ -42,7 +42,6 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.ConditionBindings;
 import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
-import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jgroups.Address;
@@ -115,6 +114,12 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    private long castTimeout;
    
    private RoutingPolicy routingPolicy;
+   
+   private RedistributionPolicy redistributionPolicy;
+   
+   private MessageRedistributor redistributor;
+   
+   private long redistributePeriod;
       
    public ClusteredPostOfficeImpl()
    {        
@@ -140,10 +145,13 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                               TransactionRepository tr,
                               PersistenceManager pm,
                               long stateTimeout, long castTimeout,
-                              RoutingPolicy routingPolicy) throws Exception
+                              RoutingPolicy routingPolicy,
+                              RedistributionPolicy redistributionPolicy,
+                              long redistributePeriod) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           groupName, tr, pm, stateTimeout, castTimeout, routingPolicy);
+           groupName, tr, pm, stateTimeout, castTimeout, routingPolicy, redistributionPolicy,
+           redistributePeriod);
       
       this.syncChannelConfigE = syncChannelConfig;      
       this.asyncChannelConfigE = asyncChannelConfig;     
@@ -161,10 +169,12 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                               TransactionRepository tr,
                               PersistenceManager pm,
                               long stateTimeout, long castTimeout,
-                              RoutingPolicy routingPolicy) throws Exception
+                              RoutingPolicy routingPolicy,
+                              RedistributionPolicy redistributionPolicy,
+                              long redistributePeriod) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           groupName, tr, pm, stateTimeout, castTimeout, routingPolicy);
+           groupName, tr, pm, stateTimeout, castTimeout, routingPolicy, redistributionPolicy, redistributePeriod);
 
       this.syncChannelConfigS = syncChannelConfig;      
       this.asyncChannelConfigS = asyncChannelConfig;     
@@ -177,7 +187,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                                TransactionRepository tr,
                                PersistenceManager pm,
                                long stateTimeout, long castTimeout,
-                               RoutingPolicy routingPolicy)
+                               RoutingPolicy routingPolicy,
+                               RedistributionPolicy redistributionPolicy,
+                               long redistributePeriod)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, tr);
        
@@ -191,9 +203,15 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
       this.routingPolicy = routingPolicy;
       
+      this.redistributionPolicy = redistributionPolicy;
+      
+      this.redistributePeriod = redistributePeriod;
+      
       init();
    }
 
+   // MessagingComponent overrides
+   // --------------------------------------------------------------
    
    public void start() throws Exception
    {
@@ -236,11 +254,17 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       handleAddressNodeMapping(currentAddress, nodeId);
       
       syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));
+            
+      redistributor = new MessageRedistributor(this, redistributePeriod);
+      
+      redistributor.start();
    }
 
    public void stop() throws Exception
    {
       super.stop();
+      
+      redistributor.stop();
       
       syncChannel.close();
       
@@ -463,7 +487,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
     * Called when another node adds a binding
     */
    public void addBindingFromCluster(String nodeId, String queueName, String condition,
-                                      String filterString, long channelID, boolean durable)
+                                     String filterString, long channelID, boolean durable)
       throws Exception
    {
       lock.writeLock().acquire();
@@ -491,8 +515,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             throw new IllegalArgumentException(this.nodeId + "Binding already exists for node Id " + nodeId + " queue name " + queueName);
          }
          
-         binding = new BindingImpl(nodeId, queueName, condition, filterString,
-                                   channelID, durable); 
+         binding = new BalancedBindingImpl(nodeId, queueName, condition, filterString,
+                                           channelID, durable); 
          
          binding.activate();
          
@@ -533,7 +557,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
       try
       { 
-         nodeIdAddressMap.put(nodeId, address.toString());
+         nodeIdAddressMap.put(nodeId, address);
       }
       finally
       {
@@ -653,10 +677,26 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       }
    }
    
+   /*
+    * Multicast a message to all members of the group
+    */
    public void asyncSendRequest(ClusterRequest request) throws Exception
    {            
       //TODO - handle serialization more efficiently
       asyncChannel.send(new Message(null, null, request));
+   }
+   
+   /*
+    * Unicast a message to one members of the group
+    */
+   public void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception
+   {            
+      Address address = (Address)nodeIdAddressMap.get(nodeId);
+      
+      Message m = new Message(address, null, request);
+      
+      //TODO - handle serialization more efficiently
+      asyncChannel.send(m);
    }
    
    /*
@@ -742,6 +782,215 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       }
    }
    
+   public void calculateRedistribution() throws Throwable
+   {
+      lock.readLock().acquire();
+      
+      try
+      {
+         Iterator iter = conditionMap.values().iterator();
+         
+         while (iter.hasNext())
+         {
+            ConditionBindings cb = (ConditionBindings)iter.next();
+            
+            Collection nameLists = cb.getBindingsByName();
+            
+            Iterator iter2 = nameLists.iterator();
+            
+            while (iter2.hasNext())
+            {
+               List bindings = (List)iter2.next();        
+            
+               if (bindings.size() > 1)
+               {
+                  RedistributionOrder order = redistributionPolicy.calculate(bindings);
+                  
+                  if (order != null)
+                  {
+                     moveMessages(order.getQueueName(), order.getDestinationNodeId(), order.getNumberOfMessages());
+                  }
+               }
+            }
+         }
+      }
+      finally
+      {
+         lock.readLock().release();
+      }
+   }
+   
+   public void sendStats() throws Exception
+   {
+      lock.writeLock().acquire();
+      
+      List stats = null;      
+      
+      try
+      {
+         
+         Map nameMap = (Map)nameMaps.get(nodeId);
+         
+         Iterator iter = nameMap.values().iterator();
+                  
+         while (iter.hasNext())
+         {
+            BalancedBinding bb = (BalancedBinding)iter.next();
+            
+            MeasuredQueue q = (MeasuredQueue)bb.getQueue();
+            
+            //We don't bother sending the stat if there is less than STATS_DIFFERENCE_MARGIN_PERCENT % difference
+            
+            double newRate = q.getGrowthRate();
+            
+            int newMessageCount = q.messageCount();
+            
+            boolean sendStats = decideToSendStats(bb.getConsumptionRate(), newRate);
+            
+            if (!sendStats)
+            {
+               sendStats = decideToSendStats(bb.getMessageCount(), newMessageCount);
+            }
+            
+            if (sendStats)
+            {
+               bb.setConsumptionRate(newRate);
+               bb.setMessageCount(newMessageCount);
+               
+               if (stats == null)
+               {
+                  stats = new ArrayList();
+               }
+               QueueStats qs = new QueueStats(bb.getQueueName(), newRate, newMessageCount);
+               
+               stats.add(qs);
+            }                  
+         }
+      }
+      finally
+      {
+         lock.writeLock().release();
+      }
+      
+      if (stats != null)
+      {
+         ClusterRequest req = new QueueStatsRequest(nodeId, stats);
+         
+         asyncSendRequest(req);
+      }
+   }
+   
+   private boolean decideToSendStats(double oldValue, double newValue)
+   {
+      boolean sendStats = false;
+      
+      if (oldValue != 0)
+      {         
+         int percentChange = (int)(100 * (oldValue - newValue) / oldValue);
+         
+         if (Math.abs(percentChange) >= STATS_DIFFERENCE_MARGIN_PERCENT)
+         {
+            sendStats = true;
+         }
+      }
+      else
+      {
+         if (newValue != 0)
+         {
+            sendStats = true;
+         }
+      }
+      return sendStats;
+   }
+   
+   private static final int STATS_DIFFERENCE_MARGIN_PERCENT = 10;
+   
+   public void updateQueueStats(String nodeId, List stats) throws Exception
+   {
+      lock.writeLock().acquire();
+      
+      Map nameMap = (Map)nameMaps.get(nodeId);
+      
+      if (nameMap == null)
+      {
+         throw new IllegalStateException("Cannot find name map for node id " + nodeId);
+      }
+            
+      try
+      {
+         Iterator iter = stats.iterator();
+         
+         while (iter.hasNext())
+         {
+            QueueStats st = (QueueStats)iter.next();
+            
+            BalancedBinding bb = (BalancedBinding)nameMap.get(st.getQueueName());
+            
+            if (bb == null)
+            {
+               throw new IllegalStateException("Cannot find binding for queue name: " + st.getQueueName());
+            }
+            
+            bb.setConsumptionRate(st.getConsumptionRate());
+            
+            bb.setMessageCount(st.getMessageCount());
+         }         
+      }
+      finally
+      {
+         lock.writeLock().release();      
+      }
+   }
+          
+   
+   
+   // Public ------------------------------------------------------------------------------------------
+      
+   // Protected ---------------------------------------------------------------------------------------
+   
+   protected Binding createBinding(String nodeId, String queueName, String condition, String filter,
+            long channelId, boolean durable)
+   {
+      return new BalancedBindingImpl(nodeId, queueName, condition, filter,
+                                     channelId, durable);   
+   }
+           
+   protected void loadBindings() throws Exception
+   {
+      // TODO I need to know whether this call times out - how do I know this??
+      boolean isState = syncChannel.getState(null, stateTimeout);
+                              
+      if (!isState)
+      {       
+         //Must be first member in group or non clustered- we load the state ourself from the database
+         super.loadBindings();      
+      }
+      else
+      {
+         //The state will be set in due course via the MessageListener - we must wait until this happens
+         
+         synchronized (setStateLock)
+         {
+            //TODO we should implement a timeout on this
+            while (!stateSet)
+            {
+               setStateLock.wait();
+            } 
+         }
+      }
+   }
+   
+   // Private ------------------------------------------------------------------------------------------
+           
+   private void syncSendRequest(ClusterRequest request) throws Exception
+   {            
+      //TODO - handle serialization more efficiently
+      
+      Message message = new Message(null, null, request);      
+      
+      controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, castTimeout);
+   }
+   
    private boolean checkTransaction(List messageHolders) throws Exception
    {
       Iterator iter = messageHolders.iterator();
@@ -788,94 +1037,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          return false;
       }
    }
-    
-   protected void loadBindings() throws Exception
-   {
-      // TODO I need to know whether this call times out - how do I know this??
-      boolean isState = syncChannel.getState(null, stateTimeout);
-                              
-      if (!isState)
-      {       
-         //Must be first member in group or non clustered- we load the state ourself from the database
-         super.loadBindings();      
-      }
-      else
-      {
-         //The state will be set in due course via the MessageListener - we must wait until this happens
-         
-         synchronized (setStateLock)
-         {
-            //TODO we should implement a timeout on this
-            while (!stateSet)
-            {
-               setStateLock.wait();
-            } 
-         }
-      }
-   }
    
-   // Public ------------------------------------------------------------------------------------------
-   
-   
-   // Protected ---------------------------------------------------------------------------------------
-   
-   
-   protected void syncSendRequest(ClusterRequest request) throws Exception
-   {            
-      //TODO - handle serialization more efficiently
-      
-      Message message = new Message(null, null, request);      
-      
-      controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, castTimeout);
-   }
-   
-   /*
-    * We have received a reference cast from another node - and we need to route it to our local
-    * subscriptions    
-    */
-//   protected void routeFromCluster(MessageReference ref, String routingKey) throws Exception
-//   {
-//      lock.readLock().acquire();
-//      
-//      try
-//      {      
-//         // We route on the condition
-//         List bindings = (List)conditionMap.get(routingKey);
-//      
-//         if (bindings != null)
-//         {                                
-//            Iterator iter = bindings.iterator();
-//            
-//            while (iter.hasNext())
-//            {
-//               Binding binding = (Binding)iter.next();
-//               
-//               if (binding.isActive())
-//               {            
-//                  if (binding.getNodeId().equals(this.nodeId))
-//                  {  
-//                     //It's a local binding so we pass the message on to the subscription
-//                     Queue subscription = binding.getQueue();
-//                  
-//                     //TODO instead of adding a new method on the channel
-//                     //we should set a header and use the same method
-//                     subscription.handleDontPersist(null, ref, null);
-//                  }                               
-//               }
-//            }                          
-//         }
-//      }
-//      finally
-//      {                  
-//         lock.readLock().release();
-//      }
-//   }            
-//   
-  
-       
-   // Private ------------------------------------------------------------------------------------------
-             
-   private void removeBindingsForAddress(String address) throws Exception
+   private void removeBindingsForAddress(Address address) throws Exception
    {
       lock.writeLock().acquire();
       
@@ -888,9 +1051,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          {
             Map.Entry entry = (Map.Entry)iter.next();
             
-            String str = (String)entry.getValue();
+            Address adr = (Address)entry.getValue();
             
-            if (str.equals(address))
+            if (adr.equals(address))
             {
                nodeId = (String)entry.getKey();
             }
@@ -988,6 +1151,41 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
       this.nodeIdAddressMap.putAll(state.getNodeIdAddressMap());
    }
+   
+   /*
+    * Move messages from queue on one node to queue on another node
+    */
+   private void moveMessages(String queueName, String toNodeId, int num) throws Throwable
+   {      
+      Binding binding = getBindingForQueueName(queueName);
+      
+      if (binding == null)
+      {
+         throw new IllegalStateException("Cannot find binding for queue name: " + queueName);
+      }
+      
+      Queue fromQueue = binding.getQueue();
+
+      Transaction tx = tr.createTransaction();
+               
+      List dels = ((MeasuredQueue)fromQueue).getDeliveries(num);
+      
+      Iterator iter = dels.iterator();
+      
+      MoveMessagesCallback cb = new MoveMessagesCallback(nodeId, toNodeId, queueName,
+                                                         tx.getId(), this);      
+      while (iter.hasNext())
+      {
+         Delivery del = (Delivery)iter.next();
+         
+         del.acknowledge(tx);      
+         
+         cb.addMessage(del.getReference().getMessage());
+      }
+      
+      tx.commit();
+ 
+   } 
    
    // Inner classes -------------------------------------------------------------------
     
@@ -1100,7 +1298,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                   {                  
                      try
                      {
-                        removeBindingsForAddress(address.toString());
+                        removeBindingsForAddress(address);
                      }               
                      catch (Exception e)
                      {

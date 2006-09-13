@@ -54,11 +54,11 @@ public class TransactionRepository implements MessagingComponent
    
    private boolean trace = log.isTraceEnabled();
    
-   protected Map globalToLocalMap;     
+   private Map globalToLocalMap;     
    
-   protected PersistenceManager persistenceManager;
+   private PersistenceManager persistenceManager;
    
-   protected IdManager idManager;
+   private IdManager idManager;
 
    // Static --------------------------------------------------------
    
@@ -151,6 +151,7 @@ public class TransactionRepository implements MessagingComponent
       if (trace) { log.trace("created transaction " + tx); }
       
       globalToLocalMap.put(xid, tx);
+      
       return tx;
    }
    
@@ -161,6 +162,11 @@ public class TransactionRepository implements MessagingComponent
       if (trace) { log.trace("created transaction " + tx); }
 
       return tx;
+   }
+   
+   public boolean removeTransaction(Xid xid)
+   {
+      return globalToLocalMap.remove(xid) != null;
    }
    
    // Package protected ---------------------------------------------

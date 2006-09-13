@@ -29,8 +29,10 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.postoffice.cluster.BasicRedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRoutingPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RoutingPolicy;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
@@ -63,6 +65,8 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
    private long stateTimeout = 5000;
    
    private long castTimeout = 5000;
+   
+   private long redistPeriod = 5000;
    
    private String groupName;
    
@@ -151,6 +155,16 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       return castTimeout;
    }
    
+   public void setRedistributionPeriod(long period)
+   {
+      this.redistPeriod = period;
+   }
+   
+   public long getRedistributionPeriod()
+   {
+      return redistPeriod;
+   }
+   
    public void setGroupName(String groupName)
    {
       this.groupName = groupName;
@@ -175,8 +189,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       try
       {  
          TransactionManager tm = getTransactionManagerReference();
-                  
-         
+                           
          ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
          
          MessageStore ms = serverPeer.getMessageStore();
@@ -187,14 +200,16 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
          
          String nodeId = serverPeer.getServerPeerID();
          
-         RoutingPolicy policy = new FavourLocalRoutingPolicy(nodeId);
+         RoutingPolicy routingPolicy = new FavourLocalRoutingPolicy(nodeId);
+         
+         RedistributionPolicy redistPolicy = new BasicRedistributionPolicy(nodeId);
                   
          postOffice =  new ClusteredPostOfficeImpl(ds, tm, sqlProperties, createTablesOnStartup,
                                                nodeId, officeName, ms,
                                                groupName,
                                                syncChannelConfig, asyncChannelConfig,
                                                tr, pm, stateTimeout, castTimeout,
-                                               policy);
+                                               routingPolicy, redistPolicy, redistPeriod);
          
          postOffice.start();
          

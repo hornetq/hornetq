@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jgroups.Address;
 
 /**
@@ -40,7 +41,7 @@ import org.jgroups.Address;
  * $Id$
  *
  */
-interface PostOfficeInternal
+interface PostOfficeInternal extends ClusteredPostOffice
 {
    void addBindingFromCluster(String nodeId, String queueName, String condition,
                               String filterString, long channelId, boolean durable)
@@ -58,9 +59,17 @@ interface PostOfficeInternal
    
    void asyncSendRequest(ClusterRequest request) throws Exception;
    
+   void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception;
+   
    void holdTransaction(TransactionId id, ClusterTransaction tx) throws Exception;
    
    void commitTransaction(TransactionId id) throws Exception;
    
    void check(String nodeId) throws Exception;
+   
+   void calculateRedistribution() throws Throwable;
+   
+   void updateQueueStats(String nodeId, List stats) throws Exception;
+   
+   void sendStats() throws Exception;
 }

@@ -21,10 +21,10 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.plugin.contract.Binding;
+import java.util.List;
 
 /**
- * A BalancedBinding
+ * A QueueStatsRequest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,13 +32,21 @@ import org.jboss.messaging.core.plugin.contract.Binding;
  * $Id$
  *
  */
-public interface BalancedBinding extends Binding
+public class QueueStatsRequest implements ClusterRequest
 {
-   double getConsumptionRate();
+   private String nodeId;
    
-   int getMessageCount();
+   private List queueStats;
    
-   void setConsumptionRate(double rate);
-   
-   void setMessageCount(int count);
+   public QueueStatsRequest(String nodeId, List stats)
+   {
+      this.nodeId = nodeId;
+      
+      this.queueStats = stats;
+   }
+
+   public void execute(PostOfficeInternal office) throws Exception
+   {
+      office.updateQueueStats(nodeId, queueStats);
+   }
 }

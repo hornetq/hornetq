@@ -21,10 +21,10 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.plugin.contract.Binding;
+import java.io.Serializable;
 
 /**
- * A BalancedBinding
+ * A QueueStats
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,13 +32,35 @@ import org.jboss.messaging.core.plugin.contract.Binding;
  * $Id$
  *
  */
-public interface BalancedBinding extends Binding
+public class QueueStats implements Serializable
 {
-   double getConsumptionRate();
+   private String queueName;
    
-   int getMessageCount();
+   private double consumptionRate;
    
-   void setConsumptionRate(double rate);
-   
-   void setMessageCount(int count);
+   private int messageCount;
+
+   public QueueStats(String queueName, double consumptionRate, int messageCount)
+   {
+      this.queueName = queueName;
+      
+      this.consumptionRate = consumptionRate;
+      
+      this.messageCount = messageCount;
+   }
+
+   public double getConsumptionRate()
+   {
+      return consumptionRate;
+   }
+
+   public int getMessageCount()
+   {
+      return messageCount;
+   }
+
+   public String getQueueName()
+   {
+      return queueName;
+   }      
 }

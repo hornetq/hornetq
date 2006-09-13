@@ -29,7 +29,11 @@ import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.BasicRedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRoutingPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RoutingPolicy;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleReceiver;
 
@@ -1170,12 +1174,16 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
    
    protected ClusteredPostOffice createClusteredPostOffice(String nodeId, String groupName) throws Exception
    {
+      RoutingPolicy routingPolicy = new FavourLocalRoutingPolicy(nodeId);
+      
+      RedistributionPolicy redistPolicy = new BasicRedistributionPolicy(nodeId);
+      
       ClusteredPostOfficeImpl postOffice = 
          new ClusteredPostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),
                                  null, true, nodeId, "Clustered", ms, groupName,
                                  JGroupsUtil.getControlStackProperties(50, 1),
                                  JGroupsUtil.getDataStackProperties(50, 1),
-                                 tr, pm, 5000, 5000);
+                                 tr, pm, 5000, 5000, routingPolicy, redistPolicy, 5000);
       
       postOffice.start();      
       

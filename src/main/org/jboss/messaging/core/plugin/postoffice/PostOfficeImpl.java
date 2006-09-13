@@ -157,7 +157,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          
          String filter = queue.getFilter() == null ? null : queue.getFilter().getFilterString();
                     
-         binding = new BindingImpl(nodeId, queueName, condition, filter,
+         binding = createBinding(nodeId, queueName, condition, filter,
                                    queue.getChannelID(), durable);         
          
          binding.setQueue(queue);
@@ -178,7 +178,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       {
          lock.writeLock().release();
       }
-   }
+   }   
             
    public Binding unbindQueue(String queueName) throws Throwable
    {
@@ -220,15 +220,24 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          throw new IllegalArgumentException("Condition is null");
       }
       
-      lock.writeLock().acquire();
+      lock.readLock().acquire();
       
       try
       {
-         return listMatchingBindings(condition);
+         List list = (List)conditionMap.get(condition);
+         
+         if (list == null)
+         {
+            return Collections.EMPTY_LIST;
+         }
+         else
+         {
+            return list;
+         }
       }
       finally
       {
-         lock.writeLock().release();
+         lock.readLock().release();
       }
    }
    
@@ -239,7 +248,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          throw new IllegalArgumentException("Queue name is null");
       }
       
-      lock.writeLock().acquire();
+      lock.readLock().acquire();
       
       try
       {
@@ -256,7 +265,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       }
       finally
       {
-         lock.writeLock().release();
+         lock.readLock().release();
       }
    }
    
@@ -344,6 +353,13 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    } 
      
    // Protected -----------------------------------------------------
+   
+   protected Binding createBinding(String nodeId, String queueName, String condition, String filter,
+                                   long channelId, boolean durable)
+   {
+      return new BindingImpl(nodeId, queueName, condition, filter,
+                             channelId, durable);   
+   }
    
    protected void loadBindings() throws Exception
    {
@@ -476,7 +492,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
             //We don't load the actual queue - this is because we don't know the paging params until
             //activation time
                     
-            Binding binding = new BindingImpl(nodeId, queueName, condition, selector, channelId, true);
+            Binding binding = createBinding(nodeId, queueName, condition, selector, channelId, true);
             
             list.add(binding);
          }
@@ -606,26 +622,6 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    }
    
    // Private -------------------------------------------------------             
-   
-   /*
-    * List all bindings whose condition matches the wildcard
-    * Initially we just do an exact match - when we support topic hierarchies this
-    * will change
-    */
-   private List listMatchingBindings(String wildcard)
-   {      
-      List list = (List)conditionMap.get(wildcard);
-      
-      if (list == null)
-      {
-         return Collections.EMPTY_LIST;
-      }
-      else
-      {
-         return list;
-      }
-   }
-  
-                  
+                 
    // Inner classes -------------------------------------------------            
 }

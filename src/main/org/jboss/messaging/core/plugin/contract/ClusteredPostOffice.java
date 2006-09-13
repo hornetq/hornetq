@@ -54,4 +54,5 @@ public interface ClusteredPostOffice extends PostOffice
     * @throws Throwable
     */
    Binding unbindClusteredQueue(String queueName) throws Throwable;
+  
 }

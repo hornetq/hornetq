@@ -40,15 +40,31 @@ public class MoveMessagesCallback implements TxCallback
 {
    private List messages;
    
+   private String destinationNodeId;
+   
+   private String currentNodeId;
+   
    private String queueName;
    
-   MoveMessagesCallback(String queueName)
+   private long txId;
+   
+   private PostOfficeInternal office;
+      
+   MoveMessagesCallback(String currentNodeId, String destNodeId, String queueName, long txId, PostOfficeInternal office)
    {
+      this.currentNodeId = currentNodeId;
+      
+      this.destinationNodeId = destNodeId;
+      
       this.queueName = queueName;
+      
+      this.txId = txId;
+      
+      this.office = office;
       
       messages = new ArrayList();
    }
-
+   
    void addMessage(Message msg)
    {
       messages.add(msg);
@@ -56,32 +72,38 @@ public class MoveMessagesCallback implements TxCallback
    
    public void afterCommit(boolean onePhase) throws Exception
    {
- 
+      ClusterRequest req = new MoveTransactionRequest(currentNodeId, txId);
+      
+      //We unicast the message to the node
+      office.asyncSendRequest(req, destinationNodeId);    
    }
 
    public void afterPrepare() throws Exception
    {
-
+      //NOOP
    }
 
    public void afterRollback(boolean onePhase) throws Exception
    {
-
+      //NOOP
    }
 
    public void beforeCommit(boolean onePhase) throws Exception
    {
-
+      ClusterRequest req = new MoveTransactionRequest(currentNodeId, txId, messages, queueName);
+      
+      //We unicast
+      office.asyncSendRequest(req, destinationNodeId);
    }
 
    public void beforePrepare() throws Exception
    {
-
+      //NOOP
    }
 
    public void beforeRollback(boolean onePhase) throws Exception
    {
-
+      //NOOP
    }
 
 }

@@ -55,9 +55,15 @@
    
    <attribute access="read-write" getMethod="getCastTimeout" setMethod="setCastTimeout">
       <description>Timeout for getState()</description>
-      <name>Timeout when waiting for synchronous responses when sending synchronous requests</name>
+      <name>CastTimeout/name>
       <type>long</type>
    </attribute>   
+   
+   <attribute access="read-write" getMethod="getRedistributionPeriod" setMethod="setRedistributionPeriod">
+      <description>The period between which successive message redistribution calculations will be performed</description>
+      <name>RedistributionPeriod</name>
+      <type>long</type>
+   </attribute>    
    
    <attribute access="read-write" getMethod="getSyncChannelConfig" setMethod="setSyncChannelConfig">
       <description>The JGroups stack configuration for the synchronous channel</description>
