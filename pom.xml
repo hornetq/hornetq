@@ -1,0 +1,411 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>jboss.messaging</groupId>
+  <artifactId>jboss-messaging</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0</version>
+  <name>JBoss Messaging</name>
+  <url>http://www.jboss.com/products/messaging</url>
+  <description>JBoss Messaging provides an open source and standards-based messaging platform that brings enterprise-class messaging to the mass market.</description>
+  <licenses>
+   <license>
+      <name>lgpl</name>
+      <url>http://repository.jboss.com/licenses/lgpl.txt</url>
+   </license>
+  </licenses>
+  <organization>
+    <name>JBoss Inc.</name>
+    <url>http://www.jboss.org</url>
+  </organization>
+ 
+  <repositories>
+    <repository>
+      <id>jboss</id>
+      <name>JBoss Inc. Repository</name>
+      <layout>default</layout>
+      <url>http://repository.jboss.com/maven2/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+     <pluginRepository>
+        <id>jbosspluginrepo</id>
+        <name>jboss plugin repository</name>
+        <url>http://repository.jboss.com/maven2</url>
+        <layout>default</layout>
+        <snapshots>
+           <enabled>false</enabled>
+           <updatePolicy>never</updatePolicy>
+        </snapshots>
+     </pluginRepository>
+     <pluginRepository>
+         <id>Maven Snapshots</id>
+         <url>http://snapshots.maven.codehaus.org/maven2/</url>
+         <snapshots>
+           <enabled>true</enabled>
+         </snapshots>
+         <releases>
+           <enabled>false</enabled>
+         </releases>
+       </pluginRepository>
+  </pluginRepositories>
+
+  
+  <build>
+     <sourceDirectory>src/main</sourceDirectory>
+     <!--define our resource files, these will be included in the jar -->
+     <resources>
+        <resource>
+           <directory>src/etc</directory>
+           <includes>
+              <include>aop-messaging-server.xml</include>
+              <include>aop-messaging-client.xml</include>
+           </includes>
+        </resource>
+        <resource>
+           <directory>src/etc/server/default/deploy</directory>
+           <includes>
+              <include>messaging-service.xml</include>
+              <include>connection-factories-service.xml</include>
+              <include>destinations-service.xml</include>
+              <include>hsqldb-persistence-service.xml</include>
+              <include>remoting-service.xml</include>
+              <include>jms-ds.xml</include>
+           </includes>
+        </resource> 
+        <resource>
+           <directory>src/etc/server/default/config</directory>
+           <includes>
+              <include>messaging-users.properties</include>
+              <include>messaging-roles.properties</include>
+           </includes>
+        </resource>                 
+        <resource>
+           <targetPath>xmdesc</targetPath>
+           <directory>src/etc/xmdesc</directory>
+           <includes>
+              <include>*.xml</include>
+           </includes>
+        </resource>   
+     </resources>
+     
+  <plugins>
+      
+           
+      <!-- define how we want compilation to take place
+           here, we accept most of the defaults but say that we want the
+           optimization flag set, and define the source and target to be 1.4,
+           these setting will be inherited by child projects -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.0</version>
+          <configuration>
+              <optimize>true</optimize>
+              <source>1.4</source>
+              <target>1.4</target>
+          </configuration>
+      </plugin>  
+
+      <!-- define that we wish to create src jars -->
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <inherited>true</inherited>
+       <executions>
+        <execution>
+          <goals>
+            <goal>jar</goal>
+          </goals>
+        </execution>
+      </executions>
+      </plugin>     
+      
+   <!-- generate java files from grammar -->
+   <plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>javacc-maven-plugin</artifactId>
+    <version>2.1</version>
+    <configuration>
+      <packageName>org/jboss/jms/selector</packageName>
+      <sourceDirectory>src/main</sourceDirectory>
+      <isStatic>false</isStatic>
+    </configuration>
+    <executions>
+     <execution>
+      <goals>
+       <goal>javacc</goal>
+      </goals>
+      <id>javacc</id>
+     </execution>
+    </executions>
+   </plugin>       
+  
+            
+   <!-- declare the aop compilation task and run it during the process
+        classes phase -->
+   <plugin>
+      <artifactId>maven-antrun-plugin</artifactId>
+      <version>1.1</version>
+      <inherited>true</inherited>
+        <executions>
+        <execution>
+           <id>aopc</id>         
+           <phase>process-classes</phase>
+           <configuration>
+              <tasks>
+                 <taskdef name="aopc" classname="org.jboss.aop.ant.AopC"/>
+                        
+                 <aopc compilerclasspathref="maven.compile.classpath"  classpathref="maven.compile.classpath"
+                    verbose="false">
+                    <classpath refid="maven.compile.classpath"/>
+                    <src path="target/classes"/>
+                    <aoppath path="src/etc/prepare-aop.xml"/>
+                 </aopc>
+	                      
+             </tasks>
+          </configuration>
+          <goals>
+             <goal>run</goal>
+          </goals>
+       </execution>   
+        <execution>
+           <id>create-distinct-jars</id>         
+           <phase>package</phase>
+           <configuration>
+              <tasks>
+                 <!-- need to build some specific jars for inclusion in sar -->
+     
+            
+      <jar jarfile="${project.build.directory}/jboss-common-softvaluehashmap.jar">
+         <fileset dir="${project.build.directory}/dependencies" includes="org/jboss/util/collection/SoftValueHashMap*.class"/>
+      </jar>
+
+      
+      <jar jarfile="${project.build.directory}/jboss-common-stream.jar">
+         <fileset dir="${project.build.directory}/dependencies" includes="org/jboss/util/stream/**"/>
+      </jar>
+      
+
+      <!-- I need InvocationMarshaller both on server and client side, and versions prior to
+           JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
+           org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
+           like javaURLContextFactory, which will mess up JNDI and other things.
+      -->
+
+
+      <jar jarfile="${project.build.directory}/jboss-unified-invocation.jar">
+         <fileset dir="${project.build.directory}/dependencies" includes="org/jboss/invocation/unified/**"/>
+      </jar>
+
+
+
+	                      
+             </tasks>
+          </configuration>
+          <goals>
+             <goal>run</goal>
+          </goals>
+       </execution>          
+       </executions>
+       <dependencies>
+          <dependency>
+             <groupId>jboss.jboss-aop</groupId>
+             <artifactId>jboss-aop</artifactId>
+             <version>1.5.0.GA</version>
+          </dependency>
+          <dependency>
+             <groupId>javassist</groupId>
+             <artifactId>javassist</artifactId>
+             <version>3.1</version>
+          </dependency>
+       </dependencies>         
+    </plugin>      
+  
+  
+    <!-- handle the retrieval and unpacking of dependencies
+         required for the sar -->
+   <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>dependency-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-common-core</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+                <artifactItems>
+                  <artifactItem>
+                     <groupId>jboss.common.core</groupId>
+                     <artifactId>jboss-common-core</artifactId>
+                     <version>1.0</version>
+                     <type>jar</type>
+                     <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+                   </artifactItem>
+                 </artifactItems>
+               <outputDirectory>${project.build.directory}</outputDirectory>
+               <overWriteReleases>false</overWriteReleases>
+               <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+         <execution>
+            <id>unpack-jboss</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+                <artifactItems>
+                  <artifactItem>
+                     <groupId>jboss</groupId>
+                     <artifactId>jboss</artifactId>
+                     <version>5.0-SNAPSHOT</version>
+                     <type>jar</type>
+                     <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+                   </artifactItem>
+                 </artifactItems>
+               <outputDirectory>${project.build.directory}</outputDirectory>
+               <overWriteReleases>false</overWriteReleases>
+               <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>        
+        </executions>
+      </plugin>         
+  
+  
+  
+  
+    <!-- create a sar -->
+    <plugin>
+       <groupId>org.codehaus.mojo</groupId>
+       <artifactId>jboss-packaging-maven-plugin</artifactId>
+       <version>2.0-SNAPSHOT</version>
+       <extensions>true</extensions>
+               <executions>
+               <execution>
+                  <id>scopedsar</id>         
+           <phase>package</phase>
+       <configuration>
+          <deploymentDescriptorFile>${basedir}/src/etc/server/default/deploy/jboss-service.xml</deploymentDescriptorFile>
+          <packagingDirectory>${project.build.directory}/scoped-sar</packagingDirectory>
+          <libDirectory>${project.build.directory}/scoped-sar</libDirectory>
+          <excludes>
+             <exclude>jboss:jboss-j2ee</exclude>
+             <exclude>jboss:jboss-j2se</exclude>           
+             <exclude>jboss:jboss-jmx</exclude>
+             <exclude>jboss:jboss-transaction</exclude>              
+             <exclude>jboss.logging:jboss-logging-spi</exclude>              
+             <exclude>jboss:jboss-system</exclude>                           
+             <exclude>jboss:jbosssx</exclude>                                        
+             <exclude>jgroups:jgroups</exclude>                                                     
+             <exclude>apache-log4j:log4j</exclude>    
+             <exclude>apache-httpclient:commons-httpclient</exclude>
+             <exclude>oswego-concurrent:concurrent</exclude>  
+             <exclude>dom4j:dom4j</exclude>  
+             <exclude>jaxen:jaxen</exclude> 
+             <exclude>jboss.common.core:jboss-common-core</exclude>  
+             <exclude>apache-slide:webdavlib</exclude> 
+             <exclude>apache-xerces:xml-apis</exclude>               
+          </excludes>   
+       </configuration>
+       
+       <goals>
+                    <goal>sar</goal>
+                 </goals>
+              </execution>   
+       </executions>
+    </plugin>
+          
+    
+    </plugins>
+  </build>
+  <dependencies>
+      <dependency>
+        <groupId>jboss</groupId>
+        <artifactId>jboss-j2ee</artifactId>
+        <version>SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>jboss.jboss-aop</groupId>
+      <artifactId>jboss-aop</artifactId>
+      <version>1.5.0.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>jboss.logging</groupId>
+      <artifactId>jboss-logging-spi</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>oswego-concurrent</groupId>
+      <artifactId>concurrent</artifactId>
+      <version>1.3.4</version>
+    </dependency>
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-remoting</artifactId>
+      <version>2.0.0.CR1</version>
+    </dependency>
+    <dependency>
+      <groupId>jboss.common.core</groupId>
+      <artifactId>jboss-common-core</artifactId>
+      <version>1.0</version>
+    </dependency>  
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-serialization</artifactId>
+      <version>1.0.1.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-j2se</artifactId>
+      <version>5.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-system</artifactId>
+      <version>5.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>jgroups</groupId>
+      <artifactId>jgroups</artifactId>
+      <version>2.3</version>
+    </dependency>
+    <dependency>
+       <groupId>jboss</groupId>
+       <artifactId>jbosssx</artifactId>
+       <version>5.0-SNAPSHOT</version>
+    </dependency> 
+    <dependency>
+       <groupId>jboss</groupId>
+       <artifactId>jboss-jmx</artifactId>
+       <version>5.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+       <groupId>jboss</groupId>
+       <artifactId>jboss-transaction</artifactId>
+       <version>5.0-SNAPSHOT</version>
+    </dependency> 
+    <dependency>
+       <groupId>jboss</groupId>
+       <artifactId>jboss</artifactId>
+       <version>5.0-SNAPSHOT</version>
+    </dependency>     
+    <dependency>
+      <groupId>javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <version>3.1</version>
+    </dependency>    
+    <dependency>
+      <groupId>trove</groupId>
+      <artifactId>trove</artifactId>
+      <version>2.1.1</version>
+    </dependency>        
+
+  </dependencies>  
+
+</project>
+
