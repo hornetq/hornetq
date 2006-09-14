@@ -21,10 +21,14 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
 
 /**
- * A BalancedBindingImpl
+ * 
+ * A ClusteredBindingImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,17 +36,17 @@ import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
  * $Id$
  *
  */
-public class BalancedBindingImpl extends BindingImpl implements BalancedBinding
+public class ClusteredBindingImpl extends BindingImpl implements ClusteredBinding
 {
    private double consumptionRate;
    
    private int messageCount;
    
-   public BalancedBindingImpl()
+   public ClusteredBindingImpl()
    {
    }
 
-   public BalancedBindingImpl(String nodeId, String queueName, String condition, String selector, long channelId, boolean durable)
+   public ClusteredBindingImpl(String nodeId, String queueName, String condition, String selector, long channelId, boolean durable)
    {
       super(nodeId, queueName, condition, selector, channelId, durable);
    }
@@ -67,6 +71,21 @@ public class BalancedBindingImpl extends BindingImpl implements BalancedBinding
       this.messageCount = messageCount;
    }
 
- 
+   public void read(DataInputStream in) throws Exception
+   {
+      super.read(in);
+      
+      consumptionRate = in.readDouble();
+      
+      messageCount = in.readInt();
+   }
 
+   public void write(DataOutputStream out) throws Exception
+   {
+      super.write(out);
+      
+      out.writeDouble(consumptionRate);
+      
+      out.writeInt(messageCount);
+   }
 }

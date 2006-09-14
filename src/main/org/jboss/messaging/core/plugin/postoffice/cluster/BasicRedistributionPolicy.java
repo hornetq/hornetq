@@ -48,11 +48,11 @@ public class BasicRedistributionPolicy implements RedistributionPolicy
    {
       Iterator iter = bindings.iterator();
       
-      BalancedBinding localBinding = null;
+      ClusteredBinding localBinding = null;
       
       while (iter.hasNext())
       {
-         BalancedBinding binding = (BalancedBinding)iter.next();
+         ClusteredBinding binding = (ClusteredBinding)iter.next();
          
          if (binding.getNodeId().equals(localNodeId))
          {
@@ -78,11 +78,11 @@ public class BasicRedistributionPolicy implements RedistributionPolicy
          
          double maxRate = 0;
          
-         BalancedBinding maxRateBinding = null;
+         ClusteredBinding maxRateBinding = null;
          
          while (iter.hasNext())
          {
-            BalancedBinding binding = (BalancedBinding)iter.next();
+            ClusteredBinding binding = (ClusteredBinding)iter.next();
             
             if (!binding.getNodeId().equals(localNodeId))
             {

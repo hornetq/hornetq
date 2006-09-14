@@ -21,9 +21,8 @@
   */
 package org.jboss.jms.message;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -54,10 +53,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = -8018832209056373908L;
-
    public static final byte TYPE = 2;
-
 
    // Attributes ----------------------------------------------------
 
@@ -503,13 +499,13 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
+   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
    {
       StreamUtils.writeMap(out, ((Map)getPayload()), true);
    }
 
-   protected Serializable readPayloadExternal(ObjectInput in, int length)
-      throws IOException, ClassNotFoundException
+   protected Serializable readPayload(DataInputStream in, int length)
+      throws Exception
    {
       HashMap m = StreamUtils.readMap(in, true);
       return m;

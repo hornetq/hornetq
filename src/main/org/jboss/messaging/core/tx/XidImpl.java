@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core.tx;
 
-import java.io.Serializable;
-
 import javax.transaction.xa.Xid;
 
 /**
@@ -34,10 +32,8 @@ import javax.transaction.xa.Xid;
  * 
  * @version $Revision 1.1 $
  */
-public class XidImpl implements Xid, Serializable
+public class XidImpl implements Xid
 {
-   private static final long serialVersionUID = -8400538772058491159L;
-
    protected byte[] branchQualifier;
    
    protected int formatId;

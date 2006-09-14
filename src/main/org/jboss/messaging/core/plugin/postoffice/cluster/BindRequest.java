@@ -21,6 +21,11 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import org.jboss.messaging.util.StreamUtils;
+
 /**
  * A BindRequest
  *
@@ -30,10 +35,8 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
  * $Id$
  *
  */
-class BindRequest implements ClusterRequest
+class BindRequest extends ClusterRequest
 {
-   private static final long serialVersionUID = -2881616453863261327L;
-   
    private String nodeId;   
    
    private String queueName;   
@@ -45,6 +48,12 @@ class BindRequest implements ClusterRequest
    private long channelId;   
    
    private boolean durable;
+   
+   static final byte TYPE = 1;
+   
+   BindRequest()
+   {      
+   }
    
    BindRequest(String nodeId, String queueName, String condition, String filterString,
                long channelId, boolean durable)
@@ -67,5 +76,40 @@ class BindRequest implements ClusterRequest
       office.addBindingFromCluster(nodeId, queueName, condition,
                                    filterString, channelId, durable);
       
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      nodeId = in.readUTF();
+      
+      queueName = in.readUTF();
+      
+      condition = in.readUTF();
+      
+      filterString = (String)StreamUtils.readObject(in, false);   
+      
+      channelId = in.readLong();
+      
+      durable = in.readBoolean();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(nodeId);
+      
+      out.writeUTF(queueName);
+      
+      out.writeUTF(condition);
+      
+      StreamUtils.writeObject(out, filterString, false, false);
+      
+      out.writeLong(channelId);
+      
+      out.writeBoolean(durable);
    }
 }

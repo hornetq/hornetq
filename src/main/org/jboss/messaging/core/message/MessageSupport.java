@@ -23,16 +23,13 @@ package org.jboss.messaging.core.message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.Map;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.StreamUtils;
-import org.jboss.serial.io.JBossObjectInputStream;
-import org.jboss.serial.io.JBossObjectOutputStream;
 
 
 /**
@@ -48,8 +45,6 @@ public abstract class MessageSupport extends RoutableSupport implements Message
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = -4474943687659785336L;
-   
    // Attributes ----------------------------------------------------
    
    // Must be hidden from subclasses
@@ -159,31 +154,34 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    {            
       if (payloadAsByteArray == null && payload != null)
       {
+         // convert the payload into a byte array and store internally
+         
+         //TODO - investigate how changing the buffer size effects
+         //performance
+         
+         //Ideally I would like to use the pre-existing DataOutputStream and
+         //not create another one - but would then have to add markers on the stream
+         //to signify the end of the payload
+         //This would have the advantage of us not having to allocate buffers here
+         //We could do this by creating our own FilterOutputStream that makes sure
+         //the end of marker sequence doesn't occur in the payload
+         
+         final int BUFFER_SIZE = 2048;
+         
          try
          {
-            // convert the payload into a byte array and store internally
-            final int BUFFER_SIZE = 4096;
-            JBossObjectOutputStream oos = null;
-            try
-            {
-               ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
-               oos = new JBossObjectOutputStream(bos);
-               writePayloadExternal(oos, payload);
-               payloadAsByteArray = bos.toByteArray();
-               payload = null;
-            }
-            finally
-            {
-               if (oos != null)
-               {
-                  oos.close();
-               }
-            }       
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
+            DataOutputStream daos = new DataOutputStream(bos);         
+            writePayload(daos, payload);         
+            daos.close();
+            payloadAsByteArray = bos.toByteArray();
+            payload = null;         
          }
-         catch (IOException e)
+         catch (Exception e)
          {
-            //Should never happen
-            throw new RuntimeException("Failed to convert payload to byte[]", e);
+            RuntimeException e2 = new RuntimeException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
          }
       }
       return payloadAsByteArray;
@@ -202,30 +200,24 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       else if (payloadAsByteArray != null)
       {
          // deserialize the payload from byte[]
-         JBossObjectInputStream ois = null;
+
+         //TODO use the same DataInputStream as in the read() method and
+         //add markers on the stream to represent end of payload
+         ByteArrayInputStream bis = new ByteArrayInputStream(payloadAsByteArray);
+         DataInputStream dis = new DataInputStream(bis);  
          try
          {
-            try
-            {
-               ByteArrayInputStream bis = new ByteArrayInputStream(payloadAsByteArray);
-               ois = new JBossObjectInputStream(bis);   
-               payload = readPayloadExternal(ois, payloadAsByteArray.length);
-            }
-            finally
-            {
-               if (ois != null)
-               {
-                  ois.close();
-               }
-            }
-            payloadAsByteArray = null;
-            return payload;
+            payload = readPayload(dis, payloadAsByteArray.length);
          }
          catch (Exception e)
          {
-            //This should never really happen in normal use so throw a unchecked exception
-            throw new RuntimeException("Failed to read payload", e);
-         }         
+            RuntimeException e2 = new RuntimeException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
+         }
+            
+         payloadAsByteArray = null;
+         return payload;        
       }
       else
       {
@@ -293,11 +285,11 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       return "M["+messageID+"]";
    }
    
-   // Externalizable implementation ---------------------------------
+   // Streamable implementation ---------------------------------
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
-      super.writeExternal(out);
+      super.write(out);
       
       byte[] bytes = getPayloadAsByteArray();
             
@@ -312,9 +304,9 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       }
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
-      super.readExternal(in);
+      super.read(in);
       
       int length = in.readInt();
       
@@ -336,17 +328,19 @@ public abstract class MessageSupport extends RoutableSupport implements Message
 
    /**
     * Override this if you want more sophisticated payload externalization.
+    * @throws Exception TODO
     */
-   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
+   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
    {
       StreamUtils.writeObject(out, thePayload, true, true);
    }
 
    /**
     * Override this if you want more sophisticated payload externalization.
+    * @throws Exception TODO
     */
-   protected Serializable readPayloadExternal(ObjectInput in, int length)
-      throws IOException, ClassNotFoundException
+   protected Serializable readPayload(DataInputStream in, int length)
+      throws Exception
    {
       return (Serializable)StreamUtils.readObject(in, true);
    }

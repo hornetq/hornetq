@@ -34,8 +34,6 @@ public class CoreMessage extends MessageSupport
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = -1926255243537983723L;
-
    public static final byte TYPE = 127;
 
    // Attributes ----------------------------------------------------
@@ -66,6 +64,11 @@ public class CoreMessage extends MessageSupport
    public String toString()
    {
       return "CoreMessage["+messageID+"]";
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
    }
 
    // Package protected ---------------------------------------------

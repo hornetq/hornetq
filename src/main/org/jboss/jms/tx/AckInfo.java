@@ -21,12 +21,11 @@
   */
 package org.jboss.jms.tx;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * Struct like class for holding information regarding an acknowledgement to be passed to the server
@@ -36,11 +35,9 @@ import org.jboss.jms.message.MessageProxy;
  *
  * $Id$
  */
-public class AckInfo implements Externalizable
+public class AckInfo implements Streamable
 {
    // Constants -----------------------------------------------------
-   
-   private static final long serialVersionUID = -5951156790257302184L;
    
    // Attributes ----------------------------------------------------
    
@@ -94,15 +91,15 @@ public class AckInfo implements Externalizable
       return "AckInfo[" + messageID + ", " + consumerID + "]";
    }
 
-   // Externalizable implementation ---------------------------------
+   // Streamable implementation ---------------------------------
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
      out.writeLong(messageID);
      out.writeInt(consumerID);
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
       messageID = in.readLong();
       consumerID = in.readInt();

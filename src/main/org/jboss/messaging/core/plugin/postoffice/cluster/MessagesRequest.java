@@ -21,8 +21,12 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 
 /**
  * A MessagesRequest
@@ -35,11 +39,15 @@ import java.util.List;
  * $Id$
  *
  */
-class MessagesRequest implements ClusterRequest
+class MessagesRequest extends ClusterRequest
 {
-   private static final long serialVersionUID = 3069447863470810127L;
+   static final int TYPE = 4;
    
    private List messageHolders;
+   
+   MessagesRequest()
+   {      
+   }
    
    MessagesRequest(List messageHolders)
    {
@@ -55,6 +63,33 @@ class MessagesRequest implements ClusterRequest
          MessageHolder holder = (MessageHolder)iter.next();
          
          office.routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
+      }
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      int size = in.readInt();
+      messageHolders = new ArrayList(size);
+      for (int i = 0; i < size; i++)
+      {
+         MessageHolder holder = new MessageHolder();
+         holder.read(in);
+      }
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeInt(messageHolders.size());
+      Iterator iter = messageHolders.iterator();
+      while (iter.hasNext())
+      {
+         MessageHolder holder = (MessageHolder)iter.next();
+         holder.write(out);
       }
    }   
 }

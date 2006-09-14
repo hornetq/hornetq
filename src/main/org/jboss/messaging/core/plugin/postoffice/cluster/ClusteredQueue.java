@@ -36,7 +36,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
- * A MeasuredQueue
+ * A ClusteredQueue
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -44,7 +44,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class MeasuredQueue extends Queue
+public class ClusteredQueue extends Queue
 {
    private static final int MIN_PERIOD = 1000;
    
@@ -56,7 +56,7 @@ public class MeasuredQueue extends Queue
    
    private volatile int numberConsumed;
  
-   public MeasuredQueue(long id, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages, boolean recoverable, int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor, Filter filter)
+   public ClusteredQueue(long id, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages, boolean recoverable, int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor, Filter filter)
    {
       super(id, ms, pm, acceptReliableMessages, recoverable, fullSize, pageSize,
             downCacheSize, executor, filter);

@@ -21,9 +21,9 @@
   */
 package org.jboss.messaging.util;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
 /**
  * 
@@ -73,7 +73,7 @@ public class SafeUTF
       this.chunkSize = chunkSize;
    }
       
-   public void safeWriteUTF(ObjectOutput out, String str) throws IOException
+   public void safeWriteUTF(DataOutputStream out, String str) throws IOException
    {        
       if (str == null)
       {
@@ -116,7 +116,7 @@ public class SafeUTF
       }
    }
    
-   public String safeReadUTF(ObjectInput in) throws IOException
+   public String safeReadUTF(DataInputStream in) throws IOException
    {   
       boolean isNull = in.readByte() == NULL;
       

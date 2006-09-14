@@ -21,6 +21,9 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 import org.jgroups.Address;
 
 /**
@@ -33,13 +36,17 @@ import org.jgroups.Address;
  * $Id$
  *
  */
-class SendNodeIdRequest implements ClusterRequest
+class SendNodeIdRequest extends ClusterRequest
 {
-   private static final long serialVersionUID = -3463428410402454526L;
+   static final int TYPE = 7;
 
    private Address address;
    
    private String nodeId;
+   
+   SendNodeIdRequest()
+   {      
+   }
    
    SendNodeIdRequest(Address address, String nodeId)
    {
@@ -51,5 +58,22 @@ class SendNodeIdRequest implements ClusterRequest
    public void execute(PostOfficeInternal office) throws Exception
    {
       office.handleAddressNodeMapping(address, nodeId);
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
    }
 }

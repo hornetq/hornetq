@@ -43,8 +43,6 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
  */
 public class SimpleMessageReference extends RoutableSupport implements MessageReference
 {   
-   private static final long serialVersionUID = -6794716217132447293L;
-
    private static final Logger log = Logger.getLogger(SimpleMessageReference.class);
    
    // Attributes ----------------------------------------------------

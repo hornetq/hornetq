@@ -24,6 +24,8 @@ package org.jboss.messaging.core.plugin;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -61,8 +63,6 @@ import org.jboss.messaging.core.tx.XidImpl;
 import org.jboss.messaging.util.JDBCUtil;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
-import org.jboss.serial.io.JBossObjectInputStream;
-import org.jboss.serial.io.JBossObjectOutputStream;
 
 /**
  *  
@@ -3427,26 +3427,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       
       final int BUFFER_SIZE = 1024;
+       
+      ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
       
-      JBossObjectOutputStream oos = null;
+      DataOutputStream oos = new DataOutputStream(bos);
       
-      try
-      {
-         ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
-         
-         oos = new JBossObjectOutputStream(bos);
-         
-         StreamUtils.writeMap(oos, map, true);
-         
-         return bos.toByteArray();
-      }
-      finally
-      {
-         if (oos != null)
-         {
-            oos.close();
-         }
-      }
+      StreamUtils.writeMap(oos, map, true);
+      
+      oos.close();
+      
+      return bos.toByteArray();
    }
    
    protected HashMap bytesToMap(byte[] bytes) throws Exception
@@ -3455,35 +3445,26 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          return new HashMap();
       }
+       
+      ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
       
-      JBossObjectInputStream ois = null;
+      DataInputStream dais = new DataInputStream(bis);
       
-      try
+      Map m = StreamUtils.readMap(dais, true);
+      
+      dais.close();
+      
+      HashMap map;
+      if (!(m instanceof HashMap))
       {
-         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-         
-         ois = new JBossObjectInputStream(bis);
-         
-         Map m = StreamUtils.readMap(ois, true);
-         HashMap map;
-         if (!(m instanceof HashMap))
-         {
-            map = new HashMap(m);
-         }
-         else
-         {
-            map = (HashMap) m;
-         }
-         
-         return map;
+         map = new HashMap(m);
       }
-      finally
+      else
       {
-         if (ois != null)
-         {
-            ois.close();
-         }
+         map = (HashMap) m;
       }
+      
+      return map;
    }
    
    protected void updateMessageChannelCount(Message m, PreparedStatement ps) throws Exception
@@ -3592,7 +3573,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       else
       {
-         ps.setByte(9, CoreMessage.TYPE);
+         ps.setByte(9, m.getType());
          ps.setNull(10, Types.VARCHAR);
          ps.setNull(11, Types.VARCHAR);
          ps.setNull(12, Types.BINARY);

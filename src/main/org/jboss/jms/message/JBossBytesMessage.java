@@ -26,9 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,11 +51,9 @@ import org.jboss.logging.Logger;
  *
  * $Id$
  */
-public class JBossBytesMessage extends JBossMessage implements BytesMessage, Externalizable
+public class JBossBytesMessage extends JBossMessage implements BytesMessage
 {
    // Static -------------------------------------------------------
-
-   private static final long serialVersionUID = 4636242783244742795L;
 
    private static final Logger log = Logger.getLogger(JBossBytesMessage.class);
 
@@ -150,11 +146,11 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
       }
    }
 
-   // Externalizable override ---------------------------------------
+   // Streamable override ---------------------------------------
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
-      super.readExternal(in);
+      super.read(in);
 
       // transfer the value read into payloadAsBytes by superclass to payload, since this is how
       // BytesMessage instances keep it
@@ -584,11 +580,13 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage, Ext
          baos = null;
          bais = null;
          dis = null;
-         dos = null;
+         dos = null;      
       }
-      catch (IOException e)
+      catch (Exception e)
       {
-         throw new MessagingJMSException("IOException", e);
+         JMSException e2 = new JMSException(e.getMessage());
+         e2.setStackTrace(e.getStackTrace());
+         throw e2;
       }
    }
 

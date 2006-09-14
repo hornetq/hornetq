@@ -21,8 +21,12 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 
 /**
  * A SendTransactionRequest
@@ -37,8 +41,14 @@ import java.util.List;
  */
 class SendTransactionRequest extends TransactionRequest
 {
+   static final int TYPE = 8;
+   
    private List messageHolders;
-     
+   
+   SendTransactionRequest()
+   {      
+   }
+        
    SendTransactionRequest(String nodeId, long txId, List messageHolders)
    {
       super(nodeId, txId, true);
@@ -62,5 +72,34 @@ class SendTransactionRequest extends TransactionRequest
          office.routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
       }
    }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+   
+   public void read(DataInputStream in) throws Exception
+   {
+      super.read(in);
+      int size = in.readInt();
+      messageHolders = new ArrayList(size);
+      for (int i = 0; i < size; i++)
+      {
+         MessageHolder holder = new MessageHolder();
+         holder.read(in);
+      }
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      super.write(out);
+      out.writeInt(messageHolders.size());
+      Iterator iter = messageHolders.iterator();
+      while (iter.hasNext())
+      {
+         MessageHolder holder = (MessageHolder)iter.next();
+         holder.write(out);
+      }
+   }   
 }
 

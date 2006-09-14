@@ -21,9 +21,8 @@
   */
 package org.jboss.jms.message;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,8 +50,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = 7965361851565655163L;
-   
    public static final byte TYPE = 5;
 
    // Attributes ----------------------------------------------------
@@ -156,13 +153,13 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
+   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
    {
       SafeUTF.instance.safeWriteUTF(out, (String)thePayload);
    }
 
-   protected Serializable readPayloadExternal(ObjectInput in, int length)
-      throws IOException, ClassNotFoundException
+   protected Serializable readPayload(DataInputStream in, int length)
+      throws Exception
    {
       return SafeUTF.instance.safeReadUTF(in);
    }

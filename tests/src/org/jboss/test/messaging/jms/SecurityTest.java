@@ -32,13 +32,13 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.naming.InitialContext;
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
 
+import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.XMLUtil;
 
 /**
  * Test JMS Security.

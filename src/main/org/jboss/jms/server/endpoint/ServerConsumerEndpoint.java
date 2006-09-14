@@ -74,8 +74,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = 535443606137461274L;
-
    private static final Logger log = Logger.getLogger(ServerConsumerEndpoint.class);
 
    // Static --------------------------------------------------------

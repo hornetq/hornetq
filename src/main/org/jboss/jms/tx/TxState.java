@@ -21,16 +21,15 @@
  */
 package org.jboss.jms.tx;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * Holds information for a JMS transaction to be sent to the server for
@@ -40,11 +39,10 @@ import org.jboss.messaging.core.message.MessageFactory;
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox </a>
  */
-public class TxState implements Externalizable
+public class TxState implements Streamable
 {  
    // Constants -----------------------------------------------------
-   private static final long serialVersionUID = -7255482761072658186L;
-   
+
    public final static byte TX_OPEN = 0;
    
    public final static byte TX_ENDED = 1;
@@ -98,9 +96,9 @@ public class TxState implements Externalizable
       this.state = state;
    }
     
-   // Externalizable implementation ---------------------------------
+   // Streamable implementation ---------------------------------
    
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
       out.writeInt(state);
       if (messages == null)
@@ -116,7 +114,7 @@ public class TxState implements Externalizable
             JBossMessage m = (JBossMessage)iter.next();
             //We don't use writeObject to avoid serialization overhead
             out.writeByte(m.getType());
-            m.writeExternal(out);
+            m.write(out);
          } 
       }
       if (acks == null)
@@ -131,12 +129,12 @@ public class TxState implements Externalizable
          {
             AckInfo a = (AckInfo)iter.next();
             //We don't use writeObject to avoid serialization overhead
-            a.writeExternal(out);
+            a.write(out);
          }
       }
    }
    
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
       state = in.readInt();
       int numMessages = in.readInt();
@@ -151,7 +149,7 @@ public class TxState implements Externalizable
          {
             byte type = in.readByte();
             JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
-            m.readExternal(in);
+            m.read(in);
             messages.add(m);
          }
       }
@@ -167,7 +165,7 @@ public class TxState implements Externalizable
          for (int i = 0; i < numAcks; i++)
          {
             AckInfo info = new AckInfo();
-            info.readExternal(in);
+            info.read(in);
             acks.add(info);
          }
       }  

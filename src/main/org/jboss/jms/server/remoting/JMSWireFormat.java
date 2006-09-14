@@ -21,10 +21,10 @@
   */
 package org.jboss.jms.server.remoting;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -80,15 +80,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    // The request codes  - start from zero
 
-   protected static final byte SERIALIZED = 0;
-   
+   protected static final byte SERIALIZED = 0;   
    protected static final byte ACKNOWLEDGE = 1;
    protected static final byte ACKNOWLEDGE_BATCH = 2;
-   protected static final byte SEND = 3;
-   
+   protected static final byte SEND = 3;   
    protected static final byte CANCEL_DELIVERIES = 4;
    protected static final byte MORE = 5;
-
    protected static final byte SEND_TRANSACTION = 6;
    protected static final byte GET_ID_BLOCK = 7;
  
@@ -123,261 +120,275 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    // Marshaller implementation -------------------------------------
 
    public void write(Object obj, OutputStream out) throws IOException
-   {
-      // sanity check
-      if (!(out instanceof ObjectOutputStream))
+   {          
+      DataOutputStream dos;
+      
+      if (out instanceof DataOutputStream)
       {
-         log.error("out is a " + out.getClass());
-         throw new IllegalStateException("OutputStream must be an ObjectOutputStream");
-      }
-
-      ObjectOutputStream oos = (ObjectOutputStream)out;
-
-      handleVersion(obj, oos);
-
-      if (obj instanceof InvocationRequest)
-      {
-         if (trace) { log.trace("writing InvocationRequest"); }
-
-         InvocationRequest req = (InvocationRequest)obj;
-
-         Object param;
-
-         if (req.getParameter() instanceof MessagingMarshallable)
-         {
-            param = ((MessagingMarshallable)req.getParameter()).getLoad();
-         }
-         else
-         {
-            param = req.getParameter();
-         }
-
-         if (trace) { log.trace("param is " + param); }
-
-         if (param instanceof MethodInvocation)
-         {
-            MethodInvocation mi = (MethodInvocation)param;
-
-            String methodName = mi.getMethod().getName();
-
-            if (trace) { log.trace("methodInvocation (" + methodName + "())"); }
-
-            if (methodName.equals("send"))
-            {
-               oos.writeByte(SEND);
-
-               writeHeader(mi, oos);
-
-               JBossMessage m = (JBossMessage)mi.getArguments()[0];
-
-               oos.writeByte(m.getType());
-
-               m.writeExternal(oos);
-
-               oos.flush();
-
-               if (trace) { log.trace("wrote send()"); }
-            }
-            else if ("more".equals(methodName))
-            {
-               oos.writeByte(MORE);
-
-               writeHeader(mi, oos);
-
-               oos.flush();
-
-               if (trace) { log.trace("wrote activate()"); }
-            }           
-            else if ("acknowledge".equals(methodName))
-            {
-               oos.writeByte(ACKNOWLEDGE);
-
-               writeHeader(mi, oos);
-               
-               AckInfo ack = (AckInfo)mi.getArguments()[0];
-               
-               ack.writeExternal(oos);
-
-               oos.flush();
-
-               if (trace) { log.trace("wrote acknowledge()"); }
-            }
-            else if ("acknowledgeBatch".equals(methodName))
-            {
-               oos.writeByte(ACKNOWLEDGE_BATCH);
-
-               writeHeader(mi, oos);
-               
-               List acks = (List)mi.getArguments()[0];
-
-               oos.writeInt(acks.size());
-
-               Iterator iter = acks.iterator();
-
-               while (iter.hasNext())
-               {
-                  AckInfo ack = (AckInfo)iter.next();
-                  ack.writeExternal(oos);
-               }
-
-               oos.flush();
-
-               if (trace) { log.trace("wrote acknowledge()"); }
-            }
-            else if ("sendTransaction".equals(methodName))
-            {
-               oos.writeByte(SEND_TRANSACTION);
-
-               writeHeader(mi, oos);
-
-               TransactionRequest request = (TransactionRequest)mi.getArguments()[0];
-
-               request.writeExternal(oos);
-
-               oos.flush();
-
-               if (trace) { log.trace("wrote getMessageNow()"); }
-            }
-            else if ("getIdBlock".equals(methodName))
-            {
-               oos.writeByte(GET_ID_BLOCK);
-
-               writeHeader(mi, oos);
-
-               int size = ((Integer)mi.getArguments()[0]).intValue();
-
-               oos.writeInt(size);
-
-               oos.flush();
-
-               if (trace) { log.trace("wrote getIdBlock()"); }
-            }           
-            else if ("cancelDeliveries".equals(methodName) && mi.getArguments() != null)
-            {
-               oos.writeByte(CANCEL_DELIVERIES);
-
-               writeHeader(mi, oos);
-
-               List ids = (List)mi.getArguments()[0];
-
-               oos.writeInt(ids.size());
-
-               Iterator iter = ids.iterator();
-
-               while (iter.hasNext())
-               {
-                  AckInfo ack = (AckInfo)iter.next();
-                  ack.writeExternal(oos);
-               }
-
-               oos.flush();
-
-               if (trace) { log.trace("wrote cancelDeliveries()"); }
-            }
-            else
-            {
-               oos.write(SERIALIZED);
-
-               // Delegate to serialization to handle the wire format
-               serializableMarshaller.write(obj, oos);
-
-               if (trace) { log.trace("wrote using standard serialization"); }
-            }
-         }
-         else if (param instanceof ClientDelivery)
-         {
-            //Message delivery callback
-
-            if (trace) { log.trace("DeliveryRunnable"); }
-
-            ClientDelivery dr = (ClientDelivery)param;
-
-            oos.writeByte(CALLBACK);
-
-            dr.writeExternal(oos);
-
-            oos.flush();
-
-            if (trace) { log.trace("wrote DeliveryRunnable"); }
-         }
-         else
-         {
-            //Internal invocation
-
-            oos.write(SERIALIZED);
-
-            //Delegate to serialization to handle the wire format
-            serializableMarshaller.write(obj, oos);
-
-            if (trace) { log.trace("wrote using standard serialization"); }
-         }
-      }
-      else if (obj instanceof InvocationResponse)
-      {
-         if (trace) { log.trace("writing InvocationResponse"); }
-
-         InvocationResponse resp = (InvocationResponse)obj;
-
-         Object res;
-
-         if (resp.getResult() instanceof MessagingMarshallable)
-         {
-            res = ((MessagingMarshallable)resp.getResult()).getLoad();
-         }
-         else
-         {
-            res = resp.getResult();
-         }
-
-         if (trace) { log.trace("result is " + res); }
-
-         if (res == null && !resp.isException())
-         {       
-            oos.write(NULL_RESPONSE);
-
-            oos.flush();
-
-            if (trace) { log.trace("wrote null response"); }
-         }         
-         else if (res instanceof IdBlock)
-         {
-            //Return value from getMessageNow
-            oos.write(ID_BLOCK_RESPONSE);
-
-            IdBlock block = (IdBlock)res;
-
-            block.writeExternal(oos);
-
-            oos.flush();
-
-            if (trace) { log.trace("wrote id block response"); }
-         }
-         else if (res instanceof HandleMessageResponse)
-         {         
-            //Return value from delivering messages to client
-            oos.write(HANDLE_MESSAGE_RESPONSE);
-
-            HandleMessageResponse response = (HandleMessageResponse)res;
-
-            response.writeExternal(oos);
-
-            oos.flush();
-
-            if (trace) { log.trace("wrote handle message response"); }
-         }
-         else
-         {
-            oos.write(SERIALIZED);
-
-            //Delegate to serialization to handle the wire format
-            serializableMarshaller.write(obj, out);
-
-            if (trace) { log.trace("wrote using standard serialization"); }
-         }
+         dos = (DataOutputStream)out;
       }
       else
       {
-         throw new IllegalStateException("Invalid object " + obj);
+         //TODO - We should get remoting to pass in a DataOutputStream
+         //So we don't have to wrap it every time
+         dos = new DataOutputStream(out);
+      }
+      
+      handleVersion(obj, dos);
+
+      try
+      {
+         
+         if (obj instanceof InvocationRequest)
+         {
+            if (trace) { log.trace("writing InvocationRequest"); }
+   
+            InvocationRequest req = (InvocationRequest)obj;
+   
+            Object param;
+   
+            if (req.getParameter() instanceof MessagingMarshallable)
+            {
+               param = ((MessagingMarshallable)req.getParameter()).getLoad();
+            }
+            else
+            {
+               param = req.getParameter();
+            }
+   
+            if (trace) { log.trace("param is " + param); }
+   
+            if (param instanceof MethodInvocation)
+            {
+               MethodInvocation mi = (MethodInvocation)param;
+   
+               String methodName = mi.getMethod().getName();
+   
+               if (trace) { log.trace("methodInvocation (" + methodName + "())"); }
+   
+               if (methodName.equals("send"))
+               {
+                  dos.writeByte(SEND);
+   
+                  writeHeader(mi, dos);
+   
+                  JBossMessage m = (JBossMessage)mi.getArguments()[0];
+   
+                  dos.writeByte(m.getType());
+   
+                  m.write(dos);
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote send()"); }
+               }
+               else if ("more".equals(methodName))
+               {
+                  dos.writeByte(MORE);
+   
+                  writeHeader(mi, dos);
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote activate()"); }
+               }           
+               else if ("acknowledge".equals(methodName))
+               {
+                  dos.writeByte(ACKNOWLEDGE);
+   
+                  writeHeader(mi, dos);
+                  
+                  AckInfo ack = (AckInfo)mi.getArguments()[0];
+                  
+                  ack.write(dos);
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote acknowledge()"); }
+               }
+               else if ("acknowledgeBatch".equals(methodName))
+               {
+                  dos.writeByte(ACKNOWLEDGE_BATCH);
+   
+                  writeHeader(mi, dos);
+                  
+                  List acks = (List)mi.getArguments()[0];
+   
+                  dos.writeInt(acks.size());
+   
+                  Iterator iter = acks.iterator();
+   
+                  while (iter.hasNext())
+                  {
+                     AckInfo ack = (AckInfo)iter.next();
+                     ack.write(dos);
+                  }
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote acknowledge()"); }
+               }
+               else if ("sendTransaction".equals(methodName))
+               {
+                  dos.writeByte(SEND_TRANSACTION);
+   
+                  writeHeader(mi, dos);
+   
+                  TransactionRequest request = (TransactionRequest)mi.getArguments()[0];
+   
+                  request.write(dos);
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote getMessageNow()"); }
+               }
+               else if ("getIdBlock".equals(methodName))
+               {
+                  dos.writeByte(GET_ID_BLOCK);
+   
+                  writeHeader(mi, dos);
+   
+                  int size = ((Integer)mi.getArguments()[0]).intValue();
+   
+                  dos.writeInt(size);
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote getIdBlock()"); }
+               }           
+               else if ("cancelDeliveries".equals(methodName) && mi.getArguments() != null)
+               {
+                  dos.writeByte(CANCEL_DELIVERIES);
+   
+                  writeHeader(mi, dos);
+   
+                  List ids = (List)mi.getArguments()[0];
+   
+                  dos.writeInt(ids.size());
+   
+                  Iterator iter = ids.iterator();
+   
+                  while (iter.hasNext())
+                  {
+                     AckInfo ack = (AckInfo)iter.next();
+                     ack.write(dos);
+                  }
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote cancelDeliveries()"); }
+               }
+               else
+               {
+                  dos.write(SERIALIZED);
+   
+                  // Delegate to serialization to handle the wire format
+                  serializableMarshaller.write(obj, dos);
+   
+                  if (trace) { log.trace("wrote using standard serialization"); }
+               }
+            }
+            else if (param instanceof ClientDelivery)
+            {
+               //Message delivery callback
+   
+               if (trace) { log.trace("DeliveryRunnable"); }
+   
+               ClientDelivery dr = (ClientDelivery)param;
+   
+               dos.writeByte(CALLBACK);
+   
+               dr.write(dos);
+   
+               dos.flush();
+   
+               if (trace) { log.trace("wrote DeliveryRunnable"); }
+            }
+            else
+            {
+               //Internal invocation
+   
+               dos.write(SERIALIZED);
+   
+               //Delegate to serialization to handle the wire format
+               serializableMarshaller.write(obj, dos);
+   
+               if (trace) { log.trace("wrote using standard serialization"); }
+            }
+         }
+         else if (obj instanceof InvocationResponse)
+         {
+            if (trace) { log.trace("writing InvocationResponse"); }
+   
+            InvocationResponse resp = (InvocationResponse)obj;
+   
+            Object res;
+   
+            if (resp.getResult() instanceof MessagingMarshallable)
+            {
+               res = ((MessagingMarshallable)resp.getResult()).getLoad();
+            }
+            else
+            {
+               res = resp.getResult();
+            }
+   
+            if (trace) { log.trace("result is " + res); }
+   
+            if (res == null && !resp.isException())
+            {       
+               dos.write(NULL_RESPONSE);
+   
+               dos.flush();
+   
+               if (trace) { log.trace("wrote null response"); }
+            }         
+            else if (res instanceof IdBlock)
+            {
+               //Return value from getMessageNow
+               dos.write(ID_BLOCK_RESPONSE);
+   
+               IdBlock block = (IdBlock)res;
+   
+               block.write(dos);
+   
+               dos.flush();
+   
+               if (trace) { log.trace("wrote id block response"); }
+            }
+            else if (res instanceof HandleMessageResponse)
+            {         
+               //Return value from delivering messages to client
+               dos.write(HANDLE_MESSAGE_RESPONSE);
+   
+               HandleMessageResponse response = (HandleMessageResponse)res;
+   
+               response.write(dos);
+   
+               dos.flush();
+   
+               if (trace) { log.trace("wrote handle message response"); }
+            }
+            else
+            {
+               dos.write(SERIALIZED);
+   
+               //Delegate to serialization to handle the wire format
+               serializableMarshaller.write(obj, out);
+   
+               if (trace) { log.trace("wrote using standard serialization"); }
+            }
+         }
+         else
+         {
+            throw new IllegalStateException("Invalid object " + obj);
+         }
+      }
+      catch (Exception e)
+      {
+         IOException e2 = new IOException(e.getMessage());
+         e2.setStackTrace(e.getStackTrace());
+         throw e2;
       }
    }
 
@@ -389,243 +400,257 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    // UnMarshaller implementation -----------------------------------
 
    public Object read(InputStream in, Map map) throws IOException, ClassNotFoundException
-   {
-      // Sanity check
-      if (!(in instanceof ObjectInputStream))
-      {
-         log.error("in is a " + in.getClass());
-         throw new IllegalStateException("InputStream must be an ObjectInputStream");
-      }
-
-      ObjectInputStream ois = (ObjectInputStream)in;
-
-      if (ois instanceof JBossObjectInputStream)
+   {      
+      if (in instanceof JBossObjectInputStream)
       {
          // Need to explicitly set the classloader
-         ((JBossObjectInputStream)ois).
+         ((JBossObjectInputStream)in).
             setClassLoader(Thread.currentThread().getContextClassLoader());
+      }
+      
+      DataInputStream dis;
+      
+      //TODO We should ensure that remoting always passes in a DataInputStream
+      //This saves us wrapping it each time
+      if (in instanceof DataInputStream)
+      {
+         dis = (DataInputStream)in;
+      }
+      else
+      {
+         dis = new DataInputStream(in);
       }
 
       // First byte read is always version
 
-      byte version = ois.readByte();
+      byte version = dis.readByte();
 
-      byte formatType = (byte)ois.read();
+      byte formatType = (byte)dis.read();
 
       if (trace) { log.trace("reading, format type is " + formatType); }
-
-      switch (formatType)
+      
+      try
       {
-         case SERIALIZED:
+   
+         switch (formatType)
          {
-            // Delegate to serialization
-            Object ret = serializableUnMarshaller.read(ois, map);
-
-            if (trace) { log.trace("read using standard serialization"); }
-
-            return ret;
-         }
-         case SEND:
-         {
-            MethodInvocation mi = readHeader(ois);
-
-            byte messageType = ois.readByte();
-
-            JBossMessage m = (JBossMessage)MessageFactory.createMessage(messageType);
-
-            m.readExternal(ois);
-
-            Object[] args = new Object[] {m};
-
-            mi.setArguments(args);
-
-            InvocationRequest request =
-               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                     new MessagingMarshallable(version, mi), null, null, null);
-
-            if (trace) { log.trace("read send()"); }
-
-            return request;
-         }
-         case MORE:
-         {
-            MethodInvocation mi = readHeader(ois);
-
-            InvocationRequest request =
-               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                     new MessagingMarshallable(version, mi), null, null, null);
-
-            if (trace) { log.trace("read activate()"); }
-
-            return request;
-         }         
-         case SEND_TRANSACTION:
-         {
-            MethodInvocation mi = readHeader(ois);
-
-            TransactionRequest tr = new TransactionRequest();
-
-            tr.readExternal(ois);
-
-            Object[] args = new Object[] {tr};
-
-            mi.setArguments(args);
-
-            InvocationRequest request =
-               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                     new MessagingMarshallable(version, mi), null, null, null);
-
-            if (trace) { log.trace("read sendTransaction()"); }
-
-            return request;
-         }
-         case GET_ID_BLOCK:
-         {
-            MethodInvocation mi = readHeader(ois);
-
-            int size = ois.readInt();
-
-            Object[] args = new Object[] {new Integer(size)};
-
-            mi.setArguments(args);
-
-            InvocationRequest request =
-               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                     new MessagingMarshallable(version, mi), null, null, null);
-
-            if (trace) { log.trace("read getIdBlock()"); }
-
-            return request;
-         }
-         case ACKNOWLEDGE:
-         {
-            MethodInvocation mi = readHeader(ois);
-            
-            AckInfo info = new AckInfo();
-            
-            info.readExternal(ois);
-            
-            Object[] args = new Object[] {info};
-
-            mi.setArguments(args);
-
-            InvocationRequest request =
-               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                     new MessagingMarshallable(version, mi), null, null, null);
-
-            if (trace) { log.trace("read acknowledge()"); }
-
-            return request;
-         }
-         case ACKNOWLEDGE_BATCH:
-         {
-            MethodInvocation mi = readHeader(ois);
-                        
-            int num = ois.readInt();
-            
-            List acks = new ArrayList(num);
-            
-            for (int i = 0; i < num; i++)
+            case SERIALIZED:
             {
-               AckInfo ack = new AckInfo();
-               
-               ack.readExternal(ois);
-               
-               acks.add(ack);
+               // Delegate to serialization
+               Object ret = serializableUnMarshaller.read(dis, map);
+   
+               if (trace) { log.trace("read using standard serialization"); }
+   
+               return ret;
             }
-                        
-            Object[] args = new Object[] {acks};
-
-            mi.setArguments(args);
-
-            InvocationRequest request =
-               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                     new MessagingMarshallable(version, mi), null, null, null);
-
-            if (trace) { log.trace("read acknowledge()"); }
-
-            return request;
-         }
-         case CANCEL_DELIVERIES:
-         {
-            MethodInvocation mi = readHeader(ois);
-
-            int size = ois.readInt();
-
-            List acks = new ArrayList(size);
-
-            for (int i = 0; i < size; i++)
+            case SEND:
             {
-               AckInfo ack = new AckInfo();
-               
-               ack.readExternal(ois);
-               
-               acks.add(ack);
+               MethodInvocation mi = readHeader(dis);
+   
+               byte messageType = dis.readByte();
+   
+               JBossMessage m = (JBossMessage)MessageFactory.createMessage(messageType);
+   
+               m.read(dis);
+   
+               Object[] args = new Object[] {m};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read send()"); }
+   
+               return request;
             }
-
-            Object[] args = new Object[] {acks};
-
-            mi.setArguments(args);
-
-            InvocationRequest request =
-               new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                     new MessagingMarshallable(version, mi), null, null, null);
-
-            if (trace) { log.trace("read cancelDeliveries()"); }
-
-            return request;
+            case MORE:
+            {
+               MethodInvocation mi = readHeader(dis);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read activate()"); }
+   
+               return request;
+            }         
+            case SEND_TRANSACTION:
+            {
+               MethodInvocation mi = readHeader(dis);
+   
+               TransactionRequest tr = new TransactionRequest();
+   
+               tr.read(dis);
+   
+               Object[] args = new Object[] {tr};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read sendTransaction()"); }
+   
+               return request;
+            }
+            case GET_ID_BLOCK:
+            {
+               MethodInvocation mi = readHeader(dis);
+   
+               int size = dis.readInt();
+   
+               Object[] args = new Object[] {new Integer(size)};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read getIdBlock()"); }
+   
+               return request;
+            }
+            case ACKNOWLEDGE:
+            {
+               MethodInvocation mi = readHeader(dis);
+               
+               AckInfo info = new AckInfo();
+               
+               info.read(dis);
+               
+               Object[] args = new Object[] {info};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read acknowledge()"); }
+   
+               return request;
+            }
+            case ACKNOWLEDGE_BATCH:
+            {
+               MethodInvocation mi = readHeader(dis);
+                           
+               int num = dis.readInt();
+               
+               List acks = new ArrayList(num);
+               
+               for (int i = 0; i < num; i++)
+               {
+                  AckInfo ack = new AckInfo();
+                  
+                  ack.read(dis);
+                  
+                  acks.add(ack);
+               }
+                           
+               Object[] args = new Object[] {acks};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read acknowledge()"); }
+   
+               return request;
+            }
+            case CANCEL_DELIVERIES:
+            {
+               MethodInvocation mi = readHeader(dis);
+   
+               int size = dis.readInt();
+   
+               List acks = new ArrayList(size);
+   
+               for (int i = 0; i < size; i++)
+               {
+                  AckInfo ack = new AckInfo();
+                  
+                  ack.read(dis);
+                  
+                  acks.add(ack);
+               }
+   
+               Object[] args = new Object[] {acks};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read cancelDeliveries()"); }
+   
+               return request;
+            }
+            case ID_BLOCK_RESPONSE:
+            {
+               IdBlock block = new IdBlock();
+   
+               block.read(dis);
+   
+               InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, block), false, null);
+   
+               if (trace) { log.trace("read id block response"); }
+   
+               return resp;
+            }
+            case HANDLE_MESSAGE_RESPONSE:
+            {
+               HandleMessageResponse res = new HandleMessageResponse();
+   
+               res.read(dis);
+   
+               InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, res), false, null);
+   
+               if (trace) { log.trace("read handle message response"); }
+   
+               return resp;
+            }
+            case NULL_RESPONSE:
+            {    
+               InvocationResponse resp =
+                  new InvocationResponse(null, new MessagingMarshallable(version, null), false, null);
+   
+               if (trace) { log.trace("read null response"); }
+   
+               return resp;
+            }
+            case CALLBACK:
+            {
+               ClientDelivery dr = new ClientDelivery();
+               
+               dr.read(dis);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, CallbackServerFactory.JMS_CALLBACK_SUBSYSTEM,
+                                        new MessagingMarshallable(version, dr), null, null, null);
+   
+               if (trace) { log.trace("read callback()"); }
+   
+               return request;
+            }
+            default:
+            {
+               throw new IllegalStateException("Invalid format type " + formatType);
+            }
          }
-         case ID_BLOCK_RESPONSE:
-         {
-            IdBlock block = new IdBlock();
-
-            block.readExternal(ois);
-
-            InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, block), false, null);
-
-            if (trace) { log.trace("read id block response"); }
-
-            return resp;
-         }
-         case HANDLE_MESSAGE_RESPONSE:
-         {
-            HandleMessageResponse res = new HandleMessageResponse();
-
-            res.readExternal(ois);
-
-            InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, res), false, null);
-
-            if (trace) { log.trace("read handle message response"); }
-
-            return resp;
-         }
-         case NULL_RESPONSE:
-         {    
-            InvocationResponse resp =
-               new InvocationResponse(null, new MessagingMarshallable(version, null), false, null);
-
-            if (trace) { log.trace("read null response"); }
-
-            return resp;
-         }
-         case CALLBACK:
-         {
-            ClientDelivery dr = new ClientDelivery();
-            
-            dr.readExternal(ois);
-
-            InvocationRequest request =
-               new InvocationRequest(null, CallbackServerFactory.JMS_CALLBACK_SUBSYSTEM,
-                                     new MessagingMarshallable(version, dr), null, null, null);
-
-            if (trace) { log.trace("read callback()"); }
-
-            return request;
-         }
-         default:
-         {
-            throw new IllegalStateException("Invalid format type " + formatType);
-         }
+      }
+      catch (Exception e)
+      {
+         IOException e2 = new IOException(e.getMessage());
+         e2.setStackTrace(e.getStackTrace());
+         throw e2;
       }
    }
 
@@ -637,7 +662,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    public void setClassLoader(ClassLoader classloader)
    {
-      //log.warn("ignoring setClassLoader(" + classloader + ")");
    }
 
    // Public --------------------------------------------------------
@@ -646,7 +670,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    // Protected -----------------------------------------------------
 
-   protected void handleVersion(Object obj, ObjectOutputStream oos) throws IOException
+   protected void handleVersion(Object obj, DataOutputStream oos) throws IOException
    {
       Object load = null;
 
@@ -681,7 +705,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    // Private -------------------------------------------------------
 
-   private void writeHeader(MethodInvocation mi, ObjectOutputStream dos) throws IOException
+   private void writeHeader(MethodInvocation mi, DataOutputStream dos) throws IOException
    {
       int objectId = ((Integer)mi.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue();
 
@@ -690,7 +714,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       dos.writeLong(mi.getMethodHash());
    }
 
-   private MethodInvocation readHeader(ObjectInputStream ois) throws IOException
+   private MethodInvocation readHeader(DataInputStream ois) throws IOException
    {
       int objectId = ois.readInt();
 

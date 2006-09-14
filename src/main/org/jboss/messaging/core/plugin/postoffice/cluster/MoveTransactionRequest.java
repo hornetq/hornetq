@@ -21,7 +21,14 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * 
@@ -35,10 +42,16 @@ import java.util.List;
  */
 class MoveTransactionRequest extends TransactionRequest
 {
-   private List messages;
+   static final int TYPE = 5;
    
    private String queueName;
-     
+   
+   private List messages;
+   
+   MoveTransactionRequest()
+   {      
+   }
+   
    MoveTransactionRequest(String nodeId, long txId, List messages, String queueName)
    {
       super(nodeId, txId, true);
@@ -56,6 +69,47 @@ class MoveTransactionRequest extends TransactionRequest
    public void commit(PostOfficeInternal office) throws Exception
    {
       office.addToQueue(queueName, messages);  
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      super.read(in);
+      
+      queueName = in.readUTF();
+      
+      int size = in.readInt();
+      
+      messages = new ArrayList(size);
+      
+      for (int i = 0; i < size; i++)
+      {
+         byte type = in.readByte();
+         Message msg = MessageFactory.createMessage(type);
+         msg.read(in);
+         messages.add(msg);
+      }
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      super.write(out);
+      
+      out.writeUTF(queueName);
+      
+      out.writeInt(messages.size());
+      
+      Iterator iter = messages.iterator();
+      while (iter.hasNext())
+      {
+         Message message = (Message)iter.next();
+         out.writeByte(message.getType());      
+         message.write(out);
+      }
    }
 }
 

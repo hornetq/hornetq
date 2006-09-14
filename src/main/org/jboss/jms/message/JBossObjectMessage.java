@@ -44,8 +44,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = -1626960567569667875L;
-
    public static final byte TYPE = 3;
 
    // Attributes ----------------------------------------------------
@@ -134,7 +132,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    public Serializable getObject() throws JMSException
    {
-      return getPayload();
+      return getPayload();     
    }
 
    // JBossMessage overrides ----------------------------------------

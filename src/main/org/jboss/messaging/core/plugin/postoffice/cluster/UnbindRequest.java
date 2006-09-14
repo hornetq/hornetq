@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 /**
  * A UnbindRequest
@@ -31,13 +33,17 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
  * $Id$
  *
  */
-class UnbindRequest implements ClusterRequest
+class UnbindRequest extends ClusterRequest
 {
-   private static final long serialVersionUID = 6597644036507360965L;
+   static final int TYPE = 9;
 
    private String nodeId;   
    
    private String queueName;
+   
+   UnbindRequest()
+   {      
+   }
 
    UnbindRequest(String nodeId, String queueName)
    {
@@ -49,5 +55,24 @@ class UnbindRequest implements ClusterRequest
    public void execute(PostOfficeInternal office) throws Exception
    {
       office.removeBindingFromCluster(nodeId, queueName);
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      nodeId = in.readUTF();
+      
+      queueName = in.readUTF();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(nodeId);
+      
+      out.writeUTF(queueName);
    }      
 }

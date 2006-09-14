@@ -48,4 +48,6 @@ public interface Message extends Routable
    
    int getPersistentChannelCount();
    
+   byte getType();
+   
 }

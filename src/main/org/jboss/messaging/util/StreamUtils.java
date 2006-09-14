@@ -21,9 +21,13 @@
  */
 package org.jboss.messaging.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +35,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.serial.io.JBossObjectInputStream;
+import org.jboss.serial.io.JBossObjectOutputStream;
+
+
 
 /**
  * A StreamUtils
@@ -45,41 +54,71 @@ import java.util.Set;
  */
 public class StreamUtils
 {
-   protected static final byte BYTE = 0;
-
-   protected static final byte SHORT = 1;
-
-   protected static final byte INT = 2;
-
-   protected static final byte LONG = 3;
-
-   protected static final byte FLOAT = 4;
-
-   protected static final byte DOUBLE = 5;
-
-   protected static final byte BOOLEAN = 6;
-
-   protected static final byte STRING = 7;
-
-   protected static final byte SERIALIZABLE = 8;
-
-   protected static final byte NULL = 9;
+   private static final int BUFFER_SIZE = 4096;
    
-   protected static final byte BYTES = 10;
+   private static final byte NULL = 0;
    
-   protected static final byte MAP = 11;
+   private static final byte STRING = 1;
    
-   protected static final byte LIST = 12;
+   private static final byte MAP = 2;
    
-   protected static final byte NOT_NULL = 13;
+   private static final byte BYTE = 3;
+
+   private static final byte SHORT = 4;
+
+   private static final byte INT = 5;
+
+   private static final byte LONG = 6;
+
+   private static final byte FLOAT = 7;
+
+   private static final byte DOUBLE = 8;
+
+   private static final byte BOOLEAN = 9;
+   
+   private static final byte BYTES = 10;
+     
+   private static final byte LIST = 11;
+   
+   private static final byte SERIALIZABLE = 12;
+   
+   private static boolean useJBossSerialization = false;
+   
+   public static void setUseJBossSerialization(boolean use)
+   {
+      useJBossSerialization = use;
+   }
+
          
-   public static Object readObject(ObjectInput in, boolean longStrings)
+   public static Object readObject(DataInputStream in, boolean longStrings)
       throws IOException, ClassNotFoundException
    {
       byte type = in.readByte();
       Object value = null;
       switch (type)
       {
+         case NULL:
+         {
+            value = null;
+            break;
+         }
+         case STRING :
+            if (longStrings)
+            {
+               //We cope with >= 64K Strings
+               value = SafeUTF.instance.safeReadUTF(in);
+            }
+            else
+            {
+               //Limited to < 64K Strings
+               value = in.readUTF();
+            }
+            break;
+         case MAP:
+         {
+            value = readMap(in, false);
+            break;
+         } 
          case BYTE :
             value = new Byte(in.readByte());
             break;
@@ -100,30 +139,13 @@ public class StreamUtils
             break;
          case BOOLEAN :
             value = in.readBoolean() ? Boolean.TRUE : Boolean.FALSE;
-            break;
-         case STRING :
-            if (longStrings)
-            {
-               //We cope with >= 64K Strings
-               value = SafeUTF.instance.safeReadUTF(in);
-            }
-            else
-            {
-               //Limited to < 64K Strings
-               value = in.readUTF();
-            }
-            break;
+            break;         
          case BYTES :
             int size = in.readInt();
             byte[] bytes = new byte[size];
             in.readFully(bytes);
             value = bytes;
-            break;
-         case MAP:
-         {
-            value = readMap(in, false);
-            break;
-         }            
+            break;                   
          case LIST:
          {
             value = readList(in);
@@ -131,14 +153,20 @@ public class StreamUtils
          }
          case SERIALIZABLE:
          {
-            value = (Serializable)in.readObject();
+            ObjectInputStream ois;
+            if (useJBossSerialization)
+            {
+               ois = new JBossObjectInputStream(in);
+            }
+            else
+            {
+               ois = new ObjectInputStream(in);
+            }
+                        
+            value = (Serializable)ois.readObject();
+            ois.close();
             break;
-         }                  
-         case NULL:
-         {
-            value = null;
-            break;
-         }
+         }              
          default :
          {
             throw new IllegalStateException("Unknown type: " + type);
@@ -147,10 +175,10 @@ public class StreamUtils
       return value;
    }
    
-   public static void writeObject(ObjectOutput out, Object object,
+   public static void writeObject(DataOutputStream out, Object object,
                                   boolean containerTypes, boolean longStrings) throws IOException
    {
-      // We cheat with some often used types - more efficient than using object serialization
+      // more efficient than using object serialization for well known types
       if (object == null)
       {
          out.writeByte(NULL);
@@ -169,6 +197,11 @@ public class StreamUtils
             out.writeUTF((String)object);
          }
       }
+      else if (containerTypes && object instanceof Map)
+      {
+         out.write(MAP);
+         writeMap(out, (Map)object, false);
+      }      
       else if (object instanceof Integer)
       {
          out.writeByte(INT);
@@ -215,16 +248,23 @@ public class StreamUtils
       {
          out.write(LIST);
          writeList(out, (List)object);
-      }
-      else if (containerTypes && object instanceof HashMap)
-      {
-         out.write(MAP);
-         writeMap(out, (Map)object, false);
-      }
+      }      
       else if (object instanceof Serializable)
       {
          out.writeByte(SERIALIZABLE);
-         out.writeObject(object);
+         ObjectOutputStream oos;
+         
+         if (useJBossSerialization)
+         {
+            oos = new JBossObjectOutputStream(out);
+         }
+         else
+         {
+            oos = new ObjectOutputStream(out);
+         }
+                  
+         oos.writeObject(object);
+         oos.close();
       }
       else
       {
@@ -232,7 +272,7 @@ public class StreamUtils
       }
    }  
    
-   public static void writeList(ObjectOutput out, List list) throws IOException
+   public static void writeList(DataOutputStream out, List list) throws IOException
    {
       out.writeInt(list.size());
       Iterator iter = list.iterator();
@@ -243,7 +283,7 @@ public class StreamUtils
       }
    }
    
-   public static ArrayList readList(ObjectInput in) throws ClassNotFoundException, IOException
+   public static ArrayList readList(DataInputStream in) throws ClassNotFoundException, IOException
    {
       int size = in.readInt();
       ArrayList list = new ArrayList(size);
@@ -255,7 +295,7 @@ public class StreamUtils
       return list;
    }
    
-   public static void writeMap(ObjectOutput out, Map map, boolean stringKeys) throws IOException
+   public static void writeMap(DataOutputStream out, Map map, boolean stringKeys) throws IOException
    {      
       Set entrySet = map.entrySet();
       out.writeInt(entrySet.size());
@@ -288,7 +328,7 @@ public class StreamUtils
       }      
    }
    
-   public static HashMap readMap(ObjectInput in, boolean stringKeys) throws IOException, ClassNotFoundException
+   public static HashMap readMap(DataInputStream in, boolean stringKeys) throws IOException, ClassNotFoundException
    {     
       int size = in.readInt();
       HashMap m = new HashMap(size);
@@ -310,4 +350,29 @@ public class StreamUtils
       }
       return m;      
    }  
+   
+   public static byte[] toBytes(Streamable streamable) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream(BUFFER_SIZE);
+      
+      DataOutputStream daos = new DataOutputStream(baos);
+      
+      streamable.write(daos);
+      
+      daos.close();
+      
+      return baos.toByteArray();
+   }
+   
+   public static void fromBytes(Streamable streamable, byte[] bytes) throws Exception
+   {
+      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+      
+      DataInputStream dais = new DataInputStream(bais);
+      
+      streamable.read(dais);
+      
+      dais.close();
+   }
+   
 }

@@ -21,9 +21,16 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.io.Serializable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.util.StreamUtils;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * A SharedState
@@ -34,13 +41,15 @@ import java.util.Map;
  * $Id$
  *
  */
-class SharedState implements Serializable
-{
-   private static final long serialVersionUID = 7782131373080845107L;
-
+class SharedState implements Streamable
+{  
    private List bindings;
    
    private Map nodeIdAddressMap;
+   
+   SharedState()
+   {      
+   }
    
    SharedState(List bindings, Map nodeIdAddressMap)
    {
@@ -57,5 +66,40 @@ class SharedState implements Serializable
    Map getNodeIdAddressMap()
    {
       return nodeIdAddressMap;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      int size = in.readInt();      
+      bindings = new ArrayList(size);
+      for (int i = 0; i < size; i++)
+      {
+         ClusteredBinding bb = new ClusteredBindingImpl();
+         bb.read(in);
+         bindings.add(bb);
+      }
+      
+      nodeIdAddressMap = (Map)StreamUtils.readObject(in, false);
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeInt(bindings.size());
+      Iterator iter = bindings.iterator();
+      while (iter.hasNext())
+      {
+         Binding binding = (Binding)iter.next();
+         
+         if (!(binding instanceof ClusteredBinding))
+         {
+            throw new IllegalStateException("Can only cluster clustered bindings");
+         }
+         
+         ClusteredBinding bb = (ClusteredBinding)binding;
+         
+         bb.write(out);
+      }
+      
+      StreamUtils.writeObject(out, nodeIdAddressMap, true, false);     
    }
 }

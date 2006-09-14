@@ -21,9 +21,8 @@
   */
 package org.jboss.jms.message;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,8 +53,6 @@ import org.jboss.util.Primitives;
 public class JBossStreamMessage extends JBossMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
-
-   private static final long serialVersionUID = 5504501713994881078L;
 
    public static final byte TYPE = 4;
 
@@ -694,13 +691,13 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayloadExternal(ObjectOutput out, Serializable thePayload) throws IOException
+   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
    {
       StreamUtils.writeList(out, (List)thePayload);
    }
 
-   protected Serializable readPayloadExternal(ObjectInput in, int length)
-      throws IOException, ClassNotFoundException
+   protected Serializable readPayload(DataInputStream in, int length)
+      throws Exception
    {
       ArrayList l = StreamUtils.readList(in);
       return l;

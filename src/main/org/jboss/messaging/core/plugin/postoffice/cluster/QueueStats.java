@@ -21,7 +21,10 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.io.Serializable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import org.jboss.messaging.util.Streamable;
 
 /**
  * A QueueStats
@@ -32,7 +35,7 @@ import java.io.Serializable;
  * $Id$
  *
  */
-public class QueueStats implements Serializable
+class QueueStats implements Streamable
 {
    private String queueName;
    
@@ -40,7 +43,11 @@ public class QueueStats implements Serializable
    
    private int messageCount;
 
-   public QueueStats(String queueName, double consumptionRate, int messageCount)
+   public QueueStats()
+   {      
+   }
+   
+   QueueStats(String queueName, double consumptionRate, int messageCount)
    {
       this.queueName = queueName;
       
@@ -49,18 +56,36 @@ public class QueueStats implements Serializable
       this.messageCount = messageCount;
    }
 
-   public double getConsumptionRate()
+   double getConsumptionRate()
    {
       return consumptionRate;
    }
 
-   public int getMessageCount()
+   int getMessageCount()
    {
       return messageCount;
    }
 
-   public String getQueueName()
+   String getQueueName()
    {
       return queueName;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      queueName = in.readUTF();
+      
+      consumptionRate = in.readDouble();
+      
+      messageCount = in.readInt();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(queueName);
+      
+      out.writeDouble(consumptionRate);
+      
+      out.writeInt(messageCount);
    }      
 }

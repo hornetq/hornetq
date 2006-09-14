@@ -19,10 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.postoffice.cluster;
+package org.jboss.messaging.util;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 /**
- * A ClusterTransaction
+ * A Streamable
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -30,7 +33,9 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
  * $Id$
  *
  */
-interface ClusterTransaction
+public interface Streamable
 {
-   void commit(PostOfficeInternal office) throws Exception;
+   void write(DataOutputStream out) throws Exception;
+   
+   void read(DataInputStream in) throws Exception;
 }

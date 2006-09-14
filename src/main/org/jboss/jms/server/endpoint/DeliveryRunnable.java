@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.io.Serializable;
-
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
@@ -38,12 +36,10 @@ import org.jboss.logging.Logger;
  *
  * $Id$
  */
-public class DeliveryRunnable implements Runnable, Serializable
+public class DeliveryRunnable implements Runnable
 {
    // Constants -----------------------------------------------------
    
-   private static final long serialVersionUID = 8375144805659344430L;
-
    private static final Logger log = Logger.getLogger(DeliveryRunnable.class);
 
    // Static --------------------------------------------------------

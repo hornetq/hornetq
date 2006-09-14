@@ -21,10 +21,10 @@
   */
 package org.jboss.messaging.core.plugin;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -35,10 +35,8 @@ import java.io.ObjectOutput;
  *
  * IdBlock.java,v 1.1 2006/03/07 17:11:15 timfox Exp
  */
-public class IdBlock implements Externalizable
+public class IdBlock implements Streamable
 {
-   private static final long serialVersionUID = 8923493066889334803L;
-
    protected long low;
    
    protected long high;
@@ -64,14 +62,14 @@ public class IdBlock implements Externalizable
       return high;
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
       low = in.readLong();
       
       high = in.readLong();
    }
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
       out.writeLong(low);
       

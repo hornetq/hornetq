@@ -21,15 +21,12 @@
  */
 package org.jboss.messaging.core.plugin.postoffice;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * 
@@ -41,14 +38,8 @@ import org.jboss.messaging.core.plugin.contract.Binding;
  * $Id$
  *
  */
-public class BindingImpl implements Binding, Externalizable
+public class BindingImpl implements Binding
 {
-   private static final long serialVersionUID = -5518552214992031242L;
-
-   private static final byte NULL = 0;
-   
-   private static final byte NOT_NULL = 1;   
-
    private String nodeId;
    
    private String queueName;
@@ -64,7 +55,7 @@ public class BindingImpl implements Binding, Externalizable
    private long channelId;
      
    private boolean durable;
-   
+         
    public BindingImpl()
    {      
    }
@@ -148,8 +139,7 @@ public class BindingImpl implements Binding, Externalizable
       }            
    }
    
-
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
       nodeId = in.readUTF();
       
@@ -159,14 +149,14 @@ public class BindingImpl implements Binding, Externalizable
       
       active = in.readBoolean();
       
-      selector = readString(in);
+      selector = (String)StreamUtils.readObject(in, false);
       
       channelId = in.readLong();
       
       durable = in.readBoolean();
    }
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
       out.writeUTF(nodeId);
       
@@ -176,38 +166,11 @@ public class BindingImpl implements Binding, Externalizable
       
       out.writeBoolean(active);
       
-      writeString(selector, out);
+      StreamUtils.writeObject(out, selector, false, false);
       
       out.writeLong(channelId);
       
       out.writeBoolean(durable);
    }
-   
-   private void writeString(String string, DataOutput out) throws IOException
-   {
-      if (string == null)
-      {
-         out.writeByte(NULL);
-      }
-      else
-      {
-         out.writeByte(NOT_NULL);
-         out.writeUTF(string);
-      }
-   }
-   
-   private String readString(DataInput in) throws IOException
-   {
-      byte b = in.readByte();
-      
-      if (b == NULL)
-      {
-         return null;
-      }
-      else
-      {
-         return in.readUTF();
-      }
-   }
-   
+
 }

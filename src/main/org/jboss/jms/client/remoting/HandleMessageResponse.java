@@ -21,10 +21,10 @@
  */
 package org.jboss.jms.client.remoting;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import org.jboss.messaging.util.Streamable;
 
 /**
  * A HandleMessageResponse
@@ -37,7 +37,7 @@ import java.io.ObjectOutput;
  * $Id$
  *
  */
-public class HandleMessageResponse implements Externalizable
+public class HandleMessageResponse implements Streamable
 {
    private static final long serialVersionUID = 2500443290413453569L;
 
@@ -67,17 +67,17 @@ public class HandleMessageResponse implements Externalizable
    }
    
    
-   // Externalizable implementation
+   // Streamable implementation
    // ---------------------------------------------------------------
    
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
       out.writeBoolean(full);
       
       out.writeInt(messagesAccepted);
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
       full = in.readBoolean();
       

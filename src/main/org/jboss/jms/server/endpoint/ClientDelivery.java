@@ -21,10 +21,8 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +30,7 @@ import java.util.List;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -44,12 +43,10 @@ import org.jboss.messaging.core.message.MessageFactory;
  * $Id$
  *
  */
-public class ClientDelivery implements Externalizable
+public class ClientDelivery implements Streamable
 {
    // Constants -----------------------------------------------------
    
-   private static final long serialVersionUID = 8375144805659344430L;
-
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -71,10 +68,10 @@ public class ClientDelivery implements Externalizable
       this.consumerID = consumerID;      
    }
   
-   // Externalizable implementation
+   // Streamable implementation
    // ---------------------------------------------------------------
    
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
       out.writeInt(consumerID);
       
@@ -90,11 +87,11 @@ public class ClientDelivery implements Externalizable
 
          out.writeInt(mp.getDeliveryCount());
 
-         mp.getMessage().writeExternal(out);
+         mp.getMessage().write(out);
       }      
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
       consumerID = in.readInt();
       
@@ -110,7 +107,7 @@ public class ClientDelivery implements Externalizable
          
          JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
 
-         m.readExternal(in);
+         m.read(in);
 
          MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
          

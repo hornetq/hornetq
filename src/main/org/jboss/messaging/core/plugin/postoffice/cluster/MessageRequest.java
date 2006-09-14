@@ -21,9 +21,13 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.Map;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * A MessageRequest
@@ -36,15 +40,19 @@ import org.jboss.messaging.core.Message;
  * $Id$
  *
  */
-class MessageRequest implements ClusterRequest
+class MessageRequest extends ClusterRequest
 {
-   private static final long serialVersionUID = 6681458404259394725L;
+   static final int TYPE = 3;
    
    private String routingKey;   
    
    private Message message;
    
    private Map queueNameNodeIdMap;
+   
+   MessageRequest()
+   {      
+   }
    
    MessageRequest(String routingKey, Message message, Map queueNameNodeIdMap)
    {
@@ -58,5 +66,31 @@ class MessageRequest implements ClusterRequest
    public void execute(PostOfficeInternal office) throws Exception
    {
       office.routeFromCluster(message, routingKey, queueNameNodeIdMap);      
-   }   
+   }  
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+   
+   public void read(DataInputStream in) throws Exception
+   {
+      routingKey = in.readUTF();
+      
+      byte type = in.readByte();
+      Message msg = MessageFactory.createMessage(type);
+      msg.read(in);
+
+      queueNameNodeIdMap = (Map)StreamUtils.readObject(in, false);          
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(routingKey);
+      
+      out.writeByte(message.getType());      
+      message.write(out);
+      
+      StreamUtils.writeObject(out, queueNameNodeIdMap, true, false);
+   }
 }

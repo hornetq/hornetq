@@ -23,8 +23,8 @@ package org.jboss.test.messaging.jms;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 import javax.jms.Connection;
 import javax.jms.Destination;
@@ -143,7 +143,7 @@ public class String64KLimitTest extends MessagingTestCase
    {
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       
-      ObjectOutputStream dos = new ObjectOutputStream(bos);
+      DataOutputStream dos = new DataOutputStream(bos);
       
       SafeUTF su = new SafeUTF(chunkSize);
       
@@ -155,7 +155,7 @@ public class String64KLimitTest extends MessagingTestCase
       
       ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
       
-      ObjectInputStream dis = new ObjectInputStream(bis);
+      DataInputStream dis = new DataInputStream(bis);
       
       String s2 = su.safeReadUTF(dis);
       
@@ -166,7 +166,7 @@ public class String64KLimitTest extends MessagingTestCase
    {
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       
-      ObjectOutputStream dos = new ObjectOutputStream(bos);
+      DataOutputStream dos = new DataOutputStream(bos);
       
       String s = "abcdefghijklmnopqrstuvwxyz";
       
@@ -180,7 +180,7 @@ public class String64KLimitTest extends MessagingTestCase
       
       ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
       
-      ObjectInputStream dis = new ObjectInputStream(bis);
+      DataInputStream dis = new DataInputStream(bis);
       
       String s2 = su.safeReadUTF(dis);
       

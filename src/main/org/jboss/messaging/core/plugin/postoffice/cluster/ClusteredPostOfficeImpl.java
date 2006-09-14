@@ -21,6 +21,10 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,6 +48,7 @@ import org.jboss.messaging.core.plugin.postoffice.ConditionBindings;
 import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.util.StreamUtils;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
@@ -55,7 +60,6 @@ import org.jgroups.View;
 import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
-import org.jgroups.util.Util;
 import org.w3c.dom.Element;
 
 /**
@@ -307,7 +311,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    public void recover() throws Exception
    {
       //We send a "check" message to all nodes of the cluster
-      asyncSendRequest(new CheckMessage(nodeId));
+      asyncSendRequest(new CheckRequest(nodeId));
    }
    
    public boolean route(MessageReference ref, String condition, Transaction tx) throws Exception
@@ -515,7 +519,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             throw new IllegalArgumentException(this.nodeId + "Binding already exists for node Id " + nodeId + " queue name " + queueName);
          }
          
-         binding = new BalancedBindingImpl(nodeId, queueName, condition, filterString,
+         binding = new ClusteredBindingImpl(nodeId, queueName, condition, filterString,
                                            channelID, durable); 
          
          binding.activate();
@@ -682,8 +686,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
     */
    public void asyncSendRequest(ClusterRequest request) throws Exception
    {            
-      //TODO - handle serialization more efficiently
-      asyncChannel.send(new Message(null, null, request));
+      byte[] bytes = writeRequest(request);
+         
+      asyncChannel.send(new Message(null, null, bytes));
    }
    
    /*
@@ -693,7 +698,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    {            
       Address address = (Address)nodeIdAddressMap.get(nodeId);
       
-      Message m = new Message(address, null, request);
+      byte[] bytes = writeRequest(request);
+            
+      Message m = new Message(address, null, bytes);
       
       //TODO - handle serialization more efficiently
       asyncChannel.send(m);
@@ -835,9 +842,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                   
          while (iter.hasNext())
          {
-            BalancedBinding bb = (BalancedBinding)iter.next();
+            ClusteredBinding bb = (ClusteredBinding)iter.next();
             
-            MeasuredQueue q = (MeasuredQueue)bb.getQueue();
+            ClusteredQueue q = (ClusteredQueue)bb.getQueue();
             
             //We don't bother sending the stat if there is less than STATS_DIFFERENCE_MARGIN_PERCENT % difference
             
@@ -924,7 +931,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          {
             QueueStats st = (QueueStats)iter.next();
             
-            BalancedBinding bb = (BalancedBinding)nameMap.get(st.getQueueName());
+            ClusteredBinding bb = (ClusteredBinding)nameMap.get(st.getQueueName());
             
             if (bb == null)
             {
@@ -951,7 +958,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    protected Binding createBinding(String nodeId, String queueName, String condition, String filter,
             long channelId, boolean durable)
    {
-      return new BalancedBindingImpl(nodeId, queueName, condition, filter,
+      return new ClusteredBindingImpl(nodeId, queueName, condition, filter,
                                      channelId, durable);   
    }
            
@@ -986,7 +993,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    {            
       //TODO - handle serialization more efficiently
       
-      Message message = new Message(null, null, request);      
+      byte[] bytes = StreamUtils.toBytes(request); 
+            
+      Message message = new Message(null, null, bytes);      
       
       controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, castTimeout);
    }
@@ -1123,14 +1132,16 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
       SharedState state = new SharedState(bindings, nodeIdAddressMap);
       
-      byte[] bytes = Util.objectToByteBuffer(state);
-      
+      byte[] bytes = StreamUtils.toBytes(state); 
+           
       return bytes;
    }
    
    private void processStateBytes(byte[] bytes) throws Exception
    {
-      SharedState state = (SharedState)Util.objectFromByteBuffer(bytes);
+      SharedState state = new SharedState();
+      
+      StreamUtils.fromBytes(state, bytes);
       
       nameMaps.clear();
       
@@ -1168,7 +1179,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
 
       Transaction tx = tr.createTransaction();
                
-      List dels = ((MeasuredQueue)fromQueue).getDeliveries(num);
+      List dels = ((ClusteredQueue)fromQueue).getDeliveries(num);
       
       Iterator iter = dels.iterator();
       
@@ -1186,6 +1197,32 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       tx.commit();
  
    } 
+   
+   private byte[] writeRequest(ClusterRequest request) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
+      
+      DataOutputStream daos = new DataOutputStream(baos);
+      
+      ClusterRequest.writeToStream(daos, request);
+            
+      daos.flush();
+      
+      return baos.toByteArray();
+   }
+   
+   private ClusterRequest readRequest(byte[] bytes) throws Exception
+   {
+      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+      
+      DataInputStream dais = new DataInputStream(bais);
+      
+      ClusterRequest request = ClusterRequest.createFromStream(dais);
+      
+      dais.close();
+      
+      return request;            
+   }
    
    // Inner classes -------------------------------------------------------------------
     
@@ -1352,8 +1389,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       {
          try
          {
-            //TODO handle deserialization more efficiently            
-            ClusterRequest request = (ClusterRequest)message.getObject();
+            byte[] bytes = message.getBuffer();
+            
+            ClusterRequest request = readRequest(bytes);
             
             request.execute(ClusteredPostOfficeImpl.this);
          }
@@ -1377,13 +1415,13 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    private class PostOfficeRequestHandler implements RequestHandler
    {
       public Object handle(Message message)
-      {
-         //TODO handle deserialization more efficiently
-         
-         ClusterRequest request = (ClusterRequest)message.getObject();
-              
+      {                
          try
-         {            
+         {   
+            byte[] bytes = message.getBuffer();
+            
+            ClusterRequest request = readRequest(bytes);
+            
             request.execute(ClusteredPostOfficeImpl.this);
          }
          catch (Exception e)

@@ -195,6 +195,7 @@ public class TopicTest extends MessagingTestCase
    
    static class Wibble2 implements Serializable
    {
+      private static final long serialVersionUID = -5146179676719808756L;
       String s;
    }
    

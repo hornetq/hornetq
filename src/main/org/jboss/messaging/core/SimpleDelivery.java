@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core;
 
-import java.io.Serializable;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -35,16 +33,13 @@ import org.jboss.messaging.core.tx.Transaction;
  * 
  * $Id$
  */
-public class SimpleDelivery implements Delivery, Serializable
+public class SimpleDelivery implements Delivery
 {
    // Constants -----------------------------------------------------
-
-   private static final long serialVersionUID = 4995034535739753957L;
 
    // Static --------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(SimpleDelivery.class);
-
    
    // Attributes ----------------------------------------------------
 

@@ -22,9 +22,11 @@
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.util.Streamable;
 
 /**
- * A BalancedBinding
+ * 
+ * A ClusteredBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,7 +34,7 @@ import org.jboss.messaging.core.plugin.contract.Binding;
  * $Id$
  *
  */
-public interface BalancedBinding extends Binding
+public interface ClusteredBinding extends Binding, Streamable
 {
    double getConsumptionRate();
    

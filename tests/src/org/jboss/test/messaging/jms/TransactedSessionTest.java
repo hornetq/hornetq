@@ -21,19 +21,18 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.naming.InitialContext;
-import javax.jms.Destination;
 import javax.jms.Connection;
-import javax.jms.Session;
+import javax.jms.Destination;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Message;
+import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.tx.TransactionManagerImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -88,7 +87,7 @@ public class TransactedSessionTest extends MessagingTestCase
    {
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
-      TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.OPERATIONAL);
+    //  TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.OPERATIONAL);
       super.tearDown();
    }
    

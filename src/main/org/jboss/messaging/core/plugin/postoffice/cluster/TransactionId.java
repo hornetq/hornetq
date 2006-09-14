@@ -21,6 +21,11 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import org.jboss.messaging.util.Streamable;
+
 /**
  * A Transactionid
  *
@@ -30,13 +35,17 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
  * $Id$
  *
  */
-class TransactionId
+class TransactionId implements Streamable
 {
    private String nodeId;
    
    private long txId;
    
    private int hash;
+   
+   TransactionId()
+   {      
+   }
    
    TransactionId(String nodeId, long txId)
    {
@@ -91,5 +100,23 @@ class TransactionId
       hash = 37 * hash + (int)(txId ^ (txId >>> 32));
       
       hash = 37 * hash + nodeId.hashCode();
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      nodeId = in.readUTF();
+      
+      txId = in.readLong();
+      
+      hash = in.readInt();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(nodeId);
+      
+      out.writeLong(txId);
+      
+      out.writeInt(hash);
    }
 }

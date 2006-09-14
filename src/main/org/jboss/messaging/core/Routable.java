@@ -25,6 +25,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.messaging.util.Streamable;
+
 /**
  * An atomic, self containted unit of data that is being routed by the messaging system.
  *
@@ -40,7 +42,7 @@ import java.util.Set;
  *
  * $Id$
  */
-public interface Routable extends Serializable
+public interface Routable extends Streamable
 {
    static final String REMOTE_ROUTABLE = "REMOTE_ROUTABLE";
    static final String REPLICATOR_ID = "REPLICATOR_ID";

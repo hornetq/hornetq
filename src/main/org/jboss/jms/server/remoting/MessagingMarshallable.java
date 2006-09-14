@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.server.remoting;
 
-import java.io.Serializable;
 
 /**
  * 
@@ -32,11 +31,9 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public class MessagingMarshallable implements Serializable
+public class MessagingMarshallable
 {
    // Constants -----------------------------------------------------
-
-   private static final long serialVersionUID = -575513130283539747L;
 
    // Static --------------------------------------------------------
 

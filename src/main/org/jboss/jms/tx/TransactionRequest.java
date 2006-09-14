@@ -21,14 +21,13 @@
   */
 package org.jboss.jms.tx;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * This class contians all the data needed to perform a JMS transaction.
@@ -47,11 +46,9 @@ import org.jboss.messaging.core.tx.XidImpl;
  *
  * $Id$
  */
-public class TransactionRequest implements Externalizable
+public class TransactionRequest implements Streamable
 {
    // Constants -----------------------------------------------------
-   
-   private static final long serialVersionUID = -5371388526898322431L;
    
    public final static byte ONE_PHASE_COMMIT_REQUEST = 0;
    public final static byte TWO_PHASE_PREPARE_REQUEST = 2;
@@ -86,9 +83,9 @@ public class TransactionRequest implements Externalizable
       this.state = state;
    }
    
-   // Externalizable implementation ---------------------------------
+   // Streamable implementation ---------------------------------
 
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
       out.writeInt(requestType);
             
@@ -114,7 +111,7 @@ public class TransactionRequest implements Externalizable
       if (state != null)
       {
          out.write(PRESENT);      
-         state.writeExternal(out);
+         state.write(out);
       }
       else
       {
@@ -122,7 +119,7 @@ public class TransactionRequest implements Externalizable
       }
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
      requestType = in.readInt();
      
@@ -158,7 +155,7 @@ public class TransactionRequest implements Externalizable
      {
         state = new TxState();
      
-        state.readExternal(in);
+        state.read(in);
      }
    }
 

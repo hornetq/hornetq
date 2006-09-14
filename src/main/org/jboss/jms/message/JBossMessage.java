@@ -21,9 +21,9 @@
   */
 package org.jboss.jms.message;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -73,9 +73,7 @@ import org.jboss.util.Strings;
 public class JBossMessage extends MessageSupport implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
-   
-   private static final long serialVersionUID = 8341387096828690976L;
-         
+          
    public static final byte TYPE = 0;
    
    private static final byte NULL = 0;
@@ -936,11 +934,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       this.messageID = messageID;
    }
 
-   // Externalizable implementation ---------------------------------
+   // Streamable implementation ---------------------------------
    
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {
-      super.writeExternal(out);
+      super.write(out);
       
       writeDestination(out, destination);
 
@@ -980,9 +978,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }            
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {
-      super.readExternal(in);
+      super.read(in);
 
       destination = readDestination(in);
 
@@ -1081,7 +1079,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    // Protected -----------------------------------------------------
    
-   protected void writeDestination(ObjectOutput out, Destination dest) throws IOException
+   protected void writeDestination(DataOutputStream out, Destination dest) throws IOException
    {
       JBossDestination jb = (JBossDestination)dest;
             
@@ -1117,7 +1115,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
       }
    }
    
-   protected JBossDestination readDestination(ObjectInput in) throws IOException
+   protected JBossDestination readDestination(DataInputStream in) throws IOException
    {
       byte b = in.readByte();
       

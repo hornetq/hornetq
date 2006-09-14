@@ -23,9 +23,9 @@ package org.jboss.test.messaging.jms;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -131,11 +131,9 @@ public class WireFormatTest extends MessagingTestCase
       acknowledgeBatchMethod = sessionDelegate.getMethod("acknowledgeBatch", new Class[] { java.util.List.class });
       
       cancelDeliveriesMethod = sessionDelegate.getMethod("cancelDeliveries", new Class[] { java.util.List.class });
-      
-      
+            
       //Consumer
-      
-      
+            
       moreMethod = consumerDelegate.getMethod("more", null);
 
       //Connection
@@ -223,10 +221,7 @@ public class WireFormatTest extends MessagingTestCase
    {
       wf.testHandleMessageResponse();
    }
-   
-   
-   
-   
+            
    // Public --------------------------------------------------------
    
    public static class SerializableObject implements Serializable
@@ -235,8 +230,7 @@ public class WireFormatTest extends MessagingTestCase
       private static final long serialVersionUID = 1L;
 
       public SerializableObject()
-      {
-         
+      {         
       }
 
       SerializableObject(String s, long l)
@@ -247,8 +241,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public String s;
       
-      public long l;
-      
+      public long l;      
    }
          
    /**
@@ -280,7 +273,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
          
@@ -290,7 +283,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         ObjectInputStream ois = new ObjectInputStream(bis); 
+         DataInputStream ois = new DataInputStream(bis); 
                  
          //Check the bytes
          
@@ -309,7 +302,7 @@ public class WireFormatTest extends MessagingTestCase
          //Next should be the externalized AckInfo
          AckInfo ack2 = new AckInfo();
          
-         ack2.readExternal(ois);
+         ack2.read(ois);
          
          assertEquals(ack.getMessageID(), ack2.getMessageID());
          assertEquals(ack.getConsumerID(), ack2.getConsumerID());
@@ -327,7 +320,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -377,7 +370,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
          
@@ -387,7 +380,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         ObjectInputStream ois = new ObjectInputStream(bis); 
+         DataInputStream ois = new DataInputStream(bis); 
                  
          //Check the bytes
          
@@ -409,21 +402,21 @@ public class WireFormatTest extends MessagingTestCase
          //Now the acks
          AckInfo ack = new AckInfo();
             
-         ack.readExternal(ois);
+         ack.read(ois);
          
          assertEquals(ackA.getMessageID(), ack.getMessageID());
          assertEquals(ackA.getConsumerID(), ack.getConsumerID());
          
          ack = new AckInfo();
          
-         ack.readExternal(ois);
+         ack.read(ois);
          
          assertEquals(ackB.getMessageID(), ack.getMessageID());
          assertEquals(ackB.getConsumerID(), ack.getConsumerID());
          
          ack = new AckInfo();
          
-         ack.readExternal(ois);
+         ack.read(ois);
          
          assertEquals(ackC.getMessageID(), ack.getMessageID());
          assertEquals(ackC.getConsumerID(), ack.getConsumerID());
@@ -442,7 +435,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -500,7 +493,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -510,7 +503,7 @@ public class WireFormatTest extends MessagingTestCase
          
          // Check the bytes
                   
-         ObjectInputStream ois = new ObjectInputStream(bis);
+         DataInputStream ois = new DataInputStream(bis);
          
          // First byte should be version
          byte version = ois.readByte();
@@ -519,7 +512,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
                                  
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -561,7 +554,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -569,7 +562,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         ObjectInputStream ois = new ObjectInputStream(bis);
+         DataInputStream ois = new DataInputStream(bis);
          
          // First byte should be version
          byte version = ois.readByte();
@@ -578,7 +571,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
             
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -605,7 +598,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -613,7 +606,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         ObjectInputStream ois = new ObjectInputStream(bis);
+         DataInputStream ois = new DataInputStream(bis);
          
          // First byte should be version
          byte version = ois.readByte();
@@ -622,7 +615,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
                   
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -660,7 +653,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
          
@@ -670,7 +663,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         ObjectInputStream ois = new ObjectInputStream(bis); 
+         DataInputStream ois = new DataInputStream(bis); 
                
          //Check the bytes
          
@@ -694,7 +687,7 @@ public class WireFormatTest extends MessagingTestCase
          //Next should come the message
          JBossMessage m2 = new JBossMessage();
          
-         m2.readExternal(ois);
+         m2.read(ois);
          
          //should be eos
          
@@ -711,7 +704,7 @@ public class WireFormatTest extends MessagingTestCase
          MessageTest.ensureEquivalent(m, m2);
          
          bis.reset();
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -760,7 +753,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
         
@@ -770,7 +763,7 @@ public class WireFormatTest extends MessagingTestCase
               
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         ObjectInputStream ois = new ObjectInputStream(bis); 
+         DataInputStream ois = new DataInputStream(bis); 
                
          //Check the bytes
              
@@ -790,7 +783,7 @@ public class WireFormatTest extends MessagingTestCase
          
          TransactionRequest req = new TransactionRequest();
                          
-         req.readExternal(ois);
+         req.read(ois);
          
          //should be eos
                 
@@ -816,7 +809,7 @@ public class WireFormatTest extends MessagingTestCase
          assertEquals(info.getMessageID(), info2.getMessageID());
          
          bis.reset();
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -871,7 +864,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
         
@@ -881,7 +874,7 @@ public class WireFormatTest extends MessagingTestCase
               
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         ObjectInputStream ois = new ObjectInputStream(bis); 
+         DataInputStream ois = new DataInputStream(bis); 
                
          //Check the bytes
              
@@ -908,9 +901,9 @@ public class WireFormatTest extends MessagingTestCase
          
          AckInfo rack2 = new AckInfo();
          
-         rack1.readExternal(ois);
+         rack1.read(ois);
          
-         rack2.readExternal(ois);
+         rack2.read(ois);
          
          assertEquals(ack1.getConsumerID(), rack1.getConsumerID());
          
@@ -934,7 +927,7 @@ public class WireFormatTest extends MessagingTestCase
          
          
          bis.reset();
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -970,14 +963,14 @@ public class WireFormatTest extends MessagingTestCase
          InvocationResponse resp = new InvocationResponse(null, mm, false, null);
 
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
          
          wf.write(resp, oos);
          oos.flush();
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
        
-         ObjectInputStream ois = new ObjectInputStream(bis);
+         DataInputStream ois = new DataInputStream(bis);
 
          // First byte should be version
          assertEquals(77, ois.readByte());
@@ -1002,7 +995,7 @@ public class WireFormatTest extends MessagingTestCase
 
          // END of the invalid section
 
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
 
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -1032,7 +1025,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
          
@@ -1042,7 +1035,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         ObjectInputStream ois = new ObjectInputStream(bis); 
+         DataInputStream ois = new DataInputStream(bis); 
          
          //Check the bytes
          
@@ -1070,7 +1063,7 @@ public class WireFormatTest extends MessagingTestCase
          }
          
          bis.reset();
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -1113,7 +1106,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
          
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, dr);
          
@@ -1125,7 +1118,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
                   
-         ObjectInputStream ois = new ObjectInputStream(bis);
+         DataInputStream ois = new DataInputStream(bis);
          
          //Check the bytes
          
@@ -1152,7 +1145,7 @@ public class WireFormatTest extends MessagingTestCase
          //And now the message itself
          JBossMessage r1 = new JBossMessage();
          
-         r1.readExternal(ois);
+         r1.read(ois);
          
          
          //Next byte should be type
@@ -1164,7 +1157,7 @@ public class WireFormatTest extends MessagingTestCase
          //And now the message itself
          JBossMessage r2 = new JBossMessage();
          
-         r2.readExternal(ois);
+         r2.read(ois);
          
          
          //Next byte should be type
@@ -1176,7 +1169,7 @@ public class WireFormatTest extends MessagingTestCase
          //And now the message itself
          JBossMessage r3 = new JBossMessage();
          
-         r3.readExternal(ois);
+         r3.read(ois);
          
          MessageTest.ensureEquivalent(m1, r1);
          MessageTest.ensureEquivalent(m2, r2);
@@ -1195,7 +1188,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -1237,7 +1230,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -1245,7 +1238,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         ObjectInputStream ois = new ObjectInputStream(bis);
+         DataInputStream ois = new DataInputStream(bis);
                    
          // First byte should be version
          assertEquals(77, ois.readByte());
@@ -1256,7 +1249,7 @@ public class WireFormatTest extends MessagingTestCase
          
          IdBlock block2 = new IdBlock();
          
-         block2.readExternal(ois);
+         block2.read(ois);
          
          assertEquals(block.getLow(), block2.getLow());
          assertEquals(block.getHigh(), block2.getHigh());
@@ -1274,7 +1267,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -1298,7 +1291,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         ObjectOutputStream oos = new ObjectOutputStream(bos);
+         DataOutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -1306,7 +1299,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         ObjectInputStream ois = new ObjectInputStream(bis);
+         DataInputStream ois = new DataInputStream(bis);
                    
          // First byte should be version
          assertEquals(77, ois.readByte());
@@ -1317,7 +1310,7 @@ public class WireFormatTest extends MessagingTestCase
          
          HandleMessageResponse h2 = new HandleMessageResponse();
          
-         h2.readExternal(ois);
+         h2.read(ois);
          
          assertEquals(h.clientIsFull(), h2.clientIsFull());
          assertEquals(h.getNumberAccepted(), h2.getNumberAccepted());
@@ -1335,7 +1328,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new ObjectInputStream(bis);
+         ois = new DataInputStream(bis);
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          

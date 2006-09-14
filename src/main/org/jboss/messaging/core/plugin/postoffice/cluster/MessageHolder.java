@@ -21,10 +21,14 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.io.Serializable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.Map;
 
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.util.StreamUtils;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * A MessageHolder
@@ -35,13 +39,17 @@ import org.jboss.messaging.core.Message;
  * $Id$
  *
  */
-class MessageHolder implements Serializable
+class MessageHolder implements Streamable
 {
    private String routingKey;
    
    private Message message;
    
    private Map queueNameToNodeIdMap;
+   
+   public MessageHolder()
+   {      
+   }
    
    MessageHolder(String routingKey, Message message, Map queueNameToNodeIdMap)
    {
@@ -65,5 +73,26 @@ class MessageHolder implements Serializable
    Map getQueueNameToNodeIdMap()
    {
       return queueNameToNodeIdMap;
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      routingKey = in.readUTF();
+      
+      byte type = in.readByte();
+      Message msg = MessageFactory.createMessage(type);
+      msg.read(in);
+      
+      queueNameToNodeIdMap = (Map)StreamUtils.readObject(in, false);      
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(routingKey);
+      
+      out.writeByte(message.getType());      
+      message.write(out);
+
+      StreamUtils.writeObject(out, queueNameToNodeIdMap, true, false);
    }
 }     

@@ -21,10 +21,8 @@
   */
 package org.jboss.messaging.core.message;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,19 +39,14 @@ import org.jboss.messaging.util.StreamUtils;
  *
  * $Id$
  */
-public abstract class RoutableSupport implements Routable, Externalizable
+public abstract class RoutableSupport implements Routable
 {
-
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RoutableSupport.class);
    
-
-
    // Static --------------------------------------------------------
-   
-   
-   
+         
    // Attributes ----------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
@@ -242,9 +235,9 @@ public abstract class RoutableSupport implements Routable, Externalizable
       this.priority = priority;
    }
    
-   // Externalizable implementation ---------------------------------
+   // Streamable implementation ---------------------------------
    
-   public void writeExternal(ObjectOutput out) throws IOException
+   public void write(DataOutputStream out) throws Exception
    {      
       out.writeLong(messageID);
       out.writeBoolean(reliable);
@@ -256,7 +249,7 @@ public abstract class RoutableSupport implements Routable, Externalizable
       out.writeInt(deliveryCount);
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   public void read(DataInputStream in) throws Exception
    {     
       messageID = in.readLong();
       reliable = in.readBoolean();

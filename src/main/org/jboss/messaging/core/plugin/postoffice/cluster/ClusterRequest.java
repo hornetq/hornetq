@@ -21,8 +21,10 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.io.Serializable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
+import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -34,7 +36,84 @@ import java.io.Serializable;
  * $Id$
  *
  */
-interface ClusterRequest extends Serializable
+abstract class ClusterRequest implements Streamable
 {
-   void execute(PostOfficeInternal office) throws Exception;
+   /*
+    * Factory method
+    */
+   static ClusterRequest createFromStream(DataInputStream dais) throws Exception
+   {
+      byte type = dais.readByte();
+      
+      ClusterRequest request = null;
+      
+      switch (type)
+      {
+         case BindRequest.TYPE:
+         {
+            request =  new BindRequest();
+            break;
+         }
+         case CheckRequest.TYPE:
+         {
+            request = new CheckRequest();
+            break;
+         }
+         case MessageRequest.TYPE:
+         {
+            request = new MessageRequest();
+            break;
+         }
+         case MessagesRequest.TYPE:
+         {
+            request = new MessagesRequest();
+            break;
+         }
+         case MoveTransactionRequest.TYPE:
+         {
+            request = new MoveTransactionRequest();
+            break;
+         }
+         case QueueStatsRequest.TYPE:
+         {
+            request = new QueueStatsRequest();
+            break;
+         }
+         case SendNodeIdRequest.TYPE:
+         {
+            request = new SendNodeIdRequest();
+            break;
+         }
+         case SendTransactionRequest.TYPE:
+         {
+            request = new SendTransactionRequest();
+            break;
+         }
+         case UnbindRequest.TYPE:
+         {
+            request = new UnbindRequest();
+            break;
+         }
+         default:
+         {
+            throw new IllegalArgumentException("Invalid type: " + type);
+         }
+      }
+      
+      request.read(dais);
+      
+      return request;
+   }
+   
+   public static void writeToStream(DataOutputStream daos, ClusterRequest request) throws Exception
+   {
+      daos.writeByte(request.getType());
+      
+      request.write(daos);
+   }
+   
+   abstract void execute(PostOfficeInternal office) throws Exception;
+   
+   abstract byte getType();
+
 }

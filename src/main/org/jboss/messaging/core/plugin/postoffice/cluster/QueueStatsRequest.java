@@ -21,7 +21,12 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
 
 /**
  * A QueueStatsRequest
@@ -32,13 +37,19 @@ import java.util.List;
  * $Id$
  *
  */
-public class QueueStatsRequest implements ClusterRequest
+class QueueStatsRequest extends ClusterRequest
 {
+   static final int TYPE = 6;
+   
    private String nodeId;
    
    private List queueStats;
    
-   public QueueStatsRequest(String nodeId, List stats)
+   QueueStatsRequest()
+   {      
+   }
+   
+   QueueStatsRequest(String nodeId, List stats)
    {
       this.nodeId = nodeId;
       
@@ -48,5 +59,44 @@ public class QueueStatsRequest implements ClusterRequest
    public void execute(PostOfficeInternal office) throws Exception
    {
       office.updateQueueStats(nodeId, queueStats);
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+   
+
+   public void read(DataInputStream in) throws Exception
+   {
+      nodeId = in.readUTF();
+      
+      int size = in.readInt();
+      
+      queueStats = new ArrayList(size);
+      
+      for (int i = 0; i < size; i++)
+      {
+         QueueStats stats = new QueueStats();
+         
+         stats.read(in);
+         
+         queueStats.add(stats);
+      }
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(nodeId);
+      
+      out.writeInt(queueStats.size());
+      
+      Iterator iter = queueStats.iterator();
+      while (iter.hasNext())
+      {
+         QueueStats stats = (QueueStats)iter.next();
+         
+         stats.write(out);
+      }
    }
 }

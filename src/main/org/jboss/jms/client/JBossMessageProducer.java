@@ -34,7 +34,6 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
 import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;

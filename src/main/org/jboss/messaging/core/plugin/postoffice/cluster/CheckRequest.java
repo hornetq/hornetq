@@ -21,6 +21,11 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+
 /**
  * A CheckMessage
  *
@@ -30,13 +35,17 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
  * $Id$
  *
  */
-class CheckMessage implements ClusterRequest
+class CheckRequest extends ClusterRequest
 {
-   private static final long serialVersionUID = 6254127318656179872L;
-   
    private String nodeId;
    
-   CheckMessage(String nodeId)
+   static final int TYPE = 2;
+   
+   CheckRequest()
+   {      
+   }
+   
+   CheckRequest(String nodeId)
    {
       this.nodeId = nodeId;
    }
@@ -44,5 +53,20 @@ class CheckMessage implements ClusterRequest
    public void execute(PostOfficeInternal office) throws Exception
    {
       office.check(nodeId);
+   }
+   
+   public byte getType()
+   {
+      return TYPE;
+   }
+   
+   public void read(DataInputStream in) throws IOException
+   {
+      nodeId = in.readUTF();
+   }
+
+   public void write(DataOutputStream out) throws IOException
+   {
+      out.writeUTF(nodeId);      
    }
 }

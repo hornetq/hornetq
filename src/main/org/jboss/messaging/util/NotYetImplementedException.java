@@ -31,6 +31,8 @@ public class NotYetImplementedException extends RuntimeException
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = 3795167990062836913L;
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------

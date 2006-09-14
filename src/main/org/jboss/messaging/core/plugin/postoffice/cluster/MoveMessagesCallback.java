@@ -36,7 +36,7 @@ import org.jboss.messaging.core.tx.TxCallback;
  * $Id$
  *
  */
-public class MoveMessagesCallback implements TxCallback
+class MoveMessagesCallback implements TxCallback
 {
    private List messages;
    
