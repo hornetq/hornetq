@@ -39,7 +39,6 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
@@ -51,6 +50,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.SimpleChannel;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.util.id.GUID;
 
@@ -962,7 +962,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    {
       Map headers = generateFilledMap(true);
 
-      return MessageFactory.
+      return CoreMessageFactory.
          createCoreMessage(i,
                            reliable,
                            System.currentTimeMillis() + 1000 * 60 * 60,

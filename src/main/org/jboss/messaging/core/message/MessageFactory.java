@@ -21,18 +21,17 @@
   */
 package org.jboss.messaging.core.message;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.JBossObjectMessage;
-import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.jms.message.JBossBytesMessage;
-import org.jboss.jms.message.JBossMapMessage;
-import org.jboss.jms.message.JBossStreamMessage;
-
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -75,47 +74,14 @@ public class MessageFactory
       {
          m = new JBossStreamMessage();
       }
+      else if (type == CoreMessage.TYPE)
+      {
+         m = new CoreMessage();
+      }
      
       return m;
    }
    
-   public static CoreMessage createCoreMessage(long messageID)
-   {
-      return createCoreMessage(messageID, false, 0, 0, (byte)4, null, null, 0);
-   }
-
-   public static CoreMessage createCoreMessage(long messageID,
-                                               boolean reliable,
-                                               Serializable payload)
-   {
-      return createCoreMessage(messageID, reliable, 0, 0, (byte)4, null, payload, 0);
-   }
-
-   public static CoreMessage createCoreMessage(long messageID,
-                                               boolean reliable,
-                                               long expiration,
-                                               long timestamp,
-                                               byte priority,
-                                               Map coreHeaders,
-                                               Serializable payload,
-                                               int persistentChannelCount)
-   {
-      CoreMessage cm =
-         new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, null, persistentChannelCount);
-      cm.setPayload(payload);
-      return cm;
-   }
-   
-   public static CoreMessage createCoreMessage(long messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         byte priority,
-         Map coreHeaders,
-         Serializable payload)
-   {
-      return createCoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload, 0);
-   }
    
    public static Message createJBossMessage(long messageID,
                                           boolean reliable, 
@@ -173,6 +139,10 @@ public class MessageFactory
                payloadAsByteArray, persistentChannelCount, jmsType, correlationID, correlationIDBytes,
                destination, replyTo, jmsProperties);
       }
+      else if (type == CoreMessage.TYPE)
+      {
+         m = new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray, persistentChannelCount);
+      }
       else
       {
           throw new IllegalArgumentException("Unknow type " + type);                       
@@ -181,7 +151,7 @@ public class MessageFactory
       return m;
 
    }
-      
+
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -196,3 +166,4 @@ public class MessageFactory
    
    // Inner classes -------------------------------------------------   
 }
+

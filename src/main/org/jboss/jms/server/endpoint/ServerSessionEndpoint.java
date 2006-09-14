@@ -56,10 +56,10 @@ import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.IdManager;
-import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;

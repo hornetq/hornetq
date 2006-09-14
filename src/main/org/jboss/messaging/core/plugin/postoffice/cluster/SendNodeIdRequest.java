@@ -25,6 +25,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.jgroups.Address;
+import org.jgroups.stack.IpAddress;
 
 /**
  * A SendNodeIdRequest
@@ -67,13 +68,22 @@ class SendNodeIdRequest extends ClusterRequest
 
    public void read(DataInputStream in) throws Exception
    {
-      // TODO Auto-generated method stub
+      address = new IpAddress();
       
+      address.readFrom(in);
+      
+      nodeId = in.readUTF();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      // TODO Auto-generated method stub
+      if (!(address instanceof IpAddress))
+      {
+         throw new IllegalStateException("Address must be IpAddress");
+      }
       
+      address.writeTo(out);
+      
+      out.writeUTF(nodeId);      
    }
 }

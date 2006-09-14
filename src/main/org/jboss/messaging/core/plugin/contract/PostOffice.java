@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**

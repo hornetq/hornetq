@@ -21,7 +21,8 @@
  */
 package org.jboss.messaging.core.plugin.contract;
 
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredBinding;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
 
 /**
  * 
@@ -45,7 +46,7 @@ public interface ClusteredPostOffice extends PostOffice
     * @return
     * @throws Exception
     */
-   Binding bindClusteredQueue(String queueName, String condition, Queue queue) throws Exception;
+   ClusteredBinding bindClusteredQueue(String queueName, String condition, ClusteredQueue queue) throws Exception;
    
    /**
     * Unbind a clustered queue from the post office
@@ -53,6 +54,6 @@ public interface ClusteredPostOffice extends PostOffice
     * @return
     * @throws Throwable
     */
-   Binding unbindClusteredQueue(String queueName) throws Throwable;
+   ClusteredBinding unbindClusteredQueue(String queueName) throws Throwable;
   
 }

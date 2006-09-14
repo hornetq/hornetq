@@ -21,15 +21,15 @@
 */
 package org.jboss.test.messaging.core.message;
 
-import org.jboss.test.messaging.core.message.base.RoutableSupportTestBase;
-import org.jboss.messaging.core.plugin.SimpleMessageReference;
-import org.jboss.messaging.core.message.MessageFactory;
+import java.util.Set;
+
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.RoutableSupport;
+import org.jboss.messaging.core.plugin.SimpleMessageReference;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.Message;
-
-import java.util.Set;
+import org.jboss.test.messaging.core.message.base.RoutableSupportTestBase;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -68,7 +68,7 @@ public class SimpleMessageReferenceTest extends RoutableSupportTestBase
 
    protected void setUp() throws Exception
    {
-      Message m = MessageFactory.createCoreMessage(0);
+      Message m = CoreMessageFactory.createCoreMessage(0);
       m.putHeader("headerName01", "headerValue01");
 
       MessageStore ms = new SimpleMessageStore();

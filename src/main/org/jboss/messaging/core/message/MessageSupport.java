@@ -28,6 +28,7 @@ import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.StreamUtils;
 
@@ -44,7 +45,9 @@ import org.jboss.messaging.util.StreamUtils;
 public abstract class MessageSupport extends RoutableSupport implements Message
 {
    // Constants -----------------------------------------------------
-
+   
+   private static final Logger log = Logger.getLogger(MessageSupport.class);
+   
    // Attributes ----------------------------------------------------
    
    // Must be hidden from subclasses

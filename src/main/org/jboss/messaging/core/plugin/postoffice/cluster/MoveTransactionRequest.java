@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * 
@@ -82,16 +83,25 @@ class MoveTransactionRequest extends TransactionRequest
       
       queueName = in.readUTF();
       
-      int size = in.readInt();
+      int b = in.readByte();
       
-      messages = new ArrayList(size);
-      
-      for (int i = 0; i < size; i++)
+      if (b == StreamUtils.NULL)
       {
-         byte type = in.readByte();
-         Message msg = MessageFactory.createMessage(type);
-         msg.read(in);
-         messages.add(msg);
+         messages = null;
+      }
+      else
+      {
+         int size = in.readInt();
+         
+         messages = new ArrayList(size);
+         
+         for (int i = 0; i < size; i++)
+         {
+            byte type = in.readByte();
+            Message msg = MessageFactory.createMessage(type);
+            msg.read(in);
+            messages.add(msg);
+         }
       }
    }
 
@@ -101,15 +111,26 @@ class MoveTransactionRequest extends TransactionRequest
       
       out.writeUTF(queueName);
       
-      out.writeInt(messages.size());
-      
-      Iterator iter = messages.iterator();
-      while (iter.hasNext())
+      if (messages == null)
       {
-         Message message = (Message)iter.next();
-         out.writeByte(message.getType());      
-         message.write(out);
+         out.writeByte(StreamUtils.NULL);
       }
+      else
+      {
+         out.writeByte(StreamUtils.LIST);
+         
+         out.writeInt(messages.size());
+         
+         Iterator iter = messages.iterator();
+         while (iter.hasNext())
+         {
+            Message message = (Message)iter.next();
+            out.writeByte(message.getType());      
+            message.write(out);
+         }
+      }
+      
+      
    }
 }
 

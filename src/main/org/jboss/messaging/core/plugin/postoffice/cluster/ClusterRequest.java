@@ -24,6 +24,7 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Streamable;
 
 /**
@@ -38,13 +39,15 @@ import org.jboss.messaging.util.Streamable;
  */
 abstract class ClusterRequest implements Streamable
 {
+   private static final Logger log = Logger.getLogger(ClusterRequest.class);
+      
    /*
     * Factory method
     */
    static ClusterRequest createFromStream(DataInputStream dais) throws Exception
    {
       byte type = dais.readByte();
-      
+       
       ClusterRequest request = null;
       
       switch (type)

@@ -506,17 +506,18 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                      }
                          
                      m = MessageFactory.createJBossMessage(messageId, reliable, expiration, timestamp, priority,
-                                                           coreHeaders, payload, persistentChannelCount,
-                                                           type, jmsType, correlationID, correlationIDBytes,
-                                                           dest, replyToDest,
-                                                           jmsProperties);
+                                                      coreHeaders, payload, persistentChannelCount,
+                                                      type, jmsType, correlationID, correlationIDBytes,
+                                                      dest, replyToDest,
+                                                      jmsProperties);
                   }
                   else
                   {
-                     //Core message
-                     m = MessageFactory.createCoreMessage(messageId, reliable, expiration, timestamp, priority,
-                           coreHeaders, payload, persistentChannelCount);
+                     m = MessageFactory.createJBossMessage(messageId, reliable, expiration, timestamp, priority,
+                                                          coreHeaders, payload, persistentChannelCount, type,
+                                                          null, null, null, null, null, null);
                   }
+                  
                   
                   msgs.add(m);
                }

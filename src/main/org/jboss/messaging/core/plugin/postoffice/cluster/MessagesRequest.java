@@ -79,6 +79,7 @@ class MessagesRequest extends ClusterRequest
       {
          MessageHolder holder = new MessageHolder();
          holder.read(in);
+         messageHolders.add(holder);
       }
    }
 

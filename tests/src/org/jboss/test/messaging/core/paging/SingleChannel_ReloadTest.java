@@ -26,12 +26,12 @@ import java.util.List;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -75,7 +75,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 150 np mesages
       for (int i = 0; i < 150; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
          refs[i] = ms.reference(msgs[i]);
                 
@@ -87,7 +87,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 50 p messages
       for (int i = 150; i < 200; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs[i] = ms.reference(msgs[i]);
                 
@@ -164,7 +164,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 150 np mesages
       for (int i = 0; i < 150; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
          refs[i] = ms.reference(msgs[i]);
                 
@@ -176,7 +176,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 50 p messages
       for (int i = 150; i < 200; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs[i] = ms.reference(msgs[i]);
                 
@@ -251,7 +251,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 150 np mesages
       for (int i = 0; i < 150; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
          refs[i] = ms.reference(msgs[i]);
                 
@@ -263,7 +263,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 50 p messages
       for (int i = 150; i < 200; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs[i] = ms.reference(msgs[i]);
                 
@@ -315,7 +315,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 150 p messages
       for (int i = 0; i < 150; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs[i] = ms.reference(msgs[i]);
                 
@@ -413,7 +413,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       //Send 150 p messages
       for (int i = 0; i < 150; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs[i] = ms.reference(msgs[i]);
                 

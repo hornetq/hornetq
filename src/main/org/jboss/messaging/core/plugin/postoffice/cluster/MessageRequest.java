@@ -78,8 +78,8 @@ class MessageRequest extends ClusterRequest
       routingKey = in.readUTF();
       
       byte type = in.readByte();
-      Message msg = MessageFactory.createMessage(type);
-      msg.read(in);
+      message = MessageFactory.createMessage(type);
+      message.read(in);
 
       queueNameNodeIdMap = (Map)StreamUtils.readObject(in, false);          
    }

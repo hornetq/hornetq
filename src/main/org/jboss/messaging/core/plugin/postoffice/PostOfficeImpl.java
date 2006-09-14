@@ -41,7 +41,6 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.JDBCSupport;
-import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
@@ -224,14 +223,16 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       
       try
       {
-         List list = (List)conditionMap.get(condition);
-         
-         if (list == null)
+         ConditionBindings cb = (ConditionBindings)conditionMap.get(condition);
+                  
+         if (cb == null)
          {
             return Collections.EMPTY_LIST;
          }
          else
          {
+            List list = cb.getAllBindings();                        
+            
             return list;
          }
       }

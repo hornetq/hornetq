@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Streamable;
 

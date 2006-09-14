@@ -21,10 +21,10 @@
 */
 package org.jboss.test.messaging.core.message;
 
-import org.jboss.test.messaging.core.message.base.MessageSupportTestBase;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.test.messaging.core.message.base.MessageSupportTestBase;
 
 
 /**

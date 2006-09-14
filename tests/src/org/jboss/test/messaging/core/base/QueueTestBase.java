@@ -31,7 +31,6 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
@@ -44,6 +43,7 @@ import org.jboss.test.messaging.core.BrokenReceiver;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
  * The QueueTest test strategy is to try as many combination as it makes sense of the following
@@ -6374,12 +6374,12 @@ public abstract class QueueTestBase extends MessagingTestCase
    
    private MessageReference createReference(long id, boolean reliable, Serializable payload)
    {
-      return ms.reference(MessageFactory.createCoreMessage(id, reliable, payload));
+      return ms.reference(CoreMessageFactory.createCoreMessage(id, reliable, payload));
    }
    
    private MessageReference createReference(long id)
    {
-      return ms.reference(MessageFactory.createCoreMessage(id));
+      return ms.reference(CoreMessageFactory.createCoreMessage(id));
    }
    
    // Inner classes -------------------------------------------------

@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.util.Streamable;
 
 /**

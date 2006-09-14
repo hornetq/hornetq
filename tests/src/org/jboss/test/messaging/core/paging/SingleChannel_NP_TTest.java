@@ -27,9 +27,9 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -78,7 +78,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       for (int i = 0; i < 99; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
                 
          queue.handle(null, refs[i], tx); 
@@ -115,7 +115,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       tx = tr.createTransaction();
       
-      msgs[99] = MessageFactory.createCoreMessage(99, false, null);
+      msgs[99] = CoreMessageFactory.createCoreMessage(99, false, null);
       refs[99] = ms.reference(msgs[99]);
       queue.handle(null, refs[99], tx);
       refs[99].releaseMemoryReference();
@@ -152,7 +152,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 100; i < 109; i++)
       {         
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], tx); 
          refs[i].releaseMemoryReference();
@@ -189,7 +189,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       //Send one more ref - should clear the down cache
       
       tx = tr.createTransaction();
-      msgs[109] = MessageFactory.createCoreMessage(109, false, null);
+      msgs[109] = CoreMessageFactory.createCoreMessage(109, false, null);
       refs[109] = ms.reference(msgs[109]);
       queue.handle(null, refs[109], tx);
       refs[109].releaseMemoryReference();
@@ -226,7 +226,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       //Send one more ref
       
       tx = tr.createTransaction();
-      msgs[110] = MessageFactory.createCoreMessage(110, false, null);
+      msgs[110] = CoreMessageFactory.createCoreMessage(110, false, null);
       refs[110] = ms.reference(msgs[110]);
       queue.handle(null, refs[110], tx);
       refs[110].releaseMemoryReference();
@@ -265,7 +265,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 111; i < 120; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], tx);         
          refs[i].releaseMemoryReference();
@@ -303,7 +303,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       
       for (int i = 200; i < 300; i++)
       {
-         Message m = MessageFactory.createCoreMessage(i, true, null);
+         Message m = CoreMessageFactory.createCoreMessage(i, true, null);
          MessageReference ref = ms.reference(m);
          queue.handle(null, ref, tx);     
          ref.releaseMemoryReference();
@@ -316,7 +316,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 120; i < 130; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], tx);         
          refs[i].releaseMemoryReference();
@@ -357,7 +357,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 130; i < 140; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], tx);      
          refs[i].releaseMemoryReference();
@@ -396,7 +396,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       //Send one more ref
       
       tx = tr.createTransaction();
-      msgs[140] = MessageFactory.createCoreMessage(140, false, null);
+      msgs[140] = CoreMessageFactory.createCoreMessage(140, false, null);
       refs[140] = ms.reference(msgs[140]);
       queue.handle(null, refs[140], tx);
       refs[140].releaseMemoryReference();
@@ -671,7 +671,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 141; i < 161; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], tx);
          refs[i].releaseMemoryReference();
@@ -709,7 +709,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 161; i < 181; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], tx);
          refs[i].releaseMemoryReference();
@@ -746,7 +746,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       tx = tr.createTransaction();
       for (int i = 181; i < 241; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, false, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], tx);
          refs[i].releaseMemoryReference();

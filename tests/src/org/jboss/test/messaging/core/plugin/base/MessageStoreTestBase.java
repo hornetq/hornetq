@@ -29,7 +29,7 @@ import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 
@@ -138,7 +138,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
    public void testMessageStore_1() throws Exception
    {
-      Message m = MessageFactory.
+      Message m = CoreMessageFactory.
       createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
@@ -157,7 +157,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    public void testMessageStore_1_1() throws Exception
    {
 
-      Message m = MessageFactory.
+      Message m = CoreMessageFactory.
       createCoreMessage(0, false, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
@@ -179,7 +179,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
-         m[i] = MessageFactory.createCoreMessage(i, false, 700 + i, 800 + i,
+         m[i] = CoreMessageFactory.createCoreMessage(i, false, 700 + i, 800 + i,
                                              (byte)(i % 10), headers, "payload" + i);
 
          // recoverable store, non-reliable message, one message
@@ -215,7 +215,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
    public void testMessageStore_3() throws Exception
    {
-      Message m = MessageFactory.
+      Message m = CoreMessageFactory.
       createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
@@ -237,7 +237,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
 
    public void testMessageStore_3_1() throws Exception
    {
-      Message m = MessageFactory.
+      Message m = CoreMessageFactory.
       createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // recoverable store, non-reliable message, one message
@@ -259,7 +259,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference[] refs = new MessageReference[NUMBER_OF_MESSAGES];
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++ )
       {
-         m[i] = MessageFactory.createCoreMessage(i, true, 700 + i, 800 + i,
+         m[i] = CoreMessageFactory.createCoreMessage(i, true, 700 + i, 800 + i,
                                              (byte)(i % 10), headers, "payload" + i);
 
          // recoverable store, non-reliable message, one message
@@ -286,7 +286,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    public void testMessageStore_6() throws Exception
    {
 
-      Message m = MessageFactory.
+      Message m = CoreMessageFactory.
       createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message
@@ -315,7 +315,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
    
    public void testMessageStore_7() throws Exception
    {
-      Message m = MessageFactory.
+      Message m = CoreMessageFactory.
       createCoreMessage(0, true, 777l, 888l, (byte)9, headers, "payload");
 
       // non-recoverable store, non-reliable message, one message

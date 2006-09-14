@@ -25,7 +25,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.util.StreamUtils;
 
 /**

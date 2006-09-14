@@ -23,13 +23,13 @@ package org.jboss.test.messaging.core.paging;
 
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.message.CoreMessage;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -67,10 +67,10 @@ public class PagingTest extends MessagingTestCase
 
       CoreMessage m = null;
 
-      m = MessageFactory.createCoreMessage(0);
+      m = CoreMessageFactory.createCoreMessage(0);
       p.handle(null, ms.reference(m), null);
 
-      m = MessageFactory.createCoreMessage(1);
+      m = CoreMessageFactory.createCoreMessage(1);
       p.handle(null, ms.reference(m), null);
 
    }

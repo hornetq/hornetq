@@ -23,7 +23,7 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.util.List;
 
-import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 
 /**
  * A RoutingPolicy

@@ -26,9 +26,9 @@ import java.util.List;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -73,7 +73,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       Transaction tx = this.createXATx();
       for (int i = 0; i < 50; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
@@ -132,7 +132,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       tx = createXATx();
       for (int i = 50; i < 75; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
@@ -194,7 +194,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       tx = createXATx();
       for (int i = 75; i < 100; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 
@@ -255,7 +255,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       tx = createXATx();
       for (int i = 100; i < 150; i++)
       {
-         msgs[i] = MessageFactory.createCoreMessage(i, true, null);
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
          refs1[i] = ms.reference(msgs[i]);
                 

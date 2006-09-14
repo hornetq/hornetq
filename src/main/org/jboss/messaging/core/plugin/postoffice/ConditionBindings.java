@@ -23,10 +23,10 @@ package org.jboss.messaging.core.plugin.postoffice;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.core.plugin.contract.Binding;
 
 /**
  * A ConditionBindings
@@ -59,6 +59,8 @@ public class ConditionBindings
       durableBindings = new ArrayList();
       
       nonDurableBindings = new ArrayList();
+      
+      nameMap = new HashMap();
       
       this.thisNode = thisNode;
    }

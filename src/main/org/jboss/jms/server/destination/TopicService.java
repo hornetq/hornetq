@@ -15,7 +15,7 @@ import javax.jms.JMSException;
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.messaging.core.plugin.contract.Binding;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 

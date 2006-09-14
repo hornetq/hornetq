@@ -25,17 +25,17 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.BasicRedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRoutingPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RoutingPolicy;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -93,10 +93,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          //Add a couple of bindings
          
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         ClusteredQueue queue1 = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          Binding binding1 =
             office1.bindClusteredQueue("sub1", "topic1", queue1);
-         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         ClusteredQueue queue2 = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          Binding binding2 =
             office1.bindClusteredQueue("sub2", "topic1", queue2);
          
@@ -113,7 +113,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          //Add another binding on node 2
          
-         Queue queue3 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         ClusteredQueue queue3 = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          Binding binding3 =
             office2.bindClusteredQueue("sub3", "topic1", queue3);
   
@@ -137,7 +137,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
 
          //Add another binding on node 1
          
-         Queue queue4 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         ClusteredQueue queue4 = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          Binding binding4 =
             office2.bindClusteredQueue("sub4", "topic1", queue4);
          
@@ -196,7 +196,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          //Add another binding on node 3
                   
-         Queue queue5 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         ClusteredQueue queue5 = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          Binding binding5 =
             office3.bindClusteredQueue("sub5", "topic1", queue5);
          
@@ -228,11 +228,11 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          //Add a durable and a non durable binding on node 1
          
-         Queue queue6 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         ClusteredQueue queue6 = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          Binding binding6 =
             office1.bindClusteredQueue("sub6", "topic1", queue6);
          
-         Queue queue7 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         ClusteredQueue queue7 = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          Binding binding7 =
             office1.bindClusteredQueue("sub7", "topic1", queue7);
          
@@ -424,55 +424,55 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
       
          //Two topics with a mixture of durable and non durable subscriptions
          
-         Queue[] queues = new Queue[16];
+         ClusteredQueue[] queues = new ClusteredQueue[16];
          Binding[] bindings = new Binding[16];
          
-         queues[0] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[0] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[0] = office1.bindClusteredQueue("sub1", "topic1", queues[0]);
          
-         queues[1] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[1] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[1] = office1.bindClusteredQueue("sub2", "topic1", queues[1]);
          
-         queues[2] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[2] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[2] = office2.bindClusteredQueue("sub3", "topic1", queues[2]);
          
-         queues[3] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[3] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[3] = office2.bindClusteredQueue("sub4", "topic1", queues[3]);
          
-         queues[4] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[4] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[4] = office2.bindClusteredQueue("sub5", "topic1", queues[4]);
          
-         queues[5] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[5] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[5] = office1.bindClusteredQueue("sub6", "topic1", queues[5]);
          
-         queues[6] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[6] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[6] = office1.bindClusteredQueue("sub7", "topic1", queues[6]);
          
-         queues[7] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[7] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[7] = office1.bindClusteredQueue("sub8", "topic1", queues[7]);
          
-         queues[8] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[8] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[8] = office1.bindClusteredQueue("sub9", "topic2", queues[8]);
          
-         queues[9] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[9] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[9] = office1.bindClusteredQueue("sub10", "topic2", queues[9]);
          
-         queues[10] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[10] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[10] = office2.bindClusteredQueue("sub11", "topic2", queues[10]);
          
-         queues[11] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[11] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[11] = office2.bindClusteredQueue("sub12", "topic2", queues[11]);
          
-         queues[12] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[12] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[12] = office2.bindClusteredQueue("sub13", "topic2", queues[12]);
          
-         queues[13] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[13] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[13] = office1.bindClusteredQueue("sub14", "topic2", queues[13]);
          
-         queues[14] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[14] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[14] = office1.bindClusteredQueue("sub15", "topic2", queues[14]);
          
-         queues[15] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[15] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[15] = office1.bindClusteredQueue("sub16", "topic2", queues[15]);
        
          SimpleReceiver[] receivers = new SimpleReceiver[16];
@@ -483,7 +483,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
             queues[i].add(receivers[i]);
          }
          
-         Message msg = MessageFactory.createCoreMessage(1, persistentMessage, null);      
+         Message msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
          MessageReference ref = ms.reference(msg);         
 
          boolean routed = office1.route(ref, "topic1", null);         
@@ -518,7 +518,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
                   
          //Now route to topic2
          
-         msg = MessageFactory.createCoreMessage(2, persistentMessage, null);;      
+         msg = CoreMessageFactory.createCoreMessage(2, persistentMessage, null);;      
          ref = ms.reference(msg);         
 
          routed = office1.route(ref, "topic2", null);         
@@ -586,55 +586,55 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          office1 = createClusteredPostOffice("node1", "testgroup");
          office2 = createClusteredPostOffice("node2", "testgroup");
      
-         Queue[] queues = new Queue[16];
+         ClusteredQueue[] queues = new ClusteredQueue[16];
          Binding[] bindings = new Binding[16];
          
-         queues[0] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[0] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[0] = office1.bindClusteredQueue("sub1", "topic1", queues[0]);
          
-         queues[1] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[1] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[1] = office1.bindClusteredQueue("sub2", "topic1", queues[1]);
          
-         queues[2] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[2] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[2] = office2.bindClusteredQueue("sub3", "topic1", queues[2]);
          
-         queues[3] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[3] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[3] = office2.bindClusteredQueue("sub4", "topic1", queues[3]);
          
-         queues[4] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[4] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[4] = office2.bindClusteredQueue("sub5", "topic1", queues[4]);
          
-         queues[5] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[5] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[5] = office1.bindClusteredQueue("sub6", "topic1", queues[5]);
          
-         queues[6] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[6] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[6] = office1.bindClusteredQueue("sub7", "topic1", queues[6]);
          
-         queues[7] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[7] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[7] = office1.bindClusteredQueue("sub8", "topic1", queues[7]);
          
-         queues[8] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[8] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[8] = office1.bindClusteredQueue("sub9", "topic2", queues[8]);
          
-         queues[9] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[9] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[9] = office1.bindClusteredQueue("sub10", "topic2", queues[9]);
          
-         queues[10] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[10] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[10] = office2.bindClusteredQueue("sub11", "topic2", queues[10]);
          
-         queues[11] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[11] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[11] = office2.bindClusteredQueue("sub12", "topic2", queues[11]);
          
-         queues[12] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[12] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[12] = office2.bindClusteredQueue("sub13", "topic2", queues[12]);
          
-         queues[13] = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[13] = new ClusteredQueue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[13] = office1.bindClusteredQueue("sub14", "topic2", queues[13]);
          
-         queues[14] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[14] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[14] = office1.bindClusteredQueue("sub15", "topic2", queues[14]);
          
-         queues[15] = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         queues[15] = new ClusteredQueue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
          bindings[15] = office1.bindClusteredQueue("sub16", "topic2", queues[15]);
 
          SimpleReceiver[] receivers = new SimpleReceiver[16];
@@ -647,10 +647,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          //First for topic 1
          
-         Message msg1 = MessageFactory.createCoreMessage(1, persistent, null);;      
+         Message msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);;      
          MessageReference ref1 = ms.reference(msg1);
          
-         Message msg2 = MessageFactory.createCoreMessage(2, persistent, null);;      
+         Message msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);;      
          MessageReference ref2 = ms.reference(msg2);
          
          Transaction tx = tr.createTransaction();
@@ -703,10 +703,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
             assertTrue(msgs.isEmpty());
          }
          
-         msg1 = MessageFactory.createCoreMessage(1, persistent, null);;      
+         msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);;      
          ref1 = ms.reference(msg1);
          
-         msg2 = MessageFactory.createCoreMessage(2, persistent, null);;      
+         msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);;      
          ref2 = ms.reference(msg2);
          
          tx = tr.createTransaction();
@@ -743,10 +743,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          //Now send some non transactionally
          
-         msg1 = MessageFactory.createCoreMessage(1, persistent, null);
+         msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);
          ref1 = ms.reference(msg1);
          
-         msg2 = MessageFactory.createCoreMessage(2, persistent, null);
+         msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);
          ref2 = ms.reference(msg2);
          
          routed = office1.route(ref1, "topic1", null);         
@@ -811,10 +811,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          // and the rollback
          
-         msg1 = MessageFactory.createCoreMessage(1, persistent, null);;      
+         msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);;      
          ref1 = ms.reference(msg1);
          
-         msg2 = MessageFactory.createCoreMessage(2, persistent, null);;      
+         msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);;      
          ref2 = ms.reference(msg2);
          
          routed = office1.route(ref1, "topic1", null);         
@@ -900,10 +900,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          // Now for topic 2
          
-         msg1 = MessageFactory.createCoreMessage(1, persistent, null);    
+         msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);    
          ref1 = ms.reference(msg1);
          
-         msg2 = MessageFactory.createCoreMessage(2, persistent, null);     
+         msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);     
          ref2 = ms.reference(msg2);
          
          tx = tr.createTransaction();
@@ -957,10 +957,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
             receivers[i].clear();
          }
          
-         msg1 = MessageFactory.createCoreMessage(1, persistent, null);;      
+         msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);;      
          ref1 = ms.reference(msg1);
          
-         msg2 = MessageFactory.createCoreMessage(2, persistent, null);;      
+         msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);;      
          ref2 = ms.reference(msg2);
          
          tx = tr.createTransaction();
@@ -994,10 +994,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          //Now send some non transactionally
          
-         msg1 = MessageFactory.createCoreMessage(1, persistent, null);      
+         msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);      
          ref1 = ms.reference(msg1);
          
-         msg2 = MessageFactory.createCoreMessage(2, persistent, null);      
+         msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);      
          ref2 = ms.reference(msg2);
          
          routed = office1.route(ref1, "topic2", null);         
@@ -1063,10 +1063,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          
          // and the rollback
          
-         msg1 = MessageFactory.createCoreMessage(1, persistent, null);;      
+         msg1 = CoreMessageFactory.createCoreMessage(1, persistent, null);;      
          ref1 = ms.reference(msg1);
          
-         msg2 = MessageFactory.createCoreMessage(2, persistent, null);;      
+         msg2 = CoreMessageFactory.createCoreMessage(2, persistent, null);;      
          ref2 = ms.reference(msg2);
          
          routed = office1.route(ref1, "topic2", null);         

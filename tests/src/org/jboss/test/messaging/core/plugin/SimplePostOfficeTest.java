@@ -29,14 +29,13 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
-import org.jboss.messaging.core.plugin.contract.Binding;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -44,6 +43,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -402,7 +402,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          assertTrue(binding3.isActive());
          assertTrue(binding4.isActive());      
          
-         Message msg1 = MessageFactory.createCoreMessage(1);      
+         Message msg1 = CoreMessageFactory.createCoreMessage(1);      
          MessageReference ref1 = ms.reference(msg1);
          
          boolean routed = postOffice.route(ref1, "topic1", null);      
@@ -440,7 +440,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          
          receiver3.clear();
                      
-         Message msg2 = MessageFactory.createCoreMessage(2);      
+         Message msg2 = CoreMessageFactory.createCoreMessage(2);      
          MessageReference ref2 = ms.reference(msg2);
          
          routed = postOffice.route(ref2, "topic2", null);      
@@ -503,7 +503,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
    
          assertTrue(binding1.isActive());
    
-         Message msg1 = MessageFactory.createCoreMessage(1);      
+         Message msg1 = CoreMessageFactory.createCoreMessage(1);      
          MessageReference ref1 = ms.reference(msg1);
          
          boolean routed = postOffice.route(ref1, "this won't match anything", null);      
@@ -582,7 +582,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          assertTrue(binding5.isActive());      
          assertTrue(binding6.isActive());
          
-         Message msg1 = MessageFactory.createCoreMessage(1, persistentMessage, null);      
+         Message msg1 = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
          MessageReference ref1 = ms.reference(msg1);
          
          boolean routed = postOffice.route(ref1, "topic1", null);      
@@ -635,7 +635,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          receiver3.clear();
          
          
-         Message msg2 = MessageFactory.createCoreMessage(2, persistentMessage, null);      
+         Message msg2 = CoreMessageFactory.createCoreMessage(2, persistentMessage, null);      
          MessageReference ref2 = ms.reference(msg2);
          
          routed = postOffice.route(ref2, "topic2", null);      
@@ -718,10 +718,10 @@ public class SimplePostOfficeTest extends MessagingTestCase
          assertTrue(binding1.isActive());
          assertTrue(binding2.isActive());
    
-         Message msg1 = MessageFactory.createCoreMessage(1, persistentMessage, null);      
+         Message msg1 = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
          MessageReference ref1 = ms.reference(msg1);
          
-         Message msg2 = MessageFactory.createCoreMessage(2, persistentMessage, null);      
+         Message msg2 = CoreMessageFactory.createCoreMessage(2, persistentMessage, null);      
          MessageReference ref2 = ms.reference(msg2);
          
          Transaction tx = tr.createTransaction();
@@ -776,10 +776,10 @@ public class SimplePostOfficeTest extends MessagingTestCase
          
          receiver2.clear();
               
-         Message msg3 = MessageFactory.createCoreMessage(3, persistentMessage, null);      
+         Message msg3 = CoreMessageFactory.createCoreMessage(3, persistentMessage, null);      
          MessageReference ref3 = ms.reference(msg3);
          
-         Message msg4 = MessageFactory.createCoreMessage(4, persistentMessage, null);      
+         Message msg4 = CoreMessageFactory.createCoreMessage(4, persistentMessage, null);      
          MessageReference ref4 = ms.reference(msg4);
          
          tx = tr.createTransaction();
@@ -812,10 +812,10 @@ public class SimplePostOfficeTest extends MessagingTestCase
          receiver2.clear();
          
          
-         Message msg5 = MessageFactory.createCoreMessage(5, persistentMessage, null);      
+         Message msg5 = CoreMessageFactory.createCoreMessage(5, persistentMessage, null);      
          MessageReference ref5 = ms.reference(msg5);
          
-         Message msg6 = MessageFactory.createCoreMessage(6, persistentMessage, null);      
+         Message msg6 = CoreMessageFactory.createCoreMessage(6, persistentMessage, null);      
          MessageReference ref6 = ms.reference(msg6);
                
          routed = postOffice.route(ref5, "topic1", null);            
@@ -879,10 +879,10 @@ public class SimplePostOfficeTest extends MessagingTestCase
                
          receiver2.clear();
          
-         Message msg7 = MessageFactory.createCoreMessage(7, persistentMessage, null);      
+         Message msg7 = CoreMessageFactory.createCoreMessage(7, persistentMessage, null);      
          MessageReference ref7 = ms.reference(msg7);
          
-         Message msg8 = MessageFactory.createCoreMessage(8, persistentMessage, null);      
+         Message msg8 = CoreMessageFactory.createCoreMessage(8, persistentMessage, null);      
          MessageReference ref8 = ms.reference(msg8);
                
          routed = postOffice.route(ref7, "topic1", null);            

@@ -21,8 +21,8 @@
 */
 package org.jboss.test.messaging.core.message;
 
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.test.messaging.core.message.base.MessageSupportTestBase;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 
 /**
@@ -54,7 +54,7 @@ public class CoreMessageTest extends MessageSupportTestBase
 
    protected void setUp() throws Exception
    {
-      rs = MessageFactory.createCoreMessage(0);
+      rs = CoreMessageFactory.createCoreMessage(0);
 
       super.setUp();
 

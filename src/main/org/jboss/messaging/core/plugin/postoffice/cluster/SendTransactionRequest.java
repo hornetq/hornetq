@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.logging.Logger;
+import org.jboss.messaging.util.StreamUtils;
+
 
 /**
  * A SendTransactionRequest
@@ -41,6 +44,8 @@ import java.util.List;
  */
 class SendTransactionRequest extends TransactionRequest
 {
+   private static final Logger log = Logger.getLogger(SendTransactionRequest.class);
+      
    static final int TYPE = 8;
    
    private List messageHolders;
@@ -64,7 +69,7 @@ class SendTransactionRequest extends TransactionRequest
    public void commit(PostOfficeInternal office) throws Exception
    {
       Iterator iter = messageHolders.iterator();
-    
+      
       while (iter.hasNext())
       {
          MessageHolder holder = (MessageHolder)iter.next();
@@ -81,25 +86,43 @@ class SendTransactionRequest extends TransactionRequest
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-      int size = in.readInt();
-      messageHolders = new ArrayList(size);
-      for (int i = 0; i < size; i++)
+      
+      int b = in.readByte();
+      if (b == StreamUtils.NULL)
       {
-         MessageHolder holder = new MessageHolder();
-         holder.read(in);
+         messageHolders = null;
+      }
+      else
+      {
+         int size = in.readInt();
+         messageHolders = new ArrayList(size);
+         for (int i = 0; i < size; i++)
+         {
+            MessageHolder holder = new MessageHolder();
+            holder.read(in);
+            messageHolders.add(holder);
+         }
       }
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
-      out.writeInt(messageHolders.size());
-      Iterator iter = messageHolders.iterator();
-      while (iter.hasNext())
+      if (messageHolders != null)
       {
-         MessageHolder holder = (MessageHolder)iter.next();
-         holder.write(out);
+         out.writeByte(StreamUtils.LIST);
+         out.writeInt(messageHolders.size());
+         Iterator iter = messageHolders.iterator();
+         while (iter.hasNext())
+         {
+            MessageHolder holder = (MessageHolder)iter.next();
+            holder.write(out);
+         }
       }
+      else
+      {
+         out.writeByte(StreamUtils.NULL);
+      }      
    }   
 }
 

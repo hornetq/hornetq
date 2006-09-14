@@ -56,31 +56,31 @@ public class StreamUtils
 {
    private static final int BUFFER_SIZE = 4096;
    
-   private static final byte NULL = 0;
+   public static final byte NULL = 0;
    
-   private static final byte STRING = 1;
+   public static final byte STRING = 1;
    
-   private static final byte MAP = 2;
+   public static final byte MAP = 2;
    
-   private static final byte BYTE = 3;
+   public static final byte BYTE = 3;
 
-   private static final byte SHORT = 4;
+   public static final byte SHORT = 4;
 
-   private static final byte INT = 5;
+   public static final byte INT = 5;
 
-   private static final byte LONG = 6;
+   public static final byte LONG = 6;
 
-   private static final byte FLOAT = 7;
+   public static final byte FLOAT = 7;
 
-   private static final byte DOUBLE = 8;
+   public static final byte DOUBLE = 8;
 
-   private static final byte BOOLEAN = 9;
+   public static final byte BOOLEAN = 9;
    
-   private static final byte BYTES = 10;
+   public static final byte BYTES = 10;
      
-   private static final byte LIST = 11;
+   public static final byte LIST = 11;
    
-   private static final byte SERIALIZABLE = 12;
+   public static final byte SERIALIZABLE = 12;
    
    private static boolean useJBossSerialization = false;
    
@@ -199,7 +199,7 @@ public class StreamUtils
       }
       else if (containerTypes && object instanceof Map)
       {
-         out.write(MAP);
+         out.writeByte(MAP);
          writeMap(out, (Map)object, false);
       }      
       else if (object instanceof Integer)
@@ -244,7 +244,7 @@ public class StreamUtils
          out.writeInt(bytes.length);
          out.write(bytes);
       }      
-      else if (containerTypes && object instanceof ArrayList)
+      else if (containerTypes && object instanceof List)
       {
          out.write(LIST);
          writeList(out, (List)object);
