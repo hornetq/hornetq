@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- $Id: build.xml 1204 2006-08-06 18:21:41Z ovidiu.feodorov@jboss.com $ -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+<project default="tests" name="JBoss Messaging Tests">
+
+   <!--
+        'tests' is Messaging's subproject, we're relying on the main project thirdparty and lib
+        directories.
+   -->
+   <property name="project.root" value="${basedir}/.."/>
+
+   <!--
+        Import Messaging's properties, paths and everything else.
+   -->
+   
+
+   <!-- ======================================================================================== -->
+   <!-- Configuration                                                                            -->
+   <!-- ======================================================================================== -->
+
+   <property file="build.properties"/>
+
+   <property name="build.tests.remote" value="false"/>
+   <property name="test.bind.address" value="localhost"/>
+
+   <!--
+        Functional tests.
+   -->
+
+   <property name="functional.tests.database" value="hsqldb"/>
+   <property name="functional.tests.serialization" value="jboss"/>
+
+   <!--
+        Stress tests.
+   -->
+
+   <property name="stress.tests.database" value="mysql"/>
+   <property name="stress.tests.serialization" value="jboss"/>
+
+   <!--
+        Project paths.
+   -->
+
+   <property name="tests.root" value="${basedir}"/>
+   <property name="source.tests.java" value="${tests.root}/src"/>
+   <property name="source.tests.stylesheets" value="${source.tests.java}/stylesheets"/>
+   <property name="tests.output" value="${tests.root}/output"/>
+   <property name="build.tests.classes" value="${basedir}/target/classes"/>
+   <property name="build.tests.lib" value="${tests.output}/lib"/>
+   <property name="build.tests.reports" value="${tests.output}/reports"/>
+   <property name="build.tests.stylesheets" value="${tests.output}/stylesheets"/>
+   <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
+   <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
+
+   <!--
+        JUnit configuration (values specified in ./build.properties have priority)
+   -->
+
+   <property name="junit.printsummary" value="true"/>
+   <property name="junit.haltonerror" value="false"/>
+   <property name="junit.haltonfailure" value="false"/>
+   <property name="junit.fork" value="true"/>
+   <property name="junit.includeantruntime" value="true"/>
+   <property name="junit.timeout" value="300000"/>
+   <property name="stress.timeout" value="4800000"/>
+
+   <property name="junit.showoutput" value="true"/>
+   <property name="junit.jvm" value=""/>
+   <property name="junit.jvm.options" value=""/>
+   <property name="junit.formatter.usefile" value="true"/>
+   <property name="junit.batchtest.todir" value="${build.tests.reports}"/>
+   <property name="junit.batchtest.haltonerror" value="false"/>
+   <property name="junit.batchtest.haltonfailure" value="false"/>
+   <property name="junit.batchtest.fork" value="true"/>
+   <property name="junit.test.haltonfailure" value="false"/>
+   <property name="junit.test.haltonerror" value="false"/>
+
+   <!--
+        Locally maintained dependencies.
+   -->
+
+   
+   <!--
+       JDBC Drivers.
+   -->
+
+   <path id="mysql.jdbc.driver.classpath">
+      <pathelement path="${tests.root}/lib/mysql-connector-java-3.1.13-bin.jar"/>
+   </path>
+
+   <path id="oracle.jdbc.driver.classpath">
+      <pathelement path="${tests.root}/lib/ojdbc14.jar"/>
+   </path>
+
+   <path id="postgres.jdbc.driver.classpath">
+      <pathelement path="${tests.root}/postgresql-8.1-405.jdbc3.jar"/>
+   </path>
+
+   <!--
+        The compilation classpath.
+   -->
+
+ 
+  <echo message="${cp2}"/>
+
+   <path id="test.compilation.classpath">
+         <pathelement location="${cp2}"/>
+   </path>
+
+   <!--
+        The execution classpath.
+   -->
+
+   <path id="test.execution.classpath">
+      <pathelement location="${cp2}"/>
+      <pathelement location="${tests.root}/etc"/>
+      <pathelement location="${build.tests.classes}"/>
+      <pathelement location="${project.root}/src/etc"/> <!-- server's configuration files -->
+      <pathelement location="${basedir}/target/classes"/>
+      <pathelement location="${basedir}/lib/jboss-mbeans.jar"/>
+         <path refid="mysql.jdbc.driver.classpath"/>
+      <path refid="oracle.jdbc.driver.classpath"/>
+      <path refid="postgres.jdbc.driver.classpath"/>
+
+   </path>
+
+   <path id="stress.test.execution.classpath">
+      <path refid="test.execution.classpath"/>
+      <pathelement path="${tests.root}/etc/stress"/>
+
+   </path>
+
+   <!-- ======================================================================================== -->
+   <!-- Compilation Tasks                                                                        -->
+   <!-- ======================================================================================== -->
+
+   <target name="init" />
+
+
+
+
+   <!-- ======================================================================================== -->
+   <!-- Archival Tasks                                                                           -->
+   <!-- ======================================================================================== -->
+
+   <target name="tests-jar" >
+
+      <mkdir dir="${build.tests.lib}"/>
+      <jar jarfile="${build.tests.lib}/${build.tests.archive}">
+         <fileset dir="${build.tests.classes}">
+            <include name="org/jboss/test/messaging/**"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Execution Helper Tasks                                                                   -->
+   <!-- ======================================================================================== -->
+
+   <target name="prepare-testdirs">
+      <mkdir dir="${build.tests.reports}"/>
+      <mkdir dir="${tests.output}/logs"/>
+   </target>
+
+   <target name="clear-test-logs" unless="test.logs.cleared">
+
+      <!-- At the beginning of a test run, clean up the logs, since log4j runs in "append" mode -->
+      <echo message="Cleaning test logs ${tests.output}/logs/*.log"/>
+      <delete quiet="true">
+         <fileset dir="${tests.output}/logs" includes="*.log"/>
+      </delete>
+      <property name="test.logs.cleared" value="true"/>
+   </target>
+
+   <target name="start-rmi-server" depends="init"
+           description="Starts the RMI server used by remote tests">
+
+
+   <property name="myclasspath" refid="test.execution.classpath"/>
+    <echo message="classpath= ${myclasspath}"/>
+
+
+
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
+         <sysproperty key="module.output" value="${basedir}/target"/>
+         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+          <classpath>
+	            <pathelement path="${cp2}"/>
+	            <path refid="test.execution.classpath"/>
+           </classpath>
+         
+         
+         
+      </java>
+      
+      <echo message="is it started"/>
+   </target>
+
+   <target name="start-rmi-server-stress" depends="init"
+           description="Starts the RMI server used by remote stress tests">
+
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
+         <jvmarg value="-Xmx768M"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${stress.tests.database}"/>
+         <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
+         <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/> -->
+         <classpath refid="stress.test.execution.classpath"/>
+      </java>
+   </target>
+
+   <target name="stop-rmi-server" depends="init"
+           description="Stops the RMI server used by remote tests">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
+            classpathref="test.execution.classpath"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Test Execution Tasks                                                                     -->
+   <!-- ======================================================================================== -->
+
+   <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <antcall target="crash-tests"/>
+      <antcall target="invm-tests"/>
+      <antcall target="remote-tests"/>
+   </target>
+
+   <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <antcall target="invm-stress-tests"/>
+      <antcall target="remote-stress-tests"/>
+   </target>
+
+   <target name="invm-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs all available tests an in-VM configuration">
+
+      <echo message=""/>
+      <echo message="Running invm tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="build.lib" value="${build.lib}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+          <classpath>
+	      <pathelement path="${cp2}"/>
+	      <path refid="test.execution.classpath"/>
+	      <path refid="test.compilation.classpath"/>
+           </classpath>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <!--
+               <include name="org/jboss/test/messaging/jms/JMSTest.class"/>
+               -->
+               <include name="**/messaging/core/**/*Test.class"/>
+               <include name="**/messaging/jms/**/*Test.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/crash/*Test.class"/>
+               <exclude name="**/jms/MemLeakTest.class"/>
+               <!-- TODO Exclude all distributed tests until after 1.0 release -->
+               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="memory-leak-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs memory-leak tests using JBossProfiler in-VM configuration">
+
+      <property name="ostarget" value="windows"/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="build.lib" value="${build.lib}"/>
+         <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-agentpath:${jboss.profiler.jvmti.lib}/bin/windows/jbossAgent.dll"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <!-- <include name="org/jboss/test/messaging/jms/JMSTest.class"/> -->
+               <include name="**/jms/MemLeakTest.class"/>
+               <!-- TODO Exclude all distributed tests until after 1.0 release -->
+               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="ref-test" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs all available tests an in-VM configuration">
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="build.lib" value="${build.lib}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+          <classpath>
+	      <pathelement path="${cp2}"/>
+	      <path refid="test.execution.classpath"/>
+	      <path refid="test.compilation.classpath"/>
+           </classpath>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <!-- <include name="org/jboss/test/messaging/jms/JMSTest.class"/> -->
+               <include name="**/messaging/jms/ReferenceableTest.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/crash/*Test.class"/>
+               <exclude name="**/jms/MemLeakTest.class"/>
+               <!-- TODO Exclude all distributed tests until after 1.0 release -->
+               <exclude name="**/messaging/core/distributed/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="invm-stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs all stress tests in an in-VM configuration">
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${stress.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${stress.tests.database}"/>
+         <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath refid="stress.test.execution.classpath"/>
+         <sysproperty key="messaging-test-configuration" value="StressInVM"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-StressInVM.xml"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/jms/stress/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="remote-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs remotely all tests for which it makes sense to run remotely">
+
+      <antcall target="stop-rmi-server"/>
+      <antcall target="start-rmi-server"/>
+
+      <mkdir dir="${build.tests.reports}"/>
+
+      <echo message=""/>
+      <echo message="Running remote tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="yes"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+          <classpath>
+	      <pathelement path="${cp2}"/>
+	      <path refid="test.execution.classpath"/>
+	      <path refid="test.compilation.classpath"/>
+           </classpath>
+
+         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
+
+         <sysproperty key="messaging-test-configuration" value="Remote"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <!--
+               <include name="org/jboss/test/messaging/jms/JMSTest.class"/>
+               -->
+               <include name="org/jboss/test/messaging/jms/**/*Test.class"/>
+               <exclude name="org/jboss/test/messaging/jms/stress/**"/>
+               <exclude name="org/jboss/test/messaging/jms/server/**"/>
+               <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
+               <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/crash/*Test.class"/>
+               <exclude name="org/jboss/test/messaging/jms/ManualCrashTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/MemLeakTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
+               <exclude name="org/jboss/test/messaging/jms/XATransactionTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
+   </target>
+
+   <target name="remote-stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs remotely all stress tests for which it makes sense to run remotely">
+
+      <antcall target="stop-rmi-server"/>
+      <antcall target="start-rmi-server-stress"/>
+      <mkdir dir="${build.tests.reports}"/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="yes"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${stress.timeout}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${stress.tests.database}"/>
+         <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"/> -->
+         <classpath>
+            <path refid="stress.test.execution.classpath"/>
+            <!-- Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+            <!--
+            <path refid="jboss.test.classpath"/>
+            -->
+         </classpath>
+
+         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
+
+         <sysproperty key="messaging-test-configuration" value="StressRemote"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-StressRemote.xml"/>
+
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="org/jboss/test/messaging/jms/stress/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
+   </target>
+
+   <target name="crash-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+      description="Runs crash tests">
+
+      <antcall target="stop-rmi-server"/>
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTest"/>
+      </antcall>
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashNegativeLeaseTest"/>
+      </antcall>
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashZeroLeaseTest"/>
+      </antcall>
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashLargeLeaseTest"/>
+      </antcall>
+
+      <antcall target="start-rmi-server"/>
+
+      <antcall target="crash-test">
+          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.CallbackFailureTest"/>
+      </antcall>
+
+   </target>
+
+
+   <target name="crash-test" depends="init" description="Runs crash test">
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="yes"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+                <classpath>
+       	            <pathelement path="${cp2}"/>
+       	            <path refid="test.execution.classpath"/>
+       	            <path refid="test.compilation.classpath"/>
+           </classpath>
+         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
+
+         <sysproperty key="messaging-test-configuration" value="Crash"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-Crash.xml"/>
+
+         <test name="${crash.test.name}"
+               fork="true"
+               todir="${junit.batchtest.todir}"
+               haltonfailure="${junit.test.haltonfailure}"
+               haltonerror="${junit.test.haltonerror}">
+         </test>
+
+      </junit>
+
+   </target>
+
+
+   <target name="jmstests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs the jms tests only">
+
+      <antcall target="start-rmi-server"/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/messaging/jms/**/*Test.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
+   </target>
+
+   <target name="messagetests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs the jms tests only">
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/messaging/jms/message/**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
+   </target>
+
+   <target name="coretests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs the jms tests only">
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/messaging/**/*Test.class"/>
+               <exclude name="**/messaging/jms/**"/>
+            </fileset>
+         </batchtest>
+      </junit>
+      <antcall target="stop-rmi-server"/>
+   </target>
+
+   <target name="test" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs a single test, specified by its FQ class name via 'test.classname'">
+
+      <fail unless="test.classname"
+            message="To run a single test, use: ./build.sh test -Dtest.classname=org.package.MyTest"/>
+      <echo>Module root is:${module.root}</echo>
+      <antcall target="start-rmi-server"/>
+      <property name="test.classname" value="dummy"/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="remote" value="${build.tests.remote}"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <!--
+            <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
+         -->
+         <jvmarg value="-Xmx1024M"/>
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <test name="${test.classname}"
+               fork="false"
+               todir="${junit.batchtest.todir}"
+               haltonfailure="${junit.test.haltonfailure}"
+               haltonerror="${junit.test.haltonerror}">
+         </test>
+      </junit>
+      <antcall target="stop-rmi-server"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Report Tasks                                                                             -->
+   <!-- ======================================================================================== -->
+
+   <target name="copy-stylesheets">
+      <mkdir dir="${build.tests.stylesheets}"/>
+      <copy todir="${build.tests.stylesheets}" filtering="yes">
+         <fileset dir="${source.tests.stylesheets}">
+            <include name="**/*"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="compile-report" depends="copy-stylesheets">
+      <mkdir dir="${build.tests.reports}/html"/>
+      <junitreport todir="${build.tests.reports}">
+         <fileset dir="${build.tests.reports}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="frames"
+                 todir="${build.tests.reports}/html"
+                 styledir="${build.tests.stylesheets}"/>
+      </junitreport>
+   </target>
+
+   <target name="report" depends="tests, copy-stylesheets, compile-report"/>
+
+   <target name="remote-tests-report" depends="remote-tests, copy-stylesheets, compile-report"/>
+
+   <target name="jmsreport" depends="jmstests, copy-stylesheets, compile-report"/>
+
+   <target name="messagereport" depends="messagetests, copy-stylesheets, compile-report"/>
+
+   <target name="corereport" depends="coretests, copy-stylesheets, compile-report"/>
+
+   <target name="stressreport" depends="stress-tests, copy-stylesheets, compile-report"/>
+
+   <target name="functional-tests" depends="tests"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Cleaning Tasks                                                                           -->
+   <!-- ======================================================================================== -->
+
+   <target name="clean">
+      <delete dir="${tests.output}"/>
+      <delete quiet="true">
+         <fileset dir="./bin">
+            <include name=".*.classpath"/>
+         </fileset>
+      </delete>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Tasks required by bin/runtest                                                            -->
+   <!-- ======================================================================================== -->
+
+   <property name="test.execution.classpath.file" value=".test.execution.classpath"/>
+
+   <target name="get-test-execution-classpath" depends="init">
+      <pathconvert refid="test.execution.classpath" targetos="windows"
+                   property="test.execution.classpath.unix"/>
+      <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Miscellaneous                                                                            -->
+   <!-- ======================================================================================== -->
+
+   <target name="tests-ejb-jar"
+           description="Creates the ejb jar file containing the test ejb and mdb for testing jms from within a managed environment">
+
+      <mkdir dir="${build.tests.lib}"/>
+      <mkdir dir="${build.tests.classes}/META-INF"/>
+      <copy file="${source.tests.java}/org/jboss/test/messaging/jms/managed/META-INF/jboss.xml"
+            tofile="${build.tests.classes}/META-INF/jboss.xml"/>
+      <copy file="${source.tests.java}/org/jboss/test/messaging/jms/managed/META-INF/ejb-jar.xml"
+            tofile="${build.tests.classes}/META-INF/ejb-jar.xml"/>
+      <!-- Build the tests ejb jar -->
+      <jar jarfile="${build.tests.lib}/${build.tests.ejbarchive}">
+         <fileset dir="${build.tests.classes}">
+            <include name="org/jboss/test/messaging/jms/managed/**"/>
+         </fileset>
+         <fileset dir="${build.tests.classes}">
+            <include name="META-INF/**"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="deployejb" depends="tests-ejb-jar">
+      <copy file="${build.tests.lib}/${build.tests.ejbarchive}"
+            todir="${ENV.JBOSS_HOME}/server/default/deploy"/>
+   </target>
+
+   <target name="undeployejb">
+      <delete file="${ENV.JBOSS_HOME}/server/default/deploy/${build.tests.ejbarchive}"/>
+   </target>
+
+</project>
+
