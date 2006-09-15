@@ -24,6 +24,7 @@ package org.jboss.messaging.core.plugin.postoffice;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,8 +37,10 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.JDBCSupport;
@@ -121,7 +124,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
      
    // PostOffice implementation ---------------------------------------        
          
-   public Binding bindQueue(String queueName, String condition, Queue queue) throws Exception
+   public Binding bindQueue(String queueName, String condition, Filter filter, Queue queue) throws Exception
    {
       if (queueName == null)
       {
@@ -153,11 +156,9 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          }
          
          boolean durable = queue.isRecoverable();
-         
-         String filter = queue.getFilter() == null ? null : queue.getFilter().getFilterString();
                     
          binding = createBinding(nodeId, queueName, condition, filter,
-                                   queue.getChannelID(), durable);         
+                                 queue.getChannelID(), durable);         
          
          binding.setQueue(queue);
          
@@ -327,13 +328,18 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
                if (binding.isActive() && binding.getNodeId().equals(this.nodeId))
                {
                   //It's a local binding so we pass the message on to the subscription
-                  Queue subscription = binding.getQueue();
-               
-                  Delivery del = subscription.handle(null, ref, tx);
+                  Queue queue = binding.getQueue();
                   
-                  if (del != null && del.isSelectorAccepted())
+                  Filter filter = binding.getFilter();
+                  
+                  if (filter != null && filter.accept(ref))
                   {
-                     routed = true;
+                     Delivery del = queue.handle(null, ref, tx);
+                     
+                     if (del != null && del.isSelectorAccepted())
+                     {
+                        routed = true;
+                     }      
                   }                  
                }               
             } 
@@ -355,9 +361,9 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
      
    // Protected -----------------------------------------------------
    
-   protected Binding createBinding(String nodeId, String queueName, String condition, String filter,
-                                   long channelId, boolean durable)
-   {
+   protected Binding createBinding(String nodeId, String queueName, String condition, Filter filter,
+                                   long channelId, boolean durable) throws Exception
+   {           
       return new BindingImpl(nodeId, queueName, condition, filter,
                              channelId, durable);   
    }
@@ -396,12 +402,21 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          conn = ds.getConnection();
          
          ps = conn.prepareStatement(getSQLStatement("INSERT_BINDING"));
+         
+         String filterString = binding.getFilter() == null ? null : binding.getFilter().getFilterString();
                   
          ps.setString(1, this.officeName);
          ps.setString(2, this.nodeId);
          ps.setString(3, binding.getQueueName());
          ps.setString(4, binding.getCondition());         
-         ps.setString(5, binding.getSelector());
+         if (filterString != null)
+         {
+            ps.setString(5, filterString);
+         }
+         else
+         {
+            ps.setNull(5, Types.VARCHAR);
+         }
          ps.setLong(6, binding.getChannelId());
 
          ps.executeUpdate();;
@@ -488,12 +503,24 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
             
             String selector = rs.getString(4);
             
+            if (rs.wasNull())
+            {
+               selector = null;
+            }
+            
             long channelId = rs.getLong(5);
               
             //We don't load the actual queue - this is because we don't know the paging params until
             //activation time
                     
-            Binding binding = createBinding(nodeId, queueName, condition, selector, channelId, true);
+            //TODO we need to generalise selector creation
+            Selector filter = null;
+            if (selector != null)
+            {
+               filter = new Selector(selector);
+            }
+            
+            Binding binding = createBinding(nodeId, queueName, condition, filter, channelId, true);
             
             list.add(binding);
          }

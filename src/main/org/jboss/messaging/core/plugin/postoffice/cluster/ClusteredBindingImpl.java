@@ -24,6 +24,7 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
 
 /**
@@ -46,9 +47,9 @@ public class ClusteredBindingImpl extends BindingImpl implements ClusteredBindin
    {
    }
 
-   public ClusteredBindingImpl(String nodeId, String queueName, String condition, String selector, long channelId, boolean durable)
+   public ClusteredBindingImpl(String nodeId, String queueName, String condition, Filter filter, long channelId, boolean durable)
    {
-      super(nodeId, queueName, condition, selector, channelId, durable);
+      super(nodeId, queueName, condition, filter, channelId, durable);
    }
 
    public double getConsumptionRate()

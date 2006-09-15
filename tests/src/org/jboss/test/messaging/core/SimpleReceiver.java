@@ -120,26 +120,26 @@ public class SimpleReceiver implements Receiver
 
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
-      log.info(this + " got routable:" + ref);
+      log.trace(this + " got routable:" + ref);
       
       try
       {
          if (ref == null)
          {
-            log.info("Receiver [" + name + "] is rejecting a null reference");
+            log.trace("Receiver [" + name + "] is rejecting a null reference");
             return null;
          }
          
          if (SELECTOR_REJECTING.equals(state))
          {
-            log.info(this + " is rejecting message since doesn't match selector");
+            log.trace(this + " is rejecting message since doesn't match selector");
             return new SimpleDelivery(null, null, true, false);
          }
 
          if (REJECTING.equals(state))
          {
 
-            log.info(this + " is rejecting reference " + ref);
+            log.trace(this + " is rejecting reference " + ref);
             return null;
          }
 
@@ -150,10 +150,10 @@ public class SimpleReceiver implements Receiver
                                        "THE BEHAVIOUR OF A BROKEN RECEIVER");
          }
 
-        log.info("State is:" + state);
+         log.trace("State is:" + state);
          
          boolean done = ACKING.equals(state) ? true : false;
-         log.info(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + ref);
+         log.trace(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + ref);
          
          Message m = ref.getMessage();
          
@@ -162,7 +162,7 @@ public class SimpleReceiver implements Receiver
 
          if (immediateAsynchronousAcknowledgment)
          {
-            log.info("simulating an asynchronous ACK that arrives before we return the delivery to channel");
+            log.trace("simulating an asynchronous ACK that arrives before we return the delivery to channel");
             try
             {
                delivery.acknowledge(null);
@@ -210,7 +210,7 @@ public class SimpleReceiver implements Receiver
          log.error("No channel, cannot request messages");
          return;
       }
-      log.info("receiver explicitely requesting message from the channel");
+      log.trace("receiver explicitely requesting message from the channel");
       channel.deliver(true);
    }
 
@@ -292,7 +292,7 @@ public class SimpleReceiver implements Receiver
          Message m = (Message)o[0];
          if (m == r)
          {
-            log.info("*** found it");
+            log.trace("*** found it");
             d = (Delivery)o[1];
             touple = o;
             break;
@@ -311,7 +311,7 @@ public class SimpleReceiver implements Receiver
 
       d.acknowledge(tx);
 
-      log.info(this + " acknowledged "  + r);
+      log.trace(this + " acknowledged "  + r);
 
       // make sure I get rid of message if the transaction is rolled back
       if (tx != null)
@@ -349,7 +349,7 @@ public class SimpleReceiver implements Receiver
 
       d.cancel();
 
-      log.info(this + " cancelled "  + r);
+      log.trace(this + " cancelled "  + r);
    }
 
 

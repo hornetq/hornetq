@@ -55,8 +55,7 @@ public class RecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
       
-      queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(),
-                                      null);
+      queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
    }
 
    public void tearDown() throws Exception
@@ -72,8 +71,7 @@ public class RecoverableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(),
-                                      null);
+      queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
    }
 
    // Public --------------------------------------------------------

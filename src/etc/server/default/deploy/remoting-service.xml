@@ -16,7 +16,8 @@
             <invoker transport="socket">
                <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
-               <attribute name="serializationtype" isParam="true">jboss</attribute>
+               <!-- Serialization type must be jms - do not change! -->
+               <attribute name="serializationtype" isParam="true">jms</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
                <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="timeout">0</attribute>

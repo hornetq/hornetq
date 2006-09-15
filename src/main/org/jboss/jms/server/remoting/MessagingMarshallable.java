@@ -21,6 +21,10 @@
   */
 package org.jboss.jms.server.remoting;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * 
@@ -31,19 +35,25 @@ package org.jboss.jms.server.remoting;
  *
  * $Id$
  */
-public class MessagingMarshallable
+public class MessagingMarshallable implements Externalizable
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = 4715063783844562048L;
+   
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
+   
    protected byte version;
    protected Object load;
 
    // Constructors --------------------------------------------------
 
+   public MessagingMarshallable()
+   {     
+   }
+   
    public MessagingMarshallable(byte version, Object load)
    {
       this.version = version;
@@ -65,6 +75,20 @@ public class MessagingMarshallable
    public String toString()
    {
       return "MessagingMarshallable[" + version + ", " + load + "]";
+   }
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      version = in.readByte();
+      
+      load = in.readObject();
+   }
+
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      out.writeByte(version);
+      
+      out.writeObject(load);
    }
 
    // Package protected ---------------------------------------------

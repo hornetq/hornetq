@@ -167,36 +167,7 @@ public abstract class ChannelSupport implements Channel
       {
          return handleInternal(sender, ref, tx, true);
       }
-   }
-   
-   public Delivery handleDontPersist(DeliveryObserver sender, MessageReference ref, Transaction tx)
-   {
-      checkClosed();
-      
-      Future result = new Future();
-
-      if (tx == null)
-      {         
-         try
-         {
-            // Instead of executing directly, we add the handle request to the event queue.
-            // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
-            // result, but when remoting does, we can use a full SEDA approach and get even better
-            // throughput.
-            this.executor.execute(new HandleRunnable(result, sender, ref, false));
-         }
-         catch (InterruptedException e)
-         {
-            log.warn("Thread interrupted", e);
-         }
-   
-         return (Delivery)result.getResult();
-      }
-      else
-      {
-         return handleInternal(sender, ref, tx, false);
-      }
-   }
+   }  
       
    // DeliveryObserver implementation --------------------------
 
@@ -1037,24 +1008,26 @@ public abstract class ChannelSupport implements Channel
    {
       // by default a noop
    }
-
-   // Private -------------------------------------------------------
- 
-   private void checkClosed()
+   
+   protected void checkClosed()
    {
       if (router == null)
       {
          throw new IllegalStateException(this + " closed");
       }
    }
+
+   // Private -------------------------------------------------------
+ 
+
   
    // Inner classes -------------------------------------------------
 
-   private class DeliveryRunnable implements Runnable
+   protected class DeliveryRunnable implements Runnable
    {
       Future result;
       
-      DeliveryRunnable(Future result)
+      public DeliveryRunnable(Future result)
       {
          this.result = result;
       }
@@ -1070,7 +1043,7 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   private class HandleRunnable implements Runnable
+   protected class HandleRunnable implements Runnable
    {
       Future result;
 
@@ -1080,7 +1053,7 @@ public abstract class ChannelSupport implements Channel
       
       boolean persist;
 
-      HandleRunnable(Future result, DeliveryObserver sender, MessageReference ref, boolean persist)
+      public HandleRunnable(Future result, DeliveryObserver sender, MessageReference ref, boolean persist)
       {
          this.result = result;
          this.sender = sender;

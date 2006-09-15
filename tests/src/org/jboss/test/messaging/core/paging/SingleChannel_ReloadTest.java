@@ -66,7 +66,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testRecoverableQueueCrash() throws Throwable
    {
-      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
       
       Message[] msgs = new Message[200];
       
@@ -126,7 +126,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       ms = new SimpleMessageStore();
       ms.start();
        
-      Queue queue2 = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
       
       queue2.load();
       
@@ -155,7 +155,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
 
       Message[] msgs = new Message[200];
       
@@ -215,7 +215,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       ms = new SimpleMessageStore();
       ms.start();
       
-      Queue queue2 = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
       
       queue2.load();
       
@@ -242,7 +242,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
       
       Message[] msgs = new Message[200];
       
@@ -306,7 +306,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testQueueReloadWithSmallerFullSize() throws Throwable
    {
-      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
 
       Message[] msgs = new Message[150];
       
@@ -360,7 +360,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       //Reload the queue with a smaller fullSize
       
-      Queue queue2 = new Queue(1, ms, pm, true, false, 50, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, false, 50, 20, 10, new QueuedExecutor());
       
       queue2.load();
       
@@ -404,7 +404,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testReloadWithLargerFullSize() throws Throwable
    {
-      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor(), null);
+      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
 
       Message[] msgs = new Message[150];
       
@@ -458,7 +458,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       //Reload the queue with a smaller fullSize
       
-      Queue queue2 = new Queue(1, ms, pm, true, false, 130, 20, 10, new QueuedExecutor(), null);
+      Queue queue2 = new Queue(1, ms, pm, true, false, 130, 20, 10, new QueuedExecutor());
       
       queue2.load();
       

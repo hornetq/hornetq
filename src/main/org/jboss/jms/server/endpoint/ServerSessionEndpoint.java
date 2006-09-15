@@ -192,10 +192,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
                            mDest.getFullSize(),
                            mDest.getPageSize(),
                            mDest.getDownCacheSize(),
-                           executor, selector);
+                           executor);
                
                //Make a binding for this queue
-               binding = topicPostOffice.bindQueue(new GUID().toString(), jmsDestination.getName(), q);               
+               binding = topicPostOffice.bindQueue(new GUID().toString(), jmsDestination.getName(), selector, q);               
             }
             else
             {
@@ -229,10 +229,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
                               mDest.getFullSize(),
                               mDest.getPageSize(),
                               mDest.getDownCacheSize(),
-                              executor, selector);
+                              executor);
                   
                   //Make a binding for this queue
-                  binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), q);               
+                  binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), selector, q);               
                }
                else
                {
@@ -246,11 +246,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
                   // one and creating a new one.
    
+                  String filterString = binding.getFilter() != null ? binding.getFilter().getFilterString() : null;
+                  
                   boolean selectorChanged =
-                     (selectorString == null && binding.getSelector() != null) ||
-                     (binding.getSelector() == null && selectorString != null) ||
-                     (binding.getSelector() != null && selectorString != null &&
-                     !binding.getSelector().equals(selectorString));
+                     (selectorString == null && filterString != null) ||
+                     (filterString == null && selectorString != null) ||
+                     (filterString != null && selectorString != null &&
+                     !filterString.equals(selectorString));
                   
                   if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
    
@@ -274,10 +276,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                  mDest.getFullSize(),
                                  mDest.getPageSize(),
                                  mDest.getDownCacheSize(),
-                                 executor, selector);
+                                 executor);
                      
                      //Make a binding for this queue
-                     binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), q);  
+                     binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), selector, q);  
                   }               
                }
             }
@@ -572,10 +574,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
             QueuedExecutor executor = (QueuedExecutor)pool.get();
             Queue q = 
                new Queue(idm.getId(), ms, pm, true, false, fullSize, pageSize, downCacheSize,
-                         executor, null);
+                         executor);
             
             //Make a binding for this queue
-            queuePostOffice.bindQueue(dest.getName(), dest.getName(), q);  
+            queuePostOffice.bindQueue(dest.getName(), dest.getName(), null, q);  
          }         
       }
       catch (Throwable t)

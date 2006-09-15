@@ -25,6 +25,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,9 +50,8 @@ import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.remoting.marshal.UnMarshaller;
-import org.jboss.remoting.marshal.serializable.SerializableMarshaller;
-import org.jboss.remoting.marshal.serializable.SerializableUnMarshaller;
 import org.jboss.serial.io.JBossObjectInputStream;
+import org.jboss.serial.io.JBossObjectOutputStream;
 
 /**
  * 
@@ -77,6 +78,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    private static final long serialVersionUID = -7646123424863782043L;
 
    private static final Logger log = Logger.getLogger(JMSWireFormat.class);
+   
+   private static boolean usingJBossSerialization;
 
    // The request codes  - start from zero
 
@@ -99,11 +102,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
 
    // Static --------------------------------------------------------
+   
+   public static void setUsingJBossSerialization(boolean b)
+   {
+      usingJBossSerialization = b;
+   }
 
    // Attributes ----------------------------------------------------
-
-   protected Marshaller serializableMarshaller;
-   protected UnMarshaller serializableUnMarshaller;
 
    protected boolean trace;
 
@@ -111,34 +116,27 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    public JMSWireFormat()
    {
-      serializableMarshaller = new SerializableMarshaller();
-      serializableUnMarshaller = new SerializableUnMarshaller();
-
       trace = log.isTraceEnabled();
    }
+   
+   
 
    // Marshaller implementation -------------------------------------
 
    public void write(Object obj, OutputStream out) throws IOException
    {          
-      DataOutputStream dos;
-      
-      if (out instanceof DataOutputStream)
+      //Sanity check
+      if (!(out instanceof MessagingObjectOutputStream))
       {
-         dos = (DataOutputStream)out;
-      }
-      else
-      {
-         //TODO - We should get remoting to pass in a DataOutputStream
-         //So we don't have to wrap it every time
-         dos = new DataOutputStream(out);
+         throw new IllegalStateException("Must be MessagingObjectOutputStream");
       }
       
+      DataOutputStream dos = (DataOutputStream)(((MessagingObjectOutputStream)out).getUnderlyingStream());
+            
       handleVersion(obj, dos);
 
       try
-      {
-         
+      {         
          if (obj instanceof InvocationRequest)
          {
             if (trace) { log.trace("writing InvocationRequest"); }
@@ -283,7 +281,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   dos.write(SERIALIZED);
    
                   // Delegate to serialization to handle the wire format
-                  serializableMarshaller.write(obj, dos);
+                  serialize(dos, obj);
    
                   if (trace) { log.trace("wrote using standard serialization"); }
                }
@@ -311,7 +309,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                dos.write(SERIALIZED);
    
                //Delegate to serialization to handle the wire format
-               serializableMarshaller.write(obj, dos);
+               serialize(dos, obj);
    
                if (trace) { log.trace("wrote using standard serialization"); }
             }
@@ -374,7 +372,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                dos.write(SERIALIZED);
    
                //Delegate to serialization to handle the wire format
-               serializableMarshaller.write(obj, out);
+               serialize(dos, obj);
    
                if (trace) { log.trace("wrote using standard serialization"); }
             }
@@ -401,25 +399,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    public Object read(InputStream in, Map map) throws IOException, ClassNotFoundException
    {      
-      if (in instanceof JBossObjectInputStream)
+      // Sanity check
+      if (!(in instanceof MessagingObjectInputStream))
       {
-         // Need to explicitly set the classloader
-         ((JBossObjectInputStream)in).
-            setClassLoader(Thread.currentThread().getContextClassLoader());
+         throw new IllegalStateException("Must be MessagingObjectInputStream");
       }
       
-      DataInputStream dis;
-      
-      //TODO We should ensure that remoting always passes in a DataInputStream
-      //This saves us wrapping it each time
-      if (in instanceof DataInputStream)
-      {
-         dis = (DataInputStream)in;
-      }
-      else
-      {
-         dis = new DataInputStream(in);
-      }
+      DataInputStream dis = (DataInputStream)(((MessagingObjectInputStream)in).getUnderlyingStream());
 
       // First byte read is always version
 
@@ -437,7 +423,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             case SERIALIZED:
             {
                // Delegate to serialization
-               Object ret = serializableUnMarshaller.read(dis, map);
+               Object ret = deserialize(dis);
    
                if (trace) { log.trace("read using standard serialization"); }
    
@@ -725,6 +711,42 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));
 
       return mi;
+   }
+   
+   private void serialize(OutputStream os, Object obj) throws Exception
+   { 
+      ObjectOutputStream oos;
+      
+      if (usingJBossSerialization)
+      {
+         oos = new JBossObjectOutputStream(os);
+      }
+      else
+      {
+         oos = new ObjectOutputStream(os);
+      }
+      
+      oos.writeObject(obj);
+      
+      oos.flush();      
+   }
+   
+   private Object deserialize(InputStream is) throws Exception
+   {
+      ObjectInputStream ois;
+      
+      if (usingJBossSerialization)
+      {
+         ois = new JBossObjectInputStream(is);
+      }
+      else
+      {
+         ois = new ObjectInputStream(is);
+      }
+      
+      Object obj = ois.readObject();
+      
+      return obj;
    }
 
    // Inner classes -------------------------------------------------

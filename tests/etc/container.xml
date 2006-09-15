@@ -55,7 +55,9 @@
       precedence. Supported values: "jboss" and "java".
    -->
 
-   <serialization-type>jboss</serialization-type>
+   <!-- Must ALWAYS be jms -->
+
+   <serialization-type>jms</serialization-type>
 
 </container>
 

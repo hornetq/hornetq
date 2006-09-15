@@ -23,6 +23,7 @@ package org.jboss.messaging.core.plugin.contract;
 
 import java.util.List;
 
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
@@ -53,11 +54,12 @@ public interface PostOffice extends MessagingComponent
     * @param queueName The unique name of the queue
     * @param condition The condition to be used when routing references
     * @param noLocal
+    * @param filter The filter to use
     * @param queue
     * @return
     * @throws Exception
     */
-   Binding bindQueue(String queueName, String condition, Queue queue) throws Exception;
+   Binding bindQueue(String queueName, String condition, Filter filter, Queue queue) throws Exception;
    
    /**
     * Unbind a queue from the post office

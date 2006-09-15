@@ -142,6 +142,8 @@ public class ManagedTopic extends ManagedDestination
       while (iter.hasNext())
       {
          Binding binding = (Binding)iter.next();
+         
+         String filterString = binding.getFilter() != null ? binding.getFilter().getFilterString() : null;
                   
          if (durable && binding.isDurable())
          {                      
@@ -154,7 +156,7 @@ public class ManagedTopic extends ManagedDestination
             sb.append("\", clientID=\"");
             sb.append(helper.getClientId());
             sb.append("\", selector=\"");
-            sb.append(binding.getSelector());
+            sb.append(filterString);
             sb.append("\"\n");
          }
          else if (!durable && !binding.isDurable())
@@ -162,7 +164,7 @@ public class ManagedTopic extends ManagedDestination
             sb.append("Non-durable, subscriptionID=\"");
             sb.append(binding.getChannelId());
             sb.append("\", selector=\"");
-            sb.append(binding.getSelector());
+            sb.append(filterString);
             sb.append("\"\n");
          }
       }

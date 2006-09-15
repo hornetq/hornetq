@@ -22,14 +22,9 @@
 package org.jboss.messaging.core.local;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PagingChannel;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.tx.Transaction;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -65,38 +60,19 @@ public class Queue extends PagingChannel
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   protected Filter filter;
-   
-   
+    
    // Constructors --------------------------------------------------
 
    public Queue(long id, MessageStore ms, PersistenceManager pm,             
                 boolean acceptReliableMessages, boolean recoverable,
-                int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor,
-                Filter filter)
+                int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor)
    {
       super(id, ms, pm, acceptReliableMessages, recoverable, fullSize, pageSize, downCacheSize, executor);
       
       router = new RoundRobinPointToPointRouter();
-      
-      this.filter = filter;
    }
     
-   // Channel implementation ----------------------------------------
-   
-   public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
-   { 
-      //If the queue has a Filter we do not accept any Message references that do not
-      //match the Filter
-      if (filter != null && !filter.accept(ref))
-      {
-         if (trace) { log.trace(this + " not accepting " + ref); }
-         return null;
-      }
-      
-      return super.handle(sender, ref, tx);
-   }
+   // Channel implementation ----------------------------------------   
 
    // Public --------------------------------------------------------
 
@@ -105,11 +81,6 @@ public class Queue extends PagingChannel
       return "Queue[" + getChannelID() + "]";
    }
    
-   public Filter getFilter()
-   {
-      return filter;
-   }
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

@@ -24,6 +24,8 @@ package org.jboss.messaging.core.plugin.postoffice;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.jboss.jms.selector.Selector;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.util.StreamUtils;
 
@@ -49,7 +51,7 @@ public class BindingImpl implements Binding
     
    private boolean active;
    
-   private String selector;
+   private Filter filter;
    
    private long channelId;
      
@@ -59,7 +61,7 @@ public class BindingImpl implements Binding
    {      
    }
 
-   public BindingImpl(String nodeId, String queueName, String condition, String selector,
+   public BindingImpl(String nodeId, String queueName, String condition, Filter filter,
                       long channelId, boolean durable)
    {
       this.nodeId = nodeId;
@@ -68,7 +70,7 @@ public class BindingImpl implements Binding
       
       this.condition = condition;      
       
-      this.selector = selector;
+      this.filter = filter;
       
       this.channelId = channelId;
          
@@ -113,9 +115,9 @@ public class BindingImpl implements Binding
       return active;
    }
    
-   public String getSelector()
+   public Filter getFilter()
    {
-      return selector;
+      return filter;
    }
    
    public long getChannelId()
@@ -148,7 +150,10 @@ public class BindingImpl implements Binding
       
       active = in.readBoolean();
       
-      selector = (String)StreamUtils.readObject(in, false);
+      String filterString = (String)StreamUtils.readObject(in, false);
+      
+      //TODO we need to generalise this
+      filter = new Selector(filterString);
       
       channelId = in.readLong();
       
@@ -165,7 +170,7 @@ public class BindingImpl implements Binding
       
       out.writeBoolean(active);
       
-      StreamUtils.writeObject(out, selector, false, false);
+      StreamUtils.writeObject(out, filter.getFilterString(), false, false);
       
       out.writeLong(channelId);
       

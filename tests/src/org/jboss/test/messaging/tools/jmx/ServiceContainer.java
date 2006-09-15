@@ -79,6 +79,7 @@ import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.serialization.SerializationStreamFactory;
 
 
 /**
@@ -972,10 +973,13 @@ public class ServiceContainer
 
    private void startRemoting(boolean multiplex) throws Exception
    {
+      SerializationStreamFactory.setManagerClassName(
+               "jms", "org.jboss.jms.server.remoting.MessagingSerializationManager");
+              
       RemotingJMXWrapper mbean;
 
       String serializationType = config.getSerializationType();
-
+      
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=" + serializationType + "&" +

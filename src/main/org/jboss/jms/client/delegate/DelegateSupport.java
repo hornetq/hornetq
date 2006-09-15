@@ -170,12 +170,14 @@ public abstract class DelegateSupport implements Interceptor, Serializable
          return;
       }
       
-      //We explicitly associate the datatype "jms" with our customer SerializationManager
+      //We explicitly associate the datatype "jms" with our custom SerializationManager
       //This is vital for performance reasons.
       try
       {
+//         SerializationStreamFactory.setManagerClassName(
+//            "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
          SerializationStreamFactory.setManagerClassName(
-            "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
+                  "jms", "org.jboss.jms.server.remoting.MessagingSerializationManager");
       }
       catch (Exception e)
       {

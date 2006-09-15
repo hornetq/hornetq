@@ -21,17 +21,28 @@
  */
 package org.jboss.jms.server.remoting;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
+import org.jboss.logging.Logger;
 import org.jboss.remoting.serialization.IMarshalledValue;
 import org.jboss.remoting.serialization.SerializationManager;
 
 /**
  * A MessagingSerializationManager
+ * 
+ * This class and the related ObjectInputStream and ObjectOutputStream classes
+ * are a hack to work around a limitiation of JBoss remoting whereby it always assumes
+ * the createInput and createOutput methods always return an ObjectInput/OutputStream
+ * For the purposes of messaging we want the marshaller and the server and client invokers
+ * to use the underlying stream instead, since we do not want all the extra crap that the object input/output
+ * streams add to the stream (headers)
+ * This should really be fixed properly in remoting
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -41,6 +52,9 @@ import org.jboss.remoting.serialization.SerializationManager;
  */
 public class MessagingSerializationManager extends SerializationManager
 {
+   private static final Logger log = Logger.getLogger(MessagingSerializationManager.class);
+
+   
    public IMarshalledValue createdMarshalledValue(Object arg0) throws IOException
    {
       throw new UnsupportedOperationException();
@@ -48,12 +62,12 @@ public class MessagingSerializationManager extends SerializationManager
 
    public ObjectInputStream createInput(InputStream in, ClassLoader cl) throws IOException
    {
-      return new MessagingObjectInputStream(in);
+      return new MessagingObjectInputStream(new DataInputStream(in));
    }
    
    public ObjectOutputStream createOutput(OutputStream out) throws IOException
    {
-      return new MessagingObjectOutputStream(out);
+      return new MessagingObjectOutputStream(new DataOutputStream(out));
    }
 
    public IMarshalledValue createMarshalledValueForClone(Object arg0) throws IOException

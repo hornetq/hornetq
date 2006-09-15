@@ -21,6 +21,7 @@
  */
 package org.jboss.messaging.core.plugin.postoffice;
 
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.local.Queue;
 
 /**
@@ -42,7 +43,7 @@ public interface Binding
    
    Queue getQueue();
    
-   String getSelector();
+   Filter getFilter();
      
    long getChannelId();
    

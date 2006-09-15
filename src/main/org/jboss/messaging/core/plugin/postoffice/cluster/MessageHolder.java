@@ -25,7 +25,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.Map;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.util.StreamUtils;
@@ -42,8 +41,6 @@ import org.jboss.messaging.util.Streamable;
  */
 class MessageHolder implements Streamable
 {
-   private static final Logger log = Logger.getLogger(MessageHolder.class);
-      
    private String routingKey;
    
    private Message message;

@@ -146,15 +146,15 @@ public class SimplePostOfficeTest extends MessagingTestCase
          Filter filter1 = new Selector("x = 'cheese'");
          Filter filter2 = new Selector("y = 'bread'");
          
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);
+         Queue queue1 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get());
          
          Binding binding1 =
-            office1.bindQueue("durableQueue", "condition1", queue1);
+            office1.bindQueue("durableQueue", "condition1", null, queue1);
          
          //Binding twice with the same name should fail      
          try
          {
-            Binding bindFail = office1.bindQueue("durableQueue", "condition1", queue1);
+            Binding bindFail = office1.bindQueue("durableQueue", "condition1", null, queue1);
             fail();
          }
          catch (IllegalArgumentException e)
@@ -163,9 +163,9 @@ public class SimplePostOfficeTest extends MessagingTestCase
          }
                
          //Bind one non durable
-         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);
+         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());
          Binding binding2 =
-            office1.bindQueue("nonDurableQueue", "condition2", queue2);
+            office1.bindQueue("nonDurableQueue", "condition2", null, queue2);
          
          //Check they're there
          
@@ -247,37 +247,37 @@ public class SimplePostOfficeTest extends MessagingTestCase
       {      
          office = createPostOffice();
          
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding1 =
-            office.bindQueue("queue1", "condition1", queue1);
+            office.bindQueue("queue1", "condition1", null, queue1);
          
-         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding2 =
-            office.bindQueue("queue2", "condition1", queue2);
+            office.bindQueue("queue2", "condition1", null, queue2);
          
-         Queue queue3 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue3 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding3 =
-            office.bindQueue("queue3", "condition1", queue3);
+            office.bindQueue("queue3", "condition1", null, queue3);
          
-         Queue queue4 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue4 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding4 =
-            office.bindQueue("queue4", "condition1", queue4);
+            office.bindQueue("queue4", "condition1", null, queue4);
          
-         Queue queue5 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue5 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding5 =
-            office.bindQueue("queue5", "condition2", queue5);
+            office.bindQueue("queue5", "condition2", null, queue5);
          
-         Queue queue6 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue6 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding6 =
-            office.bindQueue("queue6", "condition2", queue6);
+            office.bindQueue("queue6", "condition2", null, queue6);
          
-         Queue queue7 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue7 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding7 =
-            office.bindQueue("queue7", "condition2", queue7);
+            office.bindQueue("queue7", "condition2", null, queue7);
          
-         Queue queue8 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue8 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding8 =
-            office.bindQueue("queue8", "condition2", queue8);
+            office.bindQueue("queue8", "condition2", null, queue8);
          
          
          List bindings = office.listBindingsForCondition("dummy");
@@ -353,29 +353,29 @@ public class SimplePostOfficeTest extends MessagingTestCase
       
          postOffice = createPostOffice();
          
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding1 =
-            postOffice.bindQueue("queue1", "topic1", queue1);
+            postOffice.bindQueue("queue1", "topic1", null, queue1);
          
-         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding2 =
-            postOffice.bindQueue("queue2", "topic1", queue2);
+            postOffice.bindQueue("queue2", "topic1", null, queue2);
          
-         Queue queue3 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue3 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding3 =
-            postOffice.bindQueue("queue3", "topic1", queue3);
+            postOffice.bindQueue("queue3", "topic1", null, queue3);
          
-         Queue queue4 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue4 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding4 =
-            postOffice.bindQueue("queue4", "topic2", queue4);
+            postOffice.bindQueue("queue4", "topic2", null, queue4);
          
-         Queue queue5 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue5 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding5 =
-            postOffice.bindQueue("queue5", "topic2", queue5);
+            postOffice.bindQueue("queue5", "topic2", null, queue5);
          
-         Queue queue6 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue6 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding6 =
-            postOffice.bindQueue("queue6", "topic2", queue6);
+            postOffice.bindQueue("queue6", "topic2", null, queue6);
       
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
@@ -494,9 +494,9 @@ public class SimplePostOfficeTest extends MessagingTestCase
       {      
          postOffice = createPostOffice();
          
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding1 =
-            postOffice.bindQueue("queue1", "condition1", queue1);
+            postOffice.bindQueue("queue1", "condition1", null, queue1);
               
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.add(receiver1);
@@ -538,29 +538,29 @@ public class SimplePostOfficeTest extends MessagingTestCase
       {      
          postOffice = createPostOffice();
       
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding1 =
-            postOffice.bindQueue("queue1", "topic1", queue1);
+            postOffice.bindQueue("queue1", "topic1", null, queue1);
          
-         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue2 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding2 =
-            postOffice.bindQueue("queue2", "topic1", queue2);
+            postOffice.bindQueue("queue2", "topic1", null, queue2);
          
-         Queue queue3 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue3 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding3 =
-            postOffice.bindQueue("queue3", "topic1", queue3);
+            postOffice.bindQueue("queue3", "topic1", null, queue3);
          
-         Queue queue4 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue4 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding4 =
-            postOffice.bindQueue("queue4", "topic2", queue4);
+            postOffice.bindQueue("queue4", "topic2", null, queue4);
          
-         Queue queue5 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue5 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding5 =
-            postOffice.bindQueue("queue5", "topic2", queue5);
+            postOffice.bindQueue("queue5", "topic2", null, queue5);
          
-         Queue queue6 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue6 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding6 =
-            postOffice.bindQueue("queue6", "topic2", queue6);
+            postOffice.bindQueue("queue6", "topic2", null, queue6);
       
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.add(receiver1);
@@ -701,13 +701,13 @@ public class SimplePostOfficeTest extends MessagingTestCase
       {      
          postOffice = createPostOffice();
       
-         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue1 = new Queue(im.getId(), ms, pm, true, false, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding1 =
-            postOffice.bindQueue("queue1", "topic1", queue1);
+            postOffice.bindQueue("queue1", "topic1", null, queue1);
          
-         Queue queue2 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get(), null);         
+         Queue queue2 = new Queue(im.getId(), ms, pm, true, true, 2000, 100, 100, (QueuedExecutor)pool.get());         
          Binding binding2 =
-            postOffice.bindQueue("queue2", "topic1", queue2);
+            postOffice.bindQueue("queue2", "topic1", null, queue2);
           
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.add(receiver1);
@@ -962,8 +962,10 @@ public class SimplePostOfficeTest extends MessagingTestCase
    protected void assertEquivalent(Binding binding1, Binding binding2)
    {
       assertEquals(binding1.getNodeId(), binding2.getNodeId());
-      assertEquals(binding1.getQueueName(), binding2.getQueueName());      
-      assertEquals(binding1.getSelector(), binding2.getSelector());
+      assertEquals(binding1.getQueueName(), binding2.getQueueName()); 
+      String selector1 = binding1.getFilter() != null ? binding1.getFilter().getFilterString() : null;
+      String selector2 = binding2.getFilter() != null ? binding2.getFilter().getFilterString() : null;
+      assertEquals(selector1, selector2);
       assertEquals(binding1.getChannelId(), binding2.getChannelId());
       assertEquals(binding1.isDurable(), binding2.isDurable());
    }

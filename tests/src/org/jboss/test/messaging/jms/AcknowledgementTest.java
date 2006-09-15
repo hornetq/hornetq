@@ -272,32 +272,26 @@ public class AcknowledgementTest extends MessagingTestCase
       final int NUM_MESSAGES = 20;
 
       //Send some messages
-      log.info("********* SENDING MSGS");
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          Message m = producerSess.createMessage();
          producer.send(m);
       }
-      log.info("*********** SENT MSGSSGS");
-      
+
       assertRemainingMessages(0);
       
       producerSess.rollback();
       
       //Send some messages
-      log.info("********* SENDING MOREMSGS");
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          Message m = producerSess.createMessage();
          producer.send(m);
       }
-      log.info("********* SENT MORE MSGS");
       assertRemainingMessages(0);
       
-      log.info("COMMITTING");
       producerSess.commit();
-      log.info("COMMITTED");
-      
+
       assertRemainingMessages(NUM_MESSAGES);
 
       log.trace("Sent messages");

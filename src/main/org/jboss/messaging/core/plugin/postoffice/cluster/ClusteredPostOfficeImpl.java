@@ -36,8 +36,10 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
@@ -277,16 +279,14 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    
    // PostOffice implementation ---------------------------------------        
    
-   public ClusteredBinding bindClusteredQueue(String queueName, String condition, ClusteredQueue queue) throws Exception
+   public ClusteredBinding bindClusteredQueue(String queueName, String condition, Filter filter, ClusteredQueue queue) throws Exception
    {           
-      ClusteredBinding binding = (ClusteredBinding)super.bindQueue(queueName, condition, queue);
+      ClusteredBinding binding = (ClusteredBinding)super.bindQueue(queueName, condition, filter, queue);
       
       boolean durable = queue.isRecoverable();
       
-      String filter = queue.getFilter() == null ? null : queue.getFilter().getFilterString();
-      
       BindRequest request =
-         new BindRequest(nodeId, queueName, condition, filter,
+         new BindRequest(nodeId, queueName, condition, filter == null ? null : filter.getFilterString(),
                          binding.getChannelId(), durable);
       
       syncSendRequest(request);
@@ -410,33 +410,38 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                   throw new IllegalStateException("No bindings in list!");
                }
                
-               if (binding.getNodeId().equals(this.nodeId))
+               Filter filter = binding.getFilter();
+                               
+               if (filter != null && filter.accept(ref))
                {
-                  //It's a local binding so we pass the message on to the queue
-                  Queue queue = binding.getQueue();
-               
-                  Delivery del = queue.handle(null, ref, tx);    
-                  
-                  if (del != null && del.isSelectorAccepted())
+                  if (binding.getNodeId().equals(this.nodeId))
                   {
+                     //It's a local binding so we pass the message on to the queue
+                     Queue queue = binding.getQueue();
+                  
+                     Delivery del = queue.handle(null, ref, tx);    
+                     
+                     if (del != null && del.isSelectorAccepted())
+                     {
+                        routed = true;
+                     }  
+                  }
+                  else
+                  {
+                     //It's a binding on a different office instance on the cluster
+                     numberRemote++;                     
+                     
+                     if (ref.isReliable() && binding.isDurable())
+                     {
+                        //Insert the reference into the database
+                        
+                        //TODO perhaps we should do this via a stub queue class
+                        pm.addReference(binding.getChannelId(), ref, tx);
+                     }
+                     
                      routed = true;
                   }  
-               }
-               else
-               {
-                  //It's a binding on a different office instance on the cluster
-                  numberRemote++;                     
-                  
-                  if (ref.isReliable() && binding.isDurable())
-                  {
-                     //Insert the reference into the database
-                     
-                     //TODO perhaps we should do this via a stub queue class
-                     pm.addReference(binding.getChannelId(), ref, tx);
-                  }
-                  
-                  routed = true;
-               }                                                
+               }                                                              
             }
                                     
             //Now we've sent the message to any local queues, we might also need
@@ -522,7 +527,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             throw new IllegalArgumentException(this.nodeId + "Binding already exists for node Id " + nodeId + " queue name " + queueName);
          }
          
-         binding = new ClusteredBindingImpl(nodeId, queueName, condition, filterString,
+         binding = new ClusteredBindingImpl(nodeId, queueName, condition, new Selector(filterString),
                                            channelID, durable); 
          
          binding.activate();
@@ -585,7 +590,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             throw new IllegalStateException("Cannot find binding for queue name " + queueName);
          }
          
-         Queue queue = binding.getQueue();
+         ClusteredQueue queue = (ClusteredQueue)binding.getQueue();
          
          Iterator iter = messages.iterator();
          
@@ -599,7 +604,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                
                ref = ms.reference(msg);
                
-               queue.handleDontPersist(null, ref, null);
+               queue.handleFromCluster(null, ref, null);
             }
             finally
             {
@@ -663,11 +668,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                      if (handle)
                      {
                         //It's a local binding so we pass the message on to the subscription
-                        Queue subscription = binding.getQueue();
+                        ClusteredQueue queue = (ClusteredQueue)binding.getQueue();
                      
                         //TODO instead of adding a new method on the channel
                         //we should set a header and use the same method
-                        subscription.handleDontPersist(null, ref, null);
+                        queue.handleFromCluster(null, ref, null);
                      }
                   }                               
                }
@@ -849,34 +854,37 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             {
                ClusteredBinding bb = (ClusteredBinding)iter.next();
                
-               ClusteredQueue q = (ClusteredQueue)bb.getQueue();
-               
-               //We don't bother sending the stat if there is less than STATS_DIFFERENCE_MARGIN_PERCENT % difference
-               
-               double newRate = q.getGrowthRate();
-               
-               int newMessageCount = q.messageCount();
-               
-               boolean sendStats = decideToSendStats(bb.getConsumptionRate(), newRate);
-               
-               if (!sendStats)
-               {
-                  sendStats = decideToSendStats(bb.getMessageCount(), newMessageCount);
-               }
-               
-               if (sendStats)
-               {
-                  bb.setConsumptionRate(newRate);
-                  bb.setMessageCount(newMessageCount);
+               if (bb.isActive())
+               {                  
+                  ClusteredQueue q = (ClusteredQueue)bb.getQueue();
                   
-                  if (stats == null)
+                  //We don't bother sending the stat if there is less than STATS_DIFFERENCE_MARGIN_PERCENT % difference
+                  
+                  double newRate = q.getGrowthRate();
+                  
+                  int newMessageCount = q.messageCount();
+                  
+                  boolean sendStats = decideToSendStats(bb.getConsumptionRate(), newRate);
+                  
+                  if (!sendStats)
                   {
-                     stats = new ArrayList();
+                     sendStats = decideToSendStats(bb.getMessageCount(), newMessageCount);
                   }
-                  QueueStats qs = new QueueStats(bb.getQueueName(), newRate, newMessageCount);
                   
-                  stats.add(qs);
-               }                  
+                  if (sendStats)
+                  {
+                     bb.setConsumptionRate(newRate);
+                     bb.setMessageCount(newMessageCount);
+                     
+                     if (stats == null)
+                     {
+                        stats = new ArrayList();
+                     }
+                     QueueStats qs = new QueueStats(bb.getQueueName(), newRate, newMessageCount);
+                     
+                     stats.add(qs);
+                  } 
+               }
             }
          }
       }
@@ -961,11 +969,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
    // Protected ---------------------------------------------------------------------------------------
    
-   protected Binding createBinding(String nodeId, String queueName, String condition, String filter,
-            long channelId, boolean durable)
+   protected Binding createBinding(String nodeId, String queueName, String condition, Filter filter,
+            long channelId, boolean durable) throws Exception
    {
       return new ClusteredBindingImpl(nodeId, queueName, condition, filter,
-                                     channelId, durable);   
+                                      channelId, durable);   
    }
            
    protected void loadBindings() throws Exception

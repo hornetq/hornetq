@@ -259,7 +259,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
             "<invoker transport=\"socket\">\n" +              
                "<attribute name=\"marshaller\" isParam=\"true\">org.jboss.jms.server.remoting.JMSWireFormat</attribute>\n" +
                "<attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.jms.server.remoting.JMSWireFormat</attribute>\n" +
-               "<attribute name=\"serializationtype\" isParam=\"true\">jboss</attribute>\n" +
+               "<attribute name=\"serializationtype\" isParam=\"true\">jms</attribute>\n" +
                "<attribute name=\"dataType\" isParam=\"true\">jms</attribute>\n" +
                "<attribute name=\"serverBindPort\">" + port +"</attribute>\n" +
                "<attribute name=\"socket.check_connection\" isParam=\"true\">false</attribute>\n" +

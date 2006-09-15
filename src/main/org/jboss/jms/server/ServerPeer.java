@@ -762,8 +762,11 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       // We explicitly associate the datatype "jms" with the java SerializationManager
       // This is vital for performance reasons.
+//      SerializationStreamFactory.setManagerClassName(
+//         "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
       SerializationStreamFactory.setManagerClassName(
-         "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
+             "jms", "org.jboss.jms.server.remoting.MessagingSerializationManager");
+      
 
       JMSWireFormat wf = new JMSWireFormat();
 

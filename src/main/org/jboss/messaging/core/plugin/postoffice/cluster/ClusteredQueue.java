@@ -25,12 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.Queue;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.util.Future;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -56,10 +58,11 @@ public class ClusteredQueue extends Queue
    
    private volatile int numberConsumed;
  
-   public ClusteredQueue(long id, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages, boolean recoverable, int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor, Filter filter)
+   public ClusteredQueue(long id, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages,
+                         boolean recoverable, int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor)
    {
       super(id, ms, pm, acceptReliableMessages, recoverable, fullSize, pageSize,
-            downCacheSize, executor, filter);
+            downCacheSize, executor);
       
       lastTime = System.currentTimeMillis();      
       
@@ -114,6 +117,34 @@ public class ClusteredQueue extends Queue
             return dels;
          }
       }          
+   }
+   
+   /*
+    * This is the same as the normal handle() method on the Channel except it doesn't
+    * persist the message even if it is persistent - this is because persistent messages
+    * are always persisted on the sending node before sending.
+    */
+   public Delivery handleFromCluster(DeliveryObserver sender, MessageReference ref, Transaction tx)
+      throws Exception
+   {
+      checkClosed();
+      
+      Future result = new Future();
+
+      if (tx == null)
+      {         
+         // Instead of executing directly, we add the handle request to the event queue.
+         // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
+         // result, but when remoting does, we can use a full SEDA approach and get even better
+         // throughput.
+         this.executor.execute(new HandleRunnable(result, sender, ref, false));
+   
+         return (Delivery)result.getResult();
+      }
+      else
+      {
+         return handleInternal(sender, ref, tx, false);
+      }
    }
 
    protected void addReferenceInMemory(MessageReference ref) throws Exception

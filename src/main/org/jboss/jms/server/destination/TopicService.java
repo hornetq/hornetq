@@ -82,7 +82,7 @@ public class TopicService extends DestinationServiceSupport
                org.jboss.messaging.core.local.Queue q = 
                   new org.jboss.messaging.core.local.Queue(binding.getChannelId(), ms, pm, true, true,
                            destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize(),
-                           executor, null);
+                           executor);
                q.load();
                binding.setQueue(q);
                binding.activate();
