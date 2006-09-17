@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,12 +55,14 @@ import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -101,6 +104,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private QueuedExecutorPool pool;
    private PostOffice topicPostOffice;
    private PostOffice queuePostOffice;
+   private String nodeId;
    
    
    // Constructors --------------------------------------------------
@@ -121,6 +125,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       queuePostOffice = sp.getQueuePostOfficeInstance();
       idm = sp.getChannelIdManager();
       pool = sp.getQueuedExecutorPool();
+      nodeId = sp.getServerPeerID();
 
       consumers = new HashMap();
 		browsers = new HashMap();  
@@ -187,15 +192,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
                      
                //Create the sub
                QueuedExecutor executor = (QueuedExecutor)pool.get();
-               Queue q = 
-                  new Queue(idm.getId(), ms, pm, true, false,
-                           mDest.getFullSize(),
-                           mDest.getPageSize(),
-                           mDest.getDownCacheSize(),
-                           executor);
                
-               //Make a binding for this queue
-               binding = topicPostOffice.bindQueue(new GUID().toString(), jmsDestination.getName(), selector, q);               
+               PagingFilteredQueue q = 
+                  new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,                          
+                                          executor, selector, mDest.getFullSize(),
+                                          mDest.getPageSize(),
+                                          mDest.getDownCacheSize());       
+               
+               //Make a binding for this queue - non durable subscriptins are always non clustered
+               binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);               
             }
             else
             {
@@ -224,15 +229,27 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   if (trace) { log.trace("creating new durable subscription on " + jmsDestination); }
                   
                   QueuedExecutor executor = (QueuedExecutor)pool.get();
-                  Queue q = 
-                     new Queue(idm.getId(), ms, pm, true, true,
-                              mDest.getFullSize(),
-                              mDest.getPageSize(),
-                              mDest.getDownCacheSize(),
-                              executor);
+                  PagingFilteredQueue q;
                   
-                  //Make a binding for this queue
-                  binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), selector, q);               
+                  if (topicPostOffice.isLocal())
+                  {
+                     q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,                              
+                                                 executor, selector,
+                                                 mDest.getFullSize(),
+                                                 mDest.getPageSize(),
+                                                 mDest.getDownCacheSize());
+                     
+                     binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);      
+                  }
+                  else
+                  {
+                     q = new LocalClusteredQueue(nodeId, name, idm.getId(), ms, pm, true, true,                              
+                                                 executor, selector,
+                                                 mDest.getFullSize(),
+                                                 mDest.getPageSize(),
+                                                 mDest.getDownCacheSize());
+                     binding = ((ClusteredPostOffice)topicPostOffice).bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+                  }                 
                }
                else
                {
@@ -246,7 +263,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
                   // one and creating a new one.
    
-                  String filterString = binding.getFilter() != null ? binding.getFilter().getFilterString() : null;
+                  String filterString = binding.getQueue().getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
                   
                   boolean selectorChanged =
                      (selectorString == null && filterString != null) ||
@@ -271,15 +288,26 @@ public class ServerSessionEndpoint implements SessionEndpoint
                      // create a fresh new subscription
                      
                      QueuedExecutor executor = (QueuedExecutor)pool.get();
-                     Queue q = 
-                        new Queue(idm.getId(), ms, pm, true, true,
-                                 mDest.getFullSize(),
-                                 mDest.getPageSize(),
-                                 mDest.getDownCacheSize(),
-                                 executor);
+                     PagingFilteredQueue q;
                      
-                     //Make a binding for this queue
-                     binding = topicPostOffice.bindQueue(name, jmsDestination.getName(), selector, q);  
+                     if (topicPostOffice.isLocal())
+                     {
+                        q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,                              
+                                                    executor, selector,
+                                                    mDest.getFullSize(),
+                                                    mDest.getPageSize(),
+                                                    mDest.getDownCacheSize());
+                        binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);      
+                     }
+                     else
+                     {
+                        q = new LocalClusteredQueue(nodeId, name, idm.getId(), ms, pm, true, true,                              
+                                                    executor, selector,
+                                                    mDest.getFullSize(),
+                                                    mDest.getPageSize(),
+                                                    mDest.getDownCacheSize());
+                        binding = ((ClusteredPostOffice)topicPostOffice).bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+                     }    
                   }               
                }
             }
@@ -300,7 +328,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          int prefetchSize = connectionEndpoint.getPrefetchSize();
          
          ServerConsumerEndpoint ep =
-            new ServerConsumerEndpoint(consumerID, binding.getQueue(), binding.getQueueName(),
+            new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(), binding.getQueue().getName(),
                                        this, selectorString, noLocal, jmsDestination, prefetchSize);
           
          JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
@@ -351,7 +379,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	   int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
    	   
    	   ServerBrowserEndpoint ep =
-   	      new ServerBrowserEndpoint(this, browserID, binding.getQueue(), messageSelector);
+   	      new ServerBrowserEndpoint(this, browserID, (PagingFilteredQueue)binding.getQueue(), messageSelector);
    	   
    	   putBrowserDelegate(browserID, ep);
    	   
@@ -572,12 +600,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
          if (dest.isQueue())
          {
             QueuedExecutor executor = (QueuedExecutor)pool.get();
-            Queue q = 
-               new Queue(idm.getId(), ms, pm, true, false, fullSize, pageSize, downCacheSize,
-                         executor);
+            
+            PagingFilteredQueue q = 
+               new PagingFilteredQueue(dest.getName(), idm.getId(), ms, pm, true, false,
+                                       executor, null, fullSize, pageSize, downCacheSize);
             
             //Make a binding for this queue
-            queuePostOffice.bindQueue(dest.getName(), dest.getName(), null, q);  
+            queuePostOffice.bindQueue(dest.getName(), q);  
          }         
       }
       catch (Throwable t)
@@ -614,9 +643,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          else
          {
-            //Topic
-            
-            List bindings = topicPostOffice.listBindingsForCondition(dest.getName());
+            //Topic            
+            Collection bindings = topicPostOffice.listBindingsForCondition(dest.getName());
             
             if (!bindings.isEmpty())
             {

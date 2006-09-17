@@ -27,6 +27,7 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.selector.Selector;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 
 /**
@@ -53,28 +54,28 @@ public class ManagedQueue extends ManagedDestination
 
    public int getMessageCount() throws Exception
    {
-      Binding binding = (Binding)postOffice.listBindingsForCondition(name).get(0);
+      Binding binding = (Binding)postOffice.listBindingsForCondition(name).iterator().next();
       
       if (binding == null)
       {
          throw new IllegalStateException("Cannot find binding for queue:" + name);
       }
       
-      org.jboss.messaging.core.local.Queue queue = binding.getQueue();
+      Queue queue = binding.getQueue();
 
       return queue.messageCount();
    }
    
    public void removeAllMessages() throws Throwable
    {
-      Binding binding = (Binding)postOffice.listBindingsForCondition(name).get(0);
+      Binding binding = (Binding)postOffice.listBindingsForCondition(name).iterator().next();
       
       if (binding == null)
       {
          throw new IllegalStateException("Cannot find binding for queue:" + name);
       }
       
-      org.jboss.messaging.core.local.Queue queue = binding.getQueue();
+      Queue queue = binding.getQueue();
 
       queue.removeAllReferences();
    }
@@ -90,14 +91,14 @@ public class ManagedQueue extends ManagedDestination
          }
       }
       
-      Binding binding = (Binding)postOffice.listBindingsForCondition(name).get(0);
+      Binding binding = (Binding)postOffice.listBindingsForCondition(name).iterator().next();
       
       if (binding == null)
       {
          throw new IllegalStateException("Cannot find binding for queue:" + name);
       }
       
-      org.jboss.messaging.core.local.Queue queue = binding.getQueue();
+      Queue queue = binding.getQueue();
 
       try 
       {

@@ -62,6 +62,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    protected IdManager idm;
    
+   protected String nodeId;
+   
    private boolean createdProgrammatically;
    
    // Constructors --------------------------------------------------
@@ -96,6 +98,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          ms = serverPeer.getMessageStore();
          
          idm = serverPeer.getChannelIdManager();
+         
+         nodeId = serverPeer.getServerPeerID();
          
          String name = null;
                   

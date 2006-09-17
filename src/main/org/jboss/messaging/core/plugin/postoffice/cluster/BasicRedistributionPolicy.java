@@ -24,6 +24,8 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.messaging.core.plugin.postoffice.Binding;
+
 /**
  * A BasicRedistributonPolicy
  *
@@ -48,11 +50,11 @@ public class BasicRedistributionPolicy implements RedistributionPolicy
    {
       Iterator iter = bindings.iterator();
       
-      ClusteredBinding localBinding = null;
+      Binding localBinding = null;
       
       while (iter.hasNext())
       {
-         ClusteredBinding binding = (ClusteredBinding)iter.next();
+         Binding binding = (Binding)iter.next();
          
          if (binding.getNodeId().equals(localNodeId))
          {
@@ -67,7 +69,9 @@ public class BasicRedistributionPolicy implements RedistributionPolicy
          return null;
       }
       
-      if (localBinding.getConsumptionRate() == 0 && localBinding.getMessageCount() > 0)
+      ClusteredQueue queue = (ClusteredQueue)localBinding.getQueue();
+      
+      if (queue.getGrowthRate() == 0 && queue.getMessageCount() > 0)
       {
          //No consumers on the queue - the messages are stranded
          //We should consider moving them somewhere else
@@ -78,17 +82,21 @@ public class BasicRedistributionPolicy implements RedistributionPolicy
          
          double maxRate = 0;
          
-         ClusteredBinding maxRateBinding = null;
+         Binding maxRateBinding = null;
          
          while (iter.hasNext())
          {
-            ClusteredBinding binding = (ClusteredBinding)iter.next();
+            Binding binding = (Binding)iter.next();
+            
+            ClusteredQueue theQueue = (ClusteredQueue)binding.getQueue();
             
             if (!binding.getNodeId().equals(localNodeId))
             {
-               if (binding.getConsumptionRate() > maxRate)
+               double rate = theQueue.getGrowthRate();
+               
+               if (rate > maxRate)
                {
-                  maxRate = binding.getConsumptionRate();
+                  maxRate = rate;
                   
                   maxRateBinding = binding;
                }
@@ -100,9 +108,9 @@ public class BasicRedistributionPolicy implements RedistributionPolicy
             //Move messages to this node
             
             //How many should we move?
-            int numberToMove = Math.min(MAX_MESSAGES_TO_MOVE, localBinding.getMessageCount());     
+            int numberToMove = Math.min(MAX_MESSAGES_TO_MOVE, queue.getMessageCount());     
             
-            return new RedistributionOrder(numberToMove, localBinding.getQueueName(), maxRateBinding.getNodeId());
+            return new RedistributionOrder(numberToMove, queue, maxRateBinding.getNodeId());
          }
       }
       

@@ -26,7 +26,7 @@ import java.util.List;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.util.CoreMessageFactory;
@@ -66,8 +66,8 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
  
    public void test1() throws Throwable
    {
-      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
-                    
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      
       Message[] msgs = new Message[241];
       
       MessageReference[] refs = new MessageReference[241];

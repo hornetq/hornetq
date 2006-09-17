@@ -24,8 +24,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.messaging.util.StreamUtils;
-
 /**
  * A BindRequest
  *
@@ -37,17 +35,7 @@ import org.jboss.messaging.util.StreamUtils;
  */
 class BindRequest extends ClusterRequest
 {
-   private String nodeId;   
-   
-   private String queueName;   
-   
-   private String condition;   
-   
-   private String filterString; 
-   
-   private long channelId;   
-   
-   private boolean durable;
+   private BindingInfo bindingInfo;   
    
    static final byte TYPE = 1;
    
@@ -58,23 +46,14 @@ class BindRequest extends ClusterRequest
    BindRequest(String nodeId, String queueName, String condition, String filterString,
                long channelId, boolean durable)
    {
-      this.nodeId = nodeId;
-      
-      this.queueName = queueName;
-      
-      this.condition = condition;
-      
-      this.filterString = filterString;
-      
-      this.channelId = channelId;
-      
-      this.durable = durable;
+      bindingInfo = new BindingInfo(nodeId, queueName, condition, filterString,
+                                    channelId, durable);
    }
 
    public void execute(PostOfficeInternal office) throws Exception
    {
-      office.addBindingFromCluster(nodeId, queueName, condition,
-                                   filterString, channelId, durable);
+      office.addBindingFromCluster(bindingInfo.getNodeId(), bindingInfo.getQueueName(), bindingInfo.getCondition(),
+                                   bindingInfo.getFilterString(), bindingInfo.getChannelId(), bindingInfo.isDurable());
       
    }
    
@@ -85,31 +64,13 @@ class BindRequest extends ClusterRequest
 
    public void read(DataInputStream in) throws Exception
    {
-      nodeId = in.readUTF();
+      bindingInfo = new BindingInfo();
       
-      queueName = in.readUTF();
-      
-      condition = in.readUTF();
-      
-      filterString = (String)StreamUtils.readObject(in, false);   
-      
-      channelId = in.readLong();
-      
-      durable = in.readBoolean();
+      bindingInfo.read(in);
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(nodeId);
-      
-      out.writeUTF(queueName);
-      
-      out.writeUTF(condition);
-      
-      StreamUtils.writeObject(out, filterString, false, false);
-      
-      out.writeLong(channelId);
-      
-      out.writeBoolean(durable);
+      bindingInfo.write(out);
    }
 }

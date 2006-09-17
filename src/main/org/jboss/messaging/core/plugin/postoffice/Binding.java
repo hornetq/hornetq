@@ -21,12 +21,11 @@
  */
 package org.jboss.messaging.core.plugin.postoffice;
 
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.Queue;
 
 /**
  * A Binding
-
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
@@ -35,26 +34,9 @@ import org.jboss.messaging.core.local.Queue;
  */
 public interface Binding
 {
-   String getNodeId();
+   public String getNodeId();
    
-   String getQueueName();
+   public String getCondition();
    
-   String getCondition();
-   
-   Queue getQueue();
-   
-   Filter getFilter();
-     
-   long getChannelId();
-   
-   boolean isDurable();
-   
-   boolean isActive();
-   
-   void activate();
-   
-   void deactivate();
-   
-   void setQueue(Queue queue);
-
+   public Queue getQueue();
 }

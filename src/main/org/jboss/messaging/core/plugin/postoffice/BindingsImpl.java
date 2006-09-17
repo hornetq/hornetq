@@ -19,15 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.postoffice.cluster;
+package org.jboss.messaging.core.plugin.postoffice;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
-import org.jboss.messaging.util.Streamable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * A QueueStats
+ * A BindingsImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -35,57 +34,56 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-class QueueStats implements Streamable
+public class BindingsImpl implements Bindings
 {
-   private String queueName;
+   private List bindings;
    
-   private double growthRate;
+   private int durableCount;
    
-   private int messageCount;
+   public BindingsImpl()
+   {
+      bindings = new ArrayList();
+   }
 
-   public QueueStats()
-   {      
+   public void addBinding(Binding binding)
+   {
+      if (bindings.contains(binding))
+      {
+         throw new IllegalArgumentException("Bindings already contains binding: " + binding);
+      }
+      bindings.add(binding);
+      
+      if (binding.getQueue().isRecoverable())
+      {
+         durableCount++;
+      }
+   }
+
+   public Collection getAllBindings()
+   {
+      return bindings;
+   }
+
+   public boolean removeBinding(Binding binding)
+   {
+      boolean removed = bindings.remove(binding);
+      
+      if (removed && binding.getQueue().isRecoverable())
+      {
+         durableCount--;
+      }
+      
+      return removed;
    }
    
-   QueueStats(String queueName, double growthRate, int messageCount)
+   public int getDurableCount()
    {
-      this.queueName = queueName;
-      
-      this.growthRate = growthRate;
-      
-      this.messageCount = messageCount;
+      return durableCount;
+   }
+   
+   public boolean isEmpty()
+   {
+      return bindings.isEmpty();
    }
 
-   double getGrowthRate()
-   {
-      return growthRate;
-   }
-
-   int getMessageCount()
-   {
-      return messageCount;
-   }
-
-   String getQueueName()
-   {
-      return queueName;
-   }
-
-   public void read(DataInputStream in) throws Exception
-   {
-      queueName = in.readUTF();
-      
-      growthRate = in.readDouble();
-      
-      messageCount = in.readInt();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      out.writeUTF(queueName);
-      
-      out.writeDouble(growthRate);
-      
-      out.writeInt(messageCount);
-   }      
 }

@@ -24,16 +24,17 @@ package org.jboss.messaging.core.plugin;
 import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.selector.SelectorFactory;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.cluster.BasicRedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
-import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRoutingPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.RoutingPolicy;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -198,18 +199,21 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
          
          PersistenceManager pm = serverPeer.getPersistenceManagerInstance();
          
+         QueuedExecutorPool pool = serverPeer.getQueuedExecutorPool();
+                  
          String nodeId = serverPeer.getServerPeerID();
          
-         RoutingPolicy routingPolicy = new FavourLocalRoutingPolicy(nodeId);
-         
          RedistributionPolicy redistPolicy = new BasicRedistributionPolicy(nodeId);
+         
+         FilterFactory ff = new SelectorFactory();
                   
          postOffice =  new ClusteredPostOfficeImpl(ds, tm, sqlProperties, createTablesOnStartup,
                                                nodeId, officeName, ms,
+                                               pm, tr, ff, pool, 
                                                groupName,
                                                syncChannelConfig, asyncChannelConfig,
-                                               tr, pm, stateTimeout, castTimeout,
-                                               routingPolicy, redistPolicy, redistPeriod);
+                                               stateTimeout, castTimeout,
+                                               redistPolicy, redistPeriod);
          
          postOffice.start();
          

@@ -21,11 +21,10 @@
  */
 package org.jboss.messaging.core.plugin.contract;
 
-import java.util.List;
+import java.util.Collection;
 
-import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -49,24 +48,9 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public interface PostOffice extends MessagingComponent
 {   
-   /**
-    * Bind a queue to the post office under a specific condition
-    * @param queueName The unique name of the queue
-    * @param condition The condition to be used when routing references
-    * @param noLocal
-    * @param filter The filter to use
-    * @param queue
-    * @return
-    * @throws Exception
-    */
-   Binding bindQueue(String queueName, String condition, Filter filter, Queue queue) throws Exception;
+   Binding bindQueue(String condition, Queue queue) throws Exception;
    
-   /**
-    * Unbind a queue from the post office
-    * @param queueName The unique name of the queue
-    * @return
-    * @throws Throwable
-    */
+
    Binding unbindQueue(String queueName) throws Throwable;
    
    /**
@@ -75,7 +59,7 @@ public interface PostOffice extends MessagingComponent
     * @return
     * @throws Exception
     */
-   List listBindingsForCondition(String condition) throws Exception;
+   Collection listBindingsForCondition(String condition) throws Exception;
    
    /**
     * Get the binding for the specified queue name
@@ -98,4 +82,6 @@ public interface PostOffice extends MessagingComponent
    boolean route(MessageReference ref, String condition, Transaction tx) throws Exception;   
    
    void recover() throws Exception;
+   
+   boolean isLocal();
 }

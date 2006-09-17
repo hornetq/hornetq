@@ -21,7 +21,10 @@
 */
 package org.jboss.test.messaging.core.local;
 
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.core.base.QueueTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -55,9 +58,9 @@ public class NonRecoverableQueueTest extends QueueTestBase
    {
       super.setUp();
       
-      queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
+      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), null);
    }
-
+   
    public void tearDown() throws Exception
    {
       queue.close();
@@ -71,7 +74,7 @@ public class NonRecoverableQueueTest extends QueueTestBase
 
    public void recoverChannel() throws Exception
    {
-      queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
+      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), null);
    }
 
    // Public --------------------------------------------------------

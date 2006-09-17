@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.util.CoreMessageFactory;
@@ -64,10 +64,10 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
    
    public void testChannelShareNP_2PC() throws Throwable
    {
-      Queue queue1 = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
+      PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
       
-      Queue queue2 = new Queue(2, ms, pm, true, true, 50, 10, 5, new QueuedExecutor());
-                      
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", 1, ms, pm, true, true, new QueuedExecutor(), null, 50, 10, 5);
+                  
       Message[] msgs = new Message[150];
       
       MessageReference[] refs1 = new MessageReference[150];

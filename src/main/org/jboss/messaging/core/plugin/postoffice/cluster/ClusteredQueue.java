@@ -21,23 +21,9 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.local.Queue;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.util.Future;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import org.jboss.messaging.core.Queue;
 
 /**
- * 
  * A ClusteredQueue
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -46,122 +32,13 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class ClusteredQueue extends Queue
+public interface ClusteredQueue extends Queue
 {
-   private static final int MIN_PERIOD = 1000;
+   double getGrowthRate();
    
-   private long lastTime;
+   int getMessageCount();
    
-   private double lastGrowthRate;
+   String getNodeId();
    
-   private volatile int numberAdded;
-   
-   private volatile int numberConsumed;
- 
-   public ClusteredQueue(long id, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages,
-                         boolean recoverable, int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor)
-   {
-      super(id, ms, pm, acceptReliableMessages, recoverable, fullSize, pageSize,
-            downCacheSize, executor);
-      
-      lastTime = System.currentTimeMillis();      
-      
-      numberAdded = numberConsumed = 0;
-   }
-   
-   /**
-    * 
-    * @return The rate of growth in messages per second of the queue
-    * Rate of growth is defined as follows:
-    * growth = (number of messages added - number of messages consumed) / time
-    */
-   public synchronized double getGrowthRate()
-   {
-      long now = System.currentTimeMillis();
-      
-      long period = now - lastTime;
-      
-      if (period <= MIN_PERIOD)
-      {
-         //Cache the value to avoid recalculating too often
-         return lastGrowthRate;
-      }
-      
-      lastGrowthRate = 1000 * (numberAdded - numberConsumed) / ((double)period);
-      
-      lastTime = now;
-      
-      numberAdded = numberConsumed = 0;
-      
-      return lastGrowthRate;
-   }
-   
-   public List getDeliveries(int number) throws Exception
-   {
-      List dels = new ArrayList();
-      
-      synchronized (refLock)
-      {
-         synchronized (deliveryLock)
-         {
-            MessageReference ref;
-            
-            while ((ref = removeFirstInMemory()) != null)
-            {
-               SimpleDelivery del = new SimpleDelivery(this, ref);
-               
-               deliveries.add(del);
-               
-               dels.add(del);               
-            }           
-            return dels;
-         }
-      }          
-   }
-   
-   /*
-    * This is the same as the normal handle() method on the Channel except it doesn't
-    * persist the message even if it is persistent - this is because persistent messages
-    * are always persisted on the sending node before sending.
-    */
-   public Delivery handleFromCluster(DeliveryObserver sender, MessageReference ref, Transaction tx)
-      throws Exception
-   {
-      checkClosed();
-      
-      Future result = new Future();
-
-      if (tx == null)
-      {         
-         // Instead of executing directly, we add the handle request to the event queue.
-         // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
-         // result, but when remoting does, we can use a full SEDA approach and get even better
-         // throughput.
-         this.executor.execute(new HandleRunnable(result, sender, ref, false));
-   
-         return (Delivery)result.getResult();
-      }
-      else
-      {
-         return handleInternal(sender, ref, tx, false);
-      }
-   }
-
-   protected void addReferenceInMemory(MessageReference ref) throws Exception
-   {
-      super.addReferenceInMemory(ref);
-      
-      //This is ok, since the channel ensures only one thread calls this method at once
-      numberAdded++;
-   }
-
-   protected boolean acknowledgeInMemory(Delivery d)
-   {
-      boolean acked = super.acknowledgeInMemory(d);
-      
-      // This is ok, since the channel ensures only one thread calls this method at once
-      numberConsumed--;
-      
-      return acked;
-   }  
+   boolean isLocal();
 }

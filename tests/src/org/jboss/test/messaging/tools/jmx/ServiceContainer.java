@@ -375,7 +375,7 @@ public class ServiceContainer
 
          log.info("remoting = \"" +
             (remotingSocket ? "socket" : (remotingMultiplex ? "multiplex" : "disabled")) + "\", " +
-            "serialization = \"" + config.getSerializationType() + "\", " + 
+            "serialization = \"" + "jms" + "\", " + 
             "database = \"" + getDatabaseType() + "\"");
          log.debug(this + " started");
       }
@@ -978,7 +978,9 @@ public class ServiceContainer
               
       RemotingJMXWrapper mbean;
 
-      String serializationType = config.getSerializationType();
+      //String serializationType = config.getSerializationType();
+      
+      String serializationType = "jms";
       
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +

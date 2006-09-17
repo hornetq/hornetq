@@ -22,6 +22,7 @@
 package org.jboss.jms.server.destination;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,7 +30,7 @@ import javax.jms.InvalidSelectorException;
 
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.util.MessageQueueNameHelper;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 
 /**
@@ -56,7 +57,7 @@ public class ManagedTopic extends ManagedDestination
 
    public void removeAllMessages() throws Throwable
    {
-      List subs = postOffice.listBindingsForCondition(name);
+      Collection subs = postOffice.listBindingsForCondition(name);
       
       //XXX How to lock down all subscriptions?
       Iterator iter = subs.iterator();
@@ -70,14 +71,14 @@ public class ManagedTopic extends ManagedDestination
    
    public int subscriptionCount() throws Exception
    {
-      List subs = postOffice.listBindingsForCondition(name);
+      Collection subs = postOffice.listBindingsForCondition(name);
       
       return subs.size();         
    }
    
    public int subscriptionCount(boolean durable) throws Exception
    {
-      List subs = postOffice.listBindingsForCondition(name);
+      Collection subs = postOffice.listBindingsForCondition(name);
       
       Iterator iter = subs.iterator();
       
@@ -87,7 +88,7 @@ public class ManagedTopic extends ManagedDestination
       {
          Binding binding = (Binding)iter.next();
          
-         if ((binding.isDurable() && durable) || (!binding.isDurable() && !durable))
+         if ((binding.getQueue().isRecoverable() && durable) || (!binding.getQueue().isRecoverable() && !durable))
          {
             count++;
          }
@@ -98,14 +99,14 @@ public class ManagedTopic extends ManagedDestination
    
    public String listSubscriptionsAsText() throws Exception
    {
-      List subs = postOffice.listBindingsForCondition(name);
+      Collection subs = postOffice.listBindingsForCondition(name);
       
       return getSubscriptionsAsText(subs, true) + getSubscriptionsAsText(subs, false);
    }
    
    public String listSubscriptionsAsText(boolean durable) throws Exception
    {
-      List subs = postOffice.listBindingsForCondition(name);
+      Collection subs = postOffice.listBindingsForCondition(name);
       
       return getSubscriptionsAsText(subs, durable);
    }
@@ -113,7 +114,7 @@ public class ManagedTopic extends ManagedDestination
    public List listMessagesDurableSub(String subName, String clientID, String selector)
       throws Exception
    {
-      List subs = postOffice.listBindingsForCondition(name);
+      Collection subs = postOffice.listBindingsForCondition(name);
       
       return getMessagesFromDurableSub(subs, subName, clientID, trimSelector(selector));
    }
@@ -121,7 +122,7 @@ public class ManagedTopic extends ManagedDestination
    public List listMessagesNonDurableSub(long channelID, String selector)
       throws Exception
    {
-      List subs = postOffice.listBindingsForCondition(name);
+      Collection subs = postOffice.listBindingsForCondition(name);
       
       return getMessagesFromNonDurableSub(subs, channelID, trimSelector(selector));
    }
@@ -135,7 +136,7 @@ public class ManagedTopic extends ManagedDestination
    
    
    
-   private String getSubscriptionsAsText(List bindings, boolean durable)
+   private String getSubscriptionsAsText(Collection bindings, boolean durable)
    {
       StringBuffer sb = new StringBuffer();
       Iterator iter = bindings.iterator();
@@ -143,14 +144,14 @@ public class ManagedTopic extends ManagedDestination
       {
          Binding binding = (Binding)iter.next();
          
-         String filterString = binding.getFilter() != null ? binding.getFilter().getFilterString() : null;
+         String filterString = binding.getQueue().getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
                   
-         if (durable && binding.isDurable())
+         if (durable && binding.getQueue().isRecoverable())
          {                      
-            MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueueName());
+            MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueue().getName());
             
             sb.append("Durable, subscriptionID=\"");
-            sb.append(binding.getChannelId());    
+            sb.append(binding.getQueue().getChannelID());    
             sb.append("\", name=\"");
             sb.append(helper.getSubName());
             sb.append("\", clientID=\"");
@@ -159,10 +160,10 @@ public class ManagedTopic extends ManagedDestination
             sb.append(filterString);
             sb.append("\"\n");
          }
-         else if (!durable && !binding.isDurable())
+         else if (!durable && !binding.getQueue().isRecoverable())
          {            
             sb.append("Non-durable, subscriptionID=\"");
-            sb.append(binding.getChannelId());
+            sb.append(binding.getQueue().getChannelID());
             sb.append("\", selector=\"");
             sb.append(filterString);
             sb.append("\"\n");
@@ -178,10 +179,10 @@ public class ManagedTopic extends ManagedDestination
       if (null == name)
          throw new IllegalArgumentException();
       // Must be durable
-      if (!binding.isDurable())
+      if (!binding.getQueue().isRecoverable())
          return false;
       
-      MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueueName());
+      MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueue().getName());
 
       // Subscription name check
       if (!name.equals(helper.getSubName()))
@@ -198,15 +199,15 @@ public class ManagedTopic extends ManagedDestination
    private boolean matchNonDurableSubscription(long channelID, Binding binding)
    {
       // Must be non-durable
-      if (binding.isDurable())
+      if (binding.getQueue().isRecoverable())
          return false;
       // Channel ID must be the same
-      if (channelID != binding.getChannelId())
+      if (channelID != binding.getQueue().getChannelID())
          return false;
       return true;
    }
    
-   private List getMessagesFromDurableSub(List bindings, String name,
+   private List getMessagesFromDurableSub(Collection bindings, String name,
             String clientID, String selector) throws InvalidSelectorException
    {
       Iterator iter = bindings.iterator();
@@ -224,7 +225,7 @@ public class ManagedTopic extends ManagedDestination
       return new ArrayList();
    }
    
-   private List getMessagesFromNonDurableSub(List bindings, long channelID, String selector) throws InvalidSelectorException
+   private List getMessagesFromNonDurableSub(Collection bindings, long channelID, String selector) throws InvalidSelectorException
    {
       Iterator iter = bindings.iterator();
       while (iter.hasNext())

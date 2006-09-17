@@ -21,12 +21,12 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.util.Streamable;
+import java.util.Collection;
+
+import org.jboss.messaging.core.plugin.postoffice.Bindings;
 
 /**
- * 
- * A ClusteredBinding
+ * A ClusteredBindings
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -34,13 +34,9 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-public interface ClusteredBinding extends Binding, Streamable
+public interface ClusteredBindings extends Bindings
 {
-   double getConsumptionRate();
+   Collection getRouters();
    
-   int getMessageCount();
-   
-   void setConsumptionRate(double rate);
-   
-   void setMessageCount(int count);
+   int getLocalDurableCount();
 }

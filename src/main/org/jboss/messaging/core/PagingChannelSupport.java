@@ -32,6 +32,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.InitialLoadInfo;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.ReferenceInfo;
+import org.jboss.messaging.core.tx.Transaction;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -49,9 +50,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class PagingChannel extends ChannelSupport
+public abstract class PagingChannelSupport extends ChannelSupport
 {
-   private static final Logger log = Logger.getLogger(PagingChannel.class);
+   private static final Logger log = Logger.getLogger(PagingChannelSupport.class);
    
    private boolean trace = log.isTraceEnabled();
    
@@ -60,17 +61,17 @@ public class PagingChannel extends ChannelSupport
    /**
     * The maximum number of references this channel will hold before going into paging mode
     */
-   protected int fullSize;
+   protected int fullSize = 75000;
 
    /**
     * The maximum number of references to load from storage in one go when unpaging
     */
-   protected int pageSize;
+   protected int pageSize = 2000;
 
    /**
     * The maximum number of references paged to storage in one operation
     */
-   protected int downCacheSize;
+   protected int downCacheSize = 2000;
 
    /**
     * Are we in paging mode?
@@ -88,6 +89,13 @@ public class PagingChannel extends ChannelSupport
    protected long nextPagingOrder;
    
    /**
+    * Is the queue active?
+    */
+   protected boolean active;
+   
+
+   /**
+    * Constructor with default paging params
     * @param channelID
     * @param ms
     * @param pm
@@ -99,7 +107,33 @@ public class PagingChannel extends ChannelSupport
     * @param downCacheSize
     * @param executor
     */
-   public PagingChannel(long channelID, MessageStore ms, PersistenceManager pm, boolean acceptReliableMessages, boolean recoverable, int fullSize, int pageSize, int downCacheSize, QueuedExecutor executor)
+   public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
+                               boolean acceptReliableMessages, boolean recoverable,                        
+                               QueuedExecutor executor)
+   {
+      super(channelID, ms, pm, acceptReliableMessages, recoverable, executor);
+      
+      downCache = new ArrayList(downCacheSize);    
+      
+      active = true;
+   }
+   
+   /**
+    * Constructor specifying paging params
+    * @param channelID
+    * @param ms
+    * @param pm
+    * @param acceptReliableMessages
+    * @param recoverable
+    * @param executor
+    * @param fullSize
+    * @param pageSize
+    * @param downCacheSize
+    */
+   public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
+                               boolean acceptReliableMessages, boolean recoverable,                        
+                               QueuedExecutor executor,
+                               int fullSize, int pageSize, int downCacheSize)
    {
       super(channelID, ms, pm, acceptReliableMessages, recoverable, executor);
       
@@ -120,50 +154,33 @@ public class PagingChannel extends ChannelSupport
          throw new IllegalArgumentException("downCacheSize must be greater than zero");
       }
       
-      downCache = new ArrayList(downCacheSize);
-
+      downCache = new ArrayList(downCacheSize);    
+      
       this.fullSize = fullSize;
-
+      
       this.pageSize = pageSize;
-
-      this.downCacheSize = downCacheSize;      
+      
+      this.downCacheSize = downCacheSize;
+      
+      active = true;
    }
     
+   // Receiver implementation
+   // -----------------------------------------------------------------
+   
+   public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
+   {
+      if (!active)
+      {
+         return null;
+      }
+      
+      return super.handle(sender, ref, tx);
+   }
+   
    // Channel implementation
    // ---------------------------------------------------------------
-   
-   public void load() throws Exception
-   {
-      if (trace) { log.trace(this + " loading channel state"); }
-      synchronized (refLock)
-      {
-         InitialLoadInfo ili = pm.getInitialReferenceInfos(channelID, fullSize);
-
-         if (ili.getMaxPageOrdering() != null)            
-         {
-            firstPagingOrder = ili.getMinPageOrdering().longValue();
-            
-            nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
-            
-            paging = true;
-         }
-         else
-         {
-            firstPagingOrder = nextPagingOrder = 0;
-         }
          
-         Map refMap = processReferences(ili.getRefInfos());
-         
-         Iterator iter = ili.getRefInfos().iterator();
-         while (iter.hasNext())
-         {
-            ReferenceInfo info = (ReferenceInfo)iter.next();
-
-            addFromRefInfo(info, refMap);
-         }         
-      }
-   }      
-   
    public int messageCount()
    {   
       int count = super.messageCount();
@@ -193,6 +210,81 @@ public class PagingChannel extends ChannelSupport
       synchronized (refLock)
       {
          return paging;
+      }
+   }
+   
+   public void activate(int fullSize, int pageSize, int downCacheSize) throws Exception
+   {            
+      synchronized (refLock)
+      {
+         if (active)
+         {
+            return;
+         }
+         
+         this.fullSize = fullSize;
+         
+         this.pageSize = pageSize;
+         
+         this.downCacheSize = downCacheSize;
+         
+         if (trace) { log.trace(this + " loading channel state"); }
+         
+         InitialLoadInfo ili = pm.getInitialReferenceInfos(channelID, fullSize);
+
+         if (ili.getMaxPageOrdering() != null)            
+         {
+            firstPagingOrder = ili.getMinPageOrdering().longValue();
+            
+            nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
+            
+            paging = true;
+         }
+         else
+         {
+            firstPagingOrder = nextPagingOrder = 0;
+         }
+         
+         Map refMap = processReferences(ili.getRefInfos());
+         
+         Iterator iter = ili.getRefInfos().iterator();
+         while (iter.hasNext())
+         {
+            ReferenceInfo info = (ReferenceInfo)iter.next();
+
+            addFromRefInfo(info, refMap);
+         }         
+      }
+      
+      active = true;
+   }      
+   
+   public void deactivate() throws Exception
+   {
+      synchronized (refLock)
+      {
+         synchronized (deliveryLock)
+         {
+            messageRefs.clear();
+            
+            deliveries.clear();
+            
+            downCache.clear();
+            
+            paging = false;
+            
+            firstPagingOrder = nextPagingOrder = 0;
+            
+            active = true;
+         }
+      }
+   }
+   
+   public boolean isActive()
+   {
+      synchronized (refLock)
+      {
+         return active;
       }
    }
    

@@ -24,10 +24,14 @@ package org.jboss.messaging.core.plugin;
 import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.selector.SelectorFactory;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
@@ -116,13 +120,19 @@ public class SimplePostOfficeService extends JDBCServiceSupport
          
          MessageStore ms = serverPeer.getMessageStore();
          
+         PersistenceManager pm = serverPeer.getPersistenceManagerInstance();
+         
+         QueuedExecutorPool pool = serverPeer.getQueuedExecutorPool();
+         
          TransactionRepository tr = serverPeer.getTxRepository();
          
          String nodeId = serverPeer.getServerPeerID();
-                  
+         
+         FilterFactory ff = new SelectorFactory();
+               
          postOffice = new PostOfficeImpl(ds, tm, sqlProperties,
-                                           createTablesOnStartup,
-                                           nodeId, officeName, ms, tr);
+                                         createTablesOnStartup,
+                                         nodeId, officeName, ms, pm, tr, ff, pool);
          
          postOffice.start();
          

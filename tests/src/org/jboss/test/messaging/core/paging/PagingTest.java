@@ -21,7 +21,7 @@
 */
 package org.jboss.test.messaging.core.paging;
 
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
@@ -63,8 +63,8 @@ public class PagingTest extends MessagingTestCase
 
    public void testPaging() throws Exception
    {
-      Queue p = new Queue(0, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
-
+      PagingFilteredQueue p = new PagingFilteredQueue("queue0", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+           
       CoreMessage m = null;
 
       m = CoreMessageFactory.createCoreMessage(0);

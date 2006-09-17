@@ -62,6 +62,8 @@ import org.jboss.messaging.core.tx.TxCallback;
 class CastMessagesCallback implements TxCallback
 {           
    private static final Logger log = Logger.getLogger(CastMessagesCallback.class);
+   
+   public static final String KEY = "cast";
       
    private List persistent;
    

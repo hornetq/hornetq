@@ -19,17 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.postoffice.cluster;
+package org.jboss.messaging.core.plugin.postoffice;
 
-import java.util.Iterator;
-import java.util.List;
-
-import org.jboss.messaging.core.plugin.postoffice.Binding;
+import java.util.Collection;
 
 /**
- * A FavourLocalRoutingPolicy
- * 
- * This routing policy always favours the local queue
+ * A Bindings
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -37,32 +32,15 @@ import org.jboss.messaging.core.plugin.postoffice.Binding;
  * $Id$
  *
  */
-public class FavourLocalRoutingPolicy implements RoutingPolicy
+public interface Bindings
 {
-   private String localNodeId;
-
-   public FavourLocalRoutingPolicy(String localNodeId)
-   {
-      this.localNodeId = localNodeId;
-   }
+   void addBinding(Binding binding);
    
-   public Binding choose(List bindings)
-   {
-      Iterator iter = bindings.iterator();
-      
-      Binding binding = null;
-      
-      while (iter.hasNext())
-      {
-         binding = (Binding)iter.next();
-         
-         if (binding.getNodeId().equals(localNodeId))
-         {
-            return binding;
-         }
-      }
-      
-      return binding;
-   }
-
+   boolean removeBinding(Binding binding);
+   
+   Collection getAllBindings();
+   
+   int getDurableCount();
+   
+   boolean isEmpty();
 }

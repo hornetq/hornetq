@@ -7,17 +7,16 @@
 package org.jboss.jms.server.destination;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * A deployable JBoss Messaging topic.
@@ -66,27 +65,16 @@ public class TopicService extends DestinationServiceSupport
          destination.setPostOffice(postOffice);
            
          // We deploy any queues corresponding to pre-existing durable subscriptions
-         List bindings = postOffice.listBindingsForCondition(destination.getName());
+         Collection bindings = postOffice.listBindingsForCondition(destination.getName());
          Iterator iter = bindings.iterator();
          while (iter.hasNext())
          {
             Binding binding = (Binding)iter.next();
-            if (binding.isActive())
-            {
-               //Do nothing - already active
-            }
-            else
-            {
-               QueuedExecutorPool pool = serverPeer.getQueuedExecutorPool();
-               QueuedExecutor executor = (QueuedExecutor)pool.get();
-               org.jboss.messaging.core.local.Queue q = 
-                  new org.jboss.messaging.core.local.Queue(binding.getChannelId(), ms, pm, true, true,
-                           destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize(),
-                           executor);
-               q.load();
-               binding.setQueue(q);
-               binding.activate();
-            }
+            
+            PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
+
+            queue.deactivate();
+            queue.activate(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());            
          }
 
          // push security update to the server
@@ -120,21 +108,21 @@ public class TopicService extends DestinationServiceSupport
          //First we remove any data for a non durable sub - a non durable sub might have data in the
          //database since it might have paged
          
-         List bindings = postOffice.listBindingsForCondition(destination.getName());
+         Collection bindings = postOffice.listBindingsForCondition(destination.getName());
          
          Iterator iter = bindings.iterator();
          while (iter.hasNext())            
          {
             Binding binding = (Binding)iter.next();
             
-            binding.deactivate();
+            PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
             
-            if (!binding.isDurable())
+            if (!queue.isRecoverable())
             {
-               binding.getQueue().removeAllReferences();
+               queue.removeAllReferences();
             }
-            
-            binding.setQueue(null);
+                        
+            queue.deactivate();
          }
           
          started = false;

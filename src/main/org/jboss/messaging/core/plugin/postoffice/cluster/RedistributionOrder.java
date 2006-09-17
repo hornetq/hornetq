@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import org.jboss.messaging.core.Queue;
+
 /**
  * 
  * A RedistributionOrder
@@ -35,15 +37,15 @@ public class RedistributionOrder
 {
    private int numberOfMessages;
    
-   private String queueName;
+   private Queue queue;
    
    private String destinationNodeId;
 
-   public RedistributionOrder(int numberOfMessages, String queueName, String destinationNodeId)
+   public RedistributionOrder(int numberOfMessages, Queue queue, String destinationNodeId)
    {
       this.numberOfMessages = numberOfMessages;
       
-      this.queueName = queueName;
+      this.queue = queue;
       
       this.destinationNodeId = destinationNodeId;
    }
@@ -58,8 +60,8 @@ public class RedistributionOrder
       return numberOfMessages;
    }
 
-   public String getQueueName()
+   public Queue getQueue()
    {
-      return queueName;
+      return queue;
    }
 }

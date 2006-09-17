@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.LockMap;
@@ -66,8 +66,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testRecoverableQueueCrash() throws Throwable
    {
-      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
-      
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];
@@ -126,10 +126,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       ms = new SimpleMessageStore();
       ms.start();
        
-      Queue queue2 = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
-      
-      queue2.load();
-      
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(50, refIds.size());
                    
@@ -155,8 +153,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
-
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];
@@ -215,9 +213,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       ms = new SimpleMessageStore();
       ms.start();
       
-      Queue queue2 = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
-      
-      queue2.load();
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
       
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
@@ -242,8 +238,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      Queue queue = new Queue(1, ms, pm, true, false, 100, 20, 10, new QueuedExecutor());
-      
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+  
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];
@@ -306,8 +302,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testQueueReloadWithSmallerFullSize() throws Throwable
    {
-      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
-
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      
       Message[] msgs = new Message[150];
       
       MessageReference[] refs = new MessageReference[150];
@@ -360,9 +356,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       //Reload the queue with a smaller fullSize
       
-      Queue queue2 = new Queue(1, ms, pm, true, false, 50, 20, 10, new QueuedExecutor());
-      
-      queue2.load();
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 50, 20, 10);
       
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(150, refIds.size());
@@ -404,8 +398,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testReloadWithLargerFullSize() throws Throwable
    {
-      Queue queue = new Queue(1, ms, pm, true, true, 100, 20, 10, new QueuedExecutor());
-
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      
       Message[] msgs = new Message[150];
       
       MessageReference[] refs = new MessageReference[150];
@@ -458,9 +452,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       //Reload the queue with a smaller fullSize
       
-      Queue queue2 = new Queue(1, ms, pm, true, false, 130, 20, 10, new QueuedExecutor());
-      
-      queue2.load();
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 130, 20, 10);
       
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(150, refIds.size());

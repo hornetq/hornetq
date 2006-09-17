@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Streamable;
 
@@ -74,7 +73,7 @@ class SharedState implements Streamable
       bindings = new ArrayList(size);
       for (int i = 0; i < size; i++)
       {
-         ClusteredBinding bb = new ClusteredBindingImpl();
+         BindingInfo bb = new BindingInfo();
          bb.read(in);
          bindings.add(bb);
       }
@@ -88,16 +87,9 @@ class SharedState implements Streamable
       Iterator iter = bindings.iterator();
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
+         BindingInfo info = (BindingInfo)iter.next();
          
-         if (!(binding instanceof ClusteredBinding))
-         {
-            throw new IllegalStateException("Can only cluster clustered bindings");
-         }
-         
-         ClusteredBinding bb = (ClusteredBinding)binding;
-         
-         bb.write(out);
+         info.write(out);
       }
       
       StreamUtils.writeObject(out, nodeIdAddressMap, true, false);     

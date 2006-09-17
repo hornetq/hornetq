@@ -131,12 +131,6 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    int messageCount();   
    
    /**
-    * Load the channel state from storage
-    * @throws Exception
-    */
-   void load() throws Exception;
-   
-   /**
     * Remove all the references in the channel
     * @throws Throwable
     */

@@ -19,15 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.postoffice.cluster;
+package org.jboss.test.messaging.core.plugin.postoffice;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
-import org.jboss.messaging.util.Streamable;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.FilterFactory;
 
 /**
- * A QueueStats
+ * A SimpleFilterFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -35,57 +33,12 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-class QueueStats implements Streamable
+public class SimpleFilterFactory implements FilterFactory
 {
-   private String queueName;
-   
-   private double growthRate;
-   
-   private int messageCount;
 
-   public QueueStats()
-   {      
+   public Filter createFilter(String filterString) throws Exception
+   {
+      return filterString == null ? null : new SimpleFilter(Long.valueOf(filterString).longValue());
    }
    
-   QueueStats(String queueName, double growthRate, int messageCount)
-   {
-      this.queueName = queueName;
-      
-      this.growthRate = growthRate;
-      
-      this.messageCount = messageCount;
-   }
-
-   double getGrowthRate()
-   {
-      return growthRate;
-   }
-
-   int getMessageCount()
-   {
-      return messageCount;
-   }
-
-   String getQueueName()
-   {
-      return queueName;
-   }
-
-   public void read(DataInputStream in) throws Exception
-   {
-      queueName = in.readUTF();
-      
-      growthRate = in.readDouble();
-      
-      messageCount = in.readInt();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      out.writeUTF(queueName);
-      
-      out.writeDouble(growthRate);
-      
-      out.writeInt(messageCount);
-   }      
 }

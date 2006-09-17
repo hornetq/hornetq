@@ -19,14 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.contract;
-
-import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
+package org.jboss.messaging.core;
 
 /**
+ * A FilterFactory
  * 
- * A ClusteredPostOffice
+ * This exists so we can abstract out the creation of filters inside core code so
+ * we don't have dependencies on jms selectors
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -34,24 +33,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
  * $Id$
  *
  */
-public interface ClusteredPostOffice extends PostOffice
+public interface FilterFactory
 {
-   /**
-    * Bind a queue to the post office under a specific condition
-    * such that it is available across the cluster
-    * @param condition The condition to be used when routing references
-    * @param queue
-    * @return
-    * @throws Exception
-    */
-   Binding bindClusteredQueue(String condition, LocalClusteredQueue queue) throws Exception;
-   
-   /**
-    * Unbind a clustered queue from the post office
-    * @param queueName The unique name of the queue
-    * @return
-    * @throws Throwable
-    */
-   Binding unbindClusteredQueue(String queueName) throws Throwable;
-  
+   Filter createFilter(String filterString) throws Exception;
 }

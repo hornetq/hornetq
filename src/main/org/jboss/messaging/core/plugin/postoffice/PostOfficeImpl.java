@@ -25,30 +25,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.JDBCSupport;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
@@ -72,6 +75,8 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    
    protected MessageStore ms;     
    
+   protected PersistenceManager pm;
+   
    protected TransactionRepository tr;
    
    protected String nodeId;
@@ -81,7 +86,11 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    
    //Map <condition, List <binding> >
    protected Map conditionMap;
-     
+   
+   protected FilterFactory filterFactory;
+   
+   protected QueuedExecutorPool pool;
+   
    public PostOfficeImpl()
    {      
    }
@@ -89,7 +98,9 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    public PostOfficeImpl(DataSource ds, TransactionManager tm, Properties sqlProperties,
                          boolean createTablesOnStartup,
                          String nodeId, String officeName, MessageStore ms,
-                         TransactionRepository tr)
+                         PersistenceManager pm,
+                         TransactionRepository tr, FilterFactory filterFactory,
+                         QueuedExecutorPool pool)
    {            
       super (ds, tm, sqlProperties, createTablesOnStartup);
       
@@ -105,7 +116,13 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       
       this.ms = ms;
       
+      this.pm = pm;
+      
       this.tr = tr;
+      
+      this.filterFactory = filterFactory;
+      
+      this.pool = pool;
    }
    
    // MessagingComponent implementation --------------------------------
@@ -124,9 +141,9 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
      
    // PostOffice implementation ---------------------------------------        
          
-   public Binding bindQueue(String queueName, String condition, Filter filter, Queue queue) throws Exception
+   public Binding bindQueue(String condition, Queue queue) throws Exception
    {
-      if (queueName == null)
+      if (queue.getName() == null)
       {
          throw new IllegalArgumentException("Queue name is null");
       }
@@ -135,7 +152,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       {
          throw new IllegalArgumentException("Condition is null");
       }
-      
+       
       lock.writeLock().acquire();
 
       try
@@ -147,26 +164,19 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          
          if (nameMap != null)
          {
-            binding = (Binding)nameMap.get(queueName);
+            binding = (Binding)nameMap.get(queue.getName());
          }
          
          if (binding != null)
          {
-            throw new IllegalArgumentException("Binding already exists for name " + queueName);
+            throw new IllegalArgumentException("Binding already exists for name " + queue.getName());
          }
-         
-         boolean durable = queue.isRecoverable();
-                    
-         binding = createBinding(nodeId, queueName, condition, filter,
-                                 queue.getChannelID(), durable);         
-         
-         binding.setQueue(queue);
-         
-         binding.activate();
+                 
+         binding = new BindingImpl(this.nodeId, condition, queue); 
          
          addBinding(binding);
                
-         if (durable)
+         if (queue.isRecoverable())
          {
             //Need to write the binding to the db            
             insertBinding(binding);       
@@ -193,17 +203,14 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       {         
          Binding binding = removeBinding(this.nodeId, queueName);
       
-         if (binding.isDurable())
+         if (binding.getQueue().isRecoverable())
          {
             //Need to remove from db too
             
-            deleteBinding(binding.getQueueName());                        
+            deleteBinding(binding.getQueue().getName());                        
          }
          
-         if (binding.getQueue() != null)
-         {
-            binding.getQueue().removeAllReferences();
-         }
+         binding.getQueue().removeAllReferences();         
          
          return binding;     
       }
@@ -213,7 +220,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       }
    }   
    
-   public List listBindingsForCondition(String condition) throws Exception
+   public Collection listBindingsForCondition(String condition) throws Exception
    {
       if (condition == null)
       {
@@ -224,7 +231,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       
       try
       {
-         ConditionBindings cb = (ConditionBindings)conditionMap.get(condition);
+         Bindings cb = (Bindings)conditionMap.get(condition);
                   
          if (cb == null)
          {
@@ -232,9 +239,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          }
          else
          {
-            List list = cb.getAllBindings();                        
-            
-            return list;
+            return cb.getAllBindings();
          }
       }
       finally
@@ -294,15 +299,15 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
                 
       try
       {                 
-         ConditionBindings cb = (ConditionBindings)conditionMap.get(condition);
+         Bindings bd = (Bindings)conditionMap.get(condition);
                              
-         if (cb != null)
+         if (bd != null)
          {            
             boolean startInternalTx = false;
             
             if (tx == null && ref.isReliable())
             {
-               if (cb.getDurableCount() > 1)
+               if (bd.getDurableCount() > 1)
                {
                   // When routing a persistent message without a transaction then we may need to start an 
                   // internal transaction in order to route it.
@@ -317,31 +322,28 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
                tx = tr.createTransaction();
             }
                         
-            List bindings = cb.getAllBindings();
+            Collection bindings = bd.getAllBindings();
             
             Iterator iter = bindings.iterator();
             
             while (iter.hasNext())
             {
                Binding binding = (Binding)iter.next();
-                 
-               if (binding.isActive() && binding.getNodeId().equals(this.nodeId))
+               
+               //Sanity check
+               if (!binding.getNodeId().equals(this.nodeId))
                {
-                  //It's a local binding so we pass the message on to the subscription
-                  Queue queue = binding.getQueue();
-                  
-                  Filter filter = binding.getFilter();
-                  
-                  if (filter != null && filter.accept(ref))
-                  {
-                     Delivery del = queue.handle(null, ref, tx);
-                     
-                     if (del != null && del.isSelectorAccepted())
-                     {
-                        routed = true;
-                     }      
-                  }                  
-               }               
+                  throw new IllegalStateException("Local post office has foreign bindings!");
+               }
+                                
+               Queue queue = binding.getQueue();
+               
+               Delivery del = queue.handle(null, ref, tx);
+               
+               if (del != null && del.isSelectorAccepted())
+               {
+                  routed = true;
+               }                                                                     
             } 
             
             if (startInternalTx)
@@ -358,37 +360,96 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          lock.readLock().release();
       }
    } 
+   
+   public boolean isLocal()
+   {
+      return true;
+   }
      
    // Protected -----------------------------------------------------
-   
-   protected Binding createBinding(String nodeId, String queueName, String condition, Filter filter,
-                                   long channelId, boolean durable) throws Exception
-   {           
-      return new BindingImpl(nodeId, queueName, condition, filter,
-                             channelId, durable);   
-   }
-   
+    
    protected void loadBindings() throws Exception
    {
       lock.writeLock().acquire();
       
+      Connection conn = null;
+      PreparedStatement ps  = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+       
       try
       {
-         List list = getBindings();
+         conn = ds.getConnection();
          
-         Iterator iter = list.iterator();
-         
-         while (iter.hasNext())
+         ps = conn.prepareStatement(getSQLStatement("LOAD_BINDINGS"));
+                 
+         ps.setString(1, this.officeName);
+
+         rs = ps.executeQuery();
+              
+         while (rs.next())
          {
-            Binding binding = (Binding)iter.next();
+            String nodeId = rs.getString(1);
             
-            addBinding(binding);              
+            String queueName = rs.getString(2);
+            
+            String condition = rs.getString(3);
+            
+            String selector = rs.getString(4);
+            
+            if (rs.wasNull())
+            {
+               selector = null;
+            }
+            
+            long channelId = rs.getLong(5);
+                                             
+            Binding binding = this.createBinding(nodeId, condition, queueName, channelId, selector, true);
+            
+            addBinding(binding);
          }
       }
       finally
       {
          lock.writeLock().release();
+         
+         if (rs != null)
+         {
+            rs.close();
+         }
+         if (ps != null)
+         {
+            ps.close();
+         }
+         if (conn != null)
+         {
+            conn.close();
+         }
+         wrap.end();
       }
+   }
+   
+   protected Binding createBinding(String nodeId, String condition, String queueName, long channelId, String filterString, boolean durable) throws Exception
+   {      
+      
+      Filter filter = filterFactory.createFilter(filterString);
+      
+      Queue queue;
+      if (nodeId.equals(this.nodeId))
+      {
+         QueuedExecutor executor = (QueuedExecutor)pool.get();
+         
+         queue = new LocalClusteredQueue(nodeId, queueName, channelId, ms, pm, true,
+                                         true, executor, filter);
+      }
+      else
+      {
+         throw new IllegalStateException("This is a non clustered post office - should not have bindings from different nodes!");
+      }
+      
+      Binding binding = new BindingImpl(nodeId, condition, queue);
+      
+      return binding;
    }
          
    protected void insertBinding(Binding binding) throws Exception
@@ -403,11 +464,11 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          
          ps = conn.prepareStatement(getSQLStatement("INSERT_BINDING"));
          
-         String filterString = binding.getFilter() == null ? null : binding.getFilter().getFilterString();
+         String filterString = binding.getQueue().getFilter() == null ? null : binding.getQueue().getFilter().getFilterString();
                   
          ps.setString(1, this.officeName);
          ps.setString(2, this.nodeId);
-         ps.setString(3, binding.getQueueName());
+         ps.setString(3, binding.getQueue().getName());
          ps.setString(4, binding.getCondition());         
          if (filterString != null)
          {
@@ -417,9 +478,9 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          {
             ps.setNull(5, Types.VARCHAR);
          }
-         ps.setLong(6, binding.getChannelId());
+         ps.setLong(6, binding.getQueue().getChannelID());
 
-         ps.executeUpdate();;
+         ps.executeUpdate();
       }
       finally
       {
@@ -469,82 +530,6 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       }     
    }
 
-   /*
-    * Note that we get all bindings irrespective of which node this represents.
-    * This is because persistent messages are always persisted in durable subscriptions on
-    * 
-    */
-   protected List getBindings() throws Exception
-   {
-      Connection conn = null;
-      PreparedStatement ps  = null;
-      ResultSet rs = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-      
-      List list = new ArrayList();
-      
-      try
-      {
-         conn = ds.getConnection();
-         
-         ps = conn.prepareStatement(getSQLStatement("LOAD_BINDINGS"));
-                 
-         ps.setString(1, this.officeName);
-
-         rs = ps.executeQuery();
-              
-         while (rs.next())
-         {
-            String nodeId = rs.getString(1);
-            
-            String queueName = rs.getString(2);
-            
-            String condition = rs.getString(3);
-            
-            String selector = rs.getString(4);
-            
-            if (rs.wasNull())
-            {
-               selector = null;
-            }
-            
-            long channelId = rs.getLong(5);
-              
-            //We don't load the actual queue - this is because we don't know the paging params until
-            //activation time
-                    
-            //TODO we need to generalise selector creation
-            Selector filter = null;
-            if (selector != null)
-            {
-               filter = new Selector(selector);
-            }
-            
-            Binding binding = createBinding(nodeId, queueName, condition, filter, channelId, true);
-            
-            list.add(binding);
-         }
-         
-         return list;
-      }
-      finally
-      {
-         if (rs != null)
-         {
-            rs.close();
-         }
-         if (ps != null)
-         {
-            ps.close();
-         }
-         if (conn != null)
-         {
-            conn.close();
-         }
-         wrap.end();
-      }     
-   }
-   
    protected void addBinding(Binding binding)
    {
       Map nameMap = (Map)nameMaps.get(binding.getNodeId());
@@ -556,15 +541,15 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          nameMaps.put(binding.getNodeId(), nameMap);
       }
       
-      nameMap.put(binding.getQueueName(), binding);
+      nameMap.put(binding.getQueue().getName(), binding);
       
       String condition = binding.getCondition();
             
-      ConditionBindings bindings = (ConditionBindings)conditionMap.get(condition);
+      Bindings bindings = (Bindings)conditionMap.get(condition);
       
       if (bindings == null)
       {
-         bindings = new ConditionBindings(this.nodeId);
+         bindings = createBindings();
          
          conditionMap.put(condition, bindings);
       }
@@ -603,7 +588,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
          nameMaps.remove(nodeId);
       }
                   
-      ConditionBindings bindings = (ConditionBindings)conditionMap.get(binding.getCondition());
+      Bindings bindings = (Bindings)conditionMap.get(binding.getCondition());
       
       if (bindings == null)
       {
@@ -623,6 +608,11 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       }        
       
       return binding;
+   }
+   
+   protected Bindings createBindings()
+   {
+      return new BindingsImpl();
    }
    
    protected Map getDefaultDMLStatements()
@@ -651,5 +641,6 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    
    // Private -------------------------------------------------------             
                  
-   // Inner classes -------------------------------------------------            
+   // Inner classes ------------------------------------------------- 
+      
 }

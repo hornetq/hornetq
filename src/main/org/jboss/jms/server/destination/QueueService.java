@@ -11,7 +11,10 @@ import java.util.List;
 
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -87,37 +90,38 @@ public class QueueService extends DestinationServiceSupport
             
          Binding binding = postOffice.getBindingForQueueName(destination.getName());
          
-         QueuedExecutor executor = (QueuedExecutor)pool.get();
-         
          if (binding != null)
-         {
-            //Reload the queue for the binding
-            if (binding.isActive())
-            {
-               //Do nothing - binding is already active
-            }
-            else
-            {
-               org.jboss.messaging.core.local.Queue q = 
-                  new org.jboss.messaging.core.local.Queue(binding.getChannelId(), ms, pm, true, true,
-                           destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize(),
-                           executor);
-               q.load();
-               binding.setQueue(q);
-               binding.activate();
-            }
+         {    
+            PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
+            
+            //Activate it - this causes it's state to be loaded
+            queue.deactivate();
+            queue.activate(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());            
          }
          else
          {         
-            //Create a new queue            
+            QueuedExecutor executor = (QueuedExecutor)pool.get();
             
-            org.jboss.messaging.core.local.Queue q = 
-               new org.jboss.messaging.core.local.Queue(idm.getId(), ms, pm, true, true,
-                        destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize(),
-                        executor);
+            //Create a new queue       
             
-            //Make a binding for this queue
-            postOffice.bindQueue(destination.getName(), destination.getName(), null, q);
+            PagingFilteredQueue queue;
+            
+            if (postOffice.isLocal())
+            {
+               queue = new PagingFilteredQueue(destination.getName(), idm.getId(), ms, pm, true, true,                        
+                                               executor, null,
+                                               destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
+               
+               postOffice.bindQueue(destination.getName(), queue);
+            }
+            else
+            {
+               queue = new LocalClusteredQueue(nodeId, destination.getName(), idm.getId(), ms, pm, true, true,                        
+                                               executor, null,
+                                               destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
+               
+               ((ClusteredPostOffice)postOffice).bindClusteredQueue(destination.getName(), (LocalClusteredQueue)queue);
+            }                        
          }
          
          //push security update to the server
@@ -148,11 +152,9 @@ public class QueueService extends DestinationServiceSupport
          //We undeploy the queue from memory - this also deactivates the binding
          Binding binding = postOffice.getBindingForQueueName(destination.getName());
          
-         if (binding.isActive())
-         {
-            binding.deactivate();
-            binding.setQueue(null);
-         }
+         PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
+         
+         queue.deactivate();
          
          started = false;
          

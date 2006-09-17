@@ -49,7 +49,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.local.Queue;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
@@ -86,7 +86,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private int id;
 
-   private Queue messageQueue;
+   private PagingFilteredQueue messageQueue;
    
    private String queueName;
 
@@ -125,7 +125,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    // Constructors --------------------------------------------------
 
-   protected ServerConsumerEndpoint(int id, Queue messageQueue, String queueName,
+   protected ServerConsumerEndpoint(int id, PagingFilteredQueue messageQueue, String queueName,
                                     ServerSessionEndpoint sessionEndpoint,
                                     String selector, boolean noLocal, JBossDestination dest,
                                     int prefetchSize)
@@ -365,7 +365,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                   throw new IllegalStateException("Cannot find queue with name " + queueName);
                }
                
-               if (!binding.isDurable())
+               if (!binding.getQueue().isRecoverable())
                {                 
                   topicPostOffice.unbindQueue(queueName);
                }

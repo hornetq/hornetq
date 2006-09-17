@@ -97,7 +97,7 @@ public abstract class ChannelSupport implements Channel
    protected Object refLock;
 
    protected Object deliveryLock;
-
+      
    // Constructors --------------------------------------------------
 
    protected ChannelSupport(long channelID, MessageStore ms,
@@ -445,8 +445,8 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
-
-   // Public --------------------------------------------------------
+  
+   // Public --------------------------------------------------------   
 
    public int memoryRefCount()
    {
