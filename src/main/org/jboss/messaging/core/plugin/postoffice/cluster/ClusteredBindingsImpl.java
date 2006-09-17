@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.BindingsImpl;
 
@@ -48,24 +49,28 @@ public class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBind
    
    private int localDurableCount;
    
-   public ClusteredBindingsImpl(String thisNode)
+   private RouterFactory rf;
+   
+   public ClusteredBindingsImpl(String thisNode, RouterFactory rf)
    {
       super();
       
       nameMap = new HashMap();
       
       this.thisNode = thisNode;
+      
+      this.rf = rf;
    }
    
    public void addBinding(Binding binding)
    {
       super.addBinding(binding);
                
-      ClusterRouter router = (ClusterRouter)nameMap.get(binding.getQueue().getName());
+      Router router = (Router)nameMap.get(binding.getQueue().getName());
       
       if (router == null)
       {
-         router = new ClusterRouter();
+         router = rf.createRouter();
          
          nameMap.put(binding.getQueue().getName(), router);
       }
@@ -87,7 +92,7 @@ public class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBind
          return false;
       }
            
-      ClusterRouter router = (ClusterRouter)nameMap.get(binding.getQueue().getName());
+      FavourLocalRouter router = (FavourLocalRouter)nameMap.get(binding.getQueue().getName());
       
       if (router == null)
       {

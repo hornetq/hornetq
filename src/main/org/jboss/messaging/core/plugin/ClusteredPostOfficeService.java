@@ -34,7 +34,9 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.cluster.BasicRedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RouterFactory;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -206,6 +208,8 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
          RedistributionPolicy redistPolicy = new BasicRedistributionPolicy(nodeId);
          
          FilterFactory ff = new SelectorFactory();
+         
+         RouterFactory rf = new FavourLocalRouterFactory();
                   
          postOffice =  new ClusteredPostOfficeImpl(ds, tm, sqlProperties, createTablesOnStartup,
                                                nodeId, officeName, ms,
@@ -213,7 +217,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
                                                groupName,
                                                syncChannelConfig, asyncChannelConfig,
                                                stateTimeout, castTimeout,
-                                               redistPolicy, redistPeriod);
+                                               redistPolicy, redistPeriod, rf);
          
          postOffice.start();
          

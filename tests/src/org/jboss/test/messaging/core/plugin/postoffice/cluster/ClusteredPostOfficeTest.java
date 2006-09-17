@@ -33,8 +33,10 @@ import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.BasicRedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RouterFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.plugin.postoffice.SimpleFilter;
@@ -450,54 +452,6 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
       this.clusteredRouteWithFilter(true);
    }
    
-   public final void testRedistribute() throws Exception
-   {
-      ClusteredPostOffice office1 = null;
-      
-      ClusteredPostOffice office2 = null;
-          
-      try
-      {   
-         office1 = createClusteredPostOffice("node1", "testgroup");
-         office2 = createClusteredPostOffice("node2", "testgroup");
-         
-         LocalClusteredQueue queue1 = new LocalClusteredQueue("node1", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
-         
-         Binding binding1 = office1.bindClusteredQueue("queue1", queue1);
-         
-         LocalClusteredQueue queue2 = new LocalClusteredQueue("node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
-         
-         Binding binding2 = office2.bindClusteredQueue("queue1", queue1);
-         
-         final int NUM_MESSAGES = 10;
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            Message msg = CoreMessageFactory.createCoreMessage(i, false, null);      
-            MessageReference ref = ms.reference(msg);         
-            boolean routed = office1.route(ref, "queue1", null);
-         }
-         
-         List msgs = queue1.browse();
-         assertEquals(NUM_MESSAGES, msgs.size());
-         msgs = queue2.browse();
-         assertEquals(0, msgs.size());
-         
-         
-      
-      }
-      finally
-      {
-         if (office1 != null)
-         {            
-            office1.stop();
-         }
-         
-         if (office2 != null)
-         {
-            office2.stop();
-         }
-      }
-   }
    
    /*
     * We should allow the clustered bind of queues with the same queue name on different nodes of the
@@ -608,6 +562,8 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          }
       }
    }
+   
+   
    
    // Package protected ---------------------------------------------
 
@@ -1474,9 +1430,11 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
    
    protected ClusteredPostOffice createClusteredPostOffice(String nodeId, String groupName) throws Exception
    {
-      RedistributionPolicy redistPolicy = new BasicRedistributionPolicy(nodeId);
+      RedistributionPolicy redistPolicy = new NullRedistributionPolicy();
       
       FilterFactory ff = new SimpleFilterFactory();
+      
+      RouterFactory rf = new FavourLocalRouterFactory();
       
       ClusteredPostOfficeImpl postOffice = 
          new ClusteredPostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),
@@ -1484,7 +1442,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(50, 1),
                                  JGroupsUtil.getDataStackProperties(50, 1),
-                                 5000, 5000, redistPolicy, 1000);
+                                 5000, 5000, redistPolicy, 1000, rf);
       
       postOffice.start();      
       

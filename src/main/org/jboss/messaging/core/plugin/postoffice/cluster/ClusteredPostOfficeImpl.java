@@ -129,6 +129,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    private MessageRedistributor redistributor;
    
    private long redistributePeriod;
+   
+   private RouterFactory routerFactory;
       
    public ClusteredPostOfficeImpl()
    {        
@@ -157,10 +159,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             Element asyncChannelConfig,
             long stateTimeout, long castTimeout,
             RedistributionPolicy redistributionPolicy,
-            long redistributePeriod) throws Exception
+            long redistributePeriod,
+            RouterFactory rf) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod);
+           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod, rf);
       
       this.syncChannelConfigE = syncChannelConfig;      
       this.asyncChannelConfigE = asyncChannelConfig;     
@@ -181,10 +184,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                               String asyncChannelConfig,
                               long stateTimeout, long castTimeout,
                               RedistributionPolicy redistributionPolicy,
-                              long redistributePeriod) throws Exception
+                              long redistributePeriod,
+                              RouterFactory rf) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod);
+           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod, rf);
 
       this.syncChannelConfigS = syncChannelConfig;      
       this.asyncChannelConfigS = asyncChannelConfig;     
@@ -200,7 +204,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                                String groupName,
                                long stateTimeout, long castTimeout,                             
                                RedistributionPolicy redistributionPolicy,
-                               long redistributePeriod)
+                               long redistributePeriod,
+                               RouterFactory rf)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr, filterFactory,
              pool);
@@ -216,6 +221,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       this.redistributionPolicy = redistributionPolicy;
       
       this.redistributePeriod = redistributePeriod;
+      
+      this.routerFactory = rf;
       
       init();
    }
@@ -776,7 +783,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             
             while (iter2.hasNext())
             {
-               ClusterRouter router = (ClusterRouter)iter2.next();        
+               FavourLocalRouter router = (FavourLocalRouter)iter2.next();        
             
                RedistributionOrder order = redistributionPolicy.calculate(router.getQueues());
                
@@ -922,7 +929,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
         
    protected Bindings createBindings()
    {
-      return new ClusteredBindingsImpl(this.nodeId);
+      return new ClusteredBindingsImpl(this.nodeId, this.routerFactory);
    }
    
    protected void loadBindings() throws Exception

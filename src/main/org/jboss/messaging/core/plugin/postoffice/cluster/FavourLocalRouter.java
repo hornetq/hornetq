@@ -33,7 +33,8 @@ import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
- * A ClusterRouter
+ * 
+ * A FavourLocalRouter
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -41,13 +42,13 @@ import org.jboss.messaging.core.tx.Transaction;
  * $Id$
  *
  */
-public class ClusterRouter implements Router
+public class FavourLocalRouter implements Router
 {
    private List queues;
    
    private ClusteredQueue localQueue;
    
-   public ClusterRouter()
+   public FavourLocalRouter()
    {
       queues = new ArrayList();
    }
@@ -105,9 +106,11 @@ public class ClusterRouter implements Router
    public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
    {
       //Favour the local queue
-      
+           
       if (localQueue != null)
       {
+         //But only if it has consumers
+         
          Delivery del = localQueue.handle(observer, reference, tx);
          
          if (del != null && del.isSelectorAccepted())
