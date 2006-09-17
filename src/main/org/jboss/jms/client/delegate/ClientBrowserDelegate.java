@@ -56,7 +56,8 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    }
    
    public ClientBrowserDelegate()
-   {      
+   {     
+      
    }
 
 
