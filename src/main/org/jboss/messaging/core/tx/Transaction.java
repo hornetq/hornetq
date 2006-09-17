@@ -60,6 +60,8 @@ public class Transaction
    
    protected Map callbackMap;
    
+   protected TransactionRepository repository;
+   
    //A special first callback that is ensured to be executed first
    protected TxCallback firstCallback;
    
@@ -113,10 +115,11 @@ public class Transaction
       callbackMap = new HashMap();
    }
    
-   Transaction(long id, Xid xid)
+   Transaction(long id, Xid xid, TransactionRepository tr)
    {
       this(id);
       this.xid = xid;
+      this.repository = tr;
    }
    
    // Public --------------------------------------------------------
@@ -214,7 +217,7 @@ public class Transaction
       
       firstCallback = null;
       
-      if (trace) { log.trace("commit process complete " + this); }
+      if (trace) { log.trace("commit process complete " + this); }            
    }
    
    public synchronized void prepare() throws Exception

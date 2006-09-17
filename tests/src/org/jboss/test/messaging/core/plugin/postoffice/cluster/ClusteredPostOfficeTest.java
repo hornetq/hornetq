@@ -31,16 +31,16 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.BasicRedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRedistributionPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.RouterFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.test.messaging.core.SimpleFilter;
+import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.plugin.postoffice.SimpleFilter;
-import org.jboss.test.messaging.core.plugin.postoffice.SimpleFilterFactory;
 import org.jboss.test.messaging.core.plugin.postoffice.SimplePostOfficeTest;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
@@ -1434,7 +1434,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
       
       FilterFactory ff = new SimpleFilterFactory();
       
-      RouterFactory rf = new FavourLocalRouterFactory();
+      ClusterRouterFactory rf = new FavourLocalRouterFactory();
       
       ClusteredPostOfficeImpl postOffice = 
          new ClusteredPostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),

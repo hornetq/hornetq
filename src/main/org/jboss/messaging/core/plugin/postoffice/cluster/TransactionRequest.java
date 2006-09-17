@@ -24,8 +24,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.logging.Logger;
-
 
 
 /**
@@ -39,8 +37,6 @@ import org.jboss.logging.Logger;
  */
 abstract class TransactionRequest extends ClusterRequest implements ClusterTransaction
 {
-   private static final Logger log = Logger.getLogger(TransactionRequest.class);
-      
    private String nodeId;
    
    private long txId;

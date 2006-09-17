@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.test.messaging.core.base;
+package org.jboss.test.messaging.core.local;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,10 +27,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
@@ -41,9 +43,12 @@ import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.BrokenReceiver;
 import org.jboss.test.messaging.core.SimpleDeliveryObserver;
+import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * The QueueTest test strategy is to try as many combination as it makes sense of the following
@@ -71,7 +76,7 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
  *
  * $Id: ChannelTestBase.java 1019 2006-07-17 17:15:04Z timfox $
  */
-public abstract class QueueTestBase extends MessagingTestCase
+public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -90,11 +95,10 @@ public abstract class QueueTestBase extends MessagingTestCase
    protected ServiceContainer sc;
 
    protected PagingFilteredQueue queue;
-
-
+   
    // Constructors --------------------------------------------------
 
-   public QueueTestBase(String name)
+   public PagingFilteredQueueTestBase(String name)
    {
       super(name);
    }
@@ -186,6 +190,34 @@ public abstract class QueueTestBase extends MessagingTestCase
 
 
    // Channel tests -------------------------------------------------
+   
+
+   public void testWithFilter()
+   {
+      Filter f = new SimpleFilter(3);
+            
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), f);
+      
+      Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null, 0);
+      Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null, 0);
+      Message m3 = new CoreMessage(3, false, 0, 0, (byte)0, null, null, 0);
+      Message m4 = new CoreMessage(4, false, 0, 0, (byte)0, null, null, 0);
+      Message m5 = new CoreMessage(5, false, 0, 0, (byte)0, null, null, 0);
+      
+      MessageReference ref1 = ms.reference(m1);
+      MessageReference ref2 = ms.reference(m1);
+      MessageReference ref3 = ms.reference(m1);
+      MessageReference ref4 = ms.reference(m1);
+      MessageReference ref5 = ms.reference(m1);
+      
+      assertNull(queue.handle(null, ref1, null));
+      assertNull(queue.handle(null, ref2, null));
+      assertNotNull(queue.handle(null, ref3, null));
+      assertNull(queue.handle(null, ref4, null));
+      assertNull(queue.handle(null, ref5, null));
+      
+   }
+   
    
    public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
    {

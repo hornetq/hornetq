@@ -19,13 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.core.plugin.postoffice;
+package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.FilterFactory;
 
 /**
- * A SimpleFilterFactory
+ * A RouterFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -33,12 +31,7 @@ import org.jboss.messaging.core.FilterFactory;
  * $Id$
  *
  */
-public class SimpleFilterFactory implements FilterFactory
+public interface ClusterRouterFactory
 {
-
-   public Filter createFilter(String filterString) throws Exception
-   {
-      return filterString == null ? null : new SimpleFilter(Long.valueOf(filterString).longValue());
-   }
-   
+   ClusterRouter createRouter();
 }

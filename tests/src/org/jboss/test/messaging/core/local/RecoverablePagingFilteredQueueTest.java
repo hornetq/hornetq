@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.test.messaging.core.base.QueueTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -33,7 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id: RecoverableQueueTest.java 1019 2006-07-17 17:15:04Z timfox $
  */
-public class RecoverableQueueTest extends QueueTestBase
+public class RecoverablePagingFilteredQueueTest extends PagingFilteredQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -44,7 +43,7 @@ public class RecoverableQueueTest extends QueueTestBase
   
    // Constructors --------------------------------------------------
 
-   public RecoverableQueueTest(String name)
+   public RecoverablePagingFilteredQueueTest(String name)
    {
       super(name);
    }

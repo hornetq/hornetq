@@ -33,7 +33,6 @@ import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.tx.TxCallback;
 
 /**
  * A RemoteQueueStub
@@ -48,7 +47,7 @@ import org.jboss.messaging.core.tx.TxCallback;
  * $Id$
  *
  */
-public class RemoteQueueStub implements ClusteredQueue
+class RemoteQueueStub implements ClusteredQueue
 {
    private static final Logger log = Logger.getLogger(RemoteQueueStub.class);
       
@@ -68,7 +67,7 @@ public class RemoteQueueStub implements ClusteredQueue
    
    private PersistenceManager pm;
    
-   public RemoteQueueStub(String nodeId, String name, long id, boolean recoverable, PersistenceManager pm, Filter filter)
+   RemoteQueueStub(String nodeId, String name, long id, boolean recoverable, PersistenceManager pm, Filter filter)
    {
       this.nodeId = nodeId;
       

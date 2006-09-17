@@ -43,6 +43,8 @@ import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.SimpleFilter;
+import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;

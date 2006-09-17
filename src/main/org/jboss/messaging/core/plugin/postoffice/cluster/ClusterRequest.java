@@ -115,5 +115,4 @@ abstract class ClusterRequest implements Streamable
    abstract void execute(PostOfficeInternal office) throws Exception;
    
    abstract byte getType();
-
 }

@@ -34,7 +34,7 @@ import org.jboss.messaging.core.plugin.postoffice.Bindings;
  * $Id$
  *
  */
-public interface ClusteredBindings extends Bindings
+interface ClusteredBindings extends Bindings
 {
    Collection getRouters();
    

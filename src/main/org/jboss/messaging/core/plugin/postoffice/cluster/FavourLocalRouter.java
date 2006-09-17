@@ -29,7 +29,6 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -42,7 +41,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * $Id$
  *
  */
-public class FavourLocalRouter implements Router
+public class FavourLocalRouter implements ClusterRouter
 {
    private List queues;
    
@@ -51,6 +50,11 @@ public class FavourLocalRouter implements Router
    public FavourLocalRouter()
    {
       queues = new ArrayList();
+   }
+   
+   public int size()
+   {
+      return queues.size();
    }
 
    public boolean add(Receiver receiver)

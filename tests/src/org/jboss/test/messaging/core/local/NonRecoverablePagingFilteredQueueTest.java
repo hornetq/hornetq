@@ -21,11 +21,7 @@
 */
 package org.jboss.test.messaging.core.local;
 
-import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.test.messaging.core.base.QueueTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -36,7 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id$
  */
-public class NonRecoverableQueueTest extends QueueTestBase
+public class NonRecoverablePagingFilteredQueueTest extends PagingFilteredQueueTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -47,7 +43,7 @@ public class NonRecoverableQueueTest extends QueueTestBase
   
    // Constructors --------------------------------------------------
 
-   public NonRecoverableQueueTest(String name)
+   public NonRecoverablePagingFilteredQueueTest(String name)
    {
       super(name);
    }

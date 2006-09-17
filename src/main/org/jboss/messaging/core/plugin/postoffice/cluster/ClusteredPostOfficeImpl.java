@@ -130,7 +130,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    
    private long redistributePeriod;
    
-   private RouterFactory routerFactory;
+   private ClusterRouterFactory routerFactory;
       
    public ClusteredPostOfficeImpl()
    {        
@@ -160,7 +160,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             long stateTimeout, long castTimeout,
             RedistributionPolicy redistributionPolicy,
             long redistributePeriod,
-            RouterFactory rf) throws Exception
+            ClusterRouterFactory rf) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
            pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod, rf);
@@ -185,7 +185,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                               long stateTimeout, long castTimeout,
                               RedistributionPolicy redistributionPolicy,
                               long redistributePeriod,
-                              RouterFactory rf) throws Exception
+                              ClusterRouterFactory rf) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
            pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod, rf);
@@ -205,7 +205,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                                long stateTimeout, long castTimeout,                             
                                RedistributionPolicy redistributionPolicy,
                                long redistributePeriod,
-                               RouterFactory rf)
+                               ClusterRouterFactory rf)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr, filterFactory,
              pool);
@@ -352,16 +352,19 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          
          boolean startInternalTx = false;
          
+         String lastNodeId = null;
+         
          if (cb != null)
          {
             if (tx == null && ref.isReliable())
-            {
-               if (!(cb.getDurableCount() == 1 && cb.getLocalDurableCount() == 1))
+            {                
+               if (!(cb.getDurableCount() == 0 || (cb.getDurableCount() == 1 && cb.getLocalDurableCount() == 1)))
                {
                   // When routing a persistent message without a transaction then we may need to start an 
                   // internal transaction in order to route it.
                   // This is so we can guarantee the message is delivered to all or none of the subscriptions.
-                  // We need to do this if there is any other than a single local durable subscription
+                  // We need to do this if there is anything other than
+                  // No durable subs or exactly one local durable sub
                   startInternalTx = true;
                }
             }                        
@@ -370,12 +373,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             {
                tx = tr.createTransaction();
             }
-            
-            //There may be no transaction in the following cases
-            //1) No transaction specified in params and reference is unreliable
-            //2) No transaction specified in params and reference is reliable and there is only one
-            //   or less local durable subscription
-                     
+                
             int numberRemote = 0;
             
             Map queueNameNodeIdMap = null;
@@ -386,7 +384,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                      
             while (iter.hasNext())
             {
-               Router router = (Router)iter.next();
+               ClusterRouter router = (ClusterRouter)iter.next();
                
                Delivery del = router.handle(null, ref, tx);
                
@@ -399,16 +397,22 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                
                if (!queue.isLocal())
                {
-                  //We need to cast the message
+                  //We need to send the message remotely
                   numberRemote++;
                   
-                  if (queueNameNodeIdMap == null)
+                  lastNodeId = queue.getNodeId();
+                  
+                  if (router.size() > 1 && queueNameNodeIdMap == null)
                   {
+                     //If there are more than one queues with the same node on the remote nodes
+                     //We have now chosen which one will receive the message so we need to add this
+                     //information to a map which will get sent when casting - so the the queue
+                     //on the receiving node knows whether to receive the message
                      queueNameNodeIdMap = new HashMap();
                      
                      //We add an entry to the map so that on the receiving node we can work out which
                      //queue instance will receive the message
-                     queueNameNodeIdMap.put(queue.getName(), queue.getNodeId());
+                     queueNameNodeIdMap.put(queue.getName(), lastNodeId);
                   }
                }
             }
@@ -426,8 +430,16 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                
                if (tx == null)
                {
-                  //We just throw the message on the network - no need to wait for any reply       
-                  asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));               
+                  if (numberRemote == 1)
+                  {
+                     //Unicast - only one node is interested in the message
+                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
+                  }
+                  else
+                  {
+                     //Multicast - more than one node is interested
+                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));
+                  }                                 
                }
                else
                {
@@ -437,7 +449,15 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                   {
                      callback = new CastMessagesCallback(nodeId, tx.getId(), ClusteredPostOfficeImpl.this);
                      
-                     //This callback must be executed first
+                     //This callback MUST be executed first
+                     
+                     //Execution order is as follows:
+                     //Before commit:
+                     //1. Cast messages across network - get added to holding area (if persistent) on receiving
+                     //nodes
+                     //2. Persist messaage in persistent store
+                     //After commit
+                     //1. Cast commit message across network
                      tx.addFirstCallback(callback, this);
                   }
                       
@@ -447,8 +467,6 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                                                 
             if (startInternalTx)
             {               
-               // TODO - do we need to rollback if an exception is thrown??
-               
                tx.commit();
             }
          }

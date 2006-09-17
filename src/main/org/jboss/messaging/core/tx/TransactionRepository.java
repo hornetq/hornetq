@@ -146,7 +146,7 @@ public class TransactionRepository implements MessagingComponent
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = new Transaction(idManager.getId(), xid);
+      Transaction tx = new Transaction(idManager.getId(), xid, this);
       
       if (trace) { log.trace("created transaction " + tx); }
       

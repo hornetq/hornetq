@@ -32,7 +32,7 @@ import org.jboss.messaging.core.Queue;
  * $Id$
  *
  */
-public interface ClusteredQueue extends Queue
+interface ClusteredQueue extends Queue
 {
    double getGrowthRate();
    

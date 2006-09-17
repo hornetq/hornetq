@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.util.StreamUtils;
-
 
 /**
  * A SendTransactionRequest
@@ -43,9 +41,7 @@ import org.jboss.messaging.util.StreamUtils;
  *
  */
 class SendTransactionRequest extends TransactionRequest
-{
-   private static final Logger log = Logger.getLogger(SendTransactionRequest.class);
-      
+{ 
    static final int TYPE = 8;
    
    private List messageHolders;

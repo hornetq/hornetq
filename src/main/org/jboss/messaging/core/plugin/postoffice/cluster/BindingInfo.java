@@ -36,7 +36,7 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-public class BindingInfo implements Streamable
+class BindingInfo implements Streamable
 {
    private String nodeId;   
    
@@ -107,32 +107,32 @@ public class BindingInfo implements Streamable
       out.writeBoolean(durable);
    }
 
-   public long getChannelId()
+   long getChannelId()
    {
       return channelId;
    }
 
-   public String getCondition()
+   String getCondition()
    {
       return condition;
    }
 
-   public boolean isDurable()
+   boolean isDurable()
    {
       return durable;
    }
 
-   public String getFilterString()
+   String getFilterString()
    {
       return filterString;
    }
 
-   public String getNodeId()
+   String getNodeId()
    {
       return nodeId;
    }
 
-   public String getQueueName()
+   String getQueueName()
    {
       return queueName;
    }

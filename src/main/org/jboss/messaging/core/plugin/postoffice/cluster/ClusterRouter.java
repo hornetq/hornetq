@@ -19,13 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.core.plugin.postoffice;
+package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.Router;
 
 /**
- * A SimpleFilter
+ * A ClusterRouter
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -33,23 +32,7 @@ import org.jboss.messaging.core.Routable;
  * $Id$
  *
  */
-public class SimpleFilter implements Filter
+public interface ClusterRouter extends Router
 {
-   long idMatch;
-   
-   public SimpleFilter(long idMatch)
-   {
-      this.idMatch = idMatch;
-   }
-
-   public boolean accept(Routable routable)
-   {
-      return routable.getMessageID() == idMatch;
-   }
-
-   public String getFilterString()
-   {
-      return String.valueOf(idMatch);
-   }
-   
+   int size();
 }

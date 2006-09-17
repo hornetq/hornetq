@@ -36,7 +36,8 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
  * $Id$
  *
  */
-public class MessageRedistributor implements MessagingComponent
+
+class MessageRedistributor implements MessagingComponent
 {
    private static final Logger log = Logger.getLogger(MessageRedistributor.class);
      
@@ -46,8 +47,7 @@ public class MessageRedistributor implements MessagingComponent
    
    private long period;
    
-   public MessageRedistributor(PostOfficeInternal office,
-                               long period)
+   MessageRedistributor(PostOfficeInternal office, long period)
    {
       this.office = office;
       
