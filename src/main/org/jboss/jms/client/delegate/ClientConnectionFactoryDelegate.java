@@ -224,7 +224,7 @@ public class ClientConnectionFactoryDelegate
          {
             //Not a call to createConnectionDelegate - disconnect the client
             
-            //client.disconnect();
+            client.disconnect();
          }
       }
 
