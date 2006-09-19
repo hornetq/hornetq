@@ -350,96 +350,33 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          {
             if (trace) { log.trace("one phase commit request received"); }
             
-            Transaction tx = null;
-            try
-            {               
-               tx = tr.createTransaction();
-               processTransaction(request.getState(), tx);
-               tx.commit();
-            }
-            catch (Throwable t)
-            {
-               log.error("Exception occured", t);
-               if (tx != null)
-               {                  
-                  try
-                  {
-                     tx.rollback();
-                     throw new MessagingTransactionRolledBackException("Transaction was rolled back.", t);
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Failed to rollback tx", e);
-                     throw new MessagingJMSException("Failed to rollback tx after commit failure", e);
-                  }
-               }               
-            }
+            Transaction tx = tr.createTransaction();
+            processTransaction(request.getState(), tx);
+            tx.commit();
          }        
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
          {                        
             if (trace) { log.trace("Two phase commit prepare request received"); }   
             
-            Transaction tx = null;            
-            try
-            {
-               tx = tr.createTransaction(request.getXid());
-               processTransaction(request.getState(), tx);     
-               tx.prepare();
-            }
-            catch (Throwable t)
-            {
-               log.error("Exception occured", t);
-               if (tx != null)
-               {                  
-                  try
-                  {
-                     tx.rollback();
-                     throw new MessagingTransactionRolledBackException("Transaction was rolled back.", t);
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Failed to rollback tx", e);
-                     throw new MessagingJMSException("Failed to rollback transaction after failure in prepare", e);
-                  }
-               }               
-            }
+            Transaction tx = tr.createTransaction(request.getXid());
+            processTransaction(request.getState(), tx);     
+            tx.prepare();            
          }
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
          {   
             if (trace) { log.trace("Two phase commit commit request received"); }
              
-            Transaction tx = null;            
-            try
-            {
-               tx = tr.getPreparedTx(request.getXid());            
-               if (trace) { log.trace("Committing " + tx); }
-               tx.commit();
-            }
-            catch (Throwable t)
-            {
-               log.error("Exception occured", t);
-               //For 2PC commit we don't rollback if failure occurs - this allows the transaction manager
-               //to try again if the problem was transitory
-               throw new MessagingJMSException("Failed to commit transaction", t);
-            }
+            Transaction tx = tr.getPreparedTx(request.getXid());            
+            if (trace) { log.trace("Committing " + tx); }
+            tx.commit();   
          }
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
          {
             if (trace) { log.trace("Two phase commit rollback request received"); }
              
-            Transaction tx = null;            
-            try
-            {
-               tx = tr.getPreparedTx(request.getXid());              
-               if (trace) { log.trace("Rolling back " + tx); }
-               tx.rollback();
-            }
-            catch (Throwable t)
-            {
-               log.error("Exception occured", t);
-               
-               throw new MessagingJMSException("Failed to rollback transaction", t);
-            }
+            Transaction tx =  tr.getPreparedTx(request.getXid());              
+            if (trace) { log.trace("Rolling back " + tx); }
+            tx.rollback();
          }      
                  
          if (trace) { log.trace(this + " processed transaction successfully"); }

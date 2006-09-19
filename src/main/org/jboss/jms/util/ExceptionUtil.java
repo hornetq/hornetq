@@ -64,7 +64,7 @@ public class ExceptionUtil
       log.error(msg + " [" + id + "]", t);
       
       if (t instanceof JMSException)
-      {
+      {         
          return (JMSException)t;
       }
       else

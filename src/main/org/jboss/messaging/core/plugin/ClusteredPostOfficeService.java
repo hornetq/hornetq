@@ -32,11 +32,11 @@ import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.StandardRedistributionPolicy;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -205,7 +205,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
                   
          String nodeId = serverPeer.getServerPeerID();
          
-         RedistributionPolicy redistPolicy = new DefaultRedistributionPolicy(nodeId);
+         RedistributionPolicy redistPolicy = new StandardRedistributionPolicy(nodeId);
          
          FilterFactory ff = new SelectorFactory();
          

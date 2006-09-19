@@ -23,6 +23,7 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import org.jboss.messaging.core.Queue;
 
+
 /**
  * A ClusteredQueue
  *
@@ -34,11 +35,11 @@ import org.jboss.messaging.core.Queue;
  */
 interface ClusteredQueue extends Queue
 {
-   double getGrowthRate();
-   
-   int getMessageCount();
+   QueueStats getStats();
    
    String getNodeId();
    
    boolean isLocal();
 }
+
+

@@ -97,7 +97,9 @@ public abstract class ChannelSupport implements Channel
    protected Object refLock;
 
    protected Object deliveryLock;
-      
+   
+   protected boolean active = true;
+       
    // Constructors --------------------------------------------------
 
    protected ChannelSupport(long channelID, MessageStore ms,
@@ -142,6 +144,11 @@ public abstract class ChannelSupport implements Channel
 
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
+      if (!active)
+      {
+         return null;
+      }
+     
       checkClosed();
       
       Future result = new Future();
@@ -237,6 +244,11 @@ public abstract class ChannelSupport implements Channel
    public Iterator iterator()
    {
       return router.iterator();
+   }
+   
+   public int numberOfReceivers()
+   {
+      return router.numberOfReceivers();
    }
 
    // Channel implementation ----------------------------------------
@@ -442,6 +454,39 @@ public abstract class ChannelSupport implements Channel
          synchronized (deliveryLock)
          {
             return messageRefs.size() + deliveries.size();
+         }
+      }
+   }
+    
+   public void activate()
+   {
+      synchronized (refLock)
+      {
+         synchronized (deliveryLock)
+         {
+            active = true;
+         }
+      }
+   }
+   
+   public void deactivate()
+   {
+      synchronized (refLock)
+      {
+         synchronized (deliveryLock)
+         {
+            active = false;
+         }
+      }
+   }
+   
+   public boolean isActive()
+   {
+      synchronized (refLock)
+      {
+         synchronized (deliveryLock)
+         {
+            return active;
          }
       }
    }
@@ -743,7 +788,7 @@ public abstract class ChannelSupport implements Channel
       }
 
       // I might as well return null, the sender shouldn't care
-      return new SimpleDelivery(sender, ref, true);
+      return new SimpleDelivery(this, ref, true);
    }
 
    protected void acknowledgeInternal(Delivery d) throws Exception

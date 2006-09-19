@@ -68,4 +68,5 @@ public class BindingImpl implements Binding
    {
       return queue;
    }
+   
 }

@@ -155,10 +155,14 @@ public class SimpleReceiver implements Receiver
          boolean done = ACKING.equals(state) ? true : false;
          log.trace(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + ref);
          
+         log.info(this + " got message " + ref.getMessageID());
+         
          Message m = ref.getMessage();
          
          SimpleDelivery delivery = new SimpleDelivery(observer, ref, done);
          messages.add(new Object[] {m, done ? null : delivery});
+         
+         log.info("Added it to messages");
 
          if (immediateAsynchronousAcknowledgment)
          {

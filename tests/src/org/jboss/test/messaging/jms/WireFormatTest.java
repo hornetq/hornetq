@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
+import org.jboss.jms.server.remoting.MessagingObjectInputStream;
+import org.jboss.jms.server.remoting.MessagingObjectOutputStream;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.TxState;
@@ -273,7 +276,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
                   
          wf.write(ir, oos);
          
@@ -283,26 +286,26 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         DataInputStream ois = new DataInputStream(bis); 
+         DataInputStream dis = new DataInputStream(bis); 
                  
          //Check the bytes
          
          //First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
          
          //First byte should be ACKNOWLEDGE
-         assertEquals(JMSWireFormat.ACKNOWLEDGE, ois.readByte());
+         assertEquals(JMSWireFormat.ACKNOWLEDGE, dis.readByte());
          
          //Next int should be objectId
-         assertEquals(objectId, ois.readInt());
+         assertEquals(objectId, dis.readInt());
          
          //Next long should be methodHash
-         assertEquals(methodHash, ois.readLong());
+         assertEquals(methodHash, dis.readLong());
          
          //Next should be the externalized AckInfo
          AckInfo ack2 = new AckInfo();
-         
-         ack2.read(ois);
+                  
+         ack2.read(dis);
          
          assertEquals(ack.getMessageID(), ack2.getMessageID());
          assertEquals(ack.getConsumerID(), ack2.getConsumerID());
@@ -310,7 +313,7 @@ public class WireFormatTest extends MessagingTestCase
          //Now eos
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -320,7 +323,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         ObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          

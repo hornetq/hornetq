@@ -50,7 +50,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
 import org.jboss.messaging.core.plugin.postoffice.Bindings;
-import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.StreamUtils;
@@ -79,12 +79,10 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class ClusteredPostOfficeImpl extends PostOfficeImpl implements ClusteredPostOffice, PostOfficeInternal
+public class ClusteredPostOfficeImpl extends DefaultPostOffice implements ClusteredPostOffice, PostOfficeInternal
 {
    private static final Logger log = Logger.getLogger(ClusteredPostOfficeImpl.class);
-   
-   private static final int STATS_DIFFERENCE_MARGIN_PERCENT = 10;   
-                       
+                        
    private Channel syncChannel;
    
    private Channel asyncChannel;
@@ -267,6 +265,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       super.start();
       
       Address currentAddress = syncChannel.getLocalAddress();
+      
+      log.info(this.nodeId + " address is " + currentAddress);
              
       handleAddressNodeMapping(currentAddress, nodeId);
       
@@ -299,11 +299,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
       
       Binding binding = (Binding)super.bindQueue(condition, queue);
       
-      boolean durable = queue.isRecoverable();
-      
       BindRequest request =
          new BindRequest(nodeId, queue.getName(), condition, queue.getFilter() == null ? null : queue.getFilter().getFilterString(),
-                         binding.getQueue().getChannelID(), durable);
+                         binding.getQueue().getChannelID(), queue.isRecoverable());
       
       syncSendRequest(request);
       
@@ -384,7 +382,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                      
             while (iter.hasNext())
             {
-               ClusterRouter router = (ClusterRouter)iter.next();
+               Router router = (Router)iter.next();
                
                Delivery del = router.handle(null, ref, tx);
                
@@ -392,17 +390,19 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                {
                   routed = true;
                }
-               
+                              
                ClusteredQueue queue = (ClusteredQueue)del.getObserver();
                
-               if (!queue.isLocal())
+               log.info("sent " + ref.getMessageID() + " to " + queue.getName() + " on node " + queue.getNodeId() + " selector accepted " + del.isSelectorAccepted());
+               
+               if (del.isSelectorAccepted() && !queue.isLocal())
                {
                   //We need to send the message remotely
                   numberRemote++;
                   
                   lastNodeId = queue.getNodeId();
                   
-                  if (router.size() > 1 && queueNameNodeIdMap == null)
+                  if (router.numberOfReceivers() > 1 && queueNameNodeIdMap == null)
                   {
                      //If there are more than one queues with the same node on the remote nodes
                      //We have now chosen which one will receive the message so we need to add this
@@ -421,22 +421,27 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             //to send the message to the other office instances on the cluster if there are
             //queues on those nodes that need to receive the message
             
+            //FIXME - there is a bug here, numberRemote does not take into account that more than one
+            //of the number remote may be on the same node, so we could end up multicasting
+            //when unicast would do
             if (numberRemote > 0)
             {
-               //TODO - If numberRemote == 1, we could do unicast rather than multicast
-               //This would avoid putting strain on nodes that don't need to receive the reference
-               //This would be the case for load balancing queues where the routing policy
-               //sometimes allows a remote queue to get the reference
-               
+               log.info("Need to send remotely");
+ 
                if (tx == null)
                {
                   if (numberRemote == 1)
                   {
+                     log.info("unicast no tx");
                      //Unicast - only one node is interested in the message
-                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
+                     
+                     //FIXME - temporarily commented out until can get unicast to work
+                     //asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
+                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null));
                   }
                   else
                   {
+                     log.info("multicast no tx");
                      //Multicast - more than one node is interested
                      asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));
                   }                                 
@@ -455,13 +460,13 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                      //Before commit:
                      //1. Cast messages across network - get added to holding area (if persistent) on receiving
                      //nodes
-                     //2. Persist messaage in persistent store
+                     //2. Persist messages in persistent store
                      //After commit
                      //1. Cast commit message across network
                      tx.addFirstCallback(callback, this);
                   }
                       
-                  callback.addMessage(condition, ref.getMessage(), queueNameNodeIdMap);    
+                  callback.addMessage(condition, ref.getMessage(), queueNameNodeIdMap, numberRemote == 1 ? lastNodeId : null);    
                }
             }
                                                 
@@ -614,6 +619,9 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKey,
                                 Map queueNameNodeIdMap) throws Exception
    {
+      log.info(this.nodeId + " received route from cluster, ref = " + message.getMessageID() + " routing key " +
+               routingKey + " map " + queueNameNodeIdMap);
+      
       lock.readLock().acquire();  
       
       // Need to reference the message
@@ -624,6 +632,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
               
          // We route on the condition
          ClusteredBindingsImpl cb = (ClusteredBindingsImpl)conditionMap.get(routingKey);
+         
+         log.info("cb is: " + cb);
       
          if (cb != null)
          {                                
@@ -634,9 +644,12 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             while (iter.hasNext())
             {
                Binding binding = (Binding)iter.next();
+               
+               log.info("got binding: " + binding.getQueue().getName());
                                                         
                if (binding.getNodeId().equals(this.nodeId))
                {  
+                  log.info("node id matches");
                   boolean handle = true;
                   
                   if (queueNameNodeIdMap != null)
@@ -655,11 +668,16 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                   if (handle)
                   {
                      //It's a local binding so we pass the message on to the subscription
+                     
                      LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
+                     
+                     log.info("sending " + message.getMessageID() + " to queue: " + queue.getName() + " on node " + this.nodeId);
                   
                      //TODO instead of adding a new method on the channel
                      //we should set a header and use the same method
-                     queue.handleFromCluster(null, ref, null);
+                     Delivery del = queue.handleFromCluster(null, ref, null);
+                     
+                     log.info("sending " + message.getMessageID() + " to queue: " + queue.getName() + " on node " + this.nodeId + " delivery is " + del + " accepted? " + del.isSelectorAccepted());
                   }
                }                                              
             }                          
@@ -682,6 +700,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    {            
       byte[] bytes = writeRequest(request);
          
+      log.info("async sending " + bytes);
+      
       asyncChannel.send(new Message(null, null, bytes));
    }
    
@@ -691,6 +711,8 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    public void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception
    {            
       Address address = (Address)nodeIdAddressMap.get(nodeId);
+      
+      log.info("unicasting to address: " + address);
       
       byte[] bytes = writeRequest(request);
             
@@ -822,11 +844,10 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
    {
       lock.writeLock().acquire();
       
-      List stats = null;      
+      List statsList = null;      
       
       try
-      {
-         
+      {         
          Map nameMap = (Map)nameMaps.get(nodeId);
          
          if (nameMap != null)
@@ -840,29 +861,19 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
                LocalClusteredQueue q = (LocalClusteredQueue)bb.getQueue();
                              
                if (q.isActive())
-               {                                    
-                  //We don't bother sending the stat if there is less than STATS_DIFFERENCE_MARGIN_PERCENT % difference
+               {                                                      
+                  QueueStats stats = q.getStats();
+                                     
+                  //We don't bother sending the stats if there's no significant change in the values
                   
-                  double newRate = q.getGrowthRate();
-                  
-                  int newMessageCount = q.messageCount();
-                  
-                  boolean sendStats = decideToSendStats(q.getGrowthRate(), newRate);
-                  
-                  if (!sendStats)
+                  if (q.changedSignificantly())
                   {
-                     sendStats = decideToSendStats(q.getMessageCount(), newMessageCount);
-                  }
-                  
-                  if (sendStats)
-                  {
-                     if (stats == null)
+                     if (statsList == null)
                      {
-                        stats = new ArrayList();
+                        statsList = new ArrayList();
                      }
-                     QueueStats qs = new QueueStats(bb.getQueue().getName(), newRate, newMessageCount);
-                     
-                     stats.add(qs);
+
+                     statsList.add(stats);
                   } 
                }
             }
@@ -873,73 +884,56 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          lock.writeLock().release();
       }
       
-      if (stats != null)
+      if (statsList != null)
       {
-         ClusterRequest req = new QueueStatsRequest(nodeId, stats);
+         ClusterRequest req = new QueueStatsRequest(nodeId, statsList);
          
          asyncSendRequest(req);
       }
    }
    
-   public void updateQueueStats(String nodeId, List stats) throws Exception
+   public void updateQueueStats(String nodeId, List statsList) throws Exception
    {
       lock.writeLock().acquire();
+      
+      log.info("I have a list of stats: " + statsList.size() + " from nodeId: " + nodeId);
       
       Map nameMap = (Map)nameMaps.get(nodeId);
       
       if (nameMap == null)
       {
-         throw new IllegalStateException("Cannot find name map for node id " + nodeId);
-      }
-            
-      try
-      {
-         Iterator iter = stats.iterator();
-         
-         while (iter.hasNext())
-         {
-            QueueStats st = (QueueStats)iter.next();
-            
-            Binding bb = (Binding)nameMap.get(st.getQueueName());
-            
-            if (bb == null)
-            {
-               throw new IllegalStateException("Cannot find binding for queue name: " + st.getQueueName());
-            }
-            
-            RemoteQueueStub stub = (RemoteQueueStub)bb.getQueue();
-            
-            stub.setStats(st.getMessageCount(), st.getGrowthRate());
-         }         
-      }
-      finally
-      {
-         lock.writeLock().release();      
-      }
-   }
-   
-   private boolean decideToSendStats(double oldValue, double newValue)
-   {
-      boolean sendStats = false;
-      
-      if (oldValue != 0)
-      {         
-         int percentChange = (int)(100 * (oldValue - newValue) / oldValue);
-         
-         if (Math.abs(percentChange) >= STATS_DIFFERENCE_MARGIN_PERCENT)
-         {
-            sendStats = true;
-         }
+         //This is ok, the node might have left
+         log.info("But I have no bindings for " + nodeId);
       }
       else
-      {
-         if (newValue != 0)
+      {     
+         log.info("I do have bindings for " + nodeId);
+         try
          {
-            sendStats = true;
+            Iterator iter = statsList.iterator();
+            
+            while (iter.hasNext())
+            {
+               QueueStats st = (QueueStats)iter.next();
+               
+               Binding bb = (Binding)nameMap.get(st.getQueueName());
+               
+               if (bb == null)
+               {
+                  throw new IllegalStateException("Cannot find binding for queue name: " + st.getQueueName());
+               }
+               
+               RemoteQueueStub stub = (RemoteQueueStub)bb.getQueue();
+               
+               stub.setStats(st);
+            }         
+         }
+         finally
+         {
+            lock.writeLock().release();      
          }
       }
-      return sendStats;
-   }
+   }      
       
    // Public ------------------------------------------------------------------------------------------
       
@@ -985,11 +979,11 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
          QueuedExecutor executor = (QueuedExecutor)pool.get();
          
          queue = new LocalClusteredQueue(nodeId, queueName, channelId, ms, pm, true,
-                                         true, executor, filter);
+                                         durable, executor, filter);
       }
       else
       {
-         queue = new RemoteQueueStub(nodeId, queueName, channelId, true, pm, filter);
+         queue = new RemoteQueueStub(nodeId, queueName, channelId, durable, pm, filter);
       }
       
       Binding binding = new BindingImpl(nodeId, condition, queue);
@@ -1408,7 +1402,7 @@ public class ClusteredPostOfficeImpl extends PostOfficeImpl implements Clustered
             
             ClusterRequest request = readRequest(bytes);
             
-            request.execute(ClusteredPostOfficeImpl.this);
+            request.execute(ClusteredPostOfficeImpl.this);            
          }
          catch (Exception e)
          {

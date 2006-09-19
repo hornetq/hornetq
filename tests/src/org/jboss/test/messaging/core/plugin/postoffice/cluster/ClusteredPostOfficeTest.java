@@ -31,17 +31,16 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.plugin.postoffice.SimplePostOfficeTest;
+import org.jboss.test.messaging.core.plugin.postoffice.DefaultPostOfficeTest;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -56,7 +55,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class ClusteredPostOfficeTest extends SimplePostOfficeTest
+public class ClusteredPostOfficeTest extends DefaultPostOfficeTest
 {
    // Constants -----------------------------------------------------
 
@@ -405,7 +404,14 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
       {
          if (office1 != null)
          {
-            office1.unbindClusteredQueue("sub6");
+            try
+            {
+               office1.unbindClusteredQueue("sub6");
+            }
+            catch (Exception ignore)
+            {
+               
+            }
             office1.stop();
          }
          
@@ -591,7 +597,7 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          Binding binding2 =
             office2.bindClusteredQueue("topic1", queue2);
          
-         LocalClusteredQueue queue3 = new LocalClusteredQueue("node3", "queue3", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue("node2", "queue3", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          Binding binding3 =
             office2.bindClusteredQueue("topic1", queue3);   
          
@@ -614,6 +620,8 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          MessageReference ref3 = ms.reference(msg3);         
          routed = office1.route(ref3, "topic1", null);      
          assertTrue(routed);
+         
+         Thread.sleep(1000);
          
          List msgs = receiver1.getMessages();
          assertNotNull(msgs);
@@ -707,10 +715,10 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          queues[7] = new LocalClusteredQueue("node1", "sub8", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);         
          bindings[7] = office1.bindClusteredQueue("topic1", queues[7]);
          
-         queues[8] = new LocalClusteredQueue("node2", "sub9", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         queues[8] = new LocalClusteredQueue("node1", "sub9", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          bindings[8] = office1.bindClusteredQueue("topic2", queues[8]);
          
-         queues[9] = new LocalClusteredQueue("node2", "sub10", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         queues[9] = new LocalClusteredQueue("node1", "sub10", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          bindings[9] = office1.bindClusteredQueue("topic2", queues[9]);
          
          queues[10] = new LocalClusteredQueue("node2", "sub11", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
@@ -811,12 +819,19 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
       {
          if (office1 != null)
          {
-            office2.unbindClusteredQueue("sub5");
-            office1.unbindClusteredQueue("sub7");
-            office1.unbindClusteredQueue("sub8");
-            office2.unbindClusteredQueue("sub13");
-            office1.unbindClusteredQueue("sub15");
-            office1.unbindClusteredQueue("sub16");
+            try
+            {
+               office2.unbindClusteredQueue("sub5");
+               office1.unbindClusteredQueue("sub7");
+               office1.unbindClusteredQueue("sub8");
+               office2.unbindClusteredQueue("sub13");
+               office1.unbindClusteredQueue("sub15");
+               office1.unbindClusteredQueue("sub16");
+            }
+            catch (Exception ignore)
+            {
+               
+            }
             
             office1.stop();
          }
@@ -1440,8 +1455,8 @@ public class ClusteredPostOfficeTest extends SimplePostOfficeTest
          new ClusteredPostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),
                                  null, true, nodeId, "Clustered", ms, pm, tr, ff, pool,
                                  groupName,
-                                 JGroupsUtil.getControlStackProperties(50, 1),
-                                 JGroupsUtil.getDataStackProperties(50, 1),
+                                 JGroupsUtil.getControlStackProperties(),
+                                 JGroupsUtil.getDataStackProperties(),
                                  5000, 5000, redistPolicy, 1000, rf);
       
       postOffice.start();      

@@ -39,7 +39,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -54,7 +54,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
- * A PostOfficeTestBase
+ * A DefaultPostOfficeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -62,7 +62,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class SimplePostOfficeTest extends MessagingTestCase
+public class DefaultPostOfficeTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -84,7 +84,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
    
    // Constructors --------------------------------------------------
 
-   public SimplePostOfficeTest(String name)
+   public DefaultPostOfficeTest(String name)
    {
       super(name);
    }
@@ -180,7 +180,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          assertNotNull(binding3);
          assertTrue(binding1 == binding3);
          assertEquivalent(binding1, binding3);
-         assertNotNull(binding3.getQueue());
+         assertTrue(binding3.getQueue().isActive());
          assertEquals(true, binding3.getQueue().isRecoverable());
          
          
@@ -188,7 +188,7 @@ public class SimplePostOfficeTest extends MessagingTestCase
          assertNotNull(binding4);
          assertTrue(binding2 == binding4);
          assertEquivalent(binding2, binding4);
-         assertNotNull(binding4.getQueue());
+         assertTrue(binding4.getQueue().isActive());
          assertEquals(false, binding4.getQueue().isRecoverable());
          
          office1.stop();
@@ -200,8 +200,8 @@ public class SimplePostOfficeTest extends MessagingTestCase
          Binding binding5 = office2.getBindingForQueueName("durableQueue");
          assertNotNull(binding5);
          assertEquivalent(binding1, binding5);
-         //Should be unloaded
-         assertNull(binding5.getQueue());
+         //Should be inactive
+         assertFalse(binding5.getQueue().isActive());
          
          Binding binding6 = office2.getBindingForQueueName("nonDurableQueue");
          assertNull(binding6);
@@ -1118,8 +1118,8 @@ public class SimplePostOfficeTest extends MessagingTestCase
    {
       FilterFactory ff = new SimpleFilterFactory();
       
-      PostOfficeImpl postOffice = 
-         new PostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),
+      DefaultPostOffice postOffice = 
+         new DefaultPostOffice(sc.getDataSource(), sc.getTransactionManager(),
                             null, true, "node1", "Simple", ms, pm, tr, ff, pool);
       
       postOffice.start();      

@@ -34,5 +34,5 @@ import java.util.List;
  */
 public interface RedistributionPolicy
 {
-   RedistributionOrder calculate(List bindings);
+   RedistributionOrder calculate(List queues);
 }

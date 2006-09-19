@@ -53,7 +53,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.contract.ShutdownLogger;
-import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
@@ -127,10 +127,10 @@ public class ServerPeer extends ServiceMBeanSupport
    protected PersistenceManager persistenceManager;
    
    protected ObjectName queuePostOfficeObjectName;
-   protected PostOfficeImpl queuePostOffice;
+   protected DefaultPostOffice queuePostOffice;
    
    protected ObjectName topicPostOfficeObjectName;
-   protected PostOfficeImpl topicPostOffice;
+   protected DefaultPostOffice topicPostOffice;
      
    protected ObjectName jmsUserManagerObjectName;
    protected JMSUserManager jmsUserManager;
@@ -642,7 +642,7 @@ public class ServerPeer extends ServiceMBeanSupport
       // We get the reference lazily to avoid problems with MBean circular dependencies
       if (queuePostOffice == null)
       {
-         queuePostOffice = (PostOfficeImpl)getServer().
+         queuePostOffice = (DefaultPostOffice)getServer().
             getAttribute(queuePostOfficeObjectName, "Instance");
       }
       return queuePostOffice;
@@ -653,7 +653,7 @@ public class ServerPeer extends ServiceMBeanSupport
       // We get the reference lazily to avoid problems with MBean circular dependencies
       if (topicPostOffice == null)
       {
-         topicPostOffice = (PostOfficeImpl)getServer().
+         topicPostOffice = (DefaultPostOffice)getServer().
             getAttribute(topicPostOfficeObjectName, "Instance");
       }
       return topicPostOffice;        

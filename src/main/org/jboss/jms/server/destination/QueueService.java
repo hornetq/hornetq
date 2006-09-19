@@ -94,9 +94,9 @@ public class QueueService extends DestinationServiceSupport
          {    
             PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
             
-            //Activate it - this causes it's state to be loaded
-            queue.deactivate();
-            queue.activate(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());            
+            queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
+            queue.load();
+            queue.activate();
          }
          else
          {         
@@ -155,6 +155,7 @@ public class QueueService extends DestinationServiceSupport
          PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
          
          queue.deactivate();
+         queue.unload();
          
          started = false;
          

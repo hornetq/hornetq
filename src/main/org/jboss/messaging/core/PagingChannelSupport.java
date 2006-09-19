@@ -89,12 +89,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
    protected long nextPagingOrder;
    
    /**
-    * Is the queue active?
-    */
-   protected boolean active;
-   
-
-   /**
     * Constructor with default paging params
     * @param channelID
     * @param ms
@@ -169,12 +163,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    // -----------------------------------------------------------------
    
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
-   {
-      if (!active)
-      {
-         return null;
-      }
-      
+   { 
       return super.handle(sender, ref, tx);
    }
    
@@ -213,22 +202,38 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }
    }
    
-   public void activate(int fullSize, int pageSize, int downCacheSize) throws Exception
+   public void setPagingParams(int fullSize, int pageSize, int downCacheSize)
+   {
+      synchronized (refLock)
+      {
+         synchronized (deliveryLock)
+         {      
+            if (active)
+            {
+               throw new IllegalStateException("Cannot set paging params when active");
+            }
+            
+            this.fullSize = fullSize;
+            
+            this.pageSize = pageSize;
+            
+            this.downCacheSize = downCacheSize;
+         }
+      }
+   }
+   
+   public void load() throws Exception
    {            
       synchronized (refLock)
       {
          if (active)
          {
-            return;
+            throw new IllegalStateException("Cannot load channel when active");
          }
          
-         this.fullSize = fullSize;
-         
-         this.pageSize = pageSize;
-         
-         this.downCacheSize = downCacheSize;
-         
          if (trace) { log.trace(this + " loading channel state"); }
+         
+         unload();
          
          InitialLoadInfo ili = pm.getInitialReferenceInfos(channelID, fullSize);
 
@@ -255,16 +260,19 @@ public abstract class PagingChannelSupport extends ChannelSupport
             addFromRefInfo(info, refMap);
          }         
       }
-      
-      active = true;
    }      
    
-   public void deactivate() throws Exception
+   public void unload() throws Exception
    {
       synchronized (refLock)
       {
          synchronized (deliveryLock)
          {
+            if (active)
+            {
+               throw new IllegalStateException("Cannot unload channel when active");
+            }
+            
             messageRefs.clear();
             
             deliveries.clear();
@@ -274,8 +282,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
             paging = false;
             
             firstPagingOrder = nextPagingOrder = 0;
-            
-            active = true;
          }
       }
    }

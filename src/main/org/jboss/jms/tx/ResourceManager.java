@@ -38,6 +38,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.MessagingXAException;
 import org.jboss.logging.Logger;
 
@@ -145,7 +146,7 @@ public class ResourceManager
    {
       if (trace) { log.trace("commiting local xid " + xid); }
       
-      TxState tx = removeTx(xid);
+      TxState tx = this.getTx(xid);
       
       //Invalid xid
       if (tx == null)
@@ -156,7 +157,23 @@ public class ResourceManager
       TransactionRequest request =
          new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
       
-      connection.sendTransaction(request);      
+      try
+      {
+         connection.sendTransaction(request);
+         
+         //If we get this far we can remove the transaction
+         
+         this.removeTx(xid);
+      }
+      catch (Throwable t)
+      {
+         //If a problem occurs during commit processing the session should be rolled back
+         rollbackLocal(xid, connection);
+         
+         JMSException e = new MessagingTransactionRolledBackException(t.getMessage());
+         
+         throw e;         
+      }
    }
    
    public void rollbackLocal(LocalTx xid, ConnectionDelegate connection) throws JMSException
@@ -220,7 +237,7 @@ public class ResourceManager
          
          request.xid = xid;      
          
-         sendTransactionXA(request, connection);
+         sendTransactionXA(request, connection);        
       }
       
       if (tx != null)

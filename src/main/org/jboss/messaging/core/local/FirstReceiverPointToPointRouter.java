@@ -163,6 +163,14 @@ public class FirstReceiverPointToPointRouter implements Router
          return receivers.iterator();
       }
    }
+   
+   public int numberOfReceivers()
+   {
+      synchronized(receivers)
+      {
+         return receivers.size();
+      }
+   }
 
 
    // Public --------------------------------------------------------

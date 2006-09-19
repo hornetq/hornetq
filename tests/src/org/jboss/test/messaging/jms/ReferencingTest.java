@@ -77,8 +77,7 @@ public class ReferencingTest extends MessagingTestCase
 
       super.setUp();
       ServerManagement.start("all");
-      
-      
+            
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
@@ -118,15 +117,17 @@ public class ReferencingTest extends MessagingTestCase
       TextMessage m = sess.createTextMessage("wibble");
       
       prod.send(m);
-      
+  
       TextMessage m2 = (TextMessage)cons.receive();
-      
+       
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
+      
+      conn.close();
    }
    
    public void testAutoAck2() throws Exception
@@ -149,14 +150,18 @@ public class ReferencingTest extends MessagingTestCase
       
       MessageConsumer cons = sess.createConsumer(queue);
       
-      TextMessage m2 = (TextMessage)cons.receive();
+      TextMessage m2 = (TextMessage)cons.receive(1000);
+      
       
       assertNotNull(m2);
+      
       assertEquals(m.getText(), m2.getText());
       
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
+      
+      conn.close();
    }
    
    public void testClientAck1() throws Exception
@@ -177,7 +182,7 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      TextMessage m2 = (TextMessage)cons.receive();
+      TextMessage m2 = (TextMessage)cons.receive(1000);
       
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
@@ -193,6 +198,8 @@ public class ReferencingTest extends MessagingTestCase
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
+      
+      conn.close();
    }
    
    public void testClientAck2() throws Exception
@@ -215,7 +222,7 @@ public class ReferencingTest extends MessagingTestCase
       
       MessageConsumer cons = sess.createConsumer(queue);
       
-      TextMessage m2 = (TextMessage)cons.receive();
+      TextMessage m2 = (TextMessage)cons.receive(1000);
       
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
@@ -231,6 +238,8 @@ public class ReferencingTest extends MessagingTestCase
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
+      
+      conn.close();
    }
    
    public void testRedelivery() throws Exception
@@ -253,7 +262,7 @@ public class ReferencingTest extends MessagingTestCase
       
       MessageConsumer cons = sess.createConsumer(queue);
       
-      TextMessage m2 = (TextMessage)cons.receive();
+      TextMessage m2 = (TextMessage)cons.receive(1000);
       
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
@@ -282,6 +291,8 @@ public class ReferencingTest extends MessagingTestCase
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
+      
+      conn.close();
    }
    
    public void testTransactionCommit() throws Exception
@@ -303,7 +314,7 @@ public class ReferencingTest extends MessagingTestCase
       prod.send(m);
       sess.commit();
       
-      TextMessage m2 = (TextMessage)cons.receive();
+      TextMessage m2 = (TextMessage)cons.receive(1000);
       
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
@@ -320,6 +331,8 @@ public class ReferencingTest extends MessagingTestCase
       
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       assertNull(ref);
+      
+      conn.close();
    }
    
    public void testTransactionRollback() throws Exception
@@ -341,7 +354,7 @@ public class ReferencingTest extends MessagingTestCase
       prod.send(m);
       sess.commit();
       
-      TextMessage m2 = (TextMessage)cons.receive();
+      TextMessage m2 = (TextMessage)cons.receive(1000);
       
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
@@ -367,6 +380,8 @@ public class ReferencingTest extends MessagingTestCase
       
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       assertNull(ref);
+      
+      conn.close();
    }
    
    public void cancelTest() throws Exception
@@ -389,7 +404,7 @@ public class ReferencingTest extends MessagingTestCase
       prod.send(m1);
       prod.send(m2);
       
-      TextMessage m3 = (TextMessage)cons.receive();
+      TextMessage m3 = (TextMessage)cons.receive(1000);
       
       assertNotNull(m3);
       assertEquals(m1.getText(), m3.getText());
@@ -416,6 +431,8 @@ public class ReferencingTest extends MessagingTestCase
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertNull(ref);
+      
+      conn.close();
    }
    
       

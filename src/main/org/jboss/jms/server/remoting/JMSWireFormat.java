@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.Message;
+
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.remoting.CallbackServerFactory;
@@ -99,6 +101,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte NULL_RESPONSE = 101;
    protected static final byte ID_BLOCK_RESPONSE = 102;
    protected static final byte HANDLE_MESSAGE_RESPONSE = 103;
+   protected static final byte BROWSE_MESSAGE_RESPONSE = 104;
+   protected static final byte BROWSE_MESSAGES_RESPONSE = 105;
 
 
    // Static --------------------------------------------------------
@@ -367,6 +371,44 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                if (trace) { log.trace("wrote handle message response"); }
             }
+            else if (res instanceof JBossMessage)
+            {
+               //Return value from browsing message
+               dos.write(BROWSE_MESSAGE_RESPONSE);
+               
+               JBossMessage msg = (JBossMessage)res;
+               
+               dos.writeByte(msg.getType());
+               
+               msg.write(dos);
+               
+               dos.flush();
+               
+               if (trace) { log.trace("wrote browse message response"); }
+            }
+            
+            else if (res instanceof Message[])
+            {
+               //Return value from browsing messages
+               dos.write(BROWSE_MESSAGES_RESPONSE);
+               
+               Message[] msgs = (Message[])res;
+               
+               dos.writeInt(msgs.length);
+               
+               for (int i = 0; i < msgs.length; i++)
+               {
+                  JBossMessage m = (JBossMessage)msgs[i];
+                  
+                  dos.writeByte(m.getType());
+                  
+                  m.write(dos);
+               }
+               
+               dos.flush();
+               
+               if (trace) { log.trace("wrote browse message response"); }
+            }
             else
             {
                dos.write(SERIALIZED);
@@ -600,6 +642,43 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, res), false, null);
    
                if (trace) { log.trace("read handle message response"); }
+   
+               return resp;
+            }
+            case BROWSE_MESSAGE_RESPONSE:
+            {
+               byte type = dis.readByte();
+               
+               JBossMessage msg = (JBossMessage)MessageFactory.createMessage(type);
+               
+               msg.read(dis);
+               
+               InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, msg), false, null);
+   
+               if (trace) { log.trace("read browse message response"); }
+   
+               return resp;
+            }
+            case BROWSE_MESSAGES_RESPONSE:
+            {
+               int num = dis.readInt();
+               
+               Message[] msgs = new Message[num];
+               
+               for (int i = 0; i < num; i++)
+               {
+                  byte type = dis.readByte();
+                  
+                  JBossMessage msg = (JBossMessage)MessageFactory.createMessage(type);
+                  
+                  msg.read(dis);
+                  
+                  msgs[i] = msg;
+               }
+               
+               InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, msgs), false, null);
+   
+               if (trace) { log.trace("read browse message response"); }
    
                return resp;
             }

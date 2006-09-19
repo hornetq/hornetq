@@ -191,6 +191,31 @@ public class SimpleChannel implements Channel
       throw new NotYetImplementedException();
    }
 
+   public int numberOfReceivers()
+   {
+      throw new NotYetImplementedException();
+   }
+
+   public void activate()
+   {
+      throw new NotYetImplementedException();
+   }
+
+   public void deactivate()
+   {
+      throw new NotYetImplementedException();
+   }
+
+   public void unload() throws Exception
+   {
+      throw new NotYetImplementedException();
+   }
+   
+   public boolean isActive()
+   {
+      throw new UnsupportedOperationException();
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

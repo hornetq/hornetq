@@ -73,8 +73,30 @@ class CastMessagesCallback implements TxCallback
    
    private PostOfficeInternal office;
    
-   void addMessage(String routingKey, Message message, Map queueNameToNodeIdMap)
+   private boolean multicast;
+   
+   private String toNodeId;
+   
+   void addMessage(String routingKey, Message message, Map queueNameToNodeIdMap, String lastNodeId)
    {
+      //If we only ever send messages to the same node for this tx, then we can unicast rather than multicast
+      //This is how we determine that
+      if (lastNodeId == null)
+      {
+         multicast = true;
+      }
+      else
+      {
+         if (!lastNodeId.equals(toNodeId))
+         {
+            multicast = true;
+         }
+         else
+         {
+            toNodeId = lastNodeId;
+         }
+      }
+      
       MessageHolder holder = new MessageHolder(routingKey, message, queueNameToNodeIdMap);
       
       if (message.isReliable())
@@ -111,7 +133,7 @@ class CastMessagesCallback implements TxCallback
          // Cast the non persistent - this don't need to go into a holding area on the receiving node
          ClusterRequest req = new MessagesRequest(nonPersistent);
          
-         office.asyncSendRequest(req);
+         sendRequest(req);         
       }
       
       if (persistent != null)
@@ -119,13 +141,12 @@ class CastMessagesCallback implements TxCallback
          // Cast a commit message
          ClusterRequest req = new SendTransactionRequest(nodeId, txId);
          
-         // Stack must be FIFO
-         office.asyncSendRequest(req);
+         sendRequest(req);
       }
       
       nonPersistent = persistent = null;
    }
-
+   
    public void afterPrepare() throws Exception
    { 
    }
@@ -142,8 +163,7 @@ class CastMessagesCallback implements TxCallback
          //the receiving nodes
          ClusterRequest req = new SendTransactionRequest(nodeId, txId, persistent);
          
-         //Stack must be FIFO
-         office.asyncSendRequest(req);
+         sendRequest(req);
       }
    }
 
@@ -153,6 +173,20 @@ class CastMessagesCallback implements TxCallback
 
    public void beforeRollback(boolean onePhase) throws Exception
    {
+   }
+   
+   private void sendRequest(ClusterRequest req) throws Exception
+   {
+      if (multicast)
+      {
+         office.asyncSendRequest(req);
+      }
+      else
+      {
+         //FIXME temp commented out until unicast works
+         //office.asyncSendRequest(req, toNodeId);
+         office.asyncSendRequest(req);
+      }
    }
       
 }    

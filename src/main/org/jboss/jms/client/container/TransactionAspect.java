@@ -35,8 +35,9 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.LocalTx;
-import org.jboss.jms.tx.TxState;
 import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.TxState;
+import org.jboss.jms.util.MessagingTransactionRolledBackException;
 
 /**
  * This aspect handles transaction related logic

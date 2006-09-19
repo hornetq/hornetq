@@ -140,6 +140,8 @@ public class SessionTest extends MessagingTestCase
       assertNotNull(xid);
       assertNull(cState.getResourceManager().getTx(xid));
       
+      conn.close();
+      
    }
 
    public void testCreateProducer() throws Exception
@@ -167,6 +169,8 @@ public class SessionTest extends MessagingTestCase
       TextMessage rm = (TextMessage)c.receive(1000);
 
       assertEquals("something", rm.getText());
+      
+      conn.close();
    }
    
    public void testCreateConsumer() throws Exception
@@ -218,6 +222,7 @@ public class SessionTest extends MessagingTestCase
       }
       catch (JMSException e)
       {}
+      conn.close();
    }
    
    public void testCreateQueueOnATopicSession() throws Exception
@@ -234,6 +239,7 @@ public class SessionTest extends MessagingTestCase
       {
          // OK
       }
+      c.close();
    }
    
    public void testCreateQueueWhileTopicWithSameNameExists() throws Exception
@@ -249,6 +255,7 @@ public class SessionTest extends MessagingTestCase
       {
          // OK
       }
+      conn.close();
    }
    
    public void testCreateQueue() throws Exception
@@ -267,6 +274,7 @@ public class SessionTest extends MessagingTestCase
       Message m2 = consumer.receive(3000);
       
       assertNotNull(m2);
+      conn.close();
    }
    
    public void testCreateNonExistentTopic() throws Exception
@@ -282,6 +290,7 @@ public class SessionTest extends MessagingTestCase
       {
          // OK
       }
+      conn.close();
    }
    
    public void testCreateTopicOnAQueueSession() throws Exception
@@ -298,6 +307,7 @@ public class SessionTest extends MessagingTestCase
       {
          // OK
       }
+      c.close();
    }
    
    public void testCreateTopicWhileQueueWithSameNameExists() throws Exception
@@ -313,6 +323,7 @@ public class SessionTest extends MessagingTestCase
       {
          // OK
       }
+      conn.close();
    }
    
    public void testCreateTopic() throws Exception
@@ -363,6 +374,8 @@ public class SessionTest extends MessagingTestCase
       
       assertFalse(tr1.exceptionThrown);
       assertNotNull(tr1.m);
+      
+      conn.close();
    }
 
    public void testGetXAResource() throws Exception
@@ -432,6 +445,8 @@ public class SessionTest extends MessagingTestCase
       // this test whether session's transacted state is correctly scoped per instance (by an
       // interceptor or othewise)
       assertFalse(sessionOne.getTransacted());
+      
+      conn.close();
    }
 
    public void testCloseAndCreateSession() throws Exception
@@ -444,6 +459,8 @@ public class SessionTest extends MessagingTestCase
       // this test whether session's closed state is correctly scoped per instance (by an
       // interceptor or othewise)
       s = c.createSession(true, -1);
+      
+      c.close();
    }
 
 

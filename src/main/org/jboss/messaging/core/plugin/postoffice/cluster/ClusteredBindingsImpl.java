@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.BindingsImpl;
 
@@ -65,7 +66,7 @@ class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBindings
    {
       super.addBinding(binding);
                
-      ClusterRouter router = (ClusterRouter)nameMap.get(binding.getQueue().getName());
+      Router router = (Router)nameMap.get(binding.getQueue().getName());
       
       if (router == null)
       {
@@ -91,7 +92,7 @@ class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBindings
          return false;
       }
            
-      ClusterRouter router = (ClusterRouter)nameMap.get(binding.getQueue().getName());
+      Router router = (Router)nameMap.get(binding.getQueue().getName());
       
       if (router == null)
       {

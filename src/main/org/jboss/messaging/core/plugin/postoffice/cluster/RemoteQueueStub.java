@@ -61,11 +61,9 @@ class RemoteQueueStub implements ClusteredQueue
    
    private boolean recoverable;
    
-   private int messageCount;
-   
-   private double growthRate;
-   
    private PersistenceManager pm;
+   
+   private QueueStats stats;
    
    RemoteQueueStub(String nodeId, String name, long id, boolean recoverable, PersistenceManager pm, Filter filter)
    {
@@ -92,32 +90,34 @@ class RemoteQueueStub implements ClusteredQueue
       return false;
    }
    
-   public void setStats(int messageCount, double growthRate)
+   public void setStats(QueueStats stats)
    {
-      this.messageCount = messageCount;
-      
-      this.growthRate = growthRate;
+      this.stats = stats;
    }
    
-   public double getGrowthRate()
+   public QueueStats getStats()
    {
-      return growthRate;
+      return stats;
    }
    
-   public int getMessageCount()
-   {
-      return messageCount;
-   }
-
    public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
    {
-      //If the message is persistent and we are recoverable then we persist here, *before*
-      //the message is sent across the network
+      if (filter != null && !filter.accept(reference))
+      {
+         Delivery del = new SimpleDelivery(this, reference, false, false);
+         
+         return del;
+      }
       
-      if (recoverable && reference.isReference())
+      if (recoverable && reference.isReliable())
       {
          try
          {
+            //If the message is persistent and we are recoverable then we persist here, *before*
+            //the message is sent across the network
+            
+            log.info("Adding ref: " + reference + " in channel " + id);
+            
             pm.addReference(id, reference, tx);
          }
          catch (Exception e)
@@ -186,7 +186,7 @@ class RemoteQueueStub implements ClusteredQueue
 
    public int messageCount()
    {
-      return messageCount;
+      throw new UnsupportedOperationException();
    }
 
    public void removeAllReferences() throws Throwable
@@ -226,6 +226,36 @@ class RemoteQueueStub implements ClusteredQueue
    }
 
    public boolean remove(Receiver receiver)
+   {
+      throw new UnsupportedOperationException();
+   }
+   
+   public int numberOfReceivers()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public void activate()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public void deactivate()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public void load() throws Exception
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public void unload() throws Exception
+   {
+      throw new UnsupportedOperationException();
+   }
+   
+   public boolean isActive()
    {
       throw new UnsupportedOperationException();
    }

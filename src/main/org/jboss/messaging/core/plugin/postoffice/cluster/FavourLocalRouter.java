@@ -29,11 +29,27 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * 
  * A FavourLocalRouter
+ * 
+ * This router always favours the local queue.
+ * 
+ * If there is no local queue it will round robin between the others.
+ * 
+ * In the case of a distributed point to point queue deployed at each node in the cluster
+ * there will always be a local queue.
+ * 
+ * In this case, with the assumption that producers and consumers are distributed evenly across the cluster
+ * then sending the message to the local queue is the most efficient policy.
+ * 
+ * In the case of a durable subscription, there may well be no local queue since the durable subscription lives
+ * only on the number of nodes that it is looked up at.
+ * 
+ * In this case the round robin routing will kick in
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -41,11 +57,14 @@ import org.jboss.messaging.core.tx.Transaction;
  * $Id$
  *
  */
-public class FavourLocalRouter implements ClusterRouter
+public class FavourLocalRouter implements Router
 {
-   private List queues;
+   //MUST be an arraylist for fast index access
+   private ArrayList queues;
    
    private ClusteredQueue localQueue;
+   
+   private int target;
    
    public FavourLocalRouter()
    {
@@ -70,7 +89,9 @@ public class FavourLocalRouter implements ClusterRouter
          localQueue = queue;
       }
       
-      queues.add(queue);      
+      queues.add(queue); 
+      
+      target = 0;
       
       return true;
    }
@@ -78,7 +99,10 @@ public class FavourLocalRouter implements ClusterRouter
    public void clear()
    {
       queues.clear();
+      
       localQueue = null;
+      
+      target = 0;
    }
 
    public boolean contains(Receiver queue)
@@ -92,13 +116,16 @@ public class FavourLocalRouter implements ClusterRouter
    }
 
    public boolean remove(Receiver queue)
-   {
+   {      
       if (queues.remove(queue))
       {
          if (localQueue == queue)
          {
             localQueue = null;
          }
+         
+         target = 0;
+         
          return true;
       }
       else
@@ -113,40 +140,46 @@ public class FavourLocalRouter implements ClusterRouter
            
       if (localQueue != null)
       {
-         //But only if it has consumers
+         //The only time the local queue won't accept is if the selector doesn't
+         //match - in which case it won't match at any other nodes too so no point
+         //in trying them
          
          Delivery del = localQueue.handle(observer, reference, tx);
          
-         if (del != null && del.isSelectorAccepted())
-         {
-            return del;
-         }
+         return del;
       }
-      
-      //TODO make this round robin
-      
-      Iterator iter = queues.iterator();
-      
-      while (iter.hasNext())
+      else
       {
-         ClusteredQueue queue = (ClusteredQueue)iter.next();
+         //There is no local shared queue
          
-         if (!queue.isLocal())
+         //We round robin among the rest
+         if (!queues.isEmpty())
          {
-            Delivery del = queue.handle(observer, reference, tx);
+            ClusteredQueue queue = (ClusteredQueue)queues.get(target);
             
-            if (del != null && del.isSelectorAccepted())
+            Delivery del = queue.handle(observer, reference, tx);
+                        
+            target++;
+            
+            if (target == queues.size())
             {
-               return del;
+               target = 0;
             }
-         }
+            
+            //Again, if the selector doesn't match then it won't on any others so no point trying them
+            return del;
+         }                  
       }
-      
-      return null;      
+      return null;
    }
    
    public List getQueues()
    {
       return queues;
+   }
+
+   public int numberOfReceivers()
+   {
+      return queues.size();
    }
 }

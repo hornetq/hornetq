@@ -57,7 +57,7 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * 
- * A PostOfficeImpl
+ * A DefaultPostOffice
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -65,9 +65,9 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  * $Id$
  *
  */
-public class PostOfficeImpl extends JDBCSupport implements PostOffice
+public class DefaultPostOffice extends JDBCSupport implements PostOffice
 {
-   private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
+   private static final Logger log = Logger.getLogger(DefaultPostOffice.class);
           
    private String officeName;
    
@@ -91,11 +91,11 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
    
    protected QueuedExecutorPool pool;
    
-   public PostOfficeImpl()
+   public DefaultPostOffice()
    {      
    }
    
-   public PostOfficeImpl(DataSource ds, TransactionManager tm, Properties sqlProperties,
+   public DefaultPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
                          boolean createTablesOnStartup,
                          String nodeId, String officeName, MessageStore ms,
                          PersistenceManager pm,
@@ -296,7 +296,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
       boolean routed = false;
       
       lock.readLock().acquire();
-                
+                   
       try
       {                 
          Bindings bd = (Bindings)conditionMap.get(condition);
@@ -325,7 +325,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
             Collection bindings = bd.getAllBindings();
             
             Iterator iter = bindings.iterator();
-            
+               
             while (iter.hasNext())
             {
                Binding binding = (Binding)iter.next();
@@ -337,7 +337,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
                }
                                 
                Queue queue = binding.getQueue();
-               
+                
                Delivery del = queue.handle(null, ref, tx);
                
                if (del != null && del.isSelectorAccepted())
@@ -405,6 +405,7 @@ public class PostOfficeImpl extends JDBCSupport implements PostOffice
             long channelId = rs.getLong(5);
                                              
             Binding binding = this.createBinding(nodeId, condition, queueName, channelId, selector, true);
+            binding.getQueue().deactivate();
             
             addBinding(binding);
          }

@@ -32,7 +32,7 @@ import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.postoffice.PostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
@@ -48,7 +48,7 @@ import org.jboss.messaging.core.tx.TransactionRepository;
  */
 public class SimplePostOfficeService extends JDBCServiceSupport
 {
-   private PostOfficeImpl postOffice;
+   private DefaultPostOffice postOffice;
    
    private ObjectName serverPeerObjectName;
    
@@ -130,7 +130,7 @@ public class SimplePostOfficeService extends JDBCServiceSupport
          
          FilterFactory ff = new SelectorFactory();
                
-         postOffice = new PostOfficeImpl(ds, tm, sqlProperties,
+         postOffice = new DefaultPostOffice(ds, tm, sqlProperties,
                                          createTablesOnStartup,
                                          nodeId, officeName, ms, pm, tr, ff, pool);
          

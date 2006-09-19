@@ -39,5 +39,4 @@ public class SelectorFactory implements FilterFactory
    {
       return filterString == null ? null : new Selector(filterString);
    }
-
 }

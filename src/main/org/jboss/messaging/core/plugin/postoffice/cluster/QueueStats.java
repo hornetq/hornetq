@@ -39,7 +39,9 @@ class QueueStats implements Streamable
 {
    private String queueName;
    
-   private double growthRate;
+   private float addRate;
+   
+   private float consumeRate;
    
    private int messageCount;
 
@@ -47,18 +49,25 @@ class QueueStats implements Streamable
    {      
    }
    
-   QueueStats(String queueName, double growthRate, int messageCount)
+   QueueStats(String queueName, float addRate, float consumeRate, int messageCount)
    {
       this.queueName = queueName;
       
-      this.growthRate = growthRate;
+      this.addRate = addRate;
+      
+      this.consumeRate = consumeRate;
       
       this.messageCount = messageCount;
    }
 
-   double getGrowthRate()
+   float getAddRate()
    {
-      return growthRate;
+      return addRate;
+   }
+   
+   float getConsumeRate()
+   {
+      return consumeRate;
    }
 
    int getMessageCount()
@@ -75,7 +84,9 @@ class QueueStats implements Streamable
    {
       queueName = in.readUTF();
       
-      growthRate = in.readDouble();
+      addRate = in.readFloat();
+      
+      consumeRate = in.readFloat();
       
       messageCount = in.readInt();
    }
@@ -84,7 +95,9 @@ class QueueStats implements Streamable
    {
       out.writeUTF(queueName);
       
-      out.writeDouble(growthRate);
+      out.writeFloat(addRate);
+      
+      out.writeFloat(consumeRate);
       
       out.writeInt(messageCount);
    }      

@@ -21,10 +21,14 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.Router;
+import java.util.Iterator;
+import java.util.List;
 
 /**
- * A ClusterRouter
+ * 
+ * A StandardRedistributionPolicy
+ * 
+ * In this simple redistribution policy, we only move messages from a particular local queue if 
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,7 +36,47 @@ import org.jboss.messaging.core.Router;
  * $Id$
  *
  */
-public interface ClusterRouter extends Router
+public class StandardRedistributionPolicy implements RedistributionPolicy
 {
-   int size();
+   private String localNodeId;
+   
+   public StandardRedistributionPolicy(String localNodeId)
+   {
+      this.localNodeId = localNodeId;
+   }
+
+   public RedistributionOrder calculate(List queues)
+   {
+      Iterator iter = queues.iterator();
+      
+      ClusteredQueue localQueue = null;
+      
+      while (iter.hasNext())
+      {
+         ClusteredQueue queue = (ClusteredQueue)iter.next();
+         
+         if (queue.isLocal())
+         {
+            localQueue = queue;
+            
+            break;
+         }
+      }
+      
+      if (localQueue == null)
+      {
+         return null;
+      }
+      
+      QueueStats stats = localQueue.getStats();
+      
+      if (stats == null)
+      {
+         //We have not given the queue long enough to produce stats - so we can't move anything
+         //now
+         return null;
+      }
+
+      return null;
+   }
 }

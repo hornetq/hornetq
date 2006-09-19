@@ -62,5 +62,11 @@ public interface Distributor
     * Remove all receivers.
     */
    void clear();
+   
+   /**
+    * 
+    * @return The number of receivers in the distributor
+    */
+   int numberOfReceivers();
 
 }

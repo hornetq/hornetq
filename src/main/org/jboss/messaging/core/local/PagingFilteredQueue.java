@@ -28,6 +28,7 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PagingChannelSupport;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -65,9 +66,9 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
    
    // Attributes ----------------------------------------------------
    
-   private String name;
+   protected String name;
    
-   private Filter filter;
+   protected Filter filter;
    
    // Constructors --------------------------------------------------
 
@@ -102,13 +103,15 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
    
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
-      if (filter.accept(ref))
+      if (filter == null || filter.accept(ref))
       {
          return super.handle(sender, ref, tx);
       }
       else
       {
-         return null;
+         Delivery del = new SimpleDelivery(this, ref, true, false);
+         
+         return del;
       }
    }
    

@@ -72,9 +72,10 @@ public class TopicService extends DestinationServiceSupport
             Binding binding = (Binding)iter.next();
             
             PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
-
-            queue.deactivate();
-            queue.activate(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());            
+            
+            queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
+            queue.load();
+            queue.activate();
          }
 
          // push security update to the server
@@ -123,6 +124,7 @@ public class TopicService extends DestinationServiceSupport
             }
                         
             queue.deactivate();
+            queue.unload();
          }
           
          started = false;

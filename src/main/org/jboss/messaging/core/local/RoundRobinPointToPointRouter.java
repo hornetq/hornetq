@@ -86,6 +86,9 @@ public class RoundRobinPointToPointRouter implements Router
 
          // try to release the lock as quickly as possible and make a copy of the receivers array
          // to avoid deadlock (http://jira.jboss.org/jira/browse/JBMESSAGING-491)
+         
+         //FIXME - we shouldn't be cloning an ArrayList for the delivery of each message
+         //on the primary execution path! 
 
          receiversCopy = new ArrayList(receivers.size());
          receiversCopy.addAll(receivers);
@@ -196,6 +199,14 @@ public class RoundRobinPointToPointRouter implements Router
       synchronized(receivers)
       {
          return receivers.iterator();
+      }
+   }
+   
+   public int numberOfReceivers()
+   {
+      synchronized(receivers)
+      {
+         return receivers.size();
       }
    }
 

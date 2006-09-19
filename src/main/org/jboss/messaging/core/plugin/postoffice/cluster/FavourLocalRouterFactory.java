@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import org.jboss.messaging.core.Router;
+
 
 /**
  * A FavourLocalRouterFactory
@@ -33,7 +35,7 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
  */
 public class FavourLocalRouterFactory implements ClusterRouterFactory
 {
-   public ClusterRouter createRouter()
+   public Router createRouter()
    {
       return new FavourLocalRouter();
    }

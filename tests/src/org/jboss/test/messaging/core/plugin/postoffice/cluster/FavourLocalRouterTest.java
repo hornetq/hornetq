@@ -21,32 +21,25 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
-import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.plugin.postoffice.SimplePostOfficeTest;
+import org.jboss.test.messaging.core.plugin.postoffice.DefaultPostOfficeTest;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
-public class FavourLocalRouterTest extends SimplePostOfficeTest
+public class FavourLocalRouterTest extends DefaultPostOfficeTest
 {
    // Constants -----------------------------------------------------
 
@@ -158,8 +151,8 @@ public class FavourLocalRouterTest extends SimplePostOfficeTest
          new ClusteredPostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),
                                  null, true, nodeId, "Clustered", ms, pm, tr, ff, pool,
                                  groupName,
-                                 JGroupsUtil.getControlStackProperties(50, 1),
-                                 JGroupsUtil.getDataStackProperties(50, 1),
+                                 JGroupsUtil.getControlStackProperties(),
+                                 JGroupsUtil.getDataStackProperties(),
                                  5000, 5000, redistPolicy, 1000, rf);
       
       postOffice.start();      

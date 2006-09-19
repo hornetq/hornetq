@@ -224,13 +224,6 @@ public class SessionAspect
     *
     * So on rollback we do session recovery (local redelivery) in the same as if session.recover()
     * was called.
-    * 
-    * There is a conflict here though. It seems a CTS test requires messages to be available to
-    * OTHER sessions on rollback - see CTSMiscellaneousTest.testContestedQueueOnRollback(), which
-    * seems in direct contradiction to the spec.
-    * 
-    * In order to satisfy the test, on session recovery, if there are no local consumers available
-    * to consume the message, we cancel the message back to the channel.
     */
    public Object handleRedeliver(Invocation invocation) throws Throwable
    {

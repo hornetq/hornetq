@@ -51,15 +51,19 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
 {
    private static final int MIN_PERIOD = 1000;
    
+   private static final int STATS_DIFFERENCE_MARGIN_PERCENT = 10;   
+      
    private String nodeId;
    
    private long lastTime;
    
-   private double lastGrowthRate;
+   private QueueStats lastStats;
    
    private volatile int numberAdded;
    
    private volatile int numberConsumed;
+   
+   private volatile boolean changedSignificantly;
  
    public LocalClusteredQueue(String nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
@@ -88,13 +92,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       numberAdded = numberConsumed = 0;
    }
    
-   /**
-    * 
-    * @return The rate of growth in messages per second of the queue
-    * Rate of growth is defined as follows:
-    * growth = (number of messages added - number of messages consumed) / time
-    */
-   public synchronized double getGrowthRate()
+   public QueueStats getStats()
    {
       long now = System.currentTimeMillis();
       
@@ -103,33 +101,58 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       if (period <= MIN_PERIOD)
       {
          //Cache the value to avoid recalculating too often
-         return lastGrowthRate;
+         return lastStats;
       }
       
-      lastGrowthRate = 1000 * (numberAdded - numberConsumed) / ((double)period);
+      float addRate = 1000 * numberAdded / ((float)period);
+      
+      float consumeRate = 1000 * numberConsumed / ((float)period);
+      
+      int cnt = messageCount();      
+      
+      if (lastStats != null)
+      {
+         if (checkSignificant(lastStats.getAddRate(), addRate) ||
+             checkSignificant(lastStats.getConsumeRate(), consumeRate) ||
+             checkSignificant(lastStats.getMessageCount(), cnt))
+         {
+            changedSignificantly = true; 
+         }
+         else
+         {
+            changedSignificantly = false;
+         }
+      }
+      else
+      {
+         changedSignificantly = true;
+      }
+            
+      lastStats = new QueueStats(name, addRate, consumeRate, messageCount());
       
       lastTime = now;
       
       numberAdded = numberConsumed = 0;
       
-      return lastGrowthRate;
+      return lastStats;
+   }      
+   
+   //Have the stats changed significantly since the last time we request them?
+   public boolean changedSignificantly()
+   {
+      return changedSignificantly;
    }
    
    public boolean isLocal()
    {
       return true;
    }
-   
+     
    public String getNodeId()
    {
       return nodeId;
    }
-   
-   public int getMessageCount()
-   {
-      return messageCount();
-   }
-   
+      
    public List getDeliveries(int number) throws Exception
    {
       List dels = new ArrayList();
@@ -161,6 +184,13 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    public Delivery handleFromCluster(DeliveryObserver sender, MessageReference ref, Transaction tx)
       throws Exception
    {
+      if (filter != null && !filter.accept(ref))
+      {
+         Delivery del = new SimpleDelivery(this, ref, true, false);
+         
+         return del;
+      }
+      
       checkClosed();
       
       Future result = new Future();
@@ -198,4 +228,27 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
       return acked;
    }  
+   
+   private boolean checkSignificant(float oldValue, float newValue)
+   {
+      boolean significant = false;
+      
+      if (oldValue != 0)
+      {         
+         int percentChange = (int)(100 * (oldValue - newValue) / oldValue);
+         
+         if (Math.abs(percentChange) >= STATS_DIFFERENCE_MARGIN_PERCENT)
+         {
+            significant = true;
+         }
+      }
+      else
+      {
+         if (newValue != 0)
+         {
+            significant = true;
+         }
+      }
+      return significant;
+   }
 }
