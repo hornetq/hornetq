@@ -635,8 +635,39 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
          factory that uses the socket transport for all connections created from it.
       </para>
 
+       <para>
+         You can look at remoting configuration under:
+       </para>
+
+       <para>
+          &lt;JBoss&gt;/server/&lt;YourMessagingServer&gt;/deploy/jboss-messaging.sar/remoting-service.xml
+       </para>
+       
+       <para>
+          By default JBoss Messaging binds to ${jboss.bind.address} which can be defined by:
+          ./run.sh -c &lt;yourconfig&gt; -b yourIP.
+       </para>
+
+       <para>
+          You can change remoting-service.xml if you want for example use a
+          different communication port, or change any other network behavior.
+       </para>
   </section>
 
+  <section id="conf.callback">
+      <title>Configuring the callback</title>
 
+      <para>
+         JBoss Messaging uses a callback mechanism from Remoting that needs a Socket for callback operations. These socket properties are passed to the server by a remote call when the connection is being estabilished. As we said before we will support bidirectional protocols in future releases.
+      </para>
 
+      <para>
+         By default JBoss Messaging will execute InetAddress.getLocalHost().getHostAddress() to access your local host IP, but in case you need to setup a different IP, you can define a system property in your java arguments: 
+      </para>
+
+      <para>
+		Use java -Djboss.messaging.callback.bind.address=YourHost - That will determine the callBack host in your client.
+      </para>
+
+  </section>
 </chapter>
