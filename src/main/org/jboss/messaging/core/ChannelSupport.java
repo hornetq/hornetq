@@ -794,6 +794,7 @@ public abstract class ChannelSupport implements Channel
       }
 
       // I might as well return null, the sender shouldn't care
+      
       return new SimpleDelivery(this, ref, true);
    }
 

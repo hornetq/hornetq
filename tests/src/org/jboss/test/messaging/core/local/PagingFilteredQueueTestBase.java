@@ -205,17 +205,25 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       Message m5 = new CoreMessage(5, false, 0, 0, (byte)0, null, null, 0);
       
       MessageReference ref1 = ms.reference(m1);
-      MessageReference ref2 = ms.reference(m1);
-      MessageReference ref3 = ms.reference(m1);
-      MessageReference ref4 = ms.reference(m1);
-      MessageReference ref5 = ms.reference(m1);
+      MessageReference ref2 = ms.reference(m2);
+      MessageReference ref3 = ms.reference(m3);
+      MessageReference ref4 = ms.reference(m4);
+      MessageReference ref5 = ms.reference(m5);
       
-      assertNull(queue.handle(null, ref1, null));
-      assertNull(queue.handle(null, ref2, null));
-      assertNotNull(queue.handle(null, ref3, null));
-      assertNull(queue.handle(null, ref4, null));
-      assertNull(queue.handle(null, ref5, null));
+      Delivery del = queue.handle(null, ref1, null);
+      assertFalse(del.isSelectorAccepted());
       
+      del = queue.handle(null, ref2, null);
+      assertFalse(del.isSelectorAccepted());
+      
+      del = queue.handle(null, ref3, null);
+      assertTrue(del.isSelectorAccepted());
+      
+      del = queue.handle(null, ref4, null);
+      assertFalse(del.isSelectorAccepted());
+      
+      del = queue.handle(null, ref5, null);
+      assertFalse(del.isSelectorAccepted());
    }
    
    

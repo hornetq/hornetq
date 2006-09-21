@@ -95,9 +95,9 @@ public class ServerPeerTest extends MessagingTestCase
    public void testChangeDefaultJNDIContexts() throws Exception
    {
       ServerManagement.stopServerPeer();
-
+     
       ServerManagement.startServerPeer("0", "/here-go-queues", "/and-here-topics/etc/etc");
-
+      
       try
       {
          ServerManagement.deployQueue("SomeQueue");

@@ -883,6 +883,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       
       consume(queue, consumeCount, refs, 50);
       consumeCount += 50;
+            
 
       //verify 0 ref in storage
       

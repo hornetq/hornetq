@@ -345,10 +345,20 @@ public class LocalTestServer implements Server
 
       for(Iterator i = connFactoryObjectNames.iterator(); i.hasNext(); )
       {
-         ObjectName on = (ObjectName)i.next();
-         sc.invoke(on, "stop", new Object[0], new String[0]);
-         sc.invoke(on, "destroy", new Object[0], new String[0]);
-         sc.unregisterService(on);
+         try
+         {
+            ObjectName on = (ObjectName)i.next();
+            sc.invoke(on, "stop", new Object[0], new String[0]);
+            sc.invoke(on, "destroy", new Object[0], new String[0]);
+            sc.unregisterService(on);
+         }
+         catch (Exception ignore)
+         {
+            //If the serverpeer failed when starting up previously, then only some of the
+            //services may be started. The ones that didn't start will fail when attempting to shut
+            //them down.
+            //Hence we must catch and ignore or we won't shut everything down
+         }
       }
       connFactoryObjectNames.clear();
 
@@ -376,32 +386,93 @@ public class LocalTestServer implements Server
 
       log.debug("stopping JMS server");
 
-      sc.invoke(serverPeerObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(serverPeerObjectName, "destroy", new Object[0], new String[0]);
+      try
+      {
+         sc.invoke(serverPeerObjectName, "stop", new Object[0], new String[0]);
+         sc.invoke(serverPeerObjectName, "destroy", new Object[0], new String[0]);
+         sc.unregisterService(serverPeerObjectName);
+      }
+      catch (Exception ignore)
+      {
+         //If the serverpeer failed when starting up previously, then only some of the
+         //services may be started. The ones that didn't start will fail when attempting to shut
+         //them down.
+         //Hence we must catch and ignore or we won't shut everything down
+      }
 
-      sc.unregisterService(serverPeerObjectName);
+      
 
       log.debug("stopping ServerPeer's plug-in dependencies");
       
-      sc.invoke(shutdownLoggerObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(shutdownLoggerObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(shutdownLoggerObjectName);
+      try
+      {
+         sc.invoke(shutdownLoggerObjectName, "stop", new Object[0], new String[0]);
+         sc.invoke(shutdownLoggerObjectName, "destroy", new Object[0], new String[0]);
+         sc.unregisterService(shutdownLoggerObjectName);
+      }
+      catch (Exception ignore)
+      {
+         //If the serverpeer failed when starting up previously, then only some of the
+         //services may be started. The ones that didn't start will fail when attempting to shut
+         //them down.
+         //Hence we must catch and ignore or we won't shut everything down
+      }
       
-      sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(jmsUserManagerObjectName);
+      try
+      {
+         sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);
+         sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
+         sc.unregisterService(jmsUserManagerObjectName);
+      }
+      catch (Exception ignore)
+      {
+         //If the serverpeer failed when starting up previously, then only some of the
+         //services may be started. The ones that didn't start will fail when attempting to shut
+         //them down.
+         //Hence we must catch and ignore or we won't shut everything down
+      }
 
-      sc.invoke(queuePostOfficeObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(queuePostOfficeObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(queuePostOfficeObjectName);
+      try
+      {
+         sc.invoke(queuePostOfficeObjectName, "stop", new Object[0], new String[0]);
+         sc.invoke(queuePostOfficeObjectName, "destroy", new Object[0], new String[0]);
+         sc.unregisterService(queuePostOfficeObjectName);
+      }
+      catch (Exception ignore)
+      {
+         //If the serverpeer failed when starting up previously, then only some of the
+         //services may be started. The ones that didn't start will fail when attempting to shut
+         //them down.
+         //Hence we must catch and ignore or we won't shut everything down
+      }
       
-      sc.invoke(topicPostOfficeObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(topicPostOfficeObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(topicPostOfficeObjectName);
+      try
+      {
+         sc.invoke(topicPostOfficeObjectName, "stop", new Object[0], new String[0]);
+         sc.invoke(topicPostOfficeObjectName, "destroy", new Object[0], new String[0]);
+         sc.unregisterService(topicPostOfficeObjectName);
+      }
+      catch (Exception ignore)
+      {
+         //If the serverpeer failed when starting up previously, then only some of the
+         //services may be started. The ones that didn't start will fail when attempting to shut
+         //them down.
+         //Hence we must catch and ignore or we won't shut everything down
+      }
 
-      sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(persistenceManagerObjectName);
+      try
+      {
+         sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
+         sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
+         sc.unregisterService(persistenceManagerObjectName);
+      }
+      catch (Exception ignore)
+      {
+         //If the serverpeer failed when starting up previously, then only some of the
+         //services may be started. The ones that didn't start will fail when attempting to shut
+         //them down.
+         //Hence we must catch and ignore or we won't shut everything down
+      }
 
    }
 

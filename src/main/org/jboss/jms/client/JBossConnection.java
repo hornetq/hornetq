@@ -75,7 +75,6 @@ public class JBossConnection implements
 
    protected ConnectionDelegate delegate;
    private int connectionType;   
-   private boolean closed;
 
    // Constructors --------------------------------------------------
 
@@ -131,7 +130,6 @@ public class JBossConnection implements
    {
       delegate.closing();
       delegate.close();
-      closed = true;
    }
 
    public ConnectionConsumer createConnectionConsumer(Destination destination,
@@ -264,17 +262,6 @@ public class JBossConnection implements
       }
    }
 
-   protected void finalize() throws Throwable
-   {      
-      super.finalize();
-      //If a user hasn't explicitly closed the connection due to sloppy programming
-      //then we close it here
-      if (!closed)
-      {
-         close();
-      }
-   }
-   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

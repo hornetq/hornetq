@@ -162,10 +162,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
    // Receiver implementation
    // -----------------------------------------------------------------
    
-   public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
-   { 
-      return super.handle(sender, ref, tx);
-   }
    
    // Channel implementation
    // ---------------------------------------------------------------
