@@ -235,6 +235,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          unload();
          
+         //Load the unpaged references
          InitialLoadInfo ili = pm.getInitialReferenceInfos(channelID, fullSize);
 
          if (ili.getMaxPageOrdering() != null)            
@@ -250,18 +251,27 @@ public abstract class PagingChannelSupport extends ChannelSupport
             firstPagingOrder = nextPagingOrder = 0;
          }
          
-         Map refMap = processReferences(ili.getRefInfos());
+         log.info("Loading channel");
          
+         log.info("Got " + ili.getRefInfos().size() + " intial refs");
+         
+         Map refMap = processReferences(ili.getRefInfos()); 
+        
          Iterator iter = ili.getRefInfos().iterator();
          while (iter.hasNext())
          {
             ReferenceInfo info = (ReferenceInfo)iter.next();
 
             addFromRefInfo(info, refMap);
-         }         
+         }                    
+         
+         //Maybe we need to load some paged refs
+         
+         while (checkLoad()) {}
       }
    }      
-   
+    
+      
    public void unload() throws Exception
    {
       synchronized (refLock)
@@ -295,6 +305,74 @@ public abstract class PagingChannelSupport extends ChannelSupport
    }
    
    // Protected -------------------------------------------------------
+   
+   protected void loadPagedReferences(long number) throws Exception
+   {
+      if (trace) { log.trace(this + " Loading " + number + " paged references from storage"); }
+
+      // Must flush the down cache first
+      flushDownCache();
+      
+      List refInfos = pm.getPagedReferenceInfos(channelID, firstPagingOrder, number);
+      
+      Map refMap = processReferences(refInfos);
+
+      boolean loadedReliable = false;
+
+      List toRemove = new ArrayList();
+      
+      int unreliableNumber = 0;
+
+      Iterator iter = refInfos.iterator();
+      while (iter.hasNext())
+      {
+         ReferenceInfo info = (ReferenceInfo)iter.next();
+         
+         MessageReference ref = addFromRefInfo(info, refMap);
+         
+         if (recoverable && ref.isReliable())
+         {
+            loadedReliable = true;
+         }
+         else
+         {
+            // We put the non reliable refs (or reliable in a non-recoverable store)
+            // in a list to be removed
+            toRemove.add(ref);
+            
+            unreliableNumber++;
+         }
+      }
+
+      if (!toRemove.isEmpty())
+      {
+         // Now we remove the references we loaded (only the non persistent or persistent in a non-recoverable store)
+         
+         pm.removeReferences(channelID, toRemove);
+      }
+
+      if (loadedReliable)
+      {
+         // If we loaded any reliable refs then we must set the page ordering to null in
+         // the store otherwise they may get loaded again, the next time we do a load
+         // We can't delete them since they're reliable and haven't been acked yet
+            
+         pm.updateReliableReferencesNotPagedInRange(channelID, firstPagingOrder, firstPagingOrder + number - 1, number - unreliableNumber);
+      }
+            
+      firstPagingOrder += number;
+      
+      if (firstPagingOrder == nextPagingOrder)
+      {
+         //No more refs in storage
+         firstPagingOrder = nextPagingOrder = 0;
+         
+         if (messageRefs.size() != fullSize)
+         {
+            paging = false;
+         }
+      }    
+   }
    
    protected boolean cancelInternal(Delivery del) throws Exception
    {
@@ -345,24 +423,38 @@ public abstract class PagingChannelSupport extends ChannelSupport
       {
          MessageReference result = (MessageReference) messageRefs.removeFirst();
 
-         long refNum = downCache.size() + nextPagingOrder - firstPagingOrder   ;
-         
-         if (refNum > 0)
-         {
-            long numberLoadable = Math.min(refNum, pageSize);
+         checkLoad();
 
-            if (messageRefs.size() <= fullSize - numberLoadable)
-            {
-               //This will flush the down cache too
-               loadPagedReferences(numberLoadable);
-            }
+         return (MessageReference) result;
+      }
+   }
+   
+   private boolean checkLoad() throws Exception
+   {
+      long refNum = downCache.size() + nextPagingOrder - firstPagingOrder;
+      
+      if (refNum > 0)
+      {
+         long numberLoadable = Math.min(refNum, pageSize);
+
+         if (messageRefs.size() <= fullSize - numberLoadable)
+         {
+            //This will flush the down cache too
+            log.info("Loading " + numberLoadable + " refs");
+            loadPagedReferences(numberLoadable);
+            
+            return true;
          }
          else
          {
-            paging = false;
+            return false;
          }
-
-         return (MessageReference) result;
+      }
+      else
+      {
+         paging = false;
+         
+         return false;
       }
    }
    
@@ -468,7 +560,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
       if (!toAdd.isEmpty())
       {
-         pm.addReferences(channelID, toAdd);
+         pm.addReferences(channelID, toAdd, true);
       }
       if (!toUpdate.isEmpty())
       {
@@ -493,70 +585,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
    }
    
    
-   
-   protected void loadPagedReferences(long number) throws Exception
-   {
-      if (trace) { log.trace(this + " Loading " + number + " paged references from storage"); }
-
-      // Must flush the down cache first
-      flushDownCache();
-      
-      List refInfos = pm.getPagedReferenceInfos(channelID, firstPagingOrder, number);
-      
-      Map refMap = processReferences(refInfos);
-
-      boolean loadedReliable = false;
-
-      List toRemove = new ArrayList();
-
-      Iterator iter = refInfos.iterator();
-      while (iter.hasNext())
-      {
-         ReferenceInfo info = (ReferenceInfo)iter.next();
-         
-         MessageReference ref = addFromRefInfo(info, refMap);
-         
-         if (recoverable && ref.isReliable())
-         {
-            loadedReliable = true;
-         }
-         else
-         {
-            // We put the non reliable refs (or reliable in a non-recoverable store)
-            // in a list to be removed
-            toRemove.add(ref);
-         }
-      }
-
-      if (!toRemove.isEmpty())
-      {
-         // Now we remove the references we loaded (only the non persistent or persistent in a non-recoverable store)
-         
-         pm.removeReferences(channelID, toRemove);
-      }
-
-      if (loadedReliable)
-      {
-         // If we loaded any reliable refs then we must set the page ordering to null in
-         // the store otherwise they may get loaded again, the next time we do a load
-         // We can't delete them since they're reliable and haven't been acked yet
-         
-         pm.updateReliableReferencesNotPagedInRange(channelID, firstPagingOrder, number);
-      }
-            
-      firstPagingOrder += number;
-      
-      if (firstPagingOrder == nextPagingOrder)
-      {
-         //No more refs in storage
-         firstPagingOrder = nextPagingOrder = 0;
-         
-         if (messageRefs.size() != fullSize)
-         {
-            paging = false;
-         }
-      }    
-   }
    
    // Private ------------------------------------------------------------------------------
    

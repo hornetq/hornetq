@@ -48,7 +48,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
- * A ClusteredPostOfficeTest
+ * A DefaultClusteredPostOfficeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -56,7 +56,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class ClusteredPostOfficeTest extends DefaultPostOfficeTest
+public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
 {
    // Constants -----------------------------------------------------
 
@@ -66,7 +66,7 @@ public class ClusteredPostOfficeTest extends DefaultPostOfficeTest
    
    // Constructors --------------------------------------------------
 
-   public ClusteredPostOfficeTest(String name)
+   public DefaultClusteredPostOfficeTest(String name)
    {
       super(name);
    }

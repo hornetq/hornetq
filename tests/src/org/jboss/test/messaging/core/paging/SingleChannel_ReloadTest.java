@@ -108,8 +108,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue.memoryDeliveryCount());
       
       //Stop and restart the persistence manager
-      //Only the persistent messages should survive
-      //This is what would happen if the server crashed
+      //All the paged refs will survive
        
       pm.stop();
       tr.stop();
@@ -125,13 +124,23 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       ms = new SimpleMessageStore();
       ms.start();
-       
+      
+      queue = null;
+      
       PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
-
-      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
+      queue2.deactivate();
+      queue2.load();
+      
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(50, refIds.size());
+      
+      assertEquals(100, queue2.memoryRefCount());
+      assertEquals(0, queue2.downCacheCount());
+      assertFalse(queue2.isPaging());      
+      
+      assertEquals(0, queue2.memoryDeliveryCount());
                    
-      this.consume(queue2, 150, refs, 50);
+      this.consume(queue2, 100, refs, 100);
       
       refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(0, refIds.size());
@@ -195,7 +204,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue.memoryDeliveryCount());
       
       //Stop and restart the persistence manager
-      //No messages should survive
+      //Only the paged messages will survive
       //This is what would happen if the server crashed
 
       pm.stop();
@@ -214,18 +223,22 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       ms.start();
       
       PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      queue2.deactivate();
+      queue2.load();
       
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(0, refIds.size());
+      assertEquals(50, refIds.size());
       
       List msgIds = getMessageIds();
-      assertEquals(0, msgIds.size());
+      assertEquals(50, msgIds.size());
                                                                   
-      assertEquals(0, queue2.memoryRefCount());
+      assertEquals(100, queue2.memoryRefCount());
       
       assertEquals(0, queue2.downCacheCount());
       
       assertFalse(queue2.isPaging());      
+      
+      this.consume(queue2, 100, refs, 100);
       
       assertEquals(0, queue2.memoryDeliveryCount());
       
@@ -300,196 +313,5 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, LockMap.instance.getSize());
    }
    
-   public void testQueueReloadWithSmallerFullSize() throws Throwable
-   {
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
-      
-      Message[] msgs = new Message[150];
-      
-      MessageReference[] refs = new MessageReference[150];
-       
-      //Send 150 p messages
-      for (int i = 0; i < 150; i++)
-      {
-         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         
-         refs[i] = ms.reference(msgs[i]);
-                
-         queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
-      }
 
-      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(150, refIds.size());
-                                                
-      assertEquals(100, queue.memoryRefCount());
-      
-      assertEquals(0, queue.downCacheCount());
-      
-      assertTrue(queue.isPaging());      
-      
-      assertEquals(0, queue.memoryDeliveryCount());
-      
-      //Also we cancel some so we make sure that we have some negative page orders
-      
-      //cancel 10
-      
-      this.cancelDeliveries(queue, 10);
-      
-      //Stop and restart the persistence manager
-
-      pm.stop();
-      tr.stop();
-      ms.stop();
-      
-      pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, true, true, 100);      
-      pm.start();
-      
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
-      tr.start();
-      
-      ms = new SimpleMessageStore();
-      ms.start();
-      
-      //Reload the queue with a smaller fullSize
-      
-      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 50, 20, 10);
-      
-      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(150, refIds.size());
-      
-      List msgIds = getMessageIds();
-      assertEquals(150, msgIds.size());
-                                                                  
-      assertEquals(50, queue2.memoryRefCount());
-      
-      assertEquals(0, queue2.downCacheCount());
-      
-      assertTrue(queue2.isPaging());      
-      
-      assertEquals(0, queue2.memoryDeliveryCount());
-      
-      assertEquals(50, queue2.messageCount());
-      
-      //Consume all the messages
-      this.consume(queue2, 0, refs, 150);
-      
-      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(0, refIds.size());
-      
-      msgIds = getMessageIds();
-      assertEquals(0, msgIds.size());
-                                                                  
-      assertEquals(0, queue2.memoryRefCount());
-      
-      assertEquals(0, queue2.downCacheCount());
-      
-      assertFalse(queue2.isPaging());      
-      
-      assertEquals(0, queue2.memoryDeliveryCount());
-      
-      assertEquals(0, queue2.messageCount());
-      
-      assertEquals(0, LockMap.instance.getSize());            
-   }
-   
-   public void testReloadWithLargerFullSize() throws Throwable
-   {
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
-      
-      Message[] msgs = new Message[150];
-      
-      MessageReference[] refs = new MessageReference[150];
-       
-      //Send 150 p messages
-      for (int i = 0; i < 150; i++)
-      {
-         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         
-         refs[i] = ms.reference(msgs[i]);
-                
-         queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
-      }
-
-      List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(150, refIds.size());
-                                                
-      assertEquals(100, queue.memoryRefCount());
-      
-      assertEquals(0, queue.downCacheCount());
-      
-      assertTrue(queue.isPaging());      
-      
-      assertEquals(0, queue.memoryDeliveryCount());
-      
-      //Also we cancel some so we make sure that we have some negative page orders
-      
-      //cancel 10
-      
-      this.cancelDeliveries(queue, 10);
-      
-      //Stop and restart the persistence manager
-
-      pm.stop();
-      tr.stop();
-      ms.stop();
-      
-      pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, true, true, 100);      
-      pm.start();
-      
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
-      tr.start();
-      
-      ms = new SimpleMessageStore();
-      ms.start();
-      
-      //Reload the queue with a smaller fullSize
-      
-      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 130, 20, 10);
-      
-      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(150, refIds.size());
-      
-      List msgIds = getMessageIds();
-      assertEquals(150, msgIds.size());
-                                                                  
-      assertEquals(130, queue2.memoryRefCount());
-      
-      assertEquals(0, queue2.downCacheCount());
-      
-      assertTrue(queue2.isPaging());      
-      
-      assertEquals(0, queue2.memoryDeliveryCount());
-      
-      assertEquals(130, queue2.messageCount());
-      
-      //Consume all the messages
-      this.consume(queue2, 0, refs, 150);
-      
-      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(0, refIds.size());
-      
-      msgIds = getMessageIds();
-      assertEquals(0, msgIds.size());
-                                                                  
-      assertEquals(0, queue2.memoryRefCount());
-      
-      assertEquals(0, queue2.downCacheCount());
-      
-      assertFalse(queue2.isPaging());      
-      
-      assertEquals(0, queue2.memoryDeliveryCount());
-      
-      assertEquals(0, queue2.messageCount());
-      
-      assertEquals(0, LockMap.instance.getSize());            
-   }
-   
 }

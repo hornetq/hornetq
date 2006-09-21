@@ -47,13 +47,13 @@ public interface PersistenceManager extends MessagingComponent
       
    // Paging functionality - TODO we should split this out into its own interface
    
-   void addReferences(long channelID, List references) throws Exception;
+   void addReferences(long channelID, List references, boolean paged) throws Exception;
    
    void removeReferences(long channelID, List refs) throws Exception;
     
    void updatePageOrder(long channelID, List references) throws Exception;
    
-   void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd) throws Exception;
+   void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception;
             
    List getPagedReferenceInfos(long channelID, long orderStart, long number) throws Exception;
    

@@ -27,6 +27,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -372,9 +373,9 @@ public class WireFormatTest extends MessagingTestCase
          InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         
-         DataOutputStream oos = new DataOutputStream(bos);
                   
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+      
          wf.write(ir, oos);
          
          oos.flush();
@@ -383,43 +384,43 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         DataInputStream ois = new DataInputStream(bis); 
+         DataInputStream dis = new DataInputStream(bis); 
                  
          //Check the bytes
          
          //First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
          
          //First byte should be ACKNOWLEDGE
-         assertEquals(JMSWireFormat.ACKNOWLEDGE_BATCH, ois.readByte());
+         assertEquals(JMSWireFormat.ACKNOWLEDGE_BATCH, dis.readByte());
          
          //Next int should be objectId
-         assertEquals(objectId, ois.readInt());
+         assertEquals(objectId, dis.readInt());
          
          //Next long should be methodHash
-         assertEquals(methodHash, ois.readLong());
+         assertEquals(methodHash, dis.readLong());
          
          //Next should be number of acks
-         assertEquals(3, ois.readInt());
+         assertEquals(3, dis.readInt());
          
          //Now the acks
          AckInfo ack = new AckInfo();
             
-         ack.read(ois);
+         ack.read(dis);
          
          assertEquals(ackA.getMessageID(), ack.getMessageID());
          assertEquals(ackA.getConsumerID(), ack.getConsumerID());
          
          ack = new AckInfo();
          
-         ack.read(ois);
+         ack.read(dis);
          
          assertEquals(ackB.getMessageID(), ack.getMessageID());
          assertEquals(ackB.getConsumerID(), ack.getConsumerID());
          
          ack = new AckInfo();
          
-         ack.read(ois);
+         ack.read(dis);
          
          assertEquals(ackC.getMessageID(), ack.getMessageID());
          assertEquals(ackC.getConsumerID(), ack.getConsumerID());
@@ -428,7 +429,7 @@ public class WireFormatTest extends MessagingTestCase
          //Now eos
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -438,7 +439,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         ObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -496,7 +497,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
          
          wf.write(ir, oos);
          
@@ -506,16 +507,16 @@ public class WireFormatTest extends MessagingTestCase
          
          // Check the bytes
                   
-         DataInputStream ois = new DataInputStream(bis);
+         DataInputStream dis = new DataInputStream(bis);
          
          // First byte should be version
-         byte version = ois.readByte();
+         byte version = dis.readByte();
          
          assertEquals(CURRENT_VERSION, version);
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
                                  
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -557,7 +558,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
          
          wf.write(ir, oos);
          
@@ -565,16 +566,16 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         DataInputStream ois = new DataInputStream(bis);
+         DataInputStream dis = new DataInputStream(bis);
          
          // First byte should be version
-         byte version = ois.readByte();
+         byte version = dis.readByte();
          
          assertEquals(CURRENT_VERSION, version);
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
             
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -601,7 +602,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
          
          wf.write(ir, oos);
          
@@ -609,16 +610,16 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         DataInputStream ois = new DataInputStream(bis);
+         DataInputStream dis = new DataInputStream(bis);
          
          // First byte should be version
-         byte version = ois.readByte();
+         byte version = dis.readByte();
          
          assertEquals(CURRENT_VERSION, version);
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
                   
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -656,7 +657,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
                   
          wf.write(ir, oos);
          
@@ -666,37 +667,37 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         DataInputStream ois = new DataInputStream(bis); 
+         DataInputStream dis = new DataInputStream(bis); 
                
          //Check the bytes
          
          //First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
          
          //First byte should be SEND
-         assertEquals(JMSWireFormat.SEND, ois.readByte());
+         assertEquals(JMSWireFormat.SEND, dis.readByte());
          
          //Next int should be objectId
-         assertEquals(objectId, ois.readInt());
+         assertEquals(objectId, dis.readInt());
          
          //Next long should be methodHash
-         assertEquals(methodHash, ois.readLong());
+         assertEquals(methodHash, dis.readLong());
          
          //Next should be be type         
-         byte type = ois.readByte();
+         byte type = dis.readByte();
          
          assertEquals(JBossMessage.TYPE, type);
          
          //Next should come the message
          JBossMessage m2 = new JBossMessage();
          
-         m2.read(ois);
+         m2.read(dis);
          
          //should be eos
          
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -707,7 +708,7 @@ public class WireFormatTest extends MessagingTestCase
          MessageTest.ensureEquivalent(m, m2);
          
          bis.reset();
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -756,7 +757,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
                   
          wf.write(ir, oos);
         
@@ -766,33 +767,33 @@ public class WireFormatTest extends MessagingTestCase
               
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         DataInputStream ois = new DataInputStream(bis); 
+         DataInputStream dis = new DataInputStream(bis); 
                
          //Check the bytes
              
          //First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
          
          //First byte should be SEND_TRANSACTION
-         assertEquals(JMSWireFormat.SEND_TRANSACTION, ois.readByte());
+         assertEquals(JMSWireFormat.SEND_TRANSACTION, dis.readByte());
          
          //Next int should be objectId
-         assertEquals(objectId, ois.readInt());
+         assertEquals(objectId, dis.readInt());
          
          //Next long should be methodHash
-         assertEquals(methodHash, ois.readLong());
+         assertEquals(methodHash, dis.readLong());
                   
          //Next should come the transaction request
          
          TransactionRequest req = new TransactionRequest();
                          
-         req.read(ois);
+         req.read(dis);
          
          //should be eos
                 
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -812,7 +813,8 @@ public class WireFormatTest extends MessagingTestCase
          assertEquals(info.getMessageID(), info2.getMessageID());
          
          bis.reset();
-         ois = new DataInputStream(bis);
+         
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -867,7 +869,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
                   
          wf.write(ir, oos);
         
@@ -877,25 +879,25 @@ public class WireFormatTest extends MessagingTestCase
               
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         DataInputStream ois = new DataInputStream(bis); 
+         DataInputStream dis = new DataInputStream(bis); 
                
          //Check the bytes
              
          //First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
          
          //Next byte should be CANCEL_MESSAGES
-         assertEquals(JMSWireFormat.CANCEL_DELIVERIES, ois.readByte());
+         assertEquals(JMSWireFormat.CANCEL_DELIVERIES, dis.readByte());
          
          //Next int should be objectId
-         assertEquals(objectId, ois.readInt());
+         assertEquals(objectId, dis.readInt());
          
          //Next long should be methodHash
-         assertEquals(methodHash, ois.readLong());
+         assertEquals(methodHash, dis.readLong());
                   
          //Next should the size of the list
          
-         int size = ois.readInt();
+         int size = dis.readInt();
          
          assertEquals(2, size);
          
@@ -904,9 +906,9 @@ public class WireFormatTest extends MessagingTestCase
          
          AckInfo rack2 = new AckInfo();
          
-         rack1.read(ois);
+         rack1.read(dis);
          
-         rack2.read(ois);
+         rack2.read(dis);
          
          assertEquals(ack1.getConsumerID(), rack1.getConsumerID());
          
@@ -920,7 +922,7 @@ public class WireFormatTest extends MessagingTestCase
                 
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -930,7 +932,8 @@ public class WireFormatTest extends MessagingTestCase
          
          
          bis.reset();
-         ois = new DataInputStream(bis);
+         
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -966,27 +969,27 @@ public class WireFormatTest extends MessagingTestCase
          InvocationResponse resp = new InvocationResponse(null, mm, false, null);
 
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
          
          wf.write(resp, oos);
          oos.flush();
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
        
-         DataInputStream ois = new DataInputStream(bis);
+         DataInputStream dis = new DataInputStream(bis);
 
          // First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
 
          // Should be 1 byte
-         byte b = ois.readByte();
+         byte b = dis.readByte();
 
          assertEquals(JMSWireFormat.NULL_RESPONSE, b);
 
          // Should be eos
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -996,9 +999,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
 
-         // END of the invalid section
-
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
 
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -1028,7 +1029,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
                   
          wf.write(ir, oos);
          
@@ -1038,26 +1039,26 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                   
-         DataInputStream ois = new DataInputStream(bis); 
+         DataInputStream dis = new DataInputStream(bis); 
          
          //Check the bytes
          
          //First byte should be version
-         assertEquals(77, ois.readByte());         
+         assertEquals(77, dis.readByte());         
          
          //Second byte should be MORE
-         assertEquals(JMSWireFormat.MORE, ois.readByte());
+         assertEquals(JMSWireFormat.MORE, dis.readByte());
          
          //Next int should be objectId
-         assertEquals(objectId, ois.readInt());
+         assertEquals(objectId, dis.readInt());
          
          //Next long should be methodHash
-         assertEquals(methodHash, ois.readLong());
+         assertEquals(methodHash, dis.readLong());
          
          //Now eos
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -1066,7 +1067,7 @@ public class WireFormatTest extends MessagingTestCase
          }
          
          bis.reset();
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -1109,7 +1110,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
          
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, dr);
          
@@ -1121,58 +1122,58 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
                   
-         DataInputStream ois = new DataInputStream(bis);
+         DataInputStream dis = new DataInputStream(bis);
          
          //Check the bytes
          
          //First byte should be version
-         assertEquals(77, ois.readByte());         
+         assertEquals(77, dis.readByte());         
          
          //Second byte should be CALLBACK
-         assertEquals(JMSWireFormat.CALLBACK, ois.readByte());
+         assertEquals(JMSWireFormat.CALLBACK, dis.readByte());
          
          //Next int should be consumer id
-         assertEquals(12345678, ois.readInt());
+         assertEquals(12345678, dis.readInt());
          
          //Next int should be number of messages
-         assertEquals(3, ois.readInt());
+         assertEquals(3, dis.readInt());
          
          
          
          //Next byte should be type
-         assertEquals(JBossMessage.TYPE, ois.readByte());
+         assertEquals(JBossMessage.TYPE, dis.readByte());
          
          //Next int should be delivery count
-         assertEquals(7, ois.readInt());
+         assertEquals(7, dis.readInt());
          
          //And now the message itself
          JBossMessage r1 = new JBossMessage();
          
-         r1.read(ois);
+         r1.read(dis);
          
          
          //Next byte should be type
-         assertEquals(JBossMessage.TYPE, ois.readByte());
+         assertEquals(JBossMessage.TYPE, dis.readByte());
          
          //Next int should be delivery count
-         assertEquals(8, ois.readInt());
+         assertEquals(8, dis.readInt());
          
          //And now the message itself
          JBossMessage r2 = new JBossMessage();
          
-         r2.read(ois);
+         r2.read(dis);
          
          
          //Next byte should be type
-         assertEquals(JBossMessage.TYPE, ois.readByte());
+         assertEquals(JBossMessage.TYPE, dis.readByte());
          
          //Next int should be delivery count
-         assertEquals(9, ois.readInt());
+         assertEquals(9, dis.readInt());
          
          //And now the message itself
          JBossMessage r3 = new JBossMessage();
          
-         r3.read(ois);
+         r3.read(dis);
          
          MessageTest.ensureEquivalent(m1, r1);
          MessageTest.ensureEquivalent(m2, r2);
@@ -1181,7 +1182,7 @@ public class WireFormatTest extends MessagingTestCase
          //eos
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -1191,7 +1192,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -1233,7 +1234,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
          
          wf.write(ir, oos);
          
@@ -1241,18 +1242,18 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         DataInputStream ois = new DataInputStream(bis);
+         DataInputStream dis = new DataInputStream(bis);
                    
          // First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
          
-         int b = ois.readByte();
+         int b = dis.readByte();
          
          assertEquals(JMSWireFormat.ID_BLOCK_RESPONSE, b);
          
          IdBlock block2 = new IdBlock();
          
-         block2.read(ois);
+         block2.read(dis);
          
          assertEquals(block.getLow(), block2.getLow());
          assertEquals(block.getHigh(), block2.getHigh());
@@ -1260,7 +1261,7 @@ public class WireFormatTest extends MessagingTestCase
          //eos
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -1270,7 +1271,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -1294,7 +1295,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         DataOutputStream oos = new DataOutputStream(bos);
+         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
          
          wf.write(ir, oos);
          
@@ -1302,18 +1303,18 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
          
-         DataInputStream ois = new DataInputStream(bis);
+         DataInputStream dis = new DataInputStream(bis);
                    
          // First byte should be version
-         assertEquals(77, ois.readByte());
+         assertEquals(77, dis.readByte());
          
-         int b = ois.readByte();
+         int b = dis.readByte();
          
          assertEquals(JMSWireFormat.HANDLE_MESSAGE_RESPONSE, b);
          
          HandleMessageResponse h2 = new HandleMessageResponse();
          
-         h2.read(ois);
+         h2.read(dis);
          
          assertEquals(h.clientIsFull(), h2.clientIsFull());
          assertEquals(h.getNumberAccepted(), h2.getNumberAccepted());
@@ -1321,7 +1322,7 @@ public class WireFormatTest extends MessagingTestCase
          //eos
          try
          {
-            ois.readByte();
+            dis.readByte();
             fail("End of stream expected");
          }
          catch (EOFException e)
@@ -1331,7 +1332,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ois = new DataInputStream(bis);
+         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          

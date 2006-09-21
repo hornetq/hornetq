@@ -335,7 +335,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.addReferences(channel1.getChannelID(), refs);
+      pm.addReferences(channel1.getChannelID(), refs, false);
       
       refs = new ArrayList();
       refs.add(ref11);
@@ -344,7 +344,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref14);
       refs.add(ref15);
     
-      pm.addReferences(channel2.getChannelID(), refs);
+      pm.addReferences(channel2.getChannelID(), refs, false);
                   
       List refIds = getReferenceIds(channel1.getChannelID());
       assertNotNull(refIds);
@@ -512,7 +512,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.addReferences(channel.getChannelID(), refs); 
+      pm.addReferences(channel.getChannelID(), refs, false); 
       
       ref1.setPagingOrder(0);
       ref2.setPagingOrder(1);
@@ -556,7 +556,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
       assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
     
-      pm.updateReliableReferencesNotPagedInRange(channel.getChannelID(), 0, 4);
+      pm.updateReliableReferencesNotPagedInRange(channel.getChannelID(), 0, 3, 4);
       
       refInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 5, 5);
       
@@ -680,10 +680,13 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.addReferences(channel.getChannelID(), refs); 
+      pm.addReferences(channel.getChannelID(), refs, false); 
       
       //First load exactly 10
       PersistenceManager.InitialLoadInfo info = pm.getInitialReferenceInfos(channel.getChannelID(), 10);
+      
+      log.info("min:" + info.getMinPageOrdering());
+      log.info("max:" + info.getMaxPageOrdering());
       
       assertNull(info.getMinPageOrdering());
       assertNull(info.getMaxPageOrdering());
@@ -702,127 +705,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
       assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
       assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());
-      
-      //fullSize has increased to 15 - only 10 should be loadeed still
-      info = pm.getInitialReferenceInfos(channel.getChannelID(), 15);
-      
-      assertNull(info.getMinPageOrdering());
-      assertNull(info.getMaxPageOrdering());
-      
-      refInfos = info.getRefInfos();
-      assertNotNull(refInfos);
-      assertEquals(10, refInfos.size());
-      
-      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
-      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
-      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
-      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
-      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());
-      
-      //fullSize has gone down to 7 - 7 should be loaded and the other 3 marked as paged
-      info = pm.getInitialReferenceInfos(channel.getChannelID(), 7);
-      
-      assertEquals(0, info.getMinPageOrdering().longValue());
-      assertEquals(2, info.getMaxPageOrdering().longValue());
-      
-      refInfos = info.getRefInfos();
-      assertNotNull(refInfos);
-      assertEquals(7, refInfos.size());
-      
-      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
-      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
-      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
-      
-      List pagedInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 0, 3);
-      assertNotNull(pagedInfos);
-      assertEquals(3, pagedInfos.size());
-      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(0)).getMessageId());
-      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(1)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(2)).getMessageId());
-            
-      //fullSize gone down even further to 4 - 4 should be loaded and othe others re-ordered from zero
-      
-      info = pm.getInitialReferenceInfos(channel.getChannelID(), 4);
-      
-      assertEquals(0, info.getMinPageOrdering().longValue());
-      assertEquals(5, info.getMaxPageOrdering().longValue());
-      
-      refInfos = info.getRefInfos();
-      assertNotNull(refInfos);
-      assertEquals(4, refInfos.size());
-      
-      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-         
-      pagedInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 0, 6);
-      assertNotNull(pagedInfos);
-      assertEquals(6, pagedInfos.size());
-      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(0)).getMessageId());
-      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(1)).getMessageId());
-      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(2)).getMessageId());
-      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(3)).getMessageId());
-      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(4)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(5)).getMessageId());
-      
-      //fullSize back up to 6 - 6 should be loaded and the others shifted
-      
-      info = pm.getInitialReferenceInfos(channel.getChannelID(), 6);
-      
-      assertEquals(2, info.getMinPageOrdering().longValue());
-      assertEquals(5, info.getMaxPageOrdering().longValue());
-      
-      refInfos = info.getRefInfos();
-      assertNotNull(refInfos);
-      assertEquals(6, refInfos.size());
-      
-      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
-      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
-              
-      pagedInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 2, 4);
-      assertNotNull(pagedInfos);
-      assertEquals(4, pagedInfos.size());
-      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(0)).getMessageId());
-      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(1)).getMessageId());
-      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(2)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)pagedInfos.get(3)).getMessageId());
-              
-      //fullSize up to 12
-      
-      info = pm.getInitialReferenceInfos(channel.getChannelID(), 12);
-      
-      assertNull(info.getMinPageOrdering());
-      assertNull(info.getMaxPageOrdering());
-      
-      refInfos = info.getRefInfos();
-      assertNotNull(refInfos);
-      assertEquals(10, refInfos.size());
-      
-      assertEquals(ref1.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(0)).getMessageId());
-      assertEquals(ref2.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(1)).getMessageId());
-      assertEquals(ref3.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(2)).getMessageId());
-      assertEquals(ref4.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
-      assertEquals(ref5.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
-      assertEquals(ref6.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(5)).getMessageId());
-      assertEquals(ref7.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(6)).getMessageId());
-      assertEquals(ref8.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(7)).getMessageId());
-      assertEquals(ref9.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
-      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());            
+      assertEquals(ref10.getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());          
    }
       
    

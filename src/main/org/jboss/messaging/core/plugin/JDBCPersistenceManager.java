@@ -139,8 +139,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn.close();
       }
-            
-      removeUnreliableMessageData();
+        
+      //We can't remnove unreliable data since it might introduce holes into the paging order
+      //removeUnreliableMessageData();
         
       log.debug(this + " started");
    }
@@ -274,16 +275,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    // Related to paging functionality
    // ===============================
       
-   public void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long number) throws Exception
+   public void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception
    {
       if (trace)
       {
-         log.trace("Updating reliable references for channel " + channelID + " between " + orderStart + " number " + number);
+         log.trace("Updating reliable references for channel " + channelID + " between " + orderStart + " and " + orderEnd);
       }
       Connection conn = null;
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
-      
+
       final int MAX_TRIES = 25;      
       
       try
@@ -291,10 +292,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          conn = ds.getConnection();
          
          ps = conn.prepareStatement(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
+                 
+         log.info(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
          
          ps.setLong(1, orderStart);
          
-         ps.setLong(2, orderStart + number - 1);
+         ps.setLong(2, orderEnd);
          
          ps.setLong(3, channelID);
          
@@ -305,11 +308,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             try
             {
                int rows = ps.executeUpdate();
-               
+                 
                if (trace)
                {
                   log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"), new Long(channelID),
-                        new Long(orderStart), new Long(orderStart + number - 1))
+                        new Long(orderStart), new Long(orderEnd))
                         + " updated " + rows + " rows");
                }
                if (tries > 0)
@@ -318,7 +321,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                }
                
                //Sanity check
-               if (rows != number)
+               if (rows != num)
                {
                   throw new IllegalStateException("Did not update correct number of rows");
                }
@@ -578,7 +581,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }  
                
-   public void addReferences(long channelID, List references) throws Exception
+   public void addReferences(long channelID, List references, boolean paged) throws Exception
    {  
       Connection conn = null;
       PreparedStatement psInsertReference = null;  
@@ -623,7 +626,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             
             //Now store the reference
-            addReference(channelID, ref, psInsertReference, true);
+            addReference(channelID, ref, psInsertReference, paged);
                         
             if (usingBatchUpdates)
             {
@@ -1145,6 +1148,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }      
    }   
    
+   /*
+    * Load the initial, non paged refs
+    */
    public InitialLoadInfo getInitialReferenceInfos(long channelID, int fullSize) throws Exception
    {
       if (trace)
@@ -1175,6 +1181,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          Long minOrdering = new Long(rs.getLong(1));
          
+         log.info("min ordering is: " + minOrdering);
+         
          if (rs.wasNull())
          {
             minOrdering = null;
@@ -1187,9 +1195,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             maxOrdering = null;
          }
          
-         //Must cope with the possibility that fullSize has changed for the channel since last
-         //restart
-         
+         log.info("Min ordering: " + minOrdering + " max Ordering: " + maxOrdering);
+
          ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
          
          ps.setLong(1, channelID);
@@ -1208,136 +1215,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (count < fullSize)
             {
                refs.add(ri);
-            }
-            else
-            {
-               extraRefs.add(ri);
-            }
+            }            
             
             count++;
          }
                   
-         if (count != fullSize)
-         {                        
-            rs.close();
-            rs = null;
-            ps.close();
-            ps = null;            
+         //No refs paged
             
-            if (count < fullSize)
-            {
-               if (minOrdering != null)
-               {
-                  //This means that fullSize is now greater and we have some paged refs
-                  //We need to convert some of the paged refs into non paged refs before loading               
-                  
-                  //We can do this by setting page_ord = null for the first x paged refs                  
-                  
-                  long numberPaged = 1 + maxOrdering.longValue() - minOrdering.longValue();
-                  
-                  long numberToConvert = Math.min(numberPaged, fullSize - count);
-                                    
-                  ps = conn.prepareStatement(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
-                  
-                  ps.setLong(1, minOrdering.longValue());
-                  ps.setLong(2, minOrdering.longValue() + numberToConvert - 1);
-                  ps.setLong(3, channelID);
-                  
-                  ps.executeUpdate();
-                  
-                  minOrdering = new Long(minOrdering.longValue() + numberToConvert);
-                  if (minOrdering.longValue() == maxOrdering.longValue() + 1)
-                  {
-                     minOrdering = maxOrdering = null;
-                  }
-                  
-                  ps.close();
-                  ps = null;
-  
-                  //Need to reload
-                  
-                  ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
-                  
-                  ps.setLong(1, channelID);
-                          
-                  rs = ps.executeQuery();
-                  
-                  refs.clear();
-                  
-                  while (rs.next())
-                  {
-                     long msgId = rs.getLong(1);            
-                     int deliveryCount = rs.getInt(2);
-                     boolean reliable = rs.getString(3).equals("Y");                  
-                     ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, reliable);
-                     refs.add(ri);                  
-                  }                                           
-               }
-               else
-               {
-                  //Not a problem nothing to do
-               }
-            }
-            else if (count > fullSize)
-            {         
-               //This means that fullSize is now smaller
-               //We need to convert some of the non paged refs into paged refs before loading
-               
-               int numberToConvert = count - fullSize;
-               
-               //Shift any pre-existing paged refs up by this
-               
-               ps = conn.prepareStatement(getSQLStatement("SHIFT_PAGE_ORDER"));
-               
-               ps.setLong(1, numberToConvert);
-               
-               ps.setLong(2, channelID);
-               
-               ps.executeUpdate();
-               
-               //Now we need to convert the last <numberToConvert> non paged refs to paged refs
-               ps.close();
-               ps = null;
-               
-               ps = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
-                                             
-               long c;
-               if (minOrdering == null)
-               {
-                  c = 0;
-                  minOrdering = new Long(0);
-               }
-               else
-               {
-                  c = minOrdering.longValue();
-               }
-               
-               if (maxOrdering == null)
-               {
-                  maxOrdering = new Long(numberToConvert - 1);
-               }
-               else
-               {
-                  maxOrdering = new Long(maxOrdering.longValue() + numberToConvert);
-               }
-               
-               Iterator iter = extraRefs.iterator();
-               while (iter.hasNext())
-               {
-                  ReferenceInfo ri = (ReferenceInfo)iter.next();
-                  
-                  ps.setLong(1, c);
-                  ps.setLong(2, ri.getMessageId());
-                  ps.setLong(3, channelID);
-                  
-                  //TODO use batch updates
-                  ps.executeUpdate();
-                  
-                  c++;
-               }               
-            }
+         if (count > fullSize)
+         {
+            throw new IllegalStateException("Cannot load channel " + channelID + " since the fullSize parameter is too small to load " +
+                     " all the required references, fullSize needs to be at least " + count + " it is currently " + fullSize);
          }
-         
+                         
          return new InitialLoadInfo(minOrdering, maxOrdering, refs);
       }
       catch (Exception e)
@@ -1920,134 +1810,136 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
     * was a clean shutdown
     * 
     */
-   protected void removeUnreliableMessageData() throws Exception
-   {
-      log.trace("Removing all non-persistent data");
-      
-      Connection conn = null;
-      PreparedStatement psRes = null;
-      PreparedStatement psUpdate = null;
-      PreparedStatement psDeleteMsgs = null;
-      PreparedStatement psDeleteRefs = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-          
-      ResultSet rs = null;
-      
-      try
-      {
-         conn = ds.getConnection();
-         
-         psRes = conn.prepareStatement(getSQLStatement("SELECT_ALL_CHANNELS"));
-         
-         psUpdate = conn.prepareStatement(getSQLStatement("UPDATE_UNRELIABLE_CHANNELCOUNT"));
-                          
-         rs = psRes.executeQuery();
-         
-         while (rs.next())
-         {
-            long channelID = rs.getLong(1);
-            
-            psUpdate.setLong(1, channelID);
-            
-            int rows = psUpdate.executeUpdate();
-            
-            if (trace)
-            {
-               log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_UNRELIABLE_CHANNELCOUNT"))
-                     + " updated " + rows + " rows");
-            }            
-         }
-         
-         psDeleteRefs = conn.prepareStatement(getSQLStatement("DELETE_UNRELIABLE_REFS"));
-         
-         int rows = psDeleteRefs.executeUpdate();
-         
-         if (trace)
-         {
-            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_UNRELIABLE_REFS"))
-                  + " deleted " + rows + " rows");
-         }
-                  
-         psDeleteMsgs = conn.prepareStatement(getSQLStatement("DELETE_UNREFFED_MESSAGES"));
-         
-         rows = psDeleteMsgs.executeUpdate();
-         
-         if (trace)
-         {
-            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_UNREFFED_MESSAGES"))
-                  + " deleted " + rows + " rows");
-         }                   
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (psRes != null)
-         {
-            try
-            {
-               psRes.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (psUpdate != null)
-         {
-            try
-            {
-               psUpdate.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (psDeleteMsgs != null)
-         {
-            try
-            {
-               psDeleteMsgs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (psDeleteRefs != null)
-         {
-            try
-            {
-               psDeleteRefs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         wrap.end();
-      }
-   }
+//   protected void removeUnreliableMessageData() throws Exception
+//   {
+//      log.trace("Removing all non-persistent data");
+//      
+//      Connection conn = null;
+//      PreparedStatement psRes = null;
+//      PreparedStatement psUpdate = null;
+//      PreparedStatement psDeleteMsgs = null;
+//      PreparedStatement psDeleteRefs = null;
+//      TransactionWrapper wrap = new TransactionWrapper();
+//          
+//      ResultSet rs = null;
+//      
+//      try
+//      {
+//         conn = ds.getConnection();
+//         
+//         psRes = conn.prepareStatement(getSQLStatement("SELECT_ALL_CHANNELS"));
+//         
+//         psUpdate = conn.prepareStatement(getSQLStatement("UPDATE_UNRELIABLE_CHANNELCOUNT"));
+//                          
+//         rs = psRes.executeQuery();
+//         
+//         while (rs.next())
+//         {
+//            long channelID = rs.getLong(1);
+//            
+//            psUpdate.setLong(1, channelID);
+//            
+//            int rows = psUpdate.executeUpdate();
+//            
+//            if (trace)
+//            {
+//               log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_UNRELIABLE_CHANNELCOUNT"))
+//                     + " updated " + rows + " rows");
+//            }            
+//         }
+//         
+//         psDeleteRefs = conn.prepareStatement(getSQLStatement("DELETE_UNRELIABLE_REFS"));
+//         
+//         int rows = psDeleteRefs.executeUpdate();
+//         
+//         boolean doReOrder = rows > 0;
+//         
+//         if (trace)
+//         {
+//            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_UNRELIABLE_REFS"))
+//                  + " deleted " + rows + " rows");
+//         }
+//                  
+//         psDeleteMsgs = conn.prepareStatement(getSQLStatement("DELETE_UNREFFED_MESSAGES"));
+//         
+//         rows = psDeleteMsgs.executeUpdate();
+//         
+//         if (trace)
+//         {
+//            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_UNREFFED_MESSAGES"))
+//                  + " deleted " + rows + " rows");
+//         }     
+//      }
+//      catch (Exception e)
+//      {
+//         wrap.exceptionOccurred();
+//         throw e;
+//      }
+//      finally
+//      {
+//         if (rs != null)
+//         {
+//            try
+//            {
+//               rs.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         if (psRes != null)
+//         {
+//            try
+//            {
+//               psRes.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         if (psUpdate != null)
+//         {
+//            try
+//            {
+//               psUpdate.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         if (psDeleteMsgs != null)
+//         {
+//            try
+//            {
+//               psDeleteMsgs.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         if (psDeleteRefs != null)
+//         {
+//            try
+//            {
+//               psDeleteRefs.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         if (conn != null)
+//         {
+//            try
+//            {
+//               conn.close();
+//            }
+//            catch (Throwable e)
+//            {
+//            }
+//         }
+//         wrap.end();
+//      }
+//   }
    
    
    protected void handleBeforeCommit1PC(List refsToAdd, List refsToRemove, Transaction tx)

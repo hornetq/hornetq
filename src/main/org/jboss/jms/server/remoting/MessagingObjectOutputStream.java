@@ -42,7 +42,6 @@ public class MessagingObjectOutputStream extends ObjectOutputStream
    
    public MessagingObjectOutputStream(OutputStream out) throws IOException
    {
-      super(out);
       this.out = out;
    }
    

@@ -206,8 +206,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       if (trace) { log.trace(this + " receives " + ref + " for delivery"); }
       
-      log.info("BEING OFFERED -------- " + ref);
-      
       // This is ok to have outside lock - is volatile
       if (bufferFull)
       {

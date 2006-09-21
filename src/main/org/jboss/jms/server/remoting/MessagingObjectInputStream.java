@@ -45,10 +45,7 @@ public class MessagingObjectInputStream extends ObjectInputStream
 
    public MessagingObjectInputStream(InputStream in) throws IOException, SecurityException
    {
-      super(in);
-      
-      this.in = in;
-      
+      this.in = in;     
    }
    
    public InputStream getUnderlyingStream()

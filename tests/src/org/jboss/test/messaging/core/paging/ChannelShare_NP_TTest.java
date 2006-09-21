@@ -66,7 +66,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
    {
       PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
       
-      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", 1, ms, pm, true, true, new QueuedExecutor(), null, 50, 10, 5);
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", 2, ms, pm, true, true, new QueuedExecutor(), null, 50, 10, 5);
      
                                
       Message[] msgs = new Message[150];

@@ -462,6 +462,8 @@ public class PagingStateTestBase extends MessagingTestCase
       
       List msgIds = new ArrayList();
 
+      //log.info("channel id:" + channelId);
+      
       String sql = "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY PAGE_ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
@@ -470,7 +472,11 @@ public class PagingStateTestBase extends MessagingTestCase
             
       while (rs.next())
       {
-         long msgId = rs.getLong(1);           
+         long msgId = rs.getLong(1);     
+         long pageOrd = rs.getLong(3);
+         
+         //log.info("Exists " + msgId + " with page ord " + pageOrd);
+         
          msgIds.add(new Long(msgId));
       }
       rs.close();

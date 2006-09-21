@@ -392,8 +392,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                               
                ClusteredQueue queue = (ClusteredQueue)del.getObserver();
                
-               log.info("sent " + ref.getMessageID() + " to " + queue.getName() + " on node " + queue.getNodeId() + " selector accepted " + del.isSelectorAccepted());
-               
                if (del.isSelectorAccepted() && !queue.isLocal())
                {
                   //We need to send the message remotely
@@ -427,8 +425,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             //when unicast would do
             if (numberRemote > 0)
             {
-               log.info("Need to send remotely");
- 
                if (tx == null)
                {
                   if (numberRemote == 1)
@@ -636,8 +632,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          // We route on the condition
          DefaultClusteredBindings cb = (DefaultClusteredBindings)conditionMap.get(routingKey);
          
-         log.info("cb is: " + cb);
-      
          if (cb != null)
          {                                
             Collection bindings = cb.getAllBindings();
@@ -647,12 +641,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             while (iter.hasNext())
             {
                Binding binding = (Binding)iter.next();
-               
-               log.info("got binding: " + binding.getQueue().getName());
-                                                        
+                                                     
                if (binding.getNodeId().equals(this.nodeId))
                {  
-                  log.info("node id matches");
                   boolean handle = true;
                   
                   if (queueNameNodeIdMap != null)
@@ -674,13 +665,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                      
                      LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
                      
-                     log.info("sending " + message.getMessageID() + " to queue: " + queue.getName() + " on node " + this.nodeId);
-                  
-                     //TODO instead of adding a new method on the channel
-                     //we should set a header and use the same method
-                     Delivery del = queue.handleFromCluster(ref);
-                     
-                     log.info("sending " + message.getMessageID() + " to queue: " + queue.getName() + " on node " + this.nodeId + " delivery is " + del + " accepted? " + del.isSelectorAccepted());
+                     Delivery del = queue.handleFromCluster(ref);                                          
                   }
                }                                              
             }                          
@@ -703,8 +688,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {            
       byte[] bytes = writeRequest(request);
          
-      log.info("async sending " + bytes);
-      
       asyncChannel.send(new Message(null, null, bytes));
    }
    
@@ -712,9 +695,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     * Unicast a message to one members of the group
     */
    public void asyncSendRequest(ClusterRequest request, Address address) throws Exception
-   {            
-      log.info("unicasting to address: " + address);
-      
+   {               
       byte[] bytes = writeRequest(request);
             
       Message m = new Message(address, null, bytes);
@@ -858,8 +839,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       try
       {      
-         log.info("I have a list of stats: " + statsList.size() + " from nodeId: " + nodeId);
-         
          if (nodeId.equals(this.nodeId))
          {
             //Sanity check
@@ -875,8 +854,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          }
          else
          {     
-            log.info("I do have bindings for " + nodeId);
-
             Iterator iter = statsList.iterator();
             
             while (iter.hasNext())

@@ -131,9 +131,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       {
          synchronized (deliveryLock)
          {
-            //We only get the refs if receiversReady = true since
-            //we don't
-            //TODO is this right?          
+            //We only get the refs if receiversReady = false so as not to steal messages that
+            //might be consumed by local receivers            
             if (!receiversReady)
             {
                MessageReference ref;

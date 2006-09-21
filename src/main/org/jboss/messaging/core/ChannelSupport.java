@@ -226,6 +226,11 @@ public abstract class ChannelSupport implements Channel
    public boolean remove(Receiver r)
    {
       boolean removed = router.remove(r);
+      
+      if (removed && !router.iterator().hasNext())
+      {
+         receiversReady = false;
+      }
 
       if (trace) { log.trace(this + (removed ? " removed " : " did NOT remove ") + r); }
 
