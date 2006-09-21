@@ -37,16 +37,29 @@ import java.io.DataOutputStream;
  */
 abstract class TransactionRequest extends ClusterRequest implements ClusterTransaction
 {
-   private String nodeId;
+   protected String nodeId;
    
-   private long txId;
+   protected long txId;
  
-   private boolean hold;
+   protected boolean hold;
+   
+   protected long checkChannelID;
    
    TransactionRequest()
    {      
    }
       
+   TransactionRequest(String nodeId, long txId, boolean hold, long checkChannelID)
+   {
+      this.nodeId = nodeId;
+      
+      this.txId= txId;
+
+      this.hold = hold;
+      
+      this.checkChannelID = checkChannelID;
+   }
+   
    TransactionRequest(String nodeId, long txId, boolean hold)
    {
       this.nodeId = nodeId;
@@ -56,7 +69,7 @@ abstract class TransactionRequest extends ClusterRequest implements ClusterTrans
       this.hold = hold;
    }
    
-   public void execute(PostOfficeInternal office) throws Exception
+   Object execute(PostOfficeInternal office) throws Throwable
    { 
       TransactionId id = new TransactionId(nodeId, txId);
       
@@ -68,6 +81,7 @@ abstract class TransactionRequest extends ClusterRequest implements ClusterTrans
       {
          office.commitTransaction(id);
       }
+      return null;
    }   
    
    public void read(DataInputStream in) throws Exception

@@ -39,4 +39,8 @@ interface ClusteredBindings extends Bindings
    Collection getRouters();
    
    int getLocalDurableCount();
+   
+   void addRouter(String queueName, ClusterRouter router);
+
+   void removeRouter(String queueName);
 }

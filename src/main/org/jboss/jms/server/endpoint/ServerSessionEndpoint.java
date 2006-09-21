@@ -243,7 +243,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   }
                   else
                   {
-                     q = new LocalClusteredQueue(nodeId, name, idm.getId(), ms, pm, true, true,                              
+                     q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,                              
                                                  executor, selector,
                                                  mDest.getFullSize(),
                                                  mDest.getPageSize(),
@@ -301,7 +301,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                      }
                      else
                      {
-                        q = new LocalClusteredQueue(nodeId, name, idm.getId(), ms, pm, true, true,                              
+                        q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,                              
                                                     executor, selector,
                                                     mDest.getFullSize(),
                                                     mDest.getPageSize(),

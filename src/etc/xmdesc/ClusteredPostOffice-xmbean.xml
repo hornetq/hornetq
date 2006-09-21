@@ -63,6 +63,18 @@
       <description>The period between which successive message redistribution calculations will be performed</description>
       <name>RedistributionPeriod</name>
       <type>long</type>
+   </attribute>   
+   
+   <attribute access="read-write" getMethod="getSyncPullSize" setMethod="setSyncPullSize">
+      <description>The maximum number of message to pull synchronously in one go from a remote queue when the local queue consumers are starving</description>
+      <name>SyncPullSize</name>
+      <type>int</type>
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="getAsyncPullSize" setMethod="setAsyncPullSize">
+      <description>The maximum number of message to pull aysynchronously in one go from a remote queue when the local queue consumers are starving</description>
+      <name>AsyncPullSize</name>
+      <type>int</type>
    </attribute>    
    
    <attribute access="read-write" getMethod="getSyncChannelConfig" setMethod="setSyncChannelConfig">

@@ -19,13 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.postoffice.cluster;
+package org.jboss.messaging.core.plugin.postoffice;
 
-import org.jboss.messaging.core.Queue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 
- * A RedistributionOrder
+ * A DefaultBindings
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -33,35 +35,56 @@ import org.jboss.messaging.core.Queue;
  * $Id$
  *
  */
-public class RedistributionOrder
+public class DefaultBindings implements Bindings
 {
-   private int numberOfMessages;
+   private List bindings;
    
-   private Queue queue;
+   private int durableCount;
    
-   private String destinationNodeId;
-
-   public RedistributionOrder(int numberOfMessages, Queue queue, String destinationNodeId)
+   public DefaultBindings()
    {
-      this.numberOfMessages = numberOfMessages;
+      bindings = new ArrayList();
+   }
+
+   public void addBinding(Binding binding)
+   {
+      if (bindings.contains(binding))
+      {
+         throw new IllegalArgumentException("Bindings already contains binding: " + binding);
+      }
+      bindings.add(binding);
       
-      this.queue = queue;
+      if (binding.getQueue().isRecoverable())
+      {
+         durableCount++;
+      }
+   }
+
+   public Collection getAllBindings()
+   {
+      return bindings;
+   }
+
+   public boolean removeBinding(Binding binding)
+   {
+      boolean removed = bindings.remove(binding);
       
-      this.destinationNodeId = destinationNodeId;
+      if (removed && binding.getQueue().isRecoverable())
+      {
+         durableCount--;
+      }
+      
+      return removed;
+   }
+   
+   public int getDurableCount()
+   {
+      return durableCount;
+   }
+   
+   public boolean isEmpty()
+   {
+      return bindings.isEmpty();
    }
 
-   public String getDestinationNodeId()
-   {
-      return destinationNodeId;
-   }
-
-   public int getNumberOfMessages()
-   {
-      return numberOfMessages;
-   }
-
-   public Queue getQueue()
-   {
-      return queue;
-   }
 }

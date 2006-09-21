@@ -57,12 +57,12 @@ import org.jboss.messaging.core.tx.Transaction;
  * $Id$
  *
  */
-public class FavourLocalRouter implements Router
+public class FavourLocalRouter implements ClusterRouter
 {
    //MUST be an arraylist for fast index access
    private ArrayList queues;
    
-   private ClusteredQueue localQueue;
+   private LocalClusteredQueue localQueue;
    
    private int target;
    
@@ -75,6 +75,11 @@ public class FavourLocalRouter implements Router
    {
       return queues.size();
    }
+   
+   public LocalClusteredQueue getLocalQueue()
+   {
+      return localQueue;
+   }
 
    public boolean add(Receiver receiver)
    {
@@ -86,7 +91,7 @@ public class FavourLocalRouter implements Router
          {
             throw new IllegalStateException("Already has local queue");
          }
-         localQueue = queue;
+         localQueue = (LocalClusteredQueue)queue;
       }
       
       queues.add(queue); 

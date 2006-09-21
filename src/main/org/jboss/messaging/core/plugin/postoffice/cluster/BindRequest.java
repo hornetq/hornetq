@@ -50,14 +50,14 @@ class BindRequest extends ClusterRequest
                                     channelId, durable);
    }
 
-   public void execute(PostOfficeInternal office) throws Exception
+   Object execute(PostOfficeInternal office) throws Exception
    {
       office.addBindingFromCluster(bindingInfo.getNodeId(), bindingInfo.getQueueName(), bindingInfo.getCondition(),
                                    bindingInfo.getFilterString(), bindingInfo.getChannelId(), bindingInfo.isDurable());
-      
+      return null;
    }
    
-   public byte getType()
+   byte getType()
    {
       return TYPE;
    }

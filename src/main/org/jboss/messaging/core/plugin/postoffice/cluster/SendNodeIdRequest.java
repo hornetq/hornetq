@@ -56,12 +56,14 @@ class SendNodeIdRequest extends ClusterRequest
       this.nodeId = nodeId;      
    }
    
-   public void execute(PostOfficeInternal office) throws Exception
+   Object execute(PostOfficeInternal office) throws Exception
    {
       office.handleAddressNodeMapping(address, nodeId);
+      
+      return null;
    }
    
-   public byte getType()
+   byte getType()
    {
       return TYPE;
    }

@@ -43,13 +43,12 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.Router;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.BindingImpl;
-import org.jboss.messaging.core.plugin.postoffice.Bindings;
+import org.jboss.messaging.core.plugin.postoffice.DefaultBinding;
 import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -71,7 +70,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
- * A ClusteredPostOfficeImpl
+ * A DefaultClusteredPostOffice
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -79,9 +78,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class ClusteredPostOfficeImpl extends DefaultPostOffice implements ClusteredPostOffice, PostOfficeInternal
+public class DefaultClusteredPostOffice extends DefaultPostOffice implements ClusteredPostOffice, PostOfficeInternal
 {
-   private static final Logger log = Logger.getLogger(ClusteredPostOfficeImpl.class);
+   private static final Logger log = Logger.getLogger(DefaultClusteredPostOffice.class);
                         
    private Channel syncChannel;
    
@@ -122,15 +121,15 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
    
    private long castTimeout;
    
-   private RedistributionPolicy redistributionPolicy;
-   
-   private MessageRedistributor redistributor;
-   
-   private long redistributePeriod;
+   private MessagePullPolicy messagePullPolicy;
    
    private ClusterRouterFactory routerFactory;
+   
+   private int pullSize;
+   
+   private Map routerMap;
       
-   public ClusteredPostOfficeImpl()
+   public DefaultClusteredPostOffice()
    {        
       init();
    }
@@ -145,7 +144,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
    /*
     * Constructor using Element for configuration
     */
-   public ClusteredPostOfficeImpl(DataSource ds, TransactionManager tm, Properties sqlProperties,
+   public DefaultClusteredPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
             boolean createTablesOnStartup,
             String nodeId, String officeName, MessageStore ms,
             PersistenceManager pm,
@@ -156,12 +155,13 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
             Element syncChannelConfig,
             Element asyncChannelConfig,
             long stateTimeout, long castTimeout,
-            RedistributionPolicy redistributionPolicy,
-            long redistributePeriod,
-            ClusterRouterFactory rf) throws Exception
+            MessagePullPolicy redistributionPolicy,
+            ClusterRouterFactory rf,
+            int pullSize) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod, rf);
+           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy,
+           rf, pullSize);
       
       this.syncChannelConfigE = syncChannelConfig;      
       this.asyncChannelConfigE = asyncChannelConfig;     
@@ -170,7 +170,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
    /*
     * Constructor using String for configuration
     */
-   public ClusteredPostOfficeImpl(DataSource ds, TransactionManager tm, Properties sqlProperties,
+   public DefaultClusteredPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
                               boolean createTablesOnStartup,
                               String nodeId, String officeName, MessageStore ms,
                               PersistenceManager pm,
@@ -181,18 +181,19 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                               String syncChannelConfig,
                               String asyncChannelConfig,
                               long stateTimeout, long castTimeout,
-                              RedistributionPolicy redistributionPolicy,
-                              long redistributePeriod,
-                              ClusterRouterFactory rf) throws Exception
+                              MessagePullPolicy redistributionPolicy,                      
+                              ClusterRouterFactory rf,
+                              int pullSize) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy, redistributePeriod, rf);
+           pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy,
+           rf, pullSize);
 
       this.syncChannelConfigS = syncChannelConfig;      
       this.asyncChannelConfigS = asyncChannelConfig;     
    }
    
-   private ClusteredPostOfficeImpl(DataSource ds, TransactionManager tm, Properties sqlProperties,
+   private DefaultClusteredPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
                                boolean createTablesOnStartup,
                                String nodeId, String officeName, MessageStore ms,
                                PersistenceManager pm,                               
@@ -201,9 +202,9 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                                QueuedExecutorPool pool,
                                String groupName,
                                long stateTimeout, long castTimeout,                             
-                               RedistributionPolicy redistributionPolicy,
-                               long redistributePeriod,
-                               ClusterRouterFactory rf)
+                               MessagePullPolicy redistributionPolicy,                               
+                               ClusterRouterFactory rf,
+                               int pullSize)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr, filterFactory,
              pool);
@@ -216,11 +217,13 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
       
       this.castTimeout = castTimeout;
       
-      this.redistributionPolicy = redistributionPolicy;
-      
-      this.redistributePeriod = redistributePeriod;
+      this.messagePullPolicy = redistributionPolicy;
       
       this.routerFactory = rf;
+      
+      this.pullSize = pullSize;
+      
+      routerMap = new HashMap();
       
       init();
    }
@@ -270,26 +273,20 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
              
       handleAddressNodeMapping(currentAddress, nodeId);
       
-      syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));
-            
-      redistributor = new MessageRedistributor(this, redistributePeriod);
-      
-      redistributor.start();
+      syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));           
    }
 
    public void stop() throws Exception
    {
       super.stop();
-      
-      redistributor.stop();
-      
+         
       syncChannel.close();
       
       asyncChannel.close();
    }  
    
    // PostOffice implementation ---------------------------------------        
-      
+
    public Binding bindClusteredQueue(String condition, LocalClusteredQueue queue) throws Exception
    {           
       if (!queue.getNodeId().equals(this.nodeId))
@@ -304,7 +301,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                          binding.getQueue().getChannelID(), queue.isRecoverable());
       
       syncSendRequest(request);
-      
+        
       return binding;
    }
    
@@ -376,13 +373,15 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
             
             Map queueNameNodeIdMap = null;
             
+            long lastChannelId = -1;
+            
             Collection routers = cb.getRouters();
 
             Iterator iter = routers.iterator();
                      
             while (iter.hasNext())
             {
-               Router router = (Router)iter.next();
+               ClusterRouter router = (ClusterRouter)iter.next();
                
                Delivery del = router.handle(null, ref, tx);
                
@@ -414,6 +413,8 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                      //queue instance will receive the message
                      queueNameNodeIdMap.put(queue.getName(), lastNodeId);
                   }
+                  
+                  lastChannelId = queue.getChannelID();
                }
             }
             
@@ -452,7 +453,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                   
                   if (callback == null)
                   {
-                     callback = new CastMessagesCallback(nodeId, tx.getId(), ClusteredPostOfficeImpl.this);
+                     callback = new CastMessagesCallback(nodeId, tx.getId(), DefaultClusteredPostOffice.this);
                      
                      //This callback MUST be executed first
                      
@@ -466,7 +467,9 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                      tx.addFirstCallback(callback, this);
                   }
                       
-                  callback.addMessage(condition, ref.getMessage(), queueNameNodeIdMap, numberRemote == 1 ? lastNodeId : null);    
+                  callback.addMessage(condition, ref.getMessage(), queueNameNodeIdMap,
+                                      numberRemote == 1 ? lastNodeId : null,
+                                      lastChannelId);    
                }
             }
                                                 
@@ -598,7 +601,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                
                ref = ms.reference(msg);
                
-               queue.handleFromCluster(null, ref, null);
+               queue.handleFromCluster(ref);
             }
             finally
             {
@@ -631,7 +634,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
          ref = ms.reference(message);
               
          // We route on the condition
-         ClusteredBindingsImpl cb = (ClusteredBindingsImpl)conditionMap.get(routingKey);
+         DefaultClusteredBindings cb = (DefaultClusteredBindings)conditionMap.get(routingKey);
          
          log.info("cb is: " + cb);
       
@@ -675,7 +678,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                   
                      //TODO instead of adding a new method on the channel
                      //we should set a header and use the same method
-                     Delivery del = queue.handleFromCluster(null, ref, null);
+                     Delivery del = queue.handleFromCluster(ref);
                      
                      log.info("sending " + message.getMessageID() + " to queue: " + queue.getName() + " on node " + this.nodeId + " delivery is " + del + " accepted? " + del.isSelectorAccepted());
                   }
@@ -708,10 +711,8 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
    /*
     * Unicast a message to one members of the group
     */
-   public void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception
+   public void asyncSendRequest(ClusterRequest request, Address address) throws Exception
    {            
-      Address address = (Address)nodeIdAddressMap.get(nodeId);
-      
       log.info("unicasting to address: " + address);
       
       byte[] bytes = writeRequest(request);
@@ -733,7 +734,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
       } 
    }
    
-   public void commitTransaction(TransactionId id) throws Exception
+   public void commitTransaction(TransactionId id) throws Throwable
    {
       ClusterTransaction tx = null;
       
@@ -750,12 +751,10 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
       tx.commit(this);
    }
    
-   /*
-    * Called by a node if it starts and it detects that it crashed since it's last start-up.
-    * This method then checks to see if there any messages from that node in the holding area
-    * and if they are also in the database they will be processed
+   /**
+    * Check for any transactions that need to be committed or rolled back
     */
-   public void check(String nodeId) throws Exception
+   public void check(String nodeId) throws Throwable
    {
       synchronized (holdingArea)
       {
@@ -771,24 +770,20 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
             
             if (id.getNodeId().equals(nodeId))
             {
-               List holders = (List)entry.getValue();
+               ClusterTransaction tx = (ClusterTransaction)iter.next();
                
-               boolean wasCommitted = checkTransaction(holders);               
+               boolean commit = tx.check(this);
                
-               if (wasCommitted)
+               if (commit)
                {
-                  //We can process the transaction
-                  Iterator iter2 = holders.iterator();
-                  
-                  while (iter2.hasNext())
-                  {
-                     MessageHolder holder = (MessageHolder)iter2.next();
-                     
-                     routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
-                  }
-                  
-                  toRemove.add(id);
+                  tx.commit(this);
                }
+               else
+               {
+                  tx.rollback(this);
+               }
+               
+               toRemove.add(tx);
             }
          }
          
@@ -802,41 +797,6 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
             
             holdingArea.remove(id);
          }
-      }
-   }
-   
-   public void calculateRedistribution() throws Throwable
-   {
-      lock.readLock().acquire();
-      
-      try
-      {
-         Iterator iter = conditionMap.values().iterator();
-         
-         while (iter.hasNext())
-         {
-            ClusteredBindings cb = (ClusteredBindings)iter.next();
-            
-            Collection routers = cb.getRouters();
-            
-            Iterator iter2 = routers.iterator();
-            
-            while (iter2.hasNext())
-            {
-               FavourLocalRouter router = (FavourLocalRouter)iter2.next();        
-            
-               RedistributionOrder order = redistributionPolicy.calculate(router.getQueues());
-               
-               if (order != null)
-               {
-                  moveMessages(order.getQueue(), order.getDestinationNodeId(), order.getNumberOfMessages());
-               }               
-            }
-         }
-      }
-      finally
-      {
-         lock.readLock().release();
       }
    }
    
@@ -896,20 +856,27 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
    {
       lock.writeLock().acquire();
       
-      log.info("I have a list of stats: " + statsList.size() + " from nodeId: " + nodeId);
-      
-      Map nameMap = (Map)nameMaps.get(nodeId);
-      
-      if (nameMap == null)
-      {
-         //This is ok, the node might have left
-         log.info("But I have no bindings for " + nodeId);
-      }
-      else
-      {     
-         log.info("I do have bindings for " + nodeId);
-         try
+      try
+      {      
+         log.info("I have a list of stats: " + statsList.size() + " from nodeId: " + nodeId);
+         
+         if (nodeId.equals(this.nodeId))
          {
+            //Sanity check
+            throw new IllegalStateException("Cannot update queue stats for current node");
+         }
+         
+         Map nameMap = (Map)nameMaps.get(nodeId);
+         
+         if (nameMap == null)
+         {
+            //This is ok, the node might have left
+            log.info("But I have no bindings for " + nodeId);
+         }
+         else
+         {     
+            log.info("I do have bindings for " + nodeId);
+
             Iterator iter = statsList.iterator();
             
             while (iter.hasNext())
@@ -926,24 +893,136 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
                RemoteQueueStub stub = (RemoteQueueStub)bb.getQueue();
                
                stub.setStats(st);
+               
+               ClusterRouter router = (ClusterRouter)routerMap.get(st.getQueueName());
+               
+               LocalClusteredQueue localQueue = router.getLocalQueue();
+               
+               if (localQueue != null)
+               {               
+                  RemoteQueueStub toQueue = messagePullPolicy.chooseQueue(router.getQueues());
+                  
+                  if (toQueue != null)
+                  {
+                     localQueue.setPullQueue(toQueue);
+                     
+                     //We now trigger delivery - this may cause a pull event
+                     localQueue.deliver(false);
+                  }
+               }               
             }         
-         }
-         finally
-         {
-            lock.writeLock().release();      
-         }
+         }         
+      }
+      finally
+      {
+         lock.writeLock().release();      
       }
    }      
+   
+   public boolean referenceExistsInStorage(long channelID, long messageID) throws Exception
+   {
+      return pm.referenceExists(channelID, messageID);
+   } 
+   
+   public List getDeliveries(String queueName, int numMessages) throws Exception
+   {
+      Binding binding = getBindingForQueueName(queueName);
       
+      if (binding == null)
+      {
+         throw new IllegalArgumentException("Cannot find binding for queue " + queueName);
+      }
+      
+      LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
+      
+      List dels = queue.getDeliveries(numMessages);
+      
+      return dels;
+   }
+         
+   public void pullMessages(ClusteredQueue localQueue, ClusteredQueue remoteQueue) throws Throwable
+   {
+      pullMessages(localQueue, remoteQueue, pullSize);
+   }
+              
    // Public ------------------------------------------------------------------------------------------
       
    // Protected ---------------------------------------------------------------------------------------
         
-   protected Bindings createBindings()
+   protected void addToConditionMap(Binding binding)
    {
-      return new ClusteredBindingsImpl(this.nodeId, this.routerFactory);
+      String condition = binding.getCondition();
+      
+      ClusteredBindings bindings = (ClusteredBindings)conditionMap.get(condition);
+      
+      if (bindings == null)
+      {
+         bindings = new DefaultClusteredBindings(nodeId);
+         
+         conditionMap.put(condition, bindings);
+      }
+      
+      bindings.addBinding(binding);
+      
+      String queueName = binding.getQueue().getName();
+      
+      ClusterRouter router = (ClusterRouter)routerMap.get(queueName);
+      
+      if (router == null)
+      {
+         router = routerFactory.createRouter();
+         
+         routerMap.put(queueName, router);
+         
+         bindings.addRouter(queueName, router);
+      }
+      
+      router.add(binding.getQueue());                  
    }
-   
+
+   protected void removeFromConditionMap(Binding binding)
+   {
+      ClusteredBindings bindings = (ClusteredBindings)conditionMap.get(binding.getCondition());
+      
+      if (bindings == null)
+      {
+         throw new IllegalStateException("Cannot find condition bindings for " + binding.getCondition());
+      }
+      
+      boolean removed = bindings.removeBinding(binding);
+      
+      if (!removed)
+      {
+         throw new IllegalStateException("Cannot find binding in condition binding list");
+      }           
+      
+      if (bindings.isEmpty())
+      {
+         conditionMap.remove(binding.getCondition());
+      }        
+      
+      String queueName = binding.getQueue().getName();
+      
+      ClusterRouter router = (ClusterRouter)routerMap.get(queueName);
+      
+      if (router == null)
+      {
+         throw new IllegalStateException("Cannot find router with name " + queueName);
+      }
+      
+      removed = router.remove(binding.getQueue());
+      
+      if (!removed)
+      {
+         throw new IllegalStateException("Cannot find router in map");
+      }
+      
+      if (router.getQueues().isEmpty())
+      {
+         routerMap.remove(queueName);
+      }      
+   }
+
    protected void loadBindings() throws Exception
    {
       // TODO I need to know whether this call times out - how do I know this??
@@ -978,7 +1057,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
          
-         queue = new LocalClusteredQueue(nodeId, queueName, channelId, ms, pm, true,
+         queue = new LocalClusteredQueue(this, nodeId, queueName, channelId, ms, pm, true,
                                          durable, executor, filter);
       }
       else
@@ -986,13 +1065,108 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
          queue = new RemoteQueueStub(nodeId, queueName, channelId, durable, pm, filter);
       }
       
-      Binding binding = new BindingImpl(nodeId, condition, queue);
+      Binding binding = new DefaultBinding(nodeId, condition, queue);
       
       return binding;
    }
    
+   
+   
    // Private ------------------------------------------------------------------------------------------
            
+   /**
+    * TODO This can probably be moved into LocalClusteredQueue
+    * 
+    * Pull messages from a remote queue to a local queue.
+    * If any of the messages are reliable then this needs to be done reliable (i.e. without loss or redelivery)
+    * Normally this would require 2PC which would make performance suck.
+    * However since we know both queues share the same DB then we can do the persistence locally in the same
+    * tx thus avoiding 2PC and maintaining reliability:)
+    * We do the following:
+    * 
+    * 1. A tx is started locally
+    * 2. Create deliveries for message(s) on the remote node - bring messages back to the local node
+    * We send a message to the remote node to retrieve a set of deliveries from the queue - it gets a max of num
+    * deliveries.
+    * The unreliable ones can be acknowledged immediately, the reliable ones are not acknowledged and a holding transaction
+    * is placed in the holding area on the remote node, which contains knowledge of the deliveries.
+    * The messages corresponding to the deliveries are returned to the local node
+    * 3. The retrieved messages are added to the local queue in the tx
+    * 4. Deliveries corresponding to the messages retrieved are acknowledged LOCALLY for the remote queue.
+    * 5. The local tx is committed.
+    * 6. Send "commit" message to remote node
+    * 7. "Commit" message is received and deliveries in the holding transaction are acknowledged IN MEMORY only.
+    * On failure, commit or rollback will be called on the holding transaction causing the deliveries to be acked or cancelled
+    * depending on whether they exist in the database
+    */
+   private void pullMessages(ClusteredQueue localQueue, ClusteredQueue remoteQueue, int num) throws Throwable
+   { 
+      Address fromAddress = (Address)nodeIdAddressMap.get(remoteQueue.getNodeId());
+      
+      if (fromAddress == null)
+      {
+         //This is ok - the node might have left the group
+         return;
+      }
+   
+      Transaction tx = tr.createTransaction();
+         
+      ClusterRequest req = new PullMessagesRequest(this.nodeId, tx.getId(), remoteQueue.getChannelID(),
+                                                   localQueue.getName(), num);
+      
+      List msgs = (List)syncSendRequest(req, fromAddress);
+      
+      Iterator iter = msgs.iterator();
+      
+      while (iter.hasNext())
+      {
+         org.jboss.messaging.core.Message msg = (org.jboss.messaging.core.Message)iter.next();
+         
+         MessageReference ref = null;
+         
+         try
+         {
+            ref = ms.reference(msg);
+            
+            Delivery delRet = localQueue.handle(null, ref, tx);
+            
+            if (delRet == null || !delRet.isSelectorAccepted())
+            {
+               //This should never happen
+               throw new IllegalStateException("Aaarrgg queue did not accept reference");
+            }
+         }
+         finally
+         {
+            if (ref != null)
+            {
+               ref.releaseMemoryReference();
+            }
+         }
+         
+         Delivery del = new SimpleDelivery(localQueue, ref);
+         
+         del.acknowledge(tx);
+      }
+      
+      tx.commit();
+      
+      //TODO what if commit throws an exception - this means the commit message doesn't hit the 
+      //remote node so the holding transaction stays in the holding area 
+      //Need to catch the exception and throw a check message
+      //What we need to do is catch any exceptions at the top of the call, i.e. just after the interface
+      //and send a checkrequest
+      //This applies to a normal message and messages requests too
+            
+      req = new PullMessagesRequest(this.nodeId, tx.getId());
+      
+      asyncSendRequest(req, fromAddress);
+   }
+   
+   
+   /*
+    * Multicast a sync request
+    */
    private void syncSendRequest(ClusterRequest request) throws Exception
    {            
       byte[] bytes = writeRequest(request);
@@ -1002,53 +1176,20 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
       controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, castTimeout);
    }
    
-   private boolean checkTransaction(List messageHolders) throws Exception
-   {
-      Iterator iter = messageHolders.iterator();
-      
-      //We only need to check that one of the refs made it to the database - the refs would have
-      //been inserted into the db transactionally, so either they're all there or none are
-      MessageHolder holder = (MessageHolder)iter.next();
-      
-      Collection bindings = listBindingsForCondition(holder.getRoutingKey());
-      
-      if (bindings == null)
-      {
-         throw new IllegalStateException("Cannot find bindings for key: " + holder.getRoutingKey());
-      }
-      
-      Iterator iter2 = bindings.iterator();
-      
-      long channelID = -1;
-      boolean found = false;
-      
-      while (iter2.hasNext())
-      {
-         Binding binding = (Binding)iter2.next();
-         
-         if (binding.getQueue().isRecoverable())
-         {
-            found = true;
+   /*
+    * Unicast a sync request
+    */
+   private Object syncSendRequest(ClusterRequest request, Address address) throws Exception
+   {              
+      byte[] bytes = writeRequest(request);
             
-            channelID = binding.getQueue().getChannelID();
-         }
-      }
+      Message message = new Message(address, null, bytes);      
       
-      if (!found)
-      {
-         throw new IllegalStateException("Cannot find bindings");
-      }
-      
-      if (pm.referenceExists(channelID, holder.getMessage().getMessageID()))
-      {
-         return true;
-      }
-      else
-      {
-         return false;
-      }
+      Object result = controlMessageDispatcher.sendMessage(message, GroupRequest.GET_FIRST, castTimeout);
+       
+      return result;
    }
-   
+    
    private void removeBindingsForAddress(Address address) throws Exception
    {
       lock.writeLock().acquire();
@@ -1176,33 +1317,7 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
       this.nodeIdAddressMap.putAll(state.getNodeIdAddressMap());
    }
    
-   /*
-    * Move messages from queue on one node to queue on another node
-    */
-   private void moveMessages(Queue fromQueue, String toNodeId, int num) throws Throwable
-   {      
-      log.info("Moving " + num + " messages from " + this.nodeId + " to " + toNodeId + " for queue name");
-      
-      Transaction tx = tr.createTransaction();
-               
-      List dels = ((LocalClusteredQueue)fromQueue).getDeliveries(num);
-      
-      Iterator iter = dels.iterator();
-      
-      MoveMessagesCallback cb = new MoveMessagesCallback(nodeId, toNodeId, fromQueue.getName(),
-                                                         tx.getId(), this);      
-      while (iter.hasNext())
-      {
-         Delivery del = (Delivery)iter.next();
-         
-         del.acknowledge(tx);      
-         
-         cb.addMessage(del.getReference().getMessage());
-      }
-      
-      tx.commit();
- 
-   } 
+   
    
    private byte[] writeRequest(ClusterRequest request) throws Exception
    {
@@ -1402,9 +1517,9 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
             
             ClusterRequest request = readRequest(bytes);
             
-            request.execute(ClusteredPostOfficeImpl.this);            
+            request.execute(DefaultClusteredPostOffice.this);            
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
             log.error("Caught Exception in Receiver", e);
             IllegalStateException e2 = new IllegalStateException(e.getMessage());
@@ -1432,9 +1547,9 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
             
             ClusterRequest request = readRequest(bytes);
             
-            request.execute(ClusteredPostOfficeImpl.this);
+            request.execute(DefaultClusteredPostOffice.this);
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
             log.error("Caught Exception in RequestHandler", e);
             IllegalStateException e2 = new IllegalStateException(e.getMessage());
@@ -1443,5 +1558,5 @@ public class ClusteredPostOfficeImpl extends DefaultPostOffice implements Cluste
          }
          return null;
       }      
-   }   
+   }
 }

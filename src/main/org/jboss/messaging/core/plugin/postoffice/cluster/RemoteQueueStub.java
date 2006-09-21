@@ -201,7 +201,10 @@ class RemoteQueueStub implements ClusteredQueue
 
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
-      throw new UnsupportedOperationException();
+      if (recoverable && d.getReference().isReliable())
+      {
+         pm.removeReference(this.id, d.getReference(), tx);
+      }
    }
 
    public void cancel(Delivery d) throws Throwable

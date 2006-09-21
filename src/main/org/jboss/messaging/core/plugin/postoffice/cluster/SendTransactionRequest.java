@@ -45,14 +45,14 @@ class SendTransactionRequest extends TransactionRequest
    static final int TYPE = 8;
    
    private List messageHolders;
-   
+      
    SendTransactionRequest()
    {      
    }
         
-   SendTransactionRequest(String nodeId, long txId, List messageHolders)
+   SendTransactionRequest(String nodeId, long txId, List messageHolders, long channelID)
    {
-      super(nodeId, txId, true);
+      super(nodeId, txId, true, channelID);
       
       this.messageHolders = messageHolders;  
    }
@@ -73,6 +73,37 @@ class SendTransactionRequest extends TransactionRequest
          office.routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
       }
    }
+   
+   public boolean check(PostOfficeInternal office) throws Exception
+   {
+      //If the messages exist in the database then we should commit the transaction
+      //otherwise we should roll it back
+      
+      Iterator iter = messageHolders.iterator();
+      
+      //We only need to check that one of the refs made it to the database - the refs would have
+      //been inserted into the db transactionally, so either they're all there or none are
+      MessageHolder holder = (MessageHolder)iter.next();
+      
+      //We store the channelID of one of the channels that the message was persisted in
+      //it doesn't matter which one since they were all inserted in the same tx
+      
+      if (office.referenceExistsInStorage(checkChannelID, holder.getMessage().getMessageID()))
+      {
+         //We can commit
+         return true;
+      }
+      else
+      {
+         //We should rollback
+         return false;
+      }
+   }
+
+   public void rollback(PostOfficeInternal office) throws Exception
+   {
+      //NOOP
+   }  
    
    public byte getType()
    {
@@ -119,6 +150,6 @@ class SendTransactionRequest extends TransactionRequest
       {
          out.writeByte(StreamUtils.NULL);
       }      
-   }   
+   } 
 }
 

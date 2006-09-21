@@ -39,9 +39,9 @@ class QueueStats implements Streamable
 {
    private String queueName;
    
-   private float addRate;
+  // private float addRate;
    
-   private float consumeRate;
+  // private float consumeRate;
    
    private int messageCount;
 
@@ -49,26 +49,27 @@ class QueueStats implements Streamable
    {      
    }
    
-   QueueStats(String queueName, float addRate, float consumeRate, int messageCount)
+   //QueueStats(String queueName, float addRate, float consumeRate, int messageCount)
+   QueueStats(String queueName, int messageCount)
    {
       this.queueName = queueName;
       
-      this.addRate = addRate;
+     // this.addRate = addRate;
       
-      this.consumeRate = consumeRate;
+     // this.consumeRate = consumeRate;
       
       this.messageCount = messageCount;
    }
 
-   float getAddRate()
-   {
-      return addRate;
-   }
-   
-   float getConsumeRate()
-   {
-      return consumeRate;
-   }
+//   float getAddRate()
+//   {
+//      return addRate;
+//   }
+//   
+//   float getConsumeRate()
+//   {
+//      return consumeRate;
+//   }
 
    int getMessageCount()
    {
@@ -84,9 +85,9 @@ class QueueStats implements Streamable
    {
       queueName = in.readUTF();
       
-      addRate = in.readFloat();
-      
-      consumeRate = in.readFloat();
+//      addRate = in.readFloat();
+//      
+//      consumeRate = in.readFloat();
       
       messageCount = in.readInt();
    }
@@ -95,9 +96,9 @@ class QueueStats implements Streamable
    {
       out.writeUTF(queueName);
       
-      out.writeFloat(addRate);
-      
-      out.writeFloat(consumeRate);
+//      out.writeFloat(addRate);
+//      
+//      out.writeFloat(consumeRate);
       
       out.writeInt(messageCount);
    }      

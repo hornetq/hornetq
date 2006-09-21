@@ -59,17 +59,22 @@ interface PostOfficeInternal extends ClusteredPostOffice
    
    void asyncSendRequest(ClusterRequest request) throws Exception;
    
-   void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception;
+   void asyncSendRequest(ClusterRequest request, Address address) throws Exception;
    
-   void holdTransaction(TransactionId id, ClusterTransaction tx) throws Exception;
+   void holdTransaction(TransactionId id, ClusterTransaction tx) throws Throwable;
    
-   void commitTransaction(TransactionId id) throws Exception;
+   void commitTransaction(TransactionId id) throws Throwable;
    
-   void check(String nodeId) throws Exception;
-   
-   void calculateRedistribution() throws Throwable;
+   void check(String nodeId) throws Throwable;
    
    void updateQueueStats(String nodeId, List stats) throws Exception;
    
    void sendStats() throws Exception;
+   
+   boolean referenceExistsInStorage(long channelID, long messageID) throws Exception;
+   
+   List getDeliveries(String queueName, int numMessages) throws Exception;
+   
+   void pullMessages(ClusteredQueue localQueue, ClusteredQueue remoteQueue) throws Throwable;
+
 }

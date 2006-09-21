@@ -19,15 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.core.plugin.postoffice.cluster;
+package org.jboss.messaging.core.plugin.postoffice;
 
-import java.util.List;
-
-import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionOrder;
-import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
+import org.jboss.messaging.core.Queue;
 
 /**
- * A NullRedistrubtionPolicy
+ * 
+ * A DefaultBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -35,12 +33,40 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
  * $Id$
  *
  */
-public class NullRedistributionPolicy implements RedistributionPolicy
+public class DefaultBinding implements Binding
 {
-
-   public RedistributionOrder calculate(List bindings)
-   {
-      return null;
+   private String nodeId;
+   
+   private String condition;
+   
+   private Queue queue;
+       
+   public DefaultBinding()
+   {      
    }
 
+   public DefaultBinding(String nodeId, String condition, Queue queue)
+   {
+      this.nodeId = nodeId;
+      
+      this.condition = condition;     
+      
+      this.queue = queue;
+   }
+   
+   public String getNodeId()
+   {
+      return nodeId;
+   }
+      
+   public String getCondition()
+   {
+      return condition;
+   }
+   
+   public Queue getQueue()
+   {
+      return queue;
+   }
+   
 }

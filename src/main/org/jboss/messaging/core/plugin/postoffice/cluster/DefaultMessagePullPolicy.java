@@ -25,10 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * A DefaultMessagePullPolicy
  * 
- * A StandardRedistributionPolicy
- * 
- * In this simple redistribution policy, we only move messages from a particular local queue if 
+ * This chooses the remote queue with the most messages
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -36,47 +35,37 @@ import java.util.List;
  * $Id$
  *
  */
-public class StandardRedistributionPolicy implements RedistributionPolicy
+public class DefaultMessagePullPolicy implements MessagePullPolicy
 {
-   private String localNodeId;
-   
-   public StandardRedistributionPolicy(String localNodeId)
-   {
-      this.localNodeId = localNodeId;
-   }
 
-   public RedistributionOrder calculate(List queues)
+   public RemoteQueueStub chooseQueue(List queues)
    {
       Iterator iter = queues.iterator();
       
-      ClusteredQueue localQueue = null;
+      RemoteQueueStub chosenQueue = null;
+      
+      int maxMessages = 0;
       
       while (iter.hasNext())
       {
          ClusteredQueue queue = (ClusteredQueue)iter.next();
          
-         if (queue.isLocal())
+         if (!queue.isLocal())
          {
-            localQueue = queue;
+            QueueStats stats = queue.getStats();
             
-            break;
+            int cnt = stats.getMessageCount();
+            
+            if (cnt > maxMessages)
+            {
+               maxMessages = cnt;
+               
+               chosenQueue = (RemoteQueueStub)queue;
+            }
          }
       }
       
-      if (localQueue == null)
-      {
-         return null;
-      }
-      
-      QueueStats stats = localQueue.getStats();
-      
-      if (stats == null)
-      {
-         //We have not given the queue long enough to produce stats - so we can't move anything
-         //now
-         return null;
-      }
-
-      return null;
+      return chosenQueue;
    }
+
 }

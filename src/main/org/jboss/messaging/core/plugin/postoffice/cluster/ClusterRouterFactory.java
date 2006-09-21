@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.Router;
 
 
 /**
@@ -35,5 +34,5 @@ import org.jboss.messaging.core.Router;
  */
 public interface ClusterRouterFactory
 {
-   Router createRouter();
+   ClusterRouter createRouter();
 }

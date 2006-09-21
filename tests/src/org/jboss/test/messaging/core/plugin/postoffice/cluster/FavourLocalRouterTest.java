@@ -29,10 +29,11 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
-import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.plugin.postoffice.DefaultPostOfficeTest;
 import org.jboss.test.messaging.util.CoreMessageFactory;
@@ -83,11 +84,11 @@ public class FavourLocalRouterTest extends DefaultPostOfficeTest
          
          office2 = createClusteredPostOffice("node2", "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue("node1", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, "node1", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 = office1.bindClusteredQueue("queue1", queue1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue("node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, "node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 = office2.bindClusteredQueue("queue1", queue1);
       
@@ -141,19 +142,19 @@ public class FavourLocalRouterTest extends DefaultPostOfficeTest
    
    protected ClusteredPostOffice createClusteredPostOffice(String nodeId, String groupName) throws Exception
    {
-      RedistributionPolicy redistPolicy = new NullRedistributionPolicy();
+      MessagePullPolicy redistPolicy = new NullMessagePullPolicy();
       
       FilterFactory ff = new SimpleFilterFactory();
       
       ClusterRouterFactory rf = new FavourLocalRouterFactory();
       
-      ClusteredPostOfficeImpl postOffice = 
-         new ClusteredPostOfficeImpl(sc.getDataSource(), sc.getTransactionManager(),
+      DefaultClusteredPostOffice postOffice = 
+         new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
                                  null, true, nodeId, "Clustered", ms, pm, tr, ff, pool,
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, 1000, rf);
+                                 5000, 5000, redistPolicy, rf, 1);
       
       postOffice.start();      
       

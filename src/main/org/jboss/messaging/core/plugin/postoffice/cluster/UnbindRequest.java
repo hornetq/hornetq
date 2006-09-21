@@ -52,12 +52,14 @@ class UnbindRequest extends ClusterRequest
       this.queueName = queueName;
    }
 
-   public void execute(PostOfficeInternal office) throws Exception
+   Object execute(PostOfficeInternal office) throws Exception
    {
       office.removeBindingFromCluster(nodeId, queueName);
+      
+      return null;
    }
    
-   public byte getType()
+   byte getType()
    {
       return TYPE;
    }

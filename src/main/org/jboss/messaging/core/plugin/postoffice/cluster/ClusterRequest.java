@@ -69,9 +69,9 @@ abstract class ClusterRequest implements Streamable
             request = new MessagesRequest();
             break;
          }
-         case MoveTransactionRequest.TYPE:
+         case PullMessagesRequest.TYPE:
          {
-            request = new MoveTransactionRequest();
+            request = new PullMessagesRequest();
             break;
          }
          case QueueStatsRequest.TYPE:
@@ -112,7 +112,7 @@ abstract class ClusterRequest implements Streamable
       request.write(daos);
    }
    
-   abstract void execute(PostOfficeInternal office) throws Exception;
+   abstract Object execute(PostOfficeInternal office) throws Throwable;
    
    abstract byte getType();
 }

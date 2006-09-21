@@ -19,13 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.postoffice;
+package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.Queue;
+import java.util.List;
+
+import org.jboss.messaging.core.Router;
 
 /**
- * 
- * A BindingImpl
+ * A ClusterRouter
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -33,40 +34,9 @@ import org.jboss.messaging.core.Queue;
  * $Id$
  *
  */
-public class BindingImpl implements Binding
+public interface ClusterRouter extends Router
 {
-   private String nodeId;
+   List getQueues();
    
-   private String condition;
-   
-   private Queue queue;
-       
-   public BindingImpl()
-   {      
-   }
-
-   public BindingImpl(String nodeId, String condition, Queue queue)
-   {
-      this.nodeId = nodeId;
-      
-      this.condition = condition;     
-      
-      this.queue = queue;
-   }
-   
-   public String getNodeId()
-   {
-      return nodeId;
-   }
-      
-   public String getCondition()
-   {
-      return condition;
-   }
-   
-   public Queue getQueue()
-   {
-      return queue;
-   }
-   
+   LocalClusteredQueue getLocalQueue();
 }

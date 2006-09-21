@@ -43,6 +43,7 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.JDBCSupport;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -172,7 +173,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             throw new IllegalArgumentException("Binding already exists for name " + queue.getName());
          }
                  
-         binding = new BindingImpl(this.nodeId, condition, queue); 
+         binding = new DefaultBinding(this.nodeId, condition, queue); 
          
          addBinding(binding);
                
@@ -440,7 +441,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
          
-         queue = new LocalClusteredQueue(nodeId, queueName, channelId, ms, pm, true,
+         queue = new PagingFilteredQueue(queueName, channelId, ms, pm, true,
                                          true, executor, filter);
       }
       else
@@ -448,7 +449,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          throw new IllegalStateException("This is a non clustered post office - should not have bindings from different nodes!");
       }
       
-      Binding binding = new BindingImpl(nodeId, condition, queue);
+      Binding binding = new DefaultBinding(nodeId, condition, queue);
       
       return binding;
    }
@@ -533,6 +534,22 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
 
    protected void addBinding(Binding binding)
    {
+      addToNameMap(binding);
+      
+      addToConditionMap(binding);
+   }   
+   
+   protected Binding removeBinding(String nodeId, String queueName)
+   {
+      Binding binding = removeFromNameMap(nodeId, queueName);
+                  
+      removeFromConditionMap(binding);
+      
+      return binding;
+   }
+   
+   protected void addToNameMap(Binding binding)
+   {
       Map nameMap = (Map)nameMaps.get(binding.getNodeId());
       
       if (nameMap == null)
@@ -543,22 +560,25 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
       
       nameMap.put(binding.getQueue().getName(), binding);
-      
+   }
+   
+   protected void addToConditionMap(Binding binding)
+   {
       String condition = binding.getCondition();
-            
+      
       Bindings bindings = (Bindings)conditionMap.get(condition);
       
       if (bindings == null)
       {
-         bindings = createBindings();
+         bindings = new DefaultBindings();
          
          conditionMap.put(condition, bindings);
       }
       
       bindings.addBinding(binding);
-   }   
+   }
    
-   protected Binding removeBinding(String nodeId, String queueName)
+   protected Binding removeFromNameMap(String nodeId, String queueName)
    {
       if (queueName == null)
       {
@@ -588,7 +608,12 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       {
          nameMaps.remove(nodeId);
       }
-                  
+      
+      return binding;
+   }
+   
+   protected void removeFromConditionMap(Binding binding)
+   {
       Bindings bindings = (Bindings)conditionMap.get(binding.getCondition());
       
       if (bindings == null)
@@ -607,14 +632,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       {
          conditionMap.remove(binding.getCondition());
       }        
-      
-      return binding;
-   }
-   
-   protected Bindings createBindings()
-   {
-      return new BindingsImpl();
-   }
+   }         
    
    protected Map getDefaultDMLStatements()
    {                

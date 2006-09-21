@@ -25,14 +25,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.BindingsImpl;
+import org.jboss.messaging.core.plugin.postoffice.DefaultBindings;
 
 
 /**
  * 
- * A ClusteredBindings
+ * A DefaultClusteredBindings
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -40,7 +39,7 @@ import org.jboss.messaging.core.plugin.postoffice.BindingsImpl;
  * $Id$
  *
  */
-class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBindings
+class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindings
 {
    // Map <name, router>
    private Map nameMap;
@@ -49,34 +48,19 @@ class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBindings
    
    private int localDurableCount;
    
-   private ClusterRouterFactory rf;
-   
-   ClusteredBindingsImpl(String thisNode, ClusterRouterFactory rf)
+   DefaultClusteredBindings(String thisNode)
    {
       super();
       
       nameMap = new HashMap();
       
       this.thisNode = thisNode;
-      
-      this.rf = rf;
    }
    
    public void addBinding(Binding binding)
    {
       super.addBinding(binding);
-               
-      Router router = (Router)nameMap.get(binding.getQueue().getName());
-      
-      if (router == null)
-      {
-         router = rf.createRouter();
-         
-         nameMap.put(binding.getQueue().getName(), router);
-      }
-      
-      router.add(binding.getQueue());      
-      
+  
       if (binding.getNodeId().equals(thisNode) && binding.getQueue().isRecoverable())
       {
          localDurableCount++;
@@ -92,25 +76,6 @@ class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBindings
          return false;
       }
            
-      Router router = (Router)nameMap.get(binding.getQueue().getName());
-      
-      if (router == null)
-      {
-         throw new IllegalStateException("Cannot find router in name map");
-      }
-      
-      removed = router.remove(binding.getQueue());
-      
-      if (!removed)
-      {
-         throw new IllegalStateException("Cannot find binding in list");
-      }
-      
-      if (!router.iterator().hasNext())
-      {
-         nameMap.remove(binding.getQueue().getName());
-      }
-      
       if (binding.getNodeId().equals(thisNode) && binding.getQueue().isRecoverable())
       {
          localDurableCount--;
@@ -128,4 +93,15 @@ class ClusteredBindingsImpl extends BindingsImpl implements ClusteredBindings
    {
       return nameMap.values();
    }
+   
+   public void addRouter(String queueName, ClusterRouter router)
+   {
+      nameMap.put(queueName, router);
+   }
+   
+   public void removeRouter(String queueName)
+   {
+      nameMap.remove(queueName);
+   }
+
 }

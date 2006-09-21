@@ -24,7 +24,8 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.util.List;
 
 /**
- * A RedistributionPolicy
+ * 
+ * A NullMessagePullPolicy
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -32,7 +33,15 @@ import java.util.List;
  * $Id$
  *
  */
-public interface RedistributionPolicy
+public class NullMessagePullPolicy implements MessagePullPolicy
 {
-   RedistributionOrder calculate(List queues);
+   
+   public NullMessagePullPolicy()
+   {
+   }
+
+   public RemoteQueueStub chooseQueue(List queues)
+   {      
+      return null;
+   }
 }

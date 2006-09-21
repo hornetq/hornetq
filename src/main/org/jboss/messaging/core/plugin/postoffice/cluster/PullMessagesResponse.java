@@ -29,11 +29,10 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.util.StreamUtils;
+import org.jboss.messaging.util.Streamable;
 
 /**
- * 
- * A MoveTransactionRequest
+ * A PullMessagesResponse
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -41,97 +40,51 @@ import org.jboss.messaging.util.StreamUtils;
  * $Id$
  *
  */
-class MoveTransactionRequest extends TransactionRequest
+public class PullMessagesResponse implements Streamable
 {
-   static final int TYPE = 5;
-   
-   private String queueName;
-   
    private List messages;
    
-   MoveTransactionRequest()
-   {      
+   PullMessagesResponse(int size)
+   {
+      messages = new ArrayList(size);
    }
    
-   MoveTransactionRequest(String nodeId, long txId, List messages, String queueName)
+   void addMessage(Message msg)
    {
-      super(nodeId, txId, true);
-      
-      this.messages = messages;
-      
-      this.queueName = queueName;
-   }
-   
-   MoveTransactionRequest(String nodeId, long txId)
-   {
-      super(nodeId, txId, false);
-   }
-   
-   public void commit(PostOfficeInternal office) throws Exception
-   {
-      office.addToQueue(queueName, messages);  
-   }
-   
-   public byte getType()
-   {
-      return TYPE;
+      messages.add(msg);
    }
 
    public void read(DataInputStream in) throws Exception
    {
-      super.read(in);
+      int num = in.readInt();
       
-      queueName = in.readUTF();
+      messages = new ArrayList(num);
       
-      int b = in.readByte();
-      
-      if (b == StreamUtils.NULL)
+      for (int i = 0; i < num; i++)
       {
-         messages = null;
-      }
-      else
-      {
-         int size = in.readInt();
+         byte type = in.readByte();
          
-         messages = new ArrayList(size);
+         Message msg = MessageFactory.createMessage(type);
          
-         for (int i = 0; i < size; i++)
-         {
-            byte type = in.readByte();
-            Message msg = MessageFactory.createMessage(type);
-            msg.read(in);
-            messages.add(msg);
-         }
+         msg.read(in);
+         
+         messages.add(msg);
       }
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      super.write(out);
+      out.writeInt(messages.size());
       
-      out.writeUTF(queueName);
+      Iterator iter = messages.iterator();
       
-      if (messages == null)
+      while (iter.hasNext())
       {
-         out.writeByte(StreamUtils.NULL);
-      }
-      else
-      {
-         out.writeByte(StreamUtils.LIST);
+         Message msg = (Message)iter.next();
          
-         out.writeInt(messages.size());
+         out.writeByte(msg.getType());
          
-         Iterator iter = messages.iterator();
-         while (iter.hasNext())
-         {
-            Message message = (Message)iter.next();
-            out.writeByte(message.getType());      
-            message.write(out);
-         }
-      }
-      
-      
+         msg.write(out);
+      }   
    }
 }
-
-

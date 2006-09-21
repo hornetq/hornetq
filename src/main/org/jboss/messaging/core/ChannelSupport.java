@@ -82,7 +82,7 @@ public abstract class ChannelSupport implements Channel
 
    protected QueuedExecutor executor;
 
-   protected boolean receiversReady;
+   protected volatile boolean receiversReady;
 
    protected PrioritizedDeque messageRefs;
 
@@ -187,7 +187,7 @@ public abstract class ChannelSupport implements Channel
          // acknowledge non transactionally
 
          // TODO We should consider also executing acks on the event queue
-         acknowledgeInternal(d);
+         acknowledgeInternal(d, true);
       }
       else
       {
@@ -219,6 +219,7 @@ public abstract class ChannelSupport implements Channel
       if (trace) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
       
       receiversReady = true;
+      
       return added;
    }
 
@@ -525,7 +526,7 @@ public abstract class ChannelSupport implements Channel
     * 
     * @see org.jboss.messaging.core.Channel#deliver()
     */
-   protected void deliverInternal()
+   protected void deliverInternal(boolean handle) throws Throwable
    {
       try
       {
@@ -577,7 +578,7 @@ public abstract class ChannelSupport implements Channel
 
                   Delivery delivery = new SimpleDelivery(this, ref, true);
 
-                  acknowledgeInternal(delivery);
+                  acknowledgeInternal(delivery, true);
                }
                else
                {
@@ -675,7 +676,7 @@ public abstract class ChannelSupport implements Channel
             }
             else
             {
-               // No more refs in channel
+               // No more refs in channel or only ones that don't match any selectors
                if (trace) { log.trace(this + " no more refs to deliver "); }
                break;
             }
@@ -745,7 +746,7 @@ public abstract class ChannelSupport implements Channel
             if (receiversReady)
             {
                // Prompt delivery
-               deliverInternal();
+               deliverInternal(true);
             }
          }
          else
@@ -791,14 +792,14 @@ public abstract class ChannelSupport implements Channel
       return new SimpleDelivery(this, ref, true);
    }
 
-   protected void acknowledgeInternal(Delivery d) throws Exception
+   protected void acknowledgeInternal(Delivery d, boolean persist) throws Exception
    {      
       synchronized (deliveryLock)
       {
          acknowledgeInMemory(d);
       }
          
-      if (recoverable && d.getReference().isReliable())
+      if (persist && recoverable && d.getReference().isReliable())
       {
          pm.removeReference(channelID, d.getReference(), null);
       }
@@ -910,7 +911,7 @@ public abstract class ChannelSupport implements Channel
             // prompt delivery
             if (receiversReady)
             {
-               deliverInternal();
+               deliverInternal(true);
             }
 
             result.setResult(null);
@@ -1079,14 +1080,24 @@ public abstract class ChannelSupport implements Channel
       
       public void run()
       {
-         receiversReady = true;
-         deliverInternal();
-         if (result != null)
+         try
          {
-            result.setResult(null);
+            receiversReady = true;
+            
+            deliverInternal(false);                  
+            
+            if (result != null)
+            {
+               result.setResult(null);
+            }
+         }
+         catch (Throwable t)
+         {
+            log.error("Failed to deliver", t);
+            result.setException(t);
          }
       }
-   }
+   }   
 
    protected class HandleRunnable implements Runnable
    {

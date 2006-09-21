@@ -35,7 +35,7 @@ import org.jboss.messaging.core.Router;
  */
 public class FavourLocalRouterFactory implements ClusterRouterFactory
 {
-   public Router createRouter()
+   public ClusterRouter createRouter()
    {
       return new FavourLocalRouter();
    }

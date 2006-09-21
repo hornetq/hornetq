@@ -32,5 +32,9 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
  */
 interface ClusterTransaction
 {
-   void commit(PostOfficeInternal office) throws Exception;
+   void commit(PostOfficeInternal office) throws Throwable;
+   
+   void rollback(PostOfficeInternal office) throws Throwable;
+   
+   boolean check(PostOfficeInternal office) throws Exception;
 }

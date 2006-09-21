@@ -33,10 +33,10 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredPostOfficeImpl;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.RedistributionPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.StandardRedistributionPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -53,7 +53,7 @@ import org.w3c.dom.Element;
  */
 public class ClusteredPostOfficeService extends JDBCServiceSupport
 {
-   private ClusteredPostOfficeImpl postOffice;
+   private DefaultClusteredPostOffice postOffice;
    
    private ObjectName serverPeerObjectName;
    
@@ -68,10 +68,10 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
    private long stateTimeout = 5000;
    
    private long castTimeout = 5000;
-   
-   private long redistPeriod = 5000;
-   
+     
    private String groupName;
+   
+   private int pullSize = 1;   
    
    // Constructors --------------------------------------------------------
    
@@ -158,16 +158,6 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       return castTimeout;
    }
    
-   public void setRedistributionPeriod(long period)
-   {
-      this.redistPeriod = period;
-   }
-   
-   public long getRedistributionPeriod()
-   {
-      return redistPeriod;
-   }
-   
    public void setGroupName(String groupName)
    {
       this.groupName = groupName;
@@ -176,6 +166,16 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
    public String getGroupName()
    {
       return groupName;
+   }
+   
+   public void setPullSize(int size)
+   {
+      this.pullSize = size;
+   }
+   
+   public int getPullSize()
+   {
+      return pullSize;
    }
    
    // ServiceMBeanSupport overrides ---------------------------------
@@ -205,19 +205,20 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
                   
          String nodeId = serverPeer.getServerPeerID();
          
-         RedistributionPolicy redistPolicy = new StandardRedistributionPolicy(nodeId);
+         MessagePullPolicy pullPolicy = new NullMessagePullPolicy();
          
          FilterFactory ff = new SelectorFactory();
          
          ClusterRouterFactory rf = new FavourLocalRouterFactory();
                   
-         postOffice =  new ClusteredPostOfficeImpl(ds, tm, sqlProperties, createTablesOnStartup,
+         postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties, createTablesOnStartup,
                                                nodeId, officeName, ms,
                                                pm, tr, ff, pool, 
                                                groupName,
                                                syncChannelConfig, asyncChannelConfig,
                                                stateTimeout, castTimeout,
-                                               redistPolicy, redistPeriod, rf);
+                                               pullPolicy, rf,
+                                               pullSize);
          
          postOffice.start();
          

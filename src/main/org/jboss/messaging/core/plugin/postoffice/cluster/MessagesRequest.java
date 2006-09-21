@@ -54,7 +54,7 @@ class MessagesRequest extends ClusterRequest
       this.messageHolders = messageHolders;
    }
    
-   public void execute(PostOfficeInternal office) throws Exception
+   Object execute(PostOfficeInternal office) throws Exception
    {
       Iterator iter = messageHolders.iterator();
       
@@ -64,9 +64,10 @@ class MessagesRequest extends ClusterRequest
          
          office.routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
       }
+      return null;
    }
    
-   public byte getType()
+   byte getType()
    {
       return TYPE;
    }

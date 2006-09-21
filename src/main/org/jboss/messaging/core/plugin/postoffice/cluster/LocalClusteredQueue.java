@@ -22,17 +22,17 @@
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.util.Future;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -49,23 +49,18 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  */
 public class LocalClusteredQueue extends PagingFilteredQueue implements ClusteredQueue
 {
-   private static final int MIN_PERIOD = 1000;
+   private PostOfficeInternal office;
    
-   private static final int STATS_DIFFERENCE_MARGIN_PERCENT = 10;   
-      
-   private String nodeId;
-   
-   private long lastTime;
-   
-   private QueueStats lastStats;
-   
-   private volatile int numberAdded;
-   
-   private volatile int numberConsumed;
+   private volatile int lastCount;
    
    private volatile boolean changedSignificantly;
+   
+   private RemoteQueueStub pullQueue;
+   
+   private String nodeId;
  
-   public LocalClusteredQueue(String nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
+   //TODO - we shouldn't have to specify office AND nodeId
+   public LocalClusteredQueue(PostOffice office, String nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
                               Filter filter,
                               int fullSize, int pageSize, int downCacheSize)
@@ -74,12 +69,11 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
      
       this.nodeId = nodeId;
       
-      lastTime = System.currentTimeMillis();      
-      
-      numberAdded = numberConsumed = 0;
+      //FIXME - this cast is a hack
+      this.office = (PostOfficeInternal)office;
    }
    
-   public LocalClusteredQueue(String nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
+   public LocalClusteredQueue(PostOffice office, String nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
                               Filter filter)
    {
@@ -87,54 +81,27 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
       this.nodeId = nodeId;
       
-      lastTime = System.currentTimeMillis();      
-      
-      numberAdded = numberConsumed = 0;
+      //FIXME - this cast is a hack
+      this.office = (PostOfficeInternal)office;
+   }
+   
+   public void setPullQueue(RemoteQueueStub queue)
+   {
+      this.pullQueue = queue;
    }
    
    public QueueStats getStats()
-   {
-      long now = System.currentTimeMillis();
+   {      
+      int cnt = messageCount();
       
-      long period = now - lastTime;
-      
-      if (period <= MIN_PERIOD)
-      {
-         //Cache the value to avoid recalculating too often
-         return lastStats;
-      }
-      
-      float addRate = 1000 * numberAdded / ((float)period);
-      
-      float consumeRate = 1000 * numberConsumed / ((float)period);
-      
-      int cnt = messageCount();      
-      
-      if (lastStats != null)
-      {
-         if (checkSignificant(lastStats.getAddRate(), addRate) ||
-             checkSignificant(lastStats.getConsumeRate(), consumeRate) ||
-             checkSignificant(lastStats.getMessageCount(), cnt))
-         {
-            changedSignificantly = true; 
-         }
-         else
-         {
-            changedSignificantly = false;
-         }
-      }
-      else
+      if (cnt != lastCount)
       {
          changedSignificantly = true;
+         
+         lastCount = cnt;
       }
-            
-      lastStats = new QueueStats(name, addRate, consumeRate, messageCount());
       
-      lastTime = now;
-      
-      numberAdded = numberConsumed = 0;
-      
-      return lastStats;
+      return new QueueStats(name, cnt);
    }      
    
    //Have the stats changed significantly since the last time we request them?
@@ -153,6 +120,9 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       return nodeId;
    }
       
+   /*
+    * Used when pulling messages from a remote queue
+    */
    public List getDeliveries(int number) throws Exception
    {
       List dels = new ArrayList();
@@ -161,17 +131,27 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       {
          synchronized (deliveryLock)
          {
-            MessageReference ref;
-            
-            while ((ref = removeFirstInMemory()) != null)
+            //We only get the refs if receiversReady = true since
+            //we don't
+            //TODO is this right?          
+            if (!receiversReady)
             {
-               SimpleDelivery del = new SimpleDelivery(this, ref);
+               MessageReference ref;
                
-               deliveries.add(del);
-               
-               dels.add(del);               
-            }           
-            return dels;
+               while ((ref = removeFirstInMemory()) != null)
+               {
+                  SimpleDelivery del = new SimpleDelivery(this, ref);
+                  
+                  deliveries.add(del);
+                  
+                  dels.add(del);               
+               }           
+               return dels;
+            }
+            else
+            {
+               return Collections.EMPTY_LIST;
+            }
          }
       }          
    }
@@ -181,7 +161,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
     * persist the message even if it is persistent - this is because persistent messages
     * are always persisted on the sending node before sending.
     */
-   public Delivery handleFromCluster(DeliveryObserver sender, MessageReference ref, Transaction tx)
+   public Delivery handleFromCluster(MessageReference ref)
       throws Exception
    {
       if (filter != null && !filter.accept(ref))
@@ -194,61 +174,41 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       checkClosed();
       
       Future result = new Future();
+      
+      // Instead of executing directly, we add the handle request to the event queue.
+      // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
+      // result, but when remoting does, we can use a full SEDA approach and get even better
+      // throughput.
+      this.executor.execute(new HandleRunnable(result, null, ref, false));
 
-      if (tx == null)
-      {         
-         // Instead of executing directly, we add the handle request to the event queue.
-         // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
-         // result, but when remoting does, we can use a full SEDA approach and get even better
-         // throughput.
-         this.executor.execute(new HandleRunnable(result, sender, ref, false));
+      return (Delivery)result.getResult();
+   }
    
-         return (Delivery)result.getResult();
-      }
-      else
+   public void acknowledgeFromCluster(Delivery d) throws Throwable
+   {
+      acknowledgeInternal(d, false);      
+   }
+   
+   protected void deliverInternal(boolean handle) throws Throwable
+   {
+      super.deliverInternal(handle);
+      
+      if (!handle)
       {
-         return handleInternal(sender, ref, tx, false);
-      }
-   }
-
-   protected void addReferenceInMemory(MessageReference ref) throws Exception
-   {
-      super.addReferenceInMemory(ref);
-      
-      //This is ok, since the channel ensures only one thread calls this method at once
-      numberAdded++;
-   }
-
-   protected boolean acknowledgeInMemory(Delivery d)
-   {
-      boolean acked = super.acknowledgeInMemory(d);
-      
-      // This is ok, since the channel ensures only one thread calls this method at once
-      numberConsumed--;
-      
-      return acked;
-   }  
-   
-   private boolean checkSignificant(float oldValue, float newValue)
-   {
-      boolean significant = false;
-      
-      if (oldValue != 0)
-      {         
-         int percentChange = (int)(100 * (oldValue - newValue) / oldValue);
-         
-         if (Math.abs(percentChange) >= STATS_DIFFERENCE_MARGIN_PERCENT)
+         if (receiversReady)
          {
-            significant = true;
+            //Delivery has been prompted (not from handle call)
+            //and has run, and there are consumers that are still interested in receiving more
+            //refs but there are none available in the channel (either the channel is empty
+            //or there are only refs that don't match any selectors)
+            //then we should perhaps pull some messages from a remote queue
+            if (pullQueue != null)
+            {
+               office.pullMessages(this, pullQueue);                        
+            }
          }
       }
-      else
-      {
-         if (newValue != 0)
-         {
-            significant = true;
-         }
-      }
-      return significant;
    }
+   
+   
 }

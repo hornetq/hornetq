@@ -115,8 +115,8 @@ public class QueueService extends DestinationServiceSupport
                postOffice.bindQueue(destination.getName(), queue);
             }
             else
-            {
-               queue = new LocalClusteredQueue(nodeId, destination.getName(), idm.getId(), ms, pm, true, true,                        
+            {               
+               queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(), idm.getId(), ms, pm, true, true,                        
                                                executor, null,
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
                

@@ -76,8 +76,16 @@ class CastMessagesCallback implements TxCallback
    private boolean multicast;
    
    private String toNodeId;
+      
+   /*
+    * We store the id of one of the channels that the ref was inserted into
+    * this is used after node failure to determine whether the tx has to be committed
+    * or rolled back on the remote node
+    */
+   private long checkChannelID;
    
-   void addMessage(String routingKey, Message message, Map queueNameToNodeIdMap, String lastNodeId)
+   void addMessage(String routingKey, Message message, Map queueNameToNodeIdMap,
+                   String lastNodeId, long channelID)
    {
       //If we only ever send messages to the same node for this tx, then we can unicast rather than multicast
       //This is how we determine that
@@ -106,6 +114,8 @@ class CastMessagesCallback implements TxCallback
             persistent = new ArrayList();
          }
          persistent.add(holder);
+         
+         checkChannelID = channelID;
       }
       else
       {
@@ -161,7 +171,7 @@ class CastMessagesCallback implements TxCallback
       {
          //We send the persistent messages which go into the "holding area" on
          //the receiving nodes
-         ClusterRequest req = new SendTransactionRequest(nodeId, txId, persistent);
+         ClusterRequest req = new SendTransactionRequest(nodeId, txId, persistent, checkChannelID);
          
          sendRequest(req);
       }

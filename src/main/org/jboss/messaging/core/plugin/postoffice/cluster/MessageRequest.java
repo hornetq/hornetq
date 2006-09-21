@@ -63,12 +63,13 @@ class MessageRequest extends ClusterRequest
       this.queueNameNodeIdMap = queueNameNodeIdMap;
    }
    
-   public void execute(PostOfficeInternal office) throws Exception
+   Object execute(PostOfficeInternal office) throws Exception
    {
       office.routeFromCluster(message, routingKey, queueNameNodeIdMap);      
+      return null;
    }  
    
-   public byte getType()
+   byte getType()
    {
       return TYPE;
    }

@@ -56,12 +56,14 @@ class QueueStatsRequest extends ClusterRequest
       this.queueStats = stats;
    }
 
-   public void execute(PostOfficeInternal office) throws Exception
+   Object execute(PostOfficeInternal office) throws Exception
    {
       office.updateQueueStats(nodeId, queueStats);
+      
+      return null;
    }
    
-   public byte getType()
+   byte getType()
    {
       return TYPE;
    }
