@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.util.StreamUtils;
 
 /**
  * A PullMessagesRequest
@@ -40,6 +42,8 @@ import org.jboss.messaging.core.Delivery;
  */
 public class PullMessagesRequest extends TransactionRequest implements ClusterTransaction
 {
+   private static final Logger log = Logger.getLogger(PullMessagesRequest.class);
+      
    private String queueName;
    
    private int numMessages;
@@ -68,11 +72,15 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
 
    Object execute(PostOfficeInternal office) throws Throwable
    {
+      log.info("********* executign pull messages requiest");
+      
       TransactionId id = new TransactionId(nodeId, txId);
       
       if (hold)
       {         
          List dels = office.getDeliveries(queueName, numMessages);
+         
+         log.info("Got a list of " + dels.size() + " deliveries");
          
          PullMessagesResponse response = new PullMessagesResponse(dels.size());
          
@@ -107,7 +115,12 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
             office.holdTransaction(id, this);
          }
          
-         return response;
+         log.info("returning response:" + response);
+         
+         //Convert to bytes since the response isn't serializable (nor do we want it to be)
+         byte[] bytes = StreamUtils.toBytes(response);
+         
+         return bytes;
       }
       else
       {
@@ -184,16 +197,26 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
    
    public void read(DataInputStream in) throws Exception
    {
-      queueName = in.readUTF();
+      super.read(in);
       
-      numMessages = in.readInt();
+      if (hold)
+      {
+         queueName = in.readUTF();
+         
+         numMessages = in.readInt();
+      }
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(queueName);
+      super.write(out);
       
-      out.writeInt(numMessages);
+      if (hold)
+      {      
+         out.writeUTF(queueName);
+         
+         out.writeInt(numMessages);
+      }
    }
 
 

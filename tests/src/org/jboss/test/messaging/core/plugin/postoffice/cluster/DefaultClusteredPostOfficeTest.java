@@ -1178,7 +1178,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //========================
          
          log.info("******** sending");
-         List msgs = sendMessages(persistent, office1, 3, null);
+         List msgs = sendMessages("topic", persistent, office1, 3, null);
          log.info("********** sent");
          
          //n2
@@ -1211,7 +1211,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //Send 3 messages at node2
          //========================
          
-         msgs = sendMessages(persistent, office2, 3, null);
+         msgs = sendMessages("topic", persistent, office2, 3, null);
          
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1242,7 +1242,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //Send 3 messages at node3
          //========================
          
-         msgs = sendMessages(persistent, office3, 3, null);
+         msgs = sendMessages("topic", persistent, office3, 3, null);
          
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1281,7 +1281,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
 //         * node6: 1 shared durable (shared2), 1 non durable
 //         * node7: 1 shared durable (shared2)
          
-         msgs = sendMessages(persistent, office4, 3, null);
+         msgs = sendMessages("topic", persistent, office4, 3, null);
                
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1312,7 +1312,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //Send 3 messages at node5
          //========================
          
-         msgs = sendMessages(persistent, office5, 3, null);
+         msgs = sendMessages("topic", persistent, office5, 3, null);
              
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1343,7 +1343,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //Send 3 messages at node6
          //========================
          
-         msgs = sendMessages(persistent, office6, 3, null);
+         msgs = sendMessages("topic", persistent, office6, 3, null);
              
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1375,7 +1375,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //Send 3 messages at node7
          //========================
          
-         msgs = sendMessages(persistent, office7, 3, null);
+         msgs = sendMessages("topic", persistent, office7, 3, null);
 
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -2101,7 +2101,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, pullPolicy, rf, 1);
+                                 5000, 5000, pullPolicy, rf, 1, 1000);
       
       postOffice.start();      
       
@@ -2110,65 +2110,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
 
    // Private -------------------------------------------------------
    
-   private List sendMessages(boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
-   {
-      List list = new ArrayList();
-      
-      Message msg = CoreMessageFactory.createCoreMessage(1, persistent, null);      
-      
-      MessageReference ref = ms.reference(msg);         
-      
-      boolean routed = office.route(ref, "topic", null);         
-      
-      assertTrue(routed);
-      
-      list.add(msg);
-      
-      Thread.sleep(1000);
-      
-      return list;
-   }
    
-   private void checkContainsAndAcknowledge(Message msg, SimpleReceiver receiver, Queue queue) throws Throwable
-   {
-      List msgs = receiver.getMessages();
-      assertNotNull(msgs);
-      assertEquals(1, msgs.size());
-      Message msgRec = (Message)msgs.get(0);
-      assertEquals(msg.getMessageID(), msgRec.getMessageID());
-      receiver.acknowledge(msgRec, null);
-      msgs = queue.browse();
-      assertNotNull(msgs);
-      assertTrue(msgs.isEmpty()); 
-      receiver.clear();
-   }
-   
-   private void checkContainsAndAcknowledge(List msgList, SimpleReceiver receiver, Queue queue) throws Throwable
-   {
-      List msgs = receiver.getMessages();
-      assertNotNull(msgs);
-      assertEquals(msgList.size(), msgs.size());
-      
-      for (int i = 0; i < msgList.size(); i++)
-      {
-         Message msgRec = (Message)msgs.get(i);
-         Message msgCheck = (Message)msgList.get(i);
-         assertEquals(msgCheck.getMessageID(), msgRec.getMessageID());
-         receiver.acknowledge(msgRec, null);
-      }
-      
-      msgs = queue.browse();
-      assertNotNull(msgs);
-      assertTrue(msgs.isEmpty()); 
-      receiver.clear();
-   }
-   
-   private void checkEmpty(SimpleReceiver receiver) throws Throwable
-   {
-      List msgs = receiver.getMessages();
-      assertNotNull(msgs);
-      assertTrue(msgs.isEmpty());
-   }
 
    // Inner classes -------------------------------------------------
 

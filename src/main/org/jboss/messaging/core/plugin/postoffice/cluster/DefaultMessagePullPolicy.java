@@ -54,13 +54,16 @@ public class DefaultMessagePullPolicy implements MessagePullPolicy
          {
             QueueStats stats = queue.getStats();
             
-            int cnt = stats.getMessageCount();
-            
-            if (cnt > maxMessages)
-            {
-               maxMessages = cnt;
+            if (stats != null)
+            {               
+               int cnt = stats.getMessageCount();
                
-               chosenQueue = queue;
+               if (cnt > maxMessages)
+               {
+                  maxMessages = cnt;
+                  
+                  chosenQueue = queue;
+               }
             }
          }
       }

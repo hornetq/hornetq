@@ -128,6 +128,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    private int pullSize;
    
    private Map routerMap;
+   
+   private StatsSender statsSender;
+   
+   private long statsSendPeriod;
       
    public DefaultClusteredPostOffice()
    {        
@@ -157,11 +161,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             long stateTimeout, long castTimeout,
             MessagePullPolicy redistributionPolicy,
             ClusterRouterFactory rf,
-            int pullSize) throws Exception
+            int pullSize,
+            long statsSendPeriod) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
            pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy,
-           rf, pullSize);
+           rf, pullSize, statsSendPeriod);
       
       this.syncChannelConfigE = syncChannelConfig;      
       this.asyncChannelConfigE = asyncChannelConfig;     
@@ -183,11 +188,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                               long stateTimeout, long castTimeout,
                               MessagePullPolicy redistributionPolicy,                      
                               ClusterRouterFactory rf,
-                              int pullSize) throws Exception
+                              int pullSize,
+                              long statsSendPeriod) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
            pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy,
-           rf, pullSize);
+           rf, pullSize, statsSendPeriod);
 
       this.syncChannelConfigS = syncChannelConfig;      
       this.asyncChannelConfigS = asyncChannelConfig;     
@@ -204,7 +210,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                                long stateTimeout, long castTimeout,                             
                                MessagePullPolicy redistributionPolicy,                               
                                ClusterRouterFactory rf,
-                               int pullSize)
+                               int pullSize,
+                               long statsSendPeriod)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr, filterFactory,
              pool);
@@ -223,7 +230,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       this.pullSize = pullSize;
       
+      this.statsSendPeriod = statsSendPeriod;
+      
       routerMap = new HashMap();
+      
+      statsSender = new StatsSender(this, statsSendPeriod);
       
       init();
    }
@@ -274,11 +285,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       handleAddressNodeMapping(currentAddress, nodeId);
       
       syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));           
+      
+      statsSender.start();
    }
 
    public void stop() throws Exception
    {
       super.stop();
+      
+      statsSender.stop();
          
       syncChannel.close();
       
@@ -1111,7 +1126,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       ClusterRequest req = new PullMessagesRequest(this.nodeId, tx.getId(), remoteQueue.getChannelID(),
                                                    localQueue.getName(), num);
       
-      List msgs = (List)syncSendRequest(req, fromAddress);
+      byte[] bytes = (byte[])syncSendRequest(req, fromAddress);
+      
+      PullMessagesResponse response = new PullMessagesResponse();
+      
+      StreamUtils.fromBytes(response, bytes);
+
+      List msgs = response.getMessages();
+      
+      log.info("I have " + msgs.size() + " messages");
       
       Iterator iter = msgs.iterator();
       
@@ -1155,9 +1178,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       //and send a checkrequest
       //This applies to a normal message and messages requests too
             
-      req = new PullMessagesRequest(this.nodeId, tx.getId());
-      
-      asyncSendRequest(req, fromAddress);
+      if (!msgs.isEmpty())
+      {         
+         req = new PullMessagesRequest(this.nodeId, tx.getId());
+         
+         asyncSendRequest(req, fromAddress);
+      }
    }
    
    
@@ -1544,7 +1570,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             
             ClusterRequest request = readRequest(bytes);
             
-            request.execute(DefaultClusteredPostOffice.this);
+            Object result = request.execute(DefaultClusteredPostOffice.this);
+            
+            return result;
          }
          catch (Throwable e)
          {
@@ -1552,8 +1580,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             IllegalStateException e2 = new IllegalStateException(e.getMessage());
             e2.setStackTrace(e.getStackTrace());
             throw e2;
-         }
-         return null;
+         }         
       }      
    }
 }

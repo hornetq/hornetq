@@ -60,6 +60,7 @@
       <attribute name="StateTimeout">5000</attribute>
       <attribute name="CastTimeout">5000</attribute>
       <attribute name="PullSize">1</attribute>
+      <attribute name="StatsSendPeriod">1000</attribute>
       <attribute name="SyncChannelConfig">
          <UDP mcast_addr="228.8.8.8" mcast_port="45568"
               ip_ttl="8" ip_mcast="true"

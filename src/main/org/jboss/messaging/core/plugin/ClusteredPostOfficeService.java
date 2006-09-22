@@ -73,6 +73,8 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
    
    private int pullSize = 1;   
    
+   private long statsSendPeriod = 1000;
+   
    // Constructors --------------------------------------------------------
    
    public ClusteredPostOfficeService()
@@ -178,6 +180,16 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       return pullSize;
    }
    
+   public void setStatsSendPeriod(long period)
+   {
+      this.statsSendPeriod = period;
+   }
+   
+   public long getStatsSendPeriod()
+   {
+      return statsSendPeriod;
+   }
+   
    // ServiceMBeanSupport overrides ---------------------------------
    
    protected synchronized void startService() throws Exception
@@ -218,7 +230,8 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
                                                syncChannelConfig, asyncChannelConfig,
                                                stateTimeout, castTimeout,
                                                pullPolicy, rf,
-                                               pullSize);
+                                               pullSize,
+                                               statsSendPeriod);
          
          postOffice.start();
          

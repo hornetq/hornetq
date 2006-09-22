@@ -65,6 +65,12 @@
       <type>int</type>
    </attribute> 
    
+   <attribute access="read-write" getMethod="getStatsSendPeriod" setMethod="setStatsSendPeriod">
+      <description>The period in milliseconds between a post office casting it's statistics across the cluster</description>
+      <name>StatsSendPeriod/name>
+      <type>long</type>
+   </attribute>    
+   
    <attribute access="read-write" getMethod="getSyncChannelConfig" setMethod="setSyncChannelConfig">
       <description>The JGroups stack configuration for the synchronous channel</description>
       <name>SyncChannelConfig</name>

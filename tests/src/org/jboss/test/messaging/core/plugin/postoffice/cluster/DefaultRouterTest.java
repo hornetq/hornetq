@@ -21,21 +21,10 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.messaging.core.FilterFactory;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.plugin.IdManager;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
@@ -43,14 +32,9 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.util.CoreMessageFactory;
+import org.jboss.test.messaging.core.plugin.base.ClusteringTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -64,25 +48,13 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class DefaultRouterTest extends MessagingTestCase
+public class DefaultRouterTest extends ClusteringTestBase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   protected ServiceContainer sc;
-
-   protected IdManager im;   
-   
-   protected PersistenceManager pm;
-      
-   protected MessageStore ms;
-   
-   protected TransactionRepository tr;
-   
-   protected QueuedExecutorPool pool;
    
    // Constructors --------------------------------------------------
 
@@ -96,40 +68,10 @@ public class DefaultRouterTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      sc = new ServiceContainer("all");
-      
-      sc.start();                
-      
-      pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, true, true, 100);      
-      pm.start();
-      
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
-      tr.start();
-      
-      ms = new SimpleMessageStore();
-      ms.start();
-      
-      pool = new QueuedExecutorPool(10);
-      
-      im = new IdManager("CHANNEL_ID", 10, pm);
-            
-      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {      
-      if (!ServerManagement.isRemote())
-      {
-         sc.stop();
-         sc = null;
-      }
-      pm.stop();
-      tr.stop();
-      ms.stop();
-      
       super.tearDown();
    }
    
@@ -206,49 +148,49 @@ public class DefaultRouterTest extends MessagingTestCase
          SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue5.add(receiver5);
                
-         List msgs = sendMessages(persistent, office1, 3, null);         
+         List msgs = sendMessages("topic", persistent, office1, 3, null);         
          checkContainsAndAcknowledge(msgs, receiver1, queue1);         
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 3, null);         
          checkEmpty(receiver1);
          checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 3, null);         
          checkEmpty(receiver1);
          checkEmpty(receiver2);
          checkContainsAndAcknowledge(msgs, receiver3, queue1);                           
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 3, null);         
          checkEmpty(receiver1);
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkContainsAndAcknowledge(msgs, receiver4, queue1);                                    
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 3, null);         
          checkEmpty(receiver1);
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkContainsAndAcknowledge(msgs, receiver5, queue1); 
          
-         msgs = sendMessages(persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 3, null);         
          checkContainsAndAcknowledge(msgs, receiver1, queue1);         
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 3, null);         
          checkEmpty(receiver1);
          checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
          checkEmpty(receiver3);
@@ -345,21 +287,21 @@ public class DefaultRouterTest extends MessagingTestCase
          SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue5.add(receiver5);
                
-         List msgs = sendMessages(persistent, office2, 3, null);         
+         List msgs = sendMessages("topic", persistent, office2, 3, null);         
          checkContainsAndAcknowledge(msgs, receiver1, queue1);         
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office2, 3, null);         
+         msgs = sendMessages("topic", persistent, office2, 3, null);         
          checkContainsAndAcknowledge(msgs, receiver1, queue1);         
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office2, 3, null);         
+         msgs = sendMessages("topic", persistent, office2, 3, null);         
          checkContainsAndAcknowledge(msgs, receiver1, queue1);         
          checkEmpty(receiver2);
          checkEmpty(receiver3);
@@ -367,21 +309,21 @@ public class DefaultRouterTest extends MessagingTestCase
          checkEmpty(receiver5);
          
          
-         msgs = sendMessages(persistent, office3, 3, null); 
+         msgs = sendMessages("topic", persistent, office3, 3, null); 
          checkEmpty(receiver1);
          checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office3, 3, null); 
+         msgs = sendMessages("topic", persistent, office3, 3, null); 
          checkEmpty(receiver1);
          checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages(persistent, office3, 3, null); 
+         msgs = sendMessages("topic", persistent, office3, 3, null); 
          checkEmpty(receiver1);
          checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
          checkEmpty(receiver3);
@@ -440,7 +382,7 @@ public class DefaultRouterTest extends MessagingTestCase
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, rf, 1);
+                                 5000, 5000, redistPolicy, rf, 1, 1000);
       
       postOffice.start();      
       
@@ -449,70 +391,7 @@ public class DefaultRouterTest extends MessagingTestCase
 
    // Private -------------------------------------------------------
    
-   //TODO these methods are duplicated from DefaultClusteredPostOfficeTest - put in common super class or somewhere
-   //else
    
-   private List sendMessages(boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
-   {
-      List list = new ArrayList();
-      
-      Message msg = CoreMessageFactory.createCoreMessage(1, persistent, null);      
-      
-      MessageReference ref = ms.reference(msg);         
-      
-      boolean routed = office.route(ref, "topic", null);         
-      
-      assertTrue(routed);
-      
-      list.add(msg);
-      
-      Thread.sleep(1000);
-      
-      return list;
-   }
-   
-   
-   private void checkContainsAndAcknowledge(Message msg, SimpleReceiver receiver, Queue queue) throws Throwable
-   {
-      List msgs = receiver.getMessages();
-      assertNotNull(msgs);
-      assertEquals(1, msgs.size());
-      Message msgRec = (Message)msgs.get(0);
-      assertEquals(msg.getMessageID(), msgRec.getMessageID());
-      receiver.acknowledge(msgRec, null);
-      msgs = queue.browse();
-      assertNotNull(msgs);
-      assertTrue(msgs.isEmpty()); 
-      receiver.clear();
-   }
-   
-   private void checkContainsAndAcknowledge(List msgList, SimpleReceiver receiver, Queue queue) throws Throwable
-   {
-      List msgs = receiver.getMessages();
-      assertNotNull(msgs);
-      assertEquals(msgList.size(), msgs.size());
-      
-      for (int i = 0; i < msgList.size(); i++)
-      {
-         Message msgRec = (Message)msgs.get(i);
-         Message msgCheck = (Message)msgList.get(i);
-         assertEquals(msgCheck.getMessageID(), msgRec.getMessageID());
-         receiver.acknowledge(msgRec, null);
-      }
-      
-      msgs = queue.browse();
-      assertNotNull(msgs);
-      assertTrue(msgs.isEmpty()); 
-      receiver.clear();
-   }
-   
-   private void checkEmpty(SimpleReceiver receiver) throws Throwable
-   {
-      List msgs = receiver.getMessages();
-      assertNotNull(msgs);
-      assertTrue(msgs.isEmpty());
-   }
-
    // Inner classes -------------------------------------------------
    
 
