@@ -32,7 +32,9 @@ package org.jboss.messaging.core;
  */
 public interface Queue extends Channel
 {
-   public String getName();
+   String getName();
    
-   public Filter getFilter();
+   Filter getFilter();
+   
+   boolean isClustered();
 }

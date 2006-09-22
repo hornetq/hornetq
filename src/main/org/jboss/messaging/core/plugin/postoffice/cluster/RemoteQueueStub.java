@@ -263,4 +263,9 @@ class RemoteQueueStub implements ClusteredQueue
       throw new UnsupportedOperationException();
    }
    
+   public boolean isClustered()
+   {
+      return true;
+   }
+   
 }

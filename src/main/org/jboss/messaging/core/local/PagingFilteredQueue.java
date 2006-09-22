@@ -98,6 +98,24 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
       
       this.filter = filter;
    }
+   
+   // Queue implementation
+   // ---------------------------------------------------------------
+   
+   public boolean isClustered()
+   {
+      return false;
+   }
+   
+   public String getName()
+   {
+      return name;
+   }
+      
+   public Filter getFilter()
+   {
+      return filter;
+   }
     
    // Channel implementation ----------------------------------------   
    
@@ -116,20 +134,10 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
    }
    
    // Public --------------------------------------------------------
-
-   public String getName()
-   {
-      return name;
-   }
    
    public String toString()
    {
       return "Queue[" + getChannelID() + "]";
-   }
-   
-   public Filter getFilter()
-   {
-      return filter;
    }
 
    // Package protected ---------------------------------------------

@@ -33,10 +33,10 @@ import org.jboss.messaging.core.Router;
  * $Id$
  *
  */
-public class FavourLocalRouterFactory implements ClusterRouterFactory
+public class DefaultRouterFactory implements ClusterRouterFactory
 {
    public ClusterRouter createRouter()
    {
-      return new FavourLocalRouter();
+      return new DefaultRouter();
    }
 }

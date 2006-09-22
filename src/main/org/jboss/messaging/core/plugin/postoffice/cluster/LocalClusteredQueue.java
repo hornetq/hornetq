@@ -209,5 +209,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       }
    }
    
-   
+   public boolean isClustered()
+   {
+      return true;
+   }
 }

@@ -21,6 +21,7 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -28,12 +29,14 @@ import java.util.List;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.cluster.FavourLocalRouterFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
@@ -425,6 +428,8 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          {
             office2.stop();
          }
+         
+         checkNoBindingData();
       }
       
    }
@@ -457,6 +462,26 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
    public void testClusteredPersistentRouteWithFilter() throws Throwable
    {
       this.clusteredRouteWithFilter(true);
+   }
+   
+   public void testRouteSharedPointToPointQueuePersistent() throws Throwable
+   {
+      this.routeSharedQueue(true);
+   }
+   
+   public void testRouteSharedPointToPointQueueNonPersistent() throws Throwable
+   {
+      this.routeSharedQueue(false);
+   }
+   
+   public void testRouteComplexTopicPersistent() throws Throwable
+   {
+      this.routeComplexTopic(true);
+   }
+   
+   public void testRouteComplexTopicNonPersistent() throws Throwable
+   {
+      this.routeComplexTopic(false);
    }
    
    
@@ -673,6 +698,8 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          {
             office2.stop();
          }
+         
+         checkNoMessageData();
       }
    }
    
@@ -841,7 +868,632 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          {
             office2.stop();
          }
+         
+         checkNoMessageData();
       }
+   }
+   
+   protected void routeSharedQueue(boolean persistentMessage) throws Throwable
+   {
+      ClusteredPostOffice office1 = null;
+      
+      ClusteredPostOffice office2 = null;
+      
+      ClusteredPostOffice office3 = null;
+      
+      ClusteredPostOffice office4 = null;
+      
+      ClusteredPostOffice office5 = null;
+      
+      ClusteredPostOffice office6 = null;
+        
+      try
+      {   
+         office1 = createClusteredPostOffice("node1", "testgroup");
+         office2 = createClusteredPostOffice("node2", "testgroup");
+         office3 = createClusteredPostOffice("node3", "testgroup");
+         office4 = createClusteredPostOffice("node4", "testgroup");
+         office5 = createClusteredPostOffice("node5", "testgroup");
+         office6 = createClusteredPostOffice("node6", "testgroup");
+    
+         //We deploy the queue on nodes 1, 2, 3, 4 and 5
+         //We don't deploy on node 6
+         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, "node1", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding1 = office1.bindClusteredQueue("queue1", queue1);
+         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue1.add(receiver1);
+         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, "node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding2 = office2.bindClusteredQueue("queue1", queue2); 
+         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue2.add(receiver2);
+         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, "node3", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding3 = office3.bindClusteredQueue("queue1", queue3);
+         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue3.add(receiver3);
+         
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, "node4", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding4 = office4.bindClusteredQueue("queue1", queue4); 
+         SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue4.add(receiver4);
+         
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, "node5", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding5 = office5.bindClusteredQueue("queue1", queue5);
+         SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue5.add(receiver5);
+        
+         //We are using a AlwaysLocalRoutingPolicy so only the local queue should ever get the message if the filter matches
+                          
+         Message msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+         MessageReference ref = ms.reference(msg);         
+         boolean routed = office1.route(ref, "queue1", null);         
+         assertTrue(routed);
+         checkContainsAndAcknowledge(msg, receiver1, queue1);
+         this.checkEmpty(receiver2);
+         this.checkEmpty(receiver3);
+         this.checkEmpty(receiver4);
+         this.checkEmpty(receiver5);
+         
+         msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+         ref = ms.reference(msg);         
+         routed = office2.route(ref, "queue1", null);         
+         assertTrue(routed);
+         this.checkEmpty(receiver1);
+         checkContainsAndAcknowledge(msg, receiver2, queue2);
+         this.checkEmpty(receiver3);
+         this.checkEmpty(receiver4);
+         this.checkEmpty(receiver5);
+         
+         msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+         ref = ms.reference(msg);         
+         routed = office3.route(ref, "queue1", null);         
+         assertTrue(routed);
+         this.checkEmpty(receiver1);
+         this.checkEmpty(receiver2);
+         checkContainsAndAcknowledge(msg, receiver3, queue3);
+         this.checkEmpty(receiver4);
+         this.checkEmpty(receiver5);
+         
+         msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+         ref = ms.reference(msg);         
+         routed = office4.route(ref, "queue1", null);         
+         assertTrue(routed);
+         this.checkEmpty(receiver1);
+         this.checkEmpty(receiver2);
+         this.checkEmpty(receiver3);
+         checkContainsAndAcknowledge(msg, receiver4, queue3);
+         this.checkEmpty(receiver5);
+         
+         msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+         ref = ms.reference(msg);         
+         routed = office5.route(ref, "queue1", null);         
+         assertTrue(routed);
+         this.checkEmpty(receiver1);
+         this.checkEmpty(receiver2);         
+         this.checkEmpty(receiver3);
+         this.checkEmpty(receiver4);
+         checkContainsAndAcknowledge(msg, receiver5, queue5);
+         
+         log.info("************* ROOTING");
+         
+         msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+         ref = ms.reference(msg);         
+         routed = office6.route(ref, "queue1", null);         
+         assertTrue(routed);
+         
+         //The actual queue that receives the mesage is determined by the routing policy
+         //The default uses round robin for the nodes (this is tested more thoroughly in
+         //its own test)
+         
+         Thread.sleep(1000);
+         
+         log.info("checking");
+         checkContainsAndAcknowledge(msg, receiver1, queue1);
+         this.checkEmpty(receiver1);
+         this.checkEmpty(receiver2);         
+         this.checkEmpty(receiver3);
+         this.checkEmpty(receiver4);
+         this.checkEmpty(receiver5);
+                 
+      }
+      finally
+      {
+         if (office1 != null)
+         {            
+            office1.stop();
+         }
+         
+         if (office2 != null)
+         {
+            office2.stop();
+         }
+         
+         if (office3 != null)
+         {            
+            office3.stop();
+         }
+         
+         if (office4 != null)
+         {
+            office4.stop();
+         }
+         
+         if (office5 != null)
+         {            
+            office5.stop();
+         }
+         
+         if (office6 != null)
+         {            
+            office6.stop();
+         }
+         
+         checkNoMessageData();
+      }
+   }
+   
+
+   
+   /*
+    * We set up a complex scenario with multiple subscriptions, shared and unshared on different nodes
+    * 
+    * node1: no subscriptions
+    * node2: 2 non durable
+    * node3: 1 non shared durable, 1 non durable
+    * node4: 1 shared durable (shared1), 1 non shared durable, 3 non durable
+    * node5: 2 shared durable (shared1 and shared2)
+    * node6: 1 shared durable (shared2), 1 non durable
+    * node7: 1 shared durable (shared2)
+    * 
+    * Then we send mess
+    * 
+    * 
+    */
+   protected void routeComplexTopic(boolean persistent) throws Throwable
+   {
+      ClusteredPostOffice office1 = null;
+      
+      ClusteredPostOffice office2 = null;
+      
+      ClusteredPostOffice office3 = null;
+      
+      ClusteredPostOffice office4 = null;
+      
+      ClusteredPostOffice office5 = null;
+      
+      ClusteredPostOffice office6 = null;
+      
+      ClusteredPostOffice office7 = null;
+        
+      try
+      {   
+         office1 = createClusteredPostOffice("node1", "testgroup");
+         office2 = createClusteredPostOffice("node2", "testgroup");
+         office3 = createClusteredPostOffice("node3", "testgroup");
+         office4 = createClusteredPostOffice("node4", "testgroup");
+         office5 = createClusteredPostOffice("node5", "testgroup");
+         office6 = createClusteredPostOffice("node6", "testgroup");
+         office7 = createClusteredPostOffice("node7", "testgroup");
+         
+         //Node 2
+         //======
+         
+         //Non durable 1 on node 2
+         LocalClusteredQueue nonDurable1 = new LocalClusteredQueue(office2, "node2", "nondurable1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding1 = office2.bindClusteredQueue("topic", nonDurable1);
+         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonDurable1.add(receiver1);
+         
+         //Non durable 2 on node 2
+         LocalClusteredQueue nonDurable2 = new LocalClusteredQueue(office2, "node2", "nondurable2", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding2 = office2.bindClusteredQueue("topic", nonDurable2);
+         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonDurable2.add(receiver2);
+         
+         //Node 3
+         //======
+         
+         //Non shared durable
+         LocalClusteredQueue nonSharedDurable1 = new LocalClusteredQueue(office3, "node3", "nonshareddurable1", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         Binding binding3 = office3.bindClusteredQueue("topic", nonSharedDurable1);
+         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonSharedDurable1.add(receiver3);
+         
+         //Non durable
+         LocalClusteredQueue nonDurable3 = new LocalClusteredQueue(office3, "node3", "nondurable3", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding4 = office3.bindClusteredQueue("topic", nonDurable3);
+         SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonDurable3.add(receiver4);
+         
+         //Node 4
+         //======
+         
+         //Shared durable
+         LocalClusteredQueue sharedDurable1 = new LocalClusteredQueue(office4, "node4", "shareddurable1", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         Binding binding5 = office4.bindClusteredQueue("topic", sharedDurable1);
+         SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sharedDurable1.add(receiver5);
+         
+         //Non shared durable
+         LocalClusteredQueue nonSharedDurable2 = new LocalClusteredQueue(office4, "node4", "nonshareddurable2", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         Binding binding6 = office4.bindClusteredQueue("topic", nonSharedDurable2);
+         SimpleReceiver receiver6 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonSharedDurable2.add(receiver6);
+         
+         //Non durable
+         LocalClusteredQueue nonDurable4 = new LocalClusteredQueue(office4, "node4", "nondurable4", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding7 = office4.bindClusteredQueue("topic", nonDurable4);
+         SimpleReceiver receiver7 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonDurable4.add(receiver7);
+         
+         // Non durable
+         LocalClusteredQueue nonDurable5 = new LocalClusteredQueue(office4, "node4", "nondurable5", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding8 = office4.bindClusteredQueue("topic", nonDurable5);
+         SimpleReceiver receiver8 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonDurable5.add(receiver8);
+         
+         //Non durable
+         LocalClusteredQueue nonDurable6 = new LocalClusteredQueue(office4, "node4", "nondurable6", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding9 = office4.bindClusteredQueue("topic", nonDurable6);
+         SimpleReceiver receiver9 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonDurable6.add(receiver9);
+         
+         // Node 5
+         //=======
+         //Shared durable
+         LocalClusteredQueue sharedDurable2 = new LocalClusteredQueue(office5, "node5", "shareddurable1", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         Binding binding10 = office5.bindClusteredQueue("topic", sharedDurable2);
+         SimpleReceiver receiver10 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sharedDurable2.add(receiver10);
+         
+         //Shared durable
+         LocalClusteredQueue sharedDurable3 = new LocalClusteredQueue(office5, "node5", "shareddurable2", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         Binding binding11 = office5.bindClusteredQueue("topic", sharedDurable3);
+         SimpleReceiver receiver11 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sharedDurable3.add(receiver11);
+         
+         // Node 6
+         //=========
+         LocalClusteredQueue sharedDurable4 = new LocalClusteredQueue(office6, "node6", "shareddurable2", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         Binding binding12 = office6.bindClusteredQueue("topic", sharedDurable4);
+         SimpleReceiver receiver12 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sharedDurable4.add(receiver12);
+         
+         LocalClusteredQueue nonDurable7 = new LocalClusteredQueue(office6, "node6", "nondurable7", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         Binding binding13 = office6.bindClusteredQueue("topic", nonDurable7);
+         SimpleReceiver receiver13 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         nonDurable7.add(receiver13);
+         
+         //Node 7
+         //=======
+         LocalClusteredQueue sharedDurable5 = new LocalClusteredQueue(office7, "node7", "shareddurable2", im.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         Binding binding14 = office7.bindClusteredQueue("topic", sharedDurable5);
+         SimpleReceiver receiver14 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sharedDurable5.add(receiver14);
+         
+         
+         //Send 3 messages at node1
+         //========================
+         
+         List msgs = sendMessages(persistent, office1, 3, null);
+         
+         //n2
+         checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
+         checkContainsAndAcknowledge(msgs, receiver2, nonDurable2);
+         
+         //n3
+         checkContainsAndAcknowledge(msgs, receiver3, nonSharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
+         
+         //n4
+         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
+         checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
+         checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
+         
+         //n5
+         checkEmpty(receiver10);
+         checkContainsAndAcknowledge(msgs, receiver11, sharedDurable3);
+         
+         //n6
+         checkEmpty(receiver12);
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         
+         //n7
+         checkEmpty(receiver12);
+         
+         
+         //Send 3 messages at node2
+         //========================
+         
+         msgs = sendMessages(persistent, office2, 3, null);
+         
+         //n2
+         checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
+         checkContainsAndAcknowledge(msgs, receiver2, nonDurable2);
+         
+         //n3
+         checkContainsAndAcknowledge(msgs, receiver3, nonSharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
+         
+         //n4
+         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
+         checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
+         checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
+         
+         //n5
+         checkEmpty(receiver10);
+         checkContainsAndAcknowledge(msgs, receiver11, sharedDurable3);
+         
+         //n6
+         checkEmpty(receiver12);
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         
+         //n7
+         checkEmpty(receiver12);
+         
+         //Send 3 messages at node3
+         //========================
+         
+         msgs = sendMessages(persistent, office3, 3, null);
+         
+         //n2
+         checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
+         checkContainsAndAcknowledge(msgs, receiver2, nonDurable2);
+         
+         //n3
+         checkContainsAndAcknowledge(msgs, receiver3, nonSharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
+         
+         //n4
+         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
+         checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
+         checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
+         
+         //n5
+         checkEmpty(receiver10);
+         checkContainsAndAcknowledge(msgs, receiver11, sharedDurable3);
+         
+         //n6
+         checkEmpty(receiver12);
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         
+         //n7
+         checkEmpty(receiver12);     
+         
+         //Send 3 messages at node4
+         //========================
+         
+         msgs = sendMessages(persistent, office4, 3, null);
+               
+         //n2
+         checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
+         checkContainsAndAcknowledge(msgs, receiver2, nonDurable2);
+         
+         //n3
+         checkContainsAndAcknowledge(msgs, receiver3, nonSharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
+         
+         //n4
+         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
+         checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
+         checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
+         
+         //n5
+         checkEmpty(receiver10);
+         checkContainsAndAcknowledge(msgs, receiver11, sharedDurable3);
+         
+         //n6
+         checkEmpty(receiver12);
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         
+         //n7
+         checkEmpty(receiver12);
+         
+         //Send 3 messages at node5
+         //========================
+         
+         msgs = sendMessages(persistent, office5, 3, null);
+             
+         //n2
+         checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
+         checkContainsAndAcknowledge(msgs, receiver2, nonDurable2);
+         
+         //n3
+         checkContainsAndAcknowledge(msgs, receiver3, nonSharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
+         
+         //n4
+         checkEmpty(receiver5);
+         checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
+         checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
+         checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
+         
+         //n5
+         checkContainsAndAcknowledge(msgs, receiver10, sharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver11, sharedDurable3);
+         
+         //n6
+         checkEmpty(receiver12);
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         
+         //n7
+         checkEmpty(receiver12);
+         
+         //Send 3 messages at node6
+         //========================
+         
+         msgs = sendMessages(persistent, office6, 3, null);
+             
+         //n2
+         checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
+         checkContainsAndAcknowledge(msgs, receiver2, nonDurable2);
+         
+         //n3
+         checkContainsAndAcknowledge(msgs, receiver3, nonSharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
+         
+         //n4
+         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
+         checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
+         checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
+         
+         //n5
+         checkEmpty(receiver10);
+        
+         checkEmpty(receiver11);
+         
+         //n6
+         checkContainsAndAcknowledge(msgs, receiver12, sharedDurable4);         
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         
+         //n7
+         checkEmpty(receiver12);
+         
+         //Send 3 messages at node7
+         //========================
+         
+         msgs = sendMessages(persistent, office7, 3, null);
+
+         //n2
+         checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
+         checkContainsAndAcknowledge(msgs, receiver2, nonDurable2);
+         
+         //n3
+         checkContainsAndAcknowledge(msgs, receiver3, nonSharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
+         
+         //n4
+         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
+         checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
+         checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
+         checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
+         
+         //n5
+         checkEmpty(receiver10);
+         checkEmpty(receiver11);
+         
+         //n6
+         checkEmpty(receiver12);
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         
+         //n7
+         checkContainsAndAcknowledge(msgs, receiver14, sharedDurable5);
+        
+      }
+      finally
+      {
+         if (office1 != null)
+         {            
+            office1.stop();
+         }
+         
+         if (office2 != null)
+         {
+            office2.stop();
+         }
+         
+         if (office3 != null)
+         {            
+            office3.stop();
+         }
+         
+         if (office4 != null)
+         {
+            office4.stop();
+         }
+         
+         if (office5 != null)
+         {            
+            office5.stop();
+         }
+         
+         if (office6 != null)
+         {            
+            office6.stop();
+         }
+         
+         if (office7 != null)
+         {            
+            office7.stop();
+         }
+         
+         checkNoMessageData();
+      }
+   }
+   
+   
+   private List sendMessages(boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
+   {
+      List list = new ArrayList();
+      
+      Message msg = CoreMessageFactory.createCoreMessage(1, persistent, null);      
+      
+      MessageReference ref = ms.reference(msg);         
+      
+      boolean routed = office.route(ref, "topic", null);         
+      
+      assertTrue(routed);
+      
+      list.add(msg);
+      
+      Thread.sleep(1000);
+      
+      return list;
+   }
+   
+   private void checkContainsAndAcknowledge(Message msg, SimpleReceiver receiver, Queue queue) throws Throwable
+   {
+      List msgs = receiver.getMessages();
+      assertNotNull(msgs);
+      assertEquals(1, msgs.size());
+      Message msgRec = (Message)msgs.get(0);
+      assertEquals(msg.getMessageID(), msgRec.getMessageID());
+      receiver.acknowledge(msgRec, null);
+      msgs = queue.browse();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty()); 
+      receiver.clear();
+   }
+   
+   private void checkContainsAndAcknowledge(List msgList, SimpleReceiver receiver, Queue queue) throws Throwable
+   {
+      List msgs = receiver.getMessages();
+      assertNotNull(msgs);
+      assertEquals(msgList.size(), msgs.size());
+      
+      for (int i = 0; i < msgList.size(); i++)
+      {
+         Message msgRec = (Message)msgs.get(i);
+         Message msgCheck = (Message)msgList.get(i);
+         assertEquals(msgCheck.getMessageID(), msgRec.getMessageID());
+         receiver.acknowledge(msgRec, null);
+      }
+      
+      msgs = queue.browse();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty()); 
+      receiver.clear();
+   }
+   
+   private void checkEmpty(SimpleReceiver receiver) throws Throwable
+   {
+      List msgs = receiver.getMessages();
+      assertNotNull(msgs);
+      assertTrue(msgs.isEmpty());
    }
    
    
@@ -1441,16 +2093,18 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          {
             office2.stop();
          }
+         
+         checkNoMessageData();
       }
    }
    
    protected ClusteredPostOffice createClusteredPostOffice(String nodeId, String groupName) throws Exception
    {
-      MessagePullPolicy redistPolicy = new NullMessagePullPolicy();
+      MessagePullPolicy pullPolicy = new NullMessagePullPolicy();
       
       FilterFactory ff = new SimpleFilterFactory();
       
-      ClusterRouterFactory rf = new FavourLocalRouterFactory();
+      ClusterRouterFactory rf = new DefaultRouterFactory();
       
       DefaultClusteredPostOffice postOffice = 
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
@@ -1458,7 +2112,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, rf, 1);
+                                 5000, 5000, pullPolicy, rf, 1);
       
       postOffice.start();      
       

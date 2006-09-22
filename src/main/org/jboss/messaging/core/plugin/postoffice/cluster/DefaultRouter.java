@@ -25,16 +25,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * 
- * A FavourLocalRouter
+ * A DefaultRouter
  * 
  * This router always favours the local queue.
  * 
@@ -57,8 +57,10 @@ import org.jboss.messaging.core.tx.Transaction;
  * $Id$
  *
  */
-public class FavourLocalRouter implements ClusterRouter
+public class DefaultRouter implements ClusterRouter
 {
+   private static final Logger log = Logger.getLogger(DefaultRouter.class);
+      
    //MUST be an arraylist for fast index access
    private ArrayList queues;
    
@@ -66,7 +68,7 @@ public class FavourLocalRouter implements ClusterRouter
    
    private int target;
    
-   public FavourLocalRouter()
+   public DefaultRouter()
    {
       queues = new ArrayList();
    }
@@ -145,6 +147,8 @@ public class FavourLocalRouter implements ClusterRouter
            
       if (localQueue != null)
       {
+         log.info("There is a local queue");
+         
          //The only time the local queue won't accept is if the selector doesn't
          //match - in which case it won't match at any other nodes too so no point
          //in trying them
@@ -155,6 +159,7 @@ public class FavourLocalRouter implements ClusterRouter
       }
       else
       {
+         log.info("No local queue!");
          //There is no local shared queue
          
          //We round robin among the rest
