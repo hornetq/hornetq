@@ -35,7 +35,7 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-class QueueStats implements Streamable
+public class QueueStats implements Streamable
 {
    private String queueName;
    
@@ -50,7 +50,7 @@ class QueueStats implements Streamable
    }
    
    //QueueStats(String queueName, float addRate, float consumeRate, int messageCount)
-   QueueStats(String queueName, int messageCount)
+   public QueueStats(String queueName, int messageCount)
    {
       this.queueName = queueName;
       

@@ -33,7 +33,7 @@ import org.jboss.messaging.core.Queue;
  * $Id$
  *
  */
-interface ClusteredQueue extends Queue
+public interface ClusteredQueue extends Queue
 {
    QueueStats getStats();
    

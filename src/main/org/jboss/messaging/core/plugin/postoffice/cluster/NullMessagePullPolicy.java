@@ -40,7 +40,7 @@ public class NullMessagePullPolicy implements MessagePullPolicy
    {
    }
 
-   public RemoteQueueStub chooseQueue(List queues)
+   public ClusteredQueue chooseQueue(List queues)
    {      
       return null;
    }

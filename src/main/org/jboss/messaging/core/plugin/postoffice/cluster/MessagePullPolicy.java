@@ -35,5 +35,5 @@ import java.util.List;
  */
 public interface MessagePullPolicy
 {
-   RemoteQueueStub chooseQueue(List queues);
+   ClusteredQueue chooseQueue(List queues);
 }

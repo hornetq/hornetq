@@ -38,11 +38,11 @@ import java.util.List;
 public class DefaultMessagePullPolicy implements MessagePullPolicy
 {
 
-   public RemoteQueueStub chooseQueue(List queues)
+   public ClusteredQueue chooseQueue(List queues)
    {
       Iterator iter = queues.iterator();
       
-      RemoteQueueStub chosenQueue = null;
+      ClusteredQueue chosenQueue = null;
       
       int maxMessages = 0;
       
@@ -60,7 +60,7 @@ public class DefaultMessagePullPolicy implements MessagePullPolicy
             {
                maxMessages = cnt;
                
-               chosenQueue = (RemoteQueueStub)queue;
+               chosenQueue = queue;
             }
          }
       }

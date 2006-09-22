@@ -391,26 +391,28 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                
                   ClusteredQueue queue = (ClusteredQueue)del.getObserver();
                   
+                  log.info("Routing message to queue:" + queue.getName() + " on node " + queue.getNodeId());
+                  
+                  if (router.numberOfReceivers() > 1)
+                  {
+                     //We have now chosen which one will receive the message so we need to add this
+                     //information to a map which will get sent when casting - so the the queue
+                     //on the receiving node knows whether to receive the message
+                     if (queueNameNodeIdMap == null)
+                     {
+                        queueNameNodeIdMap = new HashMap();
+                     }
+                     
+                     queueNameNodeIdMap.put(queue.getName(), queue.getNodeId());
+                  }
+                  
                   if (!queue.isLocal())
                   {
                      //We need to send the message remotely
                      numberRemote++;
                      
-                     lastNodeId = queue.getNodeId();
-                     
-                     if (router.numberOfReceivers() > 1 && queueNameNodeIdMap == null)
-                     {
-                        //If there are more than one queues with the same node on the remote nodes
-                        //We have now chosen which one will receive the message so we need to add this
-                        //information to a map which will get sent when casting - so the the queue
-                        //on the receiving node knows whether to receive the message
-                        queueNameNodeIdMap = new HashMap();
-                        
-                        //We add an entry to the map so that on the receiving node we can work out which
-                        //queue instance will receive the message
-                        queueNameNodeIdMap.put(queue.getName(), lastNodeId);
-                     }
-                     
+                     lastNodeId = queue.getNodeId();                                                               
+                                          
                      lastChannelId = queue.getChannelID();
                   }
                }
@@ -650,9 +652,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                {  
                   boolean handle = true;
                   
+                  //log.info("Queue map is: " + queueNameNodeIdMap);
                   if (queueNameNodeIdMap != null)
-                  {
-                    // log.info("I have a queue map");
+                  {                     
                      String desiredNodeId = (String)queueNameNodeIdMap.get(binding.getQueue().getName());
                      
                      //When there are more than one queues with the same name across the cluster we only
@@ -665,16 +667,17 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   }
                   
                   if (handle)
-                  {
-                     log.info(this.nodeId + " is handling it");
+                  {                     
                      //It's a local binding so we pass the message on to the subscription
                      
                      LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
                      
+                     log.info(queue.getName() + " is handling it on node " + queue.getNodeId());
+                     
                      Delivery del = queue.handleFromCluster(ref);         
                      
-                     log.info("Handled it: " + del);
-                     log.info("accepted: " +del.isSelectorAccepted());
+                     //log.info("Handled it: " + del);
+                     //log.info("accepted: " +del.isSelectorAccepted());
                   }
                   else
                   {
@@ -894,7 +897,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                
                if (localQueue != null)
                {               
-                  RemoteQueueStub toQueue = messagePullPolicy.chooseQueue(router.getQueues());
+                  RemoteQueueStub toQueue = (RemoteQueueStub)messagePullPolicy.chooseQueue(router.getQueues());
                   
                   if (toQueue != null)
                   {
