@@ -21,7 +21,6 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -29,10 +28,8 @@ import java.util.List;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
@@ -550,18 +547,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          {
             //ok
          }
-         
-         try
-         {
-            office1.unbindQueue("queue1");
-            fail();
-         }
-         catch (Exception e)
-         {
-            //ok
-         }
-         
+          
          office1.unbindClusteredQueue("queue1");
+         
+         //It should be possible to bind local queues into a clustered post office
          
          PagingFilteredQueue queue7 = new PagingFilteredQueue("queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);       
          Binding binding7 = office1.bindQueue("queue1", queue7);
@@ -848,17 +837,15 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          if (office1 != null)
          {
             try
-            {
-               office2.unbindClusteredQueue("sub5");
+            {              
                office1.unbindClusteredQueue("sub7");
-               office1.unbindClusteredQueue("sub8");
-               office2.unbindClusteredQueue("sub13");
+               office1.unbindClusteredQueue("sub8");               
                office1.unbindClusteredQueue("sub15");
                office1.unbindClusteredQueue("sub16");
             }
             catch (Exception ignore)
             {
-               
+               ignore.printStackTrace();
             }
             
             office1.stop();
@@ -866,6 +853,15 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          if (office2 != null)
          {
+            try
+            {
+               office2.unbindClusteredQueue("sub5");
+               office2.unbindClusteredQueue("sub13");
+            }
+            catch (Exception ignore)
+            {     
+               ignore.printStackTrace();
+            }
             office2.stop();
          }
          
@@ -976,8 +972,6 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          this.checkEmpty(receiver4);
          checkContainsAndAcknowledge(msg, receiver5, queue5);
          
-         log.info("************* ROOTING");
-         
          msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
          ref = ms.reference(msg);         
          routed = office6.route(ref, "queue1", null);         
@@ -989,7 +983,6 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          Thread.sleep(1000);
          
-         log.info("checking");
          checkContainsAndAcknowledge(msg, receiver1, queue1);
          this.checkEmpty(receiver1);
          this.checkEmpty(receiver2);         
@@ -1174,12 +1167,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          sharedDurable5.add(receiver14);
          
          
-         //Send 3 messages at node1
+         //Send 1 message at node1
          //========================
          
-         log.info("******** sending");
-         List msgs = sendMessages("topic", persistent, office1, 3, null);
-         log.info("********** sent");
+         List msgs = sendMessages("topic", persistent, office1, 1, null);
          
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1208,10 +1199,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          checkEmpty(receiver12);
          
          
-         //Send 3 messages at node2
+         //Send 1 message at node2
          //========================
          
-         msgs = sendMessages("topic", persistent, office2, 3, null);
+         msgs = sendMessages("topic", persistent, office2, 1, null);
          
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1239,10 +1230,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //n7
          checkEmpty(receiver12);
          
-         //Send 3 messages at node3
+         //Send 1 message at node3
          //========================
          
-         msgs = sendMessages("topic", persistent, office3, 3, null);
+         msgs = sendMessages("topic", persistent, office3, 1, null);
          
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1270,18 +1261,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //n7
          checkEmpty(receiver12);     
          
-         //Send 3 messages at node4
+         //Send 1 message at node4
          //========================
-         
-//         * node1: no subscriptions
-//         * node2: 2 non durable
-//         * node3: 1 non shared durable, 1 non durable
-//         * node4: 1 shared durable (shared1), 1 non shared durable, 3 non durable
-//         * node5: 2 shared durable (shared1 and shared2)
-//         * node6: 1 shared durable (shared2), 1 non durable
-//         * node7: 1 shared durable (shared2)
-         
-         msgs = sendMessages("topic", persistent, office4, 3, null);
+             
+         msgs = sendMessages("topic", persistent, office4, 1, null);
                
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1309,10 +1292,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //n7
          checkEmpty(receiver12);
          
-         //Send 3 messages at node5
+         //Send 1 message at node5
          //========================
          
-         msgs = sendMessages("topic", persistent, office5, 3, null);
+         msgs = sendMessages("topic", persistent, office5, 1, null);
              
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1340,10 +1323,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //n7
          checkEmpty(receiver12);
          
-         //Send 3 messages at node6
+         //Send 1 message at node6
          //========================
          
-         msgs = sendMessages("topic", persistent, office6, 3, null);
+         msgs = sendMessages("topic", persistent, office6, 1, null);
              
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1372,10 +1355,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //n7
          checkEmpty(receiver12);
          
-         //Send 3 messages at node7
+         //Send 1 message at node7
          //========================
          
-         msgs = sendMessages("topic", persistent, office7, 3, null);
+         msgs = sendMessages("topic", persistent, office7, 1, null);
 
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1423,7 +1406,8 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                office3.unbindClusteredQueue("nonshareddurable1");
             }
             catch (Exception ignore)
-            {               
+            {   
+               ignore.printStackTrace();
             }
             office3.stop();
          }
@@ -1436,7 +1420,8 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                office4.unbindClusteredQueue("nonshareddurable2");
             }
             catch (Exception ignore)
-            {               
+            {           
+               ignore.printStackTrace();
             }
             office4.stop();
          }
@@ -1450,6 +1435,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             }
             catch (Exception ignore)
             {               
+               ignore.printStackTrace();
             }
             office5.stop();
          }
@@ -1462,6 +1448,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             }
             catch (Exception ignore)
             {               
+               ignore.printStackTrace();
             }
             office6.stop();
          }
@@ -1470,10 +1457,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          {      
             try
             {
-               office6.unbindClusteredQueue("shareddurable2");
+               office7.unbindClusteredQueue("shareddurable2");
             }
             catch (Exception ignore)
             {               
+               ignore.printStackTrace();
             }
             office7.stop();
          }
@@ -2069,17 +2057,33 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
       {
          if (office1 != null)
          {
-            office2.unbindClusteredQueue("sub5");
-            office1.unbindClusteredQueue("sub7");
-            office1.unbindClusteredQueue("sub8");
-            office2.unbindClusteredQueue("sub13");
-            office1.unbindClusteredQueue("sub15");
-            office1.unbindClusteredQueue("sub16");
+            try
+            {
+               office1.unbindClusteredQueue("sub7");
+               office1.unbindClusteredQueue("sub8");           
+               office1.unbindClusteredQueue("sub15");
+               office1.unbindClusteredQueue("sub16");
+            }
+            catch (Exception ignore)
+            {
+               ignore.printStackTrace();
+            }
+                        
             office1.stop();
          }
          
          if (office2 != null)
          {
+            try
+            {
+               office2.unbindClusteredQueue("sub5");
+               office2.unbindClusteredQueue("sub13");
+            }
+            catch (Exception ignore)
+            {
+               ignore.printStackTrace();
+            }
+            
             office2.stop();
          }
          

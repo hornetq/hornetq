@@ -269,7 +269,7 @@ public class ClusteringTestBase extends MessagingTestCase
          list.add(msg);
       }
       
-      Thread.sleep(1000);
+      Thread.sleep(2000);
       
       return list;
    }

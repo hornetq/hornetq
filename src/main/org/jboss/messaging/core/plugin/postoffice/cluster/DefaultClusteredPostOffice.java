@@ -131,6 +131,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    private StatsSender statsSender;
    
    private long statsSendPeriod;
+   
+   private boolean started;
       
    public DefaultClusteredPostOffice()
    {        
@@ -241,7 +243,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    // MessagingComponent overrides
    // --------------------------------------------------------------
    
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
       if (syncChannelConfigE != null)
       {        
@@ -286,9 +288,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));           
       
       statsSender.start();
+      
+      started = true;      
    }
 
-   public void stop() throws Exception
+   public synchronized void stop() throws Exception
    {
       super.stop();
       
@@ -297,6 +301,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       syncChannel.close();
       
       asyncChannel.close();
+      
+      started = false;
    }  
    
    // PostOffice implementation ---------------------------------------        
@@ -752,8 +758,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
    }
    
-   public void sendQueueStats() throws Exception
+   public synchronized void sendQueueStats() throws Exception
    {
+      if (!started)
+      {
+         return;
+      }
+      
       lock.readLock().acquire();
       
       List statsList = null;      

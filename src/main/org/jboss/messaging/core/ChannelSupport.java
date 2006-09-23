@@ -1133,12 +1133,11 @@ public abstract class ChannelSupport implements Channel
             {               
                receiversReady = true;
                
-               deliverInternal(false);                  
-               
-               if (result != null)
-               {
-                  result.setResult(null);
-               }
+               deliverInternal(false);                     
+            }
+            if (result != null)
+            {
+               result.setResult(null);
             }
          }
          catch (Throwable t)

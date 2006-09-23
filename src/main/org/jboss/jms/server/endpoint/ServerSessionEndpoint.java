@@ -135,7 +135,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
    
    // SessionDelegate implementation --------------------------------
-
+   
 	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
                                                   String selectorString,
                                                   boolean noLocal,
@@ -193,17 +193,30 @@ public class ServerSessionEndpoint implements SessionEndpoint
                // non-durable subscription
                if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + jmsDestination); }
                      
-               //Create the sub
+               //Create the non durable sub
                QueuedExecutor executor = (QueuedExecutor)pool.get();
                
-               PagingFilteredQueue q = 
-                  new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,                          
-                                          executor, selector, mDest.getFullSize(),
-                                          mDest.getPageSize(),
-                                          mDest.getDownCacheSize());       
+               PagingFilteredQueue q;
                
-               //Make a binding for this queue - non durable subscriptins are always non clustered
-               binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);               
+               if (topicPostOffice.isLocal())
+               {
+                  q = new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,                              
+                                              executor, selector,
+                                              mDest.getFullSize(),
+                                              mDest.getPageSize(),
+                                              mDest.getDownCacheSize());
+                  
+                  binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);      
+               }
+               else
+               {
+                  q = new LocalClusteredQueue(topicPostOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,                              
+                                              executor, selector, tr,
+                                              mDest.getFullSize(),
+                                              mDest.getPageSize(),
+                                              mDest.getDownCacheSize());
+                  binding = ((ClusteredPostOffice)topicPostOffice).bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+               }       
             }
             else
             {
@@ -607,6 +620,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
             PagingFilteredQueue q = 
                new PagingFilteredQueue(dest.getName(), idm.getId(), ms, pm, true, false,
                                        executor, null, fullSize, pageSize, downCacheSize);
+            
+            
             
             //Make a binding for this queue
             queuePostOffice.bindQueue(dest.getName(), q);  

@@ -23,7 +23,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +40,7 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-public class PullMessagesResponse implements Streamable, Serializable
+public class PullMessagesResponse implements Streamable
 {
    private List messages;
    

@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.Router;
 
 
 /**

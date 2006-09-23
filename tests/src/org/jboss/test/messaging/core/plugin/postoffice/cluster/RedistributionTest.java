@@ -21,8 +21,6 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
-import java.util.List;
-
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.FilterFactory;
@@ -71,16 +69,16 @@ public class RedistributionTest extends ClusteringTestBase
       super.tearDown();
    }
    
-   public void testRedist() throws Throwable
+   public void testRedistNonPersistent() throws Throwable
+   {
+      redistTest(false);
+   }
+   
+   public void testRedistPersistent() throws Throwable
    {
       redistTest(true);
    }
    
-   /*
-    * 
-    * 
-    * 
-    */
    public void redistTest(boolean persistent) throws Throwable
    {
       ClusteredPostOffice office1 = null;
@@ -137,20 +135,20 @@ public class RedistributionTest extends ClusteringTestBase
          
          //Check the sizes
           
-         List msgs = queue1.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(30, queue1.memoryRefCount());
+         assertEquals(0, queue1.memoryDeliveryCount());
          
-         msgs = queue2.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(30, queue2.memoryRefCount());
+         assertEquals(0, queue2.memoryDeliveryCount());
            
-         msgs = queue3.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(30, queue3.memoryRefCount());
+         assertEquals(0, queue3.memoryDeliveryCount());
          
-         msgs = queue4.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(30, queue4.memoryRefCount());
+         assertEquals(0, queue4.memoryDeliveryCount());
          
-         msgs = queue5.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(30, queue5.memoryRefCount());
+         assertEquals(0, queue5.memoryDeliveryCount());
          
          //Now we add the receivers
          //Note that we did not do this before the send.
@@ -184,43 +182,52 @@ public class RedistributionTest extends ClusteringTestBase
          Thread.sleep(1000);
          
          //Now we check the sizes again in case automatic balancing has erroneously
-         //kicked in
+         //kicked in                  
          
-         msgs = queue1.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue1.memoryRefCount());
+         assertEquals(1, queue1.memoryDeliveryCount());
          
-         msgs = queue2.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue2.memoryRefCount());
+         assertEquals(1, queue2.memoryDeliveryCount());
            
-         msgs = queue3.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue3.memoryRefCount());
+         assertEquals(1, queue3.memoryDeliveryCount());
          
-         msgs = queue4.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue4.memoryRefCount());
+         assertEquals(1, queue4.memoryDeliveryCount());
          
-         msgs = queue5.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue5.memoryRefCount());
+         assertEquals(1, queue5.memoryDeliveryCount());
          
          Thread.sleep(5000);
          
          //And again - should still be no redistribution
          
-         msgs = queue1.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue1.memoryRefCount());
+         assertEquals(1, queue1.memoryDeliveryCount());
          
-         msgs = queue2.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue2.memoryRefCount());
+         assertEquals(1, queue2.memoryDeliveryCount());
            
-         msgs = queue3.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue3.memoryRefCount());
+         assertEquals(1, queue3.memoryDeliveryCount());
          
-         msgs = queue4.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue4.memoryRefCount());
+         assertEquals(1, queue4.memoryDeliveryCount());
          
-         msgs = queue5.browse();
-         assertEquals(30, msgs.size());
+         assertEquals(29, queue5.memoryRefCount());
+         assertEquals(1, queue5.memoryDeliveryCount());
          
-         //Try and consumer them all via one receiver
+         Thread.sleep(2000);
+         
+         log.info("Here are the sizes:");         
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         
+         
          
          log.info("trying to consume");
          
@@ -236,87 +243,79 @@ public class RedistributionTest extends ClusteringTestBase
          
          //Consume 10 on node 4
          
-         //Consume 5 on node 5
+         //We leave the last 5 since they will be as deliveries in the receivers probably
+         
+         Delivery del;
                   
          log.info("consuming queue1");
          for (int i = 0; i < 10; i++)
          {       
             queue1.deliver(true);
-            Delivery del = receiver1.getDelivery();
+            del = receiver1.getDelivery();
             log.info("Got delivery: " + del.getReference().getMessageID());
             del.acknowledge(null);  
          }
          log.info("consumed queue1");
          
+         log.info("Here are the sizes:");  
+         
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+                  
          log.info("consuming queue2");
          for (int i = 0; i < 50; i++)
          {       
             queue2.deliver(true);
-            Delivery del = receiver2.getDelivery();
+            del = receiver2.getDelivery();
             log.info("Got delivery: " + del.getReference().getMessageID());
             del.acknowledge(null);  
          }
+         log.info("consumed queue2");
+         
+         log.info("Here are the sizes:");         
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
          
          log.info("consuming queue3");
          for (int i = 0; i < 75; i++)
          {       
             queue3.deliver(true);
-            Delivery del = receiver3.getDelivery();
+            del = receiver3.getDelivery();
             log.info("Got delivery: " + del.getReference().getMessageID());
             del.acknowledge(null);  
          }
+         log.info("consumed queue3");
+         
+         log.info("Here are the sizes:");         
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
          
          log.info("consuming queue4");
          for (int i = 0; i < 10; i++)
          {       
             queue4.deliver(true);
-            Delivery del = receiver4.getDelivery();
+            del = receiver4.getDelivery();
             log.info("Got delivery: " + del.getReference().getMessageID());
             del.acknowledge(null);  
          }
+         log.info("consumed queue4");
          
-         Thread.sleep(2000);
+         log.info("Here are the sizes:");         
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
          
-         log.info("Here are the sizes:");
-         
-         msgs = queue1.browse();
-         log.info("queue1: " + msgs.size());
-         
-         msgs = queue2.browse();
-         log.info("queue2: " + msgs.size());
-           
-         msgs = queue3.browse();
-         log.info("queue3: " + msgs.size());
-         
-         msgs = queue4.browse();
-         log.info("queue4: " + msgs.size());
-         
-         msgs = queue5.browse();
-         log.info("queue5: " + msgs.size());
-         
-         log.info("consuming queue5");
-         for (int i = 0; i < 5; i++)
-         {       
-            queue5.deliver(true);
-            Delivery del = receiver5.getDelivery();
-            log.info("Got delivery: " + del.getReference().getMessageID());
-            del.acknowledge(null);  
-         }
-         
-         msgs = queue1.browse();
-         assertEquals(0, msgs.size());
-         
-         msgs = queue2.browse();
-         assertEquals(0, msgs.size());
-           
-         msgs = queue3.browse();
-         assertEquals(0, msgs.size());
-         
-         msgs = queue4.browse();
-         assertEquals(0, msgs.size());
-         
-         msgs = queue5.browse();
-         assertEquals(0, msgs.size());
       }
       finally
       { 
