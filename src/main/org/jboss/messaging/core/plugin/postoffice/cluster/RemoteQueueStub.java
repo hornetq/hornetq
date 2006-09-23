@@ -115,9 +115,7 @@ class RemoteQueueStub implements ClusteredQueue
          {
             //If the message is persistent and we are recoverable then we persist here, *before*
             //the message is sent across the network
-            
-            log.info("Adding ref: " + reference + " in channel " + id);
-            
+
             pm.addReference(id, reference, tx);
          }
          catch (Exception e)

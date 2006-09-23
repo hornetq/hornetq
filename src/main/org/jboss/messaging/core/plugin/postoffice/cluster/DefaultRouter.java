@@ -147,8 +147,6 @@ public class DefaultRouter implements ClusterRouter
            
       if (localQueue != null)
       {
-         log.info("There is a local queue");
-         
          //The only time the local queue won't accept is if the selector doesn't
          //match - in which case it won't match at any other nodes too so no point
          //in trying them
@@ -159,7 +157,6 @@ public class DefaultRouter implements ClusterRouter
       }
       else
       {
-         log.info("No local queue!");
          //There is no local shared queue
          
          //We round robin among the rest

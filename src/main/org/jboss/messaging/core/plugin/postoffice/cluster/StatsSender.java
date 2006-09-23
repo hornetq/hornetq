@@ -83,25 +83,20 @@ public class StatsSender implements MessagingComponent
       timer.cancel();
       
       timer = null;
-   }
-   
-   
+   }      
    
    class SendStatsTimerTask extends TimerTask
    {
-
       public void run()
       {
          try
          {
-            office.sendStats();
+            office.sendQueueStats();
          }
          catch (Exception e)
          {
             log.error("Failed to send statistics", e);
          }
-      }
-      
+      }      
    }
-
 }

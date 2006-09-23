@@ -250,13 +250,15 @@ public class ClusteringTestBase extends MessagingTestCase
       } 
    }
    
+   private static long msgCount;
+   
    protected List sendMessages(String condition, boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
    {
       List list = new ArrayList();
       
       for (int i = 0; i < num; i++)
       {         
-         Message msg = CoreMessageFactory.createCoreMessage(i + 1, persistent, null);      
+         Message msg = CoreMessageFactory.createCoreMessage(msgCount++, persistent, null);      
          
          MessageReference ref = ms.reference(msg);         
          

@@ -46,15 +46,15 @@ public class JGroupsUtil
       }
 
       return
-      "UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32;bind_addr=" + host + "):" +
-      "PING(timeout=2000;num_initial_members=3):"+
-      "FD(timeout=3000):"+
-      "VERIFY_SUSPECT(timeout=1500):"+
-      "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800):"+
-      "UNICAST(timeout=600,1200,2400,4800):"+
-      "pbcast.STABLE(desired_avg_gossip=10000):"+
-      "FRAG:"+
-      "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)";
+      "UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32;bind_addr=" + host + ";up_thread=false;down_thread=false):" +
+      "PING(timeout=2000;num_initial_members=3;up_thread=false;down_thread=false):"+
+      "FD(timeout=3000;up_thread=false;down_thread=false):"+
+      "VERIFY_SUSPECT(timeout=1500;up_thread=false;down_thread=false):"+
+      "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800;up_thread=false;down_thread=false):"+
+      "UNICAST(timeout=600,1200,2400,4800;up_thread=false;down_thread=false):"+
+      "pbcast.STABLE(desired_avg_gossip=10000;up_thread=false;down_thread=false):"+
+      "FRAG(up_thread=false;down_thread=false):"+
+      "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true;up_thread=false;down_thread=false)";
 
    }
    
@@ -73,15 +73,15 @@ public class JGroupsUtil
       }
 
       return
-         "UDP(mcast_addr=228.8.8.8;mcast_port=45568;ip_ttl=32;bind_addr=" + host + "):" +
-         "PING(timeout=2000;num_initial_members=3):"+
-         "FD(timeout=3000):"+
-         "VERIFY_SUSPECT(timeout=1500):"+
-         "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800):"+
-         "pbcast.STABLE(desired_avg_gossip=10000):"+
-         "FRAG:"+
-         "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true):" +
-         "pbcast.STATE_TRANSFER";     
+         "UDP(mcast_addr=228.8.8.8;mcast_port=45568;ip_ttl=32;bind_addr=" + host + ";up_thread=false;down_thread=false):" +
+         "PING(timeout=2000;num_initial_members=3;up_thread=false;down_thread=false):"+
+         "FD(timeout=3000;up_thread=false;down_thread=false):"+
+         "VERIFY_SUSPECT(timeout=1500;up_thread=false;down_thread=false):"+
+         "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800;up_thread=false;down_thread=false):"+
+         "pbcast.STABLE(desired_avg_gossip=10000;up_thread=false;down_thread=false):"+
+         "FRAG(up_thread=false;down_thread=false):"+
+         "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true;up_thread=false;down_thread=false):" +
+         "pbcast.STATE_TRANSFER(up_thread=false;down_thread=false)";     
    }
 
    // Attributes ----------------------------------------------------

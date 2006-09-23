@@ -48,7 +48,7 @@ public class SimpleDelivery implements Delivery
    protected boolean selectorAccepted;
    protected DeliveryObserver observer;
    protected MessageReference reference;
-   
+
    private boolean trace = log.isTraceEnabled();
 
    // Constructors --------------------------------------------------
@@ -89,7 +89,7 @@ public class SimpleDelivery implements Delivery
       this.observer = observer;
       this.selectorAccepted = selectorAccepted;
    }
-
+   
 
    // Delivery implementation ---------------------------------
 
@@ -148,7 +148,7 @@ public class SimpleDelivery implements Delivery
       observer.cancel(this);
       cancelled = true;      
    }
-
+   
    // Public --------------------------------------------------------
 
    public String toString()

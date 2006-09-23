@@ -172,7 +172,7 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         return handleInternal(sender, ref, tx, true);
+         return handleInternal(sender, ref, tx, true, false);
       }
    }  
       
@@ -182,26 +182,10 @@ public abstract class ChannelSupport implements Channel
    {
       if (trace) { log.trace("acknowledging " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
 
-      if (tx == null)
-      {
-         // acknowledge non transactionally
-
-         // TODO We should consider also executing acks on the event queue
-         acknowledgeInternal(d, true);
-      }
-      else
-      {
-         this.getCallback(tx).addDelivery(d);
-
-         if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
-
-         if (recoverable && d.getReference().isReliable())
-         {
-            pm.removeReference(channelID, d.getReference(), tx);
-         }
-      }
+      this.acknowledgeInternal(d, tx, true, false);
    }
-
+   
+  
    public void cancel(Delivery d) throws Throwable
    {
       // TODO We should also consider executing cancels on the event queue
@@ -325,6 +309,9 @@ public abstract class ChannelSupport implements Channel
          {
             future = new Future();
          }
+         //TODO we should keep track of how many deliveries are currently in the queue
+         //so we don't execute another delivery when one is in the queue, since
+         //this is pointless
                   
          this.executor.execute(new DeliveryRunnable(future));
          
@@ -583,7 +570,7 @@ public abstract class ChannelSupport implements Channel
 
                   Delivery delivery = new SimpleDelivery(this, ref, true);
 
-                  acknowledgeInternal(delivery, true);
+                  acknowledgeInternal(delivery, null, true, false);
                }
                else
                {
@@ -694,7 +681,7 @@ public abstract class ChannelSupport implements Channel
    }
 
    protected Delivery handleInternal(DeliveryObserver sender, MessageReference ref,
-                                     Transaction tx, boolean persist)
+                                     Transaction tx, boolean persist, boolean synchronous)
    {
       if (ref == null)
       {
@@ -771,7 +758,8 @@ public abstract class ChannelSupport implements Channel
             else
             {
                // add to post commit callback
-               this.getCallback(tx).addRef(ref);
+               getCallback(tx, synchronous).addRef(ref);
+               
                if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
             }
 
@@ -798,19 +786,33 @@ public abstract class ChannelSupport implements Channel
       return new SimpleDelivery(this, ref, true);
    }
 
-   protected void acknowledgeInternal(Delivery d, boolean persist) throws Exception
-   {      
-      synchronized (deliveryLock)
+   protected void acknowledgeInternal(Delivery d, Transaction tx, boolean persist, boolean synchronous) throws Exception
+   {   
+      if (tx == null)
       {
-         acknowledgeInMemory(d);
+         synchronized (deliveryLock)
+         {
+            acknowledgeInMemory(d);
+         }
+            
+         if (persist && recoverable && d.getReference().isReliable())
+         {
+            pm.removeReference(channelID, d.getReference(), null);
+         }
+              
+         d.getReference().releaseMemoryReference();             
       }
-         
-      if (persist && recoverable && d.getReference().isReliable())
+      else
       {
-         pm.removeReference(channelID, d.getReference(), null);
+         this.getCallback(tx, synchronous).addDelivery(d);
+   
+         if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
+   
+         if (recoverable && d.getReference().isReliable())
+         {
+            pm.removeReference(channelID, d.getReference(), tx);
+         }
       }
-           
-      d.getReference().releaseMemoryReference();        
    }
 
    protected boolean acknowledgeInMemory(Delivery d)
@@ -830,15 +832,23 @@ public abstract class ChannelSupport implements Channel
       return removed;
    }     
 
-   protected InMemoryCallback getCallback(Transaction tx)
+   protected InMemoryCallback getCallback(Transaction tx, boolean synchronous)
    {
-      InMemoryCallback callback = (InMemoryCallback) tx.getCallback(this);
+      InMemoryCallback callback = (InMemoryCallback) tx.getCallback(this);            
 
       if (callback == null)
       {
-         callback = new InMemoryCallback();
+         callback = new InMemoryCallback(synchronous);
 
          tx.addCallback(callback, this);
+      }
+      else
+      {
+         //Sanity
+         if (callback.isSynchronous() != synchronous)
+         {
+            throw new IllegalStateException("Callback synchronousness status doesn't match");
+         }
       }
 
       return callback;
@@ -859,12 +869,25 @@ public abstract class ChannelSupport implements Channel
       private List refsToAdd;
 
       private List deliveriesToRemove;
+      
+      private boolean synchronous;
+      
+      private boolean committing;
 
-      private InMemoryCallback()
+      private Future result;
+
+      private InMemoryCallback(boolean synchronous)
       {
          refsToAdd = new ArrayList();
 
          deliveriesToRemove = new ArrayList();
+         
+         this.synchronous = synchronous;
+      }
+      
+      private boolean isSynchronous()
+      {
+         return synchronous;
       }
 
       private void addRef(MessageReference ref)
@@ -896,11 +919,7 @@ public abstract class ChannelSupport implements Channel
       {
          // NOOP
       }
-
-      private boolean committing;
-
-      private Future result;
-
+      
       public void run()
       {
          try
@@ -913,13 +932,7 @@ public abstract class ChannelSupport implements Channel
             {
                doAfterRollback();
             }
-
-            // prompt delivery
-            if (receiversReady)
-            {
-               deliverInternal(true);
-            }
-
+            
             result.setResult(null);
          }
          catch (Throwable t)
@@ -928,24 +941,46 @@ public abstract class ChannelSupport implements Channel
          }
       }
 
-      public void afterCommit(boolean onePhase) throws TransactionException
+      public void afterCommit(boolean onePhase) throws Exception
       {
-         // We don't execute the commit directly, we add it to the event queue
-         // of the channel
-         // so it is executed in turn
-         committing = true;
-
-         executeAndWaitForResult();
+         if (synchronous)
+         {
+            try
+            {
+               doAfterCommit();
+            }
+            catch (Throwable t)
+            {
+               //TODO Sort out exception handling!!
+               throw new TransactionException("Failed to commit", t);
+            }
+         }
+         else
+         {            
+            // We don't execute the commit directly, we add it to the event queue
+            // of the channel
+            // so it is executed in turn
+            committing = true;
+   
+            executeAndWaitForResult();
+         }
       }
 
-      public void afterRollback(boolean onePhase) throws TransactionException
+      public void afterRollback(boolean onePhase) throws Exception
       {
-         // We don't execute the commit directly, we add it to the event queue
-         // of the channel
-         // so it is executed in turn
-         committing = false;
-
-         executeAndWaitForResult();
+         if (synchronous)            
+         {
+            doAfterRollback();
+         }
+         else
+         {                     
+            // We don't execute the commit directly, we add it to the event queue
+            // of the channel
+            // so it is executed in turn
+            committing = false;
+   
+            executeAndWaitForResult();
+         }
       }
 
       public String toString()
@@ -989,7 +1024,7 @@ public abstract class ChannelSupport implements Channel
          }
       }
 
-      private void doAfterCommit() throws TransactionException
+      private void doAfterCommit() throws Throwable
       {
          // We add the references to the state
 
@@ -1034,6 +1069,12 @@ public abstract class ChannelSupport implements Channel
             {
                throw new TransactionException("Failed to ack message", t);
             }
+         }
+         
+         //prompt delivery
+         if (receiversReady)
+         {
+            deliverInternal(true);
          }
       }
 
@@ -1086,21 +1127,27 @@ public abstract class ChannelSupport implements Channel
       
       public void run()
       {
-         try
+         try         
          {
-            receiversReady = true;
-            
-            deliverInternal(false);                  
-            
-            if (result != null)
-            {
-               result.setResult(null);
+            if (router.numberOfReceivers() > 0)
+            {               
+               receiversReady = true;
+               
+               deliverInternal(false);                  
+               
+               if (result != null)
+               {
+                  result.setResult(null);
+               }
             }
          }
          catch (Throwable t)
          {
             log.error("Failed to deliver", t);
-            result.setException(t);
+            if (result != null)
+            {
+               result.setException(t);
+            }
          }
       }
    }   
@@ -1125,7 +1172,7 @@ public abstract class ChannelSupport implements Channel
 
       public void run()
       {
-         Delivery d = handleInternal(sender, ref, null, persist);
+         Delivery d = handleInternal(sender, ref, null, persist, false);
          result.setResult(d);
       }
    }   

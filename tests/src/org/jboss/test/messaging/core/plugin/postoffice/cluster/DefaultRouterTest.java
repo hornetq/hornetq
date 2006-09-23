@@ -123,27 +123,27 @@ public class DefaultRouterTest extends ClusteringTestBase
          
          office6 = createClusteredPostOffice("node6", "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office2, "node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office2, "node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding1 = office2.bindClusteredQueue("topic", queue1);
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office3, "node3", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office3, "node3", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding2 = office3.bindClusteredQueue("topic", queue2);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue2.add(receiver2);
          
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office4, "node4", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office4, "node4", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding3 = office4.bindClusteredQueue("topic", queue3);
          SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue3.add(receiver3);
          
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office5, "node5", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office5, "node5", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding4 = office5.bindClusteredQueue("topic", queue4);
          SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue4.add(receiver4);
          
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office6, "node6", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office6, "node6", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding5 = office6.bindClusteredQueue("topic", queue5);
          SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue5.add(receiver5);
@@ -262,27 +262,27 @@ public class DefaultRouterTest extends ClusteringTestBase
          
          office6 = createClusteredPostOffice("node6", "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office2, "node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office2, "node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding1 = office2.bindClusteredQueue("topic", queue1);
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office3, "node3", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office3, "node3", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding2 = office3.bindClusteredQueue("topic", queue2);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue2.add(receiver2);
          
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office4, "node4", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office4, "node4", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding3 = office4.bindClusteredQueue("topic", queue3);
          SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue3.add(receiver3);
          
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office5, "node5", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office5, "node5", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding4 = office5.bindClusteredQueue("topic", queue4);
          SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue4.add(receiver4);
          
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office6, "node6", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office6, "node6", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding5 = office6.bindClusteredQueue("topic", queue5);
          SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue5.add(receiver5);

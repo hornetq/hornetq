@@ -55,11 +55,13 @@ interface PostOfficeInternal extends ClusteredPostOffice
    
    void routeFromCluster(Message message, String routingKey, Map queueNameNodeIdMap) throws Exception;
    
-   void addToQueue(String queueName, List messages) throws Exception;
+   //void addToQueue(String queueName, List messages) throws Exception;
    
    void asyncSendRequest(ClusterRequest request) throws Exception;
    
    void asyncSendRequest(ClusterRequest request, Address address) throws Exception;
+   
+   Object syncSendRequest(ClusterRequest request, Address address) throws Exception;
    
    void holdTransaction(TransactionId id, ClusterTransaction tx) throws Throwable;
    
@@ -69,12 +71,11 @@ interface PostOfficeInternal extends ClusteredPostOffice
    
    void updateQueueStats(String nodeId, List stats) throws Exception;
    
-   void sendStats() throws Exception;
+   void sendQueueStats() throws Exception;
    
    boolean referenceExistsInStorage(long channelID, long messageID) throws Exception;
    
-   List getDeliveries(String queueName, int numMessages) throws Exception;
+   List getDeliveries(String queueName, int numMessages) throws Exception; 
    
-   void pullMessages(ClusteredQueue localQueue, ClusteredQueue remoteQueue) throws Throwable;
-
+   Address getAddressForNodeId(String nodeId) throws Exception;
 }

@@ -71,16 +71,12 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
    }
 
    Object execute(PostOfficeInternal office) throws Throwable
-   {
-      log.info("********* executign pull messages requiest");
-      
+   { 
       TransactionId id = new TransactionId(nodeId, txId);
       
       if (hold)
       {         
          List dels = office.getDeliveries(queueName, numMessages);
-         
-         log.info("Got a list of " + dels.size() + " deliveries");
          
          PullMessagesResponse response = new PullMessagesResponse(dels.size());
          
@@ -114,9 +110,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
             //Add this to the holding area
             office.holdTransaction(id, this);
          }
-         
-         log.info("returning response:" + response);
-         
+          
          //Convert to bytes since the response isn't serializable (nor do we want it to be)
          byte[] bytes = StreamUtils.toBytes(response);
          

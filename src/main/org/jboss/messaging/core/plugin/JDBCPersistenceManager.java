@@ -293,8 +293,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ps = conn.prepareStatement(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
                  
-         log.info(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
-         
          ps.setLong(1, orderStart);
          
          ps.setLong(2, orderEnd);
@@ -1181,8 +1179,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          Long minOrdering = new Long(rs.getLong(1));
          
-         log.info("min ordering is: " + minOrdering);
-         
          if (rs.wasNull())
          {
             minOrdering = null;
@@ -1195,8 +1191,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             maxOrdering = null;
          }
          
-         log.info("Min ordering: " + minOrdering + " max Ordering: " + maxOrdering);
-
          ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
          
          ps.setLong(1, channelID);

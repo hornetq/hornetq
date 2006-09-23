@@ -24,6 +24,8 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.logging.Logger;
+
 /**
  * A DefaultMessagePullPolicy
  * 
@@ -37,7 +39,9 @@ import java.util.List;
  */
 public class DefaultMessagePullPolicy implements MessagePullPolicy
 {
-
+   private static final Logger log = Logger.getLogger(DefaultMessagePullPolicy.class);
+   
+   
    public ClusteredQueue chooseQueue(List queues)
    {
       Iterator iter = queues.iterator();

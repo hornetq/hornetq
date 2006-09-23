@@ -17,6 +17,7 @@ import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
 
@@ -60,6 +61,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    protected MessageStore ms;
    
+   protected TransactionRepository tr;
+   
    protected IdManager idm;
    
    protected String nodeId;
@@ -96,6 +99,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          pool = serverPeer.getQueuedExecutorPool();
          
          ms = serverPeer.getMessageStore();
+         
+         tr = serverPeer.getTxRepository();
          
          idm = serverPeer.getChannelIdManager();
          

@@ -247,10 +247,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
             firstPagingOrder = nextPagingOrder = 0;
          }
          
-         log.info("Loading channel");
-         
-         log.info("Got " + ili.getRefInfos().size() + " intial refs");
-         
          Map refMap = processReferences(ili.getRefInfos()); 
         
          Iterator iter = ili.getRefInfos().iterator();
@@ -436,7 +432,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
          if (messageRefs.size() <= fullSize - numberLoadable)
          {
             //This will flush the down cache too
-            log.info("Loading " + numberLoadable + " refs");
             loadPagedReferences(numberLoadable);
             
             return true;

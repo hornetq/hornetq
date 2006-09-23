@@ -63,6 +63,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
+import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -102,6 +103,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private DestinationManager dm;
    private IdManager idm;
    private QueuedExecutorPool pool;
+   private TransactionRepository tr;
    private PostOffice topicPostOffice;
    private PostOffice queuePostOffice;
    private String nodeId;
@@ -126,6 +128,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       idm = sp.getChannelIdManager();
       pool = sp.getQueuedExecutorPool();
       nodeId = sp.getServerPeerID();
+      tr = sp.getTxRepository();
 
       consumers = new HashMap();
 		browsers = new HashMap();  
@@ -244,7 +247,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   else
                   {
                      q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,                              
-                                                 executor, selector,
+                                                 executor, selector, tr,
                                                  mDest.getFullSize(),
                                                  mDest.getPageSize(),
                                                  mDest.getDownCacheSize());
@@ -302,7 +305,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                      else
                      {
                         q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,                              
-                                                    executor, selector,
+                                                    executor, selector, tr,
                                                     mDest.getFullSize(),
                                                     mDest.getPageSize(),
                                                     mDest.getDownCacheSize());

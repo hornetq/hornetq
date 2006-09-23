@@ -52,5 +52,5 @@ public interface Delivery
    void acknowledge(Transaction tx) throws Throwable;
 
    void cancel() throws Throwable;
-
+   
 }
