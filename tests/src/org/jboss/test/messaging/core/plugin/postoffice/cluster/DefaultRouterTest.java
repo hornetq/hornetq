@@ -148,49 +148,49 @@ public class DefaultRouterTest extends ClusteringTestBase
          SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue5.add(receiver5);
                
-         List msgs = sendMessages("topic", persistent, office1, 3, null);         
+         List msgs = sendMessages("topic", persistent, office1, 1, null);         
          checkContainsAndAcknowledge(msgs, receiver1, queue1);         
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages("topic", persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 1, null);         
          checkEmpty(receiver1);
          checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages("topic", persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 1, null);         
          checkEmpty(receiver1);
          checkEmpty(receiver2);
          checkContainsAndAcknowledge(msgs, receiver3, queue1);                           
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages("topic", persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 1, null);         
          checkEmpty(receiver1);
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkContainsAndAcknowledge(msgs, receiver4, queue1);                                    
          checkEmpty(receiver5);
          
-         msgs = sendMessages("topic", persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 1, null);         
          checkEmpty(receiver1);
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkContainsAndAcknowledge(msgs, receiver5, queue1); 
          
-         msgs = sendMessages("topic", persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 1, null);         
          checkContainsAndAcknowledge(msgs, receiver1, queue1);         
          checkEmpty(receiver2);
          checkEmpty(receiver3);
          checkEmpty(receiver4);
          checkEmpty(receiver5);
          
-         msgs = sendMessages("topic", persistent, office1, 3, null);         
+         msgs = sendMessages("topic", persistent, office1, 1, null);         
          checkEmpty(receiver1);
          checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
          checkEmpty(receiver3);
