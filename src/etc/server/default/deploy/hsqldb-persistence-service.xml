@@ -21,7 +21,7 @@
       <attribute name="UsingBatchUpdates">true</attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.SimplePostOfficeService"
+   <mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
       name="jboss.messaging:service=QueuePostOffice"
       xmbean-dd="xmdesc/SimplePostOffice-xmbean.xml"> 
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends> 
@@ -32,7 +32,7 @@
       <attribute name="CreateTablesOnStartup">true</attribute>
    </mbean>
    
-   <mbean code="org.jboss.messaging.core.plugin.SimplePostOfficeService"
+   <mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
       name="jboss.messaging:service=TopicPostOffice"
       xmbean-dd="xmdesc/SimplePostOffice-xmbean.xml"> 
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
@@ -45,7 +45,7 @@
    
    <!--
    
-   Uncomment this and comment out the one above to enable clustered topics
+   Uncomment this to enable clustered destinations
    
    <mbean code="org.jboss.messaging.core.plugin.ClusteredTopicPostOfficeService"
       name="jboss.messaging:service=TopicPostOffice"
@@ -55,64 +55,48 @@
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <attribute name="PostOfficeName">Clustered Topic</attribute>
       <attribute name="DataSource">java:/DefaultDS</attribute>
-      <attribute name="CreateTablesOnStartup">true</attribute>      
+      <attribute name="CreateTablesOnStartup">true</attribute>            
+      <attribute name="SqlProperties"><![CDATA[
       <attribute name="GroupName">cluster1</attribute>
       <attribute name="StateTimeout">5000</attribute>
       <attribute name="CastTimeout">5000</attribute>
       <attribute name="PullSize">1</attribute>
       <attribute name="StatsSendPeriod">1000</attribute>
       <attribute name="SyncChannelConfig">
-         <UDP mcast_addr="228.8.8.8" mcast_port="45568"
-              ip_ttl="8" ip_mcast="true"
-              mcast_send_buf_size="800000" mcast_recv_buf_size="150000"
-              ucast_send_buf_size="800000" ucast_recv_buf_size="150000"
-              loopback="false"/>
-         <PING timeout="2000" num_initial_members="3"
-              up_thread="true" down_thread="true"/>
-         <MERGE2 min_interval="10000" max_interval="20000"/>
-         <FD shun="true" up_thread="true" down_thread="true"
-              timeout="2500" max_tries="5"/>
-         <VERIFY_SUSPECT timeout="3000" num_msgs="3"
-              up_thread="true" down_thread="true"/>
-         <pbcast.NAKACK gc_lag="50" retransmit_timeout="300,600,1200,2400,4800"
-              max_xmit_size="8192"
-              up_thread="true" down_thread="true"/>
-         <pbcast.STABLE desired_avg_gossip="20000"
-              up_thread="true" down_thread="true"/>
-         <FRAG frag_size="8192"
-              down_thread="true" up_thread="true"/>
-         <pbcast.GMS join_timeout="5000" join_retry_timeout="2000"
-              shun="true" print_local_addr="true"/>
-         <pbcast.STATE_TRANSFER up_thread="true" down_thread="true"/>
+         <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+        mcast_port="45566" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+        mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="false" ucast_send_buf_size="32000" ip_ttl="32"/>
+         <AUTOCONF down_thread="false" up_thread="false"/>
+	      <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
+	      <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
+	      <FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+	      <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
+	      <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+	                   retransmit_timeout="100,200,600,1200,2400,4800"/>
+	      <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
+	      <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
+	      <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
+	      <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
+	      <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
       </attribute>      
       
-      TODO
-      Do we need failure detection and group management in this stack ?? 
-      
       <attribute name="AsyncChannelConfig">
-         <UDP mcast_addr="${jboss.partition.udpGroup:228.1.2.3}" mcast_port="45566"
-               ip_ttl="8" ip_mcast="true"
-               mcast_send_buf_size="800000" mcast_recv_buf_size="150000"
-               ucast_send_buf_size="800000" ucast_recv_buf_size="150000"
-               loopback="false"/>
-        <PING timeout="2000" num_initial_members="3"
-           up_thread="true" down_thread="true"/>
-        <MERGE2 min_interval="10000" max_interval="20000"/>
-        <FD shun="true" up_thread="true" down_thread="true"
-           timeout="2500" max_tries="5"/>
-        <VERIFY_SUSPECT timeout="3000" num_msgs="3"
-           up_thread="true" down_thread="true"/>
-        <pbcast.NAKACK gc_lag="50" retransmit_timeout="300,600,1200,2400,4800"
-           max_xmit_size="8192"
-           up_thread="true" down_thread="true"/>
-        <UNICAST timeout="300,600,1200,2400,4800" window_size="100" min_threshold="10"
-           down_thread="true"/>
-        <pbcast.STABLE desired_avg_gossip="20000"
-           up_thread="true" down_thread="true"/>
-        <FRAG frag_size="8192"
-           down_thread="true" up_thread="true"/>
-        <pbcast.GMS join_timeout="5000" join_retry_timeout="2000"
-           shun="true" print_local_addr="true"/>
+         <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+        mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+        mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="false" ucast_send_buf_size="32000" ip_ttl="32"/>
+	      <AUTOCONF down_thread="false" up_thread="false"/>
+	      <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
+	      <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
+	      <FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+	      <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
+	      <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+	                   retransmit_timeout="100,200,600,1200,2400,4800"/>
+	      <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
+	      <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
+	      <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
+	      <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
+	      <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
+	      <pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/>
       </attribute>      
    </mbean>
    

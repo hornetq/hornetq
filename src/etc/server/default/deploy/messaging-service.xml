@@ -21,13 +21,13 @@
          <arg type="java.lang.String" value="/topic" />
       </constructor>
 
-      <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
-      <depends optional-attribute-name="QueuePostOffice">jboss.messaging:service=QueuePostOffice</depends>
-      <depends optional-attribute-name="TopicPostOffice">jboss.messaging:service=TopicPostOffice</depends>     
+      <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>    
       <depends optional-attribute-name="JMSUserManager">jboss.messaging:service=JMSUserManager</depends>
 	   <depends optional-attribute-name="ShutdownLogger">jboss.messaging:service=ShutdownLogger</depends>
 
-      <!-- Set to -1 to completely disable client leasing -->
+	   <attribute name="QueuePostOffice">jboss.messaging:service=QueuePostOffice</attribute>
+	   <attribute name="TopicPostOffice">jboss.messaging:service=TopicPostOffice</attribute>
+
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">
         <security>

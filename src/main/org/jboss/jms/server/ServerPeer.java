@@ -238,12 +238,9 @@ public class ServerPeer extends ServiceMBeanSupport
          txRepository.start();
          
          //Did the server crash last time?
-         crashed = shutdownLogger.startup(serverPeerID);
-                            
-         if (crashed)
-         {
-            topicPostOffice.recover();
-         }
+         
+         //TODO do we need this?
+         crashed = shutdownLogger.startup(serverPeerID);                            
 
          initializeRemoting(mbeanServer);
    

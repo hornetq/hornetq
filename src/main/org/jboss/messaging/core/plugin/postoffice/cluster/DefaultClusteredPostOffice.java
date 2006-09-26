@@ -130,8 +130,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    private StatsSender statsSender;
    
-   private long statsSendPeriod;
-   
    private boolean started;
       
    public DefaultClusteredPostOffice()
@@ -230,9 +228,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       this.routerFactory = rf;
       
       this.pullSize = pullSize;
-      
-      this.statsSendPeriod = statsSendPeriod;
-      
+       
       routerMap = new HashMap();
       
       statsSender = new StatsSender(this, statsSendPeriod);
@@ -442,7 +438,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             //to send the message to the other office instances on the cluster if there are
             //queues on those nodes that need to receive the message
             
-            //FIXME - there is a bug here, numberRemote does not take into account that more than one
+            //TODO - there is an innefficiency here, numberRemote does not take into account that more than one
             //of the number remote may be on the same node, so we could end up multicasting
             //when unicast would do
             if (numberRemote > 0)
@@ -454,7 +450,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   //   log.info("unicast no tx");
                      //Unicast - only one node is interested in the message
                      
-                     //FIXME - temporarily commented out until can get unicast to work
+                     //TODO - temporarily commented out until can get unicast to work                     
                      //asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
                      asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));
                   }
@@ -671,14 +667,48 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    /*
     * Unicast a message to one members of the group
     */
-   public void asyncSendRequest(ClusterRequest request, Address address) throws Exception
+   public void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception
    {               
+      Address address = this.getAddressForNodeId(nodeId);
+      
+      if (address == null)
+      {
+         throw new IllegalArgumentException("Cannot find address for node " + nodeId);
+      }
+      
       byte[] bytes = writeRequest(request);
             
       Message m = new Message(address, null, bytes);
       
-      //TODO - handle serialization more efficiently
       asyncChannel.send(m);
+   }
+   
+   /*
+    * Unicast a sync request
+    */
+   public Object syncSendRequest(ClusterRequest request, String nodeId, boolean ignoreNoAddress) throws Exception
+   {              
+      Address address = this.getAddressForNodeId(nodeId);
+      
+      if (address == null)
+      {
+         if (ignoreNoAddress)
+         {
+            return null;
+         }
+         else
+         {
+            throw new IllegalArgumentException("Cannot find address for node " + nodeId);
+         }
+      }
+      
+      byte[] bytes = writeRequest(request);
+            
+      Message message = new Message(address, null, bytes);      
+      
+      Object result = controlMessageDispatcher.sendMessage(message, GroupRequest.GET_FIRST, castTimeout);
+       
+      return result;
    }
    
    /*
@@ -919,19 +949,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
    }
    
-   /*
-    * Unicast a sync request
-    */
-   public Object syncSendRequest(ClusterRequest request, Address address) throws Exception
-   {              
-      byte[] bytes = writeRequest(request);
-            
-      Message message = new Message(address, null, bytes);      
-      
-      Object result = controlMessageDispatcher.sendMessage(message, GroupRequest.GET_FIRST, castTimeout);
-       
-      return result;
-   }
+  
                
    // Public ------------------------------------------------------------------------------------------
       
@@ -1142,8 +1160,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
    }
       
-   //TODO - Sort out serialization properly
-   
    private byte[] getStateAsBytes() throws Exception
    {
       List bindings = new ArrayList();

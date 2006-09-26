@@ -170,9 +170,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
          //We need to ack them in memory only
          //since they would have been acked on the pulling node
          LocalClusteredQueue queue = (LocalClusteredQueue)del.getObserver();
-         
-         log.info("i am committing request");
-         
+              
          queue.acknowledgeFromCluster(del);
       }
    }

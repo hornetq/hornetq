@@ -237,23 +237,19 @@ class RemoteQueueStub implements ClusteredQueue
    }
 
    public void activate()
-   {
-      throw new UnsupportedOperationException();
+   {      
    }
 
    public void deactivate()
-   {
-      throw new UnsupportedOperationException();
+   {      
    }
 
    public void load() throws Exception
-   {
-      throw new UnsupportedOperationException();
+   {      
    }
 
    public void unload() throws Exception
-   {
-      throw new UnsupportedOperationException();
+   {      
    }
    
    public boolean isActive()

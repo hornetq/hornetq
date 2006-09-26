@@ -5,7 +5,7 @@
 
 <mbean>
    <description>An simple non-clustered post-office</description>
-   <class>org.jboss.messaging.core.plugin.SimplePostOfficeService</class>
+   <class>org.jboss.messaging.core.plugin.DefaultPostOfficeService</class>
 
    <!-- Managed constructors -->
 
@@ -51,13 +51,7 @@
       <description>The ObjectName of the server peer this destination was deployed on</description>
       <name>ServerPeer</name>
       <type>javax.management.ObjectName</type>
-   </attribute>   
-   
-   <attribute access="read-write" getMethod="getServerPeer" setMethod="setServerPeer">
-      <description>The ObjectName of the server peer this destination was deployed on</description>
-      <name>ServerPeer</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>  
+   </attribute>    
 
    <!-- Managed operations -->
 

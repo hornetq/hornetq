@@ -155,8 +155,6 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    {
       List dels = new ArrayList();
       
-      log.info("getting " + number + " deliveries, there are " + messageRefs.size() + " available");
-      
       synchronized (refLock)
       {
          synchronized (deliveryLock)
@@ -183,7 +181,6 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
             }
             else
             {
-               log.info("Returning an empty list since receivers are ready");
                return Collections.EMPTY_LIST;
             }
          }
@@ -245,7 +242,6 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
             //refs but there are none available in the channel (either the channel is empty
             //or there are only refs that don't match any selectors)
             //then we should perhaps pull some messages from a remote queue
-            log.info("pulling messages");
             pullMessages();
          }
       }
@@ -296,15 +292,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
          theQueue = pullQueue;
          thePullSize = pullSize;
       }
-       
-      Address fromAddress = office.getAddressForNodeId(theQueue.getNodeId());
-      
-      if (fromAddress == null)
-      {
-         //This is ok - the node might have left the group
-         return;
-      }
-                  
+                
       Transaction tx = tr.createTransaction();
          
       ClusterRequest req = new PullMessagesRequest(this.nodeId, tx.getId(), theQueue.getChannelID(),
@@ -313,7 +301,13 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       log.info(System.identityHashCode(this) + " Executing pull messages request for queue " + name +
                " pulling from node " + theQueue.getNodeId() + " to node " + this.nodeId);
       
-      byte[] bytes = (byte[])office.syncSendRequest(req, fromAddress);
+      byte[] bytes = (byte[])office.syncSendRequest(req, theQueue.getNodeId(), true);
+      
+      if (bytes == null)
+      {
+         //Ok - node might have left the group
+         return;
+      }
       
       log.info( System.identityHashCode(this) +" Executed pull messages request");
       
@@ -371,7 +365,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       {         
          req = new PullMessagesRequest(this.nodeId, tx.getId());
          
-         office.asyncSendRequest(req, fromAddress);
+         office.asyncSendRequest(req, theQueue.getNodeId());
       }
       
    }

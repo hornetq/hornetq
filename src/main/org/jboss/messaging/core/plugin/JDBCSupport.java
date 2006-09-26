@@ -24,8 +24,8 @@ package org.jboss.messaging.core.plugin;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -66,9 +66,9 @@ public class JDBCSupport implements MessagingComponent
       
    public JDBCSupport()
    {
-      defaultDMLStatements = new HashMap();
+      defaultDMLStatements = new LinkedHashMap();
       
-      defaultDDLStatements = new HashMap();
+      defaultDDLStatements = new LinkedHashMap();
       
       sqlProperties = new Properties();
    }
@@ -123,7 +123,7 @@ public class JDBCSupport implements MessagingComponent
             
             if (sqlProperties.get(statementName) == null)
             {
-               throw new IllegalStateException("SQL statement " + statementName + " is not specified in the persistence manager SQL properties");
+               throw new IllegalStateException("SQL statement " + statementName + " is not specified in the SQL properties");
             }
          }
          
@@ -135,7 +135,7 @@ public class JDBCSupport implements MessagingComponent
             
             if (sqlProperties.get(statementName) == null)
             {
-               throw new IllegalStateException("SQL statement " + statementName + " is not specified in the persistence manager SQL properties");
+               throw new IllegalStateException("SQL statement " + statementName + " is not specified in the SQL properties");
             }
          }
       }
@@ -204,16 +204,19 @@ public class JDBCSupport implements MessagingComponent
              
             String statement = getSQLStatement(statementName);
             
-            try
-            {
-               if (log.isTraceEnabled()) { log.trace("Executing: " + statement); }
-                   
-               conn.createStatement().executeUpdate(statement);
+            if (!"IGNORE".equals(statement))
+            {               
+               try
+               {
+                  if (log.isTraceEnabled()) { log.trace("Executing: " + statement); }
+                      
+                  conn.createStatement().executeUpdate(statement);
+               }
+               catch (SQLException e) 
+               {
+                  log.debug("Failed to execute: " + statement, e);
+               }  
             }
-            catch (SQLException e) 
-            {
-               log.debug("Failed to execute: " + statement, e);
-            }  
          }      
       }
       finally

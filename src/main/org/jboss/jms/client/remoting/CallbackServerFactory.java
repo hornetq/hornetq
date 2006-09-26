@@ -139,7 +139,10 @@ public class CallbackServerFactory
 
       if (params != null)
       {
-         serializationType = (String)params.get("serializationtype");
+         //serializationType = (String)params.get("serializationtype");
+         
+         //Always use jms
+         serializationType = "jms";
       }
             
       while (!completed && count < MAX_RETRIES)

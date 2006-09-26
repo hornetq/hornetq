@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -1793,149 +1794,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       Collections.sort(references, MessageOrderComparator.instance);
    }
    
-   /*
-    *
-    * We want to remove any non reliable refs from the database and any corresponding messages if their channel count
-    * has gone to zero
-    * 
-    * TODO
-    * Really - this method only needs to be executed on start up if the server has crashed
-    * We should save a flag in the db at server shutdown and check for this at startup to see if there
-    * was a clean shutdown
-    * 
-    */
-//   protected void removeUnreliableMessageData() throws Exception
-//   {
-//      log.trace("Removing all non-persistent data");
-//      
-//      Connection conn = null;
-//      PreparedStatement psRes = null;
-//      PreparedStatement psUpdate = null;
-//      PreparedStatement psDeleteMsgs = null;
-//      PreparedStatement psDeleteRefs = null;
-//      TransactionWrapper wrap = new TransactionWrapper();
-//          
-//      ResultSet rs = null;
-//      
-//      try
-//      {
-//         conn = ds.getConnection();
-//         
-//         psRes = conn.prepareStatement(getSQLStatement("SELECT_ALL_CHANNELS"));
-//         
-//         psUpdate = conn.prepareStatement(getSQLStatement("UPDATE_UNRELIABLE_CHANNELCOUNT"));
-//                          
-//         rs = psRes.executeQuery();
-//         
-//         while (rs.next())
-//         {
-//            long channelID = rs.getLong(1);
-//            
-//            psUpdate.setLong(1, channelID);
-//            
-//            int rows = psUpdate.executeUpdate();
-//            
-//            if (trace)
-//            {
-//               log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_UNRELIABLE_CHANNELCOUNT"))
-//                     + " updated " + rows + " rows");
-//            }            
-//         }
-//         
-//         psDeleteRefs = conn.prepareStatement(getSQLStatement("DELETE_UNRELIABLE_REFS"));
-//         
-//         int rows = psDeleteRefs.executeUpdate();
-//         
-//         boolean doReOrder = rows > 0;
-//         
-//         if (trace)
-//         {
-//            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_UNRELIABLE_REFS"))
-//                  + " deleted " + rows + " rows");
-//         }
-//                  
-//         psDeleteMsgs = conn.prepareStatement(getSQLStatement("DELETE_UNREFFED_MESSAGES"));
-//         
-//         rows = psDeleteMsgs.executeUpdate();
-//         
-//         if (trace)
-//         {
-//            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_UNREFFED_MESSAGES"))
-//                  + " deleted " + rows + " rows");
-//         }     
-//      }
-//      catch (Exception e)
-//      {
-//         wrap.exceptionOccurred();
-//         throw e;
-//      }
-//      finally
-//      {
-//         if (rs != null)
-//         {
-//            try
-//            {
-//               rs.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         if (psRes != null)
-//         {
-//            try
-//            {
-//               psRes.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         if (psUpdate != null)
-//         {
-//            try
-//            {
-//               psUpdate.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         if (psDeleteMsgs != null)
-//         {
-//            try
-//            {
-//               psDeleteMsgs.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         if (psDeleteRefs != null)
-//         {
-//            try
-//            {
-//               psDeleteRefs.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         if (conn != null)
-//         {
-//            try
-//            {
-//               conn.close();
-//            }
-//            catch (Throwable e)
-//            {
-//            }
-//         }
-//         wrap.end();
-//      }
-//   }
-   
-   
    protected void handleBeforeCommit1PC(List refsToAdd, List refsToRemove, Transaction tx)
       throws Exception
    {
@@ -3147,6 +3005,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }  
    
+   
+   
    protected void addReference(long channelID, MessageReference ref, PreparedStatement ps, boolean paged) throws Exception
    {
       if (trace)
@@ -3158,16 +3018,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setLong(2, ref.getMessageID());
       ps.setNull(3, Types.BIGINT);
       ps.setString(4, "C");
+      ps.setLong(5, getOrdering());
       if (paged)
       {
-         ps.setLong(5, ref.getPagingOrder());
+         ps.setLong(6, ref.getPagingOrder());
       }
       else
       {
-         ps.setNull(5, Types.BIGINT);
+         ps.setNull(6, Types.BIGINT);
       }
-      ps.setInt(6, ref.getDeliveryCount());
-      ps.setString(7, ref.isReliable() ? "Y" : "N");
+      ps.setInt(7, ref.getDeliveryCount());
+      ps.setString(8, ref.isReliable() ? "Y" : "N");
    }
    
    protected void removeReference(long channelID, MessageReference ref, PreparedStatement ps) throws Exception
@@ -3194,9 +3055,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setLong(2, ref.getMessageID());
       ps.setLong(3, tx.getId());
       ps.setString(4, "+");
-      ps.setNull(5, Types.BIGINT);      
-      ps.setInt(6, ref.getDeliveryCount());
-      ps.setString(7, ref.isReliable() ? "Y" : "N");
+      ps.setLong(5, getOrdering());
+      ps.setNull(6, Types.BIGINT);      
+      ps.setInt(7, ref.getDeliveryCount());
+      ps.setString(8, ref.isReliable() ? "Y" : "N");
    }
    
    protected void prepareToRemoveReference(long channelID, MessageReference ref, Transaction tx, PreparedStatement ps)
@@ -3636,12 +3498,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    protected Map getDefaultDDLStatements()
    {
-      Map map = new HashMap();
+      Map map = new LinkedHashMap();
       //Message reference
       map.put("CREATE_MESSAGE_REFERENCE",
               "CREATE TABLE JMS_MESSAGE_REFERENCE (CHANNELID BIGINT, " +
               "MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, " +
-              "DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))");
+              "DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))");
       map.put("CREATE_IDX_MESSAGE_REF_TX", "CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID)");
       map.put("CREATE_IDX_MESSAGE_REF_ORD", "CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)");
       map.put("CREATE_IDX_MESSAGE_REF_PAGE_ORD", "CREATE INDEX JMS_MESSAGE_REF__PAGE_ORD ON JMS_MESSAGE_REFERENCE (PAGE_ORD)");
@@ -3663,18 +3525,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       //Counter
       map.put("CREATE_COUNTER",
               "CREATE TABLE JMS_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME))");
-      //Sequences
-      map.put("CREATE_ORDERING_SEQUENCE", "CREATE SEQUENCE REF_ORD");
       return map;
    }
       
    protected Map getDefaultDMLStatements()
    {                
-      Map map = new HashMap();
+      Map map = new LinkedHashMap();
       //Message reference
       map.put("INSERT_MESSAGE_REF",
               "INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, PAGE_ORD, DELIVERYCOUNT, RELIABLE) " +
-              "VALUES (?, ?, ?, ?, NEXT VALUE FOR REF_ORD, ?, ?, ?)");
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
       map.put("DELETE_MESSAGE_REF", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'");
       map.put("UPDATE_MESSAGE_REF",
               "UPDATE JMS_MESSAGE_REFERENCE SET TRANSACTIONID=?, STATE='-' " +
@@ -3690,9 +3550,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("LOAD_UNPAGED_REFS",
               "SELECT MESSAGEID, DELIVERYCOUNT, RELIABLE FROM JMS_MESSAGE_REFERENCE " +
               "WHERE PAGE_ORD IS NULL and CHANNELID = ? ORDER BY ORD");
-      map.put("UPDATE_RELIABLE_REFS_NOT_PAGED", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNELID=?");   
-      map.put("DELETE_UNRELIABLE_REFS", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE RELIABLE = 'N'");
-      map.put("SHIFT_PAGE_ORDER", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = PAGE_ORD + ? WHERE CHANNELID = ?");
+      map.put("UPDATE_RELIABLE_REFS_NOT_PAGED", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNELID=?");       
       map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ?");
       map.put("SELECT_EXISTS_REF", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ? AND MESSAGEID = ?");
       //Message
@@ -3709,10 +3567,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("UPDATE_MESSAGE_CHANNELCOUNT", "UPDATE JMS_MESSAGE SET CHANNELCOUNT=? WHERE MESSAGEID=?");
       map.put("DELETE_MESSAGE", "DELETE FROM JMS_MESSAGE WHERE MESSAGEID=?");
       map.put("MESSAGEID_COLUMN", "MESSAGEID");
-      map.put("UPDATE_UNRELIABLE_CHANNELCOUNT",
-              "UPDATE JMS_MESSAGE M SET M.CHANNELCOUNT = M.CHANNELCOUNT - 1 WHERE " +
-              "M.MESSAGEID IN (SELECT MR.MESSAGEID FROM JMS_MESSAGE_REFERENCE MR WHERE MR.RELIABLE = 'N' AND MR.CHANNELID = ?)");
-      map.put("DELETE_UNREFFED_MESSAGES", "DELETE FROM JMS_MESSAGE WHERE CHANNELCOUNT = 0");
       //Transaction
       map.put("INSERT_TRANSACTION",
               "INSERT INTO JMS_TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
@@ -3729,6 +3583,38 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    }
    
    // Private -------------------------------------------------------
+   
+   private short orderCount;
+   
+   private synchronized long getOrdering()
+   {
+      //We generate the ordering for the message reference by taking the lowest 48 bits of the current time and
+      //concetaning with a 15 bit rotating counter to form a string of 63 bits which we then place
+      //in the right most bits of a long, giving a positive signed 63 bit integer.
+      
+      //We only have to guarantee ordering per session, so having slight differences of time on different nodes is
+      //not a problem
+      
+      //This is good for about 8919 years - if you're still running JBoss Messaging then, I suggest you need an
+      //upgrade!
+      
+      long order = System.currentTimeMillis();
+      
+      order = order << 15;
+      
+      order = order | orderCount;
+      
+      if (orderCount == Short.MAX_VALUE)
+      {
+         orderCount = 0;
+      }
+      else
+      {
+         orderCount++;
+      }
+      
+      return order;
+   }
 
    // Inner classes -------------------------------------------------
         

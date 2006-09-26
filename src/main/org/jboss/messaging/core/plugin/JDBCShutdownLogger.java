@@ -24,7 +24,7 @@ package org.jboss.messaging.core.plugin;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -252,16 +252,16 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
    
    protected Map getDefaultDDLStatements()
    {
-      Map sql = new HashMap();
+      Map sql = new LinkedHashMap();
       
-      sql.put("CREATE_STARTUP", "CREATE TABLE JMS_STARTUP (NODE_ID CHAR(1) PRIMARY KEY)");
+      sql.put("CREATE_STARTUP", "CREATE TABLE JMS_STARTUP (NODE_ID VARCHAR(255) PRIMARY KEY)");
       
       return sql;
    }
 
    protected Map getDefaultDMLStatements()
    {
-      Map sql = new HashMap();
+      Map sql = new LinkedHashMap();
       
       sql.put("SELECT_STARTUP", "SELECT NODE_ID FROM JMS_STARTUP WHERE NODE_ID = ?");
       sql.put("DELETE_STARTUP", "DELETE FROM JMS_STARTUP WHERE NODE_ID = ?");

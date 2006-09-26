@@ -41,6 +41,18 @@
       <type>boolean</type>
    </attribute>
    
+   <attribute access="read-write" getMethod="getPostOfficeName" setMethod="setPostOfficeName">
+      <description>The name of the post office</description>
+      <name>PostOfficeName</name>
+      <type>java.lang.String</type>
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="getServerPeer" setMethod="setServerPeer">
+      <description>The ObjectName of the server peer this destination was deployed on</description>
+      <name>ServerPeer</name>
+      <type>javax.management.ObjectName</type>
+   </attribute> 
+   
    <attribute access="read-write" getMethod="getGroupName" setMethod="setGroupName">
       <description>The name of the JGroups group to use</description>
       <name>GroupName</name>
@@ -55,19 +67,19 @@
    
    <attribute access="read-write" getMethod="getCastTimeout" setMethod="setCastTimeout">
       <description>Timeout for getState()</description>
-      <name>CastTimeout/name>
+      <name>CastTimeout</name>
       <type>long</type>
    </attribute>   
    
    <attribute access="read-write" getMethod="getPullSize" setMethod="setPullSize">
       <description>The maximum number of message to pull in one go from a remote queue when the local queue consumers are starving</description>
-      <name>SyncPullSize</name>
+      <name>PullSize</name>
       <type>int</type>
    </attribute> 
    
    <attribute access="read-write" getMethod="getStatsSendPeriod" setMethod="setStatsSendPeriod">
       <description>The period in milliseconds between a post office casting it's statistics across the cluster</description>
-      <name>StatsSendPeriod/name>
+      <name>StatsSendPeriod</name>
       <type>long</type>
    </attribute>    
    

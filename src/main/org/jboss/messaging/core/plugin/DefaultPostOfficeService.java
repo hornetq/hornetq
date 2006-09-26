@@ -36,7 +36,7 @@ import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
- * A SimplePostOfficeService
+ * A DefaultPostOfficeService
  * 
  * MBean wrapper for a simple post office
  *
@@ -46,7 +46,7 @@ import org.jboss.messaging.core.tx.TransactionRepository;
  * $Id$
  *
  */
-public class SimplePostOfficeService extends JDBCServiceSupport
+public class DefaultPostOfficeService extends JDBCServiceSupport
 {
    private DefaultPostOffice postOffice;
    
@@ -58,7 +58,7 @@ public class SimplePostOfficeService extends JDBCServiceSupport
    
    // Constructor ----------------------------------------------------------
    
-   public SimplePostOfficeService()
+   public DefaultPostOfficeService()
    {      
    }
    

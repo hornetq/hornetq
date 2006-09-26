@@ -27,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -635,10 +634,10 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    protected Map getDefaultDMLStatements()
    {                
-      Map map = new HashMap();
+      Map map = new LinkedHashMap();
       map.put("INSERT_BINDING",
-               "INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, CHANNEL_ID) " +
-               "VALUES (?, ?, ?, ?, ?, ?)");
+              "INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, CHANNEL_ID) " +
+              "VALUES (?, ?, ?, ?, ?, ?)");
       map.put("DELETE_BINDING",
               "DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
       map.put("LOAD_BINDINGS",
@@ -649,11 +648,11 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    protected Map getDefaultDDLStatements()
    {
-      Map map = new HashMap();
+      Map map = new LinkedHashMap();
       map.put("CREATE_POSTOFFICE_TABLE",
-              "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(256), NODE_ID VARCHAR(256)," +
-              "QUEUE_NAME VARCHAR(1024), CONDITION VARCHAR(1024), " +
-              "SELECTOR VARCHAR(1024), CHANNEL_ID BIGINT)");
+              "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID VARCHAR(255)," +
+              "QUEUE_NAME VARCHAR(1023), CONDITION VARCHAR(1023), " +
+              "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)");
       return map;
    }
    

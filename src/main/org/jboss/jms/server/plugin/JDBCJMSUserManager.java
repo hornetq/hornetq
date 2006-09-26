@@ -26,8 +26,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -67,14 +67,14 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
    
    protected Map getDefaultDMLStatements()
    {                
-      Map map = new HashMap();
+      Map map = new LinkedHashMap();
       map.put("SELECT_PRECONF_CLIENTID", "SELECT CLIENTID FROM JMS_USER WHERE USERID=?");
       return map;
    }
    
    protected Map getDefaultDDLStatements()
    {
-      Map map = new HashMap();
+      Map map = new LinkedHashMap();
       map.put("CREATE_USER_TABLE",
               "CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128)," +
               " PRIMARY KEY(USERID))");

@@ -226,9 +226,7 @@ public class RedistributionTest extends ClusteringTestBase
          log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
          log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
          log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
-         
-         
-         
+                           
          log.info("trying to consume");
          
          //So we have 150 messages in total - 30 on each node.
