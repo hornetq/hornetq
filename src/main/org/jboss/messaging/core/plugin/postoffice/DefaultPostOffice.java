@@ -128,9 +128,12 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    public void start() throws Exception
    {
+      log.info(this + " starting");
       super.start();
       
       loadBindings();
+      
+      log.info(this + " started");
    }
    
    public void stop() throws Exception

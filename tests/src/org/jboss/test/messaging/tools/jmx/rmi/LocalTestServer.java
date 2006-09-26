@@ -216,141 +216,269 @@ public class LocalTestServer implements Server
                                String defaultQueueJNDIContext,
                                String defaultTopicJNDIContext) throws Exception
    {
-      log.debug("creating ServerPeer instance");
-
-      // we are using the "default" service deployment descriptors available in
-      // src/etc/server/default/deploy. This will allow to test the default parameters we ship.
-
-      String mainConfigFile = "server/default/deploy/messaging-service.xml";
-      URL mainConfigFileURL = getClass().getClassLoader().getResource(mainConfigFile);
-      if (mainConfigFileURL == null)
+      try
       {
-         throw new Exception("Cannot find " + mainConfigFile + " in the classpath");
+         log.debug("creating ServerPeer instance");
+   
+         // we are using the "default" service deployment descriptors available in
+         // src/etc/server/default/deploy. This will allow to test the default parameters we ship.
+   
+         String mainConfigFile = "server/default/deploy/messaging-service.xml";
+         URL mainConfigFileURL = getClass().getClassLoader().getResource(mainConfigFile);
+         if (mainConfigFileURL == null)
+         {
+            throw new Exception("Cannot find " + mainConfigFile + " in the classpath");
+         }
+   
+         String databaseType = sc.getDatabaseType();
+         String persistenceConfigFile =
+            "server/default/deploy/" + databaseType + "-persistence-service.xml";
+         URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
+         if (persistenceConfigFileURL == null)
+         {
+            throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
+         }
+   
+         String connFactoryConfigFile = "server/default/deploy/connection-factories-service.xml";
+         URL connFactoryConfigFileURL = getClass().getClassLoader().getResource(connFactoryConfigFile);
+         if (connFactoryConfigFileURL == null)
+         {
+            throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
+         }
+   
+         ServiceDeploymentDescriptor mdd = new ServiceDeploymentDescriptor(mainConfigFileURL);
+         ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
+         ServiceDeploymentDescriptor cfdd = new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
+   
+         MBeanConfigurationElement persistenceManagerConfig =
+            (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
+         persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
+         sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
+         sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);    
+              
+         MBeanConfigurationElement jmsUserManagerConfig =
+            (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
+         jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
+         sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
+         sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);  
+         
+         MBeanConfigurationElement shutdownLoggerConfig =
+            (MBeanConfigurationElement)pdd.query("service", "ShutdownLogger").iterator().next();
+         shutdownLoggerObjectName = sc.registerAndConfigureService(shutdownLoggerConfig);
+         sc.invoke(shutdownLoggerObjectName, "create", new Object[0], new String[0]);
+         sc.invoke(shutdownLoggerObjectName, "start", new Object[0], new String[0]); 
+   
+         // register server peer as a service, dependencies are injected automatically
+         MBeanConfigurationElement serverPeerConfig =
+            (MBeanConfigurationElement)mdd.query("service", "ServerPeer").iterator().next();
+   
+         // overwrite the file configuration, if needed
+         if (serverPeerID != null)
+         {
+            serverPeerConfig.setConstructorArgumentValue(0, 0, serverPeerID);
+         }
+         if (defaultQueueJNDIContext != null)
+         {
+            serverPeerConfig.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
+         }
+         if (defaultTopicJNDIContext != null)
+         {
+            serverPeerConfig.setConstructorArgumentValue(0, 2, defaultTopicJNDIContext);
+         }
+   
+         serverPeerObjectName = sc.registerAndConfigureService(serverPeerConfig);
+   
+         // overwrite the config file security domain
+         sc.setAttribute(serverPeerObjectName, "SecurityDomain",
+                         MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+   
+         log.debug("starting JMS server");
+   
+         sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
+         sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
+         
+         log.info("deploying post offices");
+         
+         MBeanConfigurationElement queuePostOfficeConfig =
+            (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
+         queuePostOfficeObjectName = sc.registerAndConfigureService(queuePostOfficeConfig);
+         sc.invoke(queuePostOfficeObjectName, "create", new Object[0], new String[0]);
+         sc.invoke(queuePostOfficeObjectName, "start", new Object[0], new String[0]);
+         
+         MBeanConfigurationElement topicPostOfficeConfig =
+            (MBeanConfigurationElement)pdd.query("service", "TopicPostOffice").iterator().next();
+         topicPostOfficeObjectName = sc.registerAndConfigureService(topicPostOfficeConfig);
+         sc.invoke(topicPostOfficeObjectName, "create", new Object[0], new String[0]);
+         sc.invoke(topicPostOfficeObjectName, "start", new Object[0], new String[0]);
+         
+         log.info("Deployed postoffices");
+    
+         log.debug("deploying connection factories");
+   
+         List connFactoryElements = cfdd.query("service", "ConnectionFactory");
+         connFactoryObjectNames.clear();
+         for(Iterator i = connFactoryElements.iterator(); i.hasNext(); )
+         {
+            MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement)i.next();
+            ObjectName on = sc.registerAndConfigureService(connFactoryElement);
+            // dependencies have been automatically injected already
+            sc.invoke(on, "create", new Object[0], new String[0]);
+            sc.invoke(on, "start", new Object[0], new String[0]);
+            connFactoryObjectNames.add(on);
+         }
+   
+         // bind the default JMS provider
+         sc.bindDefaultJMSProvider();
+         // bind the JCA ConnectionFactory
+         sc.bindJCAJMSConnectionFactory();
       }
-
-      String databaseType = sc.getDatabaseType();
-      String persistenceConfigFile =
-         "server/default/deploy/" + databaseType + "-persistence-service.xml";
-      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
-      if (persistenceConfigFileURL == null)
+      catch (Exception e)
       {
-         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
+         log.error("Failed to start server peer", e);
+         throw e;
       }
-
-      String connFactoryConfigFile = "server/default/deploy/connection-factories-service.xml";
-      URL connFactoryConfigFileURL = getClass().getClassLoader().getResource(connFactoryConfigFile);
-      if (connFactoryConfigFileURL == null)
-      {
-         throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
-      }
-
-      ServiceDeploymentDescriptor mdd = new ServiceDeploymentDescriptor(mainConfigFileURL);
-      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-      ServiceDeploymentDescriptor cfdd = new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
-
-      MBeanConfigurationElement persistenceManagerConfig =
-         (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
-      persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
-      sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);    
-           
-      MBeanConfigurationElement jmsUserManagerConfig =
-         (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
-      jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
-      sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);  
-      
-      MBeanConfigurationElement shutdownLoggerConfig =
-         (MBeanConfigurationElement)pdd.query("service", "ShutdownLogger").iterator().next();
-      shutdownLoggerObjectName = sc.registerAndConfigureService(shutdownLoggerConfig);
-      sc.invoke(shutdownLoggerObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(shutdownLoggerObjectName, "start", new Object[0], new String[0]); 
-
-      // register server peer as a service, dependencies are injected automatically
-      MBeanConfigurationElement serverPeerConfig =
-         (MBeanConfigurationElement)mdd.query("service", "ServerPeer").iterator().next();
-
-      // overwrite the file configuration, if needed
-      if (serverPeerID != null)
-      {
-         serverPeerConfig.setConstructorArgumentValue(0, 0, serverPeerID);
-      }
-      if (defaultQueueJNDIContext != null)
-      {
-         serverPeerConfig.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
-      }
-      if (defaultTopicJNDIContext != null)
-      {
-         serverPeerConfig.setConstructorArgumentValue(0, 2, defaultTopicJNDIContext);
-      }
-
-      serverPeerObjectName = sc.registerAndConfigureService(serverPeerConfig);
-
-      // overwrite the config file security domain
-      sc.setAttribute(serverPeerObjectName, "SecurityDomain",
-                      MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
-
-      log.debug("starting JMS server");
-
-      sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
-      
-      MBeanConfigurationElement queuePostOfficeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
-      queuePostOfficeObjectName = sc.registerAndConfigureService(queuePostOfficeConfig);
-      sc.invoke(queuePostOfficeObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(queuePostOfficeObjectName, "start", new Object[0], new String[0]);
-      
-      MBeanConfigurationElement topicPostOfficeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "TopicPostOffice").iterator().next();
-      topicPostOfficeObjectName = sc.registerAndConfigureService(topicPostOfficeConfig);
-      sc.invoke(topicPostOfficeObjectName, "create", new Object[0], new String[0]);
-      sc.invoke(topicPostOfficeObjectName, "start", new Object[0], new String[0]);
- 
-      log.debug("deploying connection factories");
-
-      List connFactoryElements = cfdd.query("service", "ConnectionFactory");
-      connFactoryObjectNames.clear();
-      for(Iterator i = connFactoryElements.iterator(); i.hasNext(); )
-      {
-         MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement)i.next();
-         ObjectName on = sc.registerAndConfigureService(connFactoryElement);
-         // dependencies have been automatically injected already
-         sc.invoke(on, "create", new Object[0], new String[0]);
-         sc.invoke(on, "start", new Object[0], new String[0]);
-         connFactoryObjectNames.add(on);
-      }
-
-      // bind the default JMS provider
-      sc.bindDefaultJMSProvider();
-      // bind the JCA ConnectionFactory
-      sc.bindJCAJMSConnectionFactory();
    }
 
    public void stopServerPeer() throws Exception
    {
-      // if we don't find a ServerPeer instance registered under the serverPeerObjectName
-      // ObjectName, we assume that the server was already stopped and we silently exit
-      if (sc.query(serverPeerObjectName).isEmpty())
+      try
       {
-         log.warn("ServerPeer already stopped");
-         return;
-      }
-
-      // unbind the JCA ConnectionFactory; nothing happens if no connection factory is bound
-      sc.unbindJCAJMSConnectionFactory();
-      sc.unbindDefaultJMSProvider();
-
-      log.debug("stopping connection factories");
-
-      for(Iterator i = connFactoryObjectNames.iterator(); i.hasNext(); )
-      {
+         // if we don't find a ServerPeer instance registered under the serverPeerObjectName
+         // ObjectName, we assume that the server was already stopped and we silently exit
+         if (sc.query(serverPeerObjectName).isEmpty())
+         {
+            log.warn("ServerPeer already stopped");
+            return;
+         }
+   
+         // unbind the JCA ConnectionFactory; nothing happens if no connection factory is bound
+         sc.unbindJCAJMSConnectionFactory();
+         sc.unbindDefaultJMSProvider();
+   
+         log.debug("stopping connection factories");
+   
+         for(Iterator i = connFactoryObjectNames.iterator(); i.hasNext(); )
+         {
+            try
+            {
+               ObjectName on = (ObjectName)i.next();
+               sc.invoke(on, "stop", new Object[0], new String[0]);
+               sc.invoke(on, "destroy", new Object[0], new String[0]);
+               sc.unregisterService(on);
+            }
+            catch (Exception ignore)
+            {
+               //If the serverpeer failed when starting up previously, then only some of the
+               //services may be started. The ones that didn't start will fail when attempting to shut
+               //them down.
+               //Hence we must catch and ignore or we won't shut everything down
+            }
+         }
+         connFactoryObjectNames.clear();
+   
+         log.debug("stopping all destinations");
+   
+         Set destinations = (Set)sc.getAttribute(serverPeerObjectName, "Destinations");
+   
+         for(Iterator i = destinations.iterator(); i.hasNext(); )
+         {
+            String name;
+            boolean isQueue = true;
+            Destination d = (Destination)i.next();
+            if (d instanceof Queue)
+            {
+               name = ((Queue)d).getQueueName();
+            }
+            else
+            {
+               isQueue = false;
+               name = ((Topic)d).getTopicName();
+            }
+   
+            undeployDestination(isQueue, name);
+         }
+   
+         log.debug("stopping JMS server");
+   
          try
          {
-            ObjectName on = (ObjectName)i.next();
-            sc.invoke(on, "stop", new Object[0], new String[0]);
-            sc.invoke(on, "destroy", new Object[0], new String[0]);
-            sc.unregisterService(on);
+            sc.invoke(serverPeerObjectName, "stop", new Object[0], new String[0]);
+            sc.invoke(serverPeerObjectName, "destroy", new Object[0], new String[0]);
+            sc.unregisterService(serverPeerObjectName);
+         }
+         catch (Exception ignore)
+         {
+            //If the serverpeer failed when starting up previously, then only some of the
+            //services may be started. The ones that didn't start will fail when attempting to shut
+            //them down.
+            //Hence we must catch and ignore or we won't shut everything down
+         }
+   
+         
+   
+         log.debug("stopping ServerPeer's plug-in dependencies");
+         
+         try
+         {
+            sc.invoke(shutdownLoggerObjectName, "stop", new Object[0], new String[0]);
+            sc.invoke(shutdownLoggerObjectName, "destroy", new Object[0], new String[0]);
+            sc.unregisterService(shutdownLoggerObjectName);
+         }
+         catch (Exception ignore)
+         {
+            //If the serverpeer failed when starting up previously, then only some of the
+            //services may be started. The ones that didn't start will fail when attempting to shut
+            //them down.
+            //Hence we must catch and ignore or we won't shut everything down
+         }
+         
+         try
+         {
+            sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);
+            sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
+            sc.unregisterService(jmsUserManagerObjectName);
+         }
+         catch (Exception ignore)
+         {
+            //If the serverpeer failed when starting up previously, then only some of the
+            //services may be started. The ones that didn't start will fail when attempting to shut
+            //them down.
+            //Hence we must catch and ignore or we won't shut everything down
+         }
+   
+         try
+         {
+            sc.invoke(queuePostOfficeObjectName, "stop", new Object[0], new String[0]);
+            sc.invoke(queuePostOfficeObjectName, "destroy", new Object[0], new String[0]);
+            sc.unregisterService(queuePostOfficeObjectName);
+         }
+         catch (Exception ignore)
+         {
+            //If the serverpeer failed when starting up previously, then only some of the
+            //services may be started. The ones that didn't start will fail when attempting to shut
+            //them down.
+            //Hence we must catch and ignore or we won't shut everything down
+         }
+         
+         try
+         {
+            sc.invoke(topicPostOfficeObjectName, "stop", new Object[0], new String[0]);
+            sc.invoke(topicPostOfficeObjectName, "destroy", new Object[0], new String[0]);
+            sc.unregisterService(topicPostOfficeObjectName);
+         }
+         catch (Exception ignore)
+         {
+            //If the serverpeer failed when starting up previously, then only some of the
+            //services may be started. The ones that didn't start will fail when attempting to shut
+            //them down.
+            //Hence we must catch and ignore or we won't shut everything down
+         }
+   
+         try
+         {
+            sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
+            sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
+            sc.unregisterService(persistenceManagerObjectName);
          }
          catch (Exception ignore)
          {
@@ -360,120 +488,11 @@ public class LocalTestServer implements Server
             //Hence we must catch and ignore or we won't shut everything down
          }
       }
-      connFactoryObjectNames.clear();
-
-      log.debug("stopping all destinations");
-
-      Set destinations = (Set)sc.getAttribute(serverPeerObjectName, "Destinations");
-
-      for(Iterator i = destinations.iterator(); i.hasNext(); )
+      catch (Exception e)
       {
-         String name;
-         boolean isQueue = true;
-         Destination d = (Destination)i.next();
-         if (d instanceof Queue)
-         {
-            name = ((Queue)d).getQueueName();
-         }
-         else
-         {
-            isQueue = false;
-            name = ((Topic)d).getTopicName();
-         }
-
-         undeployDestination(isQueue, name);
+         log.error("Failed to stop server peer", e);
+         throw e;
       }
-
-      log.debug("stopping JMS server");
-
-      try
-      {
-         sc.invoke(serverPeerObjectName, "stop", new Object[0], new String[0]);
-         sc.invoke(serverPeerObjectName, "destroy", new Object[0], new String[0]);
-         sc.unregisterService(serverPeerObjectName);
-      }
-      catch (Exception ignore)
-      {
-         //If the serverpeer failed when starting up previously, then only some of the
-         //services may be started. The ones that didn't start will fail when attempting to shut
-         //them down.
-         //Hence we must catch and ignore or we won't shut everything down
-      }
-
-      
-
-      log.debug("stopping ServerPeer's plug-in dependencies");
-      
-      try
-      {
-         sc.invoke(shutdownLoggerObjectName, "stop", new Object[0], new String[0]);
-         sc.invoke(shutdownLoggerObjectName, "destroy", new Object[0], new String[0]);
-         sc.unregisterService(shutdownLoggerObjectName);
-      }
-      catch (Exception ignore)
-      {
-         //If the serverpeer failed when starting up previously, then only some of the
-         //services may be started. The ones that didn't start will fail when attempting to shut
-         //them down.
-         //Hence we must catch and ignore or we won't shut everything down
-      }
-      
-      try
-      {
-         sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);
-         sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
-         sc.unregisterService(jmsUserManagerObjectName);
-      }
-      catch (Exception ignore)
-      {
-         //If the serverpeer failed when starting up previously, then only some of the
-         //services may be started. The ones that didn't start will fail when attempting to shut
-         //them down.
-         //Hence we must catch and ignore or we won't shut everything down
-      }
-
-      try
-      {
-         sc.invoke(queuePostOfficeObjectName, "stop", new Object[0], new String[0]);
-         sc.invoke(queuePostOfficeObjectName, "destroy", new Object[0], new String[0]);
-         sc.unregisterService(queuePostOfficeObjectName);
-      }
-      catch (Exception ignore)
-      {
-         //If the serverpeer failed when starting up previously, then only some of the
-         //services may be started. The ones that didn't start will fail when attempting to shut
-         //them down.
-         //Hence we must catch and ignore or we won't shut everything down
-      }
-      
-      try
-      {
-         sc.invoke(topicPostOfficeObjectName, "stop", new Object[0], new String[0]);
-         sc.invoke(topicPostOfficeObjectName, "destroy", new Object[0], new String[0]);
-         sc.unregisterService(topicPostOfficeObjectName);
-      }
-      catch (Exception ignore)
-      {
-         //If the serverpeer failed when starting up previously, then only some of the
-         //services may be started. The ones that didn't start will fail when attempting to shut
-         //them down.
-         //Hence we must catch and ignore or we won't shut everything down
-      }
-
-      try
-      {
-         sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
-         sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
-         sc.unregisterService(persistenceManagerObjectName);
-      }
-      catch (Exception ignore)
-      {
-         //If the serverpeer failed when starting up previously, then only some of the
-         //services may be started. The ones that didn't start will fail when attempting to shut
-         //them down.
-         //Hence we must catch and ignore or we won't shut everything down
-      }
-
    }
 
    public boolean isServerPeerStarted() throws Exception

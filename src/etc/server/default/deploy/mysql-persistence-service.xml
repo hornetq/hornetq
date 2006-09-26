@@ -59,7 +59,7 @@ SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNELID) FROM JMS_MESSAGE_REFERENCE
       
    <mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
       name="jboss.messaging:service=QueuePostOffice"
-      xmbean-dd="xmdesc/SimplePostOffice-xmbean.xml"> 
+      xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml"> 
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends> 
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
@@ -76,7 +76,7 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, CHANNEL_ID FROM J
    
    <mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
       name="jboss.messaging:service=TopicPostOffice"
-      xmbean-dd="xmdesc/SimplePostOffice-xmbean.xml"> 
+      xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml"> 
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>

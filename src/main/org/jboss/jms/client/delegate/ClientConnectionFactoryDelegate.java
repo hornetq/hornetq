@@ -178,8 +178,6 @@ public class ClientConnectionFactoryDelegate
 
          configuration.put(Client.ENABLE_LEASE, String.valueOf(false));
          
-         log.info("*********** SERVERLOCATOR URI:" + serverLocatorURI);
-
          client = new Client(new InvokerLocator(serverLocatorURI), configuration);     
          
          client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
