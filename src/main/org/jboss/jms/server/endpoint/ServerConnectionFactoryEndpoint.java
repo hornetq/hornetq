@@ -132,9 +132,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          
          log.debug("created and registered " + endpoint);
    
-         ClientConnectionDelegate delegate = new ClientConnectionDelegate(connectionID);     
-         
-         return delegate;
+         return new ClientConnectionDelegate(connectionID);
       }
       catch (Throwable t)
       {

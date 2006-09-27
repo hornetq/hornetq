@@ -111,7 +111,6 @@ public interface SessionEndpoint extends Closeable
     * This used at consumer close to cancel any undelivered messages left in the client buffer
     * or at session recovery to cancel any messages that couldn't be redelivered locally
     * @param ackInfos
-    * @throws Exception
     */
    void cancelDeliveries(List ackInfos) throws JMSException;
 }

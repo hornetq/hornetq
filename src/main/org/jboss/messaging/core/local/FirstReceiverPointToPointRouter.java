@@ -71,45 +71,56 @@ public class FirstReceiverPointToPointRouter implements Router
 
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
-      Delivery del = null;
-      
-      boolean selectorRejected = false;
-      
+      ArrayList receiversCopy;
+
       synchronized(receivers)
       {
-         for(Iterator i = receivers.iterator(); i.hasNext(); )
+         if (receivers.isEmpty())
          {
-            Receiver receiver = (Receiver)i.next();
-            
-            try
-            {
-               Delivery d = receiver.handle(observer, ref, tx);
+            return null;
+         }
 
-               if (trace) { log.trace("receiver " + receiver + " handled " + ref + " and returned " + d); }
-     
-               if (d != null && !d.isCancelled())
+         // try to release the lock as quickly as possible and make a copy of the receivers array
+         // to avoid deadlock
+
+         receiversCopy = new ArrayList(receivers.size());
+         receiversCopy.addAll(receivers);
+      }
+
+      Delivery del = null;
+      boolean selectorRejected = false;
+
+      for(Iterator i = receiversCopy.iterator(); i.hasNext(); )
+      {
+         Receiver receiver = (Receiver)i.next();
+
+         try
+         {
+            Delivery d = receiver.handle(observer, ref, tx);
+
+            if (trace) { log.trace("receiver " + receiver + " handled " + ref + " and returned " + d); }
+
+            if (d != null && !d.isCancelled())
+            {
+               if (d.isSelectorAccepted())
                {
-                  if (d.isSelectorAccepted())
-                  {
-                     // deliver to the first receiver that accepts
-                     del = d;
-                     
-                     break;
-                  }
-                  else
-                  {
-                     selectorRejected = true;
-                  }
+                  // deliver to the first receiver that accepts
+                  del = d;
+                  break;
+               }
+               else
+               {
+                  selectorRejected = true;
                }
             }
-            catch(Throwable t)
-            {
-               // broken receiver - log the exception and ignore it
-               log.error("The receiver " + receiver + " is broken", t);
-            }
+         }
+         catch(Throwable t)
+         {
+            // broken receiver - log the exception and ignore it
+            log.error("The receiver " + receiver + " is broken", t);
          }
       }
-      
+
       if (del == null && selectorRejected)
       {
          del = new SimpleDelivery(null, null, true, false);
@@ -117,6 +128,7 @@ public class FirstReceiverPointToPointRouter implements Router
 
       return del;
    }
+
 
    public boolean add(Receiver r)
    {

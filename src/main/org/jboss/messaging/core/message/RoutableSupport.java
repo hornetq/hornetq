@@ -111,7 +111,7 @@ public abstract class RoutableSupport implements Routable
       this.timestamp = timestamp;
       this.priority = priority;
       this.deliveryCount = deliveryCount;
-      this.redelivered = deliveryCount >= 1;      
+      this.redelivered = deliveryCount >= 2;
       if (headers == null)
       {
          this.headers = new HashMap();

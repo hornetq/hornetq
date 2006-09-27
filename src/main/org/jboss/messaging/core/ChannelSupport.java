@@ -440,12 +440,16 @@ public abstract class ChannelSupport implements Channel
       return undelivered;
    }
 
+   /**
+    * Returns the count of messages stored AND being delivered.
+    */
    public int messageCount()
    {   
       synchronized (refLock)
       {
          synchronized (deliveryLock)
          {
+            //return messageRefs.size() + refsInStorage + deliveries.size();
             return messageRefs.size() + deliveries.size();
          }
       }
@@ -576,36 +580,41 @@ public abstract class ChannelSupport implements Channel
                {
                   // Reference is not expired
 
-                  // Attempt to push the ref to a receiver
+                  // Attempt to push the ref to a receiver, so increment the delivery count
+                  ref.incrementDeliveryCount();
+
                   Delivery del = router.handle(this, ref, null);
 
                   if (del == null)
                   {
-                     // no receiver, broken receiver
-                     // or full receiver    
-                     // so we stop delivering
-                     if (trace) { log.trace(this + ": no delivery returned for message" 
-                                  + ref + " so no receiver got the message");
-                                  log.trace("Delivery is now complete"); }
+                     // No receiver, broken receiver or full receiver so we stop delivering; also
+                     // we need to decrement the delivery count, as no real delivery has been
+                     // actually performed
 
+                     if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
+
+                     ref.decrementDeliveryCount();
                      receiversReady = false;
-
                      return;
                   }
                   else if (!del.isSelectorAccepted())
                   {
-                     // No receiver accepted the message because no selectors matched
-                     // So we create an iterator (if we haven't already created it) to
-                     // iterate through the refs in the channel
-                     // TODO Note that this is only a partial solution since if there are messages paged to storage
-                     // it won't try those - i.e. it will only iterate through those refs in memory.
-                     // Dealing with refs in storage is somewhat tricky since we can't just load them and iterate
-                     // through them since we might run out of memory
-                     // So we will need to load individual refs from storage given the selector expressions
-                     // Secondly we should also introduce some in memory indexes here to prevent having to
-                     // iterate through all the refs every time
-                     // Having said all that, having consumers on a queue that don't match many messages
-                     // is an antipattern and should be avoided by the user
+                     // No receiver accepted the message because no selectors matched, so we create
+                     // an iterator (if we haven't already created it) to iterate through the refs
+                     // in the channel. No delivery was really performed, so we decrement the
+                     // delivery count
+
+                     ref.decrementDeliveryCount();
+
+                     // TODO Note that this is only a partial solution since if there are messages
+                     // paged to storage it won't try those - i.e. it will only iterate through
+                     // those refs in memory. Dealing with refs in storage is somewhat tricky since
+                     // we can't just load them and iterate through them since we might run out of
+                     // memory, so we will need to load individual refs from storage given the
+                     // selector expressions. Secondly we should also introduce some in memory
+                     // indexes here to prevent having to iterate through all the refs every time.
+                     // Having said all that, having consumers on a queue that don't match many
+                     // messages is an antipattern and should be avoided by the user.
                      if (iter == null)
                      {
                         iter = messageRefs.iterator();
@@ -615,15 +624,12 @@ public abstract class ChannelSupport implements Channel
                   {
                      if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
                      
-                     //Receiver accepted the reference
+                     // Receiver accepted the reference
 
-                     // We must synchronize here to cope with another race
-                     // condition where message is
-                     // cancelled/acked in flight while the following few
-                     // actions are being performed.
-                     // e.g. delivery could be cancelled acked after being
-                     // removed from state but before
-                     // delivery being added (observed).
+                     // We must synchronize here to cope with another race condition where message
+                     // is cancelled/acked in flight while the following few actions are being
+                     // performed. e.g. delivery could be cancelled acked after being removed from
+                     // state but before delivery being added (observed).
                      synchronized (del)
                      {
                         if (trace) { log.trace(this + " incrementing delivery count for " + del); }
@@ -1101,7 +1107,7 @@ public abstract class ChannelSupport implements Channel
    {
       // by default a noop
    }
-   
+
    protected void checkClosed()
    {
       if (router == null)

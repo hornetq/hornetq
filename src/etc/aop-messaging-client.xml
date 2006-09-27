@@ -122,7 +122,10 @@
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->redeliver(..))">
       <advice name="handleRedeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
-   </bind>    
+   </bind>
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->closing())">
+      <advice name="handleClosing" aspect="org.jboss.jms.client.container.SessionAspect"/>         
+   </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->close())">
       <advice name="handleClose" aspect="org.jboss.jms.client.container.SessionAspect"/>         
    </bind>   

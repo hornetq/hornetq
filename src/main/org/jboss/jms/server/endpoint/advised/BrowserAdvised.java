@@ -65,6 +65,11 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
       endpoint.closing();
    }
 
+   public boolean isClosed()
+   {
+      return endpoint.isClosed();
+   }
+
    public boolean hasNextMessage() throws JMSException
    {
       return endpoint.hasNextMessage();

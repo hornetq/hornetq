@@ -234,6 +234,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       Connection conn = null;
 
       int fullSize = 10;
+      int MESSAGE_COUNT = 100;
 
       ServerManagement.deployQueue("QueueMessageCount2", fullSize, fullSize / 2, fullSize / 2 - 1);
 
@@ -249,18 +250,38 @@ public class QueueManagementTest extends DestinationManagementTestBase
          MessageProducer prod = session.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         // Send 20 message to the queue
+         // Send all messages to the queue and check messageCount after each send
 
-         for(int i = 0; i < 20; i++)
+         for(int i = 0; i < MESSAGE_COUNT; i++)
          {
             TextMessage m = session.createTextMessage("message" + i);
             prod.send(m);
+
+            int mc = ((Integer)ServerManagement.
+               getAttribute(destObjectName, "MessageCount")).intValue();
+
+            assertEquals(i + 1, mc);
          }
 
-         int mc =
-            ((Integer)ServerManagement.getAttribute(destObjectName, "MessageCount")).intValue();
+         // receive messages from queue one by one and check messageCount after each receive
 
-         assertEquals(20, mc);
+         MessageConsumer cons = session.createConsumer(queue);
+         conn.start();
+
+         int receivedCount = 0;
+
+         while((cons.receive(2000)) != null)
+         {
+            receivedCount++;
+
+            int mc = ((Integer)ServerManagement.
+               getAttribute(destObjectName, "MessageCount")).intValue();
+
+            assertEquals(MESSAGE_COUNT - receivedCount, mc);
+         }
+
+         assertEquals(MESSAGE_COUNT, receivedCount);
+
       }
       finally
       {

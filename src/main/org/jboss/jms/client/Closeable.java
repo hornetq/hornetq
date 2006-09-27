@@ -28,13 +28,13 @@ import javax.jms.JMSException;
  * Implemented by JMS classes that can be closed
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
+ * @author <a href="mailto:ovidiu@jboss.org>Ovidiu Feodorov</a>
  *
  * @version $Revision$
  */
 public interface Closeable
 {
    /**
-    * 
     * Close the instance
     * 
     * @throws JMSException
@@ -47,5 +47,7 @@ public interface Closeable
     * @throws JMSException
     */
    void closing() throws JMSException;
+
+   boolean isClosed();
   
 }

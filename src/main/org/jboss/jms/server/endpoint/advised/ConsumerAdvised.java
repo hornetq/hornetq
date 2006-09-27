@@ -63,7 +63,12 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
    {
       endpoint.closing();
    }
-   
+
+   public boolean isClosed()
+   {
+      return endpoint.isClosed();
+   }
+
    public void more() throws JMSException
    {
       endpoint.more();

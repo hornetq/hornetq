@@ -104,7 +104,7 @@ public class ConnectionAspect implements ConnectionListener
       
       justCreated = false;
       
-      //This gets invoked on the server too
+      // this gets invoked on the server too
       return invocation.invokeNext();
    }
    
@@ -174,10 +174,10 @@ public class ConnectionAspect implements ConnectionListener
       state.getRemotingConnection().stop();
       
       // Remove reference to resource manager
-      ResourceManagerFactory.instance.returnResourceManager(state.getServerID());
+      ResourceManagerFactory.instance.checkInResourceManager(state.getServerID());
       
       // Remove reference to message id generator
-      MessageIdGeneratorFactory.instance.returnGenerator(state.getServerID());
+      MessageIdGeneratorFactory.instance.checkInGenerator(state.getServerID());
       
       return ret;
    }

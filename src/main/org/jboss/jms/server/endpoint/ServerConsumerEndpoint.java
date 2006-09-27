@@ -224,12 +224,20 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // queue for delivery later.
          if (!started)
          {
-            // this is a common programming error, make this visible in the debug logs
-            // TODO: analyse performance implications
-            log.debug(this + " NOT started yet!");
+            // this is a common programming error, make this visible in the debug logs. However,
+            // make also possible to cut out the performance overhead for systems that raise the
+            // threshold to INFO or higher.
+
+            if (log.isDebugEnabled())
+            {
+               log.debug(this + " NOT started yet!");
+            }
+
             return null;
          }
-                        
+
+         if (trace) { log.trace(this + " has the main lock, preparing the message for delivery"); }
+
          JBossMessage message = (JBossMessage)ref.getMessage();
          
          boolean selectorRejected = !this.accept(message);
@@ -267,6 +275,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {            
             try
             {
+               if (trace) { log.trace(this + " scheduling a new Deliverer"); }
                this.executor.execute(new Deliverer());
             }
             catch (InterruptedException e)
@@ -287,8 +296,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       boolean accept = true;
       if (this.destination.isQueue())
       {
-         //For subscriptions message selection is handled in the Subscription itself
-         //we do not want to do the check twice
+         // For subscriptions message selection is handled in the Subscription itself
+         // we do not want to do the check twice
          if (messageSelector != null)
          {
             accept = messageSelector.accept(r);
@@ -342,17 +351,19 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             // it. This is because it may still contain deliveries that may well be acknowledged
             // after the consumer has closed. This is perfectly valid.
 
-            //TODO - The deliveries should really be stored in the session endpoint, not here
-            //that is their natural place, that would mean we wouldn't have to mess around with keeping
-            //deliveries after this is closed
-                  
+            // FIXME - The deliveries should really be stored in the session endpoint, not here
+            // that is their natural place, that would mean we wouldn't have to mess around with
+            // keeping deliveries after this is closed.
+
+            if (trace) { log.trace(this + " grabbed the main lock in close()"); }
+
             disconnect(); 
             
             JMSDispatcher.instance.unregisterTarget(new Integer(id));
             
             //If this is a consumer of a non durable subscription
             //then we want to unbind the subscription and delete all it's data
-            
+
             if (destination.isTopic())
             {
                PostOffice topicPostOffice = 
@@ -378,6 +389,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " close");
       }
+   }
+
+   public boolean isClosed()
+   {
+      return closed;
    }
                
    // ConsumerEndpoint implementation -------------------------------
@@ -667,7 +683,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
     */
    private void disconnect()
    {
-
       boolean removed = messageQueue.remove(this);
       
       if (removed)
@@ -711,67 +726,75 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       public void run()
       {
          // Is there anything to deliver?
-         // This is ok outside lock - is volatile
+         // This is ok outside lock - is volatile.
          if (clientConsumerFull)
          {
-            // Do nothing
+            if (trace) { log.trace(this + " client consumer full, do nothing"); }
             return;
          }
          
          List list = null;
              
          synchronized (lock)
-         {           
+         {
+            if (trace) { log.trace(this + " has the main lock, attempting delivery"); }
+
             if (!toDeliver.isEmpty())
             {
                list = new ArrayList(toDeliver);
-               
                toDeliver.clear();
-               
                bufferFull = false;
             }
          }
                                                            
-         if (list != null)
-         {         
-            ServerConnectionEndpoint connection =
-               ServerConsumerEndpoint.this.sessionEndpoint.getConnectionEndpoint();
+         if (list == null)
+         {
+            if (trace) { log.trace(this + " has a null list, returning"); }
+            return;
+         }
 
-            try
+         ServerConnectionEndpoint connection =
+            ServerConsumerEndpoint.this.sessionEndpoint.getConnectionEndpoint();
+
+         try
+         {
+            if (trace) { log.trace(ServerConsumerEndpoint.this + " handing " + list.size() + " message(s) over to the remoting layer"); }
+
+            ClientDelivery del = new ClientDelivery(list, id);
+
+            // TODO How can we ensure that messages for the same consumer aren't delivered
+            // concurrently to the same consumer on different threads?
+            MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), del);
+
+            MessagingMarshallable resp = (MessagingMarshallable)connection.getCallbackClient().invoke(mm);
+
+            if (trace) { log.trace(ServerConsumerEndpoint.this + " handed messages over to the remoting layer"); }
+
+            HandleMessageResponse result = (HandleMessageResponse)resp.getLoad();
+
+            // For now we don't look at how many messages are accepted since they all will be.
+            // The field is a placeholder for the future.
+            if (result.clientIsFull())
             {
-               if (trace) { log.trace(ServerConsumerEndpoint.this + "handing " + list.size() + " message(s) over to the remoting layer"); }
-            
-               ClientDelivery del = new ClientDelivery(list, id);
-               
-               // TODO How can we ensure that messages for the same consumer aren't delivered
-               // concurrently to the same consumer on different threads?
-               MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), del);
-               
-               MessagingMarshallable resp = (MessagingMarshallable)connection.getCallbackClient().invoke(mm);
-
-               if (trace) { log.trace(ServerConsumerEndpoint.this + "handed messages over to the remoting layer"); }
-                
-               HandleMessageResponse result = (HandleMessageResponse)resp.getLoad();
-
-               // For now we don't look at how many messages are accepted since they all will be.
-               // The field is a placeholder for the future.
-               if (result.clientIsFull())
-               {
-                  // Stop the server sending any more messages to the client.
-                  // This is ok outside lock.
-                  clientConsumerFull = true;       
-               }                               
+               // Stop the server sending any more messages to the client.
+               // This is ok outside lock.
+               clientConsumerFull = true;
             }
-            catch(Throwable t)
-            {
-               log.warn("Failed to deliver the message to the client. See the server log for more details.");
-               log.debug(ServerConsumerEndpoint.this + " failed to deliver the message to the client.", t);
-               
-               ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
-               
-               mgr.handleClientFailure(connection.getRemotingClientSessionId());
-            }
-         }              
+         }
+         catch(Throwable t)
+         {
+            log.warn("Failed to deliver the message to the client. See the server log for more details.");
+            log.debug(ServerConsumerEndpoint.this + " failed to deliver the message to the client.", t);
+
+            ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
+
+            mgr.handleClientFailure(connection.getRemotingClientSessionId());
+         }
+      }
+
+      public String toString()
+      {
+         return "Deliverer[" + Integer.toHexString(hashCode()) + "]";
       }
    }
    

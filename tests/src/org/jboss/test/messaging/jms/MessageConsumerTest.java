@@ -251,15 +251,15 @@ public class MessageConsumerTest extends MessagingTestCase
       
       assertEquals("Your mum", tm2.getText());
       
-      //Don't ack
+      // Don't ack
       
-      //Create another consumer
+      // Create another consumer
       
       Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
       MessageConsumer cons2 = sessConsume2.createConsumer(queue);
       
-      //this should cancel message and cause delivery to other consumer
+      // this should cancel message and cause delivery to other consumer
       
       sessConsume1.close();
       

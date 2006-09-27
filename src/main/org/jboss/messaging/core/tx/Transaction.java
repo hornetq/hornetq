@@ -32,13 +32,15 @@ import javax.transaction.xa.Xid;
 import org.jboss.logging.Logger;
 
 /**
- * 
+ *
  * A JMS Server local transaction
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.com">Ovidiu Feodorov</a>
- * 
+ *
  * @version $Revision 1.1$
+ *
+ * $Id$
  */
 public class Transaction
 {
@@ -47,37 +49,40 @@ public class Transaction
    private static final Logger log = Logger.getLogger(Transaction.class);
 
    // Attributes ----------------------------------------------------
-   
+
    private boolean trace = log.isTraceEnabled();
-     
+
    protected long id;
-   
+
    protected int state;
-   
+
    protected Xid xid;
-   
+
+   /**
+    * If this is a XA transaction, when a commit is executed the transaction has to be removed from the transaction repository.
+    * This reference will guarantee the reference back to the repository where the transaction was created
+    * */
+   protected TransactionRepository transactionRepository;
+
    protected List callbacks;
-   
-   protected Map callbackMap;
-   
-   protected TransactionRepository repository;
-   
-   //A special first callback that is ensured to be executed first
-   protected TxCallback firstCallback;
-   
+
+   protected List keyedCallbacks;
+
+   protected Map keyedCallbackMap;
+
    // Static --------------------------------------------------------
-   
+
    public static final int STATE_ACTIVE = 0;
-   
+
    public static final int STATE_PREPARED = 1;
-   
+
    public static final int STATE_COMMITTED = 2;
-   
+
    public static final int STATE_ROLLEDBACK = 3;
 
    public static final int STATE_ROLLBACK_ONLY = 4;
 
-   public String stateToString(int state)
+   public static String stateToString(int state)
    {
       if (state == STATE_ACTIVE)
       {
@@ -106,58 +111,52 @@ public class Transaction
    }
 
    // Constructors --------------------------------------------------
-   
+
    Transaction(long id)
    {
       this.id = id;
       state = STATE_ACTIVE;
       callbacks = new ArrayList();
-      callbackMap = new HashMap();
+      keyedCallbacks = new ArrayList();
+      keyedCallbackMap = new HashMap();
    }
-   
-   Transaction(long id, Xid xid, TransactionRepository tr)
+
+   Transaction(long id, Xid xid, TransactionRepository repository)
    {
       this(id);
       this.xid = xid;
-      this.repository = tr;
+      this.transactionRepository=repository;
    }
-   
+
    // Public --------------------------------------------------------
-   
+
    public int getState()
    {
       return state;
-   }      
-   
+   }
+
    public Xid getXid()
    {
       return xid;
    }
 
-   public void addCallback(TxCallback callback, Object key)
-   {            
-      callbacks.add(callback);
-      
-      callbackMap.put(key, callback);
-   } 
-   
-   public void addFirstCallback(TxCallback callback, Object key)
-   {            
-      if (firstCallback != null)
-      {
-         throw new IllegalStateException("There is already a first callback");
-      }
-      
-      this.firstCallback = callback;
-      
-      callbackMap.put(key, callback);
-   }
-   
-   public TxCallback getCallback(Object key)
+   public void addCallback(TxCallback callback)
    {
-      return (TxCallback)callbackMap.get(key);
+      callbacks.add(callback);
    }
-      
+
+   public void addKeyedCallback(TxCallback callback, Object key)
+   {
+      keyedCallbacks.add(callback);
+
+      keyedCallbackMap.put(key, callback);
+   }
+
+   public TxCallback getKeyedCallback(Object key)
+   {
+      return (TxCallback)keyedCallbackMap.get(key);
+   }
+
    public synchronized void commit() throws Exception
    {
       if (state == STATE_ROLLBACK_ONLY)
@@ -174,98 +173,89 @@ public class Transaction
       }
 
       if (trace) { log.trace("executing before commit hooks " + this); }
-       
+
       boolean onePhase = state != STATE_PREPARED;
-      
-      if (firstCallback != null)
-      {
-         firstCallback.beforeCommit(onePhase);
-      }
-      
-      Iterator iter = callbacks.iterator();
-      
+
+      List cb = new ArrayList(callbacks);
+      cb.addAll(keyedCallbacks);
+
+      Iterator iter = cb.iterator();
+
       while (iter.hasNext())
       {
          TxCallback callback = (TxCallback)iter.next();
-         
+
          callback.beforeCommit(onePhase);
       }
-      
+
       state = STATE_COMMITTED;
-      
+
       if (trace) { log.trace("committed " + this); }
-      
-      iter = callbacks.iterator();
-      
+
+      iter = cb.iterator();
+
       if (trace) { log.trace("executing after commit hooks " + this); }
-      
-      if (firstCallback != null)
-      {
-         firstCallback.afterCommit(onePhase);
-      }
-      
+
       while (iter.hasNext())
       {
          TxCallback callback = (TxCallback)iter.next();
-         
+
          callback.afterCommit(onePhase);
       }
-          
+
       callbacks = null;
-      
-      callbackMap = null;      
-      
-      firstCallback = null;
-      
-      if (trace) { log.trace("commit process complete " + this); }            
+
+      keyedCallbacks = null;
+
+      keyedCallbackMap = null;
+
+      if (transactionRepository!=null)
+      {
+    	  transactionRepository.deleteTransaction(this);
+      }
+
+      if (trace) { log.trace("commit process complete " + this); }
    }
-   
+
    public synchronized void prepare() throws Exception
    {
       if (state != STATE_ACTIVE)
       {
          throw new TransactionException("Transaction not active, cannot prepare");
       }
-      
+
       if (trace) { log.trace("executing before prepare hooks " + this); }
-      
-      if (firstCallback != null)
-      {
-         firstCallback.beforePrepare();
-      }
-      
-      Iterator iter = callbacks.iterator();
-      
+
+      List cb = new ArrayList(callbacks);
+      cb.addAll(keyedCallbacks);
+
+      Iterator iter = cb.iterator();
+
       while (iter.hasNext())
       {
          TxCallback callback = (TxCallback)iter.next();
-         
+
          callback.beforePrepare();
       }
-      
+
       state = STATE_PREPARED;
-      
+
       if (trace) { log.trace("prepared " + this); }
-      
-      if (firstCallback != null)
-      {
-         firstCallback.afterPrepare();
-      }
-      
-      iter = callbacks.iterator();
-      
+
+      iter = cb.iterator();
+
       if (trace) { log.trace("executing after prepare hooks " + this); }
-      
+
       while (iter.hasNext())
       {
          TxCallback callback = (TxCallback)iter.next();
-         
+
          callback.afterPrepare();
-      }            
-      
+      }
+
       if (trace) { log.trace("prepare process complete " + this); }
    }
-   
+
    public synchronized void rollback() throws Exception
    {
       if (state == STATE_COMMITTED)
@@ -276,42 +266,41 @@ public class Transaction
       {
          throw new TransactionException("Transaction already rolled back, cannot rollback");
       }
-      
-      if (trace) { log.trace("executing before rollback hooks " + this); }
-      
-      boolean onePhase = state != STATE_PREPARED;
-      
-      if (firstCallback != null)
-      {
-         firstCallback.beforeRollback(onePhase);
-      }
 
-      for(Iterator i = callbacks.iterator(); i.hasNext(); )
+      if (trace) { log.trace("executing before rollback hooks " + this); }
+
+      boolean onePhase = state != STATE_PREPARED;
+
+      List cb = new ArrayList(callbacks);
+      cb.addAll(keyedCallbacks);
+
+      for(Iterator i = cb.iterator(); i.hasNext(); )
       {
          TxCallback callback = (TxCallback)i.next();
          callback.beforeRollback(onePhase);
       }
-      
+
       state = STATE_ROLLEDBACK;
-      
+
       if (trace) { log.trace("rolled back " + this); }
 
       if (trace) { log.trace("executing after prepare hooks " + this); }
 
-      if (firstCallback != null)
-      {
-         firstCallback.afterRollback(onePhase);
-      }
-      
-      for(Iterator i = callbacks.iterator(); i.hasNext();)
+      for(Iterator i = cb.iterator(); i.hasNext();)
       {
          TxCallback callback = (TxCallback)i.next();
          callback.afterRollback(onePhase);
-      }            
-      
+      }
+
       callbacks = null;
-      callbackMap = null;
-      
+      keyedCallbacks = null;
+      keyedCallbackMap = null;
+
+      if (transactionRepository!=null)
+      {
+    	  transactionRepository.deleteTransaction(this);
+      }
+
       if (trace) { log.trace("rollback process complete " + this); }
    }
 
@@ -321,12 +310,12 @@ public class Transaction
 
       state = STATE_ROLLBACK_ONLY;
    }
-   
+
    public long getId()
    {
       return id;
    }
-      
+
    public String toString()
    {
       StringBuffer sb = new StringBuffer("TX(");
@@ -337,13 +326,13 @@ public class Transaction
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
-   
+
 }
 
 

@@ -669,5 +669,9 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 		Use java -Djboss.messaging.callback.bind.address=YourHost - That will determine the callBack host in your client.
       </para>
 
+      <para>
+		The client port will be selected randomly for any non used port. But if you defined -Djboss.messaging.callback.bind.port=NumericPort in your System Properties that number is going to be used for the call back client port.
+      </para>
+
   </section>
 </chapter>

@@ -12,9 +12,6 @@
 	<classpathentry kind="lib" path="lib/jboss-system.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-transaction.jar"/>
 	<classpathentry kind="lib" path="lib/jnp-client.jar"/>
-	<classpathentry kind="lib" path="src/resources/clester.jar"/>
-	<classpathentry kind="lib" path="src/resources/jboss-aspect-library.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/j2sdk1.4.2_09"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="tests/lib/jboss-common-jdbc-wrapper.jar"/>
@@ -27,13 +24,38 @@
 	<classpathentry kind="lib" path="perf/resources/jcommon-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="perf/resources/jfreechart-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
+	<classpathentry sourcepath="/home/clebert/workspaces/jboss-head/aop/src/main" kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
 	<classpathentry kind="lib" path="thirdparty/hsqldb/lib/hsqldb.jar"/>
-	<classpathentry kind="lib" path="C:/tools/apache-ant-1.6.5/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-logging/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/serialization/lib/jboss-serialization.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/ant-junit.jar"/>
+	<classpathentry sourcepath="/JBossRemoting" kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/serialization/lib/jboss-serialization.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="thirdparty/sun-javacc/lib/javacc.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/snmpTrapAppender.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/resolver.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="thirdparty/dom4j/lib/dom4j.jar"/>
+	<classpathentry kind="lib" path="thirdparty/javassist/lib/javassist.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/common-softvaluehashmap.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50-client.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aspect-jdk50-client.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jdk14-pluggable-instrumentor.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/pluggable-instrumentor.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-archive-browsing.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common-client.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/namespace.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar"/>
+	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/backport-util-concurrent.jar"/>
+	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-runtime.jar"/>
+	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-transformer.jar"/>
+	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

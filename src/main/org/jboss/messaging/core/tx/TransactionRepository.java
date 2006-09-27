@@ -140,6 +140,29 @@ public class TransactionRepository implements MessagingComponent
       return tx;
    }
    
+   public void deleteTransaction(Transaction transaction) throws Exception
+   {
+	   final Xid id = transaction.getXid();
+	   final int state = transaction.getState();
+	   
+	   if (id==null)
+	   {
+		   Exception ex = new Exception();
+		   log.warn("DeleteTransaction was called for non XA transaction",ex);
+		   return;
+	   }
+
+	   if (state!=Transaction.STATE_COMMITTED && state!=Transaction.STATE_ROLLEDBACK)
+	   {
+		   throw new TransactionException("Transaction with xid " + id + " can't be removed as it's not yet commited or rolledback: (Current state is " + Transaction.stateToString(state));
+	   }
+	   
+	   globalToLocalMap.remove(id);
+	   
+	   
+	   
+   }
+   
    public Transaction createTransaction(Xid xid) throws Exception
    {
       if (globalToLocalMap.containsKey(xid))
@@ -167,6 +190,12 @@ public class TransactionRepository implements MessagingComponent
    public boolean removeTransaction(Xid xid)
    {
       return globalToLocalMap.remove(xid) != null;
+   }
+   
+   /** To be used only by testcases */
+   public int getNumberOfRegisteredTransactions()
+   {
+	  return this.globalToLocalMap.size();   
    }
    
    // Package protected ---------------------------------------------

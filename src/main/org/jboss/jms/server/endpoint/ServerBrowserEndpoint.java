@@ -152,7 +152,12 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    
    public void closing() throws JMSException
    {
-      //Do nothing
+      // Do nothing
+   }
+
+   public boolean isClosed()
+   {
+      return closed;
    }
 
    // Public --------------------------------------------------------

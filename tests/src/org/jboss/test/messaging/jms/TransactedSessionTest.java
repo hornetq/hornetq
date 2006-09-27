@@ -29,6 +29,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+import javax.management.ObjectName;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -93,6 +94,42 @@ public class TransactedSessionTest extends MessagingTestCase
    
    
    // Public --------------------------------------------------------
+
+
+   public void testSimpleRollback() throws Exception
+   {
+      // send a message
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      s.createProducer(queue).send(s.createTextMessage("one"));
+
+      log.debug("message sent");
+
+      s.close();
+
+      s = conn.createSession(true, Session.SESSION_TRANSACTED);
+      MessageConsumer c = s.createConsumer(queue);
+      conn.start();
+      Message m = c.receive();
+
+      assertEquals("one", ((TextMessage)m).getText());
+      assertFalse(m.getJMSRedelivered());
+      assertEquals(1, m.getIntProperty("JMSXDeliveryCount"));
+
+      s.rollback();
+
+      // get the message again
+      m = c.receive();
+      assertTrue(m.getJMSRedelivered());
+      assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
+
+      conn.close();
+
+      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
+      Integer i = (Integer)ServerManagement.getAttribute(on, "MessageCount");
+
+      assertEquals(1, i.intValue());
+   }
    
    public void testRedeliveredFlagTopic() throws Exception
    {
@@ -536,7 +573,9 @@ public class TransactedSessionTest extends MessagingTestCase
          TextMessage tm = (TextMessage)cons.receive();
 
          assertEquals("a message", tm.getText());
+
          assertFalse(tm.getJMSRedelivered());
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 
          sess.rollback();
          sess.close();
@@ -548,7 +587,9 @@ public class TransactedSessionTest extends MessagingTestCase
          tm = (TextMessage)cons.receive();
 
          assertEquals("a message", tm.getText());
+
          assertTrue(tm.getJMSRedelivered());
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
       }
       finally
       {
@@ -558,63 +599,6 @@ public class TransactedSessionTest extends MessagingTestCase
          }
       }
    }
-
-   /**
-    * Make sure redelivered flag is set on redelivery via rollback, different setup: we don't close
-    * the rolled back session and we receive the message whose acknowledgment was cancelled on a new
-    * session.
-    *
-    * TODO: Is this test semantically correct.
-    */
-   public void testRedeliveredQueue3() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
-
-         Session sendSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageProducer prod = sendSession.createProducer(queue);
-         prod.send(sendSession.createTextMessage("a message"));
-
-         log.debug("Message was sent to the queue");
-
-         conn.close();
-
-         conn = cf.createConnection();
-         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-         MessageConsumer cons = sess.createConsumer(queue);
-
-         conn.start();
-
-         TextMessage tm = (TextMessage)cons.receive();
-
-         assertEquals("a message", tm.getText());
-         assertFalse(tm.getJMSRedelivered());
-
-         sess.rollback();
-
-         Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         cons = sess2.createConsumer(queue);
-
-         tm = (TextMessage)cons.receive(3000);
-
-         assertEquals("a message", tm.getText());
-         assertTrue(tm.getJMSRedelivered());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
 
    public void testReceivedRollbackQueue() throws Exception
    {

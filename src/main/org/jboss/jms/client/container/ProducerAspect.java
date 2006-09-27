@@ -97,7 +97,7 @@ public class ProducerAspect
 
       if (deliveryMode == -1)
       {
-         //Use the delivery mode of the producer
+         // Use the delivery mode of the producer
          deliveryMode = producerState.getDeliveryMode();
          if (trace) { log.trace("Using producer's default delivery mode: " + deliveryMode); }
       }
@@ -105,7 +105,7 @@ public class ProducerAspect
 
       if (priority == -1)
       {
-         //Use the priority of the producer
+         // Use the priority of the producer
          priority = producerState.getPriority();
          if (trace) { log.trace("Using producer's default priority: " + priority); }
       }

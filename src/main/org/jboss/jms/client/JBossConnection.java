@@ -61,27 +61,27 @@ public class JBossConnection implements
     Connection, QueueConnection, TopicConnection,
     XAConnection, XAQueueConnection, XATopicConnection, Serializable
 {
-   
+
    // Constants -----------------------------------------------------
    private static final long serialVersionUID = -3715868654823177898L;
-   
+
    static final int TYPE_GENERIC_CONNECTION = 0;
    static final int TYPE_QUEUE_CONNECTION = 1;
    static final int TYPE_TOPIC_CONNECTION = 2;
-   
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    protected ConnectionDelegate delegate;
-   private int connectionType;   
+   private int connectionType;
 
    // Constructors --------------------------------------------------
 
    public JBossConnection(ConnectionDelegate delegate, int connectionType)
    {
       this.delegate = delegate;
-      this.connectionType = connectionType;      
+      this.connectionType = connectionType;
    }
 
    // Connection implementation -------------------------------------
@@ -146,7 +146,7 @@ public class JBossConnection implements
                                                              String messageSelector,
                                                              ServerSessionPool sessionPool,
                                                              int maxMessages) throws JMSException
-   {      
+   {
       // As spec. section 4.11
       if (connectionType == TYPE_QUEUE_CONNECTION)
       {
@@ -156,23 +156,23 @@ public class JBossConnection implements
       return delegate.
          createConnectionConsumer(topic, subscriptionName, messageSelector, sessionPool, maxMessages);
    }
-   
+
    // QueueConnection implementation ---------------------------------
 
    public QueueSession createQueueSession(boolean transacted,
                                           int acknowledgeMode) throws JMSException
-   {    
+   {
        return createSessionInternal(transacted, acknowledgeMode, false,
                                     JBossSession.TYPE_QUEUE_SESSION);
    }
-   
+
    public ConnectionConsumer createConnectionConsumer(Queue queue, String messageSelector,
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
     {
       return delegate.createConnectionConsumer(queue, null, messageSelector, sessionPool, maxMessages);
     }
-   
+
    // TopicConnection implementation ---------------------------------
 
    public TopicSession createTopicSession(boolean transacted,
@@ -181,35 +181,35 @@ public class JBossConnection implements
       return createSessionInternal(transacted, acknowledgeMode, false,
                                    JBossSession.TYPE_TOPIC_SESSION);
    }
-   
+
    public ConnectionConsumer createConnectionConsumer(Topic topic, String messageSelector,
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
    {
       return delegate.createConnectionConsumer(topic, null, messageSelector, sessionPool, maxMessages);
    }
-   
+
    // XAConnection implementation -------------------------------------
 
    public XASession createXASession() throws JMSException
-   {      
+   {
        return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                     JBossSession.TYPE_GENERIC_SESSION);
    }
-   
+
    // XAQueueConnection implementation ---------------------------------
 
    public XAQueueSession createXAQueueSession() throws JMSException
-   {       
+   {
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_QUEUE_SESSION);
 
    }
-   
+
    // XATopicConnection implementation ---------------------------------
 
    public XATopicSession createXATopicSession() throws JMSException
-   {      
+   {
       return createSessionInternal(true, Session.SESSION_TRANSACTED, true,
                                    JBossSession.TYPE_TOPIC_SESSION);
 
@@ -221,14 +221,14 @@ public class JBossConnection implements
    {
       return "JBossConnection->" + delegate;
    }
-   
+
    public String getRemotingClientSessionId()
    {
       ConnectionState state = (ConnectionState)((ClientConnectionDelegate)delegate).getState();
-      
+
       return state.getRemotingConnection().getInvokingClient().getSessionId();
    }
-   
+
    public ConnectionDelegate getDelegate()
    {
       return delegate;
@@ -237,7 +237,7 @@ public class JBossConnection implements
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected JBossSession createSessionInternal(boolean transacted, int acknowledgeMode,
                                                 boolean isXA, int type) throws JMSException
    {
@@ -261,6 +261,22 @@ public class JBossConnection implements
          tccc.restore();
       }
    }
+
+   // Temporarily commented out as it seems to produce random test failures
+   // See http://jira.jboss.org/jira/browse/JBMESSAGING-548
+   
+//   protected void finalize() throws Throwable
+//   {
+//      super.finalize();
+//
+//      // If a user hasn't explicitly closed the connection due to sloppy programming then
+//      // we close it here
+//
+//      if (!delegate.isClosed())
+//      {
+//         close();
+//      }
+//   }
 
    // Private -------------------------------------------------------
 

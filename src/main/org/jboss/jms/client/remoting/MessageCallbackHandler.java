@@ -64,11 +64,10 @@ public class MessageCallbackHandler
       trace = log.isTraceEnabled();
    }
      
-   //Hardcoded for now
+   // Hardcoded for now
    private static final int MAX_REDELIVERIES = 10;
       
-   public static void callOnMessage(ConsumerDelegate cons,
-                                    SessionDelegate sess,
+   public static void callOnMessage(SessionDelegate sess,
                                     MessageListener listener,
                                     int consumerID,
                                     boolean isConnectionConsumer,
@@ -76,15 +75,19 @@ public class MessageCallbackHandler
                                     int ackMode)
       throws JMSException
    {
-      preDeliver(sess, consumerID, m, isConnectionConsumer);  
+      preDeliver(sess, consumerID, m, isConnectionConsumer);
                   
       int tries = 0;
       
       while (true)
       {
          try
-         {      
-            listener.onMessage(m); 
+         {
+            if (trace) { log.trace("calling listener's onMessage(" + m + ")"); }
+
+            listener.onMessage(m);
+
+            if (trace) { log.trace("listener's onMessage() finished"); }
             
             break;
          }
@@ -103,9 +106,9 @@ public class MessageCallbackHandler
                {
                   m.setJMSRedelivered(true);
                   
-                  //TODO delivery count although optional should be global
-                  //so we need to send it back to the server
-                  //but this has performance hit so perhaps we just don't support it?
+                  // TODO delivery count although optional should be global so we need to send it
+                  // back to the server but this has performance hit so perhaps we just don't
+                  // support it?
                   m.incDeliveryCount();
                   
                   tries++;
@@ -129,8 +132,12 @@ public class MessageCallbackHandler
             }
          }
       }
-            
-      postDeliver(sess, consumerID, m, isConnectionConsumer);          
+
+      if (!sess.isClosed())
+      {
+         // postDeliver only if the session is not closed
+         postDeliver(sess, isConnectionConsumer);
+      }
    }
    
    protected static void preDeliver(SessionDelegate sess,
@@ -147,10 +154,7 @@ public class MessageCallbackHandler
       }         
    }
    
-   protected static void postDeliver(SessionDelegate sess,
-                                     int consumerID,
-                                     MessageProxy m,
-                                     boolean isConnectionConsumer)
+   protected static void postDeliver(SessionDelegate sess, boolean isConnectionConsumer)
       throws JMSException
    {
       // If this is the callback-handler for a connection consumer we don't want to acknowledge or
@@ -203,15 +207,15 @@ public class MessageCallbackHandler
       }
               
       this.bufferSize = bufferSize;
-      
+
       buffer = new LinkedList();
-      
+
       isConnectionConsumer = isCC;
       
       this.ackMode = ackMode;
-      
+
       this.sessionDelegate = sess;
-      
+
       this.consumerDelegate = cons;
       
       this.consumerID = consumerID;
@@ -302,13 +306,13 @@ public class MessageCallbackHandler
          
          if (receiverThread != null)
          {            
-            //Wake up any receive() thread that might be waiting
+            // Wake up any receive() thread that might be waiting
             mainLock.notify();
          }   
          
          this.listener = null;
       }
-         
+
       waitForOnMessageToComplete();
       
       // Now we cancel anything left in the buffer. The reason we do this now is that otherwise the
@@ -342,15 +346,25 @@ public class MessageCallbackHandler
    
    private void waitForOnMessageToComplete()
    {
-      // Wait for any on message executions to complete
-      
+      // Wait for any onMessage() executions to complete
+
+      if (Thread.currentThread().equals(sessionExecutor.getThread()))
+      {
+         // the current thread already closing this MessageCallbackHandler (this happens when the
+         // session is closed from within the MessageListener.onMessage(), for example), so no need
+         // to register another Closer (see http://jira.jboss.org/jira/browse/JBMESSAGING-542)
+         return;
+      }
+
       Future result = new Future();
       
       try
       {
-         this.sessionExecutor.execute(new Closer(result));
-         
+         sessionExecutor.execute(new Closer(result));
+
+         if (trace) { log.trace("blocking wait for Closer execution"); }
          result.getResult();
+         if (trace) { log.trace("got Closer result"); }
       }
       catch (InterruptedException e)
       {
@@ -439,7 +453,7 @@ public class MessageCallbackHandler
                // message is acknowledged so it gets removed from the queue/subscription.
                preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
                
-               postDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
+               postDeliver(sessionDelegate, isConnectionConsumer);
                
                if (!m.getMessage().isExpired())
                {
@@ -590,9 +604,9 @@ public class MessageCallbackHandler
       {         
          MessageProxy msg = (MessageProxy)iter.next();
       
-         //if this is the handler for a connection consumer we don't want to set the session delegate
-         //since this is only used for client acknowledgement which is illegal for a session
-         //used for an MDB
+         // If this is the handler for a connection consumer we don't want to set the session
+         // delegate since this is only used for client acknowledgement which is illegal for a
+         // session used for an MDB
          msg.setSessionDelegate(sessionDelegate, isConnectionConsumer);
                   
          msg.setReceived();
@@ -628,7 +642,7 @@ public class MessageCallbackHandler
          {
             listenerRunning = true;
 
-            if (trace) { log.trace(this + ": new ListenerRunner scheduled"); }
+            if (trace) { log.trace(this + " scheduled a new ListenerRunner"); }
             this.queueRunner(new ListenerRunner());
          }     
          
@@ -653,7 +667,11 @@ public class MessageCallbackHandler
       
       public void run()
       {
+         if (trace) { log.trace("Closer starts running"); }
+
          result.setResult(null);
+
+         if (trace) { log.trace("Closer finished run"); }
       }
    }
    
@@ -673,15 +691,16 @@ public class MessageCallbackHandler
             if (listener == null)
             {
                listenerRunning = false;
-               
+               if (trace) { log.trace("no listener, returning"); }
                return;
             }
             
-            //remove a message from the buffer
+            // remove a message from the buffer
 
             if (buffer.isEmpty())
             {
-               listenerRunning = false;               
+               listenerRunning = false;
+               if (trace) { log.trace("no messages in buffer, marking listener as not running"); }
             }
             else
             {               
@@ -697,6 +716,7 @@ public class MessageCallbackHandler
                if (!again)
                {
                   listenerRunning  = false;
+                  if (trace) { log.trace("no more messages in buffer, marking listener as not running"); }
                }  
             }
          }
@@ -705,7 +725,7 @@ public class MessageCallbackHandler
          {
             try
             {
-               callOnMessage(consumerDelegate, sessionDelegate, listener, consumerID, false, mp, ackMode);
+               callOnMessage(sessionDelegate, listener, consumerID, false, mp, ackMode);
             }
             catch (JMSException e)
             {
@@ -715,14 +735,14 @@ public class MessageCallbackHandler
          
          if (again)
          {
-            //Queue it up again
+            // Queue it up again
             queueRunner(this);
          }
          else
          {
             if (!serverSending)
             {
-               //Ask server for more messages
+               // Ask server for more messages
                try
                {
                   consumerDelegate.more();

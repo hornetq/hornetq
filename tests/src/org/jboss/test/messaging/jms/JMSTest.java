@@ -30,7 +30,9 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.naming.InitialContext;
+import javax.management.ObjectName;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -153,7 +155,7 @@ public class JMSTest extends MessagingTestCase
       conn.close();
    }
 
-   public void test_NonPersistent_Transactional() throws Exception
+   public void test_NonPersistent_Transactional_Send() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
@@ -191,7 +193,41 @@ public class JMSTest extends MessagingTestCase
       conn.close();
    }
 
-   public void test_NonPersistent_NonTransactional_Asynchronous_to_Client() throws Exception
+   public void test_NonPersistent_Transactional_Acknowledgment() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
+
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      TextMessage m = session.createTextMessage("one");
+      prod.send(m);
+
+      conn.close();
+
+      conn = cf.createConnection();
+
+      session = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+      MessageConsumer cons = session.createConsumer(queue);
+
+      conn.start();
+
+      TextMessage rm = (TextMessage)cons.receive();
+      assertEquals("one", rm.getText());
+
+      session.commit();
+
+      conn.close();
+   }
+
+
+   public void test_Asynchronous_to_Client() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
@@ -243,6 +279,90 @@ public class JMSTest extends MessagingTestCase
 
       conn.close();
    }
+
+   public void test_MessageListener() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
+
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createConsumer(queue);
+
+      final Slot slot = new Slot();
+
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            try
+            {
+               slot.put(m);
+            }
+            catch(InterruptedException e)
+            {
+               log.warn("got InterruptedException", e);
+            }
+         }
+      });
+
+      conn.start();
+
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      TextMessage m = session.createTextMessage("one");
+      prod.send(m);
+
+      TextMessage rm = (TextMessage)slot.poll(5000);
+
+      assertEquals("one", rm.getText());
+
+      conn.close();
+   }
+
+   public void test_ClientAcknowledge() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
+
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      MessageProducer p = session.createProducer(queue);
+      p.send(session.createTextMessage("CLACK"));
+
+      MessageConsumer cons = session.createConsumer(queue);
+
+      conn.start();
+
+      TextMessage m = (TextMessage)cons.receive(1000);
+
+      assertEquals("CLACK", m.getText());
+
+      // make sure there's no other message in queue
+      Message m2 = cons.receive(1000);
+      assertNull(m2);
+
+      // make sure the message is still in "delivering" state
+      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=JMSTestQueue");
+      Integer mc = (Integer)ServerManagement.getAttribute(on, "MessageCount");
+
+      assertEquals(1, mc.intValue());
+
+      m.acknowledge();
+
+      // make sure there's nothing in queue anymore
+      mc = (Integer)ServerManagement.getAttribute(on, "MessageCount");
+
+      assertEquals(0, mc.intValue());
+
+      conn.close();
+   }
+
 
 
    // Package protected ---------------------------------------------

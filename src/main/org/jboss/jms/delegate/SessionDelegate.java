@@ -79,9 +79,9 @@ public interface SessionDelegate extends SessionEndpoint
    
    void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons);
    
-   public boolean getTransacted();
+   boolean getTransacted();
    
-   public int getAcknowledgeMode();   
+   int getAcknowledgeMode();
    
    void commit() throws JMSException;
    

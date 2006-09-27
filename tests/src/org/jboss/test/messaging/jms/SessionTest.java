@@ -38,6 +38,7 @@ import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.naming.InitialContext;
+import javax.management.ObjectName;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
@@ -464,6 +465,80 @@ public class SessionTest extends MessagingTestCase
    }
 
 
+   public void testCloseNoClientAcknowledgment() throws Exception
+   {
+      // send a message to the queue
+
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      s.createProducer(queue).send(s.createTextMessage("wont_ack"));
+      conn.close();
+
+      conn = cf.createConnection();
+      s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      conn.start();
+
+      TextMessage m = (TextMessage)s.createConsumer(queue).receive(1000);
+
+      assertEquals("wont_ack", m.getText());
+
+      // Do NOT ACK
+
+      s.close(); // this shouldn cancel the delivery
+
+      // get the message again
+      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      m = (TextMessage)s.createConsumer(queue).receive(1000);
+
+      assertEquals("wont_ack", m.getText());
+
+      conn.close();
+   }
+
+   public void testCloseInTransaction() throws Exception
+   {
+      // send a message to the queue
+
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      s.createProducer(queue).send(s.createTextMessage("bex"));
+      conn.close();
+
+      conn = cf.createConnection();
+      Session session = conn.createSession(true, -1);
+      conn.start();
+
+      TextMessage m = (TextMessage)session.createConsumer(queue).receive(1000);
+
+      assertEquals("bex", m.getText());
+
+      // make sure the acknowledment hasn't been sent to the channel
+      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=TestQueue");
+      Integer mc = (Integer)ServerManagement.getAttribute(on, "MessageCount");
+
+      assertEquals(1, mc.intValue());
+
+      // close the session
+      session.close();
+
+      // JMS 1.1 4.4.1: "Closing a transacted session must roll back its transaction in progress"
+
+      mc = (Integer)ServerManagement.getAttribute(on, "MessageCount");
+      assertEquals(1, mc.intValue());
+
+      conn.close();
+
+      // make sure I can still get the right message
+
+      conn = cf.createConnection();
+      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.start();
+      TextMessage rm = (TextMessage)s.createConsumer(queue).receive(1000);
+
+      assertEquals("bex", m.getText());
+
+      conn.close();
+   }
 
    // Package protected ---------------------------------------------
    

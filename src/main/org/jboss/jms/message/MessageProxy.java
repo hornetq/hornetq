@@ -59,6 +59,10 @@ public class MessageProxy implements Message, Serializable
    
    // Static --------------------------------------------------------
 
+   protected static final int STATE_NEW = 0;
+   protected static final int STATE_SENT = 1;
+   protected static final int STATE_RECEIVED = 2;
+
    // Attributes ----------------------------------------------------
 
    protected JBossMessage message;
@@ -66,27 +70,16 @@ public class MessageProxy implements Message, Serializable
    protected transient SessionDelegate delegate;
    
    protected transient boolean cc;
-
    protected transient boolean messageCopied;
-
    protected transient boolean propertiesCopied;
-
    protected transient boolean bodyCopied;
 
    protected transient int state;
 
-   protected static final int STATE_NEW = 0;
-
-   protected static final int STATE_SENT = 1;
-
-   protected static final int STATE_RECEIVED = 2;
-
    protected transient boolean propertiesReadOnly;
-
    protected transient boolean bodyReadOnly;
 
    protected int deliveryCount;
-
    protected transient boolean jmsRedelivered;
 
    // Constructors --------------------------------------------------
@@ -264,6 +257,10 @@ public class MessageProxy implements Message, Serializable
 
    public long getLongProperty(String name) throws JMSException
    {
+      if ("JMSXDeliveryCount".equals(name))
+      {
+         return deliveryCount;
+      }
       return message.getLongProperty(name);
    }
 
@@ -279,6 +276,10 @@ public class MessageProxy implements Message, Serializable
 
    public String getStringProperty(String name) throws JMSException
    {
+      if ("JMSXDeliveryCount".equals(name))
+      {
+         return Integer.toString(deliveryCount);
+      }
       return message.getStringProperty(name);
    }
 
@@ -407,7 +408,7 @@ public class MessageProxy implements Message, Serializable
 
       bodyReadOnly = true;
 
-      this.jmsRedelivered = deliveryCount > 0;
+      this.jmsRedelivered = deliveryCount > 1;
    }
 
    public JBossMessage getMessage()

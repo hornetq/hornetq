@@ -1184,6 +1184,15 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          tx = txRep.createTransaction();
       }
       
+      if (xa)
+      {
+    	  assertEquals(1,txRep.getNumberOfRegisteredTransactions());
+      }
+      else
+      {
+    	  assertEquals(0,txRep.getNumberOfRegisteredTransactions());
+      }
+      
       MessageReference ref1 = ms.reference(m1);
       MessageReference ref2 = ms.reference(m2);  
       MessageReference ref3 = ms.reference(m3);       
@@ -1235,6 +1244,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       //commit transaction
       tx.commit();
+
+      assertEquals("numberOfRegisteredTransactions",0,txRep.getNumberOfRegisteredTransactions());
       
       //check we can see only the last 3 refs
       refs = getReferenceIds(channel.getChannelID());

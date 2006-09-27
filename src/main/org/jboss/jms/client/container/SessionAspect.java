@@ -23,9 +23,12 @@ package org.jboss.jms.client.container;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 import javax.jms.IllegalStateException;
 import javax.jms.Session;
+import javax.jms.JMSException;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -44,6 +47,7 @@ import org.jboss.messaging.util.Util;
  * This aspect is PER_VM
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.com>Ovidiu Feodorov</a>
  *
  * $Id$
  */
@@ -63,41 +67,51 @@ public class SessionAspect
    
    // Public --------------------------------------------------------
 
+   public Object handleClosing(Invocation invocation) throws Throwable
+   {
+      // Send to the server all acknowledgments accumulated in toAck. This is useful, for example,
+      // when a message listener close the session from its onMessage().
+      acknowledgeOnClosing(invocation);
+
+      return invocation.invokeNext();
+   }
+
+
    public Object handleClose(Invocation invocation) throws Throwable
    {      
       Object res = invocation.invokeNext();
-      
-      SessionState state = getState(invocation);
-      
-      //We must explicitly shutdown the executor
 
+      // We must explicitly shutdown the executor
+
+      SessionState state = getState(invocation);
       state.getExecutor().shutdownNow();
-         
+
       return res;
-   }      
+   }
    
    public Object handlePreDeliver(Invocation invocation) throws Throwable
    { 
       MethodInvocation mi = (MethodInvocation)invocation;
-      
       SessionState state = getState(invocation);
       
       int ackMode = state.getAcknowledgeMode();
       
-      if (ackMode == Session.CLIENT_ACKNOWLEDGE || ackMode == Session.AUTO_ACKNOWLEDGE ||
-          ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      if (ackMode == Session.CLIENT_ACKNOWLEDGE ||
+          ackMode == Session.AUTO_ACKNOWLEDGE ||
+          ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
+          state.getCurrentTxId() == null)
       {
+         // We collect acknowledgments (and not transact them) for CLIENT, AUTO and DUPS_OK, and
+         // also for XA sessions not enrolled in a global transaction.
+
          SessionDelegate del = (SessionDelegate)mi.getTargetObject();
          
-         //We store the ack in a list for later acknowledgement or recovery
+         // We store the ack in a list for later acknowledgement or recovery
     
          Object[] args = mi.getArguments();
-         
          MessageProxy mp = (MessageProxy)args[0];
-         
          int consumerID = ((Integer)args[1]).intValue();
-         
-         AckInfo info = new AckInfo(mp, consumerID);
+         AckInfo info = new AckInfo(mp, consumerID, ackMode);
          
          state.getToAck().add(info);
          
@@ -110,9 +124,7 @@ public class SessionAspect
    public Object handleAcknowledgeAll(Invocation invocation) throws Throwable
    {    
       MethodInvocation mi = (MethodInvocation)invocation;
-      
       SessionState state = getState(invocation);
-      
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
     
       if (!state.getToAck().isEmpty())
@@ -128,42 +140,34 @@ public class SessionAspect
    public Object handlePostDeliver(Invocation invocation) throws Throwable
    { 
       MethodInvocation mi = (MethodInvocation)invocation;
-      
       SessionState state = getState(invocation);
       
       int ackMode = state.getAcknowledgeMode();
       
-      if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      if (ackMode == Session.AUTO_ACKNOWLEDGE ||
+          ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
+          ackMode != Session.CLIENT_ACKNOWLEDGE && state.getCurrentTxId() == null)
       {
-         SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-         
-         //We acknowledge immediately
-         
+         // We acknowledge immediately on a non-transacted session that does not want to
+         // CLIENT_ACKNOWLEDGE, or an XA session not enrolled in a global transaction.
+
+         SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
+
          if (!state.isRecoverCalled())
          {
-            //We don't acknowledge the message if recover() was called
-            
-            //Object[] args = mi.getArguments();
-            
-            //MessageProxy proxy = (MessageProxy)args[0];
-                   
-            //int consumerID = ((Integer)args[1]).intValue();
+            if (trace) { log.trace("acknowledging NON-transactionally"); }
 
-            //AckInfo ack = new AckInfo(proxy, consumerID);
-            
             List acks = state.getToAck();
-            
             AckInfo ack = (AckInfo)acks.get(0);
-            
-            del.acknowledge(ack);   
-               
-            state.getToAck().clear();            
+            sd.acknowledge(ack);
+            state.getToAck().clear();
          }
          else
          {
+            if (trace) { log.trace("recover called, so NOT acknowledging"); }
+
             state.setRecoverCalled(false);
          }
-         if (trace) { log.trace("ack mode is " + Util.acknowledgmentModeToString(ackMode)+ ", acknowledged on " + del); }
       }
 
       return null;
@@ -301,6 +305,35 @@ public class SessionAspect
    private SessionState getState(Invocation inv)
    {
       return (SessionState)((DelegateSupport)inv.getTargetObject()).getState();
+   }
+
+   /**
+    * The method sends to server all eligible acknowlegments (those that are NOT CLIIENT_ACKNOWLEDGE
+    * for example)
+    */
+   private void acknowledgeOnClosing(Invocation invocation) throws JMSException
+   {
+      MethodInvocation mi = (MethodInvocation)invocation;
+      SessionState state = getState(invocation);
+      SessionDelegate del = (SessionDelegate)mi.getTargetObject();
+
+      // select eligible acknowledgments
+      List acks = new ArrayList();
+      for(Iterator i = state.getToAck().iterator(); i.hasNext(); )
+      {
+         AckInfo ack = (AckInfo)i.next();
+         if (ack.getAckMode() == Session.AUTO_ACKNOWLEDGE ||
+             ack.getAckMode() == Session.DUPS_OK_ACKNOWLEDGE)
+         {
+            acks.add(ack);
+            i.remove();
+         }
+      }
+
+      if (!acks.isEmpty())
+      {
+         del.acknowledgeBatch(acks);
+      }
    }
     
    // Inner Classes -------------------------------------------------

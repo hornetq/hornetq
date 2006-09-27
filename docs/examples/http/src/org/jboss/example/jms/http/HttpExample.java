@@ -23,7 +23,7 @@ package org.jboss.example.jms.http;
 
 import org.jboss.example.jms.common.ExampleSupport;
 
-import javax.naming.InitialContext;
+import javax.naming.InitialContext; 
 import javax.jms.TextMessage;
 import javax.jms.Session;
 import javax.jms.ConnectionFactory;

@@ -24,6 +24,7 @@ package org.jboss.jms.client.container;
 import javax.jms.IllegalStateException;
 import javax.jms.Message;
 import javax.jms.TransactionInProgressException;
+import javax.jms.Session;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -36,8 +37,7 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.TxState;
-import org.jboss.jms.util.MessagingTransactionRolledBackException;
+import org.jboss.logging.Logger;
 
 /**
  * This aspect handles transaction related logic
@@ -45,6 +45,7 @@ import org.jboss.jms.util.MessagingTransactionRolledBackException;
  * This aspect is PER_VM.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.com>Ovidiu Feodorov</a>
  *
  * $Id$
  */
@@ -52,7 +53,11 @@ public class TransactionAspect
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(TransactionAspect.class);
+
    // Attributes ----------------------------------------------------
+
+   private boolean trace = log.isTraceEnabled();
 
    // Static --------------------------------------------------------
 
@@ -129,13 +134,6 @@ public class TransactionAspect
       ResourceManager rm = connState.getResourceManager();
       ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
 
-      TxState tx = rm.getTx(state.getCurrentTxId());
-
-      if (tx == null)
-      {
-         throw new IllegalStateException("Cannot find tx:" + state.getCurrentTxId());
-      }
-
       try
       {
          rm.rollbackLocal((LocalTx)state.getCurrentTxId(), conn);
@@ -152,62 +150,50 @@ public class TransactionAspect
 
    public Object handleSend(Invocation invocation) throws Throwable
    {
-      SessionState sessionState = (SessionState)getState(invocation);
+      SessionState state = (SessionState)getState(invocation);
+      Object txID = state.getCurrentTxId();
 
-      if (sessionState.isTransacted())
+      if (txID != null)
       {
-         //Session is transacted - so we add message to tx instead of sending now
+         // the session is non-XA and transacted, or XA and enrolled in a global transaction, so
+         // we add the message to a transaction instead of sending it now. An XA session that has
+         // not been enrolled in a global transaction behaves as a non-transacted session.
 
-         Object txID = sessionState.getCurrentTxId();
-
-         if (txID == null)
-         {
-            throw new IllegalStateException("Attempt to send message in tx, but txId is null, XA?" + sessionState.isXA());
-         }
-
-         ConnectionState connState = (ConnectionState)sessionState.getParent();
-
+         ConnectionState connState = (ConnectionState)state.getParent();
          MethodInvocation mi = (MethodInvocation)invocation;
-
          Message m = (Message)mi.getArguments()[0];
+
+         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager"); }
 
          connState.getResourceManager().addMessage(txID, m);
 
          // ... and we don't invoke any further interceptors in the stack
          return null;
       }
-      else
-      {
-         return invocation.invokeNext();
-      }
+
+      if (trace) { log.trace("sending message NON-transactionally"); }
+
+      return invocation.invokeNext();
    }
 
    public Object handlePreDeliver(Invocation invocation) throws Throwable
    {
       SessionState state = (SessionState)getState(invocation);
+      Object txID = state.getCurrentTxId();
 
-      if (state.isTransacted())
+      if (txID != null)
       {
+         // the session is non-XA and transacted, or XA and enrolled in a global transaction. An
+         // XA session that has not been enrolled in a global transaction behaves as a
+         // non-transacted session.
+
          MethodInvocation mi = (MethodInvocation)invocation;
-
          MessageProxy proxy = (MessageProxy)mi.getArguments()[0];
-
-         //long messageID = proxy.getMessage().getMessageID();
-
          int consumerID = ((Integer)mi.getArguments()[1]).intValue();
-
-         AckInfo info = new AckInfo(proxy, consumerID);
-
-         Object txID = state.getCurrentTxId();
-
-         if (txID == null)
-         {
-            throw new IllegalStateException("Attempt to send message in tx, but txId is null, XA?" + state.isXA());
-         }
-
+         AckInfo info = new AckInfo(proxy, consumerID, Session.SESSION_TRANSACTED);
          ConnectionState connState = (ConnectionState)state.getParent();
 
-         //Add the acknowledgement to the transaction
+         if (trace) { log.trace("sending acknowlegment transactionally, queueing on resource manager"); }
 
          connState.getResourceManager().addAck(txID, info);
       }

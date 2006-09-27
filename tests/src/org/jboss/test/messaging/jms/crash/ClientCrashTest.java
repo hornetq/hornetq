@@ -41,7 +41,7 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * ClientCrashTest.java,v 1.1 2006/02/21 08:22:28 timfox Exp
+ * $Id$
  */
 public class ClientCrashTest extends MessagingTestCase
 {
@@ -83,6 +83,7 @@ public class ClientCrashTest extends MessagingTestCase
       localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "3000");
        
       localServer.deployQueue("Queue", null);
+      localServer.deployTopic("Topic", null);
           
       // Connect to the remote server, but don't start a servicecontainer on it. We are only using
       // the remote server to open a client connection to the local server.
@@ -129,7 +130,6 @@ public class ClientCrashTest extends MessagingTestCase
       // See if we still have a connection with this id
       assertFalse(cm.containsSession(remotingSessionId));            
    }
-   
    
    // Package protected ---------------------------------------------
    

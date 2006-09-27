@@ -686,6 +686,7 @@
    </target>
 
    <target name="source-bundle">
+      <mkdir dir="${build.lib}"/>
       <zip destfile="${build.lib}/jboss-messaging-${module.version}-src.zip">
          <zipfileset dir="${project.root}" prefix="jboss-messaging-${module.version}-src">
             <exclude name="**/.svn"/>

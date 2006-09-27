@@ -72,7 +72,12 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    {
       endpoint.closing();
    }
-   
+
+   public boolean isClosed()
+   {
+      return endpoint.isClosed();
+   }
+
    public void send(JBossMessage msg) throws JMSException
    {
       endpoint.send(msg);

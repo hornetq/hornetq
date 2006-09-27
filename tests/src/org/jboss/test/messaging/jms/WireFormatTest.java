@@ -265,7 +265,7 @@ public class WireFormatTest extends MessagingTestCase
          
          long messageID = 123456;
          int consumerID = 65432;
-         AckInfo ack = new AckInfo(messageID, consumerID);
+         AckInfo ack = new AckInfo(messageID, consumerID, -1);
          
          Object[] args = new Object[] { ack };
          
@@ -355,9 +355,9 @@ public class WireFormatTest extends MessagingTestCase
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         AckInfo ackA = new AckInfo(1524, 71627);
-         AckInfo ackB = new AckInfo(987987, 45354);
-         AckInfo ackC = new AckInfo(32423, 4533);
+         AckInfo ackA = new AckInfo(1524, 71627, -1);
+         AckInfo ackB = new AckInfo(987987, 45354, -1);
+         AckInfo ackC = new AckInfo(32423, 4533, -1);
          
          List acks = new ArrayList();
          acks.add(ackA);
@@ -733,7 +733,7 @@ public class WireFormatTest extends MessagingTestCase
          JBossMessage m = new JBossMessage(123);
          MessageTest.configureMessage(m);
          
-         AckInfo info = new AckInfo(123, 456);
+         AckInfo info = new AckInfo(123, 456, -1);
          
          TxState state = new TxState();
          state.getMessages().add(m);
@@ -852,8 +852,8 @@ public class WireFormatTest extends MessagingTestCase
          
          List ids = new ArrayList();
          
-         AckInfo ack1 = new AckInfo(1254, 78123);
-         AckInfo ack2 = new AckInfo(786, 8979);
+         AckInfo ack1 = new AckInfo(1254, 78123, -1);
+         AckInfo ack2 = new AckInfo(786, 8979, -1);
          ids.add(ack1);
          ids.add(ack2);
          

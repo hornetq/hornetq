@@ -212,7 +212,7 @@ public class ClientConnectionFactoryDelegate
                remotingConnection.stop();
             }
             catch (Throwable ignore)
-            {               
+            {
             }
          }
          

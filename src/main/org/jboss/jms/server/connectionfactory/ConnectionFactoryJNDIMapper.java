@@ -86,12 +86,12 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       ServerConnectionFactoryEndpoint endpoint =
          new ServerConnectionFactoryEndpoint(id, serverPeer, clientID, jndiBindings,
                                              prefetchSize, defaultTempQueueFullSize,
-                                             defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
+                                             defaultTempQueuePageSize,
+                                             defaultTempQueueDownCacheSize);
 
-      ClientConnectionFactoryDelegate delegate = new ClientConnectionFactoryDelegate(id, locatorURI,
-                                                                                      serverPeer.getVersion(),
-                                                                                      serverPeer.getServerPeerID(),
-                                                                                      clientPing);
+      ClientConnectionFactoryDelegate delegate =
+         new ClientConnectionFactoryDelegate(id, locatorURI, serverPeer.getVersion(),
+                                             serverPeer.getServerPeerID(), clientPing);
 
       ConnectionFactoryAdvised connFactoryAdvised = new ConnectionFactoryAdvised(endpoint);
       

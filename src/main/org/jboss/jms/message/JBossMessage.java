@@ -79,13 +79,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    private static final byte NULL = 0;
    
    private static final byte STRING = 1;
-   
    private static final byte BYTES = 2;
-   
    private static final byte QUEUE = 3;
-   
    private static final byte TOPIC = 4;
-   
    private static final byte TEMP_QUEUE = 5;
    
    private static final byte TEMP_TOPIC = 6;

@@ -33,90 +33,116 @@ import org.jboss.remoting.transport.Connector;
 import org.jboss.remoting.transport.PortUtil;
 
 /**
- * 
+ *
  * A CallbackServerFactory.
- * 
+ *
  * We maintain only one callbackserver per transport per client VM.
  * This is to avoid having too many resources e.g. server sockets in use on the client
  * E.g. in the case of a socket transport, if we had one callbackserver per connection then
  * we would have one server socket listening per connection, so we could run out of available
  * ports with a lot of connections.
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
  * $Id$
  */
 public class CallbackServerFactory
-{      
+{
    private static final Logger log = Logger.getLogger(CallbackServerFactory.class);
-   
+
    private static final String CALLBACK_SERVER_PARAMS =
       "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
       "dataType=jms&" +
       "timeout=0&" +
       "socket.check_connection=false";
-   
+
    public static final String JMS_CALLBACK_SUBSYSTEM = "CALLBACK";
+
+   public static final String CLIENT_HOST =
+      System.getProperty("jboss.messaging.callback.bind.address");
    
-   public static final String CLIENT_HOST = System.getProperty("jboss.messaging.callback.bind.address");
+   public static final int CLIENT_PORT = getPort();
    
+   private static int getPort()
+   {
+	   String propertyPort = System.getProperty("jboss.messaging.callback.bind.port");
+	   
+	   try
+	   {
+		   if (propertyPort!=null)
+		   {
+			   return Integer.parseInt(propertyPort);
+		   }
+		   else
+		   {
+			   return -1;
+		   }
+	   }
+	   catch (Exception e)
+	   {
+		   log.warn("Error during parsing jboss.messaging.callback.bind.port", e);
+		   return -1;
+	   }
+	   
+   }
+
    public static CallbackServerFactory instance = new CallbackServerFactory();
-   
+
    private Map holders;
-   
+
    private CallbackServerFactory()
-   {      
+   {
       holders = new HashMap();
    }
-      
+
    public synchronized boolean containsCallbackServer(String protocol)
    {
       return holders.containsKey(protocol);
    }
-   
+
    public synchronized Connector getCallbackServer(InvokerLocator serverLocator) throws Exception
    {
       String protocol = serverLocator.getProtocol();
-      
-      Holder h = (Holder)holders.get(protocol);           
-      
+
+      Holder h = (Holder)holders.get(protocol);
+
       if (h == null)
-      {         
+      {
          h = new Holder();
-         
+
          h.server = startCallbackServer(serverLocator);
-         
+
          holders.put(protocol, h);
       }
       else
       {
          h.refCount++;
       }
-      
+
       return h.server;
    }
-   
+
    public synchronized void stopCallbackServer(String protocol)
    {
       Holder h = (Holder)holders.get(protocol);
-      
+
       if (h == null)
       {
          throw new IllegalArgumentException("Cannot find callback server for protocol: " + protocol);
       }
-      
+
       h.refCount--;
-      
+
       if (h.refCount == 0)
       {
          stopCallbackServer(h.server);
-         
+
          holders.remove(protocol);
-      }      
+      }
    }
-   
+
    protected Connector startCallbackServer(InvokerLocator serverLocator) throws Exception
    {
       if (log.isTraceEnabled()) { log.trace(this + " setting up connection to " + serverLocator); }
@@ -149,8 +175,12 @@ public class CallbackServerFactory
       {
          try
          {      
-            int bindPort = PortUtil.findFreePort(thisAddress);
-      
+            int bindPort = CLIENT_PORT;
+            if (bindPort<=0)
+            {
+            	bindPort=PortUtil.findFreePort(thisAddress);
+            }
+            
             String callbackServerURI;
       
             if (isSSL)

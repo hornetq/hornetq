@@ -66,6 +66,10 @@
       <priority value="DEBUG"/>
    </category>
 
+   <category name="org.jboss.jms.server.remoting.JMSWireFormat">
+      <priority value="DEBUG"/>
+   </category>
+
    <root>
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>

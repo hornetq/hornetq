@@ -111,6 +111,11 @@ public class MessagingXAResource implements XAResource
       if (trace) { log.trace(this + " committing " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
       
       rm.commit(xid, onePhase, connection);
+
+      // leave the session in a 'clean' state, the currentTxId will be set when the XAResource will
+      // be enrolled with a new transaction.
+
+      setCurrentTransactionId(null);
    }
 
    public void end(Xid xid, int flags) throws XAException
@@ -158,7 +163,10 @@ public class MessagingXAResource implements XAResource
    public void rollback(Xid xid) throws XAException
    {
       if (trace) { log.trace(this + " rolling back " + xid); }
-  
+
+      // TODO on rollback should we also stop and start the consumers to remove any transient
+      // messages, like we do on local session rollback??
+
       rm.rollback(xid, connection);
    }
 
@@ -184,10 +192,11 @@ public class MessagingXAResource implements XAResource
             case TMNOFLAGS :
                if (convertTx)
                {    
-                  //If I commit/rollback the tx, then there is a short period of time between the AS (or whoever)
-                  //calling commit on the tx and calling start to enrolling the session in a new tx.
-                  //If the session has any listeners then in that period, messages can be received asychronously
-                  //but we want them to be received in the context of a tx, so we convert.
+                  // If I commit/rollback the tx, then there is a short period of time between the
+                  // AS (or whoever) calling commit on the tx and calling start to enrolling the
+                  // session in a new tx. If the session has any listeners then in that period,
+                  // messages can be received asychronously but we want them to be received in the
+                  // context of a tx, so we convert.
                   setCurrentTransactionId(rm.convertTx((LocalTx)sessionState.getCurrentTxId(), xid));
                }
                else
@@ -231,11 +240,6 @@ public class MessagingXAResource implements XAResource
    
    private void setCurrentTransactionId(final Xid xid)
    {
-      if (xid == null)
-      {
-         throw new NullPointerException("null xid");
-      }
-
       if (trace) { log.trace(this + " setting current xid to " + xid + ",  previous " + sessionState.getCurrentTxId()); }
 
       sessionState.setCurrentTxId(xid);
@@ -245,7 +249,7 @@ public class MessagingXAResource implements XAResource
    {
       if (xid == null)
       {
-         throw new org.jboss.util.NullArgumentException("xid");
+         throw new IllegalArgumentException("xid must be not null");
       }
 
       if (trace) { log.trace(this + " unsetting current xid " + xid + ",  previous " + sessionState.getCurrentTxId()); }

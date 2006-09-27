@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.logging.Logger;
 
 /**
  * This class manages instances of MessageIdGenerator. It ensures there is one instance per instance
@@ -39,25 +40,37 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
  */
 public class MessageIdGeneratorFactory
 {
+   // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(MessageIdGeneratorFactory.class);
+
    public static MessageIdGeneratorFactory instance = new MessageIdGeneratorFactory();
 
    //TODO Make configurable
    private static final int BLOCK_SIZE = 256;
 
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private Map holders;
+
+   // Constructors --------------------------------------------------
 
    private MessageIdGeneratorFactory()
    {
       holders = new HashMap();
    }
 
+   // Public --------------------------------------------------------
+
    public synchronized boolean containsMessageIdGenerator(String serverId)
    {
       return holders.containsKey(serverId);
    }
 
-   public synchronized MessageIdGenerator getGenerator(String serverId,
-                                                       ConnectionFactoryDelegate cfd)
+   public synchronized MessageIdGenerator checkOutGenerator(String serverId,
+                                                            ConnectionFactoryDelegate cfd)
       throws JMSException
    {
       Holder h = (Holder)holders.get(serverId);
@@ -65,17 +78,21 @@ public class MessageIdGeneratorFactory
       if (h == null)
       {
          h = new Holder(new MessageIdGenerator(cfd, BLOCK_SIZE));
-
          holders.put(serverId, h);
       }
       else
       {
          h.refCount++;
       }
+
+      log.debug("checked out MessageIdGenerator for " + serverId +
+                ", reference count is " + h.refCount);
+
+
       return h.generator;
    }
 
-   public synchronized void returnGenerator(String serverId)
+   public synchronized void checkInGenerator(String serverId)
    {
       Holder h = (Holder)holders.get(serverId);
 
@@ -89,13 +106,28 @@ public class MessageIdGeneratorFactory
       if (h.refCount == 0)
       {
          holders.remove(serverId);
+         log.debug("checked in and removed MessageIdGenerator for " + serverId);
+      }
+      else
+      {
+         log.debug("checked in MessageIdGenerator for " + serverId +
+                   ", reference count is " + h.refCount);
       }
    }
 
    public synchronized void clear()
    {
       holders.clear();
+      log.debug("cleared MessageIdGeneratorFactory");
    }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
    private class Holder
    {

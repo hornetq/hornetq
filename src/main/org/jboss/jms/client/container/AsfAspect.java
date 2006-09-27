@@ -39,13 +39,13 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
-import org.jgroups.protocols.JMS;
+
 
 /**
  * An aspect that implements the Application Server Facilities for concurrent processing of 
  * a consumer's messages.
  * 
- * @see JMS 1.1 spec. section 8.2
+ * See JMS 1.1 spec. section 8.2
  * 
  * This aspect is PER_INSTANCE.
  *  
@@ -162,8 +162,7 @@ public class AsfAspect
 
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
          
-         MessageCallbackHandler.callOnMessage(holder.consumerDelegate, del,
-                                              sessionListener, holder.consumerID, false,
+         MessageCallbackHandler.callOnMessage(del, sessionListener, holder.consumerID, false,
                                               holder.msg, ackMode);                          
       }
       

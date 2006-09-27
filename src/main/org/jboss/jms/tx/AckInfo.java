@@ -32,6 +32,7 @@ import org.jboss.messaging.util.Streamable;
  * for processing.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox </a>
+ * @author <a href="mailto:ovidiu@jboss.com>Ovidiu Feodorov</a>
  *
  * $Id$
  */
@@ -42,8 +43,10 @@ public class AckInfo implements Streamable
    // Attributes ----------------------------------------------------
    
    protected long messageID;
-   
    protected int consumerID;
+
+   // One of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE, etc.
+   private int ackMode;
    
    // The actual proxy must not get serialized
    protected transient MessageProxy msg;
@@ -55,18 +58,31 @@ public class AckInfo implements Streamable
    public AckInfo()
    {      
    }
-   
+
    public AckInfo(MessageProxy proxy, int consumerID)
+   {
+      this(proxy, consumerID, -1);
+   }
+
+   /**
+    * @param ackMode - one of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE, etc.
+    */
+   public AckInfo(MessageProxy proxy, int consumerID, int ackMode)
    {
       this.msg = proxy;
       this.messageID = proxy.getMessage().getMessageID();
-      this.consumerID = consumerID;    
+      this.consumerID = consumerID;
+      this.ackMode = ackMode;
    }
    
-   public AckInfo(long messageID, int consumerID)
+   /**
+    * @param ackMode - one of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE, etc.
+    */
+   public AckInfo(long messageID, int consumerID, int ackMode)
    {
       this.messageID = messageID;
       this.consumerID = consumerID;
+      this.ackMode = ackMode;
    }
 
    // Public --------------------------------------------------------
@@ -84,6 +100,16 @@ public class AckInfo implements Streamable
    public MessageProxy getMessage()
    {
       return msg;
+   }
+
+   /**
+    *
+    * @return one of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE ..., or -1 if it has not
+    *         previously set
+    */
+   public int getAckMode()
+   {
+      return ackMode;
    }
 
    public String toString()

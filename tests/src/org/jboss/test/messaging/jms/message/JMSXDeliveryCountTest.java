@@ -93,6 +93,36 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       super.tearDown();
    }
 
+   public void testSimpleJMSXDeliverCount() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = s.createProducer(queue);
+      p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      p.send(s.createTextMessage("xoxo"));
+
+      s.close();
+
+      s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer c = s.createConsumer(queue);
+
+      conn.start();
+
+      TextMessage tm = (TextMessage)c.receive(1000);
+
+      assertEquals("xoxo", tm.getText());
+      assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+
+      s.recover();
+
+      tm = (TextMessage)c.receive(1000);
+
+      assertEquals("xoxo", tm.getText());
+      assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
+
+      conn.close();
+   }
 
    public void testRedeliveryOnQueue() throws Exception
    {
@@ -128,7 +158,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
             TextMessage tm = (TextMessage)cons.receive(3000);
             assertNotNull(tm);
             assertEquals("testing" + i, tm.getText());
-            assertEquals(j, tm.getIntProperty("JMSXDeliveryCount"));
+            assertEquals(j + 1, tm.getIntProperty("JMSXDeliveryCount"));
          }
          sess2.recover();
       }
@@ -239,9 +269,10 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
                      failed = true;
                   }
 
-                  if (tm.getIntProperty("JMSXDeliveryCount") != j)
+                  if (tm.getIntProperty("JMSXDeliveryCount") != (j + 1))
                   {
-                     log.error("Delivery count not expected value:" + j + " actual:" + tm.getIntProperty("JMSXDeliveryCount"));;
+                     log.error("Delivery count not expected value:" + (j + 1) +
+                               " actual:" + tm.getIntProperty("JMSXDeliveryCount"));;
                      failed = true;
                   }
                }

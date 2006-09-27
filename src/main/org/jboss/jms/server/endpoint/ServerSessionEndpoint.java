@@ -470,7 +470,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Session is already closed");
          }
          
-         if (trace) log.trace("close()");
+         if (trace) log.trace(this + " close()");
                
          // clone to avoid ConcurrentModificationException
          HashSet consumerSet = new HashSet(consumers.values());
@@ -495,7 +495,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
    public void closing() throws JMSException
    {
       // currently does nothing
-      if (trace) log.trace("closing (noop)");
+      if (trace) log.trace(this + " closing (noop)");
+   }
+
+   public boolean isClosed()
+   {
+      return closed;
    }
    
    public void send(JBossMessage message) throws JMSException

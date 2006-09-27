@@ -59,7 +59,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    public ClientConsumerDelegate(int objectID, int bufferSize)
    {
       super(objectID);
-      
       this.bufferSize = bufferSize;
    }
    
@@ -92,6 +91,15 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     * server-side endpoint.
     */
    public void closing() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public boolean isClosed()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

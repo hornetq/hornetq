@@ -78,7 +78,6 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    public DelegateSupport(int objectID)
    {
       this.id = objectID;    
-      
       trace = log.isTraceEnabled();
    }
    

@@ -93,6 +93,15 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
+   public boolean isClosed()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public JBossConnectionConsumer createConnectionConsumer(Destination dest,
                                                            String subscriptionName,
                                                            String messageSelector,

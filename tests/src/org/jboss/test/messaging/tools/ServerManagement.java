@@ -124,18 +124,6 @@ public class ServerManagement
       throw new IllegalStateException("The RMI server doesn't seem to be started. " +
                                       "Start it and re-run the test.");
 
-//      // start the service container and the JMS server in a different VM
-//      vmStarter = new Thread(new VMStarter(), "External VM Starter Thread");
-//      vmStarter.setDaemon(true);
-//      vmStarter.start();
-//
-//      server = acquireRemote(RMI_SERVER_LOOKUP_RETRIES);
-//
-//      if (server == null)
-//      {
-//         throw new IllegalStateException("Cannot find remote server " +
-//                                         TestServer.RMI_SERVER_NAME + " in registry");
-//      }
    }
 
    public static synchronized void start(String config) throws Exception

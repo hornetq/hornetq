@@ -60,7 +60,6 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       
    }
 
-
    // BrowserDelegate implementation --------------------------------
 
    /**
@@ -73,6 +72,11 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    }
 
    public void closing() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   public boolean isClosed()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

@@ -39,55 +39,81 @@ import org.jboss.logging.Logger;
 
 /**
  * An interceptor for checking closed state. It waits for other invocations to complete before
- * allowing the close. I.e. it performs the function of a "valve"
+ * allowing the close. I.e. it performs the function of a "valve".
  * 
  * This interceptor is PER_INSTANCE.
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.com>Ovidiu Feodorov</a>
  *
  * $Id$
  */
-public class ClosedInterceptor  implements Interceptor
+public class ClosedInterceptor implements Interceptor
 {
    // Constants -----------------------------------------------------
    
    private static final Logger log = Logger.getLogger(ClosedInterceptor.class);
    
-   /** Not closed */
    private static final int NOT_CLOSED = 0;
-   
-   /** Closing */
    private static final int IN_CLOSING = 1;
-   
-   /** Closing */
    private static final int CLOSING = 2;
-   
-   /** Performing the close */
-   private static final int IN_CLOSE = 3;
-   
-   /** Closed */
+   private static final int IN_CLOSE = 3; // performing the close
    private static final int CLOSED = -1;
    
    // Attributes ----------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
 
-   /** The state of the object */
+   // The current state of the object guarded by this interceptor
    private int state = NOT_CLOSED;
    
-   /** The inuse count */
-   private int inuseCount = 0;
+   // The inuse count
+   private int inUseCount;
+
+   // The identity of the delegate this interceptor is associated with
+   private Integer id;
+   private String delegateType;
 
    // Static --------------------------------------------------------
+
+   public static String stateToString(int state)
+   {
+      return state == NOT_CLOSED ? "NOT_CLOSED" :
+         state == IN_CLOSING ? "IN_CLOSING" :
+            state == CLOSING ? "CLOSING" :
+               state == IN_CLOSE ? "IN_CLOSE" :
+                  state == CLOSED ? "CLOSED" : "UNKNOWN";
+   }
    
    // Constructors --------------------------------------------------
+
+   public ClosedInterceptor()
+   {
+      state = NOT_CLOSED;
+      inUseCount = 0;
+      id = null;
+   }
 
    // Public --------------------------------------------------------
 
    public String toString()
    {
-      return "ClosedInterceptor[" + Integer.toHexString(hashCode()) + "]";
+      StringBuffer sb = new StringBuffer("ClosedInterceptor.");
+      if (id == null)
+      {
+         sb.append("UNINITIALIZED");
+      }
+      else
+      {
+         sb.append(delegateType).append("[").append(id.intValue()).append("]");
+      }
+      return sb.toString();
+   }
+
+   public boolean isClosed()
+   {
+      return state == IN_CLOSE || state == CLOSED;
    }
 
    // Interceptor implementation -----------------------------------
@@ -99,12 +125,23 @@ public class ClosedInterceptor  implements Interceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+      // maintain the identity of the delegate that sends invocation through this interceptor, for
+      // logging purposes. It makes sense, since it's an PER_INSTANCE interceptor
+      if (id == null)
+      {
+         getIdentity(invocation);
+      }
+
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
+
+      if ("isClosed".equals(methodName))
+      {
+         return new Boolean(isClosed());
+      }
+
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
       
-//      if (trace) { log.trace(this + " invoking " + methodName + "()"); }
-
       if (isClosing)
       {         
          if (checkClosingAlreadyDone())
@@ -121,7 +158,18 @@ public class ClosedInterceptor  implements Interceptor
       }
       else
       {
-         inuse();
+         synchronized(this)
+         {
+            // object "in use", increment inUseCount
+            if (state == IN_CLOSE || state == CLOSED)
+            {
+               log.error(this + ": method " + methodName + "() did not go through, " +
+                                "the interceptor is " + stateToString(state));
+
+               throw new IllegalStateException("The object is closed");
+            }
+            ++inUseCount;
+         }
       }
 
       if (isClosing)
@@ -157,8 +205,7 @@ public class ClosedInterceptor  implements Interceptor
     * 
     * @return true when already closing or closed
     */
-   protected synchronized boolean checkClosingAlreadyDone()
-      throws Throwable
+   protected synchronized boolean checkClosingAlreadyDone() throws Throwable
    {
       if (state != NOT_CLOSED)
       {
@@ -171,8 +218,7 @@ public class ClosedInterceptor  implements Interceptor
    /**
     * Closing the object
     */
-   protected synchronized void closing()
-      throws Throwable
+   protected synchronized void closing() throws Throwable
    {
       state = CLOSING;
    }
@@ -183,14 +229,13 @@ public class ClosedInterceptor  implements Interceptor
     * 
     * @return true when already closed
     */
-   protected synchronized boolean checkCloseAlreadyDone()
-      throws Throwable
+   protected synchronized boolean checkCloseAlreadyDone() throws Throwable
    {
       if (state != CLOSING)
       {
          return true;
       }
-      while (inuseCount > 0)
+      while (inUseCount > 0)
       {
          wait();
       }
@@ -201,33 +246,18 @@ public class ClosedInterceptor  implements Interceptor
    /**
     * Closed the object
     */
-   protected synchronized void closed()
-      throws Throwable
+   protected synchronized void closed() throws Throwable
    {
       state = CLOSED;
-      if (trace) { log.trace("closed"); }
-   }
-   
-   /**
-    * Mark the object as inuse
-    */
-   protected synchronized void inuse()
-      throws Throwable
-   {
-      if (state == IN_CLOSE || state == CLOSED)
-      {
-         throw new IllegalStateException("The object is closed");
-      }
-      ++inuseCount;
+      log.debug(this + " closed");
    }
    
    /**
     * Mark the object as no longer inuse 
     */
-   protected synchronized void done()
-      throws Throwable
+   protected synchronized void done() throws Throwable
    {
-      if (--inuseCount == 0)
+      if (--inUseCount == 0)
       {
          notifyAll();
       }
@@ -242,8 +272,8 @@ public class ClosedInterceptor  implements Interceptor
    {                  
       HierarchicalState state = ((DelegateSupport)invocation.getTargetObject()).getState();
             
-      //We use a clone to avoid a deadlock where requests
-      //are made to close parent and child concurrently
+      // We use a clone to avoid a deadlock where requests are made to close parent and child
+      // concurrently
       
       Set clone;
 
@@ -251,7 +281,7 @@ public class ClosedInterceptor  implements Interceptor
       
       if (children == null)
       {
-         if (trace) { log.trace("No children"); }
+         if (trace) { log.trace(this + " has no children"); }
          return;
       }
       
@@ -260,8 +290,7 @@ public class ClosedInterceptor  implements Interceptor
          clone = new HashSet(children);
       }
       
-      // Cycle through the children this will do a depth
-      // first close
+      // Cycle through the children this will do a depth first close
       for (Iterator i = clone.iterator(); i.hasNext();)
       {
          HierarchicalState child = (HierarchicalState)i.next();      
@@ -290,7 +319,14 @@ public class ClosedInterceptor  implements Interceptor
 
    // Private --------------------------------------------------------
 
- 
+   private void getIdentity(Invocation i)
+   {
+      DelegateSupport ds = (DelegateSupport)i.getTargetObject();
+      id = new Integer(ds.getID());
+      delegateType = ds.getClass().getName();
+      delegateType = delegateType.substring(delegateType.lastIndexOf('.') + 1);
+   }
+
    // Inner Classes --------------------------------------------------
 
 }

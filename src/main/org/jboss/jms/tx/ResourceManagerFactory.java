@@ -58,7 +58,7 @@ public class ResourceManagerFactory
    /**
     * @param serverID - server peer ID.
     */
-   public synchronized ResourceManager getResourceManager(String serverID)
+   public synchronized ResourceManager checkOutResourceManager(String serverID)
    {
       Holder h = (Holder)holders.get(serverID);
       
@@ -76,7 +76,7 @@ public class ResourceManagerFactory
       return h.rm;
    }
    
-   public synchronized void returnResourceManager(String serverID)
+   public synchronized void checkInResourceManager(String serverID)
    {
       Holder h = (Holder)holders.get(serverID);
       

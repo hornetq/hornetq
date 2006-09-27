@@ -40,6 +40,7 @@ import javax.naming.NamingException;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
+
 /**
  * Tests focused on durable subscription behavior. More durable subscription tests can be found in
  * MessageConsumerTest.
@@ -47,9 +48,9 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * $Id: DurableSubscriberTest.java 1273 2006-09-10 11:53:54Z timfox $
+ * $Id: DurableSubscriberTest.java 1319 2006-09-19 17:17:53Z ovidiu.feodorov@jboss.com $
  */
-public class DurableSubscriptionTest extends MessagingTestCase
+public class DurableSubscriberTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -61,7 +62,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public DurableSubscriptionTest(String name)
+   public DurableSubscriberTest(String name)
    {
       super(name);
    }
@@ -106,11 +107,11 @@ public class DurableSubscriptionTest extends MessagingTestCase
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
       s.createDurableSubscriber(topic, "monicabelucci");
-      
-      ObjectName destObjectName = 
+
+      ObjectName destObjectName =
          new ObjectName("jboss.messaging.destination:service=Topic,name=Topic");
       String text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
-       
+
       assertTrue(text.indexOf("monicabelucci") != -1);
 
       prod.send(s.createTextMessage("k"));
@@ -118,7 +119,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
       conn.close();
 
       text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
-      
+
       assertTrue(text.indexOf("monicabelucci") != -1);
 
       conn = cf.createConnection();
@@ -290,10 +291,6 @@ public class DurableSubscriptionTest extends MessagingTestCase
       TextMessage rm = (TextMessage)durable.receive(5000);
       assertEquals("Message One", rm.getText());
 
-      // TODO: when subscriptions/durable subscription will be registered as MBean, use the JMX
-      //       interface to make sure the 'another red square message' is maintained by the
-      //       durable subascription
-
       conn.close();
 
       conn = cf.createConnection();
@@ -365,7 +362,7 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
       prod.send(s.createTextMessage("one"));
       prod.send(s.createTextMessage("two"));
-      
+
       ServerManagement.undeployTopic("TopicToBeRedeployed");
       log.debug("topic undeployed");
 

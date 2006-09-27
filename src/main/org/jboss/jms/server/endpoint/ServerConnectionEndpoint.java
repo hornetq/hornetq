@@ -47,8 +47,6 @@ import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.TxState;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.jms.util.MessagingJMSException;
-import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
@@ -279,7 +277,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {      
       try
       {
-         if (trace) { log.trace("close()"); }
+         if (trace) { log.trace(this + " close()"); }
          
          if (closed)
          {
@@ -334,9 +332,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    public void closing() throws JMSException
    {
-      log.trace("closing (noop)");    
+      log.trace(this + " closing (noop)");    
    }
-     
+
+   public boolean isClosed()
+   {
+      return closed;
+   }
+
    public void sendTransaction(TransactionRequest request) throws JMSException
    {    
       try

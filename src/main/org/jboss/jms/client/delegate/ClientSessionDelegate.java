@@ -83,6 +83,33 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
+   public void close() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void closing() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public boolean isClosed()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public void acknowledge(AckInfo ackInfo) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
@@ -120,24 +147,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * server-side endpoint.
     */
    public void redeliver() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void close() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void closing() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

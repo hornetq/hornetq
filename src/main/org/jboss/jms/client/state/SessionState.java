@@ -27,8 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.Session;
-
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
@@ -57,11 +55,12 @@ public class SessionState extends HierarchicalStateSupport
    
    private Object currentTxId;
    
-   //Executor used for executing onMessage methods
+   // Executor used for executing onMessage methods
    private QueuedExecutor executor;
    
    private boolean recoverCalled;
-   
+
+   // List<AckInfo>
    private List toAck;
    
    private Map callbackHandlers;
@@ -73,30 +72,35 @@ public class SessionState extends HierarchicalStateSupport
       children = new HashSet();
       this.acknowledgeMode = ackMode;
       this.transacted = transacted;
-      this.xa = xa;      
+      this.xa = xa;
+
       if (xa)
       {
-         //Create an XA resource
+         // Create an XA resource
          xaResource = new MessagingXAResource(parent.getResourceManager(), this);                            
       }
-      if (transacted)
+
+      // If session is transacted and XA, the currentTxId will be updated when the XAResource will
+      // be enrolled with a global transaction.
+
+      if (transacted & !xa)
       {
-         //Create a local tx                                                  
+         // Create a local tx
          currentTxId = parent.getResourceManager().createLocalTx();        
       }
+
       executor = new QueuedExecutor(new LinkedQueue());
       
-      if (ackMode == Session.CLIENT_ACKNOWLEDGE || ackMode == Session.AUTO_ACKNOWLEDGE ||
-          ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-      {
-         toAck = new ArrayList();
-      }
-      
-      //TODO could optimise this to use the same map of callbackmanagers (which holds refs
-      //to callbackhandlers) in the connection, instead of maintaining another map
+      toAck = new ArrayList();
+
+      // TODO could optimise this to use the same map of callbackmanagers (which holds refs
+      // to callbackhandlers) in the connection, instead of maintaining another map
       callbackHandlers = new HashMap();
    }
-   
+
+   /**
+    * @return List<AckInfo>
+    */
    public List getToAck()
    {
       return toAck;

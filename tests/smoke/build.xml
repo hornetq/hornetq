@@ -125,6 +125,18 @@
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405CR1.home}"/>
+      </antcall>
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405CR1.home}"/>
+         <param name="release.admin.target" value="standalone"/>
+         <param name="run.mdb.example" value="false"/>
+         <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall>
+
       <!--
          Stateless Session Bean installation test will fail on this because the client talks to
          Messaging's remoting and to Unified Invoker's remoting and runs into compatibility

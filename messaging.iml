@@ -113,7 +113,9 @@
           <root url="jar://$MODULE_DIR$/tests/lib/jms-ra.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../jboss-4.0.4.GA-src/connector/src/main" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -172,7 +174,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="file://$MODULE_DIR$/../../cvs/JBossRemoting-2.0.0.GA/src/main" />
+          <root url="file://$MODULE_DIR$/../../cvs/JBossRemoting-2.2.0.Alpha1/src/main" />
         </SOURCES>
       </library>
     </orderEntry>
