@@ -34,9 +34,9 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -217,7 +217,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
                   
          String nodeId = serverPeer.getServerPeerID();
          
-         MessagePullPolicy pullPolicy = new NullMessagePullPolicy();
+         MessagePullPolicy pullPolicy = new DefaultMessagePullPolicy();
          
          FilterFactory ff = new SelectorFactory();
          

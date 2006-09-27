@@ -24,15 +24,10 @@
 	<classpathentry kind="lib" path="perf/resources/jcommon-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="perf/resources/jfreechart-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
-	<classpathentry sourcepath="/home/clebert/workspaces/jboss-head/aop/src/main" kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
 	<classpathentry kind="lib" path="thirdparty/hsqldb/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-logging/lib/commons-logging.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/serialization/lib/jboss-serialization.jar"/>
-	<classpathentry kind="var" path="ANT_HOME/ant-junit.jar"/>
-	<classpathentry sourcepath="/JBossRemoting" kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/serialization/lib/jboss-serialization.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="thirdparty/sun-javacc/lib/javacc.jar"/>
@@ -57,5 +52,7 @@
 	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-runtime.jar"/>
 	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-transformer.jar"/>
 	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

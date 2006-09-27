@@ -144,6 +144,8 @@ public class DefaultRouter implements ClusterRouter
    public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
    {
       //Favour the local queue
+      
+      log.info("router handling ref, it has " + this.queues.size());
            
       if (localQueue != null)
       {

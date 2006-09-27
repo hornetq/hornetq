@@ -374,11 +374,13 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    {
       lock.writeLock().acquire();
       
+      log.info("loading bindings");
+      
       Connection conn = null;
       PreparedStatement ps  = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-       
+         
       try
       {
          conn = ds.getConnection();
@@ -454,7 +456,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       
       return binding;
    }
-         
+          
    protected void insertBinding(Binding binding) throws Exception
    {
       Connection conn = null;

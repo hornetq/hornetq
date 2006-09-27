@@ -159,8 +159,6 @@ public class TransactionRepository implements MessagingComponent
 	   
 	   globalToLocalMap.remove(id);
 	   
-	   
-	   
    }
    
    public Transaction createTransaction(Xid xid) throws Exception

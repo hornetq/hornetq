@@ -214,7 +214,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr, filterFactory,
              pool);
-             
+                   
       this.pm = pm;
       
       this.groupName = groupName;
@@ -241,6 +241,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    public synchronized void start() throws Exception
    {
+      log.info("DefaultClusteredPosttoffic::start");
+       
       if (syncChannelConfigE != null)
       {        
          this.syncChannel = new JChannel(syncChannelConfigE);
@@ -274,7 +276,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       asyncChannel.connect(groupName);
       
       super.start();
-      
+                  
       Address currentAddress = syncChannel.getLocalAddress();
       
       log.info(this.nodeId + " address is " + currentAddress);
@@ -305,6 +307,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
 
    public Binding bindClusteredQueue(String condition, LocalClusteredQueue queue) throws Exception
    {           
+      log.info(this.nodeId + " binding clustered queue: " + queue + " with condition: " + condition);
+      
       if (!queue.getNodeId().equals(this.nodeId))
       {
          throw new IllegalArgumentException("Queue node id does not match office node id");
@@ -357,6 +361,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       lock.readLock().acquire();
       
+      log.info(this.nodeId + " routing reference " + ref);
+      
       try
       {      
          ClusteredBindings cb = (ClusteredBindings)conditionMap.get(condition);
@@ -407,7 +413,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                
                   ClusteredQueue queue = (ClusteredQueue)del.getObserver();
                   
-              //    log.info("Routing message to queue:" + queue.getName() + " on node " + queue.getNodeId());
+                  log.info("Routing message to queue:" + queue.getName() + " on node " + queue.getNodeId());
                   
                   if (router.numberOfReceivers() > 1)
                   {
@@ -517,6 +523,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       lock.writeLock().acquire();
       
+      log.info(this.nodeId + " adding binding from node: " + nodeId +" queue: " + queueName + " with condition: " + condition);
+            
       try
       {                     
          //Sanity
@@ -591,8 +599,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKey,
                                 Map queueNameNodeIdMap) throws Exception
    {
-    //  log.info(this.nodeId + " received route from cluster, ref = " + message.getMessageID() + " routing key " +
-    //           routingKey + " map " + queueNameNodeIdMap);
+      log.info(this.nodeId + " received route from cluster, ref = " + message.getMessageID() + " routing key " +
+               routingKey + " map " + queueNameNodeIdMap);
       
       lock.readLock().acquire();  
       
@@ -1037,11 +1045,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       if (!isState)
       {       
          //Must be first member in group or non clustered- we load the state ourself from the database
+         
+         log.info("First member - so loading bindings from db");
+         
          super.loadBindings();      
       }
       else
       {
          //The state will be set in due course via the MessageListener - we must wait until this happens
+         
+         log.info("Not first member - so loading state from group.. waiting");
          
          synchronized (setStateLock)
          {
@@ -1051,6 +1064,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                setStateLock.wait();
             } 
          }
+         
+         log.info("Got state");
       }
    }
    
@@ -1058,16 +1073,22 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {            
       Filter filter = filterFactory.createFilter(filterString);
       
+      log.info("Created binding");
+      
       Queue queue;
       if (nodeId.equals(this.nodeId))
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
+         
+         log.info("created local clustered queue");
          
          queue = new LocalClusteredQueue(this, nodeId, queueName, channelId, ms, pm, true,
                                          durable, executor, filter, tr);
       }
       else
       {
+         log.info("created remote queue stub");
+         
          queue = new RemoteQueueStub(nodeId, queueName, channelId, durable, pm, filter);
       }
       
@@ -1137,6 +1158,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                
                if (!binding.getQueue().isRecoverable())
                {
+                  //We only remove the non durable bindings - we still need to be able to handle
+                  //messages for a durable subscription "owned" by a node that is not active any more!
                   toRemove.add(binding);
                }
             }
@@ -1196,6 +1219,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    private void processStateBytes(byte[] bytes) throws Exception
    {
+      log.info("Receiving state from group...");
+      
       SharedState state = new SharedState();
       
       StreamUtils.fromBytes(state, bytes);
@@ -1214,7 +1239,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          
          Binding binding = this.createBinding(info.getNodeId(), info.getCondition(), info.getQueueName(), info.getChannelId(), info.getFilterString(), info.isDurable());
          
-         addBinding(binding);
+         if (binding.getNodeId().equals(this.nodeId))
+         {
+            //We deactivate if this is one of our own bindings - it can only
+            //be one of our own durable bindings - and since state is retrieved before we are fully started
+            //then the sub hasn't been deployed so must be deactivated
+            
+            binding.getQueue().deactivate();            
+         }
+            
+         addBinding(binding);         
       }
       
       this.nodeIdAddressMap.clear();
@@ -1344,6 +1378,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
 
       public void viewAccepted(View view)
       {
+         log.info("Got new view, size=" + view.size());
+         
          if (currentView != null)
          {
             Iterator iter = currentView.getMembers().iterator();

@@ -79,8 +79,8 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
       <attribute name="AsyncChannelConfig">
          <config>
             <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="false" ucast_send_buf_size="32000" ip_ttl="32"/>
+           mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/>
             <AUTOCONF down_thread="false" up_thread="false"/>
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
@@ -99,8 +99,8 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
       <attribute name="SyncChannelConfig">
          <config>
             <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="false" ucast_send_buf_size="32000" ip_ttl="32"/>
+           mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/>
             <AUTOCONF down_thread="false" up_thread="false"/>
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
@@ -142,8 +142,8 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
       <attribute name="AsyncChannelConfig">
          <config>
             <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="false" ucast_send_buf_size="32000" ip_ttl="32"/>
+           mcast_port="45569" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/>
             <AUTOCONF down_thread="false" up_thread="false"/>
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
@@ -162,8 +162,8 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
       <attribute name="SyncChannelConfig">
          <config>
             <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45569" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="false" ucast_send_buf_size="32000" ip_ttl="32"/>
+           mcast_port="45570" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/>
             <AUTOCONF down_thread="false" up_thread="false"/>
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
