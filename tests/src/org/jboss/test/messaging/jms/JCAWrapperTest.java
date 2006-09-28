@@ -97,6 +97,8 @@ public class JCAWrapperTest extends MessagingTestCase
          TextMessage rm = (TextMessage)s.createConsumer(queue).receive(500);
    
          assertEquals("one", rm.getText());
+
+         conn.close();
       }
       finally
       {
