@@ -91,9 +91,7 @@ public class QueueService extends DestinationServiceSupport
          Binding binding = postOffice.getBindingForQueueName(destination.getName());
          
          if (binding != null)
-         {    
-            log.info("binding already exists");
-            
+         {     
             PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
             
             queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
@@ -110,8 +108,6 @@ public class QueueService extends DestinationServiceSupport
             
             if (postOffice.isLocal())
             {
-               log.info("Binding non clustered");
-               
                queue = new PagingFilteredQueue(destination.getName(), idm.getId(), ms, pm, true, true,                        
                                                executor, null,
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
@@ -120,8 +116,6 @@ public class QueueService extends DestinationServiceSupport
             }
             else
             {               
-               log.info("binding clustered");
-               
                queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(), idm.getId(), ms, pm, true, true,                        
                                                executor, null, tr, 
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());

@@ -574,9 +574,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
       //First we order the references in message order
       orderReferences(references);
-      
-      log.info("adding references: " + references.size());
-                       
+                         
       try
       {
          //Now we get a lock on all the messages. Since we have ordered the refs we should avoid deadlock
@@ -1301,8 +1299,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {         
          //No tx so add the ref directly in the db
          
-         log.info("Adding ref: " + ref);
-         
          TransactionWrapper wrap = new TransactionWrapper();
          
          PreparedStatement psReference = null;
@@ -1325,12 +1321,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             int rows = psReference.executeUpdate();            
             
             if (trace) { log.trace("Inserted " + rows + " rows"); }
-            
-            log.info("Inserted " + rows + " rows");
-               
+              
             if (!m.isPersisted())
             {
-               log.info(m + " Not persisted so inserting message");
                // First time so persist the message
                psMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
                
@@ -1340,8 +1333,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               log.info("Already persisted so updating message");
-               
                //Update the message's channel count
                psMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
                
@@ -1418,8 +1409,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {         
          //No tx so we remove the reference directly from the db
          
-         log.info("Removing ref: " + ref);
-         
          TransactionWrapper wrap = new TransactionWrapper();
          
          PreparedStatement psReference = null;
@@ -1436,8 +1425,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             LockMap.instance.obtainLock(m);
                               
             psReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
-            
-            log.info("Removing ref " + ref + " from channel " + channelID);
             
             //Remove the message reference
             removeReference(channelID, ref, psReference);
@@ -1706,8 +1693,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected void handleBeforeCommit1PC(List refsToAdd, List refsToRemove, Transaction tx)
       throws Exception
    {
-      log.info("Before commit 1pc: I have " + refsToAdd.size() + " refs to add and " + refsToRemove.size() + " refs to remove");
-      
       //TODO - A slight optimisation - it's possible we have refs referring to the same message
       //so we will end up acquiring the lock more than once which is unnecessary
       //If find unique set of messages can avoid this
@@ -1776,7 +1761,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             
             //Now store the reference
-            log.info("Adding ref: " + ref + " in channel: " + pair.channelId);
             addReference(pair.channelId, ref, psReference, false);
               
             if (batch)
@@ -1803,8 +1787,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                          
             boolean added;
             if (!m.isPersisted())
-            {
-               log.info("The message " + m.getMessageID() + " hasn't been persisted before so i'm gonna persist it");
+            {               
                //First time so add message
                storeMessage(m, psInsertMessage);
                
@@ -1813,8 +1796,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                m.setPersisted(true);
             }
             else
-            {
-               log.info("The message " + m.getMessageID() + " has been peristed before so just updating it's channel count");
+            {               
                //Update message channel count
                incrementChannelCount(m, psIncMessage);
                
@@ -1910,8 +1892,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             
             removeReference(pair.channelId, pair.ref, psReference);
-            
-            log.info("Removing ref " + pair.ref + " in tx");
             
             if (batch)
             {

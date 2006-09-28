@@ -240,9 +240,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    // --------------------------------------------------------------
    
    public synchronized void start() throws Exception
-   {
-      log.info("DefaultClusteredPosttoffic::start");
-       
+   {    
       if (syncChannelConfigE != null)
       {        
          this.syncChannel = new JChannel(syncChannelConfigE);
@@ -360,9 +358,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       boolean routed = false;
       
       lock.readLock().acquire();
-      
-      log.info(this.nodeId + " routing reference " + ref);
-      
+         
       try
       {      
          ClusteredBindings cb = (ClusteredBindings)conditionMap.get(condition);
@@ -1078,23 +1074,17 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    protected Binding createBinding(int nodeId, String condition, String queueName, long channelId, String filterString, boolean durable) throws Exception
    {            
       Filter filter = filterFactory.createFilter(filterString);
-      
-      log.info("Created binding");
-      
+         
       Queue queue;
       if (nodeId == this.nodeId)
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
-         
-         log.info("created local clustered queue");
          
          queue = new LocalClusteredQueue(this, nodeId, queueName, channelId, ms, pm, true,
                                          durable, executor, filter, tr);
       }
       else
       {
-         log.info("created remote queue stub");
-         
          queue = new RemoteQueueStub(nodeId, queueName, channelId, durable, pm, filter);
       }
       

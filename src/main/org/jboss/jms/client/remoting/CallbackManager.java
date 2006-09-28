@@ -76,21 +76,13 @@ public class CallbackManager implements ServerInvocationHandler
    
    private Long calcLookup(int serverId, int consumerId)
    {
-      log.info("calculating lookup for server:" + serverId + " consumer:" + consumerId);
       long id1 = serverId;
       
       id1 <<= 32;
-      
-      log.info("id1 is " + Long.toBinaryString(id1));
-            
+       
       long id2 = consumerId;
       
-      log.info("id2 is " + Long.toBinaryString(id2));
-      
       long lookup = id1 | id2;
-      
-      log.info("lookup is " + Long.toBinaryString(lookup));
-      
       
       return new Long(lookup);
    }
@@ -104,13 +96,9 @@ public class CallbackManager implements ServerInvocationHandler
       MessagingMarshallable mm = (MessagingMarshallable)ir.getParameter();
       
       ClientDelivery dr = (ClientDelivery)mm.getLoad();
-      
-      log.info("received message(s) from server " + dr.getServerId());
-      
+        
       Long lookup = calcLookup(dr.getServerId(), dr.getConsumerId());
-      
-      log.info("lookup key is " + lookup);
-      
+         
       List msgs = dr.getMessages();
 
       MessageCallbackHandler handler =

@@ -144,16 +144,12 @@ public class DefaultRouter implements ClusterRouter
    public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
    {
       //Favour the local queue
-      
-      log.info("router handling ref, it has " + this.queues.size());
-           
+         
       if (localQueue != null)
       {
          //The only time the local queue won't accept is if the selector doesn't
          //match - in which case it won't match at any other nodes too so no point
          //in trying them
-         
-         log.info("sending to local queue");
          
          Delivery del = localQueue.handle(observer, reference, tx);
          
@@ -162,8 +158,6 @@ public class DefaultRouter implements ClusterRouter
       else
       {
          //There is no local shared queue
-         
-         log.info("There is no local queue");
          
          //We round robin among the rest
          if (!queues.isEmpty())
