@@ -215,7 +215,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
          
          QueuedExecutorPool pool = serverPeer.getQueuedExecutorPool();
                   
-         String nodeId = serverPeer.getServerPeerID();
+         int nodeId = serverPeer.getServerPeerID();
          
          MessagePullPolicy pullPolicy = new DefaultMessagePullPolicy();
          

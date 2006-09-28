@@ -81,7 +81,7 @@ public class StateCreationAspect
       ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)inv.invokeNext();
       connectionDelegate.init();
 
-      String serverID = cfd.getServerID();
+      int serverID = cfd.getServerID();
 
       ResourceManager rm = ResourceManagerFactory.instance.checkOutResourceManager(serverID);
       MessageIdGenerator gen =

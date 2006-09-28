@@ -240,6 +240,8 @@ public class MessageCallbackHandler
    {            
       if (trace) { log.trace(this + " receiving " + msgs.size() + " message(s) from the remoting layer"); }
                       
+      log.info(this + " receiving " + msgs.size() + " message(s) from the remoting layer");
+      
       synchronized (mainLock)
       {
          if (closed)

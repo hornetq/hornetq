@@ -64,21 +64,23 @@ public class MessageIdGeneratorFactory
 
    // Public --------------------------------------------------------
 
-   public synchronized boolean containsMessageIdGenerator(String serverId)
+   public synchronized boolean containsMessageIdGenerator(int serverId)
    {
-      return holders.containsKey(serverId);
+      return holders.containsKey(new Integer(serverId));
    }
 
-   public synchronized MessageIdGenerator checkOutGenerator(String serverId,
+   public synchronized MessageIdGenerator checkOutGenerator(int serverId,
                                                             ConnectionFactoryDelegate cfd)
       throws JMSException
    {
-      Holder h = (Holder)holders.get(serverId);
+      Integer in = new Integer(serverId);
+      
+      Holder h = (Holder)holders.get(in);
 
       if (h == null)
       {
          h = new Holder(new MessageIdGenerator(cfd, BLOCK_SIZE));
-         holders.put(serverId, h);
+         holders.put(in, h);
       }
       else
       {
@@ -92,9 +94,11 @@ public class MessageIdGeneratorFactory
       return h.generator;
    }
 
-   public synchronized void checkInGenerator(String serverId)
+   public synchronized void checkInGenerator(int serverId)
    {
-      Holder h = (Holder)holders.get(serverId);
+      Integer in = new Integer(serverId);
+      
+      Holder h = (Holder)holders.get(in);
 
       if (h == null)
       {
@@ -105,7 +109,7 @@ public class MessageIdGeneratorFactory
 
       if (h.refCount == 0)
       {
-         holders.remove(serverId);
+         holders.remove(in);
          log.debug("checked in and removed MessageIdGenerator for " + serverId);
       }
       else

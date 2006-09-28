@@ -56,7 +56,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
    {      
    }
         
-   PullMessagesRequest(String nodeId, long txId, long checkChannelID, String queueName, int numMessages)
+   PullMessagesRequest(int nodeId, long txId, long checkChannelID, String queueName, int numMessages)
    {
       super(nodeId, txId, true, checkChannelID);
       
@@ -65,7 +65,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
       this.numMessages = numMessages;
    }
    
-   PullMessagesRequest(String nodeId, long txId)
+   PullMessagesRequest(int nodeId, long txId)
    {
       super(nodeId, txId, false);
    }

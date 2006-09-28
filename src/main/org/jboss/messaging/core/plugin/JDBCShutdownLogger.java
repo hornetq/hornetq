@@ -58,7 +58,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
    
    // ShutdownLogger implementation ---------------------------------------------
    
-   public boolean shutdown(String nodeId) throws Exception
+   public boolean shutdown(int nodeId) throws Exception
    {
       boolean exists = existsStartup(nodeId);
       
@@ -76,7 +76,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
       }      
    }
 
-   public boolean startup(String nodeId) throws Exception
+   public boolean startup(int nodeId) throws Exception
    {
       boolean crashed = existsStartup(nodeId);
       
@@ -97,7 +97,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
       return crashed;
    }
    
-   private boolean existsStartup(String nodeId) throws Exception
+   private boolean existsStartup(int nodeId) throws Exception
    {
       Connection conn = null;
       PreparedStatement ps = null;
@@ -108,7 +108,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
       {
          conn = ds.getConnection();
          ps = conn.prepareStatement(getSQLStatement("SELECT_STARTUP"));
-         ps.setString(1, nodeId);
+         ps.setInt(1, nodeId);
          
          rs = ps.executeQuery();
          
@@ -156,7 +156,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
       }
    }
    
-   private void removeStartup(String nodeId) throws Exception
+   private void removeStartup(int nodeId) throws Exception
    {
       Connection conn = null;
       PreparedStatement ps = null;
@@ -166,7 +166,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
       {
          conn = ds.getConnection();
          ps = conn.prepareStatement(getSQLStatement("DELETE_STARTUP"));
-         ps.setString(1, nodeId);
+         ps.setInt(1, nodeId);
          
          ps.executeUpdate();
         
@@ -204,7 +204,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
    
    // Private ------------------------------------------------------------
    
-   private void insertStartup(String nodeId) throws Exception
+   private void insertStartup(int nodeId) throws Exception
    {
       Connection conn = null;
       PreparedStatement ps = null;
@@ -214,7 +214,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
       {
          conn = ds.getConnection();
          ps = conn.prepareStatement(getSQLStatement("INSERT_STARTUP"));
-         ps.setString(1, nodeId);
+         ps.setInt(1, nodeId);
          
          ps.executeUpdate();
         
@@ -254,7 +254,7 @@ public class JDBCShutdownLogger extends JDBCSupport implements ShutdownLogger
    {
       Map sql = new LinkedHashMap();
       
-      sql.put("CREATE_STARTUP", "CREATE TABLE JMS_STARTUP (NODE_ID VARCHAR(255) PRIMARY KEY)");
+      sql.put("CREATE_STARTUP", "CREATE TABLE JMS_STARTUP (NODE_ID INTEGER PRIMARY KEY)");
       
       return sql;
    }

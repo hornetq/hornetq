@@ -67,7 +67,7 @@
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="SqlProperties"><![CDATA[
-CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID VARCHAR(255), QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)
+CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)
 INSERT_BINDING=INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID) VALUES (?, ?, ?, ?, ?, ?)
 DELETE_BINDING=DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
 LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
@@ -84,11 +84,40 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="SqlProperties"><![CDATA[
-CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID VARCHAR(255), QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)
+CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)
 INSERT_BINDING=INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID) VALUES (?, ?, ?, ?, ?, ?)
 DELETE_BINDING=DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
 LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
       ]]></attribute>
    </mbean>
+   
+   <mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
+      name="jboss.messaging:service=JMSUserManager"
+      xmbean-dd="xmdesc/JMSUserManager-xmbean.xml">
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <attribute name="CreateTablesOnStartup">true</attribute>
+      <attribute name="SqlProperties"><![CDATA[
+CREATE_USER_TABLE=CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USERID))
+CREATE_ROLE_TABLE=CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, USERID VARCHAR(32) NOT NULL, PRIMARY KEY(USERID, ROLEID))
+SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
+      ]]></attribute>
+   </mbean>
+
+   <mbean code="org.jboss.messaging.core.plugin.JDBCShutdownLoggerService"
+      name="jboss.messaging:service=ShutdownLogger"
+      xmbean-dd="xmdesc/JDBCShutdownLogger-xmbean.xml">
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      <attribute name="CreateTablesOnStartup">true</attribute>
+      <attribute name="SqlProperties"><![CDATA[
+      CREATE_STARTUP=CREATE TABLE JMS_STARTUP (NODE_ID INTEGER PRIMARY KEY)
+      SELECT_STARTUP=SELECT NODE_ID FROM JMS_STARTUP WHERE NODE_ID = ?
+      DELETE_STARTUP=DELETE FROM JMS_STARTUP WHERE NODE_ID = ?
+      INSERT_STARTUP=INSERT INTO JMS_STARTUP (NODE_ID) VALUES (?)
+      ]]></attribute>
+   </mbean>   
 
 </server>

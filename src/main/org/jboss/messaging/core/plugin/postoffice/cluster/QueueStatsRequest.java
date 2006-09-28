@@ -41,7 +41,7 @@ class QueueStatsRequest extends ClusterRequest
 {
    static final int TYPE = 6;
    
-   private String nodeId;
+   private int nodeId;
    
    private List queueStats;
    
@@ -49,7 +49,7 @@ class QueueStatsRequest extends ClusterRequest
    {      
    }
    
-   QueueStatsRequest(String nodeId, List stats)
+   QueueStatsRequest(int nodeId, List stats)
    {
       this.nodeId = nodeId;
       
@@ -71,7 +71,7 @@ class QueueStatsRequest extends ClusterRequest
 
    public void read(DataInputStream in) throws Exception
    {
-      nodeId = in.readUTF();
+      nodeId = in.readInt();
       
       int size = in.readInt();
       
@@ -89,7 +89,7 @@ class QueueStatsRequest extends ClusterRequest
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(nodeId);
+      out.writeInt(nodeId);
       
       out.writeInt(queueStats.size());
       

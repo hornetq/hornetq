@@ -126,7 +126,7 @@ public class DefaultPostOfficeService extends JDBCServiceSupport
          
          TransactionRepository tr = serverPeer.getTxRepository();
          
-         String nodeId = serverPeer.getServerPeerID();
+         int nodeId = serverPeer.getServerPeerID();
          
          FilterFactory ff = new SelectorFactory();
                

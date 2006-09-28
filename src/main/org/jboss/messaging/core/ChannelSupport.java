@@ -146,8 +146,11 @@ public abstract class ChannelSupport implements Channel
    {
       if (!active)
       {
+         log.info("Not active - ignoring ref");
          return null;
       }
+      
+      log.info("handling ref");
      
       checkClosed();
       
@@ -182,6 +185,8 @@ public abstract class ChannelSupport implements Channel
    {
       if (trace) { log.trace("acknowledging " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
 
+      log.info("acknowledging " + d);
+      
       this.acknowledgeInternal(d, tx, true, false);
    }
    
@@ -523,6 +528,8 @@ public abstract class ChannelSupport implements Channel
     */
    protected void deliverInternal(boolean handle) throws Throwable
    {
+      log.info("in deliver internal");
+      
       try
       {
          // The iterator is used to iterate through the refs in the channel in the case that they
@@ -583,6 +590,8 @@ public abstract class ChannelSupport implements Channel
                   ref.incrementDeliveryCount();
 
                   Delivery del = router.handle(this, ref, null);
+                  
+                  log.info("router returned delivery " + del);
 
                   if (del == null)
                   {

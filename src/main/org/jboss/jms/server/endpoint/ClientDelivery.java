@@ -53,7 +53,11 @@ public class ClientDelivery implements Streamable
    
    private List msgs;
          
-   private int consumerID;
+   //We need to specify the server id too since different servers might have the
+   //same consumer id
+   private int serverId;
+   
+   private int consumerId;
     
    // Constructors --------------------------------------------------
    
@@ -61,11 +65,13 @@ public class ClientDelivery implements Streamable
    {      
    }
 
-   public ClientDelivery(List msgs, int consumerID)
+   public ClientDelivery(List msgs, int serverId, int consumerId)
    {
       this.msgs = msgs;
       
-      this.consumerID = consumerID;      
+      this.serverId = serverId;
+      
+      this.consumerId = consumerId;
    }
   
    // Streamable implementation
@@ -73,7 +79,9 @@ public class ClientDelivery implements Streamable
    
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeInt(consumerID);
+      out.writeInt(serverId);
+      
+      out.writeInt(consumerId);
       
       out.writeInt(msgs.size());
       
@@ -93,7 +101,9 @@ public class ClientDelivery implements Streamable
 
    public void read(DataInputStream in) throws Exception
    {
-      consumerID = in.readInt();
+      serverId = in.readInt();
+      
+      consumerId = in.readInt();
       
       int numMessages = in.readInt();
       
@@ -122,9 +132,14 @@ public class ClientDelivery implements Streamable
       return msgs;
    }
    
-   public int getConsumerID()
+   public int getServerId()
    {
-      return consumerID;
+      return serverId;
+   }
+   
+   public int getConsumerId()
+   {
+      return consumerId;
    }
 
    // Package protected ---------------------------------------------

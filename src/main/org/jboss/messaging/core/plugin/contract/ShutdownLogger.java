@@ -32,7 +32,7 @@ package org.jboss.messaging.core.plugin.contract;
  */
 public interface ShutdownLogger extends MessagingComponent
 {
-   boolean startup(String nodeId) throws Exception;
+   boolean startup(int nodeId) throws Exception;
    
-   boolean shutdown(String nodeId) throws Exception;
+   boolean shutdown(int nodeId) throws Exception;
 }

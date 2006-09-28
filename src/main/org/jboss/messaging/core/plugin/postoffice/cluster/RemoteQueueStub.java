@@ -51,7 +51,7 @@ class RemoteQueueStub implements ClusteredQueue
 {
    private static final Logger log = Logger.getLogger(RemoteQueueStub.class);
       
-   private String nodeId;
+   private int nodeId;
    
    private String name;
    
@@ -65,7 +65,7 @@ class RemoteQueueStub implements ClusteredQueue
    
    private QueueStats stats;
    
-   RemoteQueueStub(String nodeId, String name, long id, boolean recoverable, PersistenceManager pm, Filter filter)
+   RemoteQueueStub(int nodeId, String name, long id, boolean recoverable, PersistenceManager pm, Filter filter)
    {
       this.nodeId = nodeId;
       
@@ -80,7 +80,7 @@ class RemoteQueueStub implements ClusteredQueue
       this.filter = filter;
    }
    
-   public String getNodeId()
+   public int getNodeId()
    {
       return nodeId;
    }

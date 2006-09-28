@@ -72,6 +72,7 @@ public class ConsumerAspect
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       SessionDelegate sessionDelegate = (SessionDelegate)invocation.getTargetObject();
       ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
+      int serverId = connectionState.getServerID();
       int consumerID = consumerState.getConsumerID();
       int prefetchSize = consumerState.getPrefetchSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
@@ -84,7 +85,7 @@ public class ConsumerAspect
       sessionState.addCallbackHandler(messageHandler);
       
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-      cm.registerHandler(consumerID, messageHandler);
+      cm.registerHandler(serverId, consumerID, messageHandler);
          
       consumerState.setMessageCallbackHandler(messageHandler);
       
@@ -113,7 +114,7 @@ public class ConsumerAspect
       sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());
 
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-      cm.unregisterHandler(consumerState.getConsumerID());
+      cm.unregisterHandler(connectionState.getServerID(), consumerState.getConsumerID());
             
       return res;
    }      

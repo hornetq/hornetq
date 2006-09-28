@@ -12,7 +12,7 @@
       <name>ServerPeer</name>
       <parameter>
          <name>ServerPeerID</name>
-         <type>java.lang.String</type>
+         <type>int</type>
       </parameter>
       <parameter>
          <name>DefaultQueueJNDIContext</name>
@@ -119,7 +119,7 @@
    <attribute access="read-only" getMethod="getServerPeerID">
       <description>The ID of the ServerPeer. Must be unique per JBoss instance</description>
       <name>serverPeerID</name>
-      <type>java.lang.String</type>
+      <type>int</type>
    </attribute>
 
    <attribute access="read-only" getMethod="getDefaultQueueJNDIContext">

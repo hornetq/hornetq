@@ -206,6 +206,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       if (trace) { log.trace(this + " receives " + ref + " for delivery"); }
       
+      log.info(this + " receives " + ref + " for delivery");
+      
       // This is ok to have outside lock - is volatile
       if (bufferFull)
       {
@@ -509,6 +511,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {  
       // acknowledge a delivery   
       Delivery d;
+      
+      log.info("acknowledging: " + messageID);
         
       synchronized (lock)
       {
@@ -755,12 +759,14 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          ServerConnectionEndpoint connection =
             ServerConsumerEndpoint.this.sessionEndpoint.getConnectionEndpoint();
+         
+         int serverId = connection.getServerPeer().getServerPeerID();
 
          try
          {
             if (trace) { log.trace(ServerConsumerEndpoint.this + " handing " + list.size() + " message(s) over to the remoting layer"); }
 
-            ClientDelivery del = new ClientDelivery(list, id);
+            ClientDelivery del = new ClientDelivery(list, serverId, id);
 
             // TODO How can we ensure that messages for the same consumer aren't delivered
             // concurrently to the same consumer on different threads?

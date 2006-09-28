@@ -28,6 +28,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
+import org.jboss.logging.Logger;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
@@ -49,6 +50,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  */
 public class CallbackManager implements ServerInvocationHandler
 {
+   private static final Logger log = Logger.getLogger(CallbackManager.class);
+
+   
    protected Map callbackHandlers;
 
    public CallbackManager()
@@ -56,14 +60,39 @@ public class CallbackManager implements ServerInvocationHandler
       callbackHandlers = new ConcurrentReaderHashMap();
    }
    
-   public void registerHandler(int consumerID, MessageCallbackHandler handler)
+   public void registerHandler(int serverId, int consumerId, MessageCallbackHandler handler)
    {
-      callbackHandlers.put(new Integer(consumerID), handler);
+      Long lookup = calcLookup(serverId, consumerId);
+      
+      callbackHandlers.put(lookup, handler);
    }
    
-   public void unregisterHandler(int consumerID)
+   public void unregisterHandler(int serverId, int consumerId)
    {
-      callbackHandlers.remove(new Integer(consumerID));
+      Long lookup = calcLookup(serverId, consumerId);
+      
+      callbackHandlers.remove(lookup);
+   }
+   
+   private Long calcLookup(int serverId, int consumerId)
+   {
+      log.info("calculating lookup for server:" + serverId + " consumer:" + consumerId);
+      long id1 = serverId;
+      
+      id1 <<= 32;
+      
+      log.info("id1 is " + Long.toBinaryString(id1));
+            
+      long id2 = consumerId;
+      
+      log.info("id2 is " + Long.toBinaryString(id2));
+      
+      long lookup = id1 | id2;
+      
+      log.info("lookup is " + Long.toBinaryString(lookup));
+      
+      
+      return new Long(lookup);
    }
    
    public void addListener(InvokerCallbackHandler arg0)
@@ -76,16 +105,20 @@ public class CallbackManager implements ServerInvocationHandler
       
       ClientDelivery dr = (ClientDelivery)mm.getLoad();
       
-      int consumerID = dr.getConsumerID();
+      log.info("received message(s) from server " + dr.getServerId());
+      
+      Long lookup = calcLookup(dr.getServerId(), dr.getConsumerId());
+      
+      log.info("lookup key is " + lookup);
       
       List msgs = dr.getMessages();
 
       MessageCallbackHandler handler =
-         (MessageCallbackHandler)callbackHandlers.get(new Integer(consumerID));
+         (MessageCallbackHandler)callbackHandlers.get(lookup);
       
       if (handler == null)
       {
-         throw new IllegalStateException("Cannot find handler for consumer: " + consumerID);
+         throw new IllegalStateException("Cannot find handler for consumer: " + dr.getConsumerId() +  " and server " + dr.getServerId());
       }
       
       return new MessagingMarshallable(mm.getVersion(), handler.handleMessage(msgs));

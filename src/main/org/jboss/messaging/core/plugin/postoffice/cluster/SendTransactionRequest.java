@@ -50,14 +50,14 @@ class SendTransactionRequest extends TransactionRequest
    {      
    }
         
-   SendTransactionRequest(String nodeId, long txId, List messageHolders, long channelID)
+   SendTransactionRequest(int nodeId, long txId, List messageHolders, long channelID)
    {
       super(nodeId, txId, true, channelID);
       
       this.messageHolders = messageHolders;  
    }
    
-   SendTransactionRequest(String nodeId, long txId)
+   SendTransactionRequest(int nodeId, long txId)
    {
       super(nodeId, txId, false);
    }

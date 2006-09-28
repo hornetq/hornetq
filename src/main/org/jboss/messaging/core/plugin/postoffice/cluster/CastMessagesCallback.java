@@ -67,7 +67,7 @@ class CastMessagesCallback implements TxCallback
    
    private List nonPersistent;
    
-   private String nodeId;
+   private int nodeId;
    
    private long txId;
    
@@ -75,7 +75,7 @@ class CastMessagesCallback implements TxCallback
    
    private boolean multicast;
    
-   private String toNodeId;
+   private int toNodeId;
       
    /*
     * We store the id of one of the channels that the ref was inserted into
@@ -85,17 +85,17 @@ class CastMessagesCallback implements TxCallback
    private long checkChannelID;
    
    void addMessage(String routingKey, Message message, Map queueNameToNodeIdMap,
-                   String lastNodeId, long channelID)
+                   int lastNodeId, long channelID)
    {
       //If we only ever send messages to the same node for this tx, then we can unicast rather than multicast
       //This is how we determine that
-      if (lastNodeId == null)
+      if (lastNodeId == -1)
       {
          multicast = true;
       }
       else
       {
-         if (!lastNodeId.equals(toNodeId))
+         if (lastNodeId != toNodeId)
          {
             multicast = true;
          }
@@ -127,7 +127,7 @@ class CastMessagesCallback implements TxCallback
       }
    }
    
-   CastMessagesCallback(String nodeId, long txId, PostOfficeInternal office)
+   CastMessagesCallback(int nodeId, long txId, PostOfficeInternal office)
    {
       this.nodeId = nodeId;
       

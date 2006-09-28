@@ -14,7 +14,7 @@
 
       <constructor>
          <!-- ServerPeerID -->
-         <arg type="java.lang.String" value="server.0" />
+         <arg type="int" value="0" />
          <!-- DefaultQueueJNDIContext -->
          <arg type="java.lang.String" value="/queue" />
          <!-- DefaultTopicJNDIContext -->

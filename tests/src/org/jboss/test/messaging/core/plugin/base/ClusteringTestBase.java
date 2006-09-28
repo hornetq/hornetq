@@ -140,7 +140,7 @@ public class ClusteringTestBase extends MessagingTestCase
       
       DefaultPostOffice postOffice = 
          new DefaultPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                            null, true, "node1", "Simple", ms, pm, tr, ff, pool);
+                            null, true, 1, "Simple", ms, pm, tr, ff, pool);
       
       postOffice.start();      
       

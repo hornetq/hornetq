@@ -188,10 +188,10 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
          this.msgCount = msgCount;
       }
 
-      public String getNodeId()
+      public int getNodeId()
       {
          // TODO Auto-generated method stub
-         return null;
+         return -1;
       }
 
       public QueueStats getStats()

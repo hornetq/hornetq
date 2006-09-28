@@ -37,7 +37,7 @@ import java.io.IOException;
  */
 class CheckRequest extends ClusterRequest
 {
-   private String nodeId;
+   private int nodeId;
    
    static final int TYPE = 2;
    
@@ -45,7 +45,7 @@ class CheckRequest extends ClusterRequest
    {      
    }
    
-   CheckRequest(String nodeId)
+   CheckRequest(int nodeId)
    {
       this.nodeId = nodeId;
    }
@@ -63,11 +63,11 @@ class CheckRequest extends ClusterRequest
    
    public void read(DataInputStream in) throws IOException
    {
-      nodeId = in.readUTF();
+      nodeId = in.readInt();
    }
 
    public void write(DataOutputStream out) throws IOException
    {
-      out.writeUTF(nodeId);      
+      out.writeInt(nodeId);      
    }
 }

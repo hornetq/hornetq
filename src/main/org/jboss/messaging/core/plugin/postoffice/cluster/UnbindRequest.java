@@ -37,7 +37,7 @@ class UnbindRequest extends ClusterRequest
 {
    static final int TYPE = 9;
 
-   private String nodeId;   
+   private int nodeId;   
    
    private String queueName;
    
@@ -45,7 +45,7 @@ class UnbindRequest extends ClusterRequest
    {      
    }
 
-   UnbindRequest(String nodeId, String queueName)
+   UnbindRequest(int nodeId, String queueName)
    {
       this.nodeId = nodeId;
       
@@ -66,14 +66,14 @@ class UnbindRequest extends ClusterRequest
 
    public void read(DataInputStream in) throws Exception
    {
-      nodeId = in.readUTF();
+      nodeId = in.readInt();
       
       queueName = in.readUTF();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(nodeId);
+      out.writeInt(nodeId);
       
       out.writeUTF(queueName);
    }      

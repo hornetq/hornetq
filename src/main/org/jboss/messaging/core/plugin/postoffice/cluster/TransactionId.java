@@ -37,26 +37,24 @@ import org.jboss.messaging.util.Streamable;
  */
 class TransactionId implements Streamable
 {
-   private String nodeId;
+   private int nodeId;
    
    private long txId;
    
-   private int hash;
+   private int hash = -1;
    
    TransactionId()
    {      
    }
    
-   TransactionId(String nodeId, long txId)
+   TransactionId(int nodeId, long txId)
    {
       this.nodeId = nodeId;
       
       this.txId = txId;
-      
-      calculateHash();
    }
    
-   String getNodeId()
+   int getNodeId()
    {
       return nodeId;
    }
@@ -68,6 +66,10 @@ class TransactionId implements Streamable
    
    public int hashCode()
    {
+      if (hash == -1)
+      {
+         calculateHash();
+      }
       return hash;
    }
    
@@ -85,7 +87,7 @@ class TransactionId implements Streamable
       
       TransactionId tother = (TransactionId)other;
       
-      return tother.txId == this.txId && tother.nodeId.equals(this.nodeId);
+      return tother.txId == this.txId && tother.nodeId == this.nodeId;
    }
    
    public String toString()
@@ -99,24 +101,20 @@ class TransactionId implements Streamable
       
       hash = 37 * hash + (int)(txId ^ (txId >>> 32));
       
-      hash = 37 * hash + nodeId.hashCode();
+      hash = 37 * hash + nodeId;
    }
 
    public void read(DataInputStream in) throws Exception
    {
-      nodeId = in.readUTF();
+      nodeId = in.readInt();
       
       txId = in.readLong();
-      
-      hash = in.readInt();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(nodeId);
+      out.writeInt(nodeId);
       
       out.writeLong(txId);
-      
-      out.writeInt(hash);
    }
 }

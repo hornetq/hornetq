@@ -64,7 +64,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    
    private RemoteQueueStub pullQueue;
    
-   private String nodeId;
+   private int nodeId;
    
    //TODO Make configurable
    private int pullSize;
@@ -74,7 +74,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    private Object pullLock = new Object();
  
    //TODO - we shouldn't have to specify office AND nodeId
-   public LocalClusteredQueue(PostOffice office, String nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
+   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
                               Filter filter, TransactionRepository tr,
                               int fullSize, int pageSize, int downCacheSize)
@@ -89,7 +89,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       this.office = (PostOfficeInternal)office;
    }
    
-   public LocalClusteredQueue(PostOffice office, String nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
+   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
                               Filter filter, TransactionRepository tr)
    {
@@ -142,7 +142,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       return true;
    }
      
-   public String getNodeId()
+   public int getNodeId()
    {
       return nodeId;
    }

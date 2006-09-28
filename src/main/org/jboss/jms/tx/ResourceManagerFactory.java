@@ -50,23 +50,25 @@ public class ResourceManagerFactory
       holders = new HashMap();
    }
       
-   public synchronized boolean containsResourceManager(String serverID)
+   public synchronized boolean containsResourceManager(int serverID)
    {
-      return holders.containsKey(serverID);
+      return holders.containsKey(new Integer(serverID));
    }
    
    /**
     * @param serverID - server peer ID.
     */
-   public synchronized ResourceManager checkOutResourceManager(String serverID)
+   public synchronized ResourceManager checkOutResourceManager(int serverID)
    {
-      Holder h = (Holder)holders.get(serverID);
+      Integer in = new Integer(serverID);
+      
+      Holder h = (Holder)holders.get(in);
       
       if (h == null)
       {
          h = new Holder();
          
-         holders.put(serverID, h);
+         holders.put(in, h);
       }
       else
       {
@@ -76,9 +78,11 @@ public class ResourceManagerFactory
       return h.rm;
    }
    
-   public synchronized void checkInResourceManager(String serverID)
+   public synchronized void checkInResourceManager(int serverID)
    {
-      Holder h = (Holder)holders.get(serverID);
+      Integer in = new Integer(serverID);
+      
+      Holder h = (Holder)holders.get(in);
       
       if (h == null)
       {
@@ -89,7 +93,7 @@ public class ResourceManagerFactory
       
       if (h.refCount == 0)
       {
-         holders.remove(serverID);
+         holders.remove(in);
       }      
    }
    

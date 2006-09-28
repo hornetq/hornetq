@@ -35,7 +35,7 @@ import org.jboss.messaging.core.Queue;
  */
 public class DefaultBinding implements Binding
 {
-   private String nodeId;
+   private int nodeId;
    
    private String condition;
    
@@ -45,7 +45,7 @@ public class DefaultBinding implements Binding
    {      
    }
 
-   public DefaultBinding(String nodeId, String condition, Queue queue)
+   public DefaultBinding(int nodeId, String condition, Queue queue)
    {
       this.nodeId = nodeId;
       
@@ -54,7 +54,7 @@ public class DefaultBinding implements Binding
       this.queue = queue;
    }
    
-   public String getNodeId()
+   public int getNodeId()
    {
       return nodeId;
    }

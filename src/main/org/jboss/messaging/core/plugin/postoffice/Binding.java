@@ -34,7 +34,7 @@ import org.jboss.messaging.core.Queue;
  */
 public interface Binding
 {
-   public String getNodeId();
+   public int getNodeId();
    
    public String getCondition();
    

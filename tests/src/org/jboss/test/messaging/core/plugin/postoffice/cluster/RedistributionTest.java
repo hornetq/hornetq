@@ -93,31 +93,31 @@ public class RedistributionTest extends ClusteringTestBase
           
       try
       {   
-         office1 = createClusteredPostOffice("node1", "testgroup");
+         office1 = createClusteredPostOffice(1, "testgroup");
          
-         office2 = createClusteredPostOffice("node2", "testgroup");
+         office2 = createClusteredPostOffice(2, "testgroup");
          
-         office3 = createClusteredPostOffice("node3", "testgroup");
+         office3 = createClusteredPostOffice(3, "testgroup");
          
-         office4 = createClusteredPostOffice("node4", "testgroup");
+         office4 = createClusteredPostOffice(4, "testgroup");
          
-         office5 = createClusteredPostOffice("node5", "testgroup");
+         office5 = createClusteredPostOffice(5, "testgroup");
          
          log.info("Started offices");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, "node1", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding1 = office1.bindClusteredQueue("queue1", queue1);
                   
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, "node2", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding2 = office2.bindClusteredQueue("queue1", queue2);
                   
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, "node3", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding3 = office3.bindClusteredQueue("queue1", queue3);         
          
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, "node4", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding4 = office4.bindClusteredQueue("queue1", queue4);
                   
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, "node5", "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding5 = office5.bindClusteredQueue("queue1", queue5);
                   
          log.info("bound queues");
@@ -381,7 +381,7 @@ public class RedistributionTest extends ClusteringTestBase
       
    }
    
-   protected ClusteredPostOffice createClusteredPostOffice(String nodeId, String groupName) throws Exception
+   protected ClusteredPostOffice createClusteredPostOffice(int nodeId, String groupName) throws Exception
    {
       MessagePullPolicy pullPolicy = new DefaultMessagePullPolicy();
       

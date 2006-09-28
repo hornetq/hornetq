@@ -68,7 +68,7 @@ public class ClientConnectionFactoryDelegate
 
    protected String serverLocatorURI;
    protected Version serverVersion;
-   protected String serverID;
+   protected int serverID;
    protected boolean clientPing;
 
    private boolean trace;
@@ -78,7 +78,7 @@ public class ClientConnectionFactoryDelegate
    // Constructors --------------------------------------------------
 
    public ClientConnectionFactoryDelegate(int objectID, String serverLocatorURI,
-                                          Version serverVersion, String serverID,
+                                          Version serverVersion, int serverID,
                                           boolean clientPing)
    {
       super(objectID);
@@ -246,7 +246,7 @@ public class ClientConnectionFactoryDelegate
       return serverVersion;
    }
 
-   public String getServerID()
+   public int getServerID()
    {
       return serverID;
    }

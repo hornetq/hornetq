@@ -1418,6 +1418,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {         
          //No tx so we remove the reference directly from the db
          
+         log.info("Removing ref: " + ref);
+         
          TransactionWrapper wrap = new TransactionWrapper();
          
          PreparedStatement psReference = null;
@@ -1908,6 +1910,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             
             removeReference(pair.channelId, pair.ref, psReference);
+            
+            log.info("Removing ref " + pair.ref + " in tx");
             
             if (batch)
             {

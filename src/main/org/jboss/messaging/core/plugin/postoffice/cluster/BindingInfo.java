@@ -38,7 +38,7 @@ import org.jboss.messaging.util.Streamable;
  */
 class BindingInfo implements Streamable
 {
-   private String nodeId;   
+   private int nodeId;   
    
    private String queueName;   
    
@@ -54,7 +54,7 @@ class BindingInfo implements Streamable
    {      
    }
    
-   BindingInfo(String nodeId, String queueName, String condition, String filterString,
+   BindingInfo(int nodeId, String queueName, String condition, String filterString,
                long channelId, boolean durable)
    {
       this.nodeId = nodeId;
@@ -79,7 +79,7 @@ class BindingInfo implements Streamable
    
    public void read(DataInputStream in) throws Exception
    {
-      nodeId = in.readUTF();
+      nodeId = in.readInt();
       
       queueName = in.readUTF();
       
@@ -94,7 +94,7 @@ class BindingInfo implements Streamable
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(nodeId);
+      out.writeInt(nodeId);
       
       out.writeUTF(queueName);
       
@@ -127,7 +127,7 @@ class BindingInfo implements Streamable
       return filterString;
    }
 
-   String getNodeId()
+   int getNodeId()
    {
       return nodeId;
    }

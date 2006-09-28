@@ -149,7 +149,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     */
    public DefaultClusteredPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
             boolean createTablesOnStartup,
-            String nodeId, String officeName, MessageStore ms,
+            int nodeId, String officeName, MessageStore ms,
             PersistenceManager pm,
             TransactionRepository tr,
             FilterFactory filterFactory,
@@ -176,7 +176,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     */
    public DefaultClusteredPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
                               boolean createTablesOnStartup,
-                              String nodeId, String officeName, MessageStore ms,
+                              int nodeId, String officeName, MessageStore ms,
                               PersistenceManager pm,
                               TransactionRepository tr,
                               FilterFactory filterFactory,
@@ -200,7 +200,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    private DefaultClusteredPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
                                boolean createTablesOnStartup,
-                               String nodeId, String officeName, MessageStore ms,
+                               int nodeId, String officeName, MessageStore ms,
                                PersistenceManager pm,                               
                                TransactionRepository tr,
                                FilterFactory filterFactory,
@@ -309,7 +309,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {           
       log.info(this.nodeId + " binding clustered queue: " + queue + " with condition: " + condition);
       
-      if (!queue.getNodeId().equals(this.nodeId))
+      if (queue.getNodeId() != this.nodeId)
       {
          throw new IllegalArgumentException("Queue node id does not match office node id");
       }
@@ -369,7 +369,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          
          boolean startInternalTx = false;
          
-         String lastNodeId = null;
+         int lastNodeId = -1;
          
          if (cb != null)
          {
@@ -425,7 +425,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                         queueNameNodeIdMap = new HashMap();
                      }
                      
-                     queueNameNodeIdMap.put(queue.getName(), queue.getNodeId());
+                     queueNameNodeIdMap.put(queue.getName(), new Integer(queue.getNodeId()));
                   }
                   
                   if (!queue.isLocal())
@@ -488,7 +488,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   }
                       
                   callback.addMessage(condition, ref.getMessage(), queueNameNodeIdMap,
-                                      numberRemote == 1 ? lastNodeId : null,
+                                      numberRemote == 1 ? lastNodeId : -1,
                                       lastChannelId);    
                }
             }
@@ -517,7 +517,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    /*
     * Called when another node adds a binding
     */
-   public void addBindingFromCluster(String nodeId, String queueName, String condition,
+   public void addBindingFromCluster(int nodeId, String queueName, String condition,
                                      String filterString, long channelID, boolean durable)
       throws Exception
    {
@@ -529,13 +529,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       {                     
          //Sanity
 
-         if (!nodeIdAddressMap.containsKey(nodeId))
+         if (!nodeIdAddressMap.containsKey(new Integer(nodeId)))
          {
             throw new IllegalStateException("Cannot find address for node: " + nodeId);
          }
          
          // We currently only allow one binding per name per node
-         Map nameMap = (Map)nameMaps.get(nodeId);
+         Map nameMap = (Map)nameMaps.get(new Integer(nodeId));
          
          Binding binding = null;
          
@@ -562,14 +562,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    /*
     * Called when another node removes a binding
     */
-   public void removeBindingFromCluster(String nodeId, String queueName) throws Exception
+   public void removeBindingFromCluster(int nodeId, String queueName) throws Exception
    {
       lock.writeLock().acquire();
       
       try
       {         
          // Sanity
-         if (!nodeIdAddressMap.containsKey(nodeId))
+         if (!nodeIdAddressMap.containsKey(new Integer(nodeId)))
          {
             throw new IllegalStateException("Cannot find address for node: " + nodeId);
          }
@@ -582,13 +582,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
    }
    
-   public void handleAddressNodeMapping(Address address, String nodeId) throws Exception
+   public void handleAddressNodeMapping(Address address, int nodeId) throws Exception
    {
       lock.writeLock().acquire();
       
       try
       { 
-         nodeIdAddressMap.put(nodeId, address);
+         nodeIdAddressMap.put(new Integer(nodeId), address);
       }
       finally
       {
@@ -629,20 +629,20 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             {
                Binding binding = (Binding)iter.next();
                                                      
-               if (binding.getNodeId().equals(this.nodeId))
+               if (binding.getNodeId() == this.nodeId)
                {  
                   boolean handle = true;
                   
                   if (queueNameNodeIdMap != null)
-                  {                     
-                     String desiredNodeId = (String)queueNameNodeIdMap.get(binding.getQueue().getName());
+                  {           
+                     Integer in = (Integer)queueNameNodeIdMap.get(binding.getQueue().getName());
                      
                      //When there are more than one queues with the same name across the cluster we only
                      //want to chose one of them
                      
-                     if (desiredNodeId != null)
+                     if (in != null)
                      {
-                        handle = desiredNodeId.equals(nodeId);
+                        handle = in.intValue() == nodeId;
                      }
                   }
                   
@@ -681,7 +681,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    /*
     * Unicast a message to one members of the group
     */
-   public void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception
+   public void asyncSendRequest(ClusterRequest request, int nodeId) throws Exception
    {               
       Address address = this.getAddressForNodeId(nodeId);
       
@@ -700,7 +700,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    /*
     * Unicast a sync request
     */
-   public Object syncSendRequest(ClusterRequest request, String nodeId, boolean ignoreNoAddress) throws Exception
+   public Object syncSendRequest(ClusterRequest request, int nodeId, boolean ignoreNoAddress) throws Exception
    {              
       Address address = this.getAddressForNodeId(nodeId);
       
@@ -756,7 +756,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    /**
     * Check for any transactions that need to be committed or rolled back
     */
-   public void check(String nodeId) throws Throwable
+   public void check(int nodeId) throws Throwable
    {
       synchronized (holdingArea)
       {
@@ -770,7 +770,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             
             TransactionId id = (TransactionId)entry.getKey();
             
-            if (id.getNodeId().equals(nodeId))
+            if (id.getNodeId() == nodeId)
             {
                ClusterTransaction tx = (ClusterTransaction)iter.next();
                
@@ -815,7 +815,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       try
       {         
-         Map nameMap = (Map)nameMaps.get(nodeId);
+         Map nameMap = (Map)nameMaps.get(new Integer(nodeId));
          
          if (nameMap != null)
          {            
@@ -865,19 +865,19 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
    }
    
-   public void updateQueueStats(String nodeId, List statsList) throws Exception
+   public void updateQueueStats(int nodeId, List statsList) throws Exception
    {
       lock.readLock().acquire();
       
       try
       {      
-         if (nodeId.equals(this.nodeId))
+         if (nodeId == this.nodeId)
          {
             //Sanity check
             throw new IllegalStateException("Cannot update queue stats for current node");
          }
          
-         Map nameMap = (Map)nameMaps.get(nodeId);
+         Map nameMap = (Map)nameMaps.get(new Integer(nodeId));
          
          if (nameMap == null)
          {
@@ -949,13 +949,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       return dels;
    }
    
-   public Address getAddressForNodeId(String nodeId) throws Exception
+   public Address getAddressForNodeId(int nodeId) throws Exception
    {
       lock.readLock().acquire();
       
       try
       {
-         return (Address)nodeIdAddressMap.get(nodeId);
+         return (Address)nodeIdAddressMap.get(new Integer(nodeId));
       }
       finally
       {
@@ -1075,14 +1075,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
    }
    
-   protected Binding createBinding(String nodeId, String condition, String queueName, long channelId, String filterString, boolean durable) throws Exception
+   protected Binding createBinding(int nodeId, String condition, String queueName, long channelId, String filterString, boolean durable) throws Exception
    {            
       Filter filter = filterFactory.createFilter(filterString);
       
       log.info("Created binding");
       
       Queue queue;
-      if (nodeId.equals(this.nodeId))
+      if (nodeId == this.nodeId)
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
          
@@ -1132,7 +1132,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       { 
          Iterator iter = nodeIdAddressMap.entrySet().iterator();
          
-         String nodeId = null;
+         Integer nodeId = null;
          while (iter.hasNext())
          {
             Map.Entry entry = (Map.Entry)iter.next();
@@ -1141,7 +1141,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             
             if (adr.equals(address))
             {
-               nodeId = (String)entry.getKey();
+               nodeId = (Integer)entry.getKey();
             }
          }
          
@@ -1176,7 +1176,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             {
                Binding binding = (Binding)iter.next();
                
-               removeBinding(nodeId, binding.getQueue().getName());
+               removeBinding(nodeId.intValue(), binding.getQueue().getName());
             }
          }
          
@@ -1245,7 +1245,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          
          Binding binding = this.createBinding(info.getNodeId(), info.getCondition(), info.getQueueName(), info.getChannelId(), info.getFilterString(), info.isDurable());
          
-         if (binding.getNodeId().equals(this.nodeId))
+         if (binding.getNodeId() == this.nodeId)
          {
             //We deactivate if this is one of our own bindings - it can only
             //be one of our own durable bindings - and since state is retrieved before we are fully started

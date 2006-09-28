@@ -37,7 +37,7 @@ import java.io.DataOutputStream;
  */
 abstract class TransactionRequest extends ClusterRequest implements ClusterTransaction
 {
-   protected String nodeId;
+   protected int nodeId;
    
    protected long txId;
  
@@ -49,7 +49,7 @@ abstract class TransactionRequest extends ClusterRequest implements ClusterTrans
    {      
    }
       
-   TransactionRequest(String nodeId, long txId, boolean hold, long checkChannelID)
+   TransactionRequest(int nodeId, long txId, boolean hold, long checkChannelID)
    {
       this.nodeId = nodeId;
       
@@ -60,7 +60,7 @@ abstract class TransactionRequest extends ClusterRequest implements ClusterTrans
       this.checkChannelID = checkChannelID;
    }
    
-   TransactionRequest(String nodeId, long txId, boolean hold)
+   TransactionRequest(int nodeId, long txId, boolean hold)
    {
       this.nodeId = nodeId;
       
@@ -86,7 +86,7 @@ abstract class TransactionRequest extends ClusterRequest implements ClusterTrans
    
    public void read(DataInputStream in) throws Exception
    {
-      nodeId = in.readUTF();
+      nodeId = in.readInt();
       
       txId = in.readLong();
       
@@ -95,7 +95,7 @@ abstract class TransactionRequest extends ClusterRequest implements ClusterTrans
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(nodeId);
+      out.writeInt(nodeId);
       
       out.writeLong(txId);
       

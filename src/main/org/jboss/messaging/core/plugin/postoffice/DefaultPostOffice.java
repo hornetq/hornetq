@@ -78,7 +78,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    protected TransactionRepository tr;
    
-   protected String nodeId;
+   protected int nodeId;
    
    //Map <node id, Map < queue name, binding > >
    protected Map nameMaps;
@@ -96,7 +96,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    public DefaultPostOffice(DataSource ds, TransactionManager tm, Properties sqlProperties,
                          boolean createTablesOnStartup,
-                         String nodeId, String officeName, MessageStore ms,
+                         int nodeId, String officeName, MessageStore ms,
                          PersistenceManager pm,
                          TransactionRepository tr, FilterFactory filterFactory,
                          QueuedExecutorPool pool)
@@ -160,7 +160,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       try
       {         
          //We currently only allow one binding per name per node
-         Map nameMap = (Map)nameMaps.get(this.nodeId);
+         Map nameMap = (Map)nameMaps.get(new Integer(this.nodeId));
          
          Binding binding = null;
          
@@ -261,7 +261,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       
       try
       {
-         Map nameMap = (Map)nameMaps.get(this.nodeId);
+         Map nameMap = (Map)nameMaps.get(new Integer(this.nodeId));
          
          Binding binding = null;
          
@@ -333,7 +333,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                Binding binding = (Binding)iter.next();
                
                //Sanity check
-               if (!binding.getNodeId().equals(this.nodeId))
+               if (binding.getNodeId() != this.nodeId)
                {
                   throw new IllegalStateException("Local post office has foreign bindings!");
                }
@@ -393,7 +393,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
               
          while (rs.next())
          {
-            String nodeId = rs.getString(1);
+            int nodeId = rs.getInt(1);
             
             String queueName = rs.getString(2);
             
@@ -434,13 +434,13 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
    }
    
-   protected Binding createBinding(String nodeId, String condition, String queueName, long channelId, String filterString, boolean durable) throws Exception
+   protected Binding createBinding(int nodeId, String condition, String queueName, long channelId, String filterString, boolean durable) throws Exception
    {      
       
       Filter filter = filterFactory.createFilter(filterString);
       
       Queue queue;
-      if (nodeId.equals(this.nodeId))
+      if (nodeId == this.nodeId)
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
          
@@ -472,7 +472,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          String filterString = binding.getQueue().getFilter() == null ? null : binding.getQueue().getFilter().getFilterString();
                   
          ps.setString(1, this.officeName);
-         ps.setString(2, this.nodeId);
+         ps.setInt(2, this.nodeId);
          ps.setString(3, binding.getQueue().getName());
          ps.setString(4, binding.getCondition());         
          if (filterString != null)
@@ -514,7 +514,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          ps = conn.prepareStatement(getSQLStatement("DELETE_BINDING"));
          
          ps.setString(1, this.officeName);
-         ps.setString(2, this.nodeId);
+         ps.setInt(2, this.nodeId);
          ps.setString(3, queueName);
 
          int rows = ps.executeUpdate();
@@ -542,7 +542,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       addToConditionMap(binding);
    }   
    
-   protected Binding removeBinding(String nodeId, String queueName)
+   protected Binding removeBinding(int nodeId, String queueName)
    {
       Binding binding = removeFromNameMap(nodeId, queueName);
                   
@@ -553,13 +553,13 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    protected void addToNameMap(Binding binding)
    {
-      Map nameMap = (Map)nameMaps.get(binding.getNodeId());
+      Map nameMap = (Map)nameMaps.get(new Integer(binding.getNodeId()));
       
       if (nameMap == null)
       {
          nameMap = new LinkedHashMap();
          
-         nameMaps.put(binding.getNodeId(), nameMap);
+         nameMaps.put(new Integer(binding.getNodeId()), nameMap);
       }
       
       nameMap.put(binding.getQueue().getName(), binding);
@@ -581,14 +581,14 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       bindings.addBinding(binding);
    }
    
-   protected Binding removeFromNameMap(String nodeId, String queueName)
+   protected Binding removeFromNameMap(int nodeId, String queueName)
    {
       if (queueName == null)
       {
          throw new IllegalArgumentException("Queue name is null");
       }
              
-      Map nameMap = (Map)nameMaps.get(nodeId);
+      Map nameMap = (Map)nameMaps.get(new Integer(nodeId));
       
       if (nameMap == null)
       {
@@ -609,7 +609,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
               
       if (nameMap.isEmpty())
       {
-         nameMaps.remove(nodeId);
+         nameMaps.remove(new Integer(nodeId));
       }
       
       return binding;
@@ -655,7 +655,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    {
       Map map = new LinkedHashMap();
       map.put("CREATE_POSTOFFICE_TABLE",
-              "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID VARCHAR(255)," +
+              "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER," +
               "QUEUE_NAME VARCHAR(1023), CONDITION VARCHAR(1023), " +
               "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)");
       return map;

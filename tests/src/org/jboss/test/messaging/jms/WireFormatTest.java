@@ -27,7 +27,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -1088,6 +1087,8 @@ public class WireFormatTest extends MessagingTestCase
       {
          int consumerID = 12345678;
          
+         int serverId = 76543;
+         
          JBossMessage m1 = new JBossMessage(123);
          JBossMessage m2 = new JBossMessage(456);
          JBossMessage m3 = new JBossMessage(789);
@@ -1106,7 +1107,7 @@ public class WireFormatTest extends MessagingTestCase
          msgs.add(del2);
          msgs.add(del3);         
          
-         ClientDelivery dr = new ClientDelivery(msgs, consumerID);
+         ClientDelivery dr = new ClientDelivery(msgs, serverId, consumerID);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -1131,6 +1132,9 @@ public class WireFormatTest extends MessagingTestCase
          
          //Second byte should be CALLBACK
          assertEquals(JMSWireFormat.CALLBACK, dis.readByte());
+         
+         //Next int should be server id
+         assertEquals(76543, dis.readInt());
          
          //Next int should be consumer id
          assertEquals(12345678, dis.readInt());
@@ -1204,7 +1208,8 @@ public class WireFormatTest extends MessagingTestCase
          
          List msgs2 = dr2.getMessages();
          
-         assertEquals(consumerID, dr2.getConsumerID());
+         assertEquals(serverId, dr2.getServerId());
+         assertEquals(consumerID, dr2.getConsumerId());
          
          MessageProxy p1 = (MessageProxy)msgs2.get(0);
          MessageProxy p2 = (MessageProxy)msgs2.get(1);

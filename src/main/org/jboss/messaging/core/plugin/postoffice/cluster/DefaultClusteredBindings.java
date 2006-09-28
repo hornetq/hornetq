@@ -44,11 +44,11 @@ class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindi
    // Map <name, router>
    private Map nameMap;
    
-   private String thisNode;
+   private int thisNode;
    
    private int localDurableCount;
    
-   DefaultClusteredBindings(String thisNode)
+   DefaultClusteredBindings(int thisNode)
    {
       super();
       
@@ -61,7 +61,7 @@ class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindi
    {
       super.addBinding(binding);
   
-      if (binding.getNodeId().equals(thisNode) && binding.getQueue().isRecoverable())
+      if (binding.getNodeId() == thisNode && binding.getQueue().isRecoverable())
       {
          localDurableCount++;
       }      
@@ -76,7 +76,7 @@ class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindi
          return false;
       }
            
-      if (binding.getNodeId().equals(thisNode) && binding.getQueue().isRecoverable())
+      if (binding.getNodeId() == thisNode && binding.getQueue().isRecoverable())
       {
          localDurableCount--;
       }      

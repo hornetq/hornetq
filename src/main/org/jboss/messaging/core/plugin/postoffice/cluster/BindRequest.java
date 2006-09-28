@@ -43,7 +43,7 @@ class BindRequest extends ClusterRequest
    {      
    }
    
-   BindRequest(String nodeId, String queueName, String condition, String filterString,
+   BindRequest(int nodeId, String queueName, String condition, String filterString,
                long channelId, boolean durable)
    {
       bindingInfo = new BindingInfo(nodeId, queueName, condition, filterString,

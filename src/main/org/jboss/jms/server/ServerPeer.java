@@ -81,7 +81,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private static final Logger log = Logger.getLogger(ServerPeer.class);
 
-   public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
+   //public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
 
    // The "subsystem" label this ServerPeer uses to register its ServerInvocationHandler with the
    // Remoting connector
@@ -91,7 +91,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // Attributes ----------------------------------------------------
 
-   private String serverPeerID;
+   private int serverPeerID;
    private byte[] clientAOPConfig;
    private Version version;
 
@@ -102,7 +102,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private boolean started;
 
-   private int objectIDSequence = Integer.MIN_VALUE + 1;
+   private int objectIDSequence = 1;
    
    private boolean crashed;
 
@@ -152,7 +152,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // Constructors --------------------------------------------------
 
-   public ServerPeer(String serverPeerID,
+   public ServerPeer(int serverPeerID,
                      String defaultQueueJNDIContext,
                      String defaultTopicJNDIContext) throws Exception
    {
@@ -244,7 +244,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
          initializeRemoting(mbeanServer);
    
-         createRecoverable();
+         //createRecoverable();
    
          started = true;
    
@@ -270,7 +270,7 @@ public class ServerPeer extends ServiceMBeanSupport
    
          started = false;
    
-         removeRecoverable();
+         //removeRecoverable();
    
          shutdownLogger.shutdown(serverPeerID);         
                   
@@ -405,7 +405,7 @@ public class ServerPeer extends ServiceMBeanSupport
       return version.getProviderMinorVersion();
    }
 
-   public String getServerPeerID()
+   public int getServerPeerID()
    {
       return serverPeerID;
    }
@@ -660,9 +660,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return shutdownLogger;
    }
-   
-   
-
+      
    public synchronized int getNextObjectID()
    {
       return objectIDSequence++;
@@ -706,12 +704,12 @@ public class ServerPeer extends ServiceMBeanSupport
     * order to obtain an XAResource so it can perform XA recovery.
     */
 
-   //Commented out until XA Recovery is complete
-
-   private void createRecoverable() throws Exception
-   {
-      //Disabled until XA Recovery is complete with Arjuna transaction integration
-
+//   //Commented out until XA Recovery is complete
+//
+//   private void createRecoverable() throws Exception
+//   {
+//      //Disabled until XA Recovery is complete with Arjuna transaction integration
+//
 //      InitialContext ic = new InitialContext();
 //
 //      int connFactoryID = connFactoryJNDIMapper.registerConnectionFactory(null, null);
@@ -737,23 +735,23 @@ public class ServerPeer extends ServiceMBeanSupport
 //      }
 //
 //      recCtx.rebind(this.serverPeerID, recoverable);
-   }
+//   }
 
-   private void removeRecoverable() throws Exception
-   {
-      InitialContext ic = new InitialContext();
-
-      Context recCtx = null;
-      try
-      {
-         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
-         recCtx.unbind(serverPeerID);
-      }
-      catch (NamingException e)
-      {
-         //Ignore
-      }
-   }
+//   private void removeRecoverable() throws Exception
+//   {
+//      InitialContext ic = new InitialContext();
+//
+//      Context recCtx = null;
+//      try
+//      {
+//         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
+//         recCtx.unbind(serverPeerID);
+//      }
+//      catch (NamingException e)
+//      {
+//         //Ignore
+//      }
+//   }
 
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {

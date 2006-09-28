@@ -37,7 +37,7 @@ public interface ClusteredQueue extends Queue
 {
    QueueStats getStats();
    
-   String getNodeId();
+   int getNodeId();
    
    boolean isLocal();
 }

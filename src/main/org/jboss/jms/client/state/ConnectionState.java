@@ -52,11 +52,11 @@ public class ConnectionState extends HierarchicalStateSupport
    
    private MessageIdGenerator idGenerator;
    
-   private String serverID;
+   private int serverID;
    
    private Version versionToUse;
     
-   public ConnectionState(String serverID, ConnectionDelegate delegate,
+   public ConnectionState(int serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection, Version versionToUse,
                           ResourceManager rm, MessageIdGenerator gen)
       throws Exception
@@ -98,7 +98,7 @@ public class ConnectionState extends HierarchicalStateSupport
       return versionToUse;
    }
    
-   public String getServerID()
+   public int getServerID()
    {
       return serverID;
    }

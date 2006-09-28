@@ -153,6 +153,8 @@ public class DefaultRouter implements ClusterRouter
          //match - in which case it won't match at any other nodes too so no point
          //in trying them
          
+         log.info("sending to local queue");
+         
          Delivery del = localQueue.handle(observer, reference, tx);
          
          return del;
@@ -160,6 +162,8 @@ public class DefaultRouter implements ClusterRouter
       else
       {
          //There is no local shared queue
+         
+         log.info("There is no local queue");
          
          //We round robin among the rest
          if (!queues.isEmpty())

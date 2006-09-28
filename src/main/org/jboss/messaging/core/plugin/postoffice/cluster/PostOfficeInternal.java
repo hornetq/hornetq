@@ -43,14 +43,14 @@ import org.jgroups.Address;
  */
 interface PostOfficeInternal extends ClusteredPostOffice
 {
-   void addBindingFromCluster(String nodeId, String queueName, String condition,
+   void addBindingFromCluster(int nodeId, String queueName, String condition,
                               String filterString, long channelId, boolean durable)
       throws Exception;
    
-   void removeBindingFromCluster(String nodeId, String queueName)
+   void removeBindingFromCluster(int nodeId, String queueName)
       throws Exception;
    
-   void handleAddressNodeMapping(Address address, String nodeId)
+   void handleAddressNodeMapping(Address address, int nodeId)
       throws Exception;
    
    void routeFromCluster(Message message, String routingKey, Map queueNameNodeIdMap) throws Exception;
@@ -59,17 +59,17 @@ interface PostOfficeInternal extends ClusteredPostOffice
    
    void asyncSendRequest(ClusterRequest request) throws Exception;
    
-   void asyncSendRequest(ClusterRequest request, String nodeId) throws Exception;
+   void asyncSendRequest(ClusterRequest request, int nodeId) throws Exception;
    
-   Object syncSendRequest(ClusterRequest request, String nodeId, boolean ignoreNoAddress) throws Exception;
+   Object syncSendRequest(ClusterRequest request, int nodeId, boolean ignoreNoAddress) throws Exception;
    
    void holdTransaction(TransactionId id, ClusterTransaction tx) throws Throwable;
    
    void commitTransaction(TransactionId id) throws Throwable;
    
-   void check(String nodeId) throws Throwable;
+   void check(int nodeId) throws Throwable;
    
-   void updateQueueStats(String nodeId, List stats) throws Exception;
+   void updateQueueStats(int nodeId, List stats) throws Exception;
    
    void sendQueueStats() throws Exception;
    

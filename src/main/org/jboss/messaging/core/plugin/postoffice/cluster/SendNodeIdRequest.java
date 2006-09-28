@@ -43,13 +43,13 @@ class SendNodeIdRequest extends ClusterRequest
 
    private Address address;
    
-   private String nodeId;
+   private int nodeId;
    
    SendNodeIdRequest()
    {      
    }
    
-   SendNodeIdRequest(Address address, String nodeId)
+   SendNodeIdRequest(Address address, int nodeId)
    {
       this.address = address;
       
@@ -74,7 +74,7 @@ class SendNodeIdRequest extends ClusterRequest
       
       address.readFrom(in);
       
-      nodeId = in.readUTF();
+      nodeId = in.readInt();
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -86,6 +86,6 @@ class SendNodeIdRequest extends ClusterRequest
       
       address.writeTo(out);
       
-      out.writeUTF(nodeId);      
+      out.writeInt(nodeId);   
    }
 }

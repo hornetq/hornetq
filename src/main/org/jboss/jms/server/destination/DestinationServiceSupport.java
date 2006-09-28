@@ -65,7 +65,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    protected IdManager idm;
    
-   protected String nodeId;
+   protected int nodeId;
    
    private boolean createdProgrammatically;
    

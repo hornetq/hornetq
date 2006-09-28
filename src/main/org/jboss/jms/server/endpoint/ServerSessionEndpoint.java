@@ -106,7 +106,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private TransactionRepository tr;
    private PostOffice topicPostOffice;
    private PostOffice queuePostOffice;
-   private String nodeId;
+   private int nodeId;
    
    
    // Constructors --------------------------------------------------
