@@ -41,14 +41,14 @@ public class CoreMessageFactory
 
    public static CoreMessage createCoreMessage(long messageID)
    {
-      return createCoreMessage(messageID, false, 0, 0, (byte)4, null, null, 0);
+      return createCoreMessage(messageID, false, 0, 0, (byte)4, null, null);
    }
 
    public static CoreMessage createCoreMessage(long messageID,
                                                boolean reliable,
                                                Serializable payload)
    {
-      return createCoreMessage(messageID, reliable, 0, 0, (byte)4, null, payload, 0);
+      return createCoreMessage(messageID, reliable, 0, 0, (byte)4, null, payload);
    }
 
    public static CoreMessage createCoreMessage(long messageID,
@@ -57,27 +57,14 @@ public class CoreMessageFactory
                                                long timestamp,
                                                byte priority,
                                                Map coreHeaders,
-                                               Serializable payload,
-                                               int persistentChannelCount)
+                                               Serializable payload)
    {
       CoreMessage cm =
-         new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, null, persistentChannelCount);
+         new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, null);
       cm.setPayload(payload);
       return cm;
    }
-   
-   public static CoreMessage createCoreMessage(long messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         byte priority,
-         Map coreHeaders,
-         Serializable payload)
-   {
-      return createCoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, payload, 0);
-   }
-   
-   
+         
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------

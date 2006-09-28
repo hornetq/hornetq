@@ -335,7 +335,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.addReferences(channel1.getChannelID(), refs, false);
+      pm.pageReferences(channel1.getChannelID(), refs, false);
       
       refs = new ArrayList();
       refs.add(ref11);
@@ -344,7 +344,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref14);
       refs.add(ref15);
     
-      pm.addReferences(channel2.getChannelID(), refs, false);
+      pm.pageReferences(channel2.getChannelID(), refs, false);
                   
       List refIds = getReferenceIds(channel1.getChannelID());
       assertNotNull(refIds);
@@ -405,7 +405,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref13);
       refs.add(ref14);
       refs.add(ref15);
-      pm.removeReferences(channel2.getChannelID(), refs);
+      pm.removeDepagedReferences(channel2.getChannelID(), refs);
       
       refIds = getReferenceIds(channel2.getChannelID());
       assertNotNull(refIds);
@@ -433,7 +433,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref1);
       refs.add(ref2);
       refs.add(ref3);
-      pm.removeReferences(channel1.getChannelID(), refs);
+      pm.removeDepagedReferences(channel1.getChannelID(), refs);
       
       refIds = getReferenceIds(channel1.getChannelID());
       assertNotNull(refIds);
@@ -463,7 +463,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       refs = new ArrayList();
       refs.add(ref11);
-      pm.removeReferences(channel2.getChannelID(), refs);
+      pm.removeDepagedReferences(channel2.getChannelID(), refs);
       
       refs = new ArrayList();
       refs.add(ref4);
@@ -473,7 +473,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref8);
       refs.add(ref9);
       refs.add(ref10);
-      pm.removeReferences(channel1.getChannelID(), refs);
+      pm.removeDepagedReferences(channel1.getChannelID(), refs);
       
       ms = getMessageIds();
       assertNotNull(ms);
@@ -512,7 +512,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.addReferences(channel.getChannelID(), refs, false); 
+      pm.pageReferences(channel.getChannelID(), refs, false); 
       
       ref1.setPagingOrder(0);
       ref2.setPagingOrder(1);
@@ -680,7 +680,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.addReferences(channel.getChannelID(), refs, false); 
+      pm.pageReferences(channel.getChannelID(), refs, false); 
       
       //First load exactly 10
       PersistenceManager.InitialLoadInfo info = pm.getInitialReferenceInfos(channel.getChannelID(), 10);

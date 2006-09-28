@@ -98,7 +98,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
                             byte priority,
                             Map coreHeaders,
                             byte[] payloadAsByteArray,
-                            int persistentChannelCount,
                             String jmsType,
                             String correlationID,
                             byte[] correlationIDBytes,
@@ -107,7 +106,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
                             HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            persistentChannelCount,jmsType, correlationID, correlationIDBytes, destination, replyTo,
+            jmsType, correlationID, correlationIDBytes, destination, replyTo,
             jmsProperties);
       
       baos = new ByteArrayOutputStream();

@@ -39,7 +39,6 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.StreamUtils;
-import org.jgroups.Address;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -325,6 +324,12 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       {
          org.jboss.messaging.core.Message msg = (org.jboss.messaging.core.Message)iter.next();
          
+         if (msg.isReliable())
+         {
+            //It will alerady have been persisted on the other node
+            msg.setPersisted(true);
+         }
+         
          MessageReference ref = null;
          
          try
@@ -346,10 +351,11 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                ref.releaseMemoryReference();
             }
          }
+                 
+         //Acknowledge on the remote queue stub
+         Delivery del = new SimpleDelivery(theQueue, ref);
          
-         Delivery del = new SimpleDelivery(this, ref);
-         
-         acknowledgeInternal(del, tx, true, true);
+         del.acknowledge(tx);        
       }
       
       tx.commit();

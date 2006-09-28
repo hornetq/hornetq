@@ -608,6 +608,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       MessageReference ref = null;
       try
       {
+         if (message.isReliable())
+         {
+            // It will already have been persisted on the sender's side
+            message.setPersisted(true);
+         }
+         
          ref = ms.reference(message);
               
          // We route on the condition

@@ -340,7 +340,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       {
          // Now we remove the references we loaded (only the non persistent or persistent in a non-recoverable store)
          
-         pm.removeReferences(channelID, toRemove);
+         pm.removeDepagedReferences(channelID, toRemove);
       }
 
       if (loadedReliable)
@@ -551,7 +551,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
       if (!toAdd.isEmpty())
       {
-         pm.addReferences(channelID, toAdd, true);
+         pm.pageReferences(channelID, toAdd, true);
       }
       if (!toUpdate.isEmpty())
       {

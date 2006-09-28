@@ -83,7 +83,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          byte priority,
          Map coreHeaders,
          byte[] payloadAsByteArray,         
-         int persistentChannelCount,
          String jmsType,
          String correlationID,
          byte[] correlationIDBytes,
@@ -92,7 +91,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
          HashMap jmsProperties)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            persistentChannelCount,
             jmsType, correlationID, correlationIDBytes, destination, replyTo, 
             jmsProperties);
    }

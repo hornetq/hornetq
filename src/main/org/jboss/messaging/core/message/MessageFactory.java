@@ -82,74 +82,85 @@ public class MessageFactory
       return m;
    }
    
-   
-   public static Message createJBossMessage(long messageID,
-                                          boolean reliable, 
-                                          long expiration, 
-                                          long timestamp,
-                                          byte priority,
-                                          Map coreHeaders,
-                                          byte[] payloadAsByteArray,                                          
-                                          int persistentChannelCount,
-                                          byte type,
-                                          String jmsType,                                       
-                                          String correlationID,
-                                          byte[] correlationIDBytes,
-                                          JBossDestination destination,
-                                          JBossDestination replyTo,                                                                              
-                                          HashMap jmsProperties)
+   /*
+    * Create a message from persistent storage
+    */
+   public static Message createMessage(long messageID,
+                                       boolean reliable, 
+                                       long expiration, 
+                                       long timestamp,
+                                       byte priority,
+                                       Map coreHeaders,
+                                       byte[] payloadAsByteArray,                                                                                    
+                                       byte type,
+                                       String jmsType,                                       
+                                       String correlationID,
+                                       byte[] correlationIDBytes,
+                                       JBossDestination destination,
+                                       JBossDestination replyTo,                                                                              
+                                       HashMap jmsProperties)
 
    {
-
       Message m = null;
       
-      if (type == JBossMessage.TYPE)
+      switch (type)
       {
-         m = new JBossMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                              payloadAsByteArray, persistentChannelCount, jmsType, correlationID, correlationIDBytes,
-                              destination, replyTo, jmsProperties);
+         case JBossMessage.TYPE:
+         {
+            m = new JBossMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
+                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                     destination, replyTo, jmsProperties);
+            break;
+         }
+         case JBossObjectMessage.TYPE:
+         {
+            m = new JBossObjectMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
+                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                     destination, replyTo, jmsProperties);
+            break;
+         }
+         case JBossTextMessage.TYPE:
+         {
+            m = new JBossTextMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
+                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                     destination, replyTo, jmsProperties);
+            break;
+         }
+         case JBossBytesMessage.TYPE:
+         {
+            m = new JBossBytesMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
+                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                     destination, replyTo, jmsProperties);
+            break;
+         }
+         case JBossMapMessage.TYPE:
+         {
+            m = new JBossMapMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
+                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                     destination, replyTo, jmsProperties);
+            break;
+         }
+         case JBossStreamMessage.TYPE:
+         {
+            m = new JBossStreamMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
+                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
+                     destination, replyTo, jmsProperties);
+            break;
+         }
+         case CoreMessage.TYPE:
+         {
+            m = new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);
+            break;
+         }
+         default:
+         {
+            throw new IllegalArgumentException("Unknown type " + type);       
+         }
       }
-      else if (type == JBossObjectMessage.TYPE)
-      {
-         m = new JBossObjectMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, persistentChannelCount, jmsType, correlationID, correlationIDBytes,
-               destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossTextMessage.TYPE)
-      {
-         m = new JBossTextMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, persistentChannelCount, jmsType, correlationID, correlationIDBytes,
-               destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossBytesMessage.TYPE)
-      {
-         m = new JBossBytesMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, persistentChannelCount, jmsType, correlationID, correlationIDBytes,
-               destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossMapMessage.TYPE)
-      {
-         m = new JBossMapMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, persistentChannelCount, jmsType, correlationID, correlationIDBytes,
-               destination, replyTo, jmsProperties);
-      }
-      else if (type == JBossStreamMessage.TYPE)
-      {
-         m = new JBossStreamMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-               payloadAsByteArray, persistentChannelCount, jmsType, correlationID, correlationIDBytes,
-               destination, replyTo, jmsProperties);
-      }
-      else if (type == CoreMessage.TYPE)
-      {
-         m = new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray, persistentChannelCount);
-      }
-      else
-      {
-          throw new IllegalArgumentException("Unknow type " + type);                       
-      }
-
+      
+      m.setPersisted(true);
+      
       return m;
-
    }
 
    // Attributes ----------------------------------------------------

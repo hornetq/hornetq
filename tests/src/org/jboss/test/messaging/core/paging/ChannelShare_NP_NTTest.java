@@ -291,8 +291,10 @@ public class ChannelShare_NP_NTTest extends PagingStateTestBase
       
       //Now consume them all
       
+      log.info("Consuming them all from 1");
       this.consume(queue1, 0, refs1, 150);
        
+      log.info("Consuming them all from 2");
       this.consume(queue2, 0, refs2, 150);
       
       //    Queue1

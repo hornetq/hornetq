@@ -212,9 +212,9 @@ public class ServerPeer extends ServiceMBeanSupport
          //MBean dependencies
             
          // Create the wired components
-         messageIdManager = new IdManager("MESSAGE_ID", 8192, persistenceManager);
+         messageIdManager = new IdManager("MESSAGE_ID", 4096, persistenceManager);
          channelIdManager = new IdManager("CHANNEL_ID", 10, persistenceManager);
-         transactionIdManager = new IdManager("TRANSACTION_ID", 4096, persistenceManager);
+         transactionIdManager = new IdManager("TRANSACTION_ID", 1024, persistenceManager);
          destinationJNDIMapper = new DestinationJNDIMapper(this);
          connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
          connectionManager = new SimpleConnectionManager();

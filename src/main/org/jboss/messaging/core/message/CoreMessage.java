@@ -53,10 +53,9 @@ public class CoreMessage extends MessageSupport
                       long timestamp,
                       byte priority,
                       Map headers,
-                      byte[] payload,
-                      int persistentChannelCount)
+                      byte[] payload)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, headers, payload, persistentChannelCount);
+      super(messageID, reliable, expiration, timestamp, priority, 0, headers, payload);
    }
 
    // Public --------------------------------------------------------

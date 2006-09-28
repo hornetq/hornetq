@@ -56,17 +56,8 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    // Must be hidden from subclasses
    private byte[] payloadAsByteArray;
    
-  // private transient boolean inStorage;
+   private transient boolean persisted;
    
-   /* 
-   * We maintain a persistent channel count on the message itself.
-   * This is the total number of channels whether loaded in memory or not that hold a reference to the
-   * message and is needed to know when it is safe to remove the message from the db
-   * A channel may not have all it's references loaded into memory at once, also not all
-   * channels might be active at once so we can't rely on the in memory channel count.   
-   */
-   private transient int persistentChannelCount;
-
    // Constructors --------------------------------------------------
 
    /**
@@ -124,12 +115,10 @@ public abstract class MessageSupport extends RoutableSupport implements Message
                          byte priority,
                          int deliveryCount,                        
                          Map headers,
-                         byte[] payloadAsByteArray,
-                         int persistentChannelCount)
+                         byte[] payloadAsByteArray)
    {
       super(messageID, reliable, expiration, timestamp, priority, deliveryCount, headers);
       this.payloadAsByteArray = payloadAsByteArray;
-      this.persistentChannelCount = persistentChannelCount;
    }
 
    protected MessageSupport(MessageSupport that)
@@ -238,21 +227,17 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       this.payloadAsByteArray = null;
    }
    
-   public synchronized void decPersistentChannelCount()
+   public synchronized boolean isPersisted()
    {
-      persistentChannelCount--;
+      return persisted;
    }
    
-   public synchronized void incPersistentChannelCount()
+   public synchronized void setPersisted(boolean persisted)
    {
-      persistentChannelCount++;
+      this.persisted = persisted;
    }
    
-   public synchronized int getPersistentChannelCount()
-   {
-      return persistentChannelCount;
-   }
-   
+
    // Public --------------------------------------------------------
 
    public boolean equals(Object o)

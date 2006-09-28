@@ -233,6 +233,9 @@ public class LocalTestServer implements Server
          String databaseType = sc.getDatabaseType();
          String persistenceConfigFile =
             "server/default/deploy/" + databaseType + "-persistence-service.xml";
+         
+         log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
+         
          URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
          if (persistenceConfigFileURL == null)
          {

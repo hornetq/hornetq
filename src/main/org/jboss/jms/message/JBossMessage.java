@@ -243,12 +243,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    public JBossMessage(long messageID)
    {
       this(messageID, true, 0, System.currentTimeMillis(), (byte)4,
-           null, null, 0, null, null, null, null, null, null);
+           null, null, null, null, null, null, null, null);
    }
 
-   /*
-    * This constructor is used to construct messages when retrieved from persistence storage
-    */
    public JBossMessage(long messageID,
                        boolean reliable,
                        long expiration,
@@ -256,7 +253,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
                        byte priority,    
                        Map coreHeaders,
                        byte[] payloadAsByteArray,
-                       int persistentChannelCount,
                        String jmsType,
                        String correlationID,
                        byte[] correlationIDBytes,
@@ -271,8 +267,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
             priority,
             0,
             coreHeaders,
-            payloadAsByteArray,
-            persistentChannelCount);
+            payloadAsByteArray);
 
       this.jmsType = jmsType;      
       this.correlationID = correlationID;

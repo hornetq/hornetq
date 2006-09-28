@@ -41,12 +41,10 @@ public interface Message extends Routable
    Serializable getPayload();
    
    byte[] getPayloadAsByteArray();
+    
+   boolean isPersisted();
    
-   void incPersistentChannelCount();
-   
-   void decPersistentChannelCount();
-   
-   int getPersistentChannelCount();
+   void setPersisted(boolean persisted);
    
    byte getType();
    
