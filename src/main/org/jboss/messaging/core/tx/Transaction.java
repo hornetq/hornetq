@@ -39,6 +39,8 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:ovidiu@jboss.com">Ovidiu Feodorov</a>
  * 
  * @version $Revision 1.1$
+ *
+ * $Id$
  */
 public class Transaction
 {
