@@ -5233,6 +5233,48 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
    }
 
    /**
+    * Test duplicate acknowledgment.
+    */
+   public void testRecoverableChannel_27_Duplicate_ACK() throws Throwable
+   {
+      if (!queue.isRecoverable())
+      {
+         // we test only recoverable channels now
+         return;
+      }
+
+      // add an NACKING receiver to the channel
+      SimpleReceiver r = new SimpleReceiver("NackingReceiver", SimpleReceiver.ACCEPTING);
+      assertTrue(queue.add(r));
+
+      MessageReference ref = createReference(0, true, "payload");
+      SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+
+      // non-transacted send, reliable message, one message
+      queue.handle(observer, ref, null);
+
+      Message ackm = (Message)r.getMessages().get(0);
+
+      // acknowledge once
+      r.acknowledge(ackm, null);
+
+      assertTrue(queue.browse().isEmpty());
+
+      // acknowledge twice
+      try
+      {
+         r.acknowledge(ackm, null);
+      }
+      catch(IllegalStateException e)
+      {
+         // OK
+      }
+
+      assertTrue(queue.browse().isEmpty());
+   }
+
+
+   /**
     * The same test as before, but with a Receiver configured to acknowledge immediately
     * on the Delivery. Simulates a race condition in which the acknoledgment arrives before
     * the Delivery is returned to channel.
