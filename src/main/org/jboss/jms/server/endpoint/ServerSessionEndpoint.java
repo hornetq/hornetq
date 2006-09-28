@@ -179,7 +179,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
         
          Binding binding = null;
          
-         //Always validate the selector first
+         // Always validate the selector first
          Selector selector = null;
          if (selectorString != null)
          {
@@ -232,7 +232,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   throw new JMSException("Cannot create durable subscriber without a valid client ID");
                }
                
-               //See if there any bindings with the same client_id.subscription_name name
+               // See if there any bindings with the same client_id.subscription_name name
                
                String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
                

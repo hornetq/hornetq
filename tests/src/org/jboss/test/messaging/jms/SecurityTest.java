@@ -27,7 +27,6 @@ import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -776,10 +775,7 @@ public class SecurityTest extends MessagingTestCase
 
       try
       {
-         MessageConsumer cons = sess.createConsumer(dest);    
-             
-        // cons.receiveNoWait();
-         
+         sess.createConsumer(dest);
          return true;
       }
       catch (JMSSecurityException e)
