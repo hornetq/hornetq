@@ -198,11 +198,11 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
             
       PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), f);
       
-      Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null, 0);
-      Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null, 0);
-      Message m3 = new CoreMessage(3, false, 0, 0, (byte)0, null, null, 0);
-      Message m4 = new CoreMessage(4, false, 0, 0, (byte)0, null, null, 0);
-      Message m5 = new CoreMessage(5, false, 0, 0, (byte)0, null, null, 0);
+      Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null);
+      Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null);
+      Message m3 = new CoreMessage(3, false, 0, 0, (byte)0, null, null);
+      Message m4 = new CoreMessage(4, false, 0, 0, (byte)0, null, null);
+      Message m5 = new CoreMessage(5, false, 0, 0, (byte)0, null, null);
       
       MessageReference ref1 = ms.reference(m1);
       MessageReference ref2 = ms.reference(m2);
