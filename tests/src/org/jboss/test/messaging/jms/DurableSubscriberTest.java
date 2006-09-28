@@ -33,6 +33,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -458,7 +459,32 @@ public class DurableSubscriberTest extends MessagingTestCase
          // OK
       }
    }
-   
+
+   /**
+    * See http://jira.jboss.org/jira/browse/JBMESSAGING-564
+    */
+   public void testUnsubscribe() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      Topic topic = (Topic)ic.lookup("/topic/Topic");
+
+      Connection conn = cf.createConnection();
+      conn.setClientID("zeke");
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      TopicSubscriber dursub = s.createDurableSubscriber(topic, "dursub0");
+
+      s.unsubscribe("dursub0");
+
+      // TODO - what happens with dursub? It is not closed, but its associated subscriber does
+      //        not exist anymore.
+
+      dursub.close();
+
+      conn.close();
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
