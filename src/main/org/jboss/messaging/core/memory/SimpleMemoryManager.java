@@ -138,14 +138,11 @@ public class SimpleMemoryManager implements MemoryManager
             
             long totalMemory = runtime.totalMemory();
             
-            //log.info("Free:" + freeMemory + " Max: " + maxMemory + " Total: " + totalMemory);
-                        
             long availableMemory = freeMemory + maxMemory - totalMemory;
             
             if (100 * availableMemory / totalMemory <= freeMemoryPercent)
             {
                //log.warn("Less than " + freeMemoryPercent + "% of total available memory free");
-               
                low = true;
             }
             else
