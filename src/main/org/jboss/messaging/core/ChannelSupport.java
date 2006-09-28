@@ -97,9 +97,9 @@ public abstract class ChannelSupport implements Channel
    protected Object refLock;
 
    protected Object deliveryLock;
-   
+
    protected boolean active = true;
-       
+
    // Constructors --------------------------------------------------
 
    protected ChannelSupport(long channelID, MessageStore ms,
@@ -139,7 +139,7 @@ public abstract class ChannelSupport implements Channel
 
       deliveryLock = new Object();
    }
-   
+
    // Receiver implementation ---------------------------------------
 
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
@@ -148,13 +148,13 @@ public abstract class ChannelSupport implements Channel
       {
          return null;
       }
-      
+
       checkClosed();
-      
+
       Future result = new Future();
 
       if (tx == null)
-      {         
+      {
          try
          {
             // Instead of executing directly, we add the handle request to the event queue.
@@ -167,15 +167,15 @@ public abstract class ChannelSupport implements Channel
          {
             log.warn("Thread interrupted", e);
          }
-   
+
          return (Delivery)result.getResult();
       }
       else
       {
          return handleInternal(sender, ref, tx, true, false);
       }
-   }  
-      
+   }
+
    // DeliveryObserver implementation --------------------------
 
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
@@ -184,12 +184,12 @@ public abstract class ChannelSupport implements Channel
 
       this.acknowledgeInternal(d, tx, true, false);
    }
-   
-  
+
+
    public void cancel(Delivery d) throws Throwable
    {
       // TODO We should also consider executing cancels on the event queue
-      cancelInternal(d);   
+      cancelInternal(d);
    }
 
    // Distributor implementation ------------------------------------
@@ -201,16 +201,16 @@ public abstract class ChannelSupport implements Channel
       boolean added = router.add(r);
 
       if (trace) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
-      
+
       receiversReady = true;
-      
+
       return added;
    }
 
    public boolean remove(Receiver r)
    {
       boolean removed = router.remove(r);
-      
+
       if (removed && !router.iterator().hasNext())
       {
          receiversReady = false;
@@ -235,7 +235,7 @@ public abstract class ChannelSupport implements Channel
    {
       return router.iterator();
    }
-   
+
    public int numberOfReceivers()
    {
       return router.numberOfReceivers();
@@ -266,7 +266,7 @@ public abstract class ChannelSupport implements Channel
    public List browse(Filter filter)
    {
       if (trace) { log.trace(this + " browse" + (filter == null ? "" : ", filter = " + filter)); }
-      
+
       synchronized (deliveryLock)
       {
          synchronized (refLock)
@@ -276,14 +276,14 @@ public abstract class ChannelSupport implements Channel
             // Also is very inefficient since it makes a copy
             // The way to implement this properly is to use the Prioritized deque iterator
             // combined with an iterator over the refs in storage
-            
+
             //TODO use the ref queue iterator
             List references = delivering(filter);
-                        
-            List undel = undelivered(filter);            
+
+            List undel = undelivered(filter);
 
             references.addAll(undel);
-            
+
             // dereference pass
             ArrayList messages = new ArrayList(references.size());
             for (Iterator i = references.iterator(); i.hasNext();)
@@ -293,18 +293,18 @@ public abstract class ChannelSupport implements Channel
             }
             return messages;
          }
-      }   
+      }
    }
 
    public void deliver(boolean synchronous)
    {
-      checkClosed();           
-     
+      checkClosed();
+
       // We put a delivery request on the event queue.
       try
       {
          Future future = null;
-         
+
          if (synchronous)
          {
             future = new Future();
@@ -312,9 +312,9 @@ public abstract class ChannelSupport implements Channel
          //TODO we should keep track of how many deliveries are currently in the queue
          //so we don't execute another delivery when one is in the queue, since
          //this is pointless
-                  
+
          this.executor.execute(new DeliveryRunnable(future));
-         
+
          if (synchronous)
          {
             // Wait to complete
@@ -333,25 +333,25 @@ public abstract class ChannelSupport implements Channel
       {
          router.clear();
          router = null;
-      }      
-   }  
-   
+      }
+   }
+
    /*
     * This method clears the channel.
     * Basically it acknowledges any outstanding deliveries and consumes the rest of the messages in the channel.
     * We can't just delete the corresponding references directly from the database since
     * a) We might be paging
     * b) The message might remain in the message store causing a leak
-    * 
+    *
     */
    public void removeAllReferences() throws Throwable
-   {        
+   {
       synchronized (refLock)
       {
          synchronized (deliveryLock)
          {
             //Ack the deliveries
-            
+
             //Clone to avoid ConcurrentModificationException
             Set dels = new HashSet(deliveries);
 
@@ -359,26 +359,26 @@ public abstract class ChannelSupport implements Channel
             while (iter.hasNext())
             {
                SimpleDelivery d = (SimpleDelivery) iter.next();
-               
+
                d.acknowledge(null);
             }
-            
+
             //Now we consume the rest of the messages
             //This may take a while if we have a lot of messages including perhaps millions
             //paged in the database - but there's no obvious other way to do it.
             //We cannot just delete them directly from the database - because we may end up with messages leaking
             //in the message store,
             //also we might get race conditions when other channels are updating the same message in the db
-            
+
             //Note - we don't do this in a tx - because the tx could be too big if we have millions of refs
             //paged in storage
-            
+
             MessageReference ref;
             while ((ref = removeFirstInMemory()) != null)
             {
                SimpleDelivery del = new SimpleDelivery(this, ref, false);
-               
-               del.acknowledge(null);           
+
+               del.acknowledge(null);
             }
          }
       }
@@ -444,7 +444,7 @@ public abstract class ChannelSupport implements Channel
     * Returns the count of messages stored AND being delivered.
     */
    public int messageCount()
-   {   
+   {
       synchronized (refLock)
       {
          synchronized (deliveryLock)
@@ -453,7 +453,7 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
-    
+
    public void activate()
    {
       synchronized (refLock)
@@ -464,7 +464,7 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
-   
+
    public void deactivate()
    {
       synchronized (refLock)
@@ -475,7 +475,7 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
-   
+
    public boolean isActive()
    {
       synchronized (refLock)
@@ -486,8 +486,8 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
-  
-   // Public --------------------------------------------------------   
+
+   // Public --------------------------------------------------------
 
    public int memoryRefCount()
    {
@@ -517,12 +517,12 @@ public abstract class ChannelSupport implements Channel
    /*
     * This methods delivers as many messages as possible to the router until no
     * more deliveries are returned. This method should never be called at the
-    * same time as handle. 
-    * 
+    * same time as handle.
+    *
     * @see org.jboss.messaging.core.Channel#deliver()
     */
    protected void deliverInternal(boolean handle) throws Throwable
-   {  
+   {
       try
       {
          // The iterator is used to iterate through the refs in the channel in the case that they
