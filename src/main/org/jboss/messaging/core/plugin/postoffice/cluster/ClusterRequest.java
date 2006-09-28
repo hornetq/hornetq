@@ -54,11 +54,6 @@ abstract class ClusterRequest implements Streamable
             request =  new BindRequest();
             break;
          }
-         case CheckRequest.TYPE:
-         {
-            request = new CheckRequest();
-            break;
-         }
          case MessageRequest.TYPE:
          {
             request = new MessageRequest();

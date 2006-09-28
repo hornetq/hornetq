@@ -76,7 +76,9 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
       <attribute name="StateTimeout">5000</attribute>
       <attribute name="CastTimeout">5000</attribute>
       <attribute name="PullSize">1</attribute>
-      <attribute name="StatsSendPeriod">1000</attribute>
+      <attribute name="StatsSendPeriod">10000</attribute>
+      <attribute name="MessagePullPolicy">org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</attribute>
+      <attribute name="ClusterRouterFactory">org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory</attribute>
 
       <attribute name="AsyncChannelConfig">
          <config>
@@ -139,7 +141,9 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
       <attribute name="StateTimeout">5000</attribute>
       <attribute name="CastTimeout">5000</attribute>
       <attribute name="PullSize">1</attribute>
-      <attribute name="StatsSendPeriod">1000</attribute>
+      <attribute name="StatsSendPeriod">10000</attribute>
+      <attribute name="MessagePullPolicy">org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</attribute>
+      <attribute name="ClusterRouterFactory">org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory</attribute>
 
       <attribute name="AsyncChannelConfig">
          <config>

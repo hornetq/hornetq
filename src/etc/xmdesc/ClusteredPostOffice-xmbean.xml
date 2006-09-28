@@ -59,6 +59,18 @@
       <type>java.lang.String</type>
    </attribute>   
    
+   <attribute access="read-write" getMethod="getMessagePullPolicy" setMethod="setMessagePullPolicy">
+      <description>The fully qualified class name of the class to use to implement the message pull policy for rebalancing</description>
+      <name>MessagePullPolicy</name>
+      <type>java.lang.String</type>
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="getClusterRouterFactory" setMethod="setClusterRouterFactory">
+      <description>The fully qualified class name of the class to use to implement the factory that generates cluster routers</description>
+      <name>ClusterRouterFactory</name>
+      <type>java.lang.String</type>
+   </attribute>   
+   
    <attribute access="read-write" getMethod="getStateTimeout" setMethod="setStateTimeout">
       <description>Timeout for getState()</description>
       <name>StateTimeout</name>

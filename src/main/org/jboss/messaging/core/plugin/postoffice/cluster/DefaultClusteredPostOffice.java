@@ -334,15 +334,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       return binding;
    }
    
-   /*
-    * This is called by the server peer if it determines that the server crashed last time it was run
-    */
-   public void recover() throws Exception
-   {
-      //We send a "check" message to all nodes of the cluster
-      asyncSendRequest(new CheckRequest(nodeId));
-   }
-   
    public boolean route(MessageReference ref, String condition, Transaction tx) throws Exception
    {
       if (ref == null)
@@ -752,8 +743,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    /**
     * Check for any transactions that need to be committed or rolled back
     */
-   public void check(int nodeId) throws Throwable
+   public void check(Integer nodeId) throws Throwable
    {
+      lock.readLock().acquire();
+      
       synchronized (holdingArea)
       {
          Iterator iter = holdingArea.entrySet().iterator();
@@ -766,7 +759,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             
             TransactionId id = (TransactionId)entry.getKey();
             
-            if (id.getNodeId() == nodeId)
+            if (id.getNodeId() == nodeId.intValue())
             {
                ClusterTransaction tx = (ClusterTransaction)iter.next();
                
@@ -826,9 +819,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                if (q.isActive())
                {                                                      
                   QueueStats stats = q.getStats();
-                  
-                  //log.info(q.getNodeId() + " queue " + stats.getQueueName() + " count " + stats.getMessageCount());
-                                                       
+                                             
                   //We don't bother sending the stats if there's no significant change in the values
                   
                   if (q.changedSignificantly())
@@ -840,10 +831,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
 
                      statsList.add(stats);
                   } 
-                  else
-                  {
-                     //log.info("Not changed significantly");
-                  }
                }
             }
          }
@@ -1113,11 +1100,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    }
    
 
-    
-   private void removeBindingsForAddress(Address address) throws Exception
+   private Integer getNodeIdForAddress(Address address) throws Exception
    {
-      lock.writeLock().acquire();
-      
+      lock.readLock().acquire();
       try
       { 
          Iterator iter = nodeIdAddressMap.entrySet().iterator();
@@ -1134,19 +1119,27 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                nodeId = (Integer)entry.getKey();
             }
          }
-         
-         if (nodeId == null)
-         {
-            throw new IllegalStateException("Cannot find node id for address: " + address);
-         }
-         
+         return nodeId;
+      }
+      finally
+      {
+         lock.readLock().release();
+      }
+   }
+       
+   private void removeBindingsForAddress(Integer nodeId) throws Exception
+   {
+      lock.writeLock().acquire();
+      
+      try
+      {          
          Map nameMap = (Map)nameMaps.get(nodeId);
 
          if (nameMap != null)
          {
             List toRemove = new ArrayList();
             
-            iter = nameMap.values().iterator();
+            Iterator iter = nameMap.values().iterator();
             
             while (iter.hasNext())
             {
@@ -1395,9 +1388,20 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   {                  
                      try
                      {
-                        removeBindingsForAddress(address);
+                        Integer nodeId = getNodeIdForAddress(address);
+                        
+                        if (nodeId == null)
+                        {
+                           throw new IllegalStateException("Cannot find node id for address: " + address);
+                        }
+                        
+                        //Perform a check - the member might have crashed and left uncommitted transactions
+                        //we need to resolve this
+                        check(nodeId);
+                        
+                        removeBindingsForAddress(nodeId);
                      }               
-                     catch (Exception e)
+                     catch (Throwable e)
                      {
                         log.error("Caught Exception in MembershipListener", e);
                         IllegalStateException e2 = new IllegalStateException(e.getMessage());

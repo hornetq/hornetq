@@ -206,8 +206,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       if (trace) { log.trace(this + " receives " + ref + " for delivery"); }
       
-      log.info(this + " receives " + ref + " for delivery");
-      
       // This is ok to have outside lock - is volatile
       if (bufferFull)
       {
@@ -512,8 +510,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       // acknowledge a delivery   
       Delivery d;
       
-      log.info("acknowledging: " + messageID);
-        
       synchronized (lock)
       {
          d = (Delivery)deliveries.remove(new Long(messageID));

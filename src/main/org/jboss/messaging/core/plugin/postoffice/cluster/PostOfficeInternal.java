@@ -67,8 +67,6 @@ interface PostOfficeInternal extends ClusteredPostOffice
    
    void commitTransaction(TransactionId id) throws Throwable;
    
-   void check(int nodeId) throws Throwable;
-   
    void updateQueueStats(int nodeId, List stats) throws Exception;
    
    void sendQueueStats() throws Exception;

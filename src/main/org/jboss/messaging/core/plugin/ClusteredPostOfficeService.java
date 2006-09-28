@@ -34,8 +34,6 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
@@ -74,6 +72,10 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
    private int pullSize = 1;   
    
    private long statsSendPeriod = 1000;
+   
+   private String clusterRouterFactory;
+   
+   private String messagePullPolicy;
    
    // Constructors --------------------------------------------------------
    
@@ -190,6 +192,26 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       return statsSendPeriod;
    }
    
+   public String getClusterRouterFactory()
+   {
+      return clusterRouterFactory;
+   }
+   
+   public String getMessagePullPolicy()
+   {
+      return messagePullPolicy;
+   }
+   
+   public void setClusterRouterFactory(String clusterRouterFactory)
+   {
+      this.clusterRouterFactory = clusterRouterFactory;
+   }
+   
+   public void setMessagePullPolicy(String messagePullPolicy)
+   {
+      this.messagePullPolicy = messagePullPolicy;
+   }
+   
    // ServiceMBeanSupport overrides ---------------------------------
    
    protected synchronized void startService() throws Exception
@@ -217,12 +239,16 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
                   
          int nodeId = serverPeer.getServerPeerID();
          
-         MessagePullPolicy pullPolicy = new DefaultMessagePullPolicy();
+         Class clazz = Class.forName(messagePullPolicy);
+         
+         MessagePullPolicy pullPolicy = (MessagePullPolicy)clazz.newInstance();
+         
+         clazz = Class.forName(clusterRouterFactory);
+         
+         ClusterRouterFactory rf = (ClusterRouterFactory)clazz.newInstance();
          
          FilterFactory ff = new SelectorFactory();
-         
-         ClusterRouterFactory rf = new DefaultRouterFactory();
-                  
+            
          postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties, createTablesOnStartup,
                                                nodeId, officeName, ms,
                                                pm, tr, ff, pool, 

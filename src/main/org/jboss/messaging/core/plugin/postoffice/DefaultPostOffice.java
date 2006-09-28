@@ -374,8 +374,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    {
       lock.writeLock().acquire();
       
-      log.info("loading bindings");
-      
       Connection conn = null;
       PreparedStatement ps  = null;
       ResultSet rs = null;

@@ -157,8 +157,6 @@ public class SessionAspect
          {
             if (trace) { log.trace("acknowledging NON-transactionally"); }
 
-            log.info("****************ACKNOWLEDGING");
-            
             List acks = state.getToAck();
             AckInfo ack = (AckInfo)acks.get(0);
             sd.acknowledge(ack);

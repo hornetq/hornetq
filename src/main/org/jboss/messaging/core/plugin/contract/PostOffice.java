@@ -81,7 +81,5 @@ public interface PostOffice extends MessagingComponent
     */
    boolean route(MessageReference ref, String condition, Transaction tx) throws Exception;   
    
-   void recover() throws Exception;
-   
    boolean isLocal();
 }

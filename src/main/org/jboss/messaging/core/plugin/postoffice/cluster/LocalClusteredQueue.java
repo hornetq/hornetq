@@ -221,6 +221,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    
    protected void deliverInternal(boolean handle) throws Throwable
    {
+      log.info("in local clustered queue deliver internal");
+      
       int beforeSize = -1;
       
       if (!handle)
@@ -233,6 +235,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       if (!handle)
       {
          int afterSize = messageRefs.size();
+         
+         log.info("receiversready:" + receiversReady + " before size:" + beforeSize + " afterSize: " + afterSize);
          
          if (receiversReady && beforeSize == 0 && afterSize == 0)
          {
