@@ -78,9 +78,6 @@ public class TopicService extends DestinationServiceSupport
             queue.activate();
          }
 
-         // push security update to the server
-         sm.setSecurityConfig(isQueue(), destination.getName(), destination.getSecurityConfig());
-                   
          dm.registerDestination(destination);
          
          log.debug(this + " security configuration: " + (destination.getSecurityConfig() == null ?
