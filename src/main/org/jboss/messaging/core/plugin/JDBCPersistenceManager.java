@@ -2310,6 +2310,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                //First time so persist the message
                storeMessage(m, psInsertMessage);
                
+               m.setPersisted(true);
+               
                added = true;
             }
             else

@@ -449,7 +449,6 @@ public abstract class ChannelSupport implements Channel
       {
          synchronized (deliveryLock)
          {
-            //return messageRefs.size() + refsInStorage + deliveries.size();
             return messageRefs.size() + deliveries.size();
          }
       }
