@@ -5268,11 +5268,19 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       Message ackm = (Message)messages.get(0);
       assertEquals(0, ackm.getMessageID());
 
-      // an extra acknowledgment should be discarded
-      
-      //TODO - why should it be discarded?
-      //If you acknowledge twice surely this is a usage error?
-      r.acknowledge(ackm, null);
+      // Acknowledgment handling implemenation is NOT idempotent, the channel DOES NOT allow
+      // extraneous duplicate acknowlegments, so we test for that.
+
+      try
+      {
+         r.acknowledge(ackm, null);
+      }
+      catch(IllegalStateException e)
+      {
+         // OK
+         log.info(e);
+
+      }
 
       assertTrue(queue.browse().isEmpty());
    }
