@@ -361,8 +361,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             
             JMSDispatcher.instance.unregisterTarget(new Integer(id));
             
-            //If this is a consumer of a non durable subscription
-            //then we want to unbind the subscription and delete all it's data
+            // If this is a consumer of a non durable subscription then we want to unbind the
+            // subscription and delete all its data.
 
             if (destination.isTopic())
             {
@@ -370,14 +370,17 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                   sessionEndpoint.getConnectionEndpoint().getServerPeer().getTopicPostOfficeInstance();
                
                Binding binding = topicPostOffice.getBindingForQueueName(queueName);
-               
-               if (binding == null)
+
+               // TODO - quick fix for the situation when the subscription was destroyed (using
+               //        Session.unsubscribe()) while the consumer is active. Not sure this is the
+               //        best solution, though. See http://jira.jboss.org/jira/browse/JBMESSAGING-564
+//               if (binding == null)
+//               {
+//                  throw new IllegalStateException("Cannot find queue with name " + queueName);
+//               }
+
+               if (binding != null && !binding.getQueue().isRecoverable())
                {
-                  throw new IllegalStateException("Cannot find queue with name " + queueName);
-               }
-               
-               if (!binding.getQueue().isRecoverable())
-               {                 
                   topicPostOffice.unbindQueue(queueName);
                }
             }
