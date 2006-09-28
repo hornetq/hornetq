@@ -32,6 +32,7 @@ import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+import org.jboss.test.messaging.core.paging.base.PagingStateTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 

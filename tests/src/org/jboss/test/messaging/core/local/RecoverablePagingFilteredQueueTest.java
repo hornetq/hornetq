@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.test.messaging.core.local.base.PagingFilteredQueueTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 

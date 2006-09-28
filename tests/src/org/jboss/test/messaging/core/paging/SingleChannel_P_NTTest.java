@@ -29,6 +29,7 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+import org.jboss.test.messaging.core.paging.base.PagingStateTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
