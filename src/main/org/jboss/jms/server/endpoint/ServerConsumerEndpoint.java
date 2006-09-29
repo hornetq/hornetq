@@ -228,10 +228,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             // make also possible to cut out the performance overhead for systems that raise the
             // threshold to INFO or higher.
 
-            if (log.isDebugEnabled())
-            {
-               log.debug(this + " NOT started yet!");
-            }
+            //TODO - Why was this debug
+            //log.isDebugEnabled is too slow!! especially on the primary execution path
+            if (trace) { log.trace(this + " NOT started yet!"); }
 
             return null;
          }

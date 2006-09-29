@@ -287,7 +287,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       started = true;   
       
-      if (log.isTraceEnabled()) { log.trace("Started " + this + " with address " + currentAddress); }
+      if (trace) { log.trace("Started " + this + " with address " + currentAddress); }
    }
 
    public synchronized void stop() throws Exception
@@ -302,14 +302,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       started = false;
       
-      if (log.isTraceEnabled()) { log.trace("Stopped " + this); }
+      if (trace) { log.trace("Stopped " + this); }
    }  
    
    // PostOffice implementation ---------------------------------------        
 
    public Binding bindClusteredQueue(String condition, LocalClusteredQueue queue) throws Exception
    {           
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace(this.nodeId + " binding clustered queue: " + queue + " with condition: " + condition);
       }
@@ -332,7 +332,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    public Binding unbindClusteredQueue(String queueName) throws Throwable
    {
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace(this.nodeId + " unbind clustered queue: " + queueName);
       }
@@ -536,7 +536,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       lock.writeLock().acquire();
       
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace(this.nodeId + " adding binding from node: " + nodeId + " queue: " + queueName + " with condition: " + condition);        
       }
@@ -582,7 +582,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       lock.writeLock().acquire();
       
-      if (log.isTraceEnabled())
+      if (trace)
       {
          log.trace(this.nodeId + " removing binding from node: " + nodeId + " queue: " + queueName);        
       }
