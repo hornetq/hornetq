@@ -229,6 +229,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testMessageCountOverFullSize() throws Exception
    {
+      log.info("** starting testMessageCountOverFullSize");
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       Connection conn = null;
@@ -270,10 +271,14 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
          int receivedCount = 0;
 
+         log.info("Starting receiver loop...");
+
          while((cons.receive(2000)) != null)
          {
             receivedCount++;
 
+            log.info(receivedCount + " messages received");
+            Thread.sleep(500);
             int mc = ((Integer)ServerManagement.
                getAttribute(destObjectName, "MessageCount")).intValue();
 
@@ -291,6 +296,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       }
       finally
       {
+         log.info("** leaving testMessageCountOverFullSize");
          ServerManagement.undeployQueue("QueueMessageCount2");
 
          if (conn != null)
