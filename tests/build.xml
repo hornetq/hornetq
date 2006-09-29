@@ -343,6 +343,7 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/jms/ManualClusteringTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -530,6 +531,7 @@
                <exclude name="org/jboss/test/messaging/jms/MemLeakTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/JCAWrapperTest.class"/>
+               <exclude name="**/jms/ManualClusteringTest.class"/>
             </fileset>
          </batchtest>
       </junit>
