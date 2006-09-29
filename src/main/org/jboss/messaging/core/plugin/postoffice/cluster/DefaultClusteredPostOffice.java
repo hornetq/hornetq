@@ -745,8 +745,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     */
    public void check(Integer nodeId) throws Throwable
    {
-      lock.readLock().acquire();
-      
       synchronized (holdingArea)
       {
          Iterator iter = holdingArea.entrySet().iterator();
