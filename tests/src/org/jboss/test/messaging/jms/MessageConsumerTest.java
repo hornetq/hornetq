@@ -2394,12 +2394,9 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
          conn1 = cf.createConnection();
 
-
          conn1.setClientID(CLIENT_ID1);
-
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess1.createProducer(topic);
@@ -2429,6 +2426,8 @@ public class MessageConsumerTest extends MessagingTestCase
          }
 
          assertEquals(NUM_MESSAGES, count);
+         
+         durable.close();
 
          sess1.unsubscribe("mySubscription");
       }
@@ -2625,6 +2624,8 @@ public class MessageConsumerTest extends MessagingTestCase
          }
 
          log.debug("unsubscribing mySubscription");
+         
+         durable.close();
          sess5.unsubscribe("mySubscription");
          log.debug("unsubscribing done");
          conn5.close();
@@ -2638,6 +2639,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
          TextMessage tm3 = (TextMessage)durable.receive(1000);
          assertNull(tm3);
+         
+         durable.close();
       }
       finally
       {
@@ -2662,7 +2665,7 @@ public class MessageConsumerTest extends MessagingTestCase
             conn5.close();
          }
          if (sess6 != null)
-         {
+         {            
             sess6.unsubscribe("mySubscription");
          }
          if (conn6 != null)
@@ -2683,15 +2686,12 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
          conn1 = cf.createConnection();
          conn1.setClientID(CLIENT_ID1);
-
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess1.createProducer(topic);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
 
          log.debug("creating durable subscription");
          MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
@@ -2752,6 +2752,8 @@ public class MessageConsumerTest extends MessagingTestCase
          log.trace("Received " + count  + " messages");
 
          assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE, count);
+         
+         durable2.close();
 
          sess2.unsubscribe("mySubscription");
       }
@@ -2780,12 +2782,9 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
          conn1 = cf.createConnection();
 
-
          conn1.setClientID(CLIENT_ID1);
-
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess1.createProducer(topic);
@@ -2842,6 +2841,8 @@ public class MessageConsumerTest extends MessagingTestCase
          }
 
          assertEquals(0, count);
+         
+         durable2.close();
 
          sess2.unsubscribe("mySubscription");
       }

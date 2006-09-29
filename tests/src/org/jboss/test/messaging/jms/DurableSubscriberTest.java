@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
@@ -462,6 +463,15 @@ public class DurableSubscriberTest extends MessagingTestCase
 
    /**
     * See http://jira.jboss.org/jira/browse/JBMESSAGING-564
+    * 
+    * Tim - this is an invalid test - see section 6.11 of jms spec:
+    *  "It is erroneous for a client to delete a
+    *  durable subscription while it has an active TopicSubscriber for it or while a
+    *  message received by it is part of a current transaction or has not been
+    *  acknowledged in the session."
+    *  
+    *  Need to remove it
+    * 
     */
    public void testUnsubscribe() throws Exception
    {
@@ -480,6 +490,34 @@ public class DurableSubscriberTest extends MessagingTestCase
       // TODO - what happens with dursub? It is not closed, but its associated subscriber does
       //        not exist anymore.
 
+      dursub.close();
+
+      conn.close();
+   }
+   
+   //See JMS 1.1. spec sec 6.11
+   public void testUnsubscribeWithActiveConsumer() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      Topic topic = (Topic)ic.lookup("/topic/Topic");
+
+      Connection conn = cf.createConnection();
+      conn.setClientID("zeke");
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      TopicSubscriber dursub = s.createDurableSubscriber(topic, "dursub0");
+
+      try
+      {
+         s.unsubscribe("dursub0");
+         fail();
+      }
+      catch (IllegalStateException e)
+      {
+         //Ok - it is illegal to ubscribe a subscription if it has active consumers
+      }
+         
       dursub.close();
 
       conn.close();

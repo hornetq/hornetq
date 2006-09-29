@@ -27,6 +27,7 @@ import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -828,7 +829,8 @@ public class SecurityTest extends MessagingTestCase
 
       try
       {
-         sess.createDurableSubscriber(topic, subName);
+         MessageConsumer cons = sess.createDurableSubscriber(topic, subName);
+         cons.close();
          sess.unsubscribe(subName);
          log.trace("Successfully created and unsubscribed subscription");
          return true;

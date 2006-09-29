@@ -562,7 +562,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          
          if (binding != null)
          {
-            throw new IllegalArgumentException(this.nodeId + "Binding already exists for node Id " + nodeId + " queue name " + queueName);
+            throw new IllegalArgumentException(this.nodeId + " Binding already exists for node Id " + nodeId + " queue name " + queueName);
          }
             
          binding = this.createBinding(nodeId, condition, queueName, channelID, filterString, durable);

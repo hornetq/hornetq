@@ -55,6 +55,7 @@ import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
@@ -687,6 +688,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void unsubscribe(String subscriptionName) throws JMSException
    {
+      log.info("unsubscribing: " + subscriptionName);
+      
       try
       {
          if (closed)
@@ -713,6 +716,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new InvalidDestinationException("Cannot find durable subscription with name " +
                                                   subscriptionName + " to unsubscribe");
+         }
+         
+         //Section 6.11. JMS 1.1. spec:
+         // "It is erroneous for a client to delete a
+         //durable subscription while it has an active TopicSubscriber for it or while a
+         //message received by it is part of a current transaction or has not been
+         //acknowledged in the session."
+         
+         Queue sub = binding.getQueue();
+         
+         if (sub.numberOfReceivers() != 0)
+         {
+            throw new IllegalStateException("Cannot unsubscribe durable subscription " +
+                                            subscriptionName + " since it has active subscribers");
          }
          
          //Unbind it

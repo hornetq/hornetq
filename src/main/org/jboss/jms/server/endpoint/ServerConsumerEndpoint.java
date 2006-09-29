@@ -370,14 +370,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                
                Binding binding = topicPostOffice.getBindingForQueueName(queueName);
 
-               // TODO - quick fix for the situation when the subscription was destroyed (using
-               //        Session.unsubscribe()) while the consumer is active. Not sure this is the
-               //        best solution, though. See http://jira.jboss.org/jira/browse/JBMESSAGING-564
-//               if (binding == null)
-//               {
-//                  throw new IllegalStateException("Cannot find queue with name " + queueName);
-//               }
-
+               //Note binding can be null since there can many competing subscribers for the subscription  - 
+               //in which case the first will have removed the subscription and subsequently
+               //ones won't find it
+               
                if (binding != null && !binding.getQueue().isRecoverable())
                {
                   topicPostOffice.unbindQueue(queueName);
