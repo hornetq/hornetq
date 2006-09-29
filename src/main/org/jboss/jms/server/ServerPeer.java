@@ -273,27 +273,27 @@ public class ServerPeer extends ServiceMBeanSupport
                   
          // Stop the wired components         
          
-         messageIdManager.start();
+         messageIdManager.stop();
          messageIdManager = null;
-         channelIdManager.start();
+         channelIdManager.stop();
          channelIdManager = null;
-         transactionIdManager.start();
+         transactionIdManager.stop();
          transactionIdManager = null;
-         destinationJNDIMapper.start();
+         destinationJNDIMapper.stop();
          destinationJNDIMapper = null;
-         connFactoryJNDIMapper.start();
+         connFactoryJNDIMapper.stop();
          connFactoryJNDIMapper = null;
-         connectionManager.start();
+         connectionManager.stop();
          connectionManager = null;
          connectorManager.start(); 
          connectorManager = null;
-         memoryManager.start();
+         memoryManager.stop();
          memoryManager = null;
-         messageStore.start();
+         messageStore.stop();
          messageStore = null;
-         securityStore.start();
+         securityStore.stop();
          securityStore = null;
-         txRepository.start();
+         txRepository.stop();
          txRepository = null;
    
          unloadServerAOPConfig();
