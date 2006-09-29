@@ -215,14 +215,14 @@ public class QueueManagementTest extends DestinationManagementTestBase
          //Need to pause for a bit since the message is not necessarily removed
          //in memory until sometime after receive has completed
          Thread.sleep(1000);
-         
+
          // Test MessageCount again, should be 0 msg
          count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
          assertEquals(0, count.intValue());
       }
       finally
       {
-      
+
          ServerManagement.undeployQueue("QueueMessageCount");
       }
    }
@@ -277,6 +277,12 @@ public class QueueManagementTest extends DestinationManagementTestBase
             int mc = ((Integer)ServerManagement.
                getAttribute(destObjectName, "MessageCount")).intValue();
 
+
+             if ((MESSAGE_COUNT - receivedCount)!=mc)
+             {
+                 retryForLogs(mc, receivedCount, MESSAGE_COUNT, destObjectName);
+             }
+
             assertEquals(MESSAGE_COUNT - receivedCount, mc);
          }
 
@@ -294,48 +300,67 @@ public class QueueManagementTest extends DestinationManagementTestBase
       }
    }
 
+    /** this method will retry getting MessageCount until it gets a sucessful result.
+     *  This is done just so you can visualize a logs what's the real racing condition. (caused by the delivery thread at the time of the construction of this method)
+     */
+    private void retryForLogs(int mc, int receivedCount, int MESSAGE_COUNT, ObjectName destObjectName) throws Exception {
+        int retry=0;
+        while ((MESSAGE_COUNT - receivedCount != mc) && retry<10)
+        {
+           log.info("******************** Still failing");
+           mc = ((Integer) ServerManagement.
+               getAttribute(destObjectName, "MessageCount")).intValue();
+            Thread.sleep(50);
+            retry++;
+        }
+        if (retry<10)
+        {
+            log.info("There is a racing condition that was fixed after " + retry + " retries. Look at log4j traces.");
+        }
+    }
+
    // TODO this test should be done in DestinationManagementTestBase, once implemented in Topic
    // TODO this only tests reliable non-tx messages
    public void testRemoveAllMessages() throws Exception
    {
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      
+
       ServerManagement.deployQueue("QueueRemoveMessages");
-      
+
       try
       {
          Queue queue = (Queue)ic.lookup("/queue/QueueRemoveMessages");
-         
+
          // Send 1 message to queue
          Connection conn = cf.createConnection();
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = session.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-         
+
          TextMessage m = session.createTextMessage("message one");
          prod.send(m);
-         
+
          // Remove all messages from the queue
-         ObjectName destObjectName = 
+         ObjectName destObjectName =
             new ObjectName("jboss.messaging.destination:service=Queue,name=QueueRemoveMessages");
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
-   
+
          // Test MessageCount again, should be 0 msg
          Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
          assertEquals(0, count.intValue());
-   
+
          // Send another message
          m = session.createTextMessage(MESSAGE_TWO);
          prod.send(m);
          conn.close();
-   
+
          // Consume the 2nd message
          conn = cf.createConnection();
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = session.createConsumer(queue);
          conn.start();
-         
+
          Object ms = cons.receive();
          assertTrue(ms instanceof TextMessage);
          assertEquals(((TextMessage)ms).getText(), MESSAGE_TWO);
@@ -344,7 +369,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
          conn.close();
       }
       finally
-      {      
+      {
          ServerManagement.undeployQueue("QueueRemoveMessages");
       }
    }
