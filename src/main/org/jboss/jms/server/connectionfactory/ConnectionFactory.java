@@ -85,8 +85,6 @@ public class ConnectionFactory extends ServiceMBeanSupport
       
          String locatorURI = (String)server.getAttribute(connectorObjectName, "InvokerLocator");
          
-         log.info("******* LOCATOR URI IS " + locatorURI);
-         
          ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
          
          connectionFactoryManager = serverPeer.getConnectionFactoryManager();

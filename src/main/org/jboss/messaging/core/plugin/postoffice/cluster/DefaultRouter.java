@@ -60,6 +60,8 @@ import org.jboss.messaging.core.tx.Transaction;
 public class DefaultRouter implements ClusterRouter
 {
    private static final Logger log = Logger.getLogger(DefaultRouter.class);
+   
+   private boolean trace = log.isTraceEnabled();
       
    //MUST be an arraylist for fast index access
    private ArrayList queues;
@@ -143,6 +145,8 @@ public class DefaultRouter implements ClusterRouter
 
    public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
    {
+      if (trace) { log.trace(this + " routing ref " + reference); }
+      
       //Favour the local queue
          
       if (localQueue != null)
@@ -152,6 +156,8 @@ public class DefaultRouter implements ClusterRouter
          //in trying them
          
          Delivery del = localQueue.handle(observer, reference, tx);
+         
+         if (trace) { log.trace(this + " routed to local queue, it returned " + del); }
          
          return del;
       }
@@ -165,6 +171,8 @@ public class DefaultRouter implements ClusterRouter
             ClusteredQueue queue = (ClusteredQueue)queues.get(target);
             
             Delivery del = queue.handle(observer, reference, tx);
+            
+            if (trace) { log.trace(this + " routed to remote queue, it returned " + del); }
                         
             target++;
             
@@ -177,6 +185,9 @@ public class DefaultRouter implements ClusterRouter
             return del;
          }                  
       }
+      
+      if (trace) { log.trace(this + " no queues to route to so return null"); }
+      
       return null;
    }
    

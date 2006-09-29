@@ -29,7 +29,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import org.jboss.logging.Logger;
 import org.jboss.remoting.serialization.IMarshalledValue;
 import org.jboss.remoting.serialization.SerializationManager;
 
@@ -52,9 +51,6 @@ import org.jboss.remoting.serialization.SerializationManager;
  */
 public class MessagingSerializationManager extends SerializationManager
 {
-   private static final Logger log = Logger.getLogger(MessagingSerializationManager.class);
-
-   
    public IMarshalledValue createdMarshalledValue(Object arg0) throws IOException
    {
       throw new UnsupportedOperationException();

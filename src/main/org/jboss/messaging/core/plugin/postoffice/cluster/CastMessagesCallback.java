@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.tx.TxCallback;
 
@@ -61,8 +60,6 @@ import org.jboss.messaging.core.tx.TxCallback;
  */
 class CastMessagesCallback implements TxCallback
 {           
-   private static final Logger log = Logger.getLogger(CastMessagesCallback.class);
-   
    private List persistent;
    
    private List nonPersistent;

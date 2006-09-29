@@ -32,7 +32,6 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.InitialLoadInfo;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.ReferenceInfo;
-import org.jboss.messaging.core.tx.Transaction;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 

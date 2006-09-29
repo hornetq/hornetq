@@ -28,7 +28,6 @@ import javax.management.MBeanServer;
 
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
-import org.jboss.logging.Logger;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
@@ -50,9 +49,6 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  */
 public class CallbackManager implements ServerInvocationHandler
 {
-   private static final Logger log = Logger.getLogger(CallbackManager.class);
-
-   
    protected Map callbackHandlers;
 
    public CallbackManager()

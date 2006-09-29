@@ -67,6 +67,8 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 public class DefaultPostOffice extends JDBCSupport implements PostOffice
 {
    private static final Logger log = Logger.getLogger(DefaultPostOffice.class);
+   
+   private boolean trace = log.isTraceEnabled();
           
    private String officeName;
    
@@ -128,23 +130,30 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    public void start() throws Exception
    {
-      log.info(this + " starting");
+      if (trace) { log.trace(this + " starting"); }
+      
       super.start();
       
       loadBindings();
       
-      log.info(this + " started");
+      if (trace) { log.trace(this + " started"); }
    }
    
    public void stop() throws Exception
    {
+      if (trace) { log.trace(this + " stopping"); }
+      
       super.stop();
+      
+      if (trace) { log.trace(this + " stopped"); }
    }
      
    // PostOffice implementation ---------------------------------------        
          
    public Binding bindQueue(String condition, Queue queue) throws Exception
    {
+      if (trace) { log.trace(this + " binding queue " + queue.getName() + " with condition " + condition); }
+      
       if (queue.getName() == null)
       {
          throw new IllegalArgumentException("Queue name is null");
@@ -194,6 +203,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             
    public Binding unbindQueue(String queueName) throws Throwable
    {
+      if (trace) { log.trace(this + " unbinding queue " + queueName); }
+            
       if (queueName == null)
       {
          throw new IllegalArgumentException("Queue name is null");
@@ -285,6 +296,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    public boolean route(MessageReference ref, String condition, Transaction tx) throws Exception
    {
+      if (trace) { log.trace(this + "  routing ref " + ref + " with condition " + condition + " and transaction " + tx); }
+            
       if (ref == null)
       {
          throw new IllegalArgumentException("Message reference is null");

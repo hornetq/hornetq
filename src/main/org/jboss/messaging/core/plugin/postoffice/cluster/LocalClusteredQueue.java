@@ -55,6 +55,8 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 public class LocalClusteredQueue extends PagingFilteredQueue implements ClusteredQueue
 {
    private static final Logger log = Logger.getLogger(LocalClusteredQueue.class);
+   
+   private boolean trace = log.isTraceEnabled();
       
    private PostOfficeInternal office;
    
@@ -194,9 +196,13 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    public Delivery handleFromCluster(MessageReference ref)
       throws Exception
    {
+      if (trace) { log.trace("Handling ref from cluster: " + ref); }
+      
       if (filter != null && !filter.accept(ref))
       {
          Delivery del = new SimpleDelivery(this, ref, true, false);
+         
+         if (trace) { log.trace("Reference " + ref + " rejected by filter"); }
          
          return del;
       }
@@ -220,9 +226,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    }
    
    protected void deliverInternal(boolean handle) throws Throwable
-   {
-      log.info("in local clustered queue deliver internal");
-      
+   {            
       int beforeSize = -1;
       
       if (!handle)
@@ -236,7 +240,11 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       {
          int afterSize = messageRefs.size();
          
-         log.info("receiversready:" + receiversReady + " before size:" + beforeSize + " afterSize: " + afterSize);
+         if (trace)
+         {
+            log.trace(this + " Deciding whether to pull messages. " +
+                     "receiversready:" + receiversReady + " before size:" + beforeSize + " afterSize: " + afterSize);
+         }
          
          if (receiversReady && beforeSize == 0 && afterSize == 0)
          {
@@ -301,8 +309,11 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       ClusterRequest req = new PullMessagesRequest(this.nodeId, tx.getId(), theQueue.getChannelID(),
                                                    name, thePullSize);
       
-      log.info(System.identityHashCode(this) + " Executing pull messages request for queue " + name +
-               " pulling from node " + theQueue.getNodeId() + " to node " + this.nodeId);
+      if (trace)
+      {
+         log.trace(System.identityHashCode(this) + " Executing pull messages request for queue " + name +
+                   " pulling from node " + theQueue.getNodeId() + " to node " + this.nodeId);
+      }
       
       byte[] bytes = (byte[])office.syncSendRequest(req, theQueue.getNodeId(), true);
       
@@ -312,15 +323,13 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
          return;
       }
       
-      log.info( System.identityHashCode(this) +" Executed pull messages request");
-      
       PullMessagesResponse response = new PullMessagesResponse();
       
       StreamUtils.fromBytes(response, bytes);
 
       List msgs = response.getMessages();
       
-      log.info(System.identityHashCode(this) + " I retrieved " + msgs.size() + " messages");
+      if (trace) { log.trace(System.identityHashCode(this) + " I retrieved " + msgs.size() + " messages from pull"); }
       
       Iterator iter = msgs.iterator();
       
@@ -330,7 +339,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
          
          if (msg.isReliable())
          {
-            //It will alerady have been persisted on the other node
+            //It will already have been persisted on the other node
             msg.setPersisted(true);
          }
          

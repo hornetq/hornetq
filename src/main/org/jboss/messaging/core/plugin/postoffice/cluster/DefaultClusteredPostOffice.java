@@ -80,6 +80,8 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 public class DefaultClusteredPostOffice extends DefaultPostOffice implements ClusteredPostOffice, PostOfficeInternal
 {
    private static final Logger log = Logger.getLogger(DefaultClusteredPostOffice.class);
+   
+   private boolean trace = log.isTraceEnabled();
                         
    private Channel syncChannel;
    
@@ -276,16 +278,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       super.start();
                   
       Address currentAddress = syncChannel.getLocalAddress();
-      
-      log.info(this.nodeId + " address is " + currentAddress);
-             
+                     
       handleAddressNodeMapping(currentAddress, nodeId);
       
       syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));           
       
       statsSender.start();
       
-      started = true;      
+      started = true;   
+      
+      if (log.isTraceEnabled()) { log.trace("Started " + this + " with address " + currentAddress); }
    }
 
    public synchronized void stop() throws Exception
@@ -299,14 +301,19 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       asyncChannel.close();
       
       started = false;
+      
+      if (log.isTraceEnabled()) { log.trace("Stopped " + this); }
    }  
    
    // PostOffice implementation ---------------------------------------        
 
    public Binding bindClusteredQueue(String condition, LocalClusteredQueue queue) throws Exception
    {           
-      log.info(this.nodeId + " binding clustered queue: " + queue + " with condition: " + condition);
-      
+      if (log.isTraceEnabled())
+      {
+         log.trace(this.nodeId + " binding clustered queue: " + queue + " with condition: " + condition);
+      }
+            
       if (queue.getNodeId() != this.nodeId)
       {
          throw new IllegalArgumentException("Queue node id does not match office node id");
@@ -325,6 +332,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    public Binding unbindClusteredQueue(String queueName) throws Throwable
    {
+      if (log.isTraceEnabled())
+      {
+         log.trace(this.nodeId + " unbind clustered queue: " + queueName);
+      }
+      
       Binding binding = (Binding)super.unbindQueue(queueName);
       
       UnbindRequest request = new UnbindRequest(nodeId, queueName);
@@ -336,6 +348,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    public boolean route(MessageReference ref, String condition, Transaction tx) throws Exception
    {
+      if (trace)
+      {
+         log.trace(this.nodeId + " Routing " + ref + " with condition " + condition + " and transaction " + tx);
+      }
+      
       if (ref == null)
       {
          throw new IllegalArgumentException("Message reference is null");
@@ -370,6 +387,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   // We need to do this if there is anything other than
                   // No durable subs or exactly one local durable sub
                   startInternalTx = true;
+                  if (trace)
+                  {
+                     log.trace(this.nodeId + " Starting internal transaction since more than one durable sub or remote durable subs");
+                  }
                }
             }                        
             
@@ -400,7 +421,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                
                   ClusteredQueue queue = (ClusteredQueue)del.getObserver();
                   
-                  log.info("Routing message to queue:" + queue.getName() + " on node " + queue.getNodeId());
+                  if (trace)
+                  {
+                     log.trace(this.nodeId + " Routing message to queue or stub:" + queue.getName() + " on node " +
+                               queue.getNodeId() +" local:" + queue.isLocal());
+                  }
                   
                   if (router.numberOfReceivers() > 1)
                   {
@@ -483,6 +508,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             if (startInternalTx)
             {               
                tx.commit();
+               if (trace) { log.trace("Committed internal transaction"); }
             }
          }
       }
@@ -510,7 +536,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       lock.writeLock().acquire();
       
-      log.info(this.nodeId + " adding binding from node: " + nodeId +" queue: " + queueName + " with condition: " + condition);
+      if (log.isTraceEnabled())
+      {
+         log.trace(this.nodeId + " adding binding from node: " + nodeId + " queue: " + queueName + " with condition: " + condition);        
+      }
             
       try
       {                     
@@ -553,6 +582,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       lock.writeLock().acquire();
       
+      if (log.isTraceEnabled())
+      {
+         log.trace(this.nodeId + " removing binding from node: " + nodeId + " queue: " + queueName);        
+      }
+      
       try
       {         
          // Sanity
@@ -573,6 +607,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       lock.writeLock().acquire();
       
+      if (trace)
+      {
+         log.trace(this.nodeId + " Adding address node mapping for " + address + " and " + nodeId);
+      }
+      
       try
       { 
          nodeIdAddressMap.put(new Integer(nodeId), address);
@@ -586,9 +625,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKey,
                                 Map queueNameNodeIdMap) throws Exception
    {
-      log.info(this.nodeId + " received route from cluster, ref = " + message.getMessageID() + " routing key " +
-               routingKey + " map " + queueNameNodeIdMap);
-      
+      if (trace)
+      {
+         log.trace(this.nodeId + " routing from cluster, message: " + message + " routing key " +
+                  routingKey + " map " + queueNameNodeIdMap);
+      }
+            
       lock.readLock().acquire();  
       
       // Need to reference the message
@@ -639,7 +681,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                      
                      LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
                      
-                     Delivery del = queue.handleFromCluster(ref);         
+                     Delivery del = queue.handleFromCluster(ref);    
+                     
+                     if (trace)
+                     {
+                        log.trace(this.nodeId + " queue " + queue.getName() + " handled reference from cluster " + del);
+                     }
                   }
                }
             }                          
@@ -659,9 +706,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     * Multicast a message to all members of the group
     */
    public void asyncSendRequest(ClusterRequest request) throws Exception
-   {            
+   {     
+      if (trace) { log.trace(this.nodeId + " sending asynch request to group, request: " + request); }
+      
       byte[] bytes = writeRequest(request);
-         
+              
       asyncChannel.send(new Message(null, null, bytes));
    }
    
@@ -670,7 +719,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     */
    public void asyncSendRequest(ClusterRequest request, int nodeId) throws Exception
    {               
+      if (trace) { log.trace(this.nodeId + " sending asynch request to single node, request: " + request + " node " + nodeId); }
+      
       Address address = this.getAddressForNodeId(nodeId);
+      
+      if (trace) { log.trace(this.nodeId + " sending to address " + address); }
       
       if (address == null)
       {
@@ -689,7 +742,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     */
    public Object syncSendRequest(ClusterRequest request, int nodeId, boolean ignoreNoAddress) throws Exception
    {              
+      if (trace) { log.trace(this.nodeId + " sending synch request to single node, request: " + request + " node " + nodeId); }
+            
       Address address = this.getAddressForNodeId(nodeId);
+      
+      if (trace) { log.trace(this.nodeId + " sending to address " + address); }      
       
       if (address == null)
       {
@@ -708,7 +765,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       Message message = new Message(address, null, bytes);      
       
       Object result = controlMessageDispatcher.sendMessage(message, GroupRequest.GET_FIRST, castTimeout);
-       
+      
+      if (trace) { log.trace(this.nodeId + " received response: " + result); }
+                 
       return result;
    }
    
@@ -720,11 +779,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       synchronized (holdingArea)
       {
          holdingArea.put(id, tx);
+         
+         if (trace) { log.trace(this.nodeId + " added transaction " + tx + " to holding area with id " + id); }
       } 
    }
    
    public void commitTransaction(TransactionId id) throws Throwable
    {
+      if (trace) { log.trace(this.nodeId + " committing transaction " + id ); }
+      
       ClusterTransaction tx = null;
       
       synchronized (holdingArea)
@@ -738,6 +801,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
       
       tx.commit(this);
+      
+      if (trace) { log.trace(this.nodeId + " committed transaction " + id ); }
    }
    
    /**
@@ -745,6 +810,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
     */
    public void check(Integer nodeId) throws Throwable
    {
+      if (trace) { log.trace(this.nodeId + " checking for any stranded transactions for node " + nodeId); }
+      
       synchronized (holdingArea)
       {
          Iterator iter = holdingArea.entrySet().iterator();
@@ -761,7 +828,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             {
                ClusterTransaction tx = (ClusterTransaction)iter.next();
                
+               if (trace) { log.trace("Found transaction " + tx + " in holding area"); }
+               
                boolean commit = tx.check(this);
+               
+               if (trace) { log.trace(this.nodeId + " transaction " + tx + " will be committed?: " + commit); }
                
                if (commit)
                {
@@ -773,6 +844,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                }
                
                toRemove.add(tx);
+               
+               if (trace) { log.trace(this.nodeId + " resolved " + tx); }
             }
          }
          
@@ -787,6 +860,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             holdingArea.remove(id);
          }
       }
+      if (trace) { log.trace(this.nodeId + " check complete"); }
    }
    
    public synchronized void sendQueueStats() throws Exception
@@ -828,6 +902,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                      }
 
                      statsList.add(stats);
+                     
+                     if (trace) { log.trace(this.nodeId + " adding stat for send " + stats); }
                   } 
                }
             }
@@ -843,12 +919,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          ClusterRequest req = new QueueStatsRequest(nodeId, statsList);
          
          asyncSendRequest(req);
+         
+         if (trace) { log.trace(this.nodeId + " Sent stats"); }
       }
    }
    
    public void updateQueueStats(int nodeId, List statsList) throws Exception
    {
       lock.readLock().acquire();
+      
+      if (trace) { log.trace(this.nodeId + " updating queue stats from node " + nodeId + " stats size: " + statsList.size()); }
       
       try
       {      
@@ -863,7 +943,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          if (nameMap == null)
          {
             //This is ok, the node might have left
-            log.info("But I have no bindings for " + nodeId);
+            if (trace) { log.trace(this.nodeId + " cannot find node in name map, i guess the node might have left?"); }
          }
          else
          {     
@@ -884,13 +964,19 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                
                stub.setStats(st);
                
+               if (trace) { log.trace(this.nodeId + " setting stats: " + st + " on remote stub " + stub.getName()); }
+               
                ClusterRouter router = (ClusterRouter)routerMap.get(st.getQueueName());
                
+               //Maybe the local queue now wants to pull message(s) from the remote queue given that the 
+               //stats for the remote queue have changed
                LocalClusteredQueue localQueue = router.getLocalQueue();
                
                if (localQueue != null)
                {               
                   RemoteQueueStub toQueue = (RemoteQueueStub)messagePullPolicy.chooseQueue(router.getQueues());
+                  
+                  if (trace) { log.trace(this.nodeId + " recalculated pull queue for queue " + st.getQueueName() + " to be " + toQueue); }
                   
                   if (toQueue != null)
                   {
@@ -898,6 +984,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                      
                      //We now trigger delivery - this may cause a pull event
                      localQueue.deliver(false);
+                                          
+                     if (trace) { log.trace(this.nodeId + " triggered delivery for " + localQueue.getName()); }
                   }
                }               
             }         
@@ -916,6 +1004,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    public List getDeliveries(String queueName, int numMessages) throws Exception
    {
+      if (trace) { log.trace(this.nodeId + " getting max " + numMessages + " deliveries for " + queueName); }
+      
       Binding binding = getBindingForQueueName(queueName);
       
       if (binding == null)
@@ -926,6 +1016,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
       
       List dels = queue.getDeliveries(numMessages);
+      
+      if (trace) { log.trace(this.nodeId + " retrieved " + dels.size() + " deliveries from " + queueName); }
       
       return dels;
    }
@@ -943,9 +1035,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          lock.readLock().release();      
       }
    }
-   
-  
-               
+                   
    // Public ------------------------------------------------------------------------------------------
       
    // Protected ---------------------------------------------------------------------------------------
@@ -1026,6 +1116,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
 
    protected void loadBindings() throws Exception
    {
+      if (trace) { log.trace(this.nodeId + " loading bindings"); }
+      
       // TODO I need to know whether this call times out - how do I know this??
       boolean isState = syncChannel.getState(null, stateTimeout);
                               
@@ -1033,7 +1125,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       {       
          //Must be first member in group or non clustered- we load the state ourself from the database
          
-         log.info("First member - so loading bindings from db");
+         if (trace) { log.trace(this.nodeId + " First member of group- so loading bindings from db"); }
          
          super.loadBindings();      
       }
@@ -1041,7 +1133,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       {
          //The state will be set in due course via the MessageListener - we must wait until this happens
          
-         log.info("Not first member - so loading state from group.. waiting");
+         if (trace) { log.trace(this.nodeId + " Not first member of group- so waiting for state to arrive...."); }
          
          synchronized (setStateLock)
          {
@@ -1052,7 +1144,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             } 
          }
          
-         log.info("Got state");
+         if (trace) { log.trace(this.nodeId + " Received state"); }
       }
    }
    
@@ -1078,23 +1170,23 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       return binding;
    }
    
-   
-   
+    
    // Private ------------------------------------------------------------------------------------------
            
-   
-   
-   
    /*
     * Multicast a sync request
     */
    private void syncSendRequest(ClusterRequest request) throws Exception
-   {            
+   {         
+      if (trace) { log.trace(this.nodeId + " sending synch request to group, request: " + request); }
+      
       byte[] bytes = writeRequest(request);
             
       Message message = new Message(null, null, bytes);      
       
       controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, castTimeout);
+      
+      if (trace) { log.trace(this.nodeId + " sent and executed ok"); }
    }
    
 
@@ -1206,11 +1298,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    private void processStateBytes(byte[] bytes) throws Exception
    {
-      log.info("Receiving state from group...");
+      if (trace) { log.trace(this.nodeId + " received state from group"); }
       
       SharedState state = new SharedState();
       
       StreamUtils.fromBytes(state, bytes);
+      
+      if (trace) { log.trace(this.nodeId + " received " + state.getBindings().size() + " bindings and map " + state.getNodeIdAddressMap()); }
       
       nameMaps.clear();
       
@@ -1365,7 +1459,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
 
       public void viewAccepted(View view)
       {
-         log.info("Got new view, size=" + view.size());
+         if (trace) { log.trace(nodeId + " Got new view, size=" + view.size()); }
          
          if (currentView != null)
          {
@@ -1380,6 +1474,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   //Member must have left                  
                   //We don't remove bindings for ourself
                   
+                  if (trace) { log.trace(nodeId + " it seems that member " + address + " has left the group"); }
+                  
                   Address currentAddress = syncChannel.getLocalAddress();
                   
                   if (!address.equals(currentAddress))
@@ -1393,11 +1489,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                            throw new IllegalStateException("Cannot find node id for address: " + address);
                         }
                         
+                        if (trace) { log.trace(DefaultClusteredPostOffice.this.nodeId + " Performing cleanup for node " + nodeId); }
+                        
                         //Perform a check - the member might have crashed and left uncommitted transactions
                         //we need to resolve this
                         check(nodeId);
-                        
+                                                                        
                         removeBindingsForAddress(nodeId);
+                        
+                        if (trace) { log.trace(DefaultClusteredPostOffice.this.nodeId + " cleanup complete"); }
                      }               
                      catch (Throwable e)
                      {

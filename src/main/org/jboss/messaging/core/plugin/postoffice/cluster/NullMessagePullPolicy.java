@@ -23,6 +23,8 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.util.List;
 
+import org.jboss.logging.Logger;
+
 /**
  * 
  * A NullMessagePullPolicy
@@ -35,13 +37,18 @@ import java.util.List;
  */
 public class NullMessagePullPolicy implements MessagePullPolicy
 {
+   private static final Logger log = Logger.getLogger(NullMessagePullPolicy.class);
    
+   private boolean trace = log.isTraceEnabled();
+          
    public NullMessagePullPolicy()
    {
    }
 
    public ClusteredQueue chooseQueue(List queues)
    {      
+      if (trace) { log.trace(this + " always returning null"); }
+   
       return null;
    }
 }
