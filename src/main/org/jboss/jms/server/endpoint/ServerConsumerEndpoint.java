@@ -614,16 +614,16 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    protected void stop() throws Throwable
    {     
-      //We need to:
-      //Stop accepting any new messages in the SCE
-      //Flush any messages from the SCE to the buffer
-      //If the client consumer is now full, then we need to cancel the ones in the toDeliver list
+      // We need to:
+      // - Stop accepting any new messages in the SCE.
+      // - Flush any messages from the SCE to the buffer.
+      // If the client consumer is now full, then we need to cancel the ones in the toDeliver list.
 
-      //We need to lock since otherwise we could set started to false but the handle method was already executing
-      //and messages might get deposited after
+      // We need to lock since otherwise we could set started to false but the handle method was
+      // already executing and messages might get deposited after.
       synchronized (lock)
       {
-         //can't start or stop it if it is closed
+         // can't start or stop it if it is closed
          if (closed)
          {
             return;
@@ -632,31 +632,28 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          started = false;
       }
       
-      //Now we know no more messages will be accepted in the SCE
+      // Now we know no more messages will be accepted in the SCE.
             
       try
       {
-         //Flush any messages waiting to be sent to the client
+         // Flush any messages waiting to be sent to the client.
          this.executor.execute(new Deliverer());
          
-         //Now wait for it to execute
+         // Now wait for it to execute.
          Future result = new Future();
-         
          this.executor.execute(new Waiter(result));
-         
          result.getResult();
              
-         //Now we know any deliverer has delivered any outstanding messages to the client buffer
+         // Now we know any deliverer has delivered any outstanding messages to the client buffer.
       }
       catch (InterruptedException e)
       {
          log.warn("Thread interrupted", e);
       }
             
-      //Now we know that there are no in flight messages on the way to the client consumer.
-      
-      //But there may be messages still in the toDeliver list since the client consumer might be full
-      //So we need to cancel these
+      // Now we know that there are no in flight messages on the way to the client consumer, but
+      // there may be messages still in the toDeliver list since the client consumer might be full,
+      // so we need to cancel these.
             
       if (!toDeliver.isEmpty())
       { 
@@ -665,15 +662,12 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             for (int i = toDeliver.size() - 1; i >= 0; i--)
             {
                MessageProxy proxy = (MessageProxy)toDeliver.get(i);
-               
                long id = proxy.getMessage().getMessageID();
-               
                cancelDelivery(new Long(id));
             }
          }
                  
          toDeliver.clear();
-         
          bufferFull = false;
       }      
    }
