@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
+"../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
+<!ENTITY about SYSTEM "modules/about.xml">
+<!ENTITY introduction SYSTEM "modules/introduction.xml">
+<!ENTITY overview SYSTEM "modules/overview.xml">
+<!ENTITY configuration SYSTEM "modules/configuration.xml">
+]>
+<book lang="en">
+  <bookinfo>
+    <title>JBoss Messaging Clustering Introduction</title>
+
+    <subtitle>A brief guide to clustering in JBoss Messaging</subtitle>
+    <para>Tim Fox</para>
+  </bookinfo>
+
+  <toc></toc>
+
+  &about;
+
+  &introduction;
+
+  &overview;
+
+  &configuration;
+
+</book>

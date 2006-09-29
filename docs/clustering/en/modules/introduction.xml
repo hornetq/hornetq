@@ -1,0 +1,138 @@
+<chapter id="introduction">
+
+   <title>Introduction</title>
+
+   <para>
+      JBoss Messaging 1.2 GA will provide a highly sophisticated clustering implementation, far more sophisticated than you'll find in the vast
+      majority of other messaging systems.
+   </para>
+   <para>
+      It will allow you to smoothly distribute your application load across your cluster, intelligently balancing and utilising each nodes
+      CPU cycles, with no single point of failure, providing a highly scalable and performant clustering implementation.
+   </para>
+
+   <section id="features">
+      <title>JBoss Messaging 1.2 GA features:</title>
+
+      <para>
+         JBoss Messaging 1.2 GA Clustering will provide the following features:
+      </para>
+
+      <itemizedlist>
+         <listitem>
+            <para>
+               Distributed queues. Messages sent to a distributed queue while attached to a particular node will be routed
+               to a queue instance on a particular node according to a routing policy
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+               Distributed topics. Messages sent to a distributed topic while attached at a particular node will be received by subscriptions on other nodes.
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+               Fully reliable message distribution. Once and only once delivery is fully guaranteed.
+               When sending messages to a topic with multiple durable subscriptions
+               across a cluster we guarantee that message reaches all the subscriptions (or none of them in case of failure).
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+              Persistent level reliability guarantee without persistence! By replicating persistent messages between nodes in memory,
+              we can obtain comparable reliability levels to persistenting messages to disk, without actually storing them to disk.
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+         Pluggable routing implementation. The policy for routing messages to a queue is fully pluggable and easily replaceable.
+         The default policy always chooses a queue at the local node if there is one, and if not, it round robins between queues on different nodes.
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+         Intelligent message redistribution policy. Messages are automatically distributed between nodes depending on how fast or slow consumers are on certain nodes.
+         If there are no or slow consumers on a particular queue node, messages will be pulled from that queue to a queue with faster consumers on a different node.
+         The policy is fully pluggable.
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+         Shared durable subscriptions. Consumers can connect to the same durable subscription while attached to different nodes.
+         This allows processing load from durable subscriptions to be distributed across the cluster in a similar way to queues.
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+         High availability and seamless failover.
+         If the node you are connected to fails, you will automatically fail over to another node and will not lose any
+         persistent messages.
+         You can carry on with your session seamlessly where you left off.
+         Once and only once delivery of persistent messages is respected at all times.
+         </para>
+         </listitem>
+      </itemizedlist>
+
+
+   </section>
+
+   <section id="alphafeatures">
+      <title>JBoss Messaging 1.2 Alpha 1 features:</title>
+
+      <para> What's in the Alpha 1 release?</para>
+
+      <para>
+      JBoss Messaging Alpha 1, is the first experimental release of the JBoss Messaging clustering functionality.
+      </para>
+
+      <para>
+      Please note that this is an Alpha and will contain bugs!
+      We are releasing it to the community, so you can try it out, get familiar with it and feedback your experiences to us so we can improve it and stabilise it.
+      </para>
+
+      <para>
+      Thanks for your support!
+      </para>
+
+      <para>
+      This release does not have the full clustering functionality that will be available in 1.2 GA.
+      </para>
+
+      <para>
+      All the final features are available apart from:
+      </para>
+
+      <itemizedlist>
+         <listitem>
+         <para>
+         High availability. There is no seamless failover in alpha. If you are attached to a particular node and it crashes, then you will not fail over
+         onto another node.
+         </para>
+         <para>
+         There is no HA JNDI support in alpha - when connecting to a particular node you must correct directly to JNDI at the node of interest.
+         </para>
+         </listitem>
+
+         <listitem>
+         <para>
+         Persistent level reliability guarantee without persistence. There is no option for in memory replication of persistent messages in Alpha.
+         </para>
+         </listitem>
+
+         <listitem>
+         <para>
+         Intelligent message distribution is available but disabled in the default configuration because it is currently unstable.
+         Stability should increase over the next few weeks.
+(For intrepid explorers - it is very straightforward to enable this if you wish - see the configuration section - but watch out for unpredictable results.)
+         </para>
+         </listitem>
+
+      </itemizedlist>
+
+      <para>
+      Bear in mind you will need to get a bit more "down and dirty" with the configuration in this release, than you would with a GA release.
+      </para>
+
+   </section>
+
+</chapter>
