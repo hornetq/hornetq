@@ -422,7 +422,7 @@ public class DurableSubscriberTest extends MessagingTestCase
       conn.setClientID("ak47");
 
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createDurableSubscriber(topic, "uzzi");
+      MessageConsumer cons = s.createDurableSubscriber(topic, "uzzi");
       MessageProducer prod = s.createProducer(topic);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
@@ -430,6 +430,7 @@ public class DurableSubscriberTest extends MessagingTestCase
 
       log.debug("unsubscribing ...");
 
+      cons.close();
       s.unsubscribe("uzzi");
 
       log.debug("resubscribing ...");
@@ -461,40 +462,7 @@ public class DurableSubscriberTest extends MessagingTestCase
       }
    }
 
-   /**
-    * See http://jira.jboss.org/jira/browse/JBMESSAGING-564
-    * 
-    * Tim - this is an invalid test - see section 6.11 of jms spec:
-    *  "It is erroneous for a client to delete a
-    *  durable subscription while it has an active TopicSubscriber for it or while a
-    *  message received by it is part of a current transaction or has not been
-    *  acknowledged in the session."
-    *  
-    *  Need to remove it
-    * 
-    */
-   public void testUnsubscribe() throws Exception
-   {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
 
-      Connection conn = cf.createConnection();
-      conn.setClientID("zeke");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      TopicSubscriber dursub = s.createDurableSubscriber(topic, "dursub0");
-
-      s.unsubscribe("dursub0");
-
-      // TODO - what happens with dursub? It is not closed, but its associated subscriber does
-      //        not exist anymore.
-
-      dursub.close();
-
-      conn.close();
-   }
-   
    //See JMS 1.1. spec sec 6.11
    public void testUnsubscribeWithActiveConsumer() throws Exception
    {
