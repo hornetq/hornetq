@@ -688,7 +688,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void unsubscribe(String subscriptionName) throws JMSException
    {
-      log.info("unsubscribing: " + subscriptionName);
+      log.debug(this + " unsubscribing " + subscriptionName);
       
       try
       {
@@ -718,11 +718,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                   subscriptionName + " to unsubscribe");
          }
          
-         //Section 6.11. JMS 1.1. spec:
-         // "It is erroneous for a client to delete a
-         //durable subscription while it has an active TopicSubscriber for it or while a
-         //message received by it is part of a current transaction or has not been
-         //acknowledged in the session."
+         // Section 6.11. JMS 1.1.
+         // "It is erroneous for a client to delete a durable subscription while it has an active
+         // TopicSubscriber for it or while a message received by it is part of a current
+         // transaction or has not been acknowledged in the session."
          
          Queue sub = binding.getQueue();
          

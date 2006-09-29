@@ -346,7 +346,7 @@ public abstract class ChannelSupport implements Channel
     */
    public void removeAllReferences() throws Throwable
    {
-      log.info(this + " remnoving all references");
+      log.debug(this + " remnoving all references");
       
       synchronized (refLock)
       {

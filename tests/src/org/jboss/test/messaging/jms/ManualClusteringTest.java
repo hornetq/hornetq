@@ -88,7 +88,7 @@ public class ManualClusteringTest extends MessagingTestCase
       Properties props1 = new Properties();
       
       props1.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props1.put(Context.PROVIDER_URL, "jnp://localhost:1199");
+      props1.put(Context.PROVIDER_URL, "jnp://localhost:1099");
       props1.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
       
       ic1 = new InitialContext(props1);
@@ -96,7 +96,7 @@ public class ManualClusteringTest extends MessagingTestCase
       Properties props2 = new Properties();
       
       props2.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props2.put(Context.PROVIDER_URL, "jnp://localhost:1299");
+      props2.put(Context.PROVIDER_URL, "jnp://localhost:1199");
       props2.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
       
       ic2 = new InitialContext(props2);
@@ -126,6 +126,8 @@ public class ManualClusteringTest extends MessagingTestCase
       cf2 = (ConnectionFactory)ic2.lookup("/ConnectionFactory");
       
       //cf3 = (ConnectionFactory)ic3.lookup("/ConnectionFactory");
+
+      log.info("setup done");
    }
 
    protected void tearDown() throws Exception
@@ -142,6 +144,8 @@ public class ManualClusteringTest extends MessagingTestCase
     */
    public void testClusteredQueueLocalConsumerNonPersistent() throws Exception
    {
+      log.info("starting test");
+
       Connection conn1 = null;
       
       Connection conn2 = null;
