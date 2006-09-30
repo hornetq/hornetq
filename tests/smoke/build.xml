@@ -8,11 +8,12 @@
    <property file="./output/last-run.properties"/>
    <property file="./smoke.properties"/>
    <property name="sleep.interval" value="60"/>
+   <property name="jnpPort" value="1099"/>
    <property name="messaging.server.artifact.name" value="jboss-messaging-scoped.sar"/>
    <property name="messaging.server.artifact.path" value="../../output/lib"/>
    <property name="relative.client.jar.location" value="../../util"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
-   <property name="release.admin.target" value="install"/>
+   <property name="release.admin.target" value="default"/>
    <property name="jboss.configuration" value="messaging-smoke-test"/>
    <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
    <property name="smoke.test.type" value="installation"/>
@@ -28,6 +29,7 @@
    <property name="run.stateless.example" value="true"/>
    <property name="run.ejb3mdb.example" value="false"/>
    <property name="run.secure-socket.example" value="true"/>
+   <property name="run.distributed-topic.example" value="true"/>
 
    <property name="jboss.home" value="${jboss.compatibility.home}"/>
 
@@ -71,6 +73,8 @@
 
       <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
 
+                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -109,6 +113,7 @@
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
+                                                                                                 -->
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA.home}"/>
       </antcall>
@@ -124,7 +129,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-
+                                                                                                <!--
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss405CR1.home}"/>
       </antcall>
@@ -136,6 +141,8 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
+
+                                                                                                 -->
 
       <!--
          Stateless Session Bean installation test will fail on this because the client talks to
@@ -245,7 +252,7 @@
    <target name="run-all-examples">
 
       <antcall target="start"/>
-      <antcall target="write-current-jboss-home"/>
+      <antcall target="record-running-jboss-instance"/>
       <antcall target="sleep"><param name="sleep.interval" value="35"/></antcall>
 
       <antcall target="ping-jms-server"/>
@@ -256,7 +263,9 @@
 
       <antcall target="deploy-scoped-topic"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
-      <antcall target="ping-topic"/>
+      <antcall target="ping-topic">
+         <param name="example.topic.name" value="SmokeTestTopic"/>
+      </antcall>
 
       <!-- ====================================================  -->
       <!--                                                       -->
@@ -310,6 +319,102 @@
 
    </target>
 
+   <target name="run-all-clustered-examples">
+
+      <!--
+          Start node0.
+      -->
+
+      <antcall target="start">
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+      </antcall>
+
+      <antcall target="record-running-jboss-instance">
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+      </antcall>
+
+      <antcall target="sleep"><param name="sleep.interval" value="25"/></antcall>
+
+      <antcall target="ping-jms-server"/>
+
+      <antcall target="deploy-clustered-scoped-topic">
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+      </antcall>
+
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+
+      <antcall target="ping-topic">
+         <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
+      </antcall>
+
+      <!--
+          Start node1.
+      -->
+
+      <antcall target="start">
+         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
+      </antcall>
+
+      <antcall target="record-running-jboss-instance">
+         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
+      </antcall>
+
+      <antcall target="sleep"><param name="sleep.interval" value="25"/></antcall>
+
+      <antcall target="ping-jms-server">
+         <param name="jnpPort" value="1199"/>
+      </antcall>
+
+      <antcall target="deploy-clustered-scoped-topic">
+         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
+      </antcall>
+
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+
+      <antcall target="ping-topic">
+         <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
+         <param name="jnpPort" value="1199"/>
+      </antcall>
+
+      <!-- ====================================================  -->
+      <!--                                                       -->
+      <!--  List your example here:                              -->
+      <!--                                                       -->
+      <!-- ====================================================  -->
+
+      <antcall target="run-clustered-example">
+         <param name="example.name" value="distributed-topic"/>
+         <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
+      </antcall>
+
+      <!-- ====================================================  -->
+      <!--                                                       -->
+      <!--  End of example list                                  -->
+      <!--                                                       -->
+      <!-- ====================================================  -->
+
+      <antcall target="stop">
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+      </antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
+
+      <antcall target="stop">
+         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
+         <param name="jnpPort" value="1199"/>
+      </antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
+
+      <antcall target="display-warnings-and-errors">
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+      </antcall>
+
+      <antcall target="display-warnings-and-errors">
+         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
+      </antcall>
+
+   </target>
+
+
    <target name="run-example">
 
       <!--
@@ -348,6 +453,25 @@
 
    </target>
 
+   <target name="run-clustered-example">
+
+      <!--
+           Determine if a specific example should run with a specific test; to prevent a test from
+           running an example, set "run.<examplename>.example to false.
+       -->
+      <condition property="do.run" value="true">
+         <or>
+            <and>
+               <equals arg1="${example.name}" arg2="distributed-topic"/>
+               <istrue value="${run.distributed-topic.example}"/>
+            </and>
+         </or>
+      </condition>
+      <antcall target="run-clustered-example-internal"/>
+
+   </target>
+
+
    <!-- ======================================================================== -->
    <!--      Internal Targets                                                    -->
    <!-- ======================================================================== -->
@@ -355,10 +479,19 @@
    <target name="installation-test" depends="check-jboss-availability">
 
       <echo message="Testing installation on ${jboss.home}"/>
+      <!--
+          Run single-node tests
+      -->
       <antcall target="create-messaging-config"/>
       <antcall target="run-all-examples"/>
       <antcall target="clean-messaging-config"/>
-
+      <!--
+          Run clustered tests
+      -->                                                                                       <!--
+      <antcall target="create-clustered-messaging-config"/>
+      <antcall target="run-all-clustered-examples"/>
+      <antcall target="clean-clustered-messaging-config"/>
+                                                                                                 -->
    </target>
 
    <target name="old-server-compatibility-test" depends="check-jboss-availability">
@@ -411,21 +544,42 @@
       </ant>
       <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
       <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
-      <antcall target="replace-jboss-dependencies"/>
 
    </target>
 
-   <target name="replace-jboss-dependencies" if="replace.jboss.dependencies">
+   <target name="create-clustered-messaging-config">
 
-      <echo message="###"/>
-      <echo message="###"/>
-      <echo message="### WARNING! Substituting jboss-remoting.jar, jboss-serialization.jar, jboss-aop.jar, jboss-aspect-library.jar"/>
-      <echo message="###"/>
-      <echo message="###"/>
-      <copy file="../../src/resources/jboss-remoting.jar" todir="${jboss.home}/server/${jboss.configuration}/lib" overwrite="true"/>
-      <copy file="../../src/resources/jboss-serialization.jar" todir="${jboss.home}/server/${jboss.configuration}/lib"  overwrite="true"/>
-      <copy file="../../src/resources/jboss-aop.jar" todir="${jboss.home}/server/${jboss.configuration}/lib"  overwrite="true"/>
-      <copy file="../../src/resources/jboss-aspect-library.jar" todir="${jboss.home}/server/${jboss.configuration}/lib"  overwrite="true"/>
+      <available file="${messaging.server.artifact.path}/${messaging.server.artifact.name}" property="archive.present"/>
+      <fail unless="archive.present">Cannot find deployment archive ${messaging.server.artifact.path}/${messaging.server.artifact.name}</fail>
+
+      <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
+      <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
+
+      <!--
+          create node 0
+      -->
+      <ant antfile="../../util/release-admin.xml" target="cluster-node">
+         <property name="jboss.home" value="${jboss.home}"/>
+         <property name="messaging.config.name" value="${jboss.configuration}"/>
+         <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
+         <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
+         <property name="auxiliary.artifacts.location" value="../../src/etc/server/default/deploy"/>
+         <property name="auxiliary.lib.location" value="../../util/lib"/>
+      </ant>
+
+      <!--
+          create node 1
+      -->
+      <ant antfile="../../util/release-admin.xml" target="cluster-node">
+         <property name="id" value="1"/>
+         <property name="ports" value="ports-01"/>
+         <property name="jboss.home" value="${jboss.home}"/>
+         <property name="messaging.config.name" value="${jboss.configuration}"/>
+         <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
+         <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
+         <property name="auxiliary.artifacts.location" value="../../src/etc/server/default/deploy"/>
+         <property name="auxiliary.lib.location" value="../../util/lib"/>
+      </ant>
 
    </target>
 
@@ -436,12 +590,62 @@
       <delete file="./output/last-run.properties" quiet="true"/>
    </target>
 
+   <target name="clean-clustered-messaging-config">
+      <echo message="Cleaning ${jboss.home}/server/${jboss.configuration}-node0"/>
+      <delete dir="${jboss.home}/server/${jboss.configuration}-node0" quiet="false" failonerror="true"/>
+      <echo message="Cleaning ${jboss.home}/server/${jboss.configuration}-node1"/>
+      <delete dir="${jboss.home}/server/${jboss.configuration}-node1" quiet="false" failonerror="true"/>
+      <delete file="./output/last-run.properties" quiet="true"/>
+   </target>
+
    <!-- don't call this target directly, call it via "run-example" -->
    <target name="run-example-internal" if="do.run">
+
+      <antcall target="run-example-internal-common"/>
+
+      <antcall target="display-warnings-and-errors"/>
+      <antcall target="fail-on-serialization-debug-output"/>
+
+      <!-- record successful run -->
+      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration} CLIENT_VERSION=${jboss.messaging.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name}${line.separator}"
+            file="./output/smoke.log" append="yes"/>
+
+   </target>
+
+   <!-- don't call this target directly, call it via "run-example" -->
+   <target name="run-clustered-example-internal" if="do.run">
+
+      <antcall target="run-example-internal-common"/>
+
+      <antcall target="display-warnings-and-errors">
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+      </antcall>
+
+      <antcall target="display-warnings-and-errors">
+         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
+      </antcall>
+
+      <antcall target="fail-on-serialization-debug-output">
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+      </antcall>
+
+      <antcall target="fail-on-serialization-debug-output">
+         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
+      </antcall>
+
+      <!-- record successful run -->
+      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration}-node0 CLIENT_VERSION=${jboss.messaging.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name}${line.separator}"
+            file="./output/smoke.log" append="yes"/>
+
+   </target>
+
+   <target name="run-example-internal-common">
+
       <ant dir="../../docs/examples/${example.name}" antfile="build.xml" inheritAll="false" target="clean">
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="jboss.configuration" value="${jboss.configuration}"/>
       </ant>
+
       <ant dir="../../docs/examples/${example.name}" antfile="build.xml" inheritAll="false">
          <property name="example.queue.name" value="${example.queue.name}"/>
          <property name="example.topic.name" value="${example.topic.name}"/>
@@ -450,17 +654,13 @@
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="jboss.configuration" value="${jboss.configuration}"/>
       </ant>
+
       <echo message="Example ${example.name} executed successfully, cleaning ..."/>
+
       <ant dir="../../docs/examples/${example.name}" antfile="build.xml" inheritAll="false" target="clean">
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="jboss.configuration" value="${jboss.configuration}"/>
       </ant>
-      <antcall target="display-warnings-and-errors"/>
-      <antcall target="fail-on-serialization-debug-output"/>
-
-      <!-- record successful run -->
-      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration} CLIENT_VERSION=${jboss.messaging.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name}${line.separator}"
-            file="./output/smoke.log" append="yes"/>
 
    </target>
 
@@ -505,12 +705,12 @@
 
    </target>
 
-   <target name="write-current-jboss-home">
+   <target name="record-running-jboss-instance">
 
       <path id="crt.jboss.home"><pathelement location="${jboss.home}"/></path>
       <pathconvert targetos="unix" property="crt.jboss.home.tostring" refid="crt.jboss.home"/>
-      <echo message="jboss.home=${crt.jboss.home.tostring}${line.separator}" file="./output/last-run.properties"/>
-      <echo message="jboss.configuration=${jboss.configuration}" file="./output/last-run.properties" append="true"/>
+      <echo message="${line.separator}jboss.home=${crt.jboss.home.tostring}" file="./output/last-run.properties" append="true"/>
+      <echo message="${line.separator}jboss.configuration=${jboss.configuration}" file="./output/last-run.properties" append="true"/>
 
    </target>
 
@@ -518,7 +718,7 @@
 
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
             dir="${jboss.home}/bin">
-         <arg line="get jboss.messaging:service=ServerPeer serverPeerID"/>
+         <arg line="-s jnp://localhost:${jnpPort} get jboss.messaging:service=ServerPeer serverPeerID"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>
@@ -548,7 +748,7 @@
 
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${jboss.home}/bin">
-         <arg line="get jboss.messaging.destination:name=SmokeTestQueue,service=Queue Name"/>
+         <arg line="-s jnp://localhost:${jnpPort} get jboss.messaging.destination:name=SmokeTestQueue,service=Queue Name"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>
@@ -574,11 +774,24 @@
 
    </target>
 
+   <target name="deploy-clustered-scoped-topic">
+
+      <copy file="artifacts/smoketest-clustered-topic-service.xml" tofile="./smoketest-clustered-topic-service.xml"/>
+      <!-- enable scoping -->
+      <replaceregexp file="./smoketest-clustered-topic-service.xml" flags="s">
+         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
+         <substitution expression="\2"/>
+      </replaceregexp>
+      <move file="./smoketest-clustered-topic-service.xml" todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
+
+   </target>
+
+
    <target name="ping-topic">
 
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${jboss.home}/bin">
-         <arg line="get jboss.messaging.destination:name=SmokeTestTopic,service=Topic Name"/>
+         <arg line="-s jnp://localhost:${jnpPort} get jboss.messaging.destination:name=${example.topic.name},service=Topic Name"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>
@@ -593,7 +806,8 @@
          <jvmarg value="-server"/>
          <jvmarg value="-Xms128m"/>
          <jvmarg value="-Xmx128m"/>
-         <arg value="-S"/>
+         <arg line="-s jnp://localhost:${jnpPort} -S"/>
+         <!-- <arg value="-S"/> -->
          <classpath>
             <pathelement location="${jboss.home}/bin/shutdown.jar"/>
             <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
