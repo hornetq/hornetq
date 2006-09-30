@@ -267,49 +267,51 @@ public class DurableSubscriberTest extends MessagingTestCase
     *
     * Test with a different noLocal flag.
     */
-   public void testDurableSubscriptionDifferentNoLocal() throws Exception
-   {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-
-      Connection conn = cf.createConnection();
-      conn.setClientID("ID0");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      MessageConsumer durable = s.createDurableSubscriber(topic, "mySubscription", null, false);
-
-      TextMessage tm = null;
-      tm = s.createTextMessage("Message One");
-      prod.send(tm);
-      tm = s.createTextMessage("Message Two");
-      prod.send(tm);
-
-
-      conn.start();
-
-      TextMessage rm = (TextMessage)durable.receive(5000);
-      assertEquals("Message One", rm.getText());
-
-      conn.close();
-
-      conn = cf.createConnection();
-      conn.setClientID("ID0");
-      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      // modify the nolocal flag
-      durable = s.createDurableSubscriber(topic, "mySubscription", null, true);
-
-      conn.start();
-
-      Message m = durable.receive(1000);
-
-      // the durable subscription is destroyed and re-created. "Message Two" stored by the previous
-      // durable subscription is lost and (hopefully) garbage collected.
-      assertNull(m);
-   }
+   // Disabled until the validity of the test is established:
+   // http://jira.jboss.org/jira/browse/JBMESSAGING-566
+//   public void testDurableSubscriptionDifferentNoLocal() throws Exception
+//   {
+//      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+//      Topic topic = (Topic)ic.lookup("/topic/Topic");
+//
+//      Connection conn = cf.createConnection();
+//      conn.setClientID("ID0");
+//
+//      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//      MessageProducer prod = s.createProducer(topic);
+//      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+//
+//      MessageConsumer durable = s.createDurableSubscriber(topic, "mySubscription", null, false);
+//
+//      TextMessage tm = null;
+//      tm = s.createTextMessage("Message One");
+//      prod.send(tm);
+//      tm = s.createTextMessage("Message Two");
+//      prod.send(tm);
+//
+//
+//      conn.start();
+//
+//      TextMessage rm = (TextMessage)durable.receive(5000);
+//      assertEquals("Message One", rm.getText());
+//
+//      conn.close();
+//
+//      conn = cf.createConnection();
+//      conn.setClientID("ID0");
+//      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//      // modify the nolocal flag
+//      durable = s.createDurableSubscriber(topic, "mySubscription", null, true);
+//
+//      conn.start();
+//
+//      Message m = durable.receive(1000);
+//
+//      // the durable subscription is destroyed and re-created. "Message Two" stored by the previous
+//      // durable subscription is lost and (hopefully) garbage collected.
+//      assertNull(m);
+//   }
 
    public void testDurableSubscriptionOnTemporaryTopic() throws Exception
    {
