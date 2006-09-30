@@ -684,6 +684,13 @@
             <exclude name="**/do-not-distribute*"/>
          </fileset>
       </copy>
+      <ant dir="./docs/clustering" antfile="build.xml" target="all"/>
+      <copy todir="${release.output}/docs/clustering">
+         <fileset dir="${project.output}/docs/clustering/en">
+            <include name="**"/>
+            <exclude name="**/do-not-distribute*"/>
+         </fileset>
+      </copy>
    </target>
 
    <target name="bundle-source" depends="release-structure">
@@ -703,7 +710,7 @@
       <available file="${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip"
                  property="stress.test.results.present" value="true"/>
       <fail message="Stress test results ${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip not available!"
-            unless="stress.test.results.present"/>
+            unless="stress.test.results.present"/>                                               
    </target>
 
    <target name="deployscoped" depends="scoped-sar">
