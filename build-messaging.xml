@@ -49,9 +49,9 @@
    <property name="messaging.version.minor" value="2"/>
    <property name="messaging.version.revision" value="0"/>
    <property name="messaging.version.incrementing" value="6"/>
-   <property name="messaging.version.tag" value="Alpha"/>
+   <property name="messaging.version.tag" value="Alpha1"/>
    <property name="messaging.version.name" value=""/>
-   <property name="messaging.version.cvstag" value="JBossMessaging_1_2_0_Alpha"/>
+   <property name="messaging.version.cvstag" value="JBossMessaging_1_2_0_Alpha1"/>
    <property name="module.name" value="messaging"/>
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
@@ -459,8 +459,10 @@
       <copy todir="${build.scoped-sar}" file="${trove.trove.lib}/trove.jar"/>
 
       <mkdir dir="${build.scoped-sar}/tmp"/>
-      <!-- we need org/jboss/util/collection.SoftValueHashMap
-           which was moved http://jira.jboss.org/jira/browse/JBMESSAGING-281
+
+      <!--
+           We need org/jboss/util/collection.SoftValueHashMap which was moved. See
+           http://jira.jboss.org/jira/browse/JBMESSAGING-281 for more details.
       -->
       <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar" >
          <patternset>
@@ -471,26 +473,34 @@
             <include name="org/jboss/util/propertyeditor/**"/>
          </patternset>
       </unjar>
+
       <jar jarfile="${build.scoped-sar}/jboss-common-softvaluehashmap.jar">
          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
       </jar>
+
       <delete>
           <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
       </delete>
-      <!-- I also need org.jboss.util.stream.* -->
+
+      <!--
+           I also need org.jboss.util.stream.*
+      -->
       <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar">
          <patternset>
             <include name="org/jboss/util/stream/**"/>
          </patternset>
       </unjar>
+
       <jar jarfile="${build.scoped-sar}/jboss-common-stream.jar">
          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
       </jar>
+
       <delete>
           <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
       </delete>
 
-      <!-- I need InvocationMarshaller both on server and client side, and versions prior to
+      <!--
+           I need InvocationMarshaller both on server and client side, and versions prior to
            JBoss 4.0.3 don't have them, so I need to include them as well. I only need to extract
            org.jboss.invocation.unified.marshall from jboss.jar, because otherwise I scope classes
            like javaURLContextFactory, which will mess up JNDI and other things.
@@ -500,9 +510,32 @@
             <include name="org/jboss/invocation/unified/**"/>
          </patternset>
       </unjar>
+
       <jar jarfile="${build.scoped-sar}/jboss-unified-invocation.jar">
          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
       </jar>
+
+      <delete>
+          <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </delete>
+
+      <!--
+           The JGroups jar usually contains service deployment descriptors in its root. This creates
+           troubles if the jar is packed within a SAR and then deployed. Getting rid of deployment
+           descriptors, I only need classes.
+      -->
+
+      <unjar dest="${build.scoped-sar}/tmp" src="${jgroups.jgroups.lib}/jgroups.jar">
+         <patternset>
+            <include name="**"/>
+            <exclude name="*-service.xml"/>
+         </patternset>
+      </unjar>
+
+      <jar jarfile="${build.scoped-sar}/jgroups.jar">
+         <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
+      </jar>
+
       <delete>
           <fileset dir="${build.scoped-sar}/tmp" includes="**"/>
       </delete>
@@ -523,6 +556,7 @@
       -->
 
       <delete dir="${build.scoped-sar}/tmp"/>
+
    </target>
 
    <target name="artifacts" depends="jar, scoped-sar, client-jar"/>
@@ -606,7 +640,7 @@
       </copy>
       <copy todir="${release.output}/util">
          <fileset dir="./util">
-            <include name="*.xml"/>
+            <include name="**"/>
             <exclude name="do-not-distribute*"/>
          </fileset>
       </copy>
@@ -636,6 +670,7 @@
       <copy todir="${release.output}/examples/config">
          <fileset dir="./src/etc/server/default/deploy">
             <include name="*-persistence-service.xml"/>
+            <include name="*-ds.xml"/>
          </fileset>
       </copy>
    </target>

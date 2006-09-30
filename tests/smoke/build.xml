@@ -406,7 +406,7 @@
          <property name="jboss.home" value="${jboss.home}"/>
          <property name="messaging.config.name" value="${jboss.configuration}"/>
          <property name="standalone.messaging.config.name" value="${jboss.configuration}"/>
-         <property name="relative.artifact.location" value="${messaging.server.artifact.path}"/>
+         <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
          <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
       </ant>
       <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
