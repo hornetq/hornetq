@@ -46,8 +46,10 @@ public class Util
 
    public static boolean doesDestinationExist(String jndiName, InitialContext ic) throws Exception
    {
-      if (ic==null)
+      if (ic == null)
+      {
           ic = new InitialContext();
+      }
       try
       {
          ic.lookup(jndiName);
@@ -101,13 +103,11 @@ public class Util
 
    public static MBeanServerConnection lookupMBeanServerProxy(InitialContext ic) throws Exception
    {
-      if (ic==null)
+      if (ic == null)
       {
         ic = new InitialContext();
       }
-      MBeanServerConnection p = (MBeanServerConnection)ic.lookup("jmx/invoker/RMIAdaptor");
-      //ic.close();
-      return p;
+      return (MBeanServerConnection)ic.lookup("jmx/invoker/RMIAdaptor");
    }
 
    // Attributes ----------------------------------------------------

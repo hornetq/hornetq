@@ -13,7 +13,8 @@ import java.util.Properties;
 /**
  * @author Clebert Suconic
  */
-public abstract class ExampleSupportCluster extends ExampleSupport {
+public abstract class ExampleSupportCluster extends ExampleSupport
+{
 
     /** This will get the Context specific to a cluster */
     public InitialContext getServerContext(int serverNumber) throws Exception
