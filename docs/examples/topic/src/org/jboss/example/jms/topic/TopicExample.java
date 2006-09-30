@@ -46,67 +46,73 @@ public class TopicExample extends ExampleSupport
    {
       String destinationName = getDestinationJNDIName();
 
-       InitialContext ic = null;
-       Connection connection = null;
+      InitialContext ic = null;
+      Connection connection = null;
 
-       try {
+      try {
 
-           ic = new InitialContext();
+         ic = new InitialContext();
 
-           ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-           Topic topic = (Topic)ic.lookup(destinationName);
-           log("Topic " + destinationName + " exists");
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+         Topic topic = (Topic)ic.lookup(destinationName);
+         log("Topic " + destinationName + " exists");
 
-           connection = cf.createConnection();
-           Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-           MessageProducer publisher = session.createProducer(topic);
-           MessageConsumer subscriber = session.createConsumer(topic);
+         connection = cf.createConnection();
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer publisher = session.createProducer(topic);
+         MessageConsumer subscriber = session.createConsumer(topic);
 
-           ExampleListener messageListener = new ExampleListener();
-           subscriber.setMessageListener(messageListener);
-           connection.start();
+         ExampleListener messageListener = new ExampleListener();
+         subscriber.setMessageListener(messageListener);
+         connection.start();
 
-           TextMessage message = session.createTextMessage("Hello!");
-           publisher.send(message);
-           log("The message was successfully published on the topic");
+         TextMessage message = session.createTextMessage("Hello!");
+         publisher.send(message);
+         log("The message was successfully published on the topic");
 
-           messageListener.waitForMessage();
+         messageListener.waitForMessage();
 
-           message = (TextMessage)messageListener.getMessage();
-           log("Received message: " + message.getText());
-           assertEquals("Hello!", message.getText());
+         message = (TextMessage)messageListener.getMessage();
+         log("Received message: " + message.getText());
+         assertEquals("Hello!", message.getText());
 
-           displayProviderInfo(connection.getMetaData());
+         displayProviderInfo(connection.getMetaData());
 
-       }finally{
+      }
+      finally
+      {
+         if(ic != null)
+         {
+            try {
+               ic.close();
+            }
+            catch(Exception e)
+            {
+               throw e;
+            }
+         }
 
-           if(ic != null) {
-               try {
-                   ic.close();
-               }catch(Exception e){
-                   throw e;
-               }
-           }
-
-           //ALWAYS close your connection in a finally block to avoid leaks
-           //Closing connection also takes care of closing its related objects e.g. sessions
-           closeConnection(connection);
-       }
+         // ALWAYS close your connection in a finally block to avoid leaks.
+         // Closing connection also takes care of closing its related objects e.g. sessions.
+         closeConnection(connection);
+      }
    }
 
    private void closeConnection(Connection con) throws JMSException {
 
-       try {
-		   if (con != null) {
-               con.close();
-	       }
-
-       }catch(JMSException jmse) {
-           log("Could not close connection " + con +" exception was " +jmse);
-           throw jmse;
-       }
+      try
+      {
+         if (con != null)
+         {
+            con.close();
+         }
+      }
+      catch(JMSException jmse)
+      {
+         log("Could not close connection " + con +" exception was " +jmse);
+         throw jmse;
+      }
    }
-
 
    protected boolean isQueueExample()
    {
