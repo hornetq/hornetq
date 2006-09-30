@@ -51,9 +51,9 @@
    <!--
         A cluster node installation for JBoss 4.x.
    -->
-   <target name="cluster">
+   <target name="cluster-node">
       <set-config-name base="${messaging.config.name}" suffix="node${id}"/>
-      <antcall target="create-cluster-server-config"/>
+      <antcall target="create-cluster-node-server-config"/>
    </target>
 
    <!--
@@ -362,7 +362,7 @@
 
    </target>
 
-   <target name="create-cluster-server-config">
+   <target name="create-cluster-node-server-config">
 
       <!--
            Create the non-clustered configuration first.
@@ -373,6 +373,12 @@
            Configure the apropriate port range.
       -->
       <antcall target="configure-service-binding-manager"/>
+
+      <!--
+           Adjust the node id
+      -->
+      <replaceregexp file="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/messaging-service.xml" flags="s"
+         match="(\x3carg[ \t]type=\x22int\x22[ \t]*value=\x22).+?(\x22.*)" replace="\1${id}\2"/>
 
       <!--
            Replace HSQLDB with a LAN-shareable database.
@@ -394,29 +400,33 @@
       <delete file="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml" quiet="false" failonerror="true"/>
       <copy file="${auxiliary.artifacts.location}/clustered-${database}-persistence-service.xml" todir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/"/>
 
-      <echo>
-######
-######
-######
-######
-######  WARNING! The configuration just created uses a generic ${database} service descriptor!
-######
-######  Check
-######
-######      ${jboss.home}/server/${config.name}/deploy/${database}-ds.xml
-######
-######  and make sure that:
-######
-######  1. Your database is indeed ${database}.
-######  2. It is accessible from every physical node you installed Messaging on.
-######  3. Contains a schema (tablespace) named 'messaging'.
-######  4. The URL (hostname and port), username and password are correct.
-######  5. The installed ${database}-driver.jar's version maches your database.
-######
-######
-######
-######
-      </echo>
+
+<echo>
+
+                    ##########################
+                    #                        #
+                    #        WARNING!        #
+                    #                        #
+                    ##########################
+
+
+ The configuration that has just been created uses a generic ${database} service descriptor!
+
+ Check
+
+      ${jboss.home}/server/${config.name}/deploy/${database}-ds.xml
+
+ and make sure that:
+
+ 1. Your database is indeed ${database}.
+ 2. It is accessible from every physical node you installed Messaging on.
+ 3. Contains a schema (database/tablespace) named 'messaging'.
+ 4. The URL (hostname and port), username and password are correct.
+ 5. The installed ${database}-driver.jar's version maches your database.
+
+
+
+</echo>
 
    </target>
 
@@ -519,6 +529,8 @@
    </target>
 
    <target name="test">
+      <delete file="./x.xml"/>
+      <copy file="./x.xml.orig" tofile="./x.xml"/>
    </target>
 
 </project>
