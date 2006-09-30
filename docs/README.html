@@ -7,134 +7,138 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.0.1.CR5 Release Notes</h1>
+JBoss Messaging 1.2.0.Alpha1 Release Notes</h1>
 <br>
-September 22, 2006<br>
+September 29, 2006<br>
 <br>
-<br>
-<h2>Installation</h2>
 <br>
 JBoss
 Messaging is a new JBoss JMS 1.1-compliant JMS provider, aimed to
-replace JBossMQ.&nbsp; An overview of its features, installation and
-configuration instructions are available in the "JBoss Messaging
-Getting Started Guide". The guide is bundled with this release and is
-provided in <a href="./docs/userguide/html/index.html">HTML</a>, <a
- href="./docs/userguide/html_single/index.html">HTML-single</a>
-and <a href="./docs/userguide/pdf/JBossMessagingUsersGuide.pdf">PDF</a>
+replace JBossMQ.&nbsp; The curent release is the first public release
+that includes clustering features. An brief overview of the clustering
+features and installation instructions are available in the "Clustering
+Guide". The guide is bundled with this release and is
+provided in <a href="./docs/clustering/html/index.html">HTML</a>, <a
+ href="./docs/clustering/html_single/index.html">HTML-single</a>
+and <a href="./docs/clustering/pdf/ClusteringGuide.pdf">PDF</a>
 formats.&nbsp; The guide is also available on-line at&nbsp; <a
  href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a><br>
 <br>
-<br>
-<h2>Summary of Changes</h2>
-This is just a candidate release, the summary will be compiled for the
-General Availability release. For a raw change list, see "Release
-Notes" below.<br>
-<br>
-<h2>Release Notes </h2>
-<h2 style="margin-left: 40px;">Bugs</h2>
+<span style="font-weight: bold;">Warning<br>
+</span>
+<div style="margin-left: 40px;">The current JBoss Messaging
+distribution is a <span style="font-style: italic;">preview </span><span
+ style="font-style: italic;">alpha </span><span
+ style="font-style: italic;">release. </span>We strongly advise
+against using it in a production environment.<br>
+</div>
+<h2>Release Notes<br>
+</h2>
+<h2 style="margin-left: 40px;">Bug</h2>
 <ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-277">JBMESSAGING-277</a>]
-- Setting remoting lease period to -1 breaks ASF</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-410">JBMESSAGING-410</a>]
-- java:/JmsXA in no-tx context does not work the same way as JBossMQ</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-171">JBMESSAGING-171</a>]
+- Remoting timeouts</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-247">JBMESSAGING-247</a>]
+- Race condition - out of order delivery</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-302">JBMESSAGING-302</a>]
+- Invoking Topic management interface's listMessagesDurableSub()/
+listMessagesNonDurableSub() with empty params throws exception</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-331">JBMESSAGING-331</a>]
+- Message id generator and resource manager Memory leak</li>
   <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-424">JBMESSAGING-424</a>]
 - Cannot access the first message when starting the JMS subscriber</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-428">JBMESSAGING-428</a>]
-- Stress tests fail</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-432">JBMESSAGING-432</a>]
-- One connection per unique JMS server leak</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-477">JBMESSAGING-477</a>]
-- Messages are left in the Messages table after retry message is
-printed and are retried every time the server is restarted</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-435">JBMESSAGING-435</a>]
+- PointToPoint delivery with multiple consumers and selectors is broken</li>
   <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-499">JBMESSAGING-499</a>]
 - get-test-execution-classpath assumes windows</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-506">JBMESSAGING-506</a>]
-- On restart, the channel mapper throws java.sql.SQLException: Invalid
-column index</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-507">JBMESSAGING-507</a>]
-- JDBCChannelMapper ignores CreateTablesOnStartup value from
-xxx-peristence-service.xml</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-508">JBMESSAGING-508</a>]
-- The MessageCount property on the queue appears to climb to the
-FullSize value, then stop.</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-510">JBMESSAGING-510</a>]
-- JDBCChannelMapper has a createTablesOnStartup variable but no overide.</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-520">JBMESSAGING-520</a>]
-- Messages received from Receiver.receive() using an XA are never
-deleted from the database if not withing a transactional boundary.</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-521">JBMESSAGING-521</a>]
-- IllegalStateException: Cannot find delivery to cancel for 1000
-Message test.</li>
   <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-525">JBMESSAGING-525</a>]
 - postgresql-persistence-service.xml contains invalid SQL syntax</li>
   <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-526">JBMESSAGING-526</a>]
 - JMSRedelivered flag not correctly set on true in certain redelivery
 scenarios</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-531">JBMESSAGING-531</a>]
-- ServerPeer destroyTopic()/destroyQueue() must not throw exception on
-non-existent destinations, but return false.</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-532">JBMESSAGING-532</a>]
-- jboss-messaging.jar inappropriately packs service deployment
-descriptors</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-533">JBMESSAGING-533</a>]
-- Class not found when creating durable subscription from a different
-classloading domain</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-535">JBMESSAGING-535</a>]
-- Possible race condition in initialization of the server-side Remoting
-callback client:
-"org.jboss.remoting.ServerInvoker$InvalidStateException: Can not
-process invocation request since is not in started state"</li>
   <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-536">JBMESSAGING-536</a>]
 - The CallbackServer cannot be contacted for some particular network
 interface configurations</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-538">JBMESSAGING-538</a>]
-- The MessageCount property on the queue appears to climb to the
-FullSize value, then stop</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-541">JBMESSAGING-541</a>]
-- If the first opened connections is closed, Remoting Lease doesn't
-work any more</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-542">JBMESSAGING-542</a>]
-- Closing connection inside MessageListener's onMessage() causes
-deadlock</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-545">JBMESSAGING-545</a>]
-- Transaction edge cases and memory leak</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-546">JBMESSAGING-546</a>]
-- org.jboss.test.messaging.jms.DurableSubscriberTest times out</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-549">JBMESSAGING-549</a>]
-- Remoting 2.2.0.Alpha1 breaks 2 crash tests</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-564">JBMESSAGING-564</a>]
+- Session.unsubscribe() leaves an active associated consumer (durable
+subscriber) in an undefined state</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-565">JBMESSAGING-565</a>]
+- Race Condition between Topic/Queue.getMessageCount and Deliver Thread</li>
 </ul>
-<h2 style="margin-left: 40px;">Feature Requests</h2>
+<h2 style="margin-left: 40px;">Feature Request</h2>
 <ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-528">JBMESSAGING-528</a>]
-- Update user manual to include details on configuring remoting's
-serverBindAddress</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-4">JBMESSAGING-4</a>]
+- Load balancing</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-193">JBMESSAGING-193</a>]
+- Enable configurable timeout on all calls of
+RpcServerCall.remoteInvoke(...)</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-561">JBMESSAGING-561</a>]
+- Write a simple example (distributed topic) and include it in the set
+shipped with the release</li>
 </ul>
-<h2 style="margin-left: 40px;">Tasks</h2>
+<h2 style="margin-left: 40px;">Task</h2>
 <ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-431">JBMESSAGING-431</a>]
-- Socket transports should use configurable port</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-472">JBMESSAGING-472</a>]
-- Test and use remoting 2.0.0.CR1 (or 2.0.0.GA if it's released in time)</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-485">JBMESSAGING-485</a>]
-- CTSMiscellaneousTest.testContestedQueueOnRollback temporarily
-commented out</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-502">JBMESSAGING-502</a>]
-- Create a MSSQL persistence manager config</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-504">JBMESSAGING-504</a>]
-- Release with a tagged JBossSerialization jar</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-529">JBMESSAGING-529</a>]
-- Install TCK5 locally and fix all errors that prevent Messaging from
-passing</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-530">JBMESSAGING-530</a>]
-- Make sure QA cruisecontrol tests Branch_1_0</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-534">JBMESSAGING-534</a>]
-- Create a new "messaging" subdirectory in repository.jboss.com and
-start uploading messaging artifacts there</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-547">JBMESSAGING-547</a>]
-- Upgrade JBossSerialization to 1.0.3.GA</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-551">JBMESSAGING-551</a>]
-- Upgrade JBoss Remoting</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-43">JBMESSAGING-43</a>]
+- Change the module name to "messaging"</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-89">JBMESSAGING-89</a>]
+- Repository reorganization</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-139">JBMESSAGING-139</a>]
+- Consider whether core can be refactored to remove concept of delivery</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-175">JBMESSAGING-175</a>]
+- Unnecessary junit.timeout2 used by tests/build.xml</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-192">JBMESSAGING-192</a>]
+- Refactor Replicator so it won't be forced to provide noop
+implementation for Distributor's methods.</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-197">JBMESSAGING-197</a>]
+- Refactor Channel, Distributor etc so there is only one receiver per
+channel</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-199">JBMESSAGING-199</a>]
+- Fix or mothball remotetopic so it does not require multiple
+deliveries per message reference</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-200">JBMESSAGING-200</a>]
+- Complete XA transaction recovery</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-227">JBMESSAGING-227</a>]
+- Complete extension of smoke test to deploy/test non-scoped Messaging
+with JBoss 5.0</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-228">JBMESSAGING-228</a>]
+- Re-enable DistributedTopicTest testDistributedTopic_2() and
+testDistributedTopic_4()</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-229">JBMESSAGING-229</a>]
+- Peristence Optimizations</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-255">JBMESSAGING-255</a>]
+- Change signature of core interfaces to deal with MessageReferences
+only</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-267">JBMESSAGING-267</a>]
+- Re-enable distributed tests</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-269">JBMESSAGING-269</a>]
+- Review ChannelMapper interface for possible functionality separation</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-310">JBMESSAGING-310</a>]
+- Investigate whether rw lock on ServerConnectionEndpoint is necessary</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-319">JBMESSAGING-319</a>]
+- Enable the Messaging build to use component-info.xml and versioned
+dependencies</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-332">JBMESSAGING-332</a>]
+- Consider how best to factor paging logic out of channel state</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-398">JBMESSAGING-398</a>]
+- Summarize clustering design discussions and forum threads in a
+Clustering Design document</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-404">JBMESSAGING-404</a>]
+- Remove Channel::deliver(Receiver r) method</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-414">JBMESSAGING-414</a>]
+- Simplify delivery hierarchy</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-422">JBMESSAGING-422</a>]
+- Move channel mapper logic into Queue, Topic, Subscription classes</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-425">JBMESSAGING-425</a>]
+- Naming of Pipe and Distributed Pipe</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-444">JBMESSAGING-444</a>]
+- Release 1.2.0.Alpha1</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-550">JBMESSAGING-550</a>]
+- Add JBoss 4.0.5.CR1 (expanded and installer-generated) to the smoke
+test suite</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-562">JBMESSAGING-562</a>]
+- Adjust the installation script to support a clustered installation</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-563">JBMESSAGING-563</a>]
+- Update the documentation with a Clustering Intro</li>
 </ul>
 <br>
 <hr style="width: 100%; height: 2px;">
