@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+   To run the example, set JBOSS_HOME and run ant (with no parameters)
+
+   $Id: build.xml 974 2006-05-22 21:35:38 -0600 (Mon, 22 May 2006) ovidiu $
+
+ -->
+
+<project name="DistributedTopicExample" default="run">
+
+   <property environment="ENV"/>
+
+   <!--
+        If you don't find this file in the current directory, it's ok, it's intended to provide
+        defaults for in-workarea testing and it's not meant for distribution with the example bundle.
+   -->
+   <property file="do-not-distribute.properties"/>
+
+   <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
+   <property name="messaging.client.jar.path" value="../.."/>
+   <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+   <property name="example.topic.name" value="testDistributedTopic"/>
+
+   <path id="common.compilation.classpath">
+      <fileset file="${jboss.home}/client/jboss-j2ee.jar"/>
+      <fileset file="${jboss.home}/client/jboss-j2se.jar"/>
+   </path>
+
+   <path id="example.compilation.classpath">
+      <path refid="common.compilation.classpath"/>
+      <pathelement path="../common/output"/>
+   </path>
+
+   <path id="execution.classpath">
+      <pathelement path="./etc"/>
+      <pathelement path="../common/output"/>
+      <pathelement path="./output"/>
+      <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+   </path>
+
+   <target name="identify">
+      <echo message="###########################################################################"/>
+      <echo message="#                Running the DISTRIBUTED TOPIC example                    #"/>
+      <echo message="###########################################################################"/>
+      <echo message="The topic:      ${example.topic.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+   </target>
+
+   <target name="sanity-check" depends="identify">
+      <available property="client.jar.present" file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+      <fail message="Could not find client jar ${messaging.client.jar.path}/${messaging.client.jar.name}"
+            unless="client.jar.present"/>
+   </target>
+
+   <target name="init" depends="sanity-check">
+      <mkdir dir="./output"/>
+      <mkdir dir="../common/output"/>
+   </target>
+
+   <target name="compile" depends="init">
+      <javac destdir="../common/output" debug="on" debuglevel="lines,vars,source">
+         <src path="../common/src"/>
+         <classpath refid="common.compilation.classpath"/>
+      </javac>
+      <javac destdir="./output" debug="on" debuglevel="lines,vars,source">
+         <src path="./src"/>
+         <classpath refid="example.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="run" depends="compile">
+      <!--
+           DistributedTopicExample expects to find the name of the topic to connect to as value of
+           the 'example.topic.name' property, which *may* be defined by calling ant when this
+           example is used in a smoke test.
+      -->
+      <java classname="org.jboss.example.jms.distributedtopic.DistributedTopicExample"
+         classpathref="execution.classpath" fork="yes" failonerror="true">
+         <sysproperty key="example.topic.name" value="${example.topic.name}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=example"/>
+          -->
+      </java>
+   </target>
+
+   <target name="clean">
+      <delete dir="./output" quiet="true"/>
+      <delete dir="../common/output" quiet="true"/>
+   </target>
+
+</project>
+
