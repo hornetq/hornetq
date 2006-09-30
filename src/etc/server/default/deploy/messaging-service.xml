@@ -14,11 +14,11 @@
 
       <constructor>
          <!-- ServerPeerID -->
-         <arg type="int" value="0" />
+         <arg type="int" value="0"/>
          <!-- DefaultQueueJNDIContext -->
-         <arg type="java.lang.String" value="/queue" />
+         <arg type="java.lang.String" value="/queue"/>
          <!-- DefaultTopicJNDIContext -->
-         <arg type="java.lang.String" value="/topic" />
+         <arg type="java.lang.String" value="/topic"/>
       </constructor>
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>    
