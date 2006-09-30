@@ -4,6 +4,7 @@
 <!ENTITY about SYSTEM "modules/about.xml">
 <!ENTITY introduction SYSTEM "modules/introduction.xml">
 <!ENTITY overview SYSTEM "modules/overview.xml">
+<!ENTITY installation SYSTEM "modules/installation.xml">
 <!ENTITY configuration SYSTEM "modules/configuration.xml">
 ]>
 <book lang="en">
@@ -11,7 +12,8 @@
     <title>JBoss Messaging Clustering Introduction</title>
 
     <subtitle>A brief guide to clustering in JBoss Messaging</subtitle>
-    <para>Tim Fox</para>
+     <subtitle>by Tim Fox, Ovidiu Feodorov</subtitle>
+
   </bookinfo>
 
   <toc></toc>
@@ -21,6 +23,8 @@
   &introduction;
 
   &overview;
+
+  &installation;
 
   &configuration;
 

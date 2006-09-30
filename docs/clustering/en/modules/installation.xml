@@ -1,0 +1,126 @@
+<chapter id="installation">
+
+   <title>JBoss Messaging Clustering Installation</title>
+
+   <para>
+      Use the <filename>release-admin.xml</filename> ant script shipped with the release to
+      create individual cluster node configurations.
+   </para>
+
+   <para>
+      The typical usage is:
+   </para>
+
+   <programlisting>
+      ant -f release-admin.xml [-Did=node-id] [-Dports=port-config-label] cluster-node
+   </programlisting>
+
+
+   <para>
+      where:
+      <itemizedlist>
+         <listitem>
+            <filename>node-id</filename> is an integer that must be unique per cluster.
+         </listitem>
+         <listitem>
+            <filename>port-config-label</filename> is a binding manager server configuration label.
+         </listitem>
+      </itemizedlist>
+   </para>
+
+   <para>
+      For example, in order to create the configuration for a four-node cluster intended to run
+      on the same physical machine, use the following sequence:
+   </para>
+
+   <programlisting>
+      ant -f release-admin.xml -Did=0 cluster-node
+      ant -f release-admin.xml -Did=1 -Dports=ports-01 cluster-node
+      ant -f release-admin.xml -Did=2 -Dports=ports-02 cluster-node
+      ant -f release-admin.xml -Did=3 -Dports=ports-03 cluster-node
+   </programlisting>
+
+
+   <para>
+      The sequence will create four cluster node configurations ("messaging-node0",
+      "messaging-node1", "messaging-node2" and "messaging-node3").
+   </para>
+
+   <para>
+      <warning>
+         The configuration that has just been created uses a generic mysql service descriptor.
+
+         Check <filename>$JBOSS_HOME/server/messaging-node&lt;id&gt;/deploy/mysql-ds.xml</filename>
+         and verify that that:
+         <itemizedlist>
+            <listitem>1. Your database is indeed mysql.</listitem>
+         <listitem>2. It is accessible from every physical node you installed Messaging on.</listitem>
+         <listitem>3. Contains a schema (database/tablespace) named 'messaging'.</listitem>
+         <listitem>4. The URL (hostname and port), username and password are correct.</listitem>
+         <listitem>5. The installed mysql-driver.jar's version maches your database.</listitem>
+           </itemizedlist>
+      </warning>
+      </para>
+
+
+   <para>
+      To start the cluster, from four different terminals, run:
+      </para>
+
+   <programlisting>
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node0
+
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node1
+
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node2
+
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node3
+    </programlisting>
+
+
+   <para>
+      A successful node startup produces a log similar to:
+   </para>
+
+
+   <programlisting>
+      04:48:49,663 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:name=DefaultDS,service=DataSourceBinding' to JNDI name 'java:DefaultDS'
+      04:48:50,257 INFO  [ServerPeer] JBoss Messaging 1.2.0.Alpha1 server [0] started
+      04:48:50,569 INFO  [STDOUT]
+      -------------------------------------------------------
+      GMS: address is 127.0.0.1:1473
+      -------------------------------------------------------
+      04:48:52,616 INFO  [STDOUT]
+      -------------------------------------------------------
+      GMS: address is 127.0.0.1:1475
+      -------------------------------------------------------
+      04:48:54,694 INFO  [QueueService] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,694 INFO  [QueueService] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,694 INFO  [QueueService] Queue[/queue/A] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,710 INFO  [QueueService] Queue[/queue/B] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,710 INFO  [QueueService] Queue[/queue/C] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,710 INFO  [QueueService] Queue[/queue/D] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,710 INFO  [QueueService] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,726 INFO  [QueueService] Queue[/queue/testDistributedQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:54,772 INFO  [STDOUT]
+      -------------------------------------------------------
+      GMS: address is 127.0.0.1:1485
+      -------------------------------------------------------
+      04:48:56,788 INFO  [STDOUT]
+      -------------------------------------------------------
+      GMS: address is 127.0.0.1:1487
+      -------------------------------------------------------
+      04:48:58,804 INFO  [TopicService] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:58,804 INFO  [TopicService] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:58,804 INFO  [TopicService] Topic[/topic/testDurableTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:58,804 INFO  [TopicService] Topic[/topic/testDistributedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      04:48:59,335 INFO  [ConnectionFactory] Connector socket://192.168.1.101:4457 has leasing enabled, lease period 20000 milliseconds
+      04:48:59,335 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] deployed
+      04:48:59,366 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:name=JmsXA,service=ConnectionFactoryBinding' to JNDI name 'java:JmsXA'
+</programlisting>
+
+</chapter>
