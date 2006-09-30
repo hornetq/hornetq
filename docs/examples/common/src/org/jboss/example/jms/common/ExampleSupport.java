@@ -7,6 +7,7 @@
 package org.jboss.example.jms.common;
 
 import javax.jms.ConnectionMetaData;
+import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -39,7 +40,7 @@ public abstract class ExampleSupport
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    protected abstract void example() throws Exception;
@@ -126,7 +127,12 @@ public abstract class ExampleSupport
 
    // Private -------------------------------------------------------
 
-   private void setup() throws Exception
+   protected void setup() throws Exception
+   {
+       setup(null);
+   }
+
+   protected void setup(InitialContext ic) throws Exception
    {
       String destinationName;
 
@@ -143,23 +149,28 @@ public abstract class ExampleSupport
             "/topic/"  + (destinationName == null ? DEFAULT_TOPIC_NAME : destinationName);
       }
 
-      if (!Util.doesDestinationExist(jndiDestinationName))
+      if (!Util.doesDestinationExist(jndiDestinationName,ic))
       {
          System.out.println("Destination " + jndiDestinationName + " does not exist, deploying it");
-         Util.deployQueue(jndiDestinationName);
+         Util.deployQueue(jndiDestinationName,ic);
          deployed = true;
       }
    }
 
-   private void tearDown() throws Exception
+   protected void tearDown() throws Exception
+   {
+       tearDown(null);
+   }
+
+   protected void tearDown(InitialContext ic) throws Exception
    {
       if (deployed)
       {
-         Util.undeployQueue(jndiDestinationName);
+         Util.undeployQueue(jndiDestinationName,ic);
       }
    }
 
-   private void reportResultAndExit()
+   protected void reportResultAndExit()
    {
       if (isFailure())
       {

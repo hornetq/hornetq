@@ -38,9 +38,16 @@ public class Util
 
    // Static --------------------------------------------------------
 
+
    public static boolean doesDestinationExist(String jndiName) throws Exception
    {
-      InitialContext ic = new InitialContext();
+       return doesDestinationExist(jndiName, null);
+   }
+
+   public static boolean doesDestinationExist(String jndiName, InitialContext ic) throws Exception
+   {
+      if (ic==null)
+          ic = new InitialContext();
       try
       {
          ic.lookup(jndiName);
@@ -54,7 +61,12 @@ public class Util
 
    public static void deployQueue(String jndiName) throws Exception
    {
-      MBeanServerConnection mBeanServer = lookupMBeanServerProxy();
+       deployQueue(jndiName,null);
+   }
+
+   public static void deployQueue(String jndiName, InitialContext ic) throws Exception
+   {
+      MBeanServerConnection mBeanServer = lookupMBeanServerProxy(ic);
 
       ObjectName serverObjectName = new ObjectName("jboss.messaging:service=ServerPeer");
 
@@ -69,7 +81,12 @@ public class Util
 
    public static void undeployQueue(String jndiName) throws Exception
    {
-      MBeanServerConnection mBeanServer = lookupMBeanServerProxy();
+       undeployQueue(jndiName,null);
+   }
+
+   public static void undeployQueue(String jndiName, InitialContext ic) throws Exception
+   {
+      MBeanServerConnection mBeanServer = lookupMBeanServerProxy(ic);
 
       ObjectName serverObjectName = new ObjectName("jboss.messaging:service=ServerPeer");
 
@@ -82,11 +99,14 @@ public class Util
       System.out.println("Queue " + jndiName + " undeployed");
    }
 
-   public static MBeanServerConnection lookupMBeanServerProxy() throws Exception
+   public static MBeanServerConnection lookupMBeanServerProxy(InitialContext ic) throws Exception
    {
-      InitialContext ic = new InitialContext();
+      if (ic==null)
+      {
+        ic = new InitialContext();
+      }
       MBeanServerConnection p = (MBeanServerConnection)ic.lookup("jmx/invoker/RMIAdaptor");
-      ic.close();
+      //ic.close();
       return p;
    }
 
