@@ -187,6 +187,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://C:/work/jboss-messaging-labs/jbossmessaging/blog/jboss-messaging-labs-blog.iml" filepath="C:/work/jboss-messaging-labs/jbossmessaging/blog/jboss-messaging-labs-blog.iml" />
       <module fileurl="file://$PROJECT_DIR$/messaging.iml" filepath="$PROJECT_DIR$/messaging.iml" />
       <module fileurl="file://C:/work/playground/jms/messaging/mdb/messaging-mdb.iml" filepath="C:/work/playground/jms/messaging/mdb/messaging-mdb.iml" />
       <module fileurl="file://C:/work/playground/jms/messaging/topic/topic.iml" filepath="C:/work/playground/jms/messaging/topic/topic.iml" />
