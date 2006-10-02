@@ -95,6 +95,7 @@ public class ClientConnectionFactoryDelegate
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
+    * @see org.jboss.jms.client.container.StateCreationAspect#handleCreateConnectionDelegate(org.jboss.aop.joinpoint.Invocation)
     */
    public ConnectionDelegate createConnectionDelegate(String username, String password)
       throws JMSException
@@ -105,6 +106,7 @@ public class ClientConnectionFactoryDelegate
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
+    * @see org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint#getClientAOPConfig()
     */
    public byte[] getClientAOPConfig()
    {
