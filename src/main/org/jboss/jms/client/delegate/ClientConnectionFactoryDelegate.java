@@ -116,6 +116,7 @@ public class ClientConnectionFactoryDelegate
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
+    * @see org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint#getIdBlock(int)  
     */
    public IdBlock getIdBlock(int size)
    {
