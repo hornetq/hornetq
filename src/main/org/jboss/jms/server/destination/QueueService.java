@@ -120,7 +120,16 @@ public class QueueService extends DestinationServiceSupport
                                                executor, null, tr, 
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
                
-               ((ClusteredPostOffice)postOffice).bindClusteredQueue(destination.getName(), (LocalClusteredQueue)queue);
+               ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
+               
+               if (destination.isClustered())
+               {               
+                  cpo.bindClusteredQueue(destination.getName(), (LocalClusteredQueue)queue);
+               }
+               else
+               {
+                  cpo.bindQueue(destination.getName(), (LocalClusteredQueue)queue);
+               }
             }                        
          }
          

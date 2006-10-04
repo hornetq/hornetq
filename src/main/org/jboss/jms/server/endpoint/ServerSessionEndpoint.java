@@ -216,7 +216,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
-                  binding = ((ClusteredPostOffice)topicPostOffice).bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+                  
+                  ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                  
+                  if (mDest.isClustered())
+                  {                  
+                     binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);  
+                  }
+                  else
+                  {
+                     binding = cpo.bindQueue(jmsDestination.getName(), q); 
+                  }
                }       
             }
             else
@@ -265,7 +275,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                  mDest.getFullSize(),
                                                  mDest.getPageSize(),
                                                  mDest.getDownCacheSize());
-                     binding = ((ClusteredPostOffice)topicPostOffice).bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+                     
+                     ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                     
+                     if (mDest.isClustered())
+                     {                     
+                        binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
+                     }
+                     else
+                     {
+                        binding = cpo.bindQueue(jmsDestination.getName(), q);
+                     }
                   }                 
                }
                else
@@ -323,7 +343,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                     mDest.getFullSize(),
                                                     mDest.getPageSize(),
                                                     mDest.getDownCacheSize());
-                        binding = ((ClusteredPostOffice)topicPostOffice).bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+                        
+                        ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                        
+                        if (mDest.isClustered())
+                        {                        
+                           binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+                        }
+                        else
+                        {
+                           binding = cpo.bindQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
+                        }
                      }    
                   }               
                }

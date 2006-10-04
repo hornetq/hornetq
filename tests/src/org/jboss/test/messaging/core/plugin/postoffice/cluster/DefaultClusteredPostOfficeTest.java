@@ -481,6 +481,16 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
       this.routeComplexTopic(false);
    }
    
+   public void testRouteLocalQueuesPersistent() throws Throwable
+   {
+      this.routeLocalQueues(true);
+   }
+   
+   public void testRouteLocalQueuesNonPersistent() throws Throwable
+   {
+      this.routeLocalQueues(false);
+   }
+   
    
    /*
     * We should allow the clustered bind of queues with the same queue name on different nodes of the
@@ -1031,6 +1041,91 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
    }
    
 
+   /*
+    * Clustered post offices should be able to have local queues bound to them too.
+    */
+   protected void routeLocalQueues(boolean persistentMessage) throws Throwable
+   {
+      ClusteredPostOffice office1 = null;
+      
+      ClusteredPostOffice office2 = null;
+      
+      ClusteredPostOffice office3 = null;
+                    
+      try
+      {   
+         office1 = createClusteredPostOffice(1, "testgroup");
+         office2 = createClusteredPostOffice(2, "testgroup");
+         office3 = createClusteredPostOffice(3, "testgroup");
+
+         LocalClusteredQueue sub1 = new LocalClusteredQueue(office1, 1, "sub1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
+         Binding binding1 = office1.bindQueue("topic", sub1);
+         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sub1.add(receiver1);
+         
+         LocalClusteredQueue sub2 = new LocalClusteredQueue(office2, 2, "sub2", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
+         Binding binding2 = office2.bindQueue("topic", sub2); 
+         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sub2.add(receiver2);
+         
+         LocalClusteredQueue sub3 = new LocalClusteredQueue(office3, 3, "sub3", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
+         Binding binding3 = office3.bindQueue("topic", sub3);
+         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         sub3.add(receiver3);
+         
+         //Only the local sub should get it since we have bound locally
+         
+         Message msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+         MessageReference ref = ms.reference(msg);         
+         boolean routed = office1.route(ref, "topic", null);         
+         assertTrue(routed);         
+         Thread.sleep(500);         
+         checkContainsAndAcknowledge(msg, receiver1, sub1);
+         this.checkEmpty(receiver2);
+         this.checkEmpty(receiver3);
+         
+         msg = CoreMessageFactory.createCoreMessage(2, persistentMessage, null);      
+         ref = ms.reference(msg);         
+         routed = office2.route(ref, "topic", null);         
+         assertTrue(routed);                  
+         Thread.sleep(500);
+         this.checkEmpty(receiver1);
+         checkContainsAndAcknowledge(msg, receiver2, sub2);
+         this.checkEmpty(receiver3);
+         
+         msg = CoreMessageFactory.createCoreMessage(3, persistentMessage, null);      
+         ref = ms.reference(msg);         
+         routed = office3.route(ref, "topic", null);           
+         assertTrue(routed);         
+         Thread.sleep(500);
+         this.checkEmpty(receiver1);         
+         this.checkEmpty(receiver2);
+         checkContainsAndAcknowledge(msg, receiver3, sub2);           
+                 
+      }
+      finally
+      {
+         if (office1 != null)
+         {            
+            office1.stop();
+         }
+         
+         if (office2 != null)
+         {
+            office2.stop();
+         }
+         
+         if (office3 != null)
+         {            
+            office3.stop();
+         }
+         
+         
+         checkNoMessageData();
+      }
+   }
+   
+   
    
    /*
     * We set up a complex scenario with multiple subscriptions, shared and unshared on different nodes
