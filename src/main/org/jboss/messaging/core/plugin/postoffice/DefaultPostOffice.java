@@ -204,9 +204,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    public Binding unbindQueue(String queueName) throws Throwable
    {
       if (trace) { log.trace(this + " unbinding queue " + queueName); }
-            
-      log.info("unbinding queue: " + queueName);
-      
+             
       if (queueName == null)
       {
          throw new IllegalArgumentException("Queue name is null");
@@ -223,8 +221,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             //Need to remove from db too
             
             deleteBinding(binding.getQueue().getName());    
-            
-            log.info("deleting binding from db");
          }
          
          binding.getQueue().removeAllReferences();         
@@ -533,8 +529,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          ps.setString(3, queueName);
 
          int rows = ps.executeUpdate();
-         
-         log.info("deleted " + rows + " rows");
          
          return rows == 1;
       }

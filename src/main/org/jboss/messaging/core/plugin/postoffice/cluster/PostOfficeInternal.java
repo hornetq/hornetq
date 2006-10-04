@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jgroups.Address;
 
 /**
  * 
@@ -50,12 +49,10 @@ interface PostOfficeInternal extends ClusteredPostOffice
    void removeBindingFromCluster(int nodeId, String queueName)
       throws Exception;
    
-   void handleAddressNodeMapping(Address address, int nodeId)
+   void handleAddressNodeMapping(NodeAddressInfo info, int nodeId)
       throws Exception;
    
    void routeFromCluster(Message message, String routingKey, Map queueNameNodeIdMap) throws Exception;
-   
-   //void addToQueue(String queueName, List messages) throws Exception;
    
    void asyncSendRequest(ClusterRequest request) throws Exception;
    

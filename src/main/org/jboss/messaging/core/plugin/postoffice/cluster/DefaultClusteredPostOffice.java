@@ -105,8 +105,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    private View currentView;
    
-   //Map < Address, node id>
-   private Map nodeIdAddressMap;
+   //Map < Address, NodeAddressInfo>
+   private Map nodeIdAddressesMap;
    
    private Map holdingArea;
    
@@ -141,7 +141,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    private void init()
    {
-      this.nodeIdAddressMap = new HashMap();
+      this.nodeIdAddressesMap = new HashMap();
       
       this.holdingArea = new HashMap();
    }
@@ -277,17 +277,22 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       super.start();
                   
-      Address currentAddress = syncChannel.getLocalAddress();
-                     
-      handleAddressNodeMapping(currentAddress, nodeId);
+      Address syncAddress = syncChannel.getLocalAddress();
       
-      syncSendRequest(new SendNodeIdRequest(currentAddress, nodeId));           
+      Address asyncAddress = asyncChannel.getLocalAddress();
+                     
+      NodeAddressInfo info = new NodeAddressInfo(syncAddress, asyncAddress);
+      
+      handleAddressNodeMapping(info, nodeId);
+      
+      syncSendRequest(new SendNodeIdRequest(info, nodeId));           
       
       statsSender.start();
       
       started = true;   
       
-      if (trace) { log.trace("Started " + this + " with address " + currentAddress); }
+      if (trace) { log.trace("Started " + this + " with sync address " + syncAddress +
+                             " async address " + asyncAddress); }
    }
 
    public synchronized void stop() throws Exception
@@ -465,16 +470,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                {
                   if (numberRemote == 1)
                   {
-                  //   log.info("unicast no tx");
+                     if (trace) { log.trace(this.nodeId + " unicasting message to " + lastNodeId); }
                      //Unicast - only one node is interested in the message
+                                        
+                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
                      
-                     //TODO - temporarily commented out until can get unicast to work                     
-                     //asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
-                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));
+                     //syncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId, false);
                   }
                   else
                   {
-                  //   log.info("multicast no tx");
+                     if (trace) { log.trace(this.nodeId + " multicasting message to group"); }
                      //Multicast - more than one node is interested
                      asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));
                   }                                 
@@ -545,7 +550,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       {                     
          //Sanity
 
-         if (!nodeIdAddressMap.containsKey(new Integer(nodeId)))
+         if (!nodeIdAddressesMap.containsKey(new Integer(nodeId)))
          {
             throw new IllegalStateException("Cannot find address for node: " + nodeId);
          }
@@ -590,7 +595,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       try
       {         
          // Sanity
-         if (!nodeIdAddressMap.containsKey(new Integer(nodeId)))
+         if (!nodeIdAddressesMap.containsKey(new Integer(nodeId)))
          {
             throw new IllegalStateException("Cannot find address for node: " + nodeId);
          }
@@ -603,18 +608,19 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       }
    }
    
-   public void handleAddressNodeMapping(Address address, int nodeId) throws Exception
+   public void handleAddressNodeMapping(NodeAddressInfo info, int nodeId) throws Exception
    {
       lock.writeLock().acquire();
       
       if (trace)
       {
-         log.trace(this.nodeId + " Adding address node mapping for " + address + " and " + nodeId);
+         log.trace(this.nodeId + " Adding address node mapping for " + info.getSyncChannelAddress() +
+                   "," + info.getAsyncChannelAddress() + " and " + nodeId);
       }
       
       try
       { 
-         nodeIdAddressMap.put(new Integer(nodeId), address);
+         nodeIdAddressesMap.put(new Integer(nodeId), info);
       }
       finally
       {
@@ -715,13 +721,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    }
    
    /*
-    * Unicast a message to one members of the group
+    * Unicast a message to one member of the group
     */
    public void asyncSendRequest(ClusterRequest request, int nodeId) throws Exception
    {               
       if (trace) { log.trace(this.nodeId + " sending asynch request to single node, request: " + request + " node " + nodeId); }
       
-      Address address = this.getAddressForNodeId(nodeId);
+      Address address = this.getAddressForNodeId(nodeId, false);
       
       if (trace) { log.trace(this.nodeId + " sending to address " + address); }
       
@@ -734,7 +740,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             
       Message m = new Message(address, null, bytes);
       
-      asyncChannel.send(m);
+      asyncChannel.send(m);      
    }
    
    /*
@@ -744,7 +750,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {              
       if (trace) { log.trace(this.nodeId + " sending synch request to single node, request: " + request + " node " + nodeId); }
             
-      Address address = this.getAddressForNodeId(nodeId);
+      Address address = this.getAddressForNodeId(nodeId, true);
       
       if (trace) { log.trace(this.nodeId + " sending to address " + address); }      
       
@@ -1022,19 +1028,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       return dels;
    }
    
-   public Address getAddressForNodeId(int nodeId) throws Exception
-   {
-      lock.readLock().acquire();
-      
-      try
-      {
-         return (Address)nodeIdAddressMap.get(new Integer(nodeId));
-      }
-      finally
-      {
-         lock.readLock().release();      
-      }
-   }
+   
                    
    // Public ------------------------------------------------------------------------------------------
       
@@ -1190,21 +1184,21 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    }
    
 
-   private Integer getNodeIdForAddress(Address address) throws Exception
+   private Integer getNodeIdForSyncAddress(Address address) throws Exception
    {
       lock.readLock().acquire();
       try
       { 
-         Iterator iter = nodeIdAddressMap.entrySet().iterator();
+         Iterator iter = nodeIdAddressesMap.entrySet().iterator();
          
          Integer nodeId = null;
          while (iter.hasNext())
          {
             Map.Entry entry = (Map.Entry)iter.next();
             
-            Address adr = (Address)entry.getValue();
+            NodeAddressInfo info = (NodeAddressInfo)entry.getValue();
             
-            if (adr.equals(address))
+            if (info.getSyncChannelAddress().equals(address))
             {
                nodeId = (Integer)entry.getKey();
             }
@@ -1254,7 +1248,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          }
          
          //Remove the address mapping
-         nodeIdAddressMap.remove(nodeId);
+         nodeIdAddressesMap.remove(nodeId);
       }
       finally
       {
@@ -1289,7 +1283,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          }
       }
       
-      SharedState state = new SharedState(bindings, nodeIdAddressMap);
+      SharedState state = new SharedState(bindings, nodeIdAddressesMap);
       
       byte[] bytes = StreamUtils.toBytes(state); 
            
@@ -1332,9 +1326,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          addBinding(binding);         
       }
       
-      this.nodeIdAddressMap.clear();
+      this.nodeIdAddressesMap.clear();
       
-      this.nodeIdAddressMap.putAll(state.getNodeIdAddressMap());
+      this.nodeIdAddressesMap.putAll(state.getNodeIdAddressMap());
    }
    
    
@@ -1363,6 +1357,36 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       dais.close();
       
       return request;            
+   }
+   
+   private Address getAddressForNodeId(int nodeId, boolean sync) throws Exception
+   {
+      lock.readLock().acquire();
+      
+      try
+      {
+         NodeAddressInfo info = (NodeAddressInfo)nodeIdAddressesMap.get(new Integer(nodeId));
+         
+         if (info != null)
+         {
+            if (sync)
+            {
+               return info.getSyncChannelAddress();
+            }
+            else
+            {
+               return info.getAsyncChannelAddress();
+            }
+         }
+         else
+         {
+            return null;
+         }
+      }
+      finally
+      {
+         lock.readLock().release();      
+      }
    }
    
    // Inner classes -------------------------------------------------------------------
@@ -1401,7 +1425,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       public void receive(Message message)
       {         
-         //log.info("Received message on control channel: " + message);
       }
       
       public void setState(byte[] bytes)
@@ -1482,7 +1505,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   {                  
                      try
                      {
-                        Integer nodeId = getNodeIdForAddress(address);
+                        Integer nodeId = getNodeIdForSyncAddress(address);
                         
                         if (nodeId == null)
                         {
@@ -1523,7 +1546,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    
    /*
-    * This class is used to listen for messages on the data channel
+    * This class is used to listen for messages on the async channel
     */
    private class DataReceiver implements Receiver
    {
@@ -1550,6 +1573,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       public void receive(Message message)
       {
+         if (trace) { log.trace(nodeId + " received message " + message + " on async channel"); }
+         
          try
          {
             byte[] bytes = message.getBuffer();
@@ -1580,6 +1605,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       public Object handle(Message message)
       {                
+         if (trace) { log.trace(nodeId + " received message " + message + " on sync channel"); }
          try
          {   
             byte[] bytes = message.getBuffer();

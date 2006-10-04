@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.tx.TxCallback;
 
@@ -60,6 +61,10 @@ import org.jboss.messaging.core.tx.TxCallback;
  */
 class CastMessagesCallback implements TxCallback
 {           
+   private static final Logger log = Logger.getLogger(CastMessagesCallback.class);
+   
+   private boolean trace = log.isTraceEnabled();   
+      
    private List persistent;
    
    private List nonPersistent;
@@ -186,13 +191,13 @@ class CastMessagesCallback implements TxCallback
    {
       if (multicast)
       {
+         if (trace) { log.trace("Multicasting transaction across group"); }
          office.asyncSendRequest(req);
       }
       else
       {
-         //FIXME temp commented out until unicast works
-         //office.asyncSendRequest(req, toNodeId);
-         office.asyncSendRequest(req);
+         if (trace) { log.trace("Unicasting transaction to node"); }
+         office.asyncSendRequest(req, toNodeId);
       }
    }
       

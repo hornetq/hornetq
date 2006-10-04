@@ -550,15 +550,14 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
           
          office1.unbindClusteredQueue("queue1");
          
-         //It should be possible to bind local queues into a clustered post office
-         
-         PagingFilteredQueue queue7 = new PagingFilteredQueue("queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);       
+         //It should be possible to bind queues locally into a clustered post office
+         LocalClusteredQueue queue7 = new LocalClusteredQueue(office1, 1, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding7 = office1.bindQueue("queue1", queue7);
          
-         PagingFilteredQueue queue8 = new PagingFilteredQueue("queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);       
+         LocalClusteredQueue queue8 = new LocalClusteredQueue(office2, 2, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);       
          Binding binding8 = office2.bindQueue("queue1", queue8);
          
-         PagingFilteredQueue queue9 = new PagingFilteredQueue("queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);    
+         LocalClusteredQueue queue9 = new LocalClusteredQueue(office2, 2, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);       
          try
          {
             Binding binding9 = office1.bindQueue("queue1", queue9);
@@ -624,9 +623,13 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          queue3.add(receiver3);
          
          Message msg1 = CoreMessageFactory.createCoreMessage(1);      
-         MessageReference ref1 = ms.reference(msg1);         
-         boolean routed = office1.route(ref1, "topic1", null);      
+         MessageReference ref1 = ms.reference(msg1);  
+         log.info("Sending message 1");
+         boolean routed = office1.route(ref1, "topic1", null);   
+         log.info("Sent message 1");
          assertTrue(routed);
+         
+         
          Message msg2 = CoreMessageFactory.createCoreMessage(2);      
          MessageReference ref2 = ms.reference(msg2);         
          routed = office1.route(ref2, "topic1", null);      

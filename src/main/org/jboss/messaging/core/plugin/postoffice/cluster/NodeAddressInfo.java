@@ -24,9 +24,12 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.jboss.messaging.util.Streamable;
+import org.jgroups.Address;
+import org.jgroups.stack.IpAddress;
+
 /**
- * A SendNodeIdRequest
- * 
+ * A NodeAddressInfo
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -34,50 +37,59 @@ import java.io.DataOutputStream;
  * $Id$
  *
  */
-class SendNodeIdRequest extends ClusterRequest
+class NodeAddressInfo implements Streamable
 {
-   static final int TYPE = 7;
-
-   private NodeAddressInfo info;
+   private Address syncChannelAddress;
    
-   private int nodeId;
+   private Address asyncChannelAddress;
    
-   SendNodeIdRequest()
-   {      
+   public NodeAddressInfo()
+   {     
    }
    
-   SendNodeIdRequest(NodeAddressInfo info, int nodeId)
+   NodeAddressInfo(Address syncChannelAddress, Address asyncChannelAddress)
    {
-      this.info = info;
+      this.syncChannelAddress = syncChannelAddress;
       
-      this.nodeId = nodeId;      
+      this.asyncChannelAddress = asyncChannelAddress;
    }
    
-   Object execute(PostOfficeInternal office) throws Exception
+   Address getSyncChannelAddress()
    {
-      office.handleAddressNodeMapping(info, nodeId);
-      
-      return null;
+      return syncChannelAddress;
    }
    
-   byte getType()
+   Address getAsyncChannelAddress()
    {
-      return TYPE;
+      return asyncChannelAddress;
    }
-
+   
    public void read(DataInputStream in) throws Exception
    {
-      info = new NodeAddressInfo();
+      syncChannelAddress = new IpAddress();
       
-      info.read(in);
+      syncChannelAddress.readFrom(in);
       
-      nodeId = in.readInt();
+      asyncChannelAddress = new IpAddress();
+      
+      asyncChannelAddress.readFrom(in);
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      info.write(out);
+      if (!(syncChannelAddress instanceof IpAddress))
+      {
+         throw new IllegalStateException("Address must be IpAddress");
+      }
       
-      out.writeInt(nodeId);   
+      if (!(asyncChannelAddress instanceof IpAddress))
+      {
+         throw new IllegalStateException("Address must be IpAddress");
+      }
+      
+      syncChannelAddress.writeTo(out);
+      
+      asyncChannelAddress.writeTo(out);  
    }
+
 }

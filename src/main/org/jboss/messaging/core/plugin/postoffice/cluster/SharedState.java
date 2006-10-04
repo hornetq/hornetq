@@ -24,11 +24,11 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Streamable;
 
 /**
@@ -78,7 +78,20 @@ class SharedState implements Streamable
          bindings.add(bb);
       }
       
-      nodeIdAddressMap = (Map)StreamUtils.readObject(in, false);
+      size = in.readInt();
+      
+      nodeIdAddressMap = new HashMap(size);
+      
+      for (int i = 0; i < size; i++)
+      {
+         int nodeId = in.readInt();
+         
+         NodeAddressInfo info = new NodeAddressInfo();
+         
+         info.read(in);
+         
+         nodeIdAddressMap.put(new Integer(nodeId), info);
+      }
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -92,6 +105,21 @@ class SharedState implements Streamable
          info.write(out);
       }
       
-      StreamUtils.writeObject(out, nodeIdAddressMap, true, false);     
+      out.writeInt(nodeIdAddressMap.size());
+      
+      iter = nodeIdAddressMap.entrySet().iterator();
+      
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+         
+         Integer nodeId = (Integer)entry.getKey();
+         
+         out.writeInt(nodeId.intValue());
+         
+         NodeAddressInfo info = (NodeAddressInfo)entry.getValue();
+         
+         info.write(out);
+      }
    }
 }

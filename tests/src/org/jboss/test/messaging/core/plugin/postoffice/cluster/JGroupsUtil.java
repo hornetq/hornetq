@@ -46,16 +46,6 @@ public class JGroupsUtil
       }
 
       return
-//      "UDP(mcast_addr=228.8.8.8;mcast_port=45566;ip_ttl=32;bind_addr=" + host + ";up_thread=false;down_thread=false):" +
-//      "PING(timeout=2000;num_initial_members=3;up_thread=false;down_thread=false):"+
-//      "FD(timeout=3000;up_thread=false;down_thread=false):"+
-//      "VERIFY_SUSPECT(timeout=1500;up_thread=false;down_thread=false):"+
-//      "pbcast.NAKACK(gc_lag=10;retransmit_timeout=600,1200,2400,4800;up_thread=false;down_thread=false):"+
-//      "UNICAST(timeout=600,1200,2400,4800;up_thread=false;down_thread=false):"+
-//      "pbcast.STABLE(desired_avg_gossip=10000;up_thread=false;down_thread=false):"+
-//      "FRAG(up_thread=false;down_thread=false):"+
-//      "pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true;up_thread=false;down_thread=false)";
-
       "UDP(mcast_recv_buf_size=500000;down_thread=false;ip_mcast=true;mcast_send_buf_size=32000;"+
           "mcast_port=45566;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
           "mcast_addr=228.8.8.8;use_outgoing_packet_handler=true;ucast_send_buf_size=32000;ip_ttl=32;"+
@@ -71,7 +61,7 @@ public class JGroupsUtil
       "pbcast.STABLE(stability_delay=1000;desired_avg_gossip=20000;down_thread=false;max_bytes=0;up_thread=false):"+
       "FRAG(frag_size=8192;down_thread=false;up_thread=false):"+
       "VIEW_SYNC(avg_send_interval=60000;down_thread=false;up_thread=false):"+
-      "pbcast.GMS(print_local_addr=true;join_timeout=3000;down_thread=false;join_retry_timeout=2000;up_thread=false;shun=true)";      
+      "pbcast.GMS(print_local_addr=true;join_timeout=3000;down_thread=false;join_retry_timeout=2000;up_thread=false;shun=true)";
    }
    
 
