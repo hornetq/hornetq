@@ -56,6 +56,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -1766,44 +1767,111 @@ public class MessageConsumerTest extends MessagingTestCase
       latch.acquire();
    }
 
-   public void testTimeoutReceiveOnClose() throws Exception
-   {
-      if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
-      consumerConnection.start();
-      final Latch latch = new Latch();
-      final long timeToSleep = 1000;
-      Thread closerThread = new Thread(new Runnable()
-      {
-         public void run()
-         {
+
+    /** to be used by testTimeoutReceiveOnClose */
+    private class ThreadCloser extends Thread
+    {
+
+        Object waitMonitor;
+        long timeToSleep;
+
+        public ThreadCloser( Object waitMonitor, long timeToSleep)
+        {
+            this.waitMonitor=waitMonitor;
+            this.timeToSleep=timeToSleep;
+        }
+
+
+        public void run()
+        {
             try
             {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(timeToSleep);
-               topicConsumer.close();
+                log.info("(ThreadCloser)Waiting on monitor to close thread");
+                synchronized (waitMonitor)
+                {
+                    waitMonitor.wait();
+                }
+                log.info("(ThreadCloser)Notification received");
+                Thread.sleep(timeToSleep);
+                topicConsumer.close();
+
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-               log.error(e);
+                log.error(e);
+                e.printStackTrace();
             }
-            finally
+        }
+    }
+
+    /** to be used by testTimeoutReceiveOnClose */
+    private class ThreadReceiver extends Thread
+    {
+
+        long timeToWait;
+        Object waitMonitor;
+        long t1;
+        long t2;
+        Object receivedObject;
+
+        public ThreadReceiver(Object waitMonitor, long timeToWait)
+        {
+            this.waitMonitor=waitMonitor;
+            this.timeToWait=timeToWait;
+        }
+
+        public void run()
+        {
+            try
             {
-               latch.release();
+                log.info("(ThreadReceiver)Waiting on monitor to close thread");
+                synchronized(waitMonitor)
+                {
+                    waitMonitor.wait();
+                }
+                log.info("(ThreadReceiver)Notification received");
+                t1=System.currentTimeMillis();
+                receivedObject=topicConsumer.receive(timeToWait);
+                t2=System.currentTimeMillis();
+
             }
-         }
-      }, "closing thread");
-      closerThread.start();
+            catch (Exception e)
+            {
+                log.error(e);
+                e.printStackTrace();
+            }
+        }
+    }
 
-      long t1 = System.currentTimeMillis();
-      assertNull(topicConsumer.receive(1500));
-      long elapsed = System.currentTimeMillis() - t1;
-      log.trace("timeToSleep = " + timeToSleep + " ms, elapsed = " + elapsed + " ms");
+   public void testTimeoutReceiveOnClose() throws Exception
+   {
+      System.gc();       /// If A GC need to be execute, it' s better to be executed now
+      Thread.sleep(1000);
+      if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
 
-      // make sure it didn't wait 5 seconds to return null; allow 10 ms for overhead
-      assertTrue(elapsed <= timeToSleep + 100);
+      Object monitor = new Object();
+      ThreadCloser closer = null;
+      ThreadReceiver receiver = new ThreadReceiver(monitor,2000);
 
-      // wait for the closing thread to finish
-      latch.acquire();
+      closer = new ThreadCloser(monitor,1000);
+      receiver= new ThreadReceiver(monitor,2000);
+      closer.start();
+      receiver.start();
+      Thread.sleep(2000);
+      synchronized (monitor)
+      {
+         monitor.notifyAll();
+      }
+      closer.join();
+      receiver.join();
+
+
+      assertNull(receiver.receivedObject);
+
+      log.info("Elapsed time was " + (receiver.t2-receiver.t1));
+
+      // We need to make sure the
+      assertTrue("Receive was supposed to receive a notification before 2 seconds",receiver.t2-receiver.t1<=1500);
    }
 
 
