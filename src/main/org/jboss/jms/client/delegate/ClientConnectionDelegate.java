@@ -101,6 +101,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
+    * @see org.jboss.jms.client.container.AsfAspect#handleCreateConnectionConsumer(org.jboss.aop.joinpoint.Invocation)
     */
    public JBossConnectionConsumer createConnectionConsumer(Destination dest,
                                                            String subscriptionName,

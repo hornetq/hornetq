@@ -182,6 +182,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
+    * @see org.jboss.jms.client.container.ConsumerAspect#handleCreateConsumerDelegate(org.jboss.aop.joinpoint.Invocation)
     */
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
