@@ -356,6 +356,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
+    * @see org.jboss.jms.client.container.AsfAspect#handleSetMessageListener(org.jboss.aop.joinpoint.Invocation) 
     */
    public void setMessageListener(MessageListener listener) throws JMSException
    {
