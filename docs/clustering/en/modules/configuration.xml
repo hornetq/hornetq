@@ -2,5 +2,187 @@
 
    <title>JBoss Messaging Clustering Configuration</title>
 
+   <para>
+   This section describes how to configure JBoss Messaging 1.2 Alpha clustering.
+   </para>
+
+   <para>
+   Please note that the clustering configuration is likely to change before the 1.2 final release.
+
+   In particular we will be adding the ability for JBoss Messaging to use a pre-configured JGroups multiplex channel
+   when used inside JBoss Application Server.
+
+   </para>
+
+   <section id="config">
+
+   <para>
+   JBoss Messaging includes the concept of a "Post Office". Messages are posted at a Post Office and the Post Office routes the message
+   to it's destination queues.
+   </para>
+
+   <para>
+   In the case of JMS we always have two Post Office
+   instances running.
+
+   The first, the Queue Post Office, routes messages to JMS Queues, and the Topic Post Office routes messages to JMS Topics.
+   </para>
+
+   <para>
+   Internally JBoss Messaging only deals with the concepts of queues, and considers a topic to just be a set of queues (one for
+   each subscription).
+   </para>
+
+   <para>
+   Therefore the Queue Post Office routes a message to one and only one queue, depending on the queue name, whereas a Topic Post Office routes a message
+   to a set of queues (one for each subscription) depending on the topic name.
+   </para>
+
+   <para>
+   For clustering, we extend the concept of a Post Office to create a Clustered Post Office.
+   </para>
+
+   <para>
+   Clustered Post Office instances in a cluster connect to each other via JGroups, and when routing messages instead of just routing to local
+   queues as is the case with a non-clustered Post Office, they can also route messages to queues on other Clustered Post Office instances.
+
+   This allows us to create distributed queues and distributed topics.
+   </para>
+
+   <para>
+   In the current release of JBoss Messaging 1.2, the JGroups configuration for each Clustered Post Office is specified in the Post Office configuration.
+
+   The details of the JGroups configuration won't be discussed here since it is standard JGroups configuration.
+
+   For more information on JGroups configuration please consult http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups
+   </para>
+
+   <para>An example of a Clustered Post Office configuration is shown below</para>
+
+   <programlisting>
+   &lt;mbean code="org.jboss.messaging.core.plugin.ClusteredPostOfficeService"
+         name="jboss.messaging:service=TopicPostOffice"
+         xmbean-dd="xmdesc/ClusteredPostOffice-xmbean.xml"&gt;
+         &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+         &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+         &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+         &lt;attribute name="PostOfficeName"&gt;Clustered Topic&lt;/attribute&gt;
+         &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+         &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+         &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+   CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)
+   INSERT_BINDING=INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID) VALUES (?, ?, ?, ?, ?, ?)
+   DELETE_BINDING=DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
+   LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
+         ]]&gt;&lt;/attribute&gt;
+         &lt;attribute name="GroupName"&gt;Topic&lt;/attribute&gt;
+         &lt;attribute name="StateTimeout"&gt;5000&lt;/attribute&gt;
+         &lt;attribute name="CastTimeout"&gt;5000&lt;/attribute&gt;
+         &lt;attribute name="PullSize"&gt;1&lt;/attribute&gt;
+         &lt;attribute name="StatsSendPeriod"&gt;10000&lt;/attribute&gt;
+         &lt;attribute name="MessagePullPolicy"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy&lt;/attribute&gt;
+         &lt;attribute name="ClusterRouterFactory"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory&lt;/attribute&gt;
+
+         &lt;attribute name="AsyncChannelConfig"&gt;
+            &lt;config&gt;
+               &lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+              mcast_port="45569" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+              mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/&gt;
+               &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
+               &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
+               &lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
+               &lt;FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/&gt;
+               &lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
+               &lt;pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+                            retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
+               &lt;UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/&gt;
+               &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/&gt;
+               &lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
+               &lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
+               &lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/&gt;
+            &lt;/config&gt;
+         &lt;/attribute&gt;
+
+         &lt;attribute name="SyncChannelConfig"&gt;
+            &lt;config&gt;
+               &lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+              mcast_port="45570" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+              mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/&gt;
+               &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
+               &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
+               &lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
+               &lt;FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/&gt;
+               &lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
+               &lt;pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+                            retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
+               &lt;UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/&gt;
+               &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/&gt;
+               &lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
+               &lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
+               &lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/&gt;
+               &lt;pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/&gt;
+            &lt;/config&gt;
+         &lt;/attribute&gt;
+   &lt;/mbean&gt;
+   </programlisting>
+
+   <section id="conf.groupname">
+     <title>GroupName</title>
+     <para>
+        This identifies the JGroups group the Clustered Post Office will connect to. All Clustered Post Office instances with the same
+        group name will connect to that group.
+     </para>
+   </section>
+
+   <section id="conf.statetimeout">
+     <title>StateTimeout</title>
+     <para>
+        The maximum amount of time in milliseconds to wait when making a request to get the group state and waiting for the result.
+        You will not normally need to change this value. Default is 5000 ms.
+     </para>
+   </section>
+
+   <section id="conf.casttimeout">
+     <title>CastTimeout</title>
+     <para>
+        The maximum amount of time in milliseconds to wait when casting a message and waiting for a result.
+        You will not normally need to change this value. Default is 5000 ms.
+     </para>
+   </section>
+
+   <section id="conf.pullsize">
+     <title>PullSize</title>
+     <para>
+        The maximum number of messages to pull from one node to another when the local node is starving. Defaults to 1.
+     </para>
+   </section>
+
+   <section id="conf.statssend">
+     <title>StatsSendPeriod</title>
+     <para>
+        The period in milliseconds between much statistics for each queue will be cast across the cluster.
+     </para>
+   </section>
+
+   <section id="conf.messagepullpolicy">
+     <title>MessagePullPolicy</title>
+     <para>
+        The fully qualified class name of the class that implements the MessagePullPolicy.
+        To specify different message pull policies this can be changed.
+        In the Alpha1 release only the NullMessagePullPolicy is stable.
+     </para>
+   </section>
+
+   <section id="conf.clusterrouterfactory">
+     <title>ClusterRouterFactory</title>
+     <para>
+        The fully qualified class name of the class that implements a factory for creating message routers. For different message routing policies
+        this can be changed.
+     </para>
+   </section>
+
+   </section>
+
+
 
 </chapter>
