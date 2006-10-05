@@ -40,9 +40,10 @@ public interface HierarchicalState
    Set getChildren();
    
    DelegateSupport getDelegate();
-   
+   void setDelegate(DelegateSupport delegate);
+
    HierarchicalState getParent();
-   
+   void setParent(HierarchicalState parent);
+
    Version getVersionToUse();
-   
 }

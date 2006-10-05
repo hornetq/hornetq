@@ -47,18 +47,15 @@ public abstract class HierarchicalStateSupport implements HierarchicalState
 
    protected Set children;
 
-   protected HierarchicalState parent;
-
-   protected DelegateSupport delegate;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public HierarchicalStateSupport(HierarchicalState parent, Object delegate)
+   public HierarchicalStateSupport(HierarchicalState parent, DelegateSupport delegate)
    {
-      this.parent = parent;
-      this.delegate = (DelegateSupport)delegate; // TODO - find a more elegant solution, delegate must implement an interface that has getID()
+      this.setParent(parent);
+      this.setDelegate(delegate); // TODO - find a more elegant solution, delegate must implement an interface that has getID()
       if (parent != null)
       {
          parent.getChildren().add(this);
@@ -72,15 +69,6 @@ public abstract class HierarchicalStateSupport implements HierarchicalState
       return children;
    }
 
-   public HierarchicalState getParent()
-   {
-      return parent;
-   }
-
-   public DelegateSupport getDelegate()
-   {
-      return delegate;
-   }
 
    // Public --------------------------------------------------------
 

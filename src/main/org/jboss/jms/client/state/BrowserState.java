@@ -23,6 +23,7 @@ package org.jboss.jms.client.state;
 
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.client.delegate.DelegateSupport;
 
 /**
  * State corresponding to a browser
@@ -35,14 +36,40 @@ import org.jboss.jms.server.Version;
  */
 public class BrowserState extends HierarchicalStateSupport
 {
+
+   private SessionState parent;
+   private BrowserDelegate delegate;
+
    public BrowserState(SessionState parent, BrowserDelegate delegate)
    {
-      super(parent, delegate);      
-   }    
-   
+      super(parent, (DelegateSupport)delegate);
+   }
+
+
+
+    public DelegateSupport getDelegate()
+    {
+        return (DelegateSupport)delegate;
+    }
+    public void setDelegate(DelegateSupport delegate)
+    {
+        this.delegate=(BrowserDelegate)delegate;
+    }
+
+
    public Version getVersionToUse()
    {
       return parent.getVersionToUse();
    }
+
+    public void setParent(HierarchicalState parent)
+    {
+        this.parent=(SessionState)parent;
+    }
+    public HierarchicalState getParent()
+    {
+        return parent;
+    }
+
 }
 

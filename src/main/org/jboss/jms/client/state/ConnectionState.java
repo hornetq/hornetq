@@ -24,6 +24,7 @@ package org.jboss.jms.client.state;
 import java.util.HashSet;
 
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.Version;
@@ -55,13 +56,15 @@ public class ConnectionState extends HierarchicalStateSupport
    private int serverID;
    
    private Version versionToUse;
+
+   private ConnectionDelegate delegate;
     
    public ConnectionState(int serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection, Version versionToUse,
                           ResourceManager rm, MessageIdGenerator gen)
       throws Exception
    {
-      super(null, delegate);
+      super(null, (DelegateSupport)delegate);
       
       if (log.isTraceEnabled()) { log.trace("Creating connection state"); }
       
@@ -102,5 +105,28 @@ public class ConnectionState extends HierarchicalStateSupport
    {
       return serverID;
    }
+
+
+    public DelegateSupport getDelegate()
+    {
+        return (DelegateSupport)delegate;
+    }
+
+    public void setDelegate(DelegateSupport delegate)
+    {
+        this.delegate=(ConnectionDelegate)delegate;
+    }
+
+    /** Connection doesn't have a parent */
+    public void setParent(HierarchicalState parent)
+    {
+    }
+
+    /** Connection doesn't have a parent */
+    public HierarchicalState getParent()
+    {
+        return null;
+    }
+
     
 }

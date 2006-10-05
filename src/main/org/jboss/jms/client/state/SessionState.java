@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.MessagingXAResource;
@@ -62,13 +63,16 @@ public class SessionState extends HierarchicalStateSupport
 
    // List<AckInfo>
    private List toAck;
+
+   private ConnectionState parent;
+   private SessionDelegate delegate;
    
    private Map callbackHandlers;
    
    public SessionState(ConnectionState parent, SessionDelegate delegate,
                        boolean transacted, int ackMode, boolean xa)
    {
-      super(parent, delegate);
+      super(parent, (DelegateSupport)delegate);
       children = new HashSet();
       this.acknowledgeMode = ackMode;
       this.transacted = transacted;
@@ -97,6 +101,27 @@ public class SessionState extends HierarchicalStateSupport
       // to callbackhandlers) in the connection, instead of maintaining another map
       callbackHandlers = new HashMap();
    }
+
+
+    public void setParent(HierarchicalState parent)
+    {
+        this.parent = (ConnectionState)parent;
+    }
+    public HierarchicalState getParent()
+    {
+        return parent;
+    }
+
+    public DelegateSupport getDelegate()
+    {
+        return (DelegateSupport)delegate;
+    }
+
+    public void setDelegate(DelegateSupport delegate)
+    {
+        this.delegate=(SessionDelegate)delegate;
+    }
+
 
    /**
     * @return List<AckInfo>

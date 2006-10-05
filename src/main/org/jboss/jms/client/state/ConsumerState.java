@@ -26,6 +26,7 @@ import java.util.Collections;
 import javax.jms.Destination;
 
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.server.Version;
 
@@ -52,12 +53,16 @@ public class ConsumerState extends HierarchicalStateSupport
    private MessageCallbackHandler messageCallbackHandler;
    
    private int prefetchSize;
-    
+
+   private SessionState parent;
+
+   private ConsumerDelegate delegate;
+
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
                         String selector, boolean noLocal, int consumerID, boolean isCC,
                         int prefetchSize)
    {
-      super(parent, delegate);
+      super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
       this.destination = dest;
       this.selector = selector;
@@ -66,7 +71,19 @@ public class ConsumerState extends HierarchicalStateSupport
       this.isConnectionConsumer = isCC;
       this.prefetchSize = prefetchSize;
    }
-    
+
+
+    public DelegateSupport getDelegate()
+    {
+        return (DelegateSupport)delegate;
+    }
+
+    public void setDelegate(DelegateSupport delegate)
+    {
+        this.delegate = (ConsumerDelegate)delegate;
+    }
+
+
    public Destination getDestination()
    {
       return destination;
@@ -111,7 +128,13 @@ public class ConsumerState extends HierarchicalStateSupport
    {
       return prefetchSize;
    }
-    
+    public HierarchicalState getParent() {
+        return parent;
+    }
+
+    public void setParent(HierarchicalState parent) {
+        this.parent=(SessionState)parent;
+    }
 }
 
 
