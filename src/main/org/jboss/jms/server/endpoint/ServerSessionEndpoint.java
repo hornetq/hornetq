@@ -320,8 +320,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
                      // Unbind the durable subscription
                      
-                     topicPostOffice.unbindQueue(name);
-   
+                     if (mDest.isClustered() && !topicPostOffice.isLocal())
+                     {
+                        ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                        
+                        cpo.unbindClusteredQueue(name);
+                     }
+                     else
+                     {         
+                        topicPostOffice.unbindQueue(name);
+                     }
+                        
                      // create a fresh new subscription
                      
                      QueuedExecutor executor = (QueuedExecutor)pool.get();
@@ -761,9 +770,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                             subscriptionName + " since it has active subscribers");
          }
          
+         //Look up the topic
+         ManagedDestination mDest = dm.getDestination(binding.getCondition(), false);
+         
          //Unbind it
-  
-         topicPostOffice.unbindQueue(queueName);
+    
+         if (mDest.isClustered() && !topicPostOffice.isLocal())
+         {
+            ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+            
+            cpo.unbindClusteredQueue(queueName);
+         }
+         else
+         {         
+            topicPostOffice.unbindQueue(queueName);
+         }
       }
       catch (Throwable t)
       {

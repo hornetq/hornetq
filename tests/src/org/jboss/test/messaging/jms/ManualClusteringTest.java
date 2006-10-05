@@ -88,7 +88,7 @@ public class ManualClusteringTest extends MessagingTestCase
       Properties props1 = new Properties();
       
       props1.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props1.put(Context.PROVIDER_URL, "jnp://localhost:1099");
+      props1.put(Context.PROVIDER_URL, "jnp://localhost:1199");
       props1.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
       
       ic1 = new InitialContext(props1);
@@ -96,7 +96,7 @@ public class ManualClusteringTest extends MessagingTestCase
       Properties props2 = new Properties();
       
       props2.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props2.put(Context.PROVIDER_URL, "jnp://localhost:1199");
+      props2.put(Context.PROVIDER_URL, "jnp://localhost:1299");
       props2.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
       
       ic2 = new InitialContext(props2);
@@ -109,15 +109,15 @@ public class ManualClusteringTest extends MessagingTestCase
 //      
 //      ic3 = new InitialContext(props3);
       
-      queue1 = (Queue)ic1.lookup("queue/ClusteredQueue1");
+      queue1 = (Queue)ic1.lookup("queue/testDistributedQueue");
       
-      queue2 = (Queue)ic2.lookup("queue/ClusteredQueue1");
+      queue2 = (Queue)ic2.lookup("queue/testDistributedQueue");
       
       //queue3 = (Queue)ic3.lookup("queue/ClusteredQueue1");
             
-      topic1 = (Topic)ic1.lookup("topic/ClusteredTopic1");
+      topic1 = (Topic)ic1.lookup("topic/testDistributedTopic");
       
-      topic2 = (Topic)ic2.lookup("topic/ClusteredTopic1");
+      topic2 = (Topic)ic2.lookup("topic/testDistributedTopic");
       
       //topic3 = (Topic)ic3.lookup("topic/ClusteredTopic1");
       
@@ -602,17 +602,7 @@ public class ManualClusteringTest extends MessagingTestCase
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         try
-         {
-            sess1.unsubscribe("sub1");
-                  
-            sess2.unsubscribe("sub1");
-         }
-         catch (Exception ignore)
-         {            
-         }
-                 
+               
          MessageConsumer durable1 = sess1.createDurableSubscriber(topic1, "sub1");
          
          MessageConsumer durable2 = sess2.createDurableSubscriber(topic2, "sub1");
@@ -655,6 +645,9 @@ public class ManualClusteringTest extends MessagingTestCase
          
          assertNull(m);
          
+         durable1.close();
+         
+         durable2.close();
          
          sess1.unsubscribe("sub1");
          
@@ -787,14 +780,6 @@ public class ManualClusteringTest extends MessagingTestCase
          
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         try
-         {
-            sess2.unsubscribe("sub1");
-         }
-         catch (Exception ignore)
-         {            
-         }
-         
          MessageConsumer durable2 = sess2.createDurableSubscriber(topic2, "sub1");
          
          conn1.start();
@@ -830,6 +815,8 @@ public class ManualClusteringTest extends MessagingTestCase
             
             assertEquals("message" + i, tm.getText());
          }
+         
+         durable2.close();
           
          sess2.unsubscribe("sub1");
          
@@ -867,15 +854,7 @@ public class ManualClusteringTest extends MessagingTestCase
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         try
-         { 
-            sess2.unsubscribe("sub1");
-         }
-         catch (Exception ignore)
-         {            
-         }
-         
+          
          MessageConsumer durable2 = sess2.createDurableSubscriber(topic2, "sub1");
          
          conn1.start();
@@ -911,6 +890,8 @@ public class ManualClusteringTest extends MessagingTestCase
             
             assertEquals("message" + i, tm.getText());
          }
+         
+         durable2.close();
          
          sess2.unsubscribe("sub1");
          
