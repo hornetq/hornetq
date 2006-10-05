@@ -50,6 +50,8 @@ public class IdManager implements MessagingComponent
    
    protected String counterName;
    
+   private boolean started;
+   
    public IdManager(String counterName, int bigBlockSize, PersistenceManager pm) throws Exception
    {
       this.bigBlockSize = bigBlockSize;
@@ -59,18 +61,25 @@ public class IdManager implements MessagingComponent
       this.counterName = counterName;           
    }
    
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
       getNextBigBlock();
+      
+      started = true;
    }
    
-   public void stop() throws Exception
+   public synchronized void stop() throws Exception
    {
-      //NOOP
+      started = false;
    }
    
    public synchronized IdBlock getIdBlock(int size) throws Exception
    {
+      if (!started)
+      {
+         throw new IllegalStateException(this + " is not started");
+      }
+      
       if (size <= 0)
       {
          throw new IllegalArgumentException("block size must be > 0");
@@ -104,7 +113,7 @@ public class IdManager implements MessagingComponent
    {
       nextBlock = pm.reserveIDBlock(counterName, bigBlockSize);
       
-      if (trace) { log.trace("Retrieved nex block of size " + bigBlockSize + " from pm starting at " + nextBlock); }
+      if (trace) { log.trace("Retrieved next block of size " + bigBlockSize + " from pm starting at " + nextBlock); }
       
       high = nextBlock + bigBlockSize - 1;
    }

@@ -47,6 +47,8 @@ public class StatsSender implements MessagingComponent
    private Timer timer;
    
    private long period;
+    
+   private SendStatsTimerTask task;
    
    StatsSender(PostOfficeInternal office, long period)
    {
@@ -68,9 +70,11 @@ public class StatsSender implements MessagingComponent
       //Add a random delay to prevent all timers starting at once
       long delay = (long)(period * Math.random());
       
-      TimerTask task = new SendStatsTimerTask();
-      
+      task = new SendStatsTimerTask();
+            
       timer.schedule(task, delay, period);      
+      
+      started = true;
    }
 
    public synchronized void stop() throws Exception
@@ -79,16 +83,29 @@ public class StatsSender implements MessagingComponent
       {
          return;
       }
+            
+      //Wait for timer task to stop
+      
+      task.stop();
       
       timer.cancel();
       
       timer = null;
+      
+      started = false;
    }      
    
    class SendStatsTimerTask extends TimerTask
    {
+      private boolean stopping;
+      private boolean stopped;
+      
+      private Object stopLock = new Object();
+      
       public void run()
       {
+         checkStop();
+         
          try
          {
             office.sendQueueStats();
@@ -97,6 +114,42 @@ public class StatsSender implements MessagingComponent
          {
             log.error("Failed to send statistics", e);
          }
-      }      
+         
+         checkStop();
+      }  
+      
+      private void checkStop()
+      {
+         synchronized (stopLock)
+         {            
+            if (stopping)
+            {
+               cancel();
+               stopped = true;
+               stopLock.notify();
+               return;
+            }
+         }
+      }
+            
+      void stop()
+      {
+         synchronized (stopLock)
+         {
+            stopping = true;
+            
+            while (!stopped)
+            {
+               try
+               {
+                  stopLock.wait();               
+               }
+               catch (InterruptedException e)
+               {
+                  //Ignore
+               }
+            }
+         }
+      }
    }
 }

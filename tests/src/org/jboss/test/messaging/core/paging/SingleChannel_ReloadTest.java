@@ -120,7 +120,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
                                     true, true, true, 100);      
       pm.start();
       
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr = new TransactionRepository(pm, idm);
       tr.start();
       
       ms = new SimpleMessageStore();
@@ -217,7 +217,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
                                     true, true, true, 100);      
       pm.start();
       
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      tr = new TransactionRepository(pm, idm);
       tr.start();
       
       ms = new SimpleMessageStore();

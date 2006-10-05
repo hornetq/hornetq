@@ -73,7 +73,9 @@ public class ClusteringTestBase extends MessagingTestCase
 
    protected ServiceContainer sc;
 
-   protected IdManager im;   
+   protected IdManager channelIdManager;   
+   
+   protected IdManager transactionIdManager;   
    
    protected PersistenceManager pm;
       
@@ -102,10 +104,13 @@ public class ClusteringTestBase extends MessagingTestCase
       
       pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, true, true, 100);      
+                                    true, false, true, 100);      
       pm.start();
       
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      transactionIdManager = new IdManager("TRANSACTION_ID", 10, pm);
+      transactionIdManager.start();
+      
+      tr = new TransactionRepository(pm, transactionIdManager);
       tr.start();
       
       ms = new SimpleMessageStore();
@@ -113,7 +118,8 @@ public class ClusteringTestBase extends MessagingTestCase
       
       pool = new QueuedExecutorPool(10);
       
-      im = new IdManager("CHANNEL_ID", 10, pm);
+      channelIdManager = new IdManager("CHANNEL_ID", 10, pm);
+      channelIdManager.start();
             
       log.debug("setup done");
    }
@@ -128,6 +134,8 @@ public class ClusteringTestBase extends MessagingTestCase
       pm.stop();
       tr.stop();
       ms.stop();
+      transactionIdManager.stop();
+      channelIdManager.stop();
       
       super.tearDown();
    }
@@ -269,7 +277,7 @@ public class ClusteringTestBase extends MessagingTestCase
          list.add(msg);
       }
       
-      Thread.sleep(2000);
+      Thread.sleep(1000);
       
       return list;
    }

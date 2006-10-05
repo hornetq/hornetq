@@ -116,7 +116,10 @@ public class SimpleDeliveryTest extends MessagingTestCase
                                     true, true, true, 100);      
       pm.start();
       
-      TransactionRepository tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      IdManager idm = new IdManager("TRANSACTION_ID", 10, pm);
+      idm.start();
+      
+      TransactionRepository tr = new TransactionRepository(pm, idm);
       tr.start();
       
       Transaction tx = tr.createTransaction();

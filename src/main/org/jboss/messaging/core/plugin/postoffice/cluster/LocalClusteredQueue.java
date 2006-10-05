@@ -333,6 +333,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
       Iterator iter = msgs.iterator();
       
+      boolean containsReliable = false;
+      
       while (iter.hasNext())
       {
          org.jboss.messaging.core.Message msg = (org.jboss.messaging.core.Message)iter.next();
@@ -341,6 +343,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
          {
             //It will already have been persisted on the other node
             msg.setPersisted(true);
+            
+            containsReliable = true;
          }
          
          MessageReference ref = null;
@@ -370,7 +374,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
          
          del.acknowledge(tx);        
       }
-      
+          
       tx.commit();
       
       //TODO what if commit throws an exception - this means the commit message doesn't hit the 
@@ -380,7 +384,9 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       //and send a checkrequest
       //This applies to a normal message and messages requests too
             
-      if (!msgs.isEmpty())
+      //We only need to send a commit message if there were reliable messages since otherwise
+      //the transaction wouldn't have been added in the holding area
+      if (containsReliable && isRecoverable())
       {         
          req = new PullMessagesRequest(this.nodeId, tx.getId());
          

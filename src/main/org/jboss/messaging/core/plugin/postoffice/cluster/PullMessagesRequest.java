@@ -43,6 +43,8 @@ import org.jboss.messaging.util.StreamUtils;
 public class PullMessagesRequest extends TransactionRequest implements ClusterTransaction
 {
    private static final Logger log = Logger.getLogger(PullMessagesRequest.class);
+   
+   private boolean trace = log.isTraceEnabled();
       
    private String queueName;
    
@@ -74,9 +76,13 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
    { 
       TransactionId id = new TransactionId(nodeId, txId);
       
+      if (trace) { log.trace("Executing PullMessagesRequest with id: " + id + " hold: " + hold); }
+      
       if (hold)
-      {         
+      {                           
          List dels = office.getDeliveries(queueName, numMessages);
+         
+         if (trace) { log.trace("PullMessagesRequest got " + dels.size() + " deliveries"); }
          
          PullMessagesResponse response = new PullMessagesResponse(dels.size());
          
@@ -91,10 +97,10 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
                //Add it to internal list
                if (reliableDels == null)
                {
-                  reliableDels  = new ArrayList();
-                  
-                  reliableDels.add(del);
+                  reliableDels  = new ArrayList();                                    
                }
+               
+               reliableDels.add(del);
             }
             else
             {
@@ -104,7 +110,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
             
             response.addMessage(del.getReference().getMessage());
          }
-         
+              
          if (reliableDels != null)
          {
             //Add this to the holding area

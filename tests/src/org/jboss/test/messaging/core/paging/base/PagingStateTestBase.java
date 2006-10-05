@@ -71,6 +71,7 @@ public class PagingStateTestBase extends MessagingTestCase
    protected PersistenceManager pm;
    protected SimpleMessageStore ms;
    protected TransactionRepository tr;
+   protected IdManager idm;
 
    // Constructors --------------------------------------------------
 
@@ -98,7 +99,10 @@ public class PagingStateTestBase extends MessagingTestCase
                                     true, true, true, 100);      
       pm.start();
       
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      idm = new IdManager("TRANSACTION_ID", 10, pm);
+      idm.start();
+      
+      tr = new TransactionRepository(pm, idm);
       tr.start();
       
       ms = new SimpleMessageStore();

@@ -69,17 +69,27 @@ public class RedistributionTest extends ClusteringTestBase
       super.tearDown();
    }
    
-   public void testRedistNonPersistent() throws Throwable
+   public void testRedistNonPersistentNonRecoverable() throws Throwable
    {
-      redistTest(false);
+      redistTest(false, false);
    }
    
-   public void testRedistPersistent() throws Throwable
+   public void testRedistPersistentNonRecoverable() throws Throwable
    {
-      redistTest(true);
+      redistTest(true, false);
    }
    
-   public void redistTest(boolean persistent) throws Throwable
+   public void testRedistNonPersistentRecoverable() throws Throwable
+   {
+      redistTest(false, true);
+   }
+   
+   public void testRedistPersistentRecoverable() throws Throwable
+   {
+      redistTest(true, true);
+   }
+   
+   public void redistTest(boolean persistent, boolean recoverable) throws Throwable
    {
       ClusteredPostOffice office1 = null;
       
@@ -105,19 +115,19 @@ public class RedistributionTest extends ClusteringTestBase
          
          log.info("Started offices");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding1 = office1.bindClusteredQueue("queue1", queue1);
                   
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding2 = office2.bindClusteredQueue("queue1", queue2);
                   
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding3 = office3.bindClusteredQueue("queue1", queue3);         
          
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding4 = office4.bindClusteredQueue("queue1", queue4);
                   
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", im.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding5 = office5.bindClusteredQueue("queue1", queue5);
                   
          log.info("bound queues");

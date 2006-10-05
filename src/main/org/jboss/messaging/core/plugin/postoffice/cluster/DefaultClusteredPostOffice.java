@@ -941,7 +941,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
          if (nodeId == this.nodeId)
          {
             //Sanity check
-            throw new IllegalStateException("Cannot update queue stats for current node");
+            throw new IllegalStateException("Received stats from node with id that matches this nodes id. You may have started two or more nodes with the same node id!");
          }
          
          Map nameMap = (Map)nameMaps.get(new Integer(nodeId));
@@ -963,37 +963,40 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                
                if (bb == null)
                {
-                  throw new IllegalStateException("Cannot find binding for queue name: " + st.getQueueName());
+                  //I guess this is possible if the queue was unbound
+                  if (trace) { log.trace(this.nodeId + " cannot find binding for queue " + st.getQueueName() + " it could have been unbound"); }
                }
-               
-               RemoteQueueStub stub = (RemoteQueueStub)bb.getQueue();
-               
-               stub.setStats(st);
-               
-               if (trace) { log.trace(this.nodeId + " setting stats: " + st + " on remote stub " + stub.getName()); }
-               
-               ClusterRouter router = (ClusterRouter)routerMap.get(st.getQueueName());
-               
-               //Maybe the local queue now wants to pull message(s) from the remote queue given that the 
-               //stats for the remote queue have changed
-               LocalClusteredQueue localQueue = router.getLocalQueue();
-               
-               if (localQueue != null)
-               {               
-                  RemoteQueueStub toQueue = (RemoteQueueStub)messagePullPolicy.chooseQueue(router.getQueues());
+               else
+               {                  
+                  RemoteQueueStub stub = (RemoteQueueStub)bb.getQueue();
                   
-                  if (trace) { log.trace(this.nodeId + " recalculated pull queue for queue " + st.getQueueName() + " to be " + toQueue); }
+                  stub.setStats(st);
                   
-                  if (toQueue != null)
-                  {
-                     localQueue.setPullInfo(toQueue, pullSize);
+                  if (trace) { log.trace(this.nodeId + " setting stats: " + st + " on remote stub " + stub.getName()); }
+                  
+                  ClusterRouter router = (ClusterRouter)routerMap.get(st.getQueueName());
+                  
+                  //Maybe the local queue now wants to pull message(s) from the remote queue given that the 
+                  //stats for the remote queue have changed
+                  LocalClusteredQueue localQueue = router.getLocalQueue();
+                  
+                  if (localQueue != null)
+                  {               
+                     RemoteQueueStub toQueue = (RemoteQueueStub)messagePullPolicy.chooseQueue(router.getQueues());
                      
-                     //We now trigger delivery - this may cause a pull event
-                     localQueue.deliver(false);
-                                          
-                     if (trace) { log.trace(this.nodeId + " triggered delivery for " + localQueue.getName()); }
-                  }
-               }               
+                     if (trace) { log.trace(this.nodeId + " recalculated pull queue for queue " + st.getQueueName() + " to be " + toQueue); }
+                     
+                     if (toQueue != null)
+                     {
+                        localQueue.setPullInfo(toQueue, pullSize);
+                        
+                        //We now trigger delivery - this may cause a pull event
+                        localQueue.deliver(false);
+                                             
+                        if (trace) { log.trace(this.nodeId + " triggered delivery for " + localQueue.getName()); }
+                     }
+                  } 
+               }
             }         
          }         
       }

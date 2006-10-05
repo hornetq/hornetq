@@ -90,6 +90,7 @@ public class IdManagerTest extends MessagingTestCase
    public void test1() throws Exception
    {
       IdManager idm = new IdManager("test_counter", 1000, pm);
+      idm.start();
       
       int blockSize = 37;
             
@@ -105,6 +106,23 @@ public class IdManagerTest extends MessagingTestCase
          
          nextLow = block.getHigh() + 1;         
       }
+      
+      idm.stop();
+   }
+   
+   public void test2() throws Exception
+   {
+      IdManager idm = new IdManager("test_counter2", 100, pm);
+      idm.start();
+         
+      for (int i = 0; i < 1000; i++)
+      {
+         long id = idm.getId();
+         
+         assertEquals(i, id);
+      }
+      
+      idm.stop();
    }
 
    // Package protected ---------------------------------------------

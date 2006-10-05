@@ -1161,7 +1161,11 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       doSetup(batch, 100);
 
       Channel channel = new SimpleChannel(0, ms);
-      TransactionRepository txRep = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      
+      IdManager idm = new IdManager("TRANSACTION_ID", 10, pm);
+      idm.start();
+      
+      TransactionRepository txRep = new TransactionRepository(pm, idm);
       txRep.start();
 
       log.debug("transaction log started");
@@ -1268,7 +1272,11 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       doSetup(batch, 100);
 
       Channel channel = new SimpleChannel(0, ms);
-      TransactionRepository txRep = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      
+      IdManager idm = new IdManager("TRANSACTION_ID", 10, pm);
+      idm.start();
+      
+      TransactionRepository txRep = new TransactionRepository(pm, idm);
       txRep.start();
  
       Message[] messages = createMessages(10);     

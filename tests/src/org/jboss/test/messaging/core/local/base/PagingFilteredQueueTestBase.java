@@ -96,6 +96,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
    protected PagingFilteredQueue queue;
    
+   protected IdManager idm;
+   
    // Constructors --------------------------------------------------
 
    public PagingFilteredQueueTestBase(String name)
@@ -117,7 +119,10 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
                                     true, true, true, 100);      
       pm.start();
       
-      tr = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+      idm = new IdManager("TRANSACTION_ID", 10, pm);
+      idm.start();
+      
+      tr = new TransactionRepository(pm, idm);
       tr.start();
       
       ms = new SimpleMessageStore();
@@ -127,8 +132,15 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
    public void tearDown() throws Exception
    {
       sc.stop();
-      sc = null;
       
+      pm.stop();
+      idm.stop();
+      tr.stop();
+      ms.stop();
+      
+      sc = null;   
+      pm = null;
+      idm = null;
       ms = null;
       tr = null;
       super.tearDown();
