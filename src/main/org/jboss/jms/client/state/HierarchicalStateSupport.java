@@ -35,6 +35,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
  * methods on the delegate API.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

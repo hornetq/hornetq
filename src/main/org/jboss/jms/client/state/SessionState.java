@@ -40,6 +40,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * State corresponding to a session. This state is acessible inside aspects/interceptors.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

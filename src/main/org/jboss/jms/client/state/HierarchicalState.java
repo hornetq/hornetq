@@ -31,6 +31,7 @@ import java.util.Set;
  * sessions). Or, a session has child consumers, producers and browsers.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
