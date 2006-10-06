@@ -771,7 +771,6 @@
       <ant dir="./docs/examples/secure-socket" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/distributed-topic" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./tests" antfile="build.xml" inheritAll="false" target="clean"/>
-      <!-- <ant dir="./perf" antfile="build.xml" inheritAll="false" target="clean"/> -->
    </target>
 
    <!-- ======================================================================================== -->
