@@ -99,9 +99,7 @@ public class IdManager implements MessagingComponent
       
       nextBlock += size;
       
-      IdBlock block = new IdBlock(low, nextBlock - 1);
-                      
-      return block;
+      return new IdBlock(low, nextBlock - 1);
    }
    
    public synchronized long getId() throws Exception
