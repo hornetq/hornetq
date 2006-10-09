@@ -15,8 +15,10 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
 
 /**
  * A deployable JBoss Messaging topic.
@@ -72,10 +74,10 @@ public class TopicService extends DestinationServiceSupport
             Binding binding = (Binding)iter.next();
             
             PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
-            
+                        
             queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
             queue.load();
-            queue.activate();
+            queue.activate();            
          }
 
          dm.registerDestination(destination);

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="**/.svn/**/*" kind="src" path="perf/src"/>
 	<classpathentry kind="src" path="output/gen-parsers"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
@@ -21,8 +20,6 @@
 	<classpathentry kind="lib" path="tests/lib/jms-ra.jar"/>
 	<classpathentry kind="lib" path="tests/lib/mysql-connector-java-3.1.13-bin.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
-	<classpathentry kind="lib" path="perf/resources/jcommon-1.0.0-rc1.jar"/>
-	<classpathentry kind="lib" path="perf/resources/jfreechart-1.0.0-rc1.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>

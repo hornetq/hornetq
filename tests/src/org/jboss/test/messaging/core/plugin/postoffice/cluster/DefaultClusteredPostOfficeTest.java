@@ -621,9 +621,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          }
       }
    }
-   
-   
-   
+ 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -663,9 +661,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          Message msg1 = CoreMessageFactory.createCoreMessage(1);      
          MessageReference ref1 = ms.reference(msg1);  
-         log.info("Sending message 1");
          boolean routed = office1.route(ref1, "topic1", null);   
-         log.info("Sent message 1");
          assertTrue(routed);
          
          

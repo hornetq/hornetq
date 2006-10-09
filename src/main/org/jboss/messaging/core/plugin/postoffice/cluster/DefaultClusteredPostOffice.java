@@ -81,6 +81,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
 {
    private static final Logger log = Logger.getLogger(DefaultClusteredPostOffice.class);
    
+   //Used for failure testing
+   private boolean failBeforeCommit;
+   private boolean failAfterCommit;
+     
    private boolean trace = log.isTraceEnabled();
                         
    private Channel syncChannel;
@@ -471,15 +475,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   if (numberRemote == 1)
                   {
                      if (trace) { log.trace(this.nodeId + " unicasting message to " + lastNodeId); }
-                     //Unicast - only one node is interested in the message
-                                        
-                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
                      
-                     //syncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId, false);
+                     //Unicast - only one node is interested in the message                                        
+                     asyncSendRequest(new MessageRequest(condition, ref.getMessage(), null), lastNodeId);
                   }
                   else
                   {
                      if (trace) { log.trace(this.nodeId + " multicasting message to group"); }
+                     
                      //Multicast - more than one node is interested
                      asyncSendRequest(new MessageRequest(condition, ref.getMessage(), queueNameNodeIdMap));
                   }                                 
@@ -490,7 +493,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   
                   if (callback == null)
                   {
-                     callback = new CastMessagesCallback(nodeId, tx.getId(), DefaultClusteredPostOffice.this);
+                     callback = new CastMessagesCallback(nodeId, tx.getId(), DefaultClusteredPostOffice.this, failBeforeCommit, failAfterCommit);
                      
                      //This callback MUST be executed first
                      
@@ -978,7 +981,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   
                   //Maybe the local queue now wants to pull message(s) from the remote queue given that the 
                   //stats for the remote queue have changed
-                  LocalClusteredQueue localQueue = router.getLocalQueue();
+                  LocalClusteredQueue localQueue = (LocalClusteredQueue)router.getLocalQueue();
                   
                   if (localQueue != null)
                   {               
@@ -1031,10 +1034,23 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       return dels;
    }
    
-   
-                   
+                     
    // Public ------------------------------------------------------------------------------------------
-      
+   
+   
+   //Used for testing only
+   public void setFail(boolean beforeCommit, boolean afterCommit)
+   {
+      this.failBeforeCommit = beforeCommit;
+      this.failAfterCommit = afterCommit;
+   }
+   
+   //Used for testing only
+   public Collection getHoldingTransactions()
+   {
+      return holdingArea.values();
+   }
+     
    // Protected ---------------------------------------------------------------------------------------
         
    protected void addToConditionMap(Binding binding)

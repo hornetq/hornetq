@@ -46,6 +46,8 @@ import org.jboss.messaging.core.tx.Transaction;
  * In this case, with the assumption that producers and consumers are distributed evenly across the cluster
  * then sending the message to the local queue is the most efficient policy.
  * 
+ * The exception to this if there are no consumers on the local queue.
+ * 
  * In the case of a durable subscription, there may well be no local queue since the durable subscription lives
  * only on the number of nodes that it is looked up at.
  * 
@@ -66,7 +68,7 @@ public class DefaultRouter implements ClusterRouter
    //MUST be an arraylist for fast index access
    private ArrayList queues;
    
-   private LocalClusteredQueue localQueue;
+   private ClusteredQueue localQueue;
    
    private int target;
    
@@ -80,7 +82,7 @@ public class DefaultRouter implements ClusterRouter
       return queues.size();
    }
    
-   public LocalClusteredQueue getLocalQueue()
+   public ClusteredQueue getLocalQueue()
    {
       return localQueue;
    }
@@ -95,7 +97,7 @@ public class DefaultRouter implements ClusterRouter
          {
             throw new IllegalStateException("Already has local queue");
          }
-         localQueue = (LocalClusteredQueue)queue;
+         localQueue = queue;
       }
       
       queues.add(queue); 
@@ -148,8 +150,8 @@ public class DefaultRouter implements ClusterRouter
       if (trace) { log.trace(this + " routing ref " + reference); }
       
       //Favour the local queue
-         
-      if (localQueue != null)
+           
+      if (localQueue != null && localQueue.numberOfReceivers() > 0)
       {
          //The only time the local queue won't accept is if the selector doesn't
          //match - in which case it won't match at any other nodes too so no point
@@ -163,24 +165,27 @@ public class DefaultRouter implements ClusterRouter
       }
       else
       {
-         //There is no local shared queue
-         
+         //There is no local shared queue or the local queue has no consumers
+          
          //We round robin among the rest
-         if (!queues.isEmpty())
+         if ((localQueue == null && !queues.isEmpty()) || (localQueue != null && queues.size() > 1))
          {
             ClusteredQueue queue = (ClusteredQueue)queues.get(target);
             
-            Delivery del = queue.handle(observer, reference, tx);
-            
-            if (trace) { log.trace(this + " routed to remote queue, it returned " + del); }
-                        
-            target++;
-            
-            if (target == queues.size())
+            if (queue == localQueue)
             {
-               target = 0;
+               //We don't want to choose the local queue
+               incTarget();
             }
             
+            queue = (ClusteredQueue)queues.get(target);
+            
+            Delivery del = queue.handle(observer, reference, tx);
+             
+            if (trace) { log.trace(this + " routed to remote queue, it returned " + del); }
+                        
+            incTarget();
+
             //Again, if the selector doesn't match then it won't on any others so no point trying them
             return del;
          }                  
@@ -189,6 +194,16 @@ public class DefaultRouter implements ClusterRouter
       if (trace) { log.trace(this + " no queues to route to so return null"); }
       
       return null;
+   }
+   
+   private void incTarget()
+   {
+      target++;
+      
+      if (target == queues.size())
+      {
+         target = 0;
+      }
    }
    
    public List getQueues()

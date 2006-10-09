@@ -38,5 +38,5 @@ public interface ClusterRouter extends Router
 {
    List getQueues();
    
-   LocalClusteredQueue getLocalQueue();
+   ClusteredQueue getLocalQueue();
 }

@@ -25,10 +25,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -244,7 +246,9 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       
       try
       {
-         Bindings cb = (Bindings)conditionMap.get(condition);
+         //We should only list the bindings for the local node
+         
+         Bindings cb = (Bindings)conditionMap.get(condition);                  
                   
          if (cb == null)
          {
@@ -252,7 +256,23 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          }
          else
          {
-            return cb.getAllBindings();
+            List list = new ArrayList();
+            
+            Collection bindings = cb.getAllBindings();
+            
+            Iterator iter = bindings.iterator();
+            
+            while (iter.hasNext())
+            {
+               Binding binding = (Binding)iter.next();
+               
+               if (binding.getNodeId() == this.nodeId)
+               {
+                  list.add(binding);
+               }
+            }
+            
+            return list;
          }
       }
       finally

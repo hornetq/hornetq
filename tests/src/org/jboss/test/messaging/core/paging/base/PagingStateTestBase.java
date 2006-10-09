@@ -465,9 +465,7 @@ public class PagingStateTestBase extends MessagingTestCase
       Connection conn = ds.getConnection();
       
       List msgIds = new ArrayList();
-
-      //log.info("channel id:" + channelId);
-      
+ 
       String sql = "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY PAGE_ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);

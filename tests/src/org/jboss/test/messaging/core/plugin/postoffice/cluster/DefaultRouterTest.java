@@ -21,22 +21,32 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
+import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.FilterFactory;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouter;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouter;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.QueueStats;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.plugin.base.ClusteringTestBase;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
  * 
@@ -75,295 +85,288 @@ public class DefaultRouterTest extends ClusteringTestBase
       super.tearDown();
    }
    
-   public void testNotLocalPersistent() throws Throwable
+   // The router only has a local queue with a consumer
+   public void testRouterOnlyLocalWithConsumer() throws Exception
    {
-      notLocal(true);
-   }
-   
-   public void testNotLocalNonPersistent() throws Throwable
-   {
-      notLocal(false);
-   }
-   
-   public void testLocalPersistent() throws Throwable
-   {
-      local(true);
-   }
-   
-   public void testLocalNonPersistent() throws Throwable
-   {
-      local(false);
-   }
-   
-   protected void notLocal(boolean persistent) throws Throwable
-   {
-      ClusteredPostOffice office1 = null;
+      DefaultRouter dr = new DefaultRouter();
+                    
+      ClusteredQueue queue = new SimpleQueue(true);
       
-      ClusteredPostOffice office2 = null;
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
-      ClusteredPostOffice office3 = null;
-      
-      ClusteredPostOffice office4 = null;
-      
-      ClusteredPostOffice office5 = null;
-      
-      ClusteredPostOffice office6 = null;
-          
-      try
-      {   
-         office1 = createClusteredPostOffice(1, "testgroup");
-         
-         office2 = createClusteredPostOffice(2, "testgroup");
-         
-         office3 = createClusteredPostOffice(3, "testgroup");
-         
-         office4 = createClusteredPostOffice(4, "testgroup");
-         
-         office5 = createClusteredPostOffice(5, "testgroup");
-         
-         office6 = createClusteredPostOffice(6, "testgroup");
-         
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding1 = office2.bindClusteredQueue("topic", queue1);
-         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue1.add(receiver1);
-         
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office3, 3, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding2 = office3.bindClusteredQueue("topic", queue2);
-         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue2.add(receiver2);
-         
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office4, 4, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding3 = office4.bindClusteredQueue("topic", queue3);
-         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue3.add(receiver3);
-         
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office5, 5, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding4 = office5.bindClusteredQueue("topic", queue4);
-         SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue4.add(receiver4);
-         
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office6, 6, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding5 = office6.bindClusteredQueue("topic", queue5);
-         SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue5.add(receiver5);
+      queue.add(receiver1);
                
-         List msgs = sendMessages("topic", persistent, office1, 1, null);         
-         checkContainsAndAcknowledge(msgs, receiver1, queue1);         
-         checkEmpty(receiver2);
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office1, 1, null);         
-         checkEmpty(receiver1);
-         checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office1, 1, null);         
-         checkEmpty(receiver1);
-         checkEmpty(receiver2);
-         checkContainsAndAcknowledge(msgs, receiver3, queue1);                           
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office1, 1, null);         
-         checkEmpty(receiver1);
-         checkEmpty(receiver2);
-         checkEmpty(receiver3);
-         checkContainsAndAcknowledge(msgs, receiver4, queue1);                                    
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office1, 1, null);         
-         checkEmpty(receiver1);
-         checkEmpty(receiver2);
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkContainsAndAcknowledge(msgs, receiver5, queue1); 
-         
-         msgs = sendMessages("topic", persistent, office1, 1, null);         
-         checkContainsAndAcknowledge(msgs, receiver1, queue1);         
-         checkEmpty(receiver2);
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office1, 1, null);         
-         checkEmpty(receiver1);
-         checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-                     
-      }
-      finally
-      {
-         if (office1 != null)
-         {            
-            office1.stop();
-         }
-         
-         if (office2 != null)
-         {
-            office2.stop();
-         }
-         
-         if (office3 != null)
-         {            
-            office3.stop();
-         }
-         
-         if (office4 != null)
-         {
-            office4.stop();
-         }
-         
-         if (office5 != null)
-         {            
-            office5.stop();
-         }
-         
-         if (office6 != null)
-         {
-            office6.stop();
-         }
-      }
+      dr.add(queue);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);
+   }
+   
+   //The router only has a local queue with no consumer
+   public void testRouterOnlyLocalNoConsumer() throws Exception
+   {
+      DefaultRouter dr = new DefaultRouter();
+        
+      ClusteredQueue queue = new SimpleQueue(true);
+               
+      dr.add(queue);
+      
+      Message msg = CoreMessageFactory.createCoreMessage(0, false, null);      
+      
+      MessageReference ref = ms.reference(msg);         
+      
+      Delivery del = dr.handle(null, ref, null);
+      
+      assertNull(del);             
+
+   }
+   
+   //The router has only one non local queues
+   public void testRouterOnlyOneNonLocal() throws Exception
+   {
+      DefaultRouter dr = new DefaultRouter();
+                    
+      ClusteredQueue queue = new SimpleQueue(false);
+      
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      queue.add(receiver1);
+      
+      dr.add(queue);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);              
+   }
+   
+   //The router has multiple non local queues and no local queue
+   public void testRouterMultipleNonLocal() throws Exception
+   {
+      DefaultRouter dr = new DefaultRouter();
+                   
+      ClusteredQueue remote1 = new SimpleQueue(false);
+     
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote1.add(receiver1);
+      
+      dr.add(remote1);
+      
+      
+      ClusteredQueue remote2 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote2.add(receiver2);
+      
+      dr.add(remote2);
+      
+      
+      ClusteredQueue remote3 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote3.add(receiver3);
+      
+      dr.add(remote3);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver2);
+      
+      sendAndCheck(dr, receiver3);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver2);
+      
+      sendAndCheck(dr, receiver3);
    }
    
    
-   protected void local(boolean persistent) throws Throwable
+   // The router has one local with consumer and one non local queue
+   public void testRouterOneLocalWithConsumerOneNonLocal() throws Exception
    {
-      ClusteredPostOffice office1 = null;
+      DefaultRouter dr = new DefaultRouter();
+                             
+      ClusteredQueue remote1 = new SimpleQueue(false);
+     
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
-      ClusteredPostOffice office2 = null;
+      remote1.add(receiver1);
       
-      ClusteredPostOffice office3 = null;
+      dr.add(remote1);
       
-      ClusteredPostOffice office4 = null;
+      ClusteredQueue queue = new SimpleQueue(true);
       
-      ClusteredPostOffice office5 = null;
+      SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
-      ClusteredPostOffice office6 = null;
-          
-      try
-      {   
-         office1 = createClusteredPostOffice(1, "testgroup");
-         
-         office2 = createClusteredPostOffice(2, "testgroup");
-         
-         office3 = createClusteredPostOffice(3, "testgroup");
-         
-         office4 = createClusteredPostOffice(4, "testgroup");
-         
-         office5 = createClusteredPostOffice(5, "testgroup");
-         
-         office6 = createClusteredPostOffice(6, "testgroup");
-         
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding1 = office2.bindClusteredQueue("topic", queue1);
-         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue1.add(receiver1);
-         
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office3, 3, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding2 = office3.bindClusteredQueue("topic", queue2);
-         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue2.add(receiver2);
-         
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office4, 4, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding3 = office4.bindClusteredQueue("topic", queue3);
-         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue3.add(receiver3);
-         
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office5, 5, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding4 = office5.bindClusteredQueue("topic", queue4);
-         SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue4.add(receiver4);
-         
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office6, 6, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding5 = office6.bindClusteredQueue("topic", queue5);
-         SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue5.add(receiver5);
-               
-         List msgs = sendMessages("topic", persistent, office2, 3, null);         
-         checkContainsAndAcknowledge(msgs, receiver1, queue1);         
-         checkEmpty(receiver2);
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office2, 3, null);         
-         checkContainsAndAcknowledge(msgs, receiver1, queue1);         
-         checkEmpty(receiver2);
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office2, 3, null);         
-         checkContainsAndAcknowledge(msgs, receiver1, queue1);         
-         checkEmpty(receiver2);
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         
-         msgs = sendMessages("topic", persistent, office3, 3, null); 
-         checkEmpty(receiver1);
-         checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office3, 3, null); 
-         checkEmpty(receiver1);
-         checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-         msgs = sendMessages("topic", persistent, office3, 3, null); 
-         checkEmpty(receiver1);
-         checkContainsAndAcknowledge(msgs, receiver2, queue1);                  
-         checkEmpty(receiver3);
-         checkEmpty(receiver4);
-         checkEmpty(receiver5);
-         
-                     
-      }
-      finally
-      {
-         if (office1 != null)
-         {            
-            office1.stop();
-         }
-         
-         if (office2 != null)
-         {
-            office2.stop();
-         }
-         
-         if (office3 != null)
-         {            
-            office3.stop();
-         }
-         
-         if (office4 != null)
-         {
-            office4.stop();
-         }
-         
-         if (office5 != null)
-         {            
-            office5.stop();
-         }
-         
-         if (office6 != null)
-         {
-            office6.stop();
-         }
-      }
+      queue.add(receiver2);
+      
+      dr.add(queue);
+
+      sendAndCheck(dr, receiver2);
+      
+      sendAndCheck(dr, receiver2);
+      
+      sendAndCheck(dr, receiver2);                  
+   }
+   
+   // The router has multiple non local queues and one local queue with consumer
+   public void testRouterMultipleNonLocalOneLocalNoConsumer() throws Exception
+   {
+      DefaultRouter dr = new DefaultRouter();            
+                  
+      ClusteredQueue remote1 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote1.add(receiver1);
+      
+      dr.add(remote1);
+      
+      
+      ClusteredQueue remote2 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote2.add(receiver2);
+      
+      dr.add(remote2);
+      
+      
+      ClusteredQueue remote3 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote3.add(receiver3);
+      
+      dr.add(remote3);
+      
+      
+      ClusteredQueue queue = new SimpleQueue(true);
+            
+      SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      queue.add(receiver4);
+      
+      dr.add(queue);
+      
+      
+      sendAndCheck(dr, receiver4);
+      
+      sendAndCheck(dr, receiver4);
+      
+      sendAndCheck(dr, receiver4);
+   }
+   
+   // The router has multiple non local queues and one local queue without consumer
+   public void testRouterMultipleNonLocalOneLocalWithConsumer() throws Exception
+   {
+      DefaultRouter dr = new DefaultRouter();
+                  
+      ClusteredQueue remote1 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote1.add(receiver1);
+      
+      dr.add(remote1);
+      
+      
+      ClusteredQueue remote2 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote2.add(receiver2);
+      
+      dr.add(remote2);
+      
+      
+      ClusteredQueue remote3 = new SimpleQueue(false);
+      
+      SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote3.add(receiver3);
+      
+      dr.add(remote3);
+      
+      
+      ClusteredQueue queue = new SimpleQueue(true);
+      
+      
+      dr.add(queue);
+      
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver2);
+      
+      sendAndCheck(dr, receiver3);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver2);
+      
+      sendAndCheck(dr, receiver3);
+   }
+   
+   // The router has one local without consumer and one non local queue
+   public void testRouterMultipleOneLocalWithoutConsumerOneNonLocal() throws Exception
+   {
+      DefaultRouter dr = new DefaultRouter();
+                             
+      ClusteredQueue remote1 = new SimpleQueue(false);
+     
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      remote1.add(receiver1);
+      
+      dr.add(remote1);
+      
+      ClusteredQueue queue = new SimpleQueue(true);
+             
+      dr.add(queue);
+
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);                       
+   }
+   
+   private long nextId;
+   
+   private void sendAndCheck(ClusterRouter router, SimpleReceiver receiver) throws Exception
+   {
+      Message msg = CoreMessageFactory.createCoreMessage(nextId++, false, null);      
+      
+      MessageReference ref = ms.reference(msg);         
+      
+      Delivery del = router.handle(null, ref, null);
+      
+      assertNotNull(del);
+      
+      assertTrue(del.isSelectorAccepted());
+            
+      Thread.sleep(250);
+      
+      List msgs = receiver.getMessages();
+      
+      assertNotNull(msgs);
+      
+      assertEquals(1, msgs.size());
+      
+      Message msgRec = (Message)msgs.get(0);
+      
+      assertTrue(msg == msgRec);  
+      
+      receiver.clear();
    }
    
    
@@ -393,6 +396,217 @@ public class DefaultRouterTest extends ClusteringTestBase
    
    
    // Inner classes -------------------------------------------------
+   
+   class SimpleQueue implements ClusteredQueue
+   {
+      private boolean local;
+      
+      private Receiver receiver;
+        
+      SimpleQueue(boolean local)
+      {
+         this.local = local;
+      }
+
+      public int getNodeId()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public QueueStats getStats()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public boolean isLocal()
+      {
+         return local;
+      }
+
+      public Filter getFilter()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public String getName()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public boolean isClustered()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public boolean acceptReliableMessages()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public void activate()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public List browse()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public List browse(Filter filter)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public void clear()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void close()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void deactivate()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void deliver(boolean synchronous)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public List delivering(Filter filter)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public long getChannelID()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public boolean isActive()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public boolean isRecoverable()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public void load() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public int messageCount()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public void removeAllReferences() throws Throwable
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public List undelivered(Filter filter)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public void unload() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
+      {
+         if (receiver != null)
+         {
+            Delivery del = receiver.handle(observer, reference, tx);
+            
+            return del;
+         }
+         
+         return new SimpleDelivery(observer, reference);
+      }
+
+      public void acknowledge(Delivery d, Transaction tx) throws Throwable
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void cancel(Delivery d) throws Throwable
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public boolean add(Receiver receiver)
+      {
+         this.receiver = receiver;
+         
+         return true;
+      }
+
+      public boolean contains(Receiver receiver)
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public Iterator iterator()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public int numberOfReceivers()
+      {
+         if (receiver != null)
+         {
+            return 1;
+         }
+         else
+         {
+            return 0;
+         }
+      }
+
+      public boolean remove(Receiver receiver)
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+      
+   }
    
 
 }

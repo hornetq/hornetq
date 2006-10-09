@@ -47,7 +47,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * $Id$
  *
  */
-class RemoteQueueStub implements ClusteredQueue
+public class RemoteQueueStub implements ClusteredQueue
 {
    private static final Logger log = Logger.getLogger(RemoteQueueStub.class);
       
@@ -65,7 +65,8 @@ class RemoteQueueStub implements ClusteredQueue
    
    private QueueStats stats;
    
-   RemoteQueueStub(int nodeId, String name, long id, boolean recoverable, PersistenceManager pm, Filter filter)
+   public RemoteQueueStub(int nodeId, String name, long id, boolean recoverable,
+                          PersistenceManager pm, Filter filter)
    {
       this.nodeId = nodeId;
       
