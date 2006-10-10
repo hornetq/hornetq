@@ -835,10 +835,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             
             if (id.getNodeId() == nodeId.intValue())
             {
-               ClusterTransaction tx = (ClusterTransaction)iter.next();
+               ClusterTransaction tx = (ClusterTransaction)entry.getValue();
                
                if (trace) { log.trace("Found transaction " + tx + " in holding area"); }
-               
+                
                boolean commit = tx.check(this);
                
                if (trace) { log.trace(this.nodeId + " transaction " + tx + " will be committed?: " + commit); }
@@ -852,7 +852,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                   tx.rollback(this);
                }
                
-               toRemove.add(tx);
+               toRemove.add(id);
                
                if (trace) { log.trace(this.nodeId + " resolved " + tx); }
             }

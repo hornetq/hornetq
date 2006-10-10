@@ -159,8 +159,7 @@ public class RecoveryTest extends ClusteringTestBase
          assertTrue(office2.getHoldingTransactions().isEmpty());
          
          //The tx should be removed from the holding area and nothing should be received
-         msgs = receiver1.getMessages();
-         assertTrue(msgs.isEmpty());
+         //remember node1 has now crashed so no point checking receiver1
          
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
@@ -259,8 +258,7 @@ public class RecoveryTest extends ClusteringTestBase
          assertTrue(office2.getHoldingTransactions().isEmpty());
          
          //The tx should be removed from the holding area and messages be received
-         msgs = receiver1.getMessages();
-         assertEquals(NUM_MESSAGES, msgs.size());
+         //no point checking receiver1 since node1 has crashed
          
          msgs = receiver2.getMessages();
          assertEquals(NUM_MESSAGES, msgs.size());
@@ -279,7 +277,6 @@ public class RecoveryTest extends ClusteringTestBase
          }
       }
    }
-   
    
    protected ClusteredPostOffice createClusteredPostOffice(int nodeId, String groupName) throws Exception
    {
