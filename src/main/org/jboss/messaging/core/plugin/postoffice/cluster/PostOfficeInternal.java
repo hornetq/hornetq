@@ -69,6 +69,4 @@ interface PostOfficeInternal extends ClusteredPostOffice
    void sendQueueStats() throws Exception;
    
    boolean referenceExistsInStorage(long channelID, long messageID) throws Exception;
-   
-   List getDeliveries(String queueName, int numMessages) throws Exception; 
 }

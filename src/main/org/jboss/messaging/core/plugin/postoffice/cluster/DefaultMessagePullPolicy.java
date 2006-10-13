@@ -49,13 +49,13 @@ public class DefaultMessagePullPolicy implements MessagePullPolicy
       ClusteredQueue chosenQueue = null;
       
       int maxMessages = 0;
-      
+       
       while (iter.hasNext())
       {
          ClusteredQueue queue = (ClusteredQueue)iter.next();
          
          if (!queue.isLocal())
-         {
+         {  
             QueueStats stats = queue.getStats();
             
             if (stats != null)

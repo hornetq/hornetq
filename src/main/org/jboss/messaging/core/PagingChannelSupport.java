@@ -181,6 +181,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    
    // Public --------------------------------------------------------
 
+   //Only used in testing
    public int downCacheCount()
    {
       synchronized (refLock)
@@ -189,6 +190,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }
    }
 
+   //Only used in testing
    public boolean isPaging()
    {
       synchronized (refLock)
@@ -364,60 +366,37 @@ public abstract class PagingChannelSupport extends ChannelSupport
          }
       }    
    }
-   
+      
    protected boolean cancelInternal(Delivery del) throws Exception
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
 
-      boolean removed;
-
-      synchronized (deliveryLock)
+      boolean removed = super.cancelInternal(del);
+      
+      if (removed && paging)
       {
-         removed = deliveries.remove(del);
-      }
-
-      if (!removed)
-      {         
-         // This can happen if the message is cancelled before the result of
-         // ServerConsumerDelegate.handle has returned, in which case we won't have a record of the delivery
-         // In this case we don't want to add the message reference back into
-         // the state since it was never removed in the first place
-
-         if (trace) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
-      }
-      else
-      {
-         synchronized (refLock)
+         // if paging and the in memory queue is exactly full we need to evict the end reference to storage to
+         // preserve the number of refs in the queue
+         if (messageRefs.size() == fullSize + 1)
          {
-            messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
-
-            if (paging)
-            {
-               // if paging we need to evict the end reference to storage to
-               // preserve the number of refs in the queue
-
-               MessageReference ref = (MessageReference)messageRefs.removeLast();
+            MessageReference ref = (MessageReference)messageRefs.removeLast();
  
-               addToDownCache(ref, true);
-            }
+            addToDownCache(ref, true);
          }
-
-         if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }
       }
+         
+      if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }      
       
       return removed;
    }
-   
+      
    protected MessageReference removeFirstInMemory() throws Exception
    {
-      synchronized (refLock)
-      {
-         MessageReference result = (MessageReference) messageRefs.removeFirst();
+      MessageReference result = super.removeFirstInMemory();
 
-         checkLoad();
+      checkLoad();
 
-         return (MessageReference) result;
-      }
+      return result;
    }
    
    private boolean checkLoad() throws Exception
@@ -447,36 +426,30 @@ public abstract class PagingChannelSupport extends ChannelSupport
          return false;
       }
    }
-   
+    
    protected void addReferenceInMemory(MessageReference ref) throws Exception
-   {
-      if (ref.isReliable() && !acceptReliableMessages)
+   {     
+      if (paging)
       {
-         throw new IllegalStateException("Reliable reference " + ref +
-                                         " cannot be added to non-recoverable state");
+         if (ref.isReliable() && !acceptReliableMessages)
+         {
+            throw new IllegalStateException("Reliable reference " + ref +
+                                            " cannot be added to non-recoverable state");
+         }
+         addToDownCache(ref, false);
       }
-
-      synchronized (refLock)
+      else
       {
-         if (paging)
+         super.addReferenceInMemory(ref);
+         
+         if (messageRefs.size() == fullSize)
          {
-            addToDownCache(ref, false);
+            // We are full in memory - go into paging mode
+            if (trace) { log.trace(this + " going into paging mode"); }
+
+            paging = true;
          }
-         else
-         {
-            messageRefs.addLast(ref, ref.getPriority());
-
-            if (trace){ log.trace(this + " added " + ref + " non-transactionally in memory"); }
-
-            if (messageRefs.size() == fullSize)
-            {
-               // We are full in memory - go into paging mode
-               if (trace) { log.trace(this + " going into paging mode"); }
-
-               paging = true;
-            }
-         }
-      }
+      }      
    }
    
    protected void addToDownCache(MessageReference ref, boolean cancelling) throws Exception
@@ -525,8 +498,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       if (trace) { log.trace(this + " flushing " + downCache.size() + " refs from downcache"); }
 
       // Non persistent refs won't already be in the db so they need to be inserted
-      // Persistent refs in a recoverable state will already be there so need to
-      // be updated
+      // Persistent refs in a recoverable state will already be there so need to be updated
 
       List toUpdate = new ArrayList();
 
@@ -573,9 +545,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
       if (trace) { log.trace(this + " cleared downcache"); }
    }
-   
-   
-   
+        
    // Private ------------------------------------------------------------------------------
    
    private MessageReference addFromRefInfo(ReferenceInfo info, Map refMap)

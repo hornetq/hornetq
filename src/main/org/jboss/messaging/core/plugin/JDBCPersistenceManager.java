@@ -2970,7 +2970,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       
       //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
       
-      //FIXME - We are mixing concerns here
+      //TODO - We are mixing concerns here
       //The basic JDBCPersistencManager should *only* know about core messages - not 
       //JBossMessages - we should subclass JBDCPersistenceManager and the JBossMessage
       //specific code in a subclass

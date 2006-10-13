@@ -21,6 +21,7 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
@@ -85,8 +87,8 @@ public class DefaultRouterTest extends ClusteringTestBase
       super.tearDown();
    }
    
-   // The router only has a local queue with a consumer
-   public void testRouterOnlyLocalWithConsumer() throws Exception
+   // The router only has a local queue
+   public void testRouterOnlyLocal() throws Exception
    {
       DefaultRouter dr = new DefaultRouter();
                     
@@ -103,25 +105,6 @@ public class DefaultRouterTest extends ClusteringTestBase
       sendAndCheck(dr, receiver1);
       
       sendAndCheck(dr, receiver1);
-   }
-   
-   //The router only has a local queue with no consumer
-   public void testRouterOnlyLocalNoConsumer() throws Exception
-   {
-      DefaultRouter dr = new DefaultRouter();
-        
-      ClusteredQueue queue = new SimpleQueue(true);
-               
-      dr.add(queue);
-      
-      Message msg = CoreMessageFactory.createCoreMessage(0, false, null);      
-      
-      MessageReference ref = ms.reference(msg);         
-      
-      Delivery del = dr.handle(null, ref, null);
-      
-      assertNull(del);             
-
    }
    
    //The router has only one non local queues
@@ -189,8 +172,8 @@ public class DefaultRouterTest extends ClusteringTestBase
    }
    
    
-   // The router has one local with consumer and one non local queue
-   public void testRouterOneLocalWithConsumerOneNonLocal() throws Exception
+   // The router has one local with consumer and one non local queue with consumer
+   public void testRouterOneLocalOneNonLocal() throws Exception
    {
       DefaultRouter dr = new DefaultRouter();
                              
@@ -217,8 +200,8 @@ public class DefaultRouterTest extends ClusteringTestBase
       sendAndCheck(dr, receiver2);                  
    }
    
-   // The router has multiple non local queues and one local queue with consumer
-   public void testRouterMultipleNonLocalOneLocalNoConsumer() throws Exception
+   // The router has multiple non local queues with consumers and one local queue
+   public void testRouterMultipleNonLocalOneLocal() throws Exception
    {
       DefaultRouter dr = new DefaultRouter();            
                   
@@ -265,81 +248,6 @@ public class DefaultRouterTest extends ClusteringTestBase
       sendAndCheck(dr, receiver4);
    }
    
-   // The router has multiple non local queues and one local queue without consumer
-   public void testRouterMultipleNonLocalOneLocalWithConsumer() throws Exception
-   {
-      DefaultRouter dr = new DefaultRouter();
-                  
-      ClusteredQueue remote1 = new SimpleQueue(false);
-      
-      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-      
-      remote1.add(receiver1);
-      
-      dr.add(remote1);
-      
-      
-      ClusteredQueue remote2 = new SimpleQueue(false);
-      
-      SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-      
-      remote2.add(receiver2);
-      
-      dr.add(remote2);
-      
-      
-      ClusteredQueue remote3 = new SimpleQueue(false);
-      
-      SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-      
-      remote3.add(receiver3);
-      
-      dr.add(remote3);
-      
-      
-      ClusteredQueue queue = new SimpleQueue(true);
-      
-      
-      dr.add(queue);
-      
-      
-      sendAndCheck(dr, receiver1);
-      
-      sendAndCheck(dr, receiver2);
-      
-      sendAndCheck(dr, receiver3);
-      
-      sendAndCheck(dr, receiver1);
-      
-      sendAndCheck(dr, receiver2);
-      
-      sendAndCheck(dr, receiver3);
-   }
-   
-   // The router has one local without consumer and one non local queue
-   public void testRouterMultipleOneLocalWithoutConsumerOneNonLocal() throws Exception
-   {
-      DefaultRouter dr = new DefaultRouter();
-                             
-      ClusteredQueue remote1 = new SimpleQueue(false);
-     
-      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-      
-      remote1.add(receiver1);
-      
-      dr.add(remote1);
-      
-      ClusteredQueue queue = new SimpleQueue(true);
-             
-      dr.add(queue);
-
-      sendAndCheck(dr, receiver1);
-      
-      sendAndCheck(dr, receiver1);
-      
-      sendAndCheck(dr, receiver1);                       
-   }
-   
    private long nextId;
    
    private void sendAndCheck(ClusterRouter router, SimpleReceiver receiver) throws Exception
@@ -367,6 +275,33 @@ public class DefaultRouterTest extends ClusteringTestBase
       assertTrue(msg == msgRec);  
       
       receiver.clear();
+   }
+   
+   private void sendAndCheck(ClusterRouter router, Queue queue) throws Throwable
+   {
+      Message msg = CoreMessageFactory.createCoreMessage(nextId++, false, null);      
+      
+      MessageReference ref = ms.reference(msg);         
+      
+      Delivery del = router.handle(null, ref, null);
+      
+      assertNotNull(del);
+      
+      assertTrue(del.isSelectorAccepted());
+            
+      Thread.sleep(250);
+      
+      List msgs = queue.browse();
+      
+      assertNotNull(msgs);
+      
+      assertEquals(1, msgs.size());
+      
+      Message msgRec = (Message)msgs.get(0);
+      
+      assertTrue(msg == msgRec);  
+      
+      queue.removeAllReferences();
    }
    
    
@@ -402,6 +337,8 @@ public class DefaultRouterTest extends ClusteringTestBase
       private boolean local;
       
       private Receiver receiver;
+      
+      private List refs = new ArrayList();
         
       SimpleQueue(boolean local)
       {
@@ -457,8 +394,18 @@ public class DefaultRouterTest extends ClusteringTestBase
 
       public List browse()
       {
-         // TODO Auto-generated method stub
-         return null;
+         List msgs = new ArrayList();
+         
+         Iterator iter = refs.iterator();
+         
+         while (iter.hasNext())
+         {
+            MessageReference ref = (MessageReference)iter.next();
+            
+            msgs.add(ref);
+         }
+         
+         return msgs;
       }
 
       public List browse(Filter filter)
@@ -549,12 +496,21 @@ public class DefaultRouterTest extends ClusteringTestBase
       {
          if (receiver != null)
          {
+            //Send to receiver
+            
             Delivery del = receiver.handle(observer, reference, tx);
             
             return del;
          }
+         else
+         {
+            //Store internally
+            refs.add(reference);
+            
+            return new SimpleDelivery(observer, reference);
+         }
          
-         return new SimpleDelivery(observer, reference);
+      
       }
 
       public void acknowledge(Delivery d, Transaction tx) throws Throwable

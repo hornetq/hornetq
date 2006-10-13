@@ -176,7 +176,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          if (trace) log.trace("created selector");
       }
 
-      //FIXME - 
+      //TODO - 
       //We really need to get rid of this delivery list - it's only purpose in life is to solve
       //the race condition where acks or cancels can come in before handle has returned - and
       //that can be solved in a simpler way anyway.
@@ -350,7 +350,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             // it. This is because it may still contain deliveries that may well be acknowledged
             // after the consumer has closed. This is perfectly valid.
 
-            // FIXME - The deliveries should really be stored in the session endpoint, not here
+            // TODO - The deliveries should really be stored in the session endpoint, not here
             // that is their natural place, that would mean we wouldn't have to mess around with
             // keeping deliveries after this is closed.
 

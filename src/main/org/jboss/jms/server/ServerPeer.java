@@ -821,7 +821,7 @@ public class ServerPeer extends ServiceMBeanSupport
       //        <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
       //
 
-      //FIXME - Yes this is super-ugly - there must be an easier way of doing it
+      //TODO - Yes this is super-ugly - there must be an easier way of doing it
       //also in LocalTestServer is doing the same thing in a slightly different way
       //this should be combined
 

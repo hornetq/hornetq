@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
@@ -36,7 +37,9 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.StreamUtils;
 
@@ -62,19 +65,12 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    
    private volatile int lastCount;
    
-   private volatile boolean changedSignificantly;
-   
-   private RemoteQueueStub pullQueue;
+   private volatile RemoteQueueStub pullQueue;
    
    private int nodeId;
    
-   //TODO Make configurable
-   private int pullSize;
-   
    private TransactionRepository tr;
    
-   private Object pullLock = new Object();
- 
    //TODO - we shouldn't have to specify office AND nodeId
    public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
@@ -87,7 +83,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
       this.tr = tr;
       
-      //FIXME - this cast is a hack
+      //TODO - This cast is potentially unsafe - handle better
       this.office = (PostOfficeInternal)office;
    }
    
@@ -101,44 +97,39 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
       this.tr = tr;
       
-      //FIXME - this cast is a hack
+      //TODO - This cast is potentially unsafe - handle better
       this.office = (PostOfficeInternal)office;
    }
    
-   public void setPullInfo(RemoteQueueStub queue, int pullSize)
+   public void setPullQueue(RemoteQueueStub queue)
    {
-      synchronized (pullLock)
-      {
-         this.pullQueue = queue;
-         
-         this.pullSize = pullSize;
-      }
+      this.pullQueue = queue;
    }
-   
+      
    public QueueStats getStats()
    {      
-      int cnt = messageCount();
+      //Currently we only return the current message reference count for the channel
+      //Note we are only interested in the number of refs in the main queue, not
+      //in any deliveries
+      //Also we are only interested in the value obtained after delivery is complete.
+      //This is so we don't end up with transient values since delivery is half way through
+      
+      int cnt = getRefCount();
       
       if (cnt != lastCount)
       {
-         changedSignificantly = true;
-         
          lastCount = cnt;
+         
+         //We only return stats if it has changed since last time - this is so when we only
+         //broadcast data when necessary
+         return new QueueStats(name, cnt);
       }
       else
       {
-         changedSignificantly = false;
-      }
-      
-      return new QueueStats(name, cnt);
+         return null;
+      } 
    }      
-   
-   //Have the stats changed significantly since the last time we request them?
-   public boolean changedSignificantly()
-   {
-      return changedSignificantly;
-   }
-   
+    
    public boolean isLocal()
    {
       return true;
@@ -148,44 +139,17 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    {
       return nodeId;
    }
-      
+   
    /*
     * Used when pulling messages from a remote queue
     */
    public List getDeliveries(int number) throws Exception
    {
-      List dels = new ArrayList();
+      Future result = new Future();
       
-      synchronized (refLock)
-      {
-         synchronized (deliveryLock)
-         {
-            //We only get the refs if receiversReady = false so as not to steal messages that
-            //might be consumed by local receivers            
-            if (!receiversReady)
-            {               
-               int count = 0;
-               
-               MessageReference ref;
-               
-               while (count < number && (ref = removeFirstInMemory()) != null)
-               {
-                  SimpleDelivery del = new SimpleDelivery(this, ref);
-                  
-                  deliveries.add(del);
-                  
-                  dels.add(del);       
-                  
-                  count++;
-               }           
-               return dels;
-            }
-            else
-            {
-               return Collections.EMPTY_LIST;
-            }
-         }
-      }          
+      this.executor.execute(new GetDeliveriesRunnable(result, 1));
+            
+      return (List)result.getResult();
    }
    
    /*
@@ -225,39 +189,25 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       acknowledgeInternal(d, null, false, false);      
    }
    
-   protected void deliverInternal(boolean handle) throws Throwable
-   {            
-      int beforeSize = -1;
+   
+   protected MessageReference nextReference(ListIterator iter, boolean handle) throws Throwable
+   {
+      MessageReference ref = super.nextReference(iter, handle);
       
-      if (!handle)
+      if (ref == null)
       {
-         beforeSize  = messageRefs.size();
-      }      
-      
-      super.deliverInternal(handle);
-
-      if (!handle)
-      {
-         int afterSize = messageRefs.size();
+         //There are no available refs in the local queue
+         //Maybe we need to pull one (some) from a remote queue?
          
-         if (trace)
+         if (pullMessages())
          {
-            log.trace(this + " Deciding whether to pull messages. " +
-                     "receiversready:" + receiversReady + " before size:" + beforeSize + " afterSize: " + afterSize);
-         }
-         
-         if (receiversReady && beforeSize == 0 && afterSize == 0)
-         {
-            //Delivery has been prompted (not from handle call)
-            //and has run, and there are consumers that are still interested in receiving more
-            //refs but there are none available in the channel (either the channel is empty
-            //or there are only refs that don't match any selectors)
-            //then we should perhaps pull some messages from a remote queue
-            pullMessages();
+            ref = super.nextReference(iter, handle);
          }
       }
+      
+      return ref;
    }
-   
+
    public boolean isClustered()
    {
       return true;
@@ -286,28 +236,28 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
     * On failure, commit or rollback will be called on the holding transaction causing the deliveries to be acked or cancelled
     * depending on whether they exist in the database
     * 
+    * Recovery is handled in the same way as CastMessagesCallback
+    * 
     * This method will always be executed on the channel's event queue (via the deliver method)
     * so no need to do any handles or acks inside another event message
     */
-   private void pullMessages() throws Throwable
-   {       
-      RemoteQueueStub theQueue;
-      int thePullSize;
-      
-      synchronized (pullLock)
+   private boolean pullMessages() throws Throwable
+   {      
+      if (pullQueue == null)
       {
-         if (pullQueue == null)
-         {
-            return;
-         }
-         theQueue = pullQueue;
-         thePullSize = pullSize;
+         return false;
       }
-                
+      
+      //TODO we can optimise this for the case when only one message is pulled
+      //and when only non persistent messages are pulled - i.e. we don't need
+      //to create a transaction.
+      
+      RemoteQueueStub theQueue = pullQueue;
+         
       Transaction tx = tr.createTransaction();
          
       ClusterRequest req = new PullMessagesRequest(this.nodeId, tx.getId(), theQueue.getChannelID(),
-                                                   name, thePullSize);
+                                                   name, 1);
       
       if (trace)
       {
@@ -315,12 +265,14 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                    " pulling from node " + theQueue.getNodeId() + " to node " + this.nodeId);
       }
       
+      log.info("==================== Executing pull messages request");
       byte[] bytes = (byte[])office.syncSendRequest(req, theQueue.getNodeId(), true);
+      log.info("==================== Executed pull messages request");
       
       if (bytes == null)
       {
          //Ok - node might have left the group
-         return;
+         return false;
       }
       
       PullMessagesResponse response = new PullMessagesResponse();
@@ -346,20 +298,24 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
             
             containsReliable = true;
          }
-         
+               
          MessageReference ref = null;
          
          try
          {
             ref = ms.reference(msg);
             
-            Delivery delRet = handleInternal(null, ref, tx, true, true);
+            //It's ok to call this directly since this method is only ever called by the delivery thread
+            //We call it with the deliver parameter set to false - this prevents delivery being done
+            //after the ref is added - if delivery was done we would end up in recursion.
+            Delivery delRet = handleInternal(null, ref, tx, true, true, false);
             
             if (delRet == null || !delRet.isSelectorAccepted())
             {
                //This should never happen
-               throw new IllegalStateException("Aaarrgg queue did not accept reference");
+               throw new IllegalStateException("Queue did not accept reference!");
             }
+            
          }
          finally
          {
@@ -391,6 +347,164 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
          req = new PullMessagesRequest(this.nodeId, tx.getId());
          
          office.asyncSendRequest(req, theQueue.getNodeId());
+      }      
+      
+      return !msgs.isEmpty();
+   }
+   
+   public int getRefCount()
+   {
+      //We are only interested in getting the reference count when delivery is not in progress
+      //since we don't want mid delivery transient spurious values, so we execute the request
+      //on the same thread.
+      
+      Future result = new Future();
+      
+      try
+      {
+         this.executor.execute(new GetRefCountRunnable(result));
+      }
+      catch (InterruptedException e)
+      {
+         log.warn("Thread interrupted", e);
+      }
+
+      return ((Integer)result.getResult()).intValue();
+   }
+   
+   private class GetRefCountRunnable implements Runnable
+   {
+      Future result;
+      
+      public GetRefCountRunnable(Future result)
+      {
+         this.result = result;
+      }
+      
+      public void run()
+      {
+         int refCount = messageRefs.size();
+         
+         result.setResult(new Integer(refCount));        
+      }
+   }  
+   
+   private class GetDeliveriesRunnable implements Runnable
+   {
+      Future result;
+      
+      int number;
+      
+      public GetDeliveriesRunnable(Future result, int number)
+      {
+         this.result = result;
+         
+         this.number = number;
+      }
+      
+      public void run()
+      {
+         try
+         {
+            List list = null;
+            
+            //We only get the refs if receiversReady = false so as not to steal messages that
+            //might be consumed by local receivers            
+            if (!receiversReady)
+            {               
+               int count = 0;
+               
+               MessageReference ref;
+               
+               list = new ArrayList();
+               
+               synchronized (refLock)
+               {
+                  synchronized (deliveryLock)
+                  {
+                     while (count < number && (ref = removeFirstInMemory()) != null)
+                     {
+                        SimpleDelivery del = new SimpleDelivery(LocalClusteredQueue.this, ref);
+                        
+                        deliveries.add(del);
+                        
+                        list.add(del);       
+                        
+                        count++;
+                     }  
+                  }
+               }                    
+            }
+            else
+            {
+               list = Collections.EMPTY_LIST;
+            }
+            
+            result.setResult(list);
+         }
+         catch (Exception e)
+         {
+            result.setException(e);
+         }                     
+      }
+   } 
+   
+   private class AddReferencesCallback implements TxCallback
+   {
+      private List references;
+      
+      private AddReferencesCallback(List references)
+      {
+         this.references = references;
+      }
+
+      public void afterCommit(boolean onePhase) throws Exception
+      {
+         Iterator iter = references.iterator();
+
+         while (iter.hasNext())
+         {
+            MessageReference ref = (MessageReference) iter.next();
+
+            if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
+
+            try
+            {
+               synchronized (refLock)
+               {
+                  addReferenceInMemory(ref);
+               }
+            }
+            catch (Throwable t)
+            {
+               throw new TransactionException("Failed to add reference", t);
+            }
+         }
+      }
+
+      public void afterPrepare() throws Exception
+      {
+         //NOOP
+      }
+
+      public void afterRollback(boolean onePhase) throws Exception
+      {
+         //NOOP
+      }
+
+      public void beforeCommit(boolean onePhase) throws Exception
+      {
+         //NOOP
+      }
+
+      public void beforePrepare() throws Exception
+      {
+         //NOOP
+      }
+
+      public void beforeRollback(boolean onePhase) throws Exception
+      {
+         //NOOP
       }
       
    }

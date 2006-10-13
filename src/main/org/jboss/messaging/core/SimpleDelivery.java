@@ -108,7 +108,7 @@ public class SimpleDelivery implements Delivery
       return cancelled;
    }
 
-   public synchronized boolean isSelectorAccepted()
+   public boolean isSelectorAccepted()
    {
       return selectorAccepted;
    }

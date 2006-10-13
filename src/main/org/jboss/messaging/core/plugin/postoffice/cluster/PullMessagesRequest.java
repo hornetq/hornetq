@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -80,7 +81,16 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
       
       if (hold)
       {                           
-         List dels = office.getDeliveries(queueName, numMessages);
+         Binding binding = office.getBindingForQueueName(queueName);
+         
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue: " + queueName);
+         }
+         
+         LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
+         
+         List dels = queue.getDeliveries(numMessages);
          
          if (trace) { log.trace("PullMessagesRequest got " + dels.size() + " deliveries"); }
          
@@ -97,7 +107,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
                //Add it to internal list
                if (reliableDels == null)
                {
-                  reliableDels  = new ArrayList();                                    
+                  reliableDels = new ArrayList();                                    
                }
                
                reliableDels.add(del);

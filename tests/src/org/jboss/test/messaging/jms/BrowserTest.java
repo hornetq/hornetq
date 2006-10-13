@@ -100,8 +100,7 @@ public class BrowserTest extends MessagingTestCase
 	{
       ServerManagement.undeployQueue("Queue");
       
-      connection.stop();
-      connection = null;
+      connection.close();
       	
 		super.tearDown();     
 	}

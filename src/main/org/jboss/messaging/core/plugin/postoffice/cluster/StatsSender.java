@@ -98,6 +98,7 @@ public class StatsSender implements MessagingComponent
    class SendStatsTimerTask extends TimerTask
    {
       private boolean stopping;
+      
       private boolean stopped;
       
       private Object stopLock = new Object();
@@ -125,8 +126,11 @@ public class StatsSender implements MessagingComponent
             if (stopping)
             {
                cancel();
+               
                stopped = true;
+               
                stopLock.notify();
+               
                return;
             }
          }

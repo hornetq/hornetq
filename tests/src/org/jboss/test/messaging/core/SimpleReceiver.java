@@ -61,6 +61,7 @@ public class SimpleReceiver implements Receiver
    public static final String BROKEN = "BROKEN";
    public static final String REJECTING = "REJECTING";
    public static final String SELECTOR_REJECTING = "SELECTOR_REJECTING";
+   public static final String ACCEPTING_TO_MAX = "ACCEPTING_TO_MAX";
 
    private static final String INVOCATION_COUNT = "INVOCATION_COUNT";
 
@@ -77,6 +78,7 @@ public class SimpleReceiver implements Receiver
    private int invocationsToFutureStateCount;
    private Map waitingArea;
    private boolean immediateAsynchronousAcknowledgment;
+   private int maxRefs;
 
    // Constructors --------------------------------------------------
 
@@ -102,6 +104,7 @@ public class SimpleReceiver implements Receiver
    {
       this(name, state, null);
    }
+   
 
    public SimpleReceiver(String name, String state, Channel channel)
    {
@@ -142,7 +145,15 @@ public class SimpleReceiver implements Receiver
             log.trace(this + " is rejecting reference " + ref);
             return null;
          }
-
+         
+         if (ACCEPTING_TO_MAX.equals(state))
+         {
+            //Only accept up to maxRefs references
+            if (messages.size() == maxRefs)
+            {
+               return null;
+            }
+         }
 
          if (BROKEN.equals(state))
          {
@@ -192,6 +203,11 @@ public class SimpleReceiver implements Receiver
    }
    
    // Public --------------------------------------------------------
+   
+   public void setMaxRefs(int max)
+   {
+      this.maxRefs = max;
+   }
 
    public void setImmediateAsynchronousAcknowledgment(boolean b)
    {
@@ -392,7 +408,8 @@ public class SimpleReceiver implements Receiver
           !ACCEPTING.equals(state) &&
           !BROKEN.equals(state) &&
           !REJECTING.equals(state) &&
-          !SELECTOR_REJECTING.equals(state))
+          !SELECTOR_REJECTING.equals(state) &&
+          !ACCEPTING_TO_MAX.equals(state))
       {
          throw new IllegalArgumentException("Unknown receiver state: " + state);
       }

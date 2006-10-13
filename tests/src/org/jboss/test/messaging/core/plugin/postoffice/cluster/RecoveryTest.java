@@ -86,11 +86,15 @@ public class RecoveryTest extends ClusteringTestBase
       
       DefaultClusteredPostOffice office2 = null;
       
+      DefaultClusteredPostOffice office3 = null;
+      
       try
       {      
          office1 = (DefaultClusteredPostOffice)createClusteredPostOffice(1, "testgroup");
          
          office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
+         
+         office3 = (DefaultClusteredPostOffice)createClusteredPostOffice(3, "testgroup");
          
          LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding1 =
@@ -100,10 +104,16 @@ public class RecoveryTest extends ClusteringTestBase
          Binding binding2 =
             office2.bindClusteredQueue("topic1", queue2);
          
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         Binding binding3 =
+            office3.bindClusteredQueue("topic1", queue3);
+         
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue2.add(receiver2);
+         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue3.add(receiver3);
          
          //This will make it fail after casting but before persisting the message in the db
          office1.setFail(true, false);
@@ -130,6 +140,9 @@ public class RecoveryTest extends ClusteringTestBase
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
          
+         msgs = receiver3.getMessages();
+         assertTrue(msgs.isEmpty());
+         
          try
          {
             //An exception should be thrown            
@@ -149,7 +162,16 @@ public class RecoveryTest extends ClusteringTestBase
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
          
-         //We now kill the office - this should make the other office do it's transaction check
+         msgs = receiver3.getMessages();
+         assertTrue(msgs.isEmpty());
+         
+         assertEquals(1, office1.getHoldingTransactions().size());
+         
+         assertEquals(1, office2.getHoldingTransactions().size());
+         
+         assertEquals(1, office3.getHoldingTransactions().size());
+         
+         //We now kill the office - this should make the other offices do their transaction check
          office1.stop();
          
          Thread.sleep(1000);
@@ -158,10 +180,15 @@ public class RecoveryTest extends ClusteringTestBase
          
          assertTrue(office2.getHoldingTransactions().isEmpty());
          
+         assertTrue(office3.getHoldingTransactions().isEmpty());
+         
          //The tx should be removed from the holding area and nothing should be received
          //remember node1 has now crashed so no point checking receiver1
          
          msgs = receiver2.getMessages();
+         assertTrue(msgs.isEmpty());
+         
+         msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
          
       }
@@ -176,6 +203,11 @@ public class RecoveryTest extends ClusteringTestBase
          {           
             office2.stop();
          }
+         
+         if (office3!= null)
+         {           
+            office3.stop();
+         }
       }
    }
    
@@ -185,11 +217,15 @@ public class RecoveryTest extends ClusteringTestBase
       
       DefaultClusteredPostOffice office2 = null;
       
+      DefaultClusteredPostOffice office3 = null;
+      
       try
       {      
          office1 = (DefaultClusteredPostOffice)createClusteredPostOffice(1, "testgroup");
          
          office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
+         
+         office3 = (DefaultClusteredPostOffice)createClusteredPostOffice(3, "testgroup");
          
          LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
          Binding binding1 =
@@ -199,10 +235,16 @@ public class RecoveryTest extends ClusteringTestBase
          Binding binding2 =
             office2.bindClusteredQueue("topic1", queue2);
          
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         Binding binding3 =
+            office3.bindClusteredQueue("topic1", queue3);
+         
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue2.add(receiver2);
+         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue3.add(receiver3);
          
          //This will make it fail after casting and persisting the message in the db
          office1.setFail(false, true);
@@ -248,6 +290,15 @@ public class RecoveryTest extends ClusteringTestBase
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
          
+         msgs = receiver3.getMessages();
+         assertTrue(msgs.isEmpty());
+         
+         assertEquals(1, office1.getHoldingTransactions().size());
+         
+         assertEquals(1, office2.getHoldingTransactions().size());
+         
+         assertEquals(1, office3.getHoldingTransactions().size());
+         
          //We now kill the office - this should make the other office do it's transaction check
          office1.stop();
          
@@ -257,10 +308,15 @@ public class RecoveryTest extends ClusteringTestBase
          
          assertTrue(office2.getHoldingTransactions().isEmpty());
          
+         assertTrue(office3.getHoldingTransactions().isEmpty());
+         
          //The tx should be removed from the holding area and messages be received
          //no point checking receiver1 since node1 has crashed
          
          msgs = receiver2.getMessages();
+         assertEquals(NUM_MESSAGES, msgs.size());
+         
+         msgs = receiver3.getMessages();
          assertEquals(NUM_MESSAGES, msgs.size());
          
       }

@@ -900,10 +900,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                if (q.isActive())
                {                                                      
                   QueueStats stats = q.getStats();
-                                             
-                  //We don't bother sending the stats if there's no significant change in the values
-                  
-                  if (q.changedSignificantly())
+                                              
+                  if (stats != null)
                   {
                      if (statsList == null)
                      {
@@ -988,14 +986,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                      RemoteQueueStub toQueue = (RemoteQueueStub)messagePullPolicy.chooseQueue(router.getQueues());
                      
                      if (trace) { log.trace(this.nodeId + " recalculated pull queue for queue " + st.getQueueName() + " to be " + toQueue); }
+                                    
+                     localQueue.setPullQueue(toQueue);
                      
-                     if (toQueue != null)
+                     if (toQueue != null && localQueue.getRefCount() == 0)
                      {
-                        localQueue.setPullInfo(toQueue, pullSize);
+                        //We now trigger delivery - this may cause a pull event                                                
+                        //We only do this if there are no refs in the local queue
                         
-                        //We now trigger delivery - this may cause a pull event
                         localQueue.deliver(false);
-                                             
+                                                                    
                         if (trace) { log.trace(this.nodeId + " triggered delivery for " + localQueue.getName()); }
                      }
                   } 

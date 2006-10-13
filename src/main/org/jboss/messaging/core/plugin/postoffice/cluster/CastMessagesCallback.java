@@ -191,7 +191,6 @@ class CastMessagesCallback implements TxCallback
          //Only used in testing
          if (failAfterCommit)
          {
-            log.info("Forcing failure after commit");
             throw new TransactionException("Forced failure for testing");
          }
          
