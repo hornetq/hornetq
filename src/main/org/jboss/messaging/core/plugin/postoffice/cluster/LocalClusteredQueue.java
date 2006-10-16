@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
@@ -37,11 +36,8 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.util.Future;
-import org.jboss.messaging.util.StreamUtils;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -105,6 +101,11 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    {
       this.pullQueue = queue;
    }
+   
+   public RemoteQueueStub getPullQueue()
+   {
+      return pullQueue;
+   }
       
    public QueueStats getStats()
    {      
@@ -138,18 +139,6 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    public int getNodeId()
    {
       return nodeId;
-   }
-   
-   /*
-    * Used when pulling messages from a remote queue
-    */
-   public List getDeliveries(int number) throws Exception
-   {
-      Future result = new Future();
-      
-      this.executor.execute(new GetDeliveriesRunnable(result, 1));
-            
-      return (List)result.getResult();
    }
    
    /*
@@ -189,169 +178,30 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       acknowledgeInternal(d, null, false, false);      
    }
    
-   
-   protected MessageReference nextReference(ListIterator iter, boolean handle) throws Throwable
-   {
-      MessageReference ref = super.nextReference(iter, handle);
+   public void handlePullMessagesResult(RemoteQueueStub remoteQueue, List messages, long holdingTxId) throws Exception
+   { 
+      //This needs to be run on a different thread to the one used by JGroups to deliver the message
+      //to avoid deadlock
+      Runnable runnable = new MessagePullResultRunnable(remoteQueue, messages, holdingTxId);
       
-      if (ref == null)
-      {
-         //There are no available refs in the local queue
-         //Maybe we need to pull one (some) from a remote queue?
-         
-         if (pullMessages())
-         {
-            ref = super.nextReference(iter, handle);
-         }
-      }
-      
-      return ref;
+      executor.execute(runnable);      
    }
-
+   
+   //TODO it's not ideal that we need to pass in a PullMessagesRequest
+   public void handleGetDeliveriesRequest(int returnNodeId, int number, TransactionId txId, PullMessagesRequest tx) throws Exception
+   {
+      //This needs to be run on a different thread to the one used by JGroups to deliver the message
+      //to avoid deadlock
+      Runnable runnable = new MessagePullRequestRunnable(returnNodeId, number, txId, tx);
+      
+      executor.execute(runnable);
+   }
+       
    public boolean isClustered()
    {
       return true;
    }
-   
-   /**
-    * Pull messages from a remote queue to this queue.
-    * If any of the messages are reliable then this needs to be done reliable (i.e. without loss or redelivery)
-    * Normally this would require 2PC which would make performance suck.
-    * However since we know both queues share the same DB then we can do the persistence locally in the same
-    * tx thus avoiding 2PC and maintaining reliability:)
-    * We do the following:
-    * 
-    * 1. A tx is started locally
-    * 2. Create deliveries for message(s) on the remote node - bring messages back to the local node
-    * We send a message to the remote node to retrieve a set of deliveries from the queue - it gets a max of num
-    * deliveries.
-    * The unreliable ones can be acknowledged immediately, the reliable ones are not acknowledged and a holding transaction
-    * is placed in the holding area on the remote node, which contains knowledge of the deliveries.
-    * The messages corresponding to the deliveries are returned to the local node
-    * 3. The retrieved messages are added to the local queue in the tx
-    * 4. Deliveries corresponding to the messages retrieved are acknowledged LOCALLY for the remote queue.
-    * 5. The local tx is committed.
-    * 6. Send "commit" message to remote node
-    * 7. "Commit" message is received and deliveries in the holding transaction are acknowledged IN MEMORY only.
-    * On failure, commit or rollback will be called on the holding transaction causing the deliveries to be acked or cancelled
-    * depending on whether they exist in the database
-    * 
-    * Recovery is handled in the same way as CastMessagesCallback
-    * 
-    * This method will always be executed on the channel's event queue (via the deliver method)
-    * so no need to do any handles or acks inside another event message
-    */
-   private boolean pullMessages() throws Throwable
-   {      
-      if (pullQueue == null)
-      {
-         return false;
-      }
-      
-      //TODO we can optimise this for the case when only one message is pulled
-      //and when only non persistent messages are pulled - i.e. we don't need
-      //to create a transaction.
-      
-      RemoteQueueStub theQueue = pullQueue;
-         
-      Transaction tx = tr.createTransaction();
-         
-      ClusterRequest req = new PullMessagesRequest(this.nodeId, tx.getId(), theQueue.getChannelID(),
-                                                   name, 1);
-      
-      if (trace)
-      {
-         log.trace(System.identityHashCode(this) + " Executing pull messages request for queue " + name +
-                   " pulling from node " + theQueue.getNodeId() + " to node " + this.nodeId);
-      }
-      
-      log.info("==================== Executing pull messages request");
-      byte[] bytes = (byte[])office.syncSendRequest(req, theQueue.getNodeId(), true);
-      log.info("==================== Executed pull messages request");
-      
-      if (bytes == null)
-      {
-         //Ok - node might have left the group
-         return false;
-      }
-      
-      PullMessagesResponse response = new PullMessagesResponse();
-      
-      StreamUtils.fromBytes(response, bytes);
-
-      List msgs = response.getMessages();
-      
-      if (trace) { log.trace(System.identityHashCode(this) + " I retrieved " + msgs.size() + " messages from pull"); }
-      
-      Iterator iter = msgs.iterator();
-      
-      boolean containsReliable = false;
-      
-      while (iter.hasNext())
-      {
-         org.jboss.messaging.core.Message msg = (org.jboss.messaging.core.Message)iter.next();
-         
-         if (msg.isReliable())
-         {
-            //It will already have been persisted on the other node
-            msg.setPersisted(true);
-            
-            containsReliable = true;
-         }
-               
-         MessageReference ref = null;
-         
-         try
-         {
-            ref = ms.reference(msg);
-            
-            //It's ok to call this directly since this method is only ever called by the delivery thread
-            //We call it with the deliver parameter set to false - this prevents delivery being done
-            //after the ref is added - if delivery was done we would end up in recursion.
-            Delivery delRet = handleInternal(null, ref, tx, true, true, false);
-            
-            if (delRet == null || !delRet.isSelectorAccepted())
-            {
-               //This should never happen
-               throw new IllegalStateException("Queue did not accept reference!");
-            }
-            
-         }
-         finally
-         {
-            if (ref != null)
-            {
-               ref.releaseMemoryReference();
-            }
-         }
-                 
-         //Acknowledge on the remote queue stub
-         Delivery del = new SimpleDelivery(theQueue, ref);
-         
-         del.acknowledge(tx);        
-      }
-          
-      tx.commit();
-      
-      //TODO what if commit throws an exception - this means the commit message doesn't hit the 
-      //remote node so the holding transaction stays in the holding area 
-      //Need to catch the exception and throw a check message
-      //What we need to do is catch any exceptions at the top of the call, i.e. just after the interface
-      //and send a checkrequest
-      //This applies to a normal message and messages requests too
-            
-      //We only need to send a commit message if there were reliable messages since otherwise
-      //the transaction wouldn't have been added in the holding area
-      if (containsReliable && isRecoverable())
-      {         
-         req = new PullMessagesRequest(this.nodeId, tx.getId());
-         
-         office.asyncSendRequest(req, theQueue.getNodeId());
-      }      
-      
-      return !msgs.isEmpty();
-   }
-   
+        
    public int getRefCount()
    {
       //We are only interested in getting the reference count when delivery is not in progress
@@ -372,6 +222,46 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       return ((Integer)result.getResult()).intValue();
    }
    
+   protected void deliverInternal() throws Throwable
+   {      
+      super.deliverInternal();
+       
+      //If the receivers are still ready to accept more refs then we might pull messages
+      //from a remote queue
+          
+      if (receiversReady && pullQueue != null)
+      {
+         //We send a message to the remote queue to pull a message - the remote queue will then send back
+         //another message asynchronously with the result.
+         //We don't do this synchronously with a message dispatcher since that can lead to distributed
+         //deadlock
+          
+         sendPullMessage();
+      }
+   }
+   
+   private void sendPullMessage() throws Exception
+   {
+      if (pullQueue == null)
+      {
+         //Nothing to do
+         return;
+      }
+      
+      //Avoid synchronization
+      RemoteQueueStub theQueue = pullQueue;
+            
+      if (theQueue == null)
+      {
+         return;
+      }
+      
+      executor.execute(new SendPullRequestRunnable(theQueue));          
+   }
+   
+   /*
+    * Get the ref count - executed on event queue
+    */
    private class GetRefCountRunnable implements Runnable
    {
       Future result;
@@ -389,24 +279,94 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       }
    }  
    
-   private class GetDeliveriesRunnable implements Runnable
+   /*
+    * Send a message pull request.
+    * 
+    * TODO - do we really need this class?
+    * Why can't we just execute on the same thread?
+    */
+   private class SendPullRequestRunnable implements Runnable
    {
-      Future result;
+      private RemoteQueueStub theQueue;
+      
+      private SendPullRequestRunnable(RemoteQueueStub theQueue)
+      {
+         this.theQueue = theQueue;
+      }
+
+      public void run()
+      {
+         try
+         {
+            //TODO
+            //We create a tx just so we get the id - we could just get the id directly from the id
+            //manager
+            Transaction tx = tr.createTransaction();
+                             
+            ClusterRequest req = new PullMessagesRequest(nodeId, tx.getId(), theQueue.getChannelID(),
+                                                         name, 1);
+            
+            office.asyncSendRequest(req, theQueue.getNodeId()); 
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to pull message", e);
+         }
+      }
+      
+   }
+   
+   /**
+    * This is how we "pull" messages from one node to another
+    * If any of the messages are reliable then this needs to be done reliable (i.e. without loss or redelivery)
+    * Normally this would require 2PC which would make performance suck.
+    * However since we know both queues share the same DB then we can do the persistence locally in the same
+    * tx thus avoiding 2PC and maintaining reliability :)
+    * We do the following:
+    * 
+    * 1. Send a PullMessagesRequest to the remote node, on receipt it will create deliveries for message(s), and 
+    * possibly add a holding tx (if there are any persistent messages), the messages will then be returned in
+    * a PullMessagesResultRequest which is sent asynchronously from the remote node back to here to avoid
+    * distributed deadlock.
+    * 2. When the result is returned it hits this method.
+    * 3. The retrieved messages are added to the local queue in the tx
+    * 4. Deliveries corresponding to the messages retrieved are acknowledged LOCALLY for the remote queue.
+    * 5. The local tx is committed.
+    * 6. Send "commit" message to remote node
+    * 7. "Commit" message is received and deliveries in the holding transaction are acknowledged IN MEMORY only.
+    * On failure, commit or rollback will be called on the holding transaction causing the deliveries to be acked or cancelled
+    * depending on whether they exist in the database
+    * 
+    * Recovery is handled in the same way as CastMessagesCallback
+    * 
+    */   
+   
+   private class MessagePullRequestRunnable implements Runnable
+   { 
+      int returnNodeId;
       
       int number;
       
-      public GetDeliveriesRunnable(Future result, int number)
-      {
-         this.result = result;
+      TransactionId txId;
+      
+      PullMessagesRequest tx;
+      
+      public MessagePullRequestRunnable(int returnNodeId, int number, TransactionId txId, PullMessagesRequest tx)
+      { 
+         this.returnNodeId = returnNodeId;
          
          this.number = number;
+         
+         this.txId = txId;
+         
+         this.tx = tx;
       }
       
       public void run()
       {
          try
          {
-            List list = null;
+            List dels = null;
             
             //We only get the refs if receiversReady = false so as not to steal messages that
             //might be consumed by local receivers            
@@ -416,7 +376,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                
                MessageReference ref;
                
-               list = new ArrayList();
+               dels = new ArrayList();
                
                synchronized (refLock)
                {
@@ -428,7 +388,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                         
                         deliveries.add(del);
                         
-                        list.add(del);       
+                        dels.add(del);       
                         
                         count++;
                      }  
@@ -437,75 +397,159 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
             }
             else
             {
-               list = Collections.EMPTY_LIST;
+               dels = Collections.EMPTY_LIST;
             }
             
-            result.setResult(list);
+            if (trace) { log.trace("PullMessagesRunnable got " + dels.size() + " deliveries"); }
+            
+            PullMessagesResultRequest response = new PullMessagesResultRequest(LocalClusteredQueue.this.nodeId, txId.getTxId(), name, dels.size());
+            
+            List reliableDels = null;
+            
+            if (!dels.isEmpty())
+            {
+               Iterator iter = dels.iterator();
+               
+               Delivery del = (Delivery)iter.next();
+               
+               if (del.getReference().isReliable())
+               {
+                  //Add it to internal list
+                  if (reliableDels == null)
+                  {
+                     reliableDels = new ArrayList();                                    
+                  }
+                  
+                  reliableDels.add(del);
+               }
+               else
+               {
+                  //We can ack it now
+                  del.acknowledge(null);
+               }
+               
+               response.addMessage(del.getReference().getMessage());
+            }
+                 
+            if (reliableDels != null)
+            {
+               //Add this to the holding area
+               tx.setReliableDels(reliableDels);
+               office.holdTransaction(txId, tx);
+            }
+             
+            //We send the messages asynchronously to avoid a deadlock situation which can occur
+            //if we were using MessageDispatcher to get the messages.
+            
+            office.asyncSendRequest(response, returnNodeId);   
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
-            result.setException(e);
+            log.error("Failed to get deliveries", e);
          }                     
       }
    } 
    
-   private class AddReferencesCallback implements TxCallback
+   private class MessagePullResultRunnable implements Runnable
    {
-      private List references;
+      private RemoteQueueStub remoteQueue;
       
-      private AddReferencesCallback(List references)
+      private List messages;
+      
+      private long holdingTxId;
+            
+      private MessagePullResultRunnable(RemoteQueueStub remoteQueue,
+                                               List messages, long holdingTxId)
       {
-         this.references = references;
+         this.remoteQueue = remoteQueue;
+         
+         this.messages = messages;
+         
+         this.holdingTxId = holdingTxId;
       }
 
-      public void afterCommit(boolean onePhase) throws Exception
+      public void run()
       {
-         Iterator iter = references.iterator();
-
-         while (iter.hasNext())
+         try
          {
-            MessageReference ref = (MessageReference) iter.next();
-
-            if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-
-            try
+            // TODO we should optimise for the case when only one message is pulled which is basically all
+            //we support now anyway
+            //Also we should optimise for the case when only non persistent messages are pulled
+            //in this case we don't need to create a tx.
+            
+            Transaction tx = tr.createTransaction();
+            
+            Iterator iter = messages.iterator();
+            
+            boolean containsReliable = false;
+            
+            while (iter.hasNext())
             {
-               synchronized (refLock)
+               org.jboss.messaging.core.Message msg = (org.jboss.messaging.core.Message)iter.next();
+               
+               if (msg.isReliable())
                {
-                  addReferenceInMemory(ref);
+                  //It will already have been persisted on the other node
+                  //so we need to set the persisted flag here
+                  msg.setPersisted(true);
+                  
+                  containsReliable = true;
                }
+                     
+               MessageReference ref = null;
+               
+               try
+               {
+                  ref = ms.reference(msg);
+                  
+                  //Should be executed synchronously since we already in the event queue
+                  Delivery delRet = handleInternal(null, ref, tx, true, true);
+                  
+                  if (delRet == null || !delRet.isSelectorAccepted())
+                  {
+                     //This should never happen
+                     throw new IllegalStateException("Queue did not accept reference!");
+                  }            
+               }
+               finally
+               {
+                  if (ref != null)
+                  {
+                     ref.releaseMemoryReference();
+                  }
+               }
+                       
+               //Acknowledge on the remote queue stub
+               Delivery del = new SimpleDelivery(remoteQueue, ref);
+               
+               del.acknowledge(tx);        
             }
-            catch (Throwable t)
-            {
-               throw new TransactionException("Failed to add reference", t);
-            }
+               
+            tx.commit();
+          
+            //TODO what if commit throws an exception - this means the commit message doesn't hit the 
+            //remote node so the holding transaction stays in the holding area 
+            //Need to catch the exception and throw a check message
+            //What we need to do is catch any exceptions at the top of the call, i.e. just after the interface
+            //and send a checkrequest
+            //This applies to a normal message and messages requests too
+                  
+            //We only need to send a commit message if there were reliable messages since otherwise
+            //the transaction wouldn't have been added in the holding area
+            if (containsReliable && isRecoverable())
+            {         
+               ClusterRequest req = new PullMessagesRequest(nodeId, holdingTxId);
+               
+               office.asyncSendRequest(req, remoteQueue.getNodeId());
+            }  
+         }      
+         catch (Throwable e)
+         {
+            log.error("Failed to handle pulled message", e);
          }
-      }
-
-      public void afterPrepare() throws Exception
-      {
-         //NOOP
-      }
-
-      public void afterRollback(boolean onePhase) throws Exception
-      {
-         //NOOP
-      }
-
-      public void beforeCommit(boolean onePhase) throws Exception
-      {
-         //NOOP
-      }
-
-      public void beforePrepare() throws Exception
-      {
-         //NOOP
-      }
-
-      public void beforeRollback(boolean onePhase) throws Exception
-      {
-         //NOOP
       }
       
    }
+       
+   
 }

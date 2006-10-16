@@ -168,7 +168,7 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         return handleInternal(sender, ref, tx, true, false, true);
+         return handleInternal(sender, ref, tx, true, false);
       }
    }
 
@@ -521,34 +521,6 @@ public abstract class ChannelSupport implements Channel
 
    // Protected -----------------------------------------------------
    
-   protected MessageReference nextReference(ListIterator iter, boolean handle) throws Throwable
-   {
-      MessageReference ref;
-      
-      if (iter == null)
-      {
-         //We just get the next ref from the head of the queue
-         ref = (MessageReference) messageRefs.peekFirst();
-      }
-      else
-      {
-         // TODO This will not work with paged refs - see http://jira.jboss.com/jira/browse/JBMESSAGING-275
-         // We need to extend it to work with refs from the db
-         
-         //We have an iterator - this means we are iterating through the queue to find a ref that matches
-         if (iter.hasNext())
-         {                        
-            ref = (MessageReference)iter.next();
-         } 
-         else
-         {
-            ref = null;
-         }
-      }
-      
-      return ref;
-   }     
-   
    /*
     * This methods delivers as many messages as possible to the router until no
     * more deliveries are returned. This method should never be called at the
@@ -556,7 +528,7 @@ public abstract class ChannelSupport implements Channel
     *
     * @see org.jboss.messaging.core.Channel#deliver()
     */
-   protected void deliverInternal(boolean handle) throws Throwable
+   protected void deliverInternal() throws Throwable
    {
       try
       {
@@ -570,7 +542,7 @@ public abstract class ChannelSupport implements Channel
          {           
             synchronized (deliveryLock)
             {
-               ref = nextReference(iter, handle);               
+               ref = nextReference(iter);               
             }
             if (ref != null)
             {
@@ -587,6 +559,8 @@ public abstract class ChannelSupport implements Channel
                   ref.incrementDeliveryCount();
 
                   Delivery del = router.handle(this, ref, null);
+
+                  receiversReady = del != null;
                   
                   if (del == null)
                   {
@@ -596,8 +570,6 @@ public abstract class ChannelSupport implements Channel
                      if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
 
                      ref.decrementDeliveryCount();
-                     
-                     receiversReady = false;
                      
                      break;
                   }
@@ -619,7 +591,7 @@ public abstract class ChannelSupport implements Channel
                      if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
                      
                      // Receiver accepted the reference
-
+                     
                      // We must synchronize here to cope with a race condition where message
                      // is cancelled/acked in flight while the following few actions are being
                      // performed. e.g. delivery could be cancelled acked after being removed from
@@ -666,8 +638,7 @@ public abstract class ChannelSupport implements Channel
    }
 
    protected Delivery handleInternal(DeliveryObserver sender, MessageReference ref,
-                                     Transaction tx, boolean persist, boolean synchronous,
-                                     boolean deliver)
+                                     Transaction tx, boolean persist, boolean synchronous)
    {
       if (ref == null)
       {
@@ -721,10 +692,10 @@ public abstract class ChannelSupport implements Channel
             
             // We only do delivery if there are receivers that haven't said they don't want
             // any more references.
-            if (receiversReady && deliver)
+            if (receiversReady)
             {
                // Prompt delivery
-               deliverInternal(true);
+               deliverInternal();
             }
          }
          else
@@ -744,7 +715,7 @@ public abstract class ChannelSupport implements Channel
             else
             {
                // add to post commit callback
-               getCallback(tx, synchronous, deliver).addRef(ref);
+               getCallback(tx, synchronous).addRef(ref);
                
                if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
             }
@@ -791,7 +762,7 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         this.getCallback(tx, synchronous, false).addDelivery(d);
+         this.getCallback(tx, synchronous).addDelivery(d);
    
          if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
    
@@ -819,13 +790,13 @@ public abstract class ChannelSupport implements Channel
       return removed;
    }     
 
-   protected InMemoryCallback getCallback(Transaction tx, boolean synchronous, boolean deliver)
+   protected InMemoryCallback getCallback(Transaction tx, boolean synchronous)
    {
       InMemoryCallback callback = (InMemoryCallback) tx.getCallback(this);            
 
       if (callback == null)
       {
-         callback = new InMemoryCallback(synchronous, deliver);
+         callback = new InMemoryCallback(synchronous);
 
          tx.addCallback(callback, this);
       }
@@ -835,10 +806,6 @@ public abstract class ChannelSupport implements Channel
          if (callback.isSynchronous() != synchronous)
          {
             throw new IllegalStateException("Callback synchronousness status doesn't match");
-         }
-         if (callback.isDeliver() != deliver)
-         {
-            throw new IllegalStateException("Callback deliver status doesn't match");
          }
       }
 
@@ -928,6 +895,34 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
+   
+   private MessageReference nextReference(ListIterator iter) throws Throwable
+   {
+      MessageReference ref;
+      
+      if (iter == null)
+      {
+         //We just get the next ref from the head of the queue
+         ref = (MessageReference) messageRefs.peekFirst();
+      }
+      else
+      {
+         // TODO This will not work with paged refs - see http://jira.jboss.com/jira/browse/JBMESSAGING-275
+         // We need to extend it to work with refs from the db
+         
+         //We have an iterator - this means we are iterating through the queue to find a ref that matches
+         if (iter.hasNext())
+         {                        
+            ref = (MessageReference)iter.next();
+         } 
+         else
+         {
+            ref = null;
+         }
+      }
+      
+      return ref;
+   } 
 
    // Inner classes -------------------------------------------------
 
@@ -938,32 +933,23 @@ public abstract class ChannelSupport implements Channel
       private List deliveriesToRemove;
       
       private boolean synchronous;
-      
-      private boolean deliver;
-      
+          
       private boolean committing;
 
       private Future result;
 
-      private InMemoryCallback(boolean synchronous, boolean deliver)
+      private InMemoryCallback(boolean synchronous)
       {
          refsToAdd = new ArrayList();
 
          deliveriesToRemove = new ArrayList();
          
          this.synchronous = synchronous;
-         
-         this.deliver = deliver;
       }
       
       private boolean isSynchronous()
       {
          return synchronous;
-      }
-      
-      private boolean isDeliver()
-      {
-         return deliver;
       }
 
       private void addRef(MessageReference ref)
@@ -1103,7 +1089,7 @@ public abstract class ChannelSupport implements Channel
       private void doAfterCommit() throws Throwable
       {
          // We add the references to the state
-
+         
          Iterator iter = refsToAdd.iterator();
 
          while (iter.hasNext())
@@ -1126,7 +1112,7 @@ public abstract class ChannelSupport implements Channel
          }
 
          // Remove deliveries
-
+         
          iter = this.deliveriesToRemove.iterator();
 
          while (iter.hasNext())
@@ -1151,9 +1137,9 @@ public abstract class ChannelSupport implements Channel
          }
          
          //prompt delivery
-         if (deliver && receiversReady)
+         if (receiversReady)
          {
-            deliverInternal(true);
+            deliverInternal();
          }
       }
 
@@ -1210,9 +1196,7 @@ public abstract class ChannelSupport implements Channel
          {
             if (router.numberOfReceivers() > 0)
             {               
-               receiversReady = true;
-               
-               deliverInternal(false);                     
+               deliverInternal();                     
             }
             if (result != null)
             {
@@ -1250,7 +1234,7 @@ public abstract class ChannelSupport implements Channel
 
       public void run()
       {
-         Delivery d = handleInternal(sender, ref, null, persist, false, true);
+         Delivery d = handleInternal(sender, ref, null, persist, false);
          result.setResult(d);
       }
    }   

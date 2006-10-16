@@ -29,10 +29,10 @@ import java.util.List;
 
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.util.Streamable;
 
 /**
- * A PullMessagesResponse
+ * 
+ * A PullMessagesResultRequest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -40,16 +40,30 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-public class PullMessagesResponse implements Streamable
+public class PullMessagesResultRequest extends ClusterRequest
 {
+   public static final int TYPE = 2;
+   
+   private long holdingTxId;
+   
+   private String queueName;
+   
    private List messages;
    
-   PullMessagesResponse()
+   private int remoteNodeId;
+   
+   PullMessagesResultRequest()
    {
    }
    
-   PullMessagesResponse(int size)
+   PullMessagesResultRequest(int remoteNodeId, long holdingTxId, String queueName, int size)
    {
+      this.remoteNodeId = remoteNodeId;
+      
+      this.holdingTxId = holdingTxId;
+      
+      this.queueName = queueName;
+      
       messages = new ArrayList(size);
    }
    
@@ -62,9 +76,15 @@ public class PullMessagesResponse implements Streamable
    {
       return messages;
    }
-
+   
    public void read(DataInputStream in) throws Exception
    {
+      remoteNodeId = in.readInt();
+      
+      holdingTxId = in.readLong();
+      
+      queueName = in.readUTF();
+      
       int num = in.readInt();
       
       messages = new ArrayList(num);
@@ -83,6 +103,12 @@ public class PullMessagesResponse implements Streamable
 
    public void write(DataOutputStream out) throws Exception
    {
+      out.writeInt(remoteNodeId);
+      
+      out.writeLong(holdingTxId);
+      
+      out.writeUTF(queueName);
+      
       out.writeInt(messages.size());
       
       Iterator iter = messages.iterator();
@@ -95,5 +121,17 @@ public class PullMessagesResponse implements Streamable
          
          msg.write(out);
       }   
+   }
+
+   Object execute(PostOfficeInternal office) throws Throwable
+   {
+      office.handleMessagePullResult(remoteNodeId, holdingTxId, queueName, messages);
+      
+      return null;
+   }
+
+   byte getType()
+   {
+      return TYPE;
    }
 }

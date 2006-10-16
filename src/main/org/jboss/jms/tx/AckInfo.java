@@ -48,8 +48,7 @@ public class AckInfo implements Streamable
    // One of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE, etc.
    private int ackMode;
    
-   // The actual proxy must not get serialized
-   protected transient MessageProxy msg;
+   protected MessageProxy msg;
    
    // Static --------------------------------------------------------
    

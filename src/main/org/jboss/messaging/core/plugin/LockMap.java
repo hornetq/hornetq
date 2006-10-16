@@ -49,7 +49,7 @@ public class LockMap
       int refCount;   
    }
    
-   public static LockMap instance = new LockMap();
+   public static final LockMap instance = new LockMap();
    
    private LockMap()
    {

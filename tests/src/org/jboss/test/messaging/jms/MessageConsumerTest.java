@@ -1786,12 +1786,12 @@ public class MessageConsumerTest extends MessagingTestCase
         {
             try
             {
-                log.info("(ThreadCloser)Waiting on monitor to close thread");
+                log.trace("(ThreadCloser)Waiting on monitor to close thread");
                 synchronized (waitMonitor)
                 {
                     waitMonitor.wait();
                 }
-                log.info("(ThreadCloser)Notification received");
+                log.trace("(ThreadCloser)Notification received");
                 Thread.sleep(timeToSleep);
                 topicConsumer.close();
 
@@ -1824,12 +1824,12 @@ public class MessageConsumerTest extends MessagingTestCase
         {
             try
             {
-                log.info("(ThreadReceiver)Waiting on monitor to close thread");
+                log.trace("(ThreadReceiver)Waiting on monitor to close thread");
                 synchronized(waitMonitor)
                 {
                     waitMonitor.wait();
                 }
-                log.info("(ThreadReceiver)Notification received");
+                log.trace("(ThreadReceiver)Notification received");
                 t1=System.currentTimeMillis();
                 receivedObject=topicConsumer.receive(timeToWait);
                 t2=System.currentTimeMillis();
@@ -1868,7 +1868,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
       assertNull(receiver.receivedObject);
 
-      log.info("Elapsed time was " + (receiver.t2-receiver.t1));
+      log.trace("Elapsed time was " + (receiver.t2-receiver.t1));
 
       // We need to make sure the
       assertTrue("Receive was supposed to receive a notification before 2 seconds",receiver.t2-receiver.t1<=1500);

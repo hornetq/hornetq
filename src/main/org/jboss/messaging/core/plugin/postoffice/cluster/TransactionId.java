@@ -87,7 +87,7 @@ class TransactionId implements Streamable
       
       TransactionId tother = (TransactionId)other;
       
-      return tother.txId == this.txId && tother.nodeId == this.nodeId;
+      return (tother.txId == this.txId) && (tother.nodeId == this.nodeId);
    }
    
    public String toString()

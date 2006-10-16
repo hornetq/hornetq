@@ -173,8 +173,6 @@ public class ManualCrashTest extends MessagingTestCase
          
          assertEquals(count, c);
          
-         log.info("Received message:" + count);
-         
          count++;
          
          if (count == i)

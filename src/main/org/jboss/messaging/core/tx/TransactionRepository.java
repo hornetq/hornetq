@@ -179,7 +179,7 @@ public class TransactionRepository implements MessagingComponent
    public Transaction createTransaction() throws Exception
    {
       Transaction tx = new Transaction(idManager.getId());
-
+      
       if (trace) { log.trace("created transaction " + tx); }
 
       return tx;

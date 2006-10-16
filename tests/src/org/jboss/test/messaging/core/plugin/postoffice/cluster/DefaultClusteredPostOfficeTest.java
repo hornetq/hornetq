@@ -99,12 +99,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          //Add a couple of bindings
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "sub1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
-         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "sub1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);        
          Binding binding1 =
             office1.bindClusteredQueue("topic1", queue1);
+         
          LocalClusteredQueue queue2 = new LocalClusteredQueue(office1, 1, "sub2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
-
          Binding binding2 =
             office1.bindClusteredQueue("topic1", queue2);
          
@@ -112,7 +111,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          office2 = createClusteredPostOffice(2, "testgroup");
          
-         Collection bindings = office2.listBindingsForCondition("topic1");
+         Collection bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -129,7 +128,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
   
          //Make sure both nodes pick it up
          
-         bindings = office1.listBindingsForCondition("topic1");
+         bindings = office1.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(3, bindings.size());
          
@@ -138,7 +137,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding2, (Binding)iter.next());
          assertEquivalent(binding3, (Binding)iter.next());
 
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(3, bindings.size());
          
@@ -155,7 +154,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          // Make sure both nodes pick it up
          
-         bindings = office1.listBindingsForCondition("topic1");
+         bindings = office1.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -165,7 +164,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding3, (Binding)iter.next());
          assertEquivalent(binding4, (Binding)iter.next());
          
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -181,7 +180,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          //Make sure bindings are not longer available on either node
          
-         bindings = office1.listBindingsForCondition("topic1");
+         bindings = office1.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -189,7 +188,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding3, (Binding)iter.next());
          assertEquivalent(binding4, (Binding)iter.next());
    
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -203,7 +202,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          //Maks sure it picks up the bindings
          
-         bindings = office3.listBindingsForCondition("topic1");
+         bindings = office3.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -220,7 +219,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          // Make sure all nodes pick it up
          
-         bindings = office1.listBindingsForCondition("topic1");
+         bindings = office1.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(3, bindings.size());
          
@@ -229,7 +228,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding4, (Binding)iter.next());
          assertEquivalent(binding5, (Binding)iter.next());
          
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(3, bindings.size());
          
@@ -238,7 +237,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding4, (Binding)iter.next());
          assertEquivalent(binding5, (Binding)iter.next());
          
-         bindings = office3.listBindingsForCondition("topic1");
+         bindings = office3.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(3, bindings.size());
          
@@ -261,7 +260,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          // Make sure all nodes pick them up
          
-         bindings = office1.listBindingsForCondition("topic1");
+         bindings = office1.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(5, bindings.size());
          
@@ -272,7 +271,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding6, (Binding)iter.next());
          assertEquivalent(binding7, (Binding)iter.next());
          
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(5, bindings.size());
          
@@ -283,7 +282,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding6, (Binding)iter.next());
          assertEquivalent(binding7, (Binding)iter.next());
          
-         bindings = office3.listBindingsForCondition("topic1");
+         bindings = office3.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(5, bindings.size());
          
@@ -305,7 +304,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //All it's non durable bindings should be removed from the other nodes
          //Durable bindings should remain
          
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -315,7 +314,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding5, (Binding)iter.next());
          assertEquivalent(binding6, (Binding)iter.next());
          
-         bindings = office3.listBindingsForCondition("topic1");
+         bindings = office3.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -328,7 +327,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //Stop office 2
          office2.stop();
          
-         bindings = office3.listBindingsForCondition("topic1");
+         bindings = office3.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -341,7 +340,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          office2 = createClusteredPostOffice(2, "testgroup");
          
-         bindings = office1.listBindingsForCondition("topic1");
+         bindings = office1.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -349,7 +348,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding5, (Binding)iter.next());
          assertEquivalent(binding6, (Binding)iter.next());
          
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -357,7 +356,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding5, (Binding)iter.next());
          assertEquivalent(binding6, (Binding)iter.next());
          
-         bindings = office3.listBindingsForCondition("topic1");
+         bindings = office3.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(2, bindings.size());
          
@@ -378,21 +377,21 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          //Only the durable queue should survive
          
-         bindings = office1.listBindingsForCondition("topic1");
+         bindings = office1.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(1, bindings.size());
          
          iter = bindings.iterator();
          assertEquivalent(binding6, (Binding)iter.next());
          
-         bindings = office2.listBindingsForCondition("topic1");
+         bindings = office2.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(1, bindings.size());
          
          iter = bindings.iterator();
          assertEquivalent(binding6, (Binding)iter.next());
          
-         bindings = office3.listBindingsForCondition("topic1");
+         bindings = office3.listAllBindingsForCondition("topic1");
          assertNotNull(bindings);
          assertEquals(1, bindings.size());
          
@@ -540,11 +539,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
          
          Binding binding1 = office1.bindClusteredQueue("queue1", queue1);
-         
+
          LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
-         
+
          Binding binding2 = office2.bindClusteredQueue("queue1", queue2);
-                  
+
          LocalClusteredQueue queue3 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
          
          try
@@ -568,10 +567,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             //Ok
          }
          
-         office1.unbindClusteredQueue("queue1");
-         
          office2.unbindClusteredQueue("queue1");
-         
+
+         office1.unbindClusteredQueue("queue1");
+
          LocalClusteredQueue queue5 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null, tr);
          
          Binding binding5 = office1.bindClusteredQueue("queue1", queue5);
@@ -1319,7 +1318,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
          
          //n7
-         checkEmpty(receiver12);
+         checkEmpty(receiver14);
          
          
          //Send 1 message at node2
@@ -1351,7 +1350,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
          
          //n7
-         checkEmpty(receiver12);
+         checkEmpty(receiver14);
          
          //Send 1 message at node3
          //========================
@@ -1382,12 +1381,12 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
          
          //n7
-         checkEmpty(receiver12);     
+         checkEmpty(receiver14);     
          
          //Send 1 message at node4
          //========================
-             
-         msgs = sendMessages("topic", persistent, office4, 1, null);
+         
+         msgs = sendMessages("topic", persistent, office4, 1, null);         
                
          //n2
          checkContainsAndAcknowledge(msgs, receiver1, nonDurable1);
@@ -1398,22 +1397,22 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          checkContainsAndAcknowledge(msgs, receiver4, nonDurable3);
          
          //n4
-         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1);
+         checkContainsAndAcknowledge(msgs, receiver5, sharedDurable1); // shared durable 1
          checkContainsAndAcknowledge(msgs, receiver6, nonSharedDurable2);
          checkContainsAndAcknowledge(msgs, receiver7, nonDurable4);
          checkContainsAndAcknowledge(msgs, receiver8, nonDurable5);
          checkContainsAndAcknowledge(msgs, receiver9, nonDurable6);
          
          //n5
-         checkEmpty(receiver10);         
-         checkContainsAndAcknowledge(msgs, receiver11, sharedDurable3);
+         checkEmpty(receiver10);       //shared durable 1
+         checkContainsAndAcknowledge(msgs, receiver11, sharedDurable3);     //shared durable 2    
          
          //n6
-         checkEmpty(receiver12);
-         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7);
+         checkEmpty(receiver12); // shared durable 2
+         checkContainsAndAcknowledge(msgs, receiver13, nonDurable7); 
          
          //n7
-         checkEmpty(receiver12);
+         checkEmpty(receiver14);
          
          //Send 1 message at node5
          //========================

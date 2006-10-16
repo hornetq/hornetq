@@ -476,9 +476,7 @@ public class PagingStateTestBase extends MessagingTestCase
       {
          long msgId = rs.getLong(1);     
          long pageOrd = rs.getLong(3);
-         
-         //log.info("Exists " + msgId + " with page ord " + pageOrd);
-         
+          
          msgIds.add(new Long(msgId));
       }
       rs.close();

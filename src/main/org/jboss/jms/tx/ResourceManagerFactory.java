@@ -41,7 +41,7 @@ import java.util.Map;
  */
 public class ResourceManagerFactory
 {      
-   public static ResourceManagerFactory instance = new ResourceManagerFactory();
+   public static final ResourceManagerFactory instance = new ResourceManagerFactory();
    
    private Map holders;
    
@@ -97,7 +97,7 @@ public class ResourceManagerFactory
       }      
    }
    
-   private class Holder
+   private static class Holder
    {
       ResourceManager rm = new ResourceManager();
       

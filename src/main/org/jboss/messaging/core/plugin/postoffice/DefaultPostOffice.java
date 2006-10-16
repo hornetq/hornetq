@@ -213,7 +213,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
       
       lock.writeLock().acquire();
-      
+
       try
       {         
          Binding binding = removeBinding(this.nodeId, queueName);
@@ -237,49 +237,11 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    public Collection listBindingsForCondition(String condition) throws Exception
    {
-      if (condition == null)
-      {
-         throw new IllegalArgumentException("Condition is null");
-      }
-      
-      lock.readLock().acquire();
-      
-      try
-      {
-         //We should only list the bindings for the local node
+      return listBindingsForConditionInternal(condition, true);
+   }  
+   
+   
          
-         Bindings cb = (Bindings)conditionMap.get(condition);                  
-                  
-         if (cb == null)
-         {
-            return Collections.EMPTY_LIST;
-         }
-         else
-         {
-            List list = new ArrayList();
-            
-            Collection bindings = cb.getAllBindings();
-            
-            Iterator iter = bindings.iterator();
-            
-            while (iter.hasNext())
-            {
-               Binding binding = (Binding)iter.next();
-               
-               if (binding.getNodeId() == this.nodeId)
-               {
-                  list.add(binding);
-               }
-            }
-            
-            return list;
-         }
-      }
-      finally
-      {
-         lock.readLock().release();
-      }
-   }
    
    public Binding getBindingForQueueName(String queueName) throws Exception
    {    
@@ -289,7 +251,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
       
       lock.readLock().acquire();
-      
+
       try
       {
          Map nameMap = (Map)nameMaps.get(new Integer(this.nodeId));
@@ -402,11 +364,57 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    }
      
    // Protected -----------------------------------------------------
+   
+   protected Collection listBindingsForConditionInternal(String condition, boolean localOnly) throws Exception
+   {
+      if (condition == null)
+      {
+         throw new IllegalArgumentException("Condition is null");
+      }
+      
+      lock.readLock().acquire();
+      
+      try
+      {
+         //We should only list the bindings for the local node
+         
+         Bindings cb = (Bindings)conditionMap.get(condition);                  
+                  
+         if (cb == null)
+         {
+            return Collections.EMPTY_LIST;
+         }
+         else
+         {
+            List list = new ArrayList();
+            
+            Collection bindings = cb.getAllBindings();
+            
+            Iterator iter = bindings.iterator();
+            
+            while (iter.hasNext())
+            {
+               Binding binding = (Binding)iter.next();
+               
+               if (!localOnly || (binding.getNodeId() == this.nodeId))
+               {
+                  list.add(binding);
+               }
+            }
+            
+            return list;
+         }
+      }
+      finally
+      {
+         lock.readLock().release();
+      }
+   }
     
    protected void loadBindings() throws Exception
    {
       lock.writeLock().acquire();
-      
+
       Connection conn = null;
       PreparedStatement ps  = null;
       ResultSet rs = null;
@@ -448,7 +456,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       finally
       {
          lock.writeLock().release();
-         
+
          if (rs != null)
          {
             rs.close();
@@ -593,7 +601,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          nameMaps.put(new Integer(binding.getNodeId()), nameMap);
       }
       
-      nameMap.put(binding.getQueue().getName(), binding);
+      nameMap.put(binding.getQueue().getName(), binding);      
    }
    
    protected void addToConditionMap(Binding binding)
@@ -667,7 +675,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          conditionMap.remove(binding.getCondition());
       }        
    }         
-   
+
    protected Map getDefaultDMLStatements()
    {                
       Map map = new LinkedHashMap();

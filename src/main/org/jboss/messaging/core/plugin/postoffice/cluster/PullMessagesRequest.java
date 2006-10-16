@@ -23,14 +23,12 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.util.StreamUtils;
 
 /**
  * A PullMessagesRequest
@@ -90,47 +88,9 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
          
          LocalClusteredQueue queue = (LocalClusteredQueue)binding.getQueue();
          
-         List dels = queue.getDeliveries(numMessages);
-         
-         if (trace) { log.trace("PullMessagesRequest got " + dels.size() + " deliveries"); }
-         
-         PullMessagesResponse response = new PullMessagesResponse(dels.size());
-         
-         if (!dels.isEmpty())
-         {
-            Iterator iter = dels.iterator();
-            
-            Delivery del = (Delivery)iter.next();
-            
-            if (del.getReference().isReliable())
-            {
-               //Add it to internal list
-               if (reliableDels == null)
-               {
-                  reliableDels = new ArrayList();                                    
-               }
-               
-               reliableDels.add(del);
-            }
-            else
-            {
-               //We can ack it now
-               del.acknowledge(null);
-            }
-            
-            response.addMessage(del.getReference().getMessage());
-         }
-              
-         if (reliableDels != null)
-         {
-            //Add this to the holding area
-            office.holdTransaction(id, this);
-         }
+         queue.handleGetDeliveriesRequest(nodeId, numMessages, id, this);
           
-         //Convert to bytes since the response isn't serializable (nor do we want it to be)
-         byte[] bytes = StreamUtils.toBytes(response);
-         
-         return bytes;
+         return null;
       }
       else
       {
@@ -138,6 +98,12 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
          
          return null;
       }
+   }
+   
+   //TODO this is a bit messsy - must be a nicer way of setting this
+   void setReliableDels(List reliableDels)
+   {
+      this.reliableDels = reliableDels;
    }
 
    byte getType()

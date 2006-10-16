@@ -204,12 +204,21 @@ public class DefaultRouter implements ClusterRouter
    
    public List getQueues()
    {
-      return nonLocalQueues;
+      List queues = new ArrayList();
+      
+      if (localQueue != null)
+      {
+         queues.add(localQueue);
+      }
+      
+      queues.addAll(nonLocalQueues);
+      
+      return queues;
    }
 
    public int numberOfReceivers()
    {
-      return nonLocalQueues.size();
+      return nonLocalQueues.size() + (localQueue != null ? 1 : 0);
    }
 }
 

@@ -208,7 +208,7 @@ public class Transaction
       if (trace) { log.trace("executing after commit hooks " + this); }
       
       if (firstCallback != null)
-      {
+      {         
          firstCallback.afterCommit(onePhase);
       }
       

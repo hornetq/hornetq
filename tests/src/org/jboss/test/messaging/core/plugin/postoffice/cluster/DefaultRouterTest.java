@@ -87,6 +87,45 @@ public class DefaultRouterTest extends ClusteringTestBase
       super.tearDown();
    }
    
+   public void testSize() throws Exception
+   {
+      DefaultRouter dr = new DefaultRouter();
+      
+      ClusteredQueue queue1 = new SimpleQueue(true);
+      dr.add(queue1);
+      
+      assertEquals(1, dr.numberOfReceivers());
+      assertEquals(1, dr.getQueues().size());
+      
+      ClusteredQueue queue2 = new SimpleQueue(false);
+      dr.add(queue2);
+      
+      assertEquals(2, dr.numberOfReceivers());
+      assertEquals(2, dr.getQueues().size());
+      
+      ClusteredQueue queue3 = new SimpleQueue(false);
+      dr.add(queue3);
+      
+      assertEquals(3, dr.numberOfReceivers());
+      assertEquals(3, dr.getQueues().size());
+      
+      dr.remove(queue3);
+      
+      assertEquals(2, dr.numberOfReceivers());
+      assertEquals(2, dr.getQueues().size());
+      
+      dr.remove(queue2);
+      
+      assertEquals(1, dr.numberOfReceivers());
+      assertEquals(1, dr.getQueues().size());
+      
+      dr.remove(queue1);
+      
+      assertEquals(0, dr.numberOfReceivers());
+      assertTrue(dr.getQueues().isEmpty());
+      
+   }
+   
    // The router only has a local queue
    public void testRouterOnlyLocal() throws Exception
    {

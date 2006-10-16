@@ -499,7 +499,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       }
       else
       {
-         throw new IllegalStateException("Failed to acknowledge delivery " + d);
+         throw new IllegalStateException("Could not find delivery to acknowledge");
       }             
    }      
    
@@ -799,7 +799,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
     * QueueExecutor might be share by other consumers and we don't want to wait for their
     * tasks to complete
     */
-   private class Waiter implements Runnable
+   private static class Waiter implements Runnable
    {
       Future result;
       

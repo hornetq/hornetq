@@ -58,8 +58,6 @@ interface PostOfficeInternal extends ClusteredPostOffice
    
    void asyncSendRequest(ClusterRequest request, int nodeId) throws Exception;
    
-   Object syncSendRequest(ClusterRequest request, int nodeId, boolean ignoreNoAddress) throws Exception;
-   
    void holdTransaction(TransactionId id, ClusterTransaction tx) throws Throwable;
    
    void commitTransaction(TransactionId id) throws Throwable;
@@ -69,4 +67,6 @@ interface PostOfficeInternal extends ClusteredPostOffice
    void sendQueueStats() throws Exception;
    
    boolean referenceExistsInStorage(long channelID, long messageID) throws Exception;
+   
+   void handleMessagePullResult(int remoteNodeId, long holdingTxId, String queueName, List messages) throws Throwable;
 }
