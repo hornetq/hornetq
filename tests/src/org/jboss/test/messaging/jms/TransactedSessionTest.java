@@ -573,6 +573,8 @@ public class TransactedSessionTest extends MessagingTestCase
          TextMessage tm = (TextMessage)cons.receive();
 
          assertEquals("a message", tm.getText());
+         
+         log.info("del count1:" + tm.getIntProperty("JMSXDeliveryCount"));
 
          assertFalse(tm.getJMSRedelivered());
          assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
@@ -587,6 +589,8 @@ public class TransactedSessionTest extends MessagingTestCase
          tm = (TextMessage)cons.receive();
 
          assertEquals("a message", tm.getText());
+         
+         log.info("del count2:" + tm.getIntProperty("JMSXDeliveryCount"));
 
          assertTrue(tm.getJMSRedelivered());
          assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));

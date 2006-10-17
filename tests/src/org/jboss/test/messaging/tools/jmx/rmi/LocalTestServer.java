@@ -73,7 +73,6 @@ public class LocalTestServer implements Server
    private ObjectName queuePostOfficeObjectName;
    private ObjectName topicPostOfficeObjectName;
    private ObjectName jmsUserManagerObjectName;
-   private ObjectName shutdownLoggerObjectName;
 
    // the server MBean itself
    private ObjectName serverPeerObjectName;
@@ -265,12 +264,6 @@ public class LocalTestServer implements Server
          sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
          sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);  
          
-         MBeanConfigurationElement shutdownLoggerConfig =
-            (MBeanConfigurationElement)pdd.query("service", "ShutdownLogger").iterator().next();
-         shutdownLoggerObjectName = sc.registerAndConfigureService(shutdownLoggerConfig);
-         sc.invoke(shutdownLoggerObjectName, "create", new Object[0], new String[0]);
-         sc.invoke(shutdownLoggerObjectName, "start", new Object[0], new String[0]); 
-   
          // register server peer as a service, dependencies are injected automatically
          MBeanConfigurationElement serverPeerConfig =
             (MBeanConfigurationElement)mdd.query("service", "ServerPeer").iterator().next();
@@ -417,24 +410,8 @@ public class LocalTestServer implements Server
             //Hence we must catch and ignore or we won't shut everything down
          }
    
-         
-   
          log.debug("stopping ServerPeer's plug-in dependencies");
-         
-         try
-         {
-            sc.invoke(shutdownLoggerObjectName, "stop", new Object[0], new String[0]);
-            sc.invoke(shutdownLoggerObjectName, "destroy", new Object[0], new String[0]);
-            sc.unregisterService(shutdownLoggerObjectName);
-         }
-         catch (Exception ignore)
-         {
-            //If the serverpeer failed when starting up previously, then only some of the
-            //services may be started. The ones that didn't start will fail when attempting to shut
-            //them down.
-            //Hence we must catch and ignore or we won't shut everything down
-         }
-         
+               
          try
          {
             sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);

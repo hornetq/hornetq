@@ -52,13 +52,4 @@
       <attribute name="CreateTablesOnStartup">true</attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.JDBCShutdownLoggerService"
-      name="jboss.messaging:service=ShutdownLogger"
-      xmbean-dd="xmdesc/JDBCShutdownLogger-xmbean.xml">
-      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="DataSource">java:/DefaultDS</attribute>
-      <attribute name="CreateTablesOnStartup">true</attribute>
-   </mbean>
-
 </server>

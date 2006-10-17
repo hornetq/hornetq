@@ -49,7 +49,6 @@ import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
-import org.jboss.messaging.core.plugin.contract.ShutdownLogger;
 import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
@@ -78,7 +77,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private static final Logger log = Logger.getLogger(ServerPeer.class);
 
-   //public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
+   public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
 
    // The "subsystem" label this ServerPeer uses to register its ServerInvocationHandler with the
    // Remoting connector
@@ -101,8 +100,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private int objectIDSequence = 1;
    
-   private boolean crashed;
-
    // wired components
 
    private DestinationJNDIMapper destinationJNDIMapper;
@@ -132,9 +129,6 @@ public class ServerPeer extends ServiceMBeanSupport
    protected ObjectName jmsUserManagerObjectName;
    protected JMSUserManager jmsUserManager;
    
-   protected ObjectName shutdownLoggerObjectName;
-   protected ShutdownLogger shutdownLogger;
-
    //Other stuff
    
    private JMSServerInvocationHandler handler;
@@ -202,9 +196,6 @@ public class ServerPeer extends ServiceMBeanSupport
          jmsUserManager = (JMSUserManager)mbeanServer.
             getAttribute(jmsUserManagerObjectName, "Instance");
          
-         shutdownLogger = (ShutdownLogger)mbeanServer.
-            getAttribute(shutdownLoggerObjectName, "Instance");
-         
          //We get references to some plugins lazily to avoid problems with circular
          //MBean dependencies
             
@@ -234,11 +225,6 @@ public class ServerPeer extends ServiceMBeanSupport
          securityStore.start();
          txRepository.start();
          
-         //Did the server crash last time?
-         
-         //TODO do we need this?
-         crashed = shutdownLogger.startup(serverPeerID);                            
-
          initializeRemoting(mbeanServer);
    
          //createRecoverable();
@@ -268,9 +254,7 @@ public class ServerPeer extends ServiceMBeanSupport
          started = false;
    
          //removeRecoverable();
-   
-         shutdownLogger.shutdown(serverPeerID);         
-                  
+        
          // Stop the wired components         
          
          messageIdManager.stop();
@@ -352,16 +336,6 @@ public class ServerPeer extends ServiceMBeanSupport
       jmsUserManagerObjectName = on;
    }
    
-   public ObjectName getShutdownLogger()
-   {
-      return shutdownLoggerObjectName;
-   }
-
-   public void setShutdownLogger(ObjectName on)
-   {
-      shutdownLoggerObjectName = on;
-   }
-
    public Object getInstance()
    {
       return this;
@@ -577,11 +551,6 @@ public class ServerPeer extends ServiceMBeanSupport
       return version;
    }
    
-   public boolean crashedLastTime()
-   {
-      return crashed;
-   }
-
    // access to hard-wired server extensions
 
    public SecurityManager getSecurityManager()
@@ -653,11 +622,6 @@ public class ServerPeer extends ServiceMBeanSupport
       return topicPostOffice;        
    }
       
-   public ShutdownLogger getShutdownLoggerInstance()
-   {
-      return shutdownLogger;
-   }
-      
    public synchronized int getNextObjectID()
    {
       return objectIDSequence++;
@@ -701,8 +665,8 @@ public class ServerPeer extends ServiceMBeanSupport
     * order to obtain an XAResource so it can perform XA recovery.
     */
 
-//   //Commented out until XA Recovery is complete
-//
+   //Commented out until XA Recovery is complete
+
 //   private void createRecoverable() throws Exception
 //   {
 //      //Disabled until XA Recovery is complete with Arjuna transaction integration
@@ -733,7 +697,7 @@ public class ServerPeer extends ServiceMBeanSupport
 //
 //      recCtx.rebind(this.serverPeerID, recoverable);
 //   }
-
+//
 //   private void removeRecoverable() throws Exception
 //   {
 //      InitialContext ic = new InitialContext();

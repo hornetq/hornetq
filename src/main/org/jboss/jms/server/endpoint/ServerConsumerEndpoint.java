@@ -575,8 +575,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       Delivery del = (Delivery)deliveries.remove(messageID);
       if (del != null)
-      {  
-          del.getReference().decrementDeliveryCount();    
+      {     
           del.cancel();
       }
       else

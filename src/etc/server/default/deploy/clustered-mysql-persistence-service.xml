@@ -201,19 +201,4 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
       ]]></attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.JDBCShutdownLoggerService"
-      name="jboss.messaging:service=ShutdownLogger"
-      xmbean-dd="xmdesc/JDBCShutdownLogger-xmbean.xml">
-      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="DataSource">java:/DefaultDS</attribute>
-      <attribute name="CreateTablesOnStartup">true</attribute>
-      <attribute name="SqlProperties"><![CDATA[
-      CREATE_STARTUP=CREATE TABLE JMS_STARTUP (NODE_ID INTEGER PRIMARY KEY)
-      SELECT_STARTUP=SELECT NODE_ID FROM JMS_STARTUP WHERE NODE_ID = ?
-      DELETE_STARTUP=DELETE FROM JMS_STARTUP WHERE NODE_ID = ?
-      INSERT_STARTUP=INSERT INTO JMS_STARTUP (NODE_ID) VALUES (?)
-      ]]></attribute>
-   </mbean>
-
 </server>

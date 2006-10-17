@@ -23,7 +23,6 @@
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>    
       <depends optional-attribute-name="JMSUserManager">jboss.messaging:service=JMSUserManager</depends>
-	   <depends optional-attribute-name="ShutdownLogger">jboss.messaging:service=ShutdownLogger</depends>
 
 	   <attribute name="QueuePostOffice">jboss.messaging:service=QueuePostOffice</attribute>
 	   <attribute name="TopicPostOffice">jboss.messaging:service=TopicPostOffice</attribute>
