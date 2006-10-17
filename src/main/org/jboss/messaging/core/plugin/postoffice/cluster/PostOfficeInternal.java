@@ -62,11 +62,13 @@ interface PostOfficeInternal extends ClusteredPostOffice
    
    void commitTransaction(TransactionId id) throws Throwable;
    
+   void rollbackTransaction(TransactionId id) throws Throwable;
+   
    void updateQueueStats(int nodeId, List stats) throws Exception;
    
    void sendQueueStats() throws Exception;
    
    boolean referenceExistsInStorage(long channelID, long messageID) throws Exception;
    
-   void handleMessagePullResult(int remoteNodeId, long holdingTxId, String queueName, List messages) throws Throwable;
+   void handleMessagePullResult(int remoteNodeId, long holdingTxId, String queueName, Message message) throws Throwable;
 }

@@ -23,9 +23,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
@@ -33,7 +30,7 @@ import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * 
- * A PullMessagesResultRequest
+ * A PullMessageResultRequest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -41,9 +38,9 @@ import org.jboss.messaging.core.message.MessageFactory;
  * $Id$
  *
  */
-public class PullMessagesResultRequest extends ClusterRequest
+public class PullMessageResultRequest extends ClusterRequest
 {
-   private static final Logger log = Logger.getLogger(PullMessagesResultRequest.class);   
+   private static final Logger log = Logger.getLogger(PullMessageResultRequest.class);   
    
    public static final int TYPE = 2;
    
@@ -51,15 +48,15 @@ public class PullMessagesResultRequest extends ClusterRequest
    
    private String queueName;
    
-   private List messages;
+   private Message message;
    
    private int remoteNodeId;
    
-   PullMessagesResultRequest()
+   PullMessageResultRequest()
    {
    }
    
-   PullMessagesResultRequest(int remoteNodeId, long holdingTxId, String queueName, int size)
+   PullMessageResultRequest(int remoteNodeId, long holdingTxId, String queueName, Message message)
    {
       this.remoteNodeId = remoteNodeId;
       
@@ -67,17 +64,12 @@ public class PullMessagesResultRequest extends ClusterRequest
       
       this.queueName = queueName;
       
-      messages = new ArrayList(size);
+      this.message = message;
    }
    
-   void addMessage(Message msg)
+   Message getMessage()
    {
-      messages.add(msg);
-   }
-   
-   List getMessages()
-   {
-      return messages;
+      return message;
    }
    
    public void read(DataInputStream in) throws Exception
@@ -88,20 +80,11 @@ public class PullMessagesResultRequest extends ClusterRequest
       
       queueName = in.readUTF();
       
-      int num = in.readInt();
+      byte type = in.readByte();
       
-      messages = new ArrayList(num);
+      message = MessageFactory.createMessage(type);
       
-      for (int i = 0; i < num; i++)
-      {
-         byte type = in.readByte();
-         
-         Message msg = MessageFactory.createMessage(type);
-         
-         msg.read(in);
-         
-         messages.add(msg);
-      }
+      message.read(in);  
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -112,23 +95,14 @@ public class PullMessagesResultRequest extends ClusterRequest
       
       out.writeUTF(queueName);
       
-      out.writeInt(messages.size());
+      out.writeByte(message.getType());
       
-      Iterator iter = messages.iterator();
-      
-      while (iter.hasNext())
-      {
-         Message msg = (Message)iter.next();
-         
-         out.writeByte(msg.getType());
-         
-         msg.write(out);
-      }   
+      message.write(out);     
    }
 
    Object execute(PostOfficeInternal office) throws Throwable
    {
-      office.handleMessagePullResult(remoteNodeId, holdingTxId, queueName, messages);
+      office.handleMessagePullResult(remoteNodeId, holdingTxId, queueName, message);
       
       return null;
    }

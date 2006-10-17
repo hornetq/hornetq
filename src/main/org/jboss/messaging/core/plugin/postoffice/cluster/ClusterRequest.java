@@ -54,9 +54,9 @@ abstract class ClusterRequest implements Streamable
             request =  new BindRequest();
             break;
          }
-         case PullMessagesResultRequest.TYPE:
+         case PullMessageResultRequest.TYPE:
          {
-            request = new PullMessagesResultRequest();
+            request = new PullMessageResultRequest();
             break;
          }
          case MessageRequest.TYPE:
@@ -92,6 +92,11 @@ abstract class ClusterRequest implements Streamable
          case UnbindRequest.TYPE:
          {
             request = new UnbindRequest();
+            break;
+         }
+         case RollbackPullRequest.TYPE:
+         {
+            request = new RollbackPullRequest();
             break;
          }
          default:

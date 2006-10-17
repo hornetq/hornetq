@@ -2227,7 +2227,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, pullPolicy, rf, 1, 1000);
+                                 5000, 5000, pullPolicy, rf, 1000);
       
       postOffice.start();      
       

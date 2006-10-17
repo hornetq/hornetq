@@ -87,7 +87,6 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
       super.tearDown();
    }
    
-
    public void testConsumeAllNonPersistentNonRecoverable() throws Throwable
    {
       consumeAll(false, false);
@@ -107,9 +106,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
    {
       consumeAll(true, true);
    }
-   
-   
-   
+         
    public void testConsumeBitByBitNonPersistentNonRecoverable() throws Throwable
    {
       consumeBitByBit(false, false);
@@ -129,30 +126,6 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
    {
       consumeBitByBit(true, true);
    }
-   
-   
-   
-   
-//   
-//   public void testConsumeConcurrentlyNonPersistentNonRecoverable() throws Throwable
-//   {
-//      consumeConcurrently(false, false);
-//   }
-//   
-//   public void testConsumeConsumeConcurrentlyPersistentNonRecoverable() throws Throwable
-//   {
-//      consumeConcurrently(true, false);
-//   }
-//   
-//   public void testConsumeConsumeConcurrentlyNonPersistentRecoverable() throws Throwable
-//   {
-//      consumeConcurrently(false, true);
-//   }
-//   
-//   public void testConsumeConsumeConcurrentlyPersistentRecoverable() throws Throwable
-//   {
-//      consumeConcurrently(true, true);
-//   }
    
    public void testSimpleMessagePull() throws Throwable
    {
@@ -301,7 +274,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
          receiver2.setMaxRefs(1);
          
          //Force a failure before commit
-         office2.setFail(true, false);
+         office2.setFail(true, false, false);
          
          log.info("delivering");
          queue2.deliver(false);                 
@@ -401,7 +374,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
          receiver2.setMaxRefs(1);
          
          //Force a failure after commit the ack to storage
-         office2.setFail(false, true);
+         office2.setFail(false, true, false);
          
          log.info("delivering");
          queue2.deliver(false);                 
@@ -429,6 +402,93 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
          assertEquals(0, queue1.memoryRefCount());
          assertEquals(0, queue1.memoryDeliveryCount());
          
+      }
+      finally
+      {
+         if (office1 != null)
+         {           
+            office1.stop();
+         }
+         
+         if (office2 != null)
+         {           
+            office2.stop();
+         }
+      }
+   }
+   
+   public void testFailHandleMessagePullResult() throws Throwable
+   {
+      DefaultClusteredPostOffice office1 = null;
+      
+      DefaultClusteredPostOffice office2 = null;
+      
+      try
+      {      
+         office1 = (DefaultClusteredPostOffice)createClusteredPostOffice(1, "testgroup");
+         
+         office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
+         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         Binding binding1 =
+            office1.bindClusteredQueue("queue1", queue1);
+         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         Binding binding2 =
+            office2.bindClusteredQueue("queue1", queue2);
+                          
+         Message msg = CoreMessageFactory.createCoreMessage(1);   
+         msg.setReliable(true);
+         
+         MessageReference ref = ms.reference(msg);  
+         
+         office1.route(ref, "queue1", null);
+                  
+         Thread.sleep(2000);
+         
+         //Messages should all be in queue1
+         
+         List msgs = queue1.browse();
+         assertEquals(1, msgs.size());
+         
+         msgs = queue2.browse();
+         assertTrue(msgs.isEmpty());
+         
+         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING_TO_MAX);
+         receiver1.setMaxRefs(0);
+         queue1.add(receiver1);
+         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING_TO_MAX);
+         receiver2.setMaxRefs(0);
+         queue2.add(receiver2);
+         
+         //Prompt delivery so the channels know if the receivers are ready
+         queue1.deliver(false);
+         Thread.sleep(2000);
+           
+         //Pull from 1 to 2
+         
+         receiver2.setMaxRefs(1);
+         
+         office2.setFail(false, false, true);
+         
+         log.info("delivering");
+         queue2.deliver(false);                 
+         
+         Thread.sleep(3000);
+         
+         //The delivery should be rolled back
+         
+         assertTrue(office2.getHoldingTransactions().isEmpty());        
+         assertTrue(office2.getHoldingTransactions().isEmpty());
+         
+         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
+         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());
+         
+         assertEquals(1, queue1.memoryRefCount());
+         assertEquals(0, queue1.memoryDeliveryCount());
+         
+         assertEquals(0, queue2.memoryRefCount());
+         assertEquals(0, queue2.memoryDeliveryCount());                     
       }
       finally
       {
@@ -946,133 +1006,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
             office5.stop();
          }
       }
-   }
-   
-   protected void consumeConcurrently(boolean persistent, boolean recoverable) throws Throwable
-   {
-      DefaultClusteredPostOffice office1 = null;
-      
-      DefaultClusteredPostOffice office2 = null;
-      
-      DefaultClusteredPostOffice office3 = null;
-      
-      DefaultClusteredPostOffice office4 = null;
-      
-      DefaultClusteredPostOffice office5 = null;
-          
-      try
-      {   
-         office1 = (DefaultClusteredPostOffice)createClusteredPostOffice(1, "testgroup");
-         
-         office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
-         
-         office3 = (DefaultClusteredPostOffice)createClusteredPostOffice(3, "testgroup");
-         
-         office4 = (DefaultClusteredPostOffice)createClusteredPostOffice(4, "testgroup");
-         
-         office5 = (DefaultClusteredPostOffice)createClusteredPostOffice(5, "testgroup");
-         
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding1 = office1.bindClusteredQueue("queue1", queue1);
-                  
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding2 = office2.bindClusteredQueue("queue1", queue2);
-                  
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding3 = office3.bindClusteredQueue("queue1", queue3);         
-         
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding4 = office4.bindClusteredQueue("queue1", queue4);
-                  
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
-         Binding binding5 = office5.bindClusteredQueue("queue1", queue5);
-                   
-         //Test with no consumers on queue1
-         
-         //Two equal consumers on queue2 and queue3
-                           
-         //Add messages at queue 1
-         
-         final int NUM_MESSAGES = 10000;
-         
-         this.sendMessages("queue1", persistent, office1, NUM_MESSAGES, null);
-         
-         log.info("sent messages");
-         
-         Thread.sleep(4000);
-         
-         ThrottleReceiver receiver1 = new ThrottleReceiver(queue1, 0, 50);
-         queue1.add(receiver1);
-         queue1.deliver(false);  
-         
-         ThrottleReceiver receiver2 = new ThrottleReceiver(queue2, 0, 50);
-         queue2.add(receiver2);
-         queue2.deliver(false);  
-         
-         Thread.sleep(45000);
-         
-         log.info("receiver1: " + receiver1.getTotalCount());
-         
-         log.info("receiver2: " + receiver2.getTotalCount());
-         
-
-         //test1
-         
-         
-         //No consumer on node 1
-         //Very slow consumer on node 2
-         //
-         
-         /*
-          * Test with very fast, infinitely big consumer (i.e. is always ready) on node 1
-          * Fast consumer on node2
-          * Send messages on node 1
-          * Verify all go to node1 consumer
-          * 
-          * Test with very fast, not infinitely big consumer (i.e. is not always ready) on node 1
-          * Fast consumer on node2
-          * Send messages on node 1
-          * Verify most go to node1 consumer, some go to node 2
-          * 
-          * Test with slow consumer on node 1, Fast consumer on node 2
-          * 
-          * Test with no consumer on node 1, consumers on other nodes
-          * 
-          * Things up all the other permutations, then take a guess with error margin of
-          * how many messages should be on each node.
-          */
-         
-         
-         checkNoMessageData();
-      }
-      finally
-      { 
-         if (office1 != null)
-         {
-            office1.stop();
-         }
-         
-         if (office2 != null)
-         {            
-            office2.stop();
-         }
-         
-         if (office3 != null)
-         {
-            office3.stop();
-         }
-         
-         if (office4 != null)
-         {            
-            office4.stop();
-         }
-         
-         if (office5 != null)
-         {
-            office5.stop();
-         }
-      }
-   }
+   }      
    
    class ThrottleReceiver implements Receiver, Runnable
    {
@@ -1218,7 +1152,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends ClusteringTe
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 10000, 10000, pullPolicy, rf, 1, 1000);
+                                 10000, 10000, pullPolicy, rf, 1000);
       
       postOffice.start();      
       

@@ -359,7 +359,7 @@ public class DefaultRouterTest extends ClusteringTestBase
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, rf, 1, 1000);
+                                 5000, 5000, redistPolicy, rf, 1000);
       
       postOffice.start();      
       

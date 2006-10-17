@@ -116,7 +116,7 @@ public class RecoveryTest extends ClusteringTestBase
          queue3.add(receiver3);
          
          //This will make it fail after casting but before persisting the message in the db
-         office1.setFail(true, false);
+         office1.setFail(true, false, false);
          
          Transaction tx = tr.createTransaction();
          
@@ -251,7 +251,7 @@ public class RecoveryTest extends ClusteringTestBase
          queue3.add(receiver3);
          
          //This will make it fail after casting and persisting the message in the db
-         office1.setFail(false, true);
+         office1.setFail(false, true, false);
          
          Transaction tx = tr.createTransaction();
          
@@ -361,7 +361,7 @@ public class RecoveryTest extends ClusteringTestBase
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, rf, 1, 1000);
+                                 5000, 5000, redistPolicy, rf, 1000);
       
       postOffice.start();      
       

@@ -69,8 +69,6 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
      
    private String groupName;
    
-   private int pullSize = 1;   
-   
    private long statsSendPeriod = 1000;
    
    private String clusterRouterFactory;
@@ -172,16 +170,6 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       return groupName;
    }
    
-   public void setPullSize(int size)
-   {
-      this.pullSize = size;
-   }
-   
-   public int getPullSize()
-   {
-      return pullSize;
-   }
-   
    public void setStatsSendPeriod(long period)
    {
       this.statsSendPeriod = period;
@@ -256,7 +244,6 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
                                                syncChannelConfig, asyncChannelConfig,
                                                stateTimeout, castTimeout,
                                                pullPolicy, rf,
-                                               pullSize,
                                                statsSendPeriod);
          
          postOffice.start();

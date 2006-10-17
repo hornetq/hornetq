@@ -84,6 +84,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    //Used for failure testing
    private boolean failBeforeCommit;
    private boolean failAfterCommit;
+   private boolean failHandleResult;
      
    private boolean trace = log.isTraceEnabled();
                         
@@ -130,8 +131,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    
    private ClusterRouterFactory routerFactory;
    
-   private int pullSize;
-   
    private Map routerMap;
    
    private StatsSender statsSender;
@@ -166,12 +165,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
             long stateTimeout, long castTimeout,
             MessagePullPolicy redistributionPolicy,
             ClusterRouterFactory rf,
-            int pullSize,
             long statsSendPeriod) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
            pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy,
-           rf, pullSize, statsSendPeriod);
+           rf, statsSendPeriod);
       
       this.syncChannelConfigE = syncChannelConfig;      
       this.asyncChannelConfigE = asyncChannelConfig;     
@@ -193,12 +191,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                               long stateTimeout, long castTimeout,
                               MessagePullPolicy redistributionPolicy,                      
                               ClusterRouterFactory rf,
-                              int pullSize,
                               long statsSendPeriod) throws Exception
    {            
       this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
            pm, tr, filterFactory, pool, groupName, stateTimeout, castTimeout, redistributionPolicy,
-           rf, pullSize, statsSendPeriod);
+           rf, statsSendPeriod);
 
       this.syncChannelConfigS = syncChannelConfig;      
       this.asyncChannelConfigS = asyncChannelConfig;     
@@ -215,7 +212,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
                                long stateTimeout, long castTimeout,                             
                                MessagePullPolicy redistributionPolicy,                               
                                ClusterRouterFactory rf,
-                               int pullSize,
                                long statsSendPeriod)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr, filterFactory,
@@ -233,8 +229,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       this.routerFactory = rf;
       
-      this.pullSize = pullSize;
-       
       routerMap = new HashMap();
       
       statsSender = new StatsSender(this, statsSendPeriod);
@@ -795,6 +789,27 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       if (trace) { log.trace(this.nodeId + " committed transaction " + id ); }
    }
    
+   public void rollbackTransaction(TransactionId id) throws Throwable
+   {
+      if (trace) { log.trace(this.nodeId + " rolling back transaction " + id ); }
+      
+      ClusterTransaction tx = null;
+        
+      synchronized (holdingArea)
+      {
+         tx = (ClusterTransaction)holdingArea.remove(id);                
+      }
+      
+      if (tx == null)
+      {
+         throw new IllegalStateException("Cannot find transaction transaction id: " + id);
+      }
+      
+      tx.rollback(this);
+      
+      if (trace) { log.trace(this.nodeId + " committed transaction " + id ); }
+   }
+   
    /**
     * Check for any transactions that need to be committed or rolled back
     */
@@ -997,43 +1012,61 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    } 
   
    
-   public void handleMessagePullResult(int remoteNodeId, long holdingTxId, String queueName, List messages) throws Throwable
+   public void handleMessagePullResult(int remoteNodeId, long holdingTxId,
+                                       String queueName, org.jboss.messaging.core.Message message) throws Throwable
    {
-      if (trace) { log.trace(this.nodeId + " handling pull result " + messages + " for " + queueName); }
+      if (trace) { log.trace(this.nodeId + " handling pull result " + message + " for " + queueName); }
                
       Binding binding = getBindingForQueueName(queueName);
       
-      if (binding == null)
-      {
-         //This might happen if the queue is unbound
-         return;
-      }
-            
-      LocalClusteredQueue localQueue = (LocalClusteredQueue)binding.getQueue();
-           
-      RemoteQueueStub remoteQueue = localQueue.getPullQueue();
+      //The binding might be null if the queue was unbound
       
-      if (remoteNodeId != remoteQueue.getNodeId())
-      {
-         //It might have changed since the request was sent
-         Map bindings = (Map)nameMaps.get(new Integer(remoteNodeId));
+      boolean handled = false;
+      
+      if (!failHandleResult && binding != null)
+      {                     
+         LocalClusteredQueue localQueue = (LocalClusteredQueue)binding.getQueue();
+              
+         RemoteQueueStub remoteQueue = localQueue.getPullQueue();
          
-         if (bindings != null)
+         if (remoteNodeId != remoteQueue.getNodeId())
          {
-            binding = (Binding)bindings.get(queueName);
+            //It might have changed since the request was sent
+            Map bindings = (Map)nameMaps.get(new Integer(remoteNodeId));
             
-            if (binding != null)
-            {                     
-              remoteQueue = (RemoteQueueStub)binding.getQueue();                              
+            if (bindings != null)
+            {
+               binding = (Binding)bindings.get(queueName);
+               
+               if (binding != null)
+               {                     
+                 remoteQueue = (RemoteQueueStub)binding.getQueue();                              
+               }
             }
          }
+         
+         if (remoteQueue != null)
+         {
+            localQueue.handlePullMessagesResult(remoteQueue, message, holdingTxId,
+                                                failBeforeCommit, failAfterCommit);
+            
+            handled = true;
+         }     
       }
       
-      if (remoteQueue != null)
+      if (!handled)
       {
-         localQueue.handlePullMessagesResult(remoteQueue, messages, holdingTxId,
-                                             failBeforeCommit, failAfterCommit);
-      }     
+         //If we didn't handle it for what ever reason, then we might have to send a rollback
+         //message to the other node otherwise the transaction might end up in the holding
+         //area for ever
+         if (message.isReliable())
+         {
+            //Only reliable messages will be in holding area
+            this.asyncSendRequest(new RollbackPullRequest(this.nodeId, holdingTxId), remoteNodeId);
+            
+            if (trace) { log.trace(this.nodeId + " send rollback pull request"); }
+         }
+      }      
    }
    
    
@@ -1045,10 +1078,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    // Public ------------------------------------------------------------------------------------------
       
    //Used for testing only
-   public void setFail(boolean beforeCommit, boolean afterCommit)
+   public void setFail(boolean beforeCommit, boolean afterCommit, boolean handleResult)
    {
       this.failBeforeCommit = beforeCommit;
       this.failAfterCommit = afterCommit;
+      this.failHandleResult = handleResult;
    }
    
    //Used for testing only
@@ -1137,7 +1171,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
    {
       if (trace) { log.trace(this.nodeId + " loading bindings"); }
       
-      // TODO I need to know whether this call times out - how do I know this??
       boolean isState = syncChannel.getState(null, stateTimeout);
                               
       if (!isState)

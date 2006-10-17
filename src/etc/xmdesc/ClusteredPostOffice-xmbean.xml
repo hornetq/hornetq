@@ -83,12 +83,6 @@
       <type>long</type>
    </attribute>   
    
-   <attribute access="read-write" getMethod="getPullSize" setMethod="setPullSize">
-      <description>The maximum number of message to pull in one go from a remote queue when the local queue consumers are starving</description>
-      <name>PullSize</name>
-      <type>int</type>
-   </attribute> 
-   
    <attribute access="read-write" getMethod="getStatsSendPeriod" setMethod="setStatsSendPeriod">
       <description>The period in milliseconds between a post office casting it's statistics across the cluster</description>
       <name>StatsSendPeriod</name>

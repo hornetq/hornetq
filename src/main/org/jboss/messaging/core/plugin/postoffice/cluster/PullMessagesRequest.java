@@ -49,7 +49,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
    
    private int numMessages;
    
-   private List reliableDels;
+   private Delivery reliableDelivery;
    
    static final int TYPE = 5;
          
@@ -101,9 +101,9 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
    }
    
    //TODO this is a bit messsy - must be a nicer way of setting this
-   void setReliableDels(List reliableDels)
+   void setReliableDelivery(Delivery del)
    {
-      this.reliableDels = reliableDels;
+      this.reliableDelivery = del;
    }
 
    byte getType()
@@ -113,21 +113,15 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
 
    public boolean check(PostOfficeInternal office) throws Exception
    {
-      // If the messages DON'T exist in the database then we should commit the transaction
-      // Since the acks have already been processed persistently
+      // If the message doesn't exist in the database then we should commit the transaction
+      // Since the ack has already been processed persistently
       
       // otherwise we should roll it back
-      
-      Iterator iter = reliableDels.iterator();
-      
-      //We only need to check one of them since they would all have been acked in a tx      
-      
-      Delivery del = (Delivery)iter.next();
-      
+
       //We store the channelID of one of the channels that the message was persisted in
       //it doesn't matter which one since they were all inserted in the same tx
       
-      if (office.referenceExistsInStorage(checkChannelID, del.getReference().getMessageID()))
+      if (office.referenceExistsInStorage(checkChannelID, reliableDelivery.getReference().getMessageID()))
       {
          //We should rollback
          return false;
@@ -141,34 +135,20 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
 
    public void commit(PostOfficeInternal office) throws Throwable
    {
-      //We need to ack the deliveries
+      //We need to ack the delivery
       
-      Iterator iter = reliableDels.iterator();
-      
-      while (iter.hasNext())
-      {
-         Delivery del = (Delivery)iter.next();
-         
-         //We need to ack them in memory only
-         //since they would have been acked on the pulling node
-         LocalClusteredQueue queue = (LocalClusteredQueue)del.getObserver();
-              
-         queue.acknowledgeFromCluster(del);
-      }
+      //We need to ack it in memory only
+      //since it would have been acked on the pulling node
+      LocalClusteredQueue queue = (LocalClusteredQueue)reliableDelivery.getObserver();
+           
+      queue.acknowledgeFromCluster(reliableDelivery);      
    }
 
    public void rollback(PostOfficeInternal office) throws Throwable
    {
-      //We need to cancel the deliveries
+      //We need to cancel the delivery
       
-      Iterator iter = reliableDels.iterator();
-      
-      while (iter.hasNext())
-      {
-         Delivery del = (Delivery)iter.next();
-         
-         del.cancel();
-      }      
+      reliableDelivery.cancel();  
    }
    
    public void read(DataInputStream in) throws Exception

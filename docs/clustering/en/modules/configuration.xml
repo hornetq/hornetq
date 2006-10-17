@@ -78,7 +78,6 @@
          &lt;attribute name="GroupName"&gt;Topic&lt;/attribute&gt;
          &lt;attribute name="StateTimeout"&gt;5000&lt;/attribute&gt;
          &lt;attribute name="CastTimeout"&gt;5000&lt;/attribute&gt;
-         &lt;attribute name="PullSize"&gt;1&lt;/attribute&gt;
          &lt;attribute name="StatsSendPeriod"&gt;10000&lt;/attribute&gt;
          &lt;attribute name="MessagePullPolicy"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy&lt;/attribute&gt;
          &lt;attribute name="ClusterRouterFactory"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory&lt;/attribute&gt;
@@ -147,13 +146,6 @@
      <para>
         The maximum amount of time in milliseconds to wait when casting a message and waiting for a result.
         You will not normally need to change this value. Default is 5000 ms.
-     </para>
-   </section>
-
-   <section id="conf.pullsize">
-     <title>PullSize</title>
-     <para>
-        The maximum number of messages to pull from one node to another when the local node is starving. Defaults to 1.
      </para>
    </section>
 
