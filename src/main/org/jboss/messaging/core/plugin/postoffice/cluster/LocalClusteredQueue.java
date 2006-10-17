@@ -178,11 +178,13 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       acknowledgeInternal(d, null, false, false);      
    }
    
-   public void handlePullMessagesResult(RemoteQueueStub remoteQueue, List messages, long holdingTxId) throws Exception
+   public void handlePullMessagesResult(RemoteQueueStub remoteQueue, List messages,
+                                        long holdingTxId, boolean failBeforeCommit, boolean failAfterCommit) throws Exception
    { 
       //This needs to be run on a different thread to the one used by JGroups to deliver the message
       //to avoid deadlock
-      Runnable runnable = new MessagePullResultRunnable(remoteQueue, messages, holdingTxId);
+      Runnable runnable = new MessagePullResultRunnable(remoteQueue, messages, holdingTxId,
+                                                        failBeforeCommit, failAfterCommit);
       
       executor.execute(runnable);      
    }
@@ -225,10 +227,9 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    protected void deliverInternal() throws Throwable
    {      
       super.deliverInternal();
-       
+        
       //If the receivers are still ready to accept more refs then we might pull messages
-      //from a remote queue
-          
+      //from a remote queue          
       if (receiversReady && pullQueue != null)
       {
          //We send a message to the remote queue to pull a message - the remote queue will then send back
@@ -457,15 +458,23 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       private List messages;
       
       private long holdingTxId;
+      
+      //for testing only
+      private boolean failBeforeCommit;
+      private boolean failAfterCommit;
             
       private MessagePullResultRunnable(RemoteQueueStub remoteQueue,
-                                               List messages, long holdingTxId)
+                                        List messages, long holdingTxId,
+                                        boolean failBeforeCommit, boolean failAfterCommit)
       {
          this.remoteQueue = remoteQueue;
          
          this.messages = messages;
          
          this.holdingTxId = holdingTxId;
+         
+         this.failBeforeCommit = failBeforeCommit;
+         this.failAfterCommit = failAfterCommit;                  
       }
 
       public void run()
@@ -504,7 +513,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                   
                   //Should be executed synchronously since we already in the event queue
                   Delivery delRet = handleInternal(null, ref, tx, true, true);
-                  
+
                   if (delRet == null || !delRet.isSelectorAccepted())
                   {
                      //This should never happen
@@ -524,9 +533,21 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                
                del.acknowledge(tx);        
             }
+            
+            //For testing to simulate failures
+            if (failBeforeCommit)
+            {
+               throw new Exception("Test failure before commit");
+            }
                
             tx.commit();
-          
+            
+            //For testing to simulate failures
+            if (failAfterCommit)
+            {
+               throw new Exception("Test failure after commit");
+            }
+            
             //TODO what if commit throws an exception - this means the commit message doesn't hit the 
             //remote node so the holding transaction stays in the holding area 
             //Need to catch the exception and throw a check message

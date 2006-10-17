@@ -1031,13 +1031,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice implements Clu
       
       if (remoteQueue != null)
       {
-         localQueue.handlePullMessagesResult(remoteQueue, messages, holdingTxId);
+         localQueue.handlePullMessagesResult(remoteQueue, messages, holdingTxId,
+                                             failBeforeCommit, failAfterCommit);
       }     
-      else
-      {
-         //TODO need to send a rollback to the remote queue otherwise will get leak on remote node
-         //in holding area
-      }
    }
    
    

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 
@@ -42,6 +43,8 @@ import org.jboss.messaging.core.message.MessageFactory;
  */
 public class PullMessagesResultRequest extends ClusterRequest
 {
+   private static final Logger log = Logger.getLogger(PullMessagesResultRequest.class);   
+   
    public static final int TYPE = 2;
    
    private long holdingTxId;

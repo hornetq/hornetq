@@ -165,8 +165,10 @@ public class RecoveryTest extends ClusteringTestBase
          msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
          
-         assertEquals(1, office1.getHoldingTransactions().size());
+         //Nodes 2 and 3 should have a held tx
          
+         assertTrue(office1.getHoldingTransactions().isEmpty());
+
          assertEquals(1, office2.getHoldingTransactions().size());
          
          assertEquals(1, office3.getHoldingTransactions().size());
@@ -175,6 +177,8 @@ public class RecoveryTest extends ClusteringTestBase
          office1.stop();
          
          Thread.sleep(1000);
+         
+         //This should result in the held txs being rolled back
          
          assertTrue(office1.getHoldingTransactions().isEmpty());
          
@@ -271,6 +275,9 @@ public class RecoveryTest extends ClusteringTestBase
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
          
+         msgs = receiver3.getMessages();
+         assertTrue(msgs.isEmpty());
+         
          try
          {
             //An exception should be thrown            
@@ -293,7 +300,9 @@ public class RecoveryTest extends ClusteringTestBase
          msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
          
-         assertEquals(1, office1.getHoldingTransactions().size());
+         //There should be held tx in 2 and 3 but not in 1
+         
+         assertTrue(office1.getHoldingTransactions().isEmpty());
          
          assertEquals(1, office2.getHoldingTransactions().size());
          
@@ -319,6 +328,7 @@ public class RecoveryTest extends ClusteringTestBase
          msgs = receiver3.getMessages();
          assertEquals(NUM_MESSAGES, msgs.size());
          
+         
       }
       finally
       {
@@ -333,6 +343,9 @@ public class RecoveryTest extends ClusteringTestBase
          }
       }
    }
+   
+   
+  
    
    protected ClusteredPostOffice createClusteredPostOffice(int nodeId, String groupName) throws Exception
    {
