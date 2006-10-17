@@ -64,7 +64,7 @@ public class XMLUtil
 
       if (Node.CDATA_SECTION_NODE == type)
       {
-         return "<![CDATA[" + n.getNodeValue() + "]]>";
+         return n.getNodeValue();
       }
 
       if (name.startsWith("#"))
