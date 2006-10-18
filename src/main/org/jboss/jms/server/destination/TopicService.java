@@ -26,6 +26,8 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:alex.fu@novell.com">Alex Fu</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -63,7 +65,10 @@ public class TopicService extends DestinationServiceSupport
       try
       {
          postOffice = serverPeer.getTopicPostOfficeInstance();
-         
+
+         if (postOffice == null)
+          throw new IllegalArgumentException("Post Office instance not found. Check your destination configuration.");
+
          destination.setPostOffice(postOffice);
            
          // We deploy any queues corresponding to pre-existing durable subscriptions
