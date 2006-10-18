@@ -1297,7 +1297,7 @@ public class ManualClusteringTest extends MessagingTestCase
    /** This is what is planned to be executed when a durable subscriber's connection fail.
     *  The durable subscription will be created on the second node, and the first node will be closed/failed.
     *  If this test passes we will have most of what we need for HA server recovery */
-   public void testHAFailoeverRequirementsOnDurable() throws Exception
+   public void testHAFailoverRequirementsOnDurable() throws Exception
    {
        Connection conn1 = null;
        
