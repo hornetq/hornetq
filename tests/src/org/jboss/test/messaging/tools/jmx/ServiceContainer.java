@@ -1055,6 +1055,8 @@ public class ServiceContainer
    {
       try
       {
+         log.info("************************** Deleting all data from database");
+         
          InitialContext ctx = new InitialContext();
 
          TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
@@ -1065,7 +1067,7 @@ public class ServiceContainer
 
          Connection conn = ds.getConnection();
 
-         String sql = "DELETE FROM JMS_CHANNEL_MAPPING";
+         String sql = "DELETE FROM JMS_POSTOFFICE";
          PreparedStatement ps = conn.prepareStatement(sql);
 
          int rows = ps.executeUpdate();

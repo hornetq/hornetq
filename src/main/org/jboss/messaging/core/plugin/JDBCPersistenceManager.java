@@ -138,7 +138,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         conn.close();
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
         
       //We can't remnove unreliable data since it might introduce holes into the paging order
@@ -155,7 +158,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    // PersistenceManager implementation -------------------------
    
    // Related to counters
-   // ==================
+   // ===================
    
    public long reserveIDBlock(String counterName, int size) throws Exception
    {
@@ -261,103 +264,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    }
          
    // Related to paging functionality
-   // ===============================
-      
-   public void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception
-   {
-      if (trace) { log.trace("Updating reliable references for channel " + channelID + " between " + orderStart + " and " + orderEnd); }
-      
-      Connection conn = null;
-      PreparedStatement ps = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      final int MAX_TRIES = 25;      
-      
-      try
-      {
-         conn = ds.getConnection();
-         
-         ps = conn.prepareStatement(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
-                 
-         ps.setLong(1, orderStart);
-         
-         ps.setLong(2, orderEnd);
-         
-         ps.setLong(3, channelID);
-         
-         int tries = 0;
-         
-         while (true)
-         {
-            try
-            {
-               int rows = ps.executeUpdate();
-                 
-               if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"), new Long(channelID),
-                                      new Long(orderStart), new Long(orderEnd)) + " updated " + rows + " rows"); }
-               if (tries > 0)
-               {
-                  log.warn("Update worked after retry");
-               }
-               
-               //Sanity check
-               if (rows != num)
-               {
-                  throw new IllegalStateException("Did not update correct number of rows");
-               }
-               
-               break;
-            }
-            catch (SQLException e)
-            {
-               log.warn("SQLException caught - assuming deadlock detected, try:" + (tries + 1), e);
-               
-               tries++;
-               
-               if (tries == MAX_TRIES)
-               {
-                  log.error("Retried " + tries + " times, now giving up");
-                  
-                  throw new IllegalStateException("Failed to update references");
-               }
-               
-               log.warn("Trying again after a pause");
-               
-               //Now we wait for a random amount of time to minimise risk of deadlock occurring again
-               Thread.sleep((long)(Math.random() * 500));
-            }  
-         }
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         wrap.end();
-      }
-   }         
+   // ===============================         
         
    /*
     * Retrieve a List of messages corresponding to the specified List of message ids.
@@ -561,7 +468,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          wrap.end();
       }
    }  
-               
+   
+       
    public void pageReferences(long channelID, List references, boolean paged) throws Exception
    {  
       Connection conn = null;
@@ -635,7 +543,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             //Maybe we need to persist the message itself
             Message m = ref.getMessage();
             
-            //In a paging situation, we cannot use the persisted flag on the messager to determine whether
+            //In a paging situation, we cannot use the persisted flag on the message to determine whether
             //to insert the message or not.
             //This is because a channel (possibly on another node) may be paging too and referencing
             //the same message, and might have removed the message independently, the other
@@ -655,23 +563,22 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             //this, this is another reason why we cannot use HSQL in a clustered environment
             //since it does not have a for update equivalent
             
+            boolean added;
+            
             psMessageExists = conn.prepareStatement(getSQLStatement("MESSAGE_EXISTS"));
             
             psMessageExists.setLong(1, m.getMessageID());
             
             rsMessageExists = psMessageExists.executeQuery();
-            
-            boolean added;
-            
+             
             if (rsMessageExists.next())
             {
                //Message exists
                
                // Update the message with the new channel count
                incrementChannelCount(m, psUpdateMessage);
-               
-               added = false;
-               
+                  
+               added = false;              
             }
             else
             {
@@ -679,7 +586,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                storeMessage(m, psInsertMessage);
                
                added = true;
-            }            
+            }    
             
             if (usingBatchUpdates)
             {
@@ -706,9 +613,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   }
                }
                else
-               {
+               {               
                   int rows = psUpdateMessage.executeUpdate();
-                 
+                  
                   if (trace)
                   {
                      log.trace("Updated " + rows + " rows");
@@ -816,7 +723,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       PreparedStatement psDeleteMessage = null;
       PreparedStatement psUpdateMessage = null;
       TransactionWrapper wrap = new TransactionWrapper();
-      
+        
       //We order the references
       orderReferences(references);
              
@@ -870,10 +777,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             Message m = ref.getMessage();
                                     
             //Maybe we need to delete the message itself
-            
+              
             //Update the message with the new channel count
             decrementChannelCount(m, psUpdateMessage);
             
+
             //Run the remove message update
             removeMessage(m, psDeleteMessage);
                         
@@ -884,20 +792,21 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                psDeleteMessage.addBatch();
             }
             else
-            {
+            {  
                int rows = psUpdateMessage.executeUpdate();
-                              
+                                                 
                if (trace) { log.trace("Updated " + rows + " rows"); }
                
                rows = psDeleteMessage.executeUpdate();
-               
+        
                if (trace) { log.trace("Deleted " + rows + " rows"); }
             
                psDeleteMessage.close();
                psDeleteMessage = null;
                psUpdateMessage.close();
                psUpdateMessage = null;
-            }      
+            }  
+            
          }         
          
          if (usingBatchUpdates)
@@ -980,11 +889,197 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          }         
       }      
    }
+   
+   public void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception
+   {
+      if (trace) { log.trace("Updating reliable references for channel " + channelID + " between " + orderStart + " and " + orderEnd); }
+      
+      Connection conn = null;
+      PreparedStatement ps = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+
+      final int MAX_TRIES = 25;      
+      
+      try
+      {
+         conn = ds.getConnection();
+         
+         ps = conn.prepareStatement(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
+                 
+         ps.setLong(1, orderStart);
+         
+         ps.setLong(2, orderEnd);
+         
+         ps.setLong(3, channelID);
+         
+         int tries = 0;
+         
+         while (true)
+         {
+            try
+            {
+               int rows = ps.executeUpdate();
+                 
+               if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"), new Long(channelID),
+                                      new Long(orderStart), new Long(orderEnd)) + " updated " + rows + " rows"); }
+               if (tries > 0)
+               {
+                  log.warn("Update worked after retry");
+               }
+               
+               //Sanity check
+               if (rows != num)
+               {
+                  throw new IllegalStateException("Did not update correct number of rows");
+               }
+               
+               break;
+            }
+            catch (SQLException e)
+            {
+               log.warn("SQLException caught - assuming deadlock detected, try:" + (tries + 1), e);
+               
+               tries++;
+               
+               if (tries == MAX_TRIES)
+               {
+                  log.error("Retried " + tries + " times, now giving up");
+                  
+                  throw new IllegalStateException("Failed to update references");
+               }
+               
+               log.warn("Trying again after a pause");
+               
+               //Now we wait for a random amount of time to minimise risk of deadlock occurring again
+               Thread.sleep((long)(Math.random() * 500));
+            }  
+         }
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         wrap.end();
+      }
+   }
+   
+   public void updatePageOrder(long channelID, List references) throws Exception
+   {
+      Connection conn = null;
+      PreparedStatement psUpdateReference = null;  
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      if (trace) { log.trace("Updating page order for channel:" + channelID); }
+        
+      try
+      {
+         conn = ds.getConnection();
+         
+         Iterator iter = references.iterator();
+         
+         if (usingBatchUpdates)
+         {
+            psUpdateReference = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
+         }
+         
+         while (iter.hasNext())
+         {
+            MessageReference ref = (MessageReference) iter.next();
+                 
+            if (!usingBatchUpdates)
+            {
+               psUpdateReference = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
+            }
+            
+            psUpdateReference.setLong(1, ref.getPagingOrder());
+
+            psUpdateReference.setLong(2, ref.getMessageID());
+            
+            psUpdateReference.setLong(3, channelID);
+            
+            if (usingBatchUpdates)
+            {
+               psUpdateReference.addBatch();
+            }
+            else
+            {
+               int rows = psUpdateReference.executeUpdate();
+               
+               if (trace) { log.trace("Updated " + rows + " rows"); }
+               
+               psUpdateReference.close();
+               psUpdateReference = null;
+            }
+         }
+                     
+         if (usingBatchUpdates)
+         {
+            int[] rowsReference = psUpdateReference.executeBatch();
+            
+            if (trace) { logBatchUpdate(getSQLStatement("UPDATE_PAGE_ORDER"), rowsReference, "updated"); }
+                        
+            psUpdateReference.close();
+            psUpdateReference = null;
+         }
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (psUpdateReference != null)
+         {
+            try
+            {
+               psUpdateReference.close();
+            }
+            catch (Throwable t)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable t)
+            {
+            }
+         }
+         wrap.end();
+      }    
+   }
       
    public List getPagedReferenceInfos(long channelID, long orderStart, long number) throws Exception
    {
       if (trace) { log.trace("loading message reference info for channel " + channelID + " from " + orderStart + " number " + number);      }
-                    
+                 
       List refs = new ArrayList();
       
       Connection conn = null;
@@ -1192,95 +1287,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }      
    }   
    
-   public void updatePageOrder(long channelID, List references) throws Exception
-   {
-      Connection conn = null;
-      PreparedStatement psUpdateReference = null;  
-      TransactionWrapper wrap = new TransactionWrapper();
-      
-      if (trace) { log.trace("Updating page order for channel:" + channelID); }
-        
-      try
-      {
-         conn = ds.getConnection();
-         
-         Iterator iter = references.iterator();
-         
-         if (usingBatchUpdates)
-         {
-            psUpdateReference = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
-         }
-         
-         while (iter.hasNext())
-         {
-            MessageReference ref = (MessageReference) iter.next();
-                 
-            if (!usingBatchUpdates)
-            {
-               psUpdateReference = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
-            }
-            
-            psUpdateReference.setLong(1, ref.getPagingOrder());
-            
-            psUpdateReference.setLong(2, ref.getMessageID());
-            
-            psUpdateReference.setLong(3, channelID);
-            
-            if (usingBatchUpdates)
-            {
-               psUpdateReference.addBatch();
-            }
-            else
-            {
-               int rows = psUpdateReference.executeUpdate();
-               
-               if (trace) { log.trace("Updated " + rows + " rows"); }
-               
-               psUpdateReference.close();
-               psUpdateReference = null;
-            }
-         }
-                     
-         if (usingBatchUpdates)
-         {
-            int[] rowsReference = psUpdateReference.executeBatch();
-            
-            if (trace) { logBatchUpdate(getSQLStatement("UPDATE_PAGE_ORDER"), rowsReference, "updated"); }
-                        
-            psUpdateReference.close();
-            psUpdateReference = null;
-         }
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (psUpdateReference != null)
-         {
-            try
-            {
-               psUpdateReference.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         wrap.end();
-      }    
-   }
+   
    
    // End of paging functionality
    // ===========================
@@ -2924,6 +2931,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       ps.setLong(1, m.getMessageID());
    }
+   
+   
    
    protected void decrementChannelCount(Message m, PreparedStatement ps) throws Exception
    {

@@ -343,7 +343,7 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
-               <exclude name="**/jms/ManualClusteringTest.class"/>
+               <exclude name="**/jms/manual/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -456,7 +456,8 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/stress/**/*Test.class"/>
+               <!-- <include name="**/jms/stress/**/*Test.class"/> -->
+               <include name="**/jms/stress/StressTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -527,11 +528,10 @@
                <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/crash/*Test.class"/>
-               <exclude name="org/jboss/test/messaging/jms/ManualCrashTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/MemLeakTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
                <exclude name="org/jboss/test/messaging/jms/JCAWrapperTest.class"/>
-               <exclude name="**/jms/ManualClusteringTest.class"/>
+               <exclude name="**/jms/manual/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

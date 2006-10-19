@@ -212,7 +212,10 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
             office2.stop();
          }
          
-         checkNoBindingData();
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
       }
             
    }
@@ -490,8 +493,14 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
             postOffice.stop();
          }
          
-         checkNoMessageData();
-         checkNoBindingData();
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
       }
    
    }
@@ -533,8 +542,14 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
             postOffice.stop();
          }
          
-         checkNoMessageData();
-         checkNoBindingData();
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
       }
    }
    
@@ -641,8 +656,14 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
             postOffice.stop();
          }
          
-         checkNoMessageData();
-         checkNoBindingData();
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
       }
    }
    
@@ -813,8 +834,15 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
             postOffice.stop();
          }
          
-         checkNoMessageData();
-         checkNoBindingData();
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
+      
       }
    }
    
@@ -1084,8 +1112,14 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
             postOffice.stop();
          }
          
-         checkNoMessageData();
-         checkNoBindingData();
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         };
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
       }
    }
    

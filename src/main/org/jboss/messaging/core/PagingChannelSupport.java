@@ -22,6 +22,7 @@
 package org.jboss.messaging.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -302,11 +303,10 @@ public abstract class PagingChannelSupport extends ChannelSupport
    protected void loadPagedReferences(long number) throws Exception
    {
       if (trace) { log.trace(this + " Loading " + number + " paged references from storage"); }
-
+  
       // Must flush the down cache first
       flushDownCache();
-      
-      List refInfos = pm.getPagedReferenceInfos(channelID, firstPagingOrder, number);
+           List refInfos = pm.getPagedReferenceInfos(channelID, firstPagingOrder, number);      
       
       Map refMap = processReferences(refInfos);
 
@@ -336,7 +336,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
             unreliableNumber++;
          }
       }
-
+      
       if (!toRemove.isEmpty())
       {
          // Now we remove the references we loaded (only the non persistent or persistent in a non-recoverable store)
@@ -401,12 +401,12 @@ public abstract class PagingChannelSupport extends ChannelSupport
    
    private boolean checkLoad() throws Exception
    {
-      long refNum = downCache.size() + nextPagingOrder - firstPagingOrder;
+      long refNum = nextPagingOrder - firstPagingOrder;
       
       if (refNum > 0)
       {
          long numberLoadable = Math.min(refNum, pageSize);
-
+         
          if (messageRefs.size() <= fullSize - numberLoadable)
          {
             //This will flush the down cache too
@@ -465,7 +465,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
       //If cancelling then the ref is supposed to go back on the front of the queue segment in storage
       //so we set the page ordering to be firstPageOrdering - 1
-      //If not cancelling, then the ref should go on the end of the quueue in storage so
+      //If not cancelling, then the ref should go on the end of the queue in storage so
       //we set the page ordering to be nextPageOrdering
       
       if (cancelling)
@@ -509,7 +509,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       while (iter.hasNext())
       {
          MessageReference ref = (MessageReference) iter.next();
-         
+           
          if (ref.isReliable() && recoverable)
          {
             toUpdate.add(ref);
@@ -519,7 +519,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
             toAdd.add(ref);
          }
       }
-
+      
       if (!toAdd.isEmpty())
       {
          pm.pageReferences(channelID, toAdd, true);
@@ -608,9 +608,10 @@ public abstract class PagingChannelSupport extends ChannelSupport
          if (messages.size() != msgIdsToLoad.size())
          {
             // Sanity check
+            
             throw new IllegalStateException("Did not load correct number of messages, wanted:" +
                                             msgIdsToLoad.size() + " but got:" +
-                                            messages.size());
+                                            messages.size());            
          }
 
          // Create references for these messages and add them to the reference map
