@@ -54,7 +54,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.plugin.base.ClusteringTestBase;
+import org.jboss.test.messaging.core.plugin.base.PostOfficeTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
@@ -72,7 +72,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class DefaultPostOfficeTest extends ClusteringTestBase
+public class DefaultPostOfficeTest extends PostOfficeTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -324,9 +324,6 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
       routeWithFilter(true);
    }
    
-   
-
-   
    public final void testRoutePersistent() throws Throwable
    {
       route(true);
@@ -497,10 +494,6 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
          {
             fail("data still in database");
          }
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
       }
    
    }
@@ -545,10 +538,6 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
          if (checkNoMessageData())
          {
             fail("data still in database");
-         }
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
          }
       }
    }
@@ -659,10 +648,6 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
          if (checkNoMessageData())
          {
             fail("data still in database");
-         }
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
          }
       }
    }
@@ -838,11 +823,6 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
          {
             fail("data still in database");
          }
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
-      
       }
    }
    
@@ -1096,6 +1076,8 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
          msgRec2 = (Message)msgs.get(1);
          assertTrue(msgRec1 == msg7);
          assertTrue(msgRec2 == msg8);
+         receiver1.acknowledge(msgRec1, null);
+         receiver1.acknowledge(msgRec2, null);
          
          msgs = queue2.browse();
          assertNotNull(msgs);
@@ -1103,7 +1085,9 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
          msgRec1 = (Message)msgs.get(0);
          msgRec2 = (Message)msgs.get(1);
          assertTrue(msgRec1 == msg7);
-         assertTrue(msgRec2 == msg8);        
+         assertTrue(msgRec2 == msg8);    
+         receiver2.acknowledge(msgRec1, null);
+         receiver2.acknowledge(msgRec2, null);
       }
       finally
       {
@@ -1116,10 +1100,6 @@ public class DefaultPostOfficeTest extends ClusteringTestBase
          {
             fail("data still in database");
          };
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
       }
    }
    

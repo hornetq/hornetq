@@ -38,7 +38,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.plugin.base.ClusteringTestBase;
+import org.jboss.test.messaging.core.plugin.base.PostOfficeTestBase;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -53,7 +53,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class RecoveryTest extends ClusteringTestBase
+public class RecoveryTest extends PostOfficeTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -357,7 +357,7 @@ public class RecoveryTest extends ClusteringTestBase
       
       DefaultClusteredPostOffice postOffice = 
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                                 null, true, nodeId, "Clustered", ms, pm, tr, ff, pool,
+                                 sc.getClusteredPostOfficeSQLProperties(), true, nodeId, "Clustered", ms, pm, tr, ff, pool,
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),

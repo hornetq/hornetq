@@ -116,8 +116,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       ms.stop();
       
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, true, true, 100);      
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
+                  sc.getPersistenceManagerSQLProperties(),
+                  true, true, true, 100);      
       pm.start();
       
       tr = new TransactionRepository(pm, idm);
@@ -213,8 +214,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       ms.stop();
       
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, true, true, 100);      
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
+                  sc.getPersistenceManagerSQLProperties(),
+                  true, true, true, 100);     
       pm.start();
       
       tr = new TransactionRepository(pm, idm);

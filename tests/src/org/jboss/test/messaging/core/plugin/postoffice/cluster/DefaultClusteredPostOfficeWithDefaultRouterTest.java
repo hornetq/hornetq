@@ -34,7 +34,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
-import org.jboss.test.messaging.core.plugin.base.ClusteringTestBase;
+import org.jboss.test.messaging.core.plugin.base.PostOfficeTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -48,7 +48,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * $Id$
  *
  */
-public class DefaultClusteredPostOfficeWithDefaultRouterTest extends ClusteringTestBase
+public class DefaultClusteredPostOfficeWithDefaultRouterTest extends PostOfficeTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -380,7 +380,7 @@ public class DefaultClusteredPostOfficeWithDefaultRouterTest extends ClusteringT
       
       DefaultClusteredPostOffice postOffice = 
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                                 null, true, nodeId, "Clustered", ms, pm, tr, ff, pool,
+                                 sc.getClusteredPostOfficeSQLProperties(), true, nodeId, "Clustered", ms, pm, tr, ff, pool,
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),

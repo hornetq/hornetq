@@ -95,8 +95,9 @@ public class PagingStateTestBase extends MessagingTestCase
       sc.start();
 
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, true, true, 100);      
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
+                  sc.getPersistenceManagerSQLProperties(),
+                  true, true, true, 100);     
       pm.start();
       
       idm = new IdManager("TRANSACTION_ID", 10, pm);

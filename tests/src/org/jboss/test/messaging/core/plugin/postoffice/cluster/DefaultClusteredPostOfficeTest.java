@@ -424,7 +424,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office3.stop();
          }
          
-         checkNoBindingData();
+         if (checkNoBindingData())
+         {
+            fail("data still in database");
+         }
       }
       
    }
@@ -725,7 +728,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office2.stop();
          }
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
    }
    
@@ -902,7 +908,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office2.stop();
          }
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
    }
    
@@ -1060,7 +1069,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office6.stop();
          }
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
    }
    
@@ -1145,7 +1157,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          }
          
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
    }
    
@@ -1588,7 +1603,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office7.stop();
          }
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
    }
    
@@ -2209,7 +2227,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office2.stop();
          }
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
    }
    
@@ -2223,7 +2244,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
       
       DefaultClusteredPostOffice postOffice = 
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                                 null, true, nodeId, "Clustered", ms, pm, tr, ff, pool,
+                                 sc.getClusteredPostOfficeSQLProperties(), true, nodeId, "Clustered", ms, pm, tr, ff, pool,
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),

@@ -63,7 +63,7 @@ import org.jboss.tm.TransactionManagerService;
  * $Id$
  *
  */
-public class ClusteringTestBase extends MessagingTestCase
+public class PostOfficeTestBase extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -87,7 +87,7 @@ public class ClusteringTestBase extends MessagingTestCase
    
    // Constructors --------------------------------------------------
 
-   public ClusteringTestBase(String name)
+   public PostOfficeTestBase(String name)
    {
       super(name);
    }
@@ -103,8 +103,9 @@ public class ClusteringTestBase extends MessagingTestCase
       sc.start();                
       
       pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, false, true, 100);      
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
+                  sc.getPersistenceManagerSQLProperties(),
+                  true, true, true, 100);     
       pm.start();
       
       transactionIdManager = new IdManager("TRANSACTION_ID", 10, pm);
@@ -148,7 +149,7 @@ public class ClusteringTestBase extends MessagingTestCase
       
       DefaultPostOffice postOffice = 
          new DefaultPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                            null, true, 1, "Simple", ms, pm, tr, ff, pool);
+                            sc.getPostOfficeSQLProperties(), true, 1, "Simple", ms, pm, tr, ff, pool);
       
       postOffice.start();      
       

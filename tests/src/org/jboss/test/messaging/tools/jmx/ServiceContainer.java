@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.tools.jmx;
 
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -32,8 +33,10 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import javax.management.Attribute;
@@ -72,6 +75,7 @@ import org.jboss.system.ServiceController;
 import org.jboss.system.ServiceCreator;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
+import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.tm.TransactionManagerLocator;
@@ -470,6 +474,122 @@ public class ServiceContainer
    {
       return mbeanServer.invoke(on, "getInstance", new Object[0], new String[0]);
    }
+   
+   public Properties getPersistenceManagerSQLProperties() throws Exception
+   {
+      String databaseType = getDatabaseType();
+      
+      String persistenceConfigFile =
+         "server/default/deploy/" + databaseType + "-persistence-service.xml";
+      
+      log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
+      
+      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
+      if (persistenceConfigFileURL == null)
+      {
+         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
+      }
+      
+      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
+      
+      MBeanConfigurationElement persistenceManagerConfig =
+         (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
+      
+      String props = persistenceManagerConfig.getAttributeValue("SqlProperties");
+      
+      log.info("sql properties are: " + props);
+      
+      if (props != null)
+      {         
+         ByteArrayInputStream is = new ByteArrayInputStream(props.getBytes());
+         
+         Properties sqlProperties = new Properties();
+         
+         sqlProperties.load(is);      
+         
+         return sqlProperties;
+      }
+      else
+      {
+         return null;
+      }
+   }
+   
+   public Properties getPostOfficeSQLProperties() throws Exception
+   {
+      String databaseType = getDatabaseType();
+      
+      String persistenceConfigFile =
+         "server/default/deploy/" + databaseType + "-persistence-service.xml";
+      
+      log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
+      
+      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
+      if (persistenceConfigFileURL == null)
+      {
+         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
+      }
+      
+      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
+      
+      MBeanConfigurationElement postOfficeConfig =
+         (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
+      
+      String props = postOfficeConfig.getAttributeValue("SqlProperties");
+      
+      if (props != null)
+      {         
+         ByteArrayInputStream is = new ByteArrayInputStream(props.getBytes());
+         
+         Properties sqlProperties = new Properties();
+         
+         sqlProperties.load(is);      
+         
+         return sqlProperties;
+      }
+      else
+      {
+         return null;
+      }
+   }
+   
+   public Properties getClusteredPostOfficeSQLProperties() throws Exception
+   {
+      String databaseType = getDatabaseType();
+      
+      String persistenceConfigFile =
+         "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
+      
+      log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
+      
+      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
+      if (persistenceConfigFileURL == null)
+      {
+         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
+      }
+      
+      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
+      
+      MBeanConfigurationElement postOfficeConfig =
+         (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
+      
+      String props = postOfficeConfig.getAttributeValue("SqlProperties");
+      
+      if (props != null)
+      {         
+         ByteArrayInputStream is = new ByteArrayInputStream(props.getBytes());
+         
+         Properties sqlProperties = new Properties();
+         
+         sqlProperties.load(is);      
+         
+         return sqlProperties;
+      }
+      else
+      {
+         return null;
+      }
+   }
 
    /**
     * @return Set<ObjectName>
@@ -482,19 +602,7 @@ public class ServiceContainer
       }
       return mbeanServer.queryNames(pattern, null);
    }
-
-   /**
-    * Note that this method makes no assumption on whether the service was created or started, nor
-    * does it attempt to create/start the service.
-    *
-    * @param service - a Standard/DynamicMBean instance.
-    */
-   public void registerService(Object service, ObjectName on) throws Exception
-   {
-      mbeanServer.registerMBean(service, on);
-      log.debug(service + " registered as " + on);
-   }
-
+  
    /**
     * Creates and registers a service based on the MBean service descriptor element. Supports
     * XMBeans. The implementing class and the ObjectName are inferred from the mbean element. If
@@ -647,6 +755,18 @@ public class ServiceContainer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   /**
+    * Note that this method makes no assumption on whether the service was created or started, nor
+    * does it attempt to create/start the service.
+    *
+    * @param service - a Standard/DynamicMBean instance.
+    */
+   private void registerService(Object service, ObjectName on) throws Exception
+   {
+      mbeanServer.registerMBean(service, on);
+      log.debug(service + " registered as " + on);
+   }  
 
    private void readConfigurationFile() throws Exception
    {

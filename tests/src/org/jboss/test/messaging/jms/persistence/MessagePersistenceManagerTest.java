@@ -72,8 +72,9 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    protected JDBCPersistenceManager createPM(boolean batch, int maxParams) throws Throwable
    {      
       JDBCPersistenceManager p =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(), null,
-                                    true, batch, true, maxParams);      
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
+                  sc.getPersistenceManagerSQLProperties(),
+                  true, batch, true, maxParams);      
       p.start();
       return p;
    }
