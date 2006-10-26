@@ -48,6 +48,15 @@
          <password>jboss</password>
       </database-configuration>
 
+      <database-configuration name="mssql">
+          <url>jdbc:jtds:sqlserver://localhost:1433/messaging</url>
+          <driver>net.sourceforge.jtds.jdbc.Driver</driver>
+          <isolation>TRANSACTION_READ_COMMITTED</isolation>
+          <username>messaging</username>
+          <password>messaging</password>
+      </database-configuration>
+
+
    </database-configurations>
 
    <!--

@@ -30,7 +30,7 @@
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
 
-      <param name="File" value="${module.output}/logs/messaging-tests${remote.test.suffix}.stress.trace.log"/>
+      <param name="File" value="${module.output}/logs/messaging-tests${remote.test.suffix}.stress.log"/>
 
       <!-- since majority of the tests are ran in fork mode by ant, the log file is overwritten
            for each test. We need to append if we want to preserve a full testsuite run log.

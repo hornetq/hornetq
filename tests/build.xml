@@ -133,6 +133,10 @@
    <!--
        JDBC Drivers.
    -->
+   <path id="any.jdbc.driver.classpath">
+	       <fileset dir="${tests.root}/lib/jdbc-drivers" includes="*.jar"/>
+   </path>
+
 
    <path id="mysql.jdbc.driver.classpath">
       <pathelement path="${tests.root}/lib/mysql-connector-java-3.1.13-bin.jar"/>
@@ -154,6 +158,7 @@
       <path refid="compilation.classpath"/>
       <path location="../output/lib/jboss-messaging.jar"/>
       <path refid="junit.junit.classpath"/>
+      <path refid="any.jdbc.driver.classpath"/>
       <path refid="hsqldb.hsqldb.classpath"/>
       <path refid="jboss.server.classpath"/> <!-- for org.jboss.jms.jndi.JNDIProviderAdapter -->
       <path refid="jboss.jca.classpath"/>  <!-- for org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory, etc -->

@@ -79,15 +79,12 @@
    </target>
 
    <target name="jar" depends="compile">
-      <!-- TODO: uncomment this when http://jira.jboss.org/jira/browse/JBMESSAGING-351 is done -->
-      <!--
       <copy todir="./output/classes/META-INF" filtering="true">
          <fileset dir="./etc/META-INF" includes="*"/>
          <filterset>
             <filter token="QUEUE_NAME" value="${example.queue.name}"/>
          </filterset>
       </copy>
-      -->
       <jar destfile="./output/lib/mdb-example.ejb3"
            basedir="./output/classes"
            includes="META-INF/**,org/jboss/example/**/EJB3MDBExample.class"/>

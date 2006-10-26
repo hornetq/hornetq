@@ -95,7 +95,12 @@ class ServiceContainerConfiguration
    public String getDatabaseType()
    {
       DatabaseConfiguration dbc = (DatabaseConfiguration)dbConfigurations.get(database);
-      return dbc.getDatabaseType();
+      String databaseType = dbc.getDatabaseType();
+      if (databaseType.equals("jtds"))
+      {
+    	  databaseType="mssql";
+      }
+      return databaseType; 
    }
 
    public String getDatabaseConnectionURL()

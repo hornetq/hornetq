@@ -21,11 +21,18 @@
   */
 package org.jboss.test.messaging.jms.server;
 
+import java.util.Set;
+
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.destination.ManagedDestination;
+import org.jboss.jms.server.destination.ManagedQueue;
+import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -366,6 +373,69 @@ public class DestinationManagerTest extends MessagingTestCase
 
       Topic q = (Topic)initialContext.lookup(ServerManagement.DEFAULT_TOPIC_CONTEXT + "/" + name);
       assertEquals(name, q.getTopicName());      
+   }
+   
+   public void testDestinationManager() throws Exception
+   {
+      ServerPeer sp = ServerManagement.getServer().getServerPeer();
+      
+      DestinationManager dm = sp.getDestinationManager();
+      
+      dm.stop();
+      
+      dm.start();
+        
+      ManagedQueue queue1 = new ManagedQueue("queue1", 1000, 10, 10);
+      
+      ManagedTopic topic1 = new ManagedTopic("topic1", 1000, 10, 10);
+      
+      dm.registerDestination(queue1);
+      
+      dm.registerDestination(topic1);
+      
+      ManagedDestination queue2 = dm.getDestination("not exists", true);
+      
+      assertNull(queue2);
+      
+      ManagedDestination topic2 = dm.getDestination("not exists", false);
+      
+      assertNull(topic2);
+      
+      ManagedQueue queue3 = (ManagedQueue)dm.getDestination("queue1", true);
+      
+      assertTrue(queue1 == queue3);
+      
+      ManagedDestination queue4 = dm.getDestination("queue1", false);
+      
+      assertNull(queue4);
+      
+      ManagedTopic topic3 = (ManagedTopic)dm.getDestination("topic1", false);
+      
+      assertTrue(topic1 == topic3);
+      
+      ManagedDestination topic4 = dm.getDestination("topic1", true);
+      
+      assertNull(topic4);            
+            
+      dm.unregisterDestination(queue1);
+      
+      ManagedDestination queue5 = dm.getDestination("queue1", true);
+      
+      assertNull(queue5);
+      
+      dm.unregisterDestination(topic1);
+      
+      ManagedDestination topic5 = dm.getDestination("topic1", false);
+      
+      assertNull(topic5);
+      
+      dm.registerDestination(queue1);
+      
+      dm.registerDestination(topic1);
+      
+      dm.stop();
+      
+      dm.start();
    }
 
 

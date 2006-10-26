@@ -71,7 +71,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * Concrete implementation of SessionEndpoint.
- * 
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -87,11 +87,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private boolean trace = log.isTraceEnabled();
 
    private int sessionID;
-   
+
    private boolean closed;
 
    private ServerConnectionEndpoint connectionEndpoint;
@@ -108,15 +108,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private PostOffice topicPostOffice;
    private PostOffice queuePostOffice;
    private int nodeId;
-   
-   
+
+
    // Constructors --------------------------------------------------
 
    protected ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
       throws Exception
    {
       this.sessionID = sessionID;
-      
+
       this.connectionEndpoint = connectionEndpoint;
 
       ServerPeer sp = connectionEndpoint.getServerPeer();
@@ -132,11 +132,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       tr = sp.getTxRepository();
 
       consumers = new HashMap();
-		browsers = new HashMap();  
+		browsers = new HashMap();
    }
-   
+
    // SessionDelegate implementation --------------------------------
-   
+
 	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
                                                   String selectorString,
                                                   boolean noLocal,
@@ -149,21 +149,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-         
+
          if ("".equals(selectorString))
          {
             selectorString = null;
          }
-         
+
          log.debug("creating consumer for " + jmsDestination + ", selector " + selectorString + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
-   
+
          ManagedDestination mDest = dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue());
-         
+
          if (mDest == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
-         
+
          if (jmsDestination.isTemporary())
          {
             // Can only create a consumer for a temporary destination on the same connection
@@ -174,60 +174,60 @@ public class ServerSessionEndpoint implements SessionEndpoint
                             "to that which created the temporary destination";
                throw new IllegalStateException(msg);
             }
-         }          
-             
+         }
+
          int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
-        
+
          Binding binding = null;
-         
+
          // Always validate the selector first
          Selector selector = null;
          if (selectorString != null)
          {
             selector = new Selector(selectorString);
          }
-   
+
          if (jmsDestination.isTopic())
          {
             if (subscriptionName == null)
             {
                // non-durable subscription
                if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + jmsDestination); }
-                     
+
                //Create the non durable sub
                QueuedExecutor executor = (QueuedExecutor)pool.get();
-               
+
                PagingFilteredQueue q;
-               
+
                if (topicPostOffice.isLocal())
                {
-                  q = new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,                              
+                  q = new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,
                                               executor, selector,
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
-                  
-                  binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);      
+
+                  binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);
                }
                else
                {
-                  q = new LocalClusteredQueue(topicPostOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,                              
+                  q = new LocalClusteredQueue(topicPostOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,
                                               executor, selector, tr,
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
-                  
+
                   ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
-                  
+
                   if (mDest.isClustered())
-                  {                  
-                     binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);  
+                  {
+                     binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
                   }
                   else
                   {
-                     binding = cpo.bindQueue(jmsDestination.getName(), q); 
+                     binding = cpo.bindQueue(jmsDestination.getName(), q);
                   }
-               }       
+               }
             }
             else
             {
@@ -235,168 +235,168 @@ public class ServerSessionEndpoint implements SessionEndpoint
                {
                   throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
                }
-               
+
                // we have a durable subscription, look it up
                String clientID = connectionEndpoint.getClientID();
                if (clientID == null)
                {
                   throw new JMSException("Cannot create durable subscriber without a valid client ID");
                }
-               
+
                // See if there any bindings with the same client_id.subscription_name name
-               
+
                String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
-               
+
                binding = topicPostOffice.getBindingForQueueName(name);
-                  
+
                if (binding == null)
                {
                   //Does not already exist
-                  
+
                   if (trace) { log.trace("creating new durable subscription on " + jmsDestination); }
-                  
+
                   QueuedExecutor executor = (QueuedExecutor)pool.get();
                   PagingFilteredQueue q;
-                  
+
                   if (topicPostOffice.isLocal())
                   {
-                     q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,                              
+                     q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
                                                  executor, selector,
                                                  mDest.getFullSize(),
                                                  mDest.getPageSize(),
                                                  mDest.getDownCacheSize());
-                     
-                     binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);      
+
+                     binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);
                   }
                   else
                   {
-                     q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,                              
+                     q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,
                                                  executor, selector, tr,
                                                  mDest.getFullSize(),
                                                  mDest.getPageSize(),
                                                  mDest.getDownCacheSize());
-                     
+
                      ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
-                     
+
                      if (mDest.isClustered())
-                     {                     
+                     {
                         binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
                      }
                      else
                      {
                         binding = cpo.bindQueue(jmsDestination.getName(), q);
                      }
-                  }                 
+                  }
                }
                else
                {
                   //Durable sub already exists
-                  
+
                   if (trace) { log.trace("subscription " + subscriptionName + " already exists"); }
-                  
+
                   // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                   // A client can change an existing durable subscription by creating a durable
                   // TopicSubscriber with the same name and a new topic and/or message selector.
                   // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
                   // one and creating a new one.
-   
+
                   String filterString = binding.getQueue().getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
-                  
+
                   boolean selectorChanged =
                      (selectorString == null && filterString != null) ||
                      (filterString == null && selectorString != null) ||
                      (filterString != null && selectorString != null &&
                      !filterString.equals(selectorString));
-                  
+
                   if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
-   
+
                   boolean topicChanged = !binding.getCondition().equals(jmsDestination.getName());
-                  
+
                   if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
-                  
+
                   if (selectorChanged || topicChanged)
-                  {    
+                  {
                      if (trace) { log.trace("topic or selector changed so deleting old subscription"); }
-   
+
                      // Unbind the durable subscription
-                     
+
                      if (mDest.isClustered() && !topicPostOffice.isLocal())
                      {
                         ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
-                        
+
                         cpo.unbindClusteredQueue(name);
                      }
                      else
-                     {         
+                     {
                         topicPostOffice.unbindQueue(name);
                      }
-                        
+
                      // create a fresh new subscription
-                     
+
                      QueuedExecutor executor = (QueuedExecutor)pool.get();
                      PagingFilteredQueue q;
-                     
+
                      if (topicPostOffice.isLocal())
                      {
-                        q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,                              
+                        q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
                                                     executor, selector,
                                                     mDest.getFullSize(),
                                                     mDest.getPageSize(),
                                                     mDest.getDownCacheSize());
-                        binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);      
+                        binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);
                      }
                      else
                      {
-                        q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,                              
+                        q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,
                                                     executor, selector, tr,
                                                     mDest.getFullSize(),
                                                     mDest.getPageSize(),
                                                     mDest.getDownCacheSize());
-                        
+
                         ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
-                        
+
                         if (mDest.isClustered())
-                        {                        
-                           binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);    
+                        {
+                           binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
                         }
                         else
                         {
                            binding = cpo.bindQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
                         }
-                     }    
-                  }               
+                     }
+                  }
                }
             }
          }
          else
          {
             //Consumer on a jms queue
-            
+
             //Let's find the binding
             binding = queuePostOffice.getBindingForQueueName(jmsDestination.getName());
-            
+
             if (binding == null)
             {
                throw new IllegalStateException("Cannot find binding for jms queue: " + jmsDestination.getName());
             }
          }
-         
+
          int prefetchSize = connectionEndpoint.getPrefetchSize();
-         
+
          ServerConsumerEndpoint ep =
             new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(), binding.getQueue().getName(),
                                        this, selectorString, noLocal, jmsDestination, prefetchSize);
-          
+
          JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
-                     
+
          ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, prefetchSize);
-                       
+
          putConsumerEndpoint(consumerID, ep); // caching consumer locally
-         
+
          connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
-         
+
          log.debug("created and registered " + ep);
-   
+
          return stub;
       }
       catch (Throwable t)
@@ -404,7 +404,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " createConsumerDelegate");
       }
    }
-	
+
 	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination, String messageSelector)
 	   throws JMSException
 	{
@@ -414,37 +414,37 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	   {
    	      throw new IllegalStateException("Session is closed");
    	   }
-   	   
+
    	   if (jmsDestination == null)
    	   {
    	      throw new InvalidDestinationException("null destination");
    	   }
-         
+
          if (jmsDestination.isTopic())
          {
             throw new IllegalStateException("Cannot browse a topic");
          }
-   	   
+
          if (dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue()) == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
-         
+
          Binding binding = queuePostOffice.getBindingForQueueName(jmsDestination.getName());
-         
+
    	   int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
-   	   
+
    	   ServerBrowserEndpoint ep =
    	      new ServerBrowserEndpoint(this, browserID, (PagingFilteredQueue)binding.getQueue(), messageSelector);
-   	   
+
    	   putBrowserDelegate(browserID, ep);
-   	   
+
          JMSDispatcher.instance.registerTarget(new Integer(browserID), new BrowserAdvised(ep));
-   	   
+
    	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
-   	   
+
          log.debug("created and registered " + ep);
-   
+
    	   return stub;
       }
       catch (Throwable t)
@@ -461,14 +461,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-         
+
          ManagedDestination dest = (ManagedDestination)dm.getDestination(name, true);
-         
+
          if (dest == null)
          {
             throw new JMSException("There is no administratively defined queue with name:" + name);
-         }        
-   
+         }
+
          return new JBossQueue(dest.getName());
       }
       catch (Throwable t)
@@ -485,14 +485,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-         
+
          ManagedDestination dest = (ManagedDestination)dm.getDestination(name, false);
-                  
+
          if (dest == null)
          {
             throw new JMSException("There is no administratively defined topic with name:" + name);
-         }        
-   
+         }
+
          return new JBossTopic(name);
       }
       catch (Throwable t)
@@ -509,21 +509,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is already closed");
          }
-         
+
          if (trace) log.trace(this + " close()");
-               
+
          // clone to avoid ConcurrentModificationException
          HashSet consumerSet = new HashSet(consumers.values());
-         
+
          for(Iterator i = consumerSet.iterator(); i.hasNext(); )
          {
             ((ServerConsumerEndpoint)i.next()).remove();
-         }           
-         
+         }
+
          connectionEndpoint.removeSessionDelegate(sessionID);
-         
+
          JMSDispatcher.instance.unregisterTarget(new Integer(sessionID));
-         
+
          closed = true;
       }
       catch (Throwable t)
@@ -531,7 +531,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " close");
       }
    }
-   
+
    public void closing() throws JMSException
    {
       // currently does nothing
@@ -542,11 +542,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       return closed;
    }
-   
+
    public void send(JBossMessage message) throws JMSException
    {
       try
-      {       
+      {
          connectionEndpoint.sendMessage(message, null);
       }
       catch (Throwable t)
@@ -554,17 +554,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " send");
       }
    }
-   
+
    public void acknowledgeBatch(List ackInfos) throws JMSException
-   {      
+   {
       try
       {
          Iterator iter = ackInfos.iterator();
-         
+
          while (iter.hasNext())
          {
             AckInfo ackInfo = (AckInfo)iter.next();
-            
+
             acknowledgeInternal(ackInfo);
          }
       }
@@ -573,46 +573,46 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeBatch");
       }
    }
-   
+
    public void acknowledge(AckInfo ackInfo) throws JMSException
    {
       try
       {
-         acknowledgeInternal(ackInfo);      
+         acknowledgeInternal(ackInfo);
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
       }
-   }      
-         
+   }
+
    public void cancelDeliveries(List ackInfos) throws JMSException
    {
       try
       {
          // deliveries must be cancelled in reverse order
-          
+
          Set consumers = new HashSet();
-         
+
          for (int i = ackInfos.size() - 1; i >= 0; i--)
          {
             AckInfo ack = (AckInfo)ackInfos.get(i);
-            
+
             // We look in the global map since the message might have come from connection consumer
             ServerConsumerEndpoint consumer =
                this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
-   
+
             if (consumer == null)
             {
                throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
             }
-            
+
             consumer.cancelDelivery(new Long(ack.getMessageID()));
             consumers.add(consumer);
          }
-         
+
          // need to prompt delivery for all consumers
-         
+
          for(Iterator i = consumers.iterator(); i.hasNext(); )
          {
             ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)i.next();
@@ -638,15 +638,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
          }
          connectionEndpoint.addTemporaryDestination(dest);
-         
+
          //Register with the destination manager
-         
+
          ManagedDestination mDest;
-         
+
          int fullSize = connectionEndpoint.getDefaultTempQueueFullSize();
          int pageSize = connectionEndpoint.getDefaultTempQueuePageSize();
          int downCacheSize = connectionEndpoint.getDefaultTempQueueDownCacheSize();
-         
+
          if (dest.isTopic())
          {
             mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize);
@@ -655,29 +655,29 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize);
          }
-         
+
          dm.registerDestination(mDest);
-         
+
          if (dest.isQueue())
          {
             QueuedExecutor executor = (QueuedExecutor)pool.get();
-            
-            PagingFilteredQueue q = 
+
+            PagingFilteredQueue q =
                new PagingFilteredQueue(dest.getName(), idm.getId(), ms, pm, true, false,
                                        executor, null, fullSize, pageSize, downCacheSize);
-            
-            
-            
+
+
+
             //Make a binding for this queue
-            queuePostOffice.bindQueue(dest.getName(), q);  
-         }         
+            queuePostOffice.bindQueue(dest.getName(), q);
+         }
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " addTemporaryDestination");
       }
    }
-   
+
    public void deleteTemporaryDestination(JBossDestination dest) throws JMSException
    {
       try
@@ -686,19 +686,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-   
+
          if (!dest.isTemporary())
          {
             throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
          }
-         
+
          ManagedDestination mDest = dm.getDestination(dest.getName(), dest.isQueue());
-         
+
          if (mDest == null)
          {
             throw new InvalidDestinationException("No such destination: " + dest);
          }
-                  
+
          if (dest.isQueue())
          {
             //Unbind
@@ -706,17 +706,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          else
          {
-            //Topic            
+            //Topic
             Collection bindings = topicPostOffice.listBindingsForCondition(dest.getName());
-            
+
             if (!bindings.isEmpty())
             {
                throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
             }
          }
-         
-         dm.unregisterDestination(mDest);         
-            
+
+         dm.unregisterDestination(mDest);
+
          connectionEndpoint.removeTemporaryDestination(dest);
       }
       catch (Throwable t)
@@ -724,11 +724,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " deleteTemporaryDestination");
       }
    }
-   
+
    public void unsubscribe(String subscriptionName) throws JMSException
    {
       log.debug(this + " unsubscribing " + subscriptionName);
-      
+
       try
       {
          if (closed)
@@ -739,50 +739,50 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new InvalidDestinationException("Destination is null");
          }
-   
+
          String clientID = connectionEndpoint.getClientID();
-   
+
          if (clientID == null)
          {
             throw new JMSException("null clientID on connection");
          }
-         
+
          String queueName = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
-         
+
          Binding binding = topicPostOffice.getBindingForQueueName(queueName);
-         
+
          if (binding == null)
          {
             throw new InvalidDestinationException("Cannot find durable subscription with name " +
                                                   subscriptionName + " to unsubscribe");
          }
-         
+
          // Section 6.11. JMS 1.1.
          // "It is erroneous for a client to delete a durable subscription while it has an active
          // TopicSubscriber for it or while a message received by it is part of a current
          // transaction or has not been acknowledged in the session."
-         
+
          Queue sub = binding.getQueue();
-         
+
          if (sub.numberOfReceivers() != 0)
          {
             throw new IllegalStateException("Cannot unsubscribe durable subscription " +
                                             subscriptionName + " since it has active subscribers");
          }
-         
+
          //Look up the topic
          ManagedDestination mDest = dm.getDestination(binding.getCondition(), false);
-         
+
          //Unbind it
-    
+
          if (mDest.isClustered() && !topicPostOffice.isLocal())
          {
             ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
-            
+
             cpo.unbindClusteredQueue(queueName);
          }
          else
-         {         
+         {
             topicPostOffice.unbindQueue(queueName);
          }
       }
@@ -791,9 +791,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " unsubscribe");
       }
    }
-    
+
    // Public --------------------------------------------------------
-   
+
    public ServerConnectionEndpoint getConnectionEndpoint()
    {
       return connectionEndpoint;
@@ -813,9 +813,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       return consumers.keySet();
    }
-   
+
    // Protected -----------------------------------------------------
-   
+
    protected void acknowledgeInternal(AckInfo ackInfo) throws Throwable
    {
       //If the message was delivered via a connection consumer then the message needs to be acked
@@ -828,10 +828,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          throw new IllegalArgumentException("Cannot find consumer id: " + ackInfo.getConsumerID());
       }
-      
+
       consumer.acknowledge(ackInfo.getMessageID());
    }
-   
+
    protected ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint d)
    {
       if (trace) { log.trace(this + " caching consumer " + consumerID); }
@@ -842,23 +842,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
    }
-   
+
    protected ServerConsumerEndpoint removeConsumerEndpoint(int consumerID)
    {
       if (trace) { log.trace(this + " removing consumer " + consumerID + " from cache"); }
       return (ServerConsumerEndpoint)consumers.remove(new Integer(consumerID));
    }
-   
+
    protected ServerBrowserEndpoint putBrowserDelegate(int browserID, ServerBrowserEndpoint sbd)
    {
       return (ServerBrowserEndpoint)browsers.put(new Integer(browserID), sbd);
    }
-   
+
    protected ServerBrowserEndpoint getBrowserDelegate(int browserID)
    {
       return (ServerBrowserEndpoint)browsers.get(new Integer(browserID));
    }
-   
+
    protected ServerBrowserEndpoint removeBrowserDelegate(int browserID)
    {
       return (ServerBrowserEndpoint)browsers.remove(new Integer(browserID));
@@ -884,7 +884,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
          }
       }
-   }   
+   }
 
    // Private -------------------------------------------------------
 

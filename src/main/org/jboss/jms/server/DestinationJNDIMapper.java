@@ -260,9 +260,9 @@ class DestinationJNDIMapper implements DestinationManager
 
    public void stop() throws Exception
    {
-      Set queues = new HashSet(queueMap.keySet());
+      Set queues = new HashSet(queueMap.values());
       
-      Set topics = new HashSet(topicMap.keySet());
+      Set topics = new HashSet(topicMap.values());
       
       // remove all destinations from JNDI
       for(Iterator i = queues.iterator(); i.hasNext(); )

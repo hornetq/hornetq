@@ -61,7 +61,7 @@
 
       <antcall target="old-server-compatibility-tests">
          <param name="smoke.test.type" value="client.compatibility"/>
-      </antcall>                                           
+      </antcall>
       <antcall target="old-client-compatibility-tests">
          <param name="smoke.test.type" value="server.compatibility"/>
       </antcall>
@@ -72,8 +72,6 @@
    <target name="installation-tests">
 
       <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
-
-                                                                                                <!--
 
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
@@ -113,7 +111,6 @@
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
-                                                                                                 -->
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA.home}"/>
       </antcall>
@@ -129,7 +126,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss405CR1.home}"/>
       </antcall>
@@ -142,7 +139,11 @@
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
-                                                                                                 -->
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405CR1ejb3.home}"/>
+         <param name="no.java4" value="true"/>
+         <param name="run.ejb3mdb.example" value="true"/>
+      </antcall>
 
       <!--
          Stateless Session Bean installation test will fail on this because the client talks to
@@ -476,7 +477,7 @@
    <!--      Internal Targets                                                    -->
    <!-- ======================================================================== -->
 
-   <target name="installation-test" depends="check-jboss-availability">
+   <target name="installation-test" depends="check-java-version, check-jboss-availability" unless="skip.current.java">
 
       <echo message="Testing installation on ${jboss.home}"/>
       <!--
@@ -492,6 +493,21 @@
       <antcall target="run-all-clustered-examples"/>
       <antcall target="clean-clustered-messaging-config"/>
                                                                                                  -->
+   </target>
+
+   <target name="check-java-version">
+      <condition property="skip.current.java" value="true">
+         <or>
+            <and>
+               <istrue value="${no.java4}"/>
+               <equals arg1="1.4" arg2="${ant.java.version}"/>
+            </and>
+            <and>
+               <istrue value="${no.java5}"/>
+               <equals arg1="1.5" arg2="${ant.java.version}"/>
+            </and>
+         </or>
+      </condition>
    </target>
 
    <target name="old-server-compatibility-test" depends="check-jboss-availability">
@@ -681,7 +697,9 @@
 
       <ant dir="../.." antfile="build.xml" target="clean" inheritAll="false"/>
       <ant dir="../.." antfile="build.xml" target="artifacts" inheritAll="false"/>
-      <!-- I need this because the smoke test itself uses org.jboss.test.messaging.tools classes -->
+      <!--
+           I need this because the smoke test itself uses org.jboss.test.messaging.tools classes.
+      -->
       <ant dir="../../tests" antfile="build.xml" target="compile" inheritAll="false"/>
 
    </target>

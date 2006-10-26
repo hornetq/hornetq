@@ -66,7 +66,7 @@ public class MessageConsumerTest extends MessagingTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected Connection producerConnection, consumerConnection;
@@ -94,11 +94,11 @@ public class MessageConsumerTest extends MessagingTestCase
       super.setUp();
 
       ServerManagement.start("all");
-                  
+
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployQueue("Queue2");
-      
+
       ServerManagement.deployTopic("Topic");
       ServerManagement.deployQueue("Queue");
       ServerManagement.deployQueue("Queue2");
@@ -122,7 +122,7 @@ public class MessageConsumerTest extends MessagingTestCase
       queueProducer = producerSession.createProducer(queue);
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueConsumer = consumerSession.createConsumer(queue);
-      
+
       this.drainDestination(cf, queue);
       this.drainDestination(cf, queue2);
 
@@ -142,48 +142,48 @@ public class MessageConsumerTest extends MessagingTestCase
       ServerManagement.undeployTopic("Topic");
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployQueue("Queue2");
-      
+
       super.tearDown();
    }
-   
+
    public void testRelayMessage() throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       conn.start();
-      
+
       final Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       MessageConsumer cons = sess.createConsumer(queue);
-      
+
       final Object lock = new Object();
-      
+
       final int numMessages = 100;
-      
-      
+
+
       class MyListener implements MessageListener
       {
          boolean failed;
-         
+
          int count;
-         
+
          public void onMessage(Message m)
          {
             try
             {
                MessageProducer prod = sess.createProducer(queue2);
-            
+
                prod.send(m);
-               
+
                count++;
-               
+
                if (count == numMessages)
                {
                   synchronized (lock)
                   {
                      lock.notify();
                   }
-                  
+
                }
             }
             catch (JMSException e)
@@ -192,29 +192,29 @@ public class MessageConsumerTest extends MessagingTestCase
             }
          }
       }
-      
+
       MyListener listener = new MyListener();
-         
+
       cons.setMessageListener(listener);
-      
+
       MessageProducer prod = sess.createProducer(queue);
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          prod.send(sess.createMessage());
       }
-      
+
       synchronized (lock)
       {
-         lock.wait();         
+         lock.wait();
       }
-      
+
       conn.close();
-     
+
       assertFalse(listener.failed);
    }
-   
-   
+
+
    /*
     * If there are two competing consumers on a queue/subscription then if one closes
     * and has unacknowledged deliveries these should be cancelled but also
@@ -229,105 +229,105 @@ public class MessageConsumerTest extends MessagingTestCase
    public void testRedeliveryToCompetingConsumerOnQueue() throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       MessageProducer prod = sessSend.createProducer(queue);
-      
+
       conn.start();
-      
+
       Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      
+
       MessageConsumer cons1 = sessConsume1.createConsumer(queue);
-      
+
       TextMessage tm = sessSend.createTextMessage();
-      
+
       tm.setText("Your mum");
-      
+
       prod.send(tm);
-      
+
       TextMessage tm2 = (TextMessage)cons1.receive();
-      
+
       assertNotNull(tm2);
-      
+
       assertEquals("Your mum", tm2.getText());
-      
+
       // Don't ack
-      
+
       // Create another consumer
-      
+
       Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      
+
       MessageConsumer cons2 = sessConsume2.createConsumer(queue);
-      
+
       // this should cancel message and cause delivery to other consumer
-      
+
       sessConsume1.close();
-      
+
       TextMessage tm3 = (TextMessage)cons2.receive(1000);
-      
+
       assertNotNull(tm3);
-      
+
       assertEquals("Your mum", tm3.getText());
-      
+
       tm3.acknowledge();
-      
+
       conn.close();
-      
-      
+
+
    }
-  
-   
+
+
    public void testRedeliveryToCompetingConsumerOnSubscription() throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       conn.setClientID("wibble");
-      
+
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       MessageProducer prod = sessSend.createProducer(topic);
-      
+
       conn.start();
-      
+
       Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      
+
       MessageConsumer cons1 = sessConsume1.createDurableSubscriber(topic, "sub1");
-      
+
       TextMessage tm = sessSend.createTextMessage();
-      
+
       tm.setText("Your mum");
-      
+
       prod.send(tm);
-      
+
       TextMessage tm2 = (TextMessage)cons1.receive();
-      
+
       assertNotNull(tm2);
-      
+
       assertEquals("Your mum", tm2.getText());
-      
+
       //Don't ack
-      
+
       //Create another consumer
-                 
+
       Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-       
+
       MessageConsumer cons2 = sessConsume2.createDurableSubscriber(topic, "sub1");
-          
+
       //this should cancel message and cause delivery to other consumer
-      
+
       sessConsume1.close();
-               
+
       TextMessage tm3 = (TextMessage)cons2.receive(1000);
-      
+
       assertNotNull(tm3);
-      
+
       assertEquals("Your mum", tm3.getText());
-      
-      tm3.acknowledge();            
-      
+
+      tm3.acknowledge();
+
       conn.close();
-      
+
    }
 
    /**
@@ -388,14 +388,14 @@ public class MessageConsumerTest extends MessagingTestCase
 
       // start consumer connection after the message is submitted
       consumerConnection.start();
-      
+
       //NOTE! There semantics of receiveNoWait do not guarantee the message is available
       //immediately after the message is sent
       //It will be available some indeterminate time later.
       //This is fine and as per spec.
       //To implement receiveNoWait otherwise would be very costly
       //Also other messaging systems e.g. Sun implement it this way
-      
+
       Thread.sleep(500);
 
       TextMessage m = (TextMessage)queueConsumer.receiveNoWait();
@@ -455,9 +455,9 @@ public class MessageConsumerTest extends MessagingTestCase
    // closed consumer tests
    //
 
-   //This test is not valid - 
+   //This test is not valid -
    //The message will not be in the new consumer it will be in the original consumer
-   
+
 //   public void testClose1() throws Exception
 //   {
 //      // there is a consumer already open by setup
@@ -895,13 +895,13 @@ public class MessageConsumerTest extends MessagingTestCase
           assertEquals("hello1", rm1.getText());
 
           cons1.close();
-          
+
           //rollback should cause redelivery of messages
 
           //in this case redelivery occurs to a different receiver
 
           sess.rollback();
-  
+
           MessageConsumer cons2 = sess.createConsumer(queue);
 
           TextMessage rm2 = (TextMessage)cons2.receive(1500);
@@ -1010,12 +1010,12 @@ public class MessageConsumerTest extends MessagingTestCase
           assertEquals("hello1", rm1.getText());
 
           cons1.close();
-         
+
           log.debug("sess.recover()");
 
           //redeliver
           sess.recover();
-          
+
           MessageConsumer cons2 = sess.createConsumer(queue);
 
           log.debug("receiving ...");
@@ -1067,26 +1067,26 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(sess.createTextMessage("1"));
           prod.send(sess.createTextMessage("2"));
           prod.send(sess.createTextMessage("3"));
-          
+
           MessageConsumer cons1 = sess.createConsumer(queue);
 
           Message r1 = cons1.receive();
-          
+
           log.trace("Got first message");
-          
+
           cons1.close();
-          
+
           log.trace("Closed consumer");
-          
+
           MessageConsumer cons2 = sess.createConsumer(queue);
-          
+
           log.trace("Wairting for second message");
           Message r2 = cons2.receive();
-                  
+
           log.trace("got second message");
-          
+
           Message r3 = cons2.receive();
-          
+
           r1.acknowledge();
           r2.acknowledge();
           r3.acknowledge();
@@ -1152,8 +1152,8 @@ public class MessageConsumerTest extends MessagingTestCase
     * Test server-side consumer delegate activation (on receive())
     */
 // This test is not valid since the message will be in the first consumer, not c2
-   
-   
+
+
 //   public void testReceive1() throws Exception
 //   {
 //      Connection conn = null;
@@ -1193,9 +1193,9 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * Test server-side consumer delegate activation (on receive())
     */
-   
+
    //This test is not valid since the message will be in the first consumer, not c2
-   
+
 //   public void testReceive2() throws Exception
 //   {
 //      Connection conn = null;
@@ -1321,9 +1321,9 @@ public class MessageConsumerTest extends MessagingTestCase
    /**
     * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
     */
-   
+
    //This test is no longer valid since we only use one listener per connection now
-   
+
 //   public void testRemotingInternals() throws Exception
 //   {
 //      if (ServerManagement.isRemote())
@@ -1767,113 +1767,111 @@ public class MessageConsumerTest extends MessagingTestCase
       latch.acquire();
    }
 
-
     /** to be used by testTimeoutReceiveOnClose */
-    private class ThreadCloser extends Thread
-    {
+	   private class ThreadCloser extends Thread
+	   {
 
-        Object waitMonitor;
-        long timeToSleep;
+	       Object waitMonitor;
+	       long timeToSleep;
 
-        public ThreadCloser( Object waitMonitor, long timeToSleep)
-        {
-            this.waitMonitor=waitMonitor;
-            this.timeToSleep=timeToSleep;
-        }
-
-
-        public void run()
-        {
-            try
-            {
-                log.trace("(ThreadCloser)Waiting on monitor to close thread");
-                synchronized (waitMonitor)
-                {
-                    waitMonitor.wait();
-                }
-                log.trace("(ThreadCloser)Notification received");
-                Thread.sleep(timeToSleep);
-                topicConsumer.close();
-
-            }
-            catch (Exception e)
-            {
-                log.error(e);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /** to be used by testTimeoutReceiveOnClose */
-    private class ThreadReceiver extends Thread
-    {
-
-        long timeToWait;
-        Object waitMonitor;
-        long t1;
-        long t2;
-        Object receivedObject;
-
-        public ThreadReceiver(Object waitMonitor, long timeToWait)
-        {
-            this.waitMonitor=waitMonitor;
-            this.timeToWait=timeToWait;
-        }
-
-        public void run()
-        {
-            try
-            {
-                log.trace("(ThreadReceiver)Waiting on monitor to close thread");
-                synchronized(waitMonitor)
-                {
-                    waitMonitor.wait();
-                }
-                log.trace("(ThreadReceiver)Notification received");
-                t1=System.currentTimeMillis();
-                receivedObject=topicConsumer.receive(timeToWait);
-                t2=System.currentTimeMillis();
-
-            }
-            catch (Exception e)
-            {
-                log.error(e);
-                e.printStackTrace();
-            }
-        }
-    }
-
-   public void testTimeoutReceiveOnClose() throws Exception
-   {
-      System.gc();       /// If A GC need to be execute, it' s better to be executed now
-      Thread.sleep(1000);
-      if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
-
-      Object monitor = new Object();
-      ThreadCloser closer = null;
-      ThreadReceiver receiver = new ThreadReceiver(monitor,2000);
-
-      closer = new ThreadCloser(monitor,1000);
-      receiver= new ThreadReceiver(monitor,2000);
-      closer.start();
-      receiver.start();
-      Thread.sleep(2000);
-      synchronized (monitor)
-      {
-         monitor.notifyAll();
-      }
-      closer.join();
-      receiver.join();
+	       public ThreadCloser( Object waitMonitor, long timeToSleep)
+	       {
+	           this.waitMonitor=waitMonitor;
+	           this.timeToSleep=timeToSleep;
+	       }
 
 
-      assertNull(receiver.receivedObject);
+	       public void run()
+	       {
+	           try
+	           {
+	               log.info("(ThreadCloser)Waiting on monitor to close thread");
+	               synchronized (waitMonitor)
+	               {
+	                   waitMonitor.wait();
+	               }
+	               log.info("(ThreadCloser)Notification received");
+	               Thread.sleep(timeToSleep);
+	               topicConsumer.close();
 
-      log.trace("Elapsed time was " + (receiver.t2-receiver.t1));
+	           }
+	           catch (Exception e)
+	           {
+	               log.error(e);
+	               e.printStackTrace();
+	           }
+	       }
+	   }
 
-      // We need to make sure the
-      assertTrue("Receive was supposed to receive a notification before 2 seconds",receiver.t2-receiver.t1<=1500);
-   }
+	   /** to be used by testTimeoutReceiveOnClose */
+	   private class ThreadReceiver extends Thread
+	   {
 
+	       long timeToWait;
+	       Object waitMonitor;
+	       long t1;
+	       long t2;
+	       Object receivedObject;
+
+	       public ThreadReceiver(Object waitMonitor, long timeToWait)
+	       {
+	           this.waitMonitor=waitMonitor;
+	           this.timeToWait=timeToWait;
+	       }
+
+	       public void run()
+	       {
+	           try
+	           {
+	               log.info("(ThreadReceiver)Waiting on monitor to close thread");
+	               synchronized(waitMonitor)
+	               {
+	                   waitMonitor.wait();
+	               }
+	               log.info("(ThreadReceiver)Notification received");
+	               t1=System.currentTimeMillis();
+	               receivedObject=topicConsumer.receive(timeToWait);
+	               t2=System.currentTimeMillis();
+
+	           }
+	           catch (Exception e)
+	           {
+	               log.error(e);
+	               e.printStackTrace();
+	           }
+	       }
+	   }
+
+	  public void testTimeoutReceiveOnClose() throws Exception
+	  {
+	     System.gc();       /// If A GC need to be executed, it' s better to be executed now
+	     Thread.sleep(1000);
+	     if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
+
+	     Object monitor = new Object();
+	     ThreadCloser closer = null;
+	     ThreadReceiver receiver = new ThreadReceiver(monitor,2000);
+
+	     closer = new ThreadCloser(monitor,1000);
+	     receiver= new ThreadReceiver(monitor,2000);
+	     closer.start();
+	     receiver.start();
+	     Thread.sleep(2000);
+	     synchronized (monitor)
+	     {
+	        monitor.notifyAll();
+	     }
+	     closer.join();
+	     receiver.join();
+
+
+	     assertNull(receiver.receivedObject);
+
+	     log.info("Elapsed time was " + (receiver.t2-receiver.t1));
+
+	     // We need to make sure the
+	     assertTrue("Receive was supposed to receive a notification before 2 seconds",receiver.t2-receiver.t1<=1500);
+	  }
 
    //
    // MessageListener tests
@@ -2107,7 +2105,7 @@ public class MessageConsumerTest extends MessagingTestCase
    //
    // NoLocal
    //
-   
+
    public void testNoLocal() throws Exception
    {
       if (log.isTraceEnabled()) log.trace("testNoLocal");
@@ -2232,17 +2230,17 @@ public class MessageConsumerTest extends MessagingTestCase
          Session sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          Session sess2 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         
+
          log.trace("careting consumer1");
          MessageConsumer cons1 = sess1.createConsumer(topic);
-         
+
          log.trace("creating consumer2");
          MessageConsumer cons2 = sess2.createConsumer(topic);
-         
+
          log.trace("starting connection");
-         
+
          conn1.start();
-         
+
          log.trace("started connection");
 
          Session sess3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -2494,7 +2492,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
 
          assertEquals(NUM_MESSAGES, count);
-         
+
          durable.close();
 
          sess1.unsubscribe("mySubscription");
@@ -2692,7 +2690,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
 
          log.debug("unsubscribing mySubscription");
-         
+
          durable.close();
          sess5.unsubscribe("mySubscription");
          log.debug("unsubscribing done");
@@ -2707,7 +2705,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          TextMessage tm3 = (TextMessage)durable.receive(1000);
          assertNull(tm3);
-         
+
          durable.close();
       }
       finally
@@ -2733,7 +2731,7 @@ public class MessageConsumerTest extends MessagingTestCase
             conn5.close();
          }
          if (sess6 != null)
-         {            
+         {
             sess6.unsubscribe("mySubscription");
          }
          if (conn6 != null)
@@ -2820,7 +2818,7 @@ public class MessageConsumerTest extends MessagingTestCase
          log.trace("Received " + count  + " messages");
 
          assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE, count);
-         
+
          durable2.close();
 
          sess2.unsubscribe("mySubscription");
@@ -2909,7 +2907,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
 
          assertEquals(0, count);
-         
+
          durable2.close();
 
          sess2.unsubscribe("mySubscription");
@@ -3005,7 +3003,7 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       producerSession.close();
       consumerSession.close();
-            
+
       Session sessProducer = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sessProducer.createProducer(queue);
       TextMessage tm = sessProducer.createTextMessage("testRedeliveredDifferentSessions");
@@ -3238,7 +3236,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
    }
 
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -3250,31 +3248,31 @@ public class MessageConsumerTest extends MessagingTestCase
    private class ExceptionRedelMessageListenerImpl implements MessageListener
    {
       private Latch latch = new Latch();
-      
+
       private int count;
-      
+
       private Session sess;
-      
+
       private boolean failed;
-      
+
       public void waitForMessages() throws InterruptedException
       {
          latch.acquire();
          //Thread.sleep(2000); //enough time for postdeliver to be called
       }
-       
+
       public ExceptionRedelMessageListenerImpl(Session sess)
       {
          this.sess = sess;
       }
-      
+
       public void onMessage(Message m)
       {
          TextMessage tm = (TextMessage)m;
          count++;
-         
+
          log.trace("Got message:" + count);
-                  
+
          try
          {
             log.trace("message:" + tm.getText());
@@ -3340,7 +3338,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   latch.release();
                }
             }
-            
+
             else if (count == 4)
             {
                if (sess.getAcknowledgeMode() == Session.AUTO_ACKNOWLEDGE || sess.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
@@ -3362,25 +3360,25 @@ public class MessageConsumerTest extends MessagingTestCase
             }
          }
          catch (JMSException e)
-         {           
+         {
             failed = true;
             latch.release();
          }
       }
    }
-   
+
    private class RedelMessageListenerImpl implements MessageListener
    {
       private Session sess;
-      
+
       private int count;
-      
+
       private boolean failed;
-      
+
       private Latch latch = new Latch();
-      
+
       private boolean transacted;
-      
+
       public RedelMessageListenerImpl(boolean transacted)
       {
          this.transacted = transacted;
@@ -3392,15 +3390,15 @@ public class MessageConsumerTest extends MessagingTestCase
          latch.acquire();
          //Thread.sleep(2000); //enough time for postdeliver to be called
       }
-      
+
       public void onMessage(Message m)
       {
          try
          {
             TextMessage tm = (TextMessage)m;
-            
+
             log.trace("Got message:" + tm.getText() + " count is " + count);
-            
+
             if (count == 0)
             {
                if (!("a".equals(tm.getText())))
@@ -3421,7 +3419,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   log.trace("recover() called");
                }
             }
-            
+
             if (count == 1)
             {
                if (!("a".equals(tm.getText())))
@@ -3443,7 +3441,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   log.trace("Should be b but was " + tm.getText());
                   failed = true;
                   latch.release();
-               }               
+               }
             }
             if (count == 3)
             {
@@ -3452,7 +3450,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   log.trace("Should be c but was " + tm.getText());
                   failed = true;
                   latch.release();
-               }               
+               }
                if (transacted)
                {
                   sess.commit();
@@ -3474,7 +3472,7 @@ public class MessageConsumerTest extends MessagingTestCase
          }
       }
    }
-   
+
    private class MessageListenerImpl implements MessageListener
    {
       private List messages = Collections.synchronizedList(new ArrayList());

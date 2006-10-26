@@ -482,7 +482,7 @@ public class ServiceContainer
       String persistenceConfigFile =
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
       
-      log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
+      log.info("********* Using config file: " + persistenceConfigFile);
       
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
@@ -496,8 +496,6 @@ public class ServiceContainer
          (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
       
       String props = persistenceManagerConfig.getAttributeValue("SqlProperties");
-      
-      log.info("sql properties are: " + props);
       
       if (props != null)
       {         
@@ -522,7 +520,7 @@ public class ServiceContainer
       String persistenceConfigFile =
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
       
-      log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
+      log.info("********* Using config file: " + persistenceConfigFile);
       
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
@@ -557,10 +555,19 @@ public class ServiceContainer
    {
       String databaseType = getDatabaseType();
       
-      String persistenceConfigFile =
-         "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
+      String persistenceConfigFile;
+      if (databaseType.equals("hsqldb"))
+      {
+         persistenceConfigFile =
+            "server/default/deploy/" + databaseType + "-persistence-service.xml";
+      }
+      else
+      {
+         persistenceConfigFile =
+            "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
+      }
       
-      log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
+      log.info("********* Using config file: " + persistenceConfigFile);
       
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)

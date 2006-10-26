@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <!--
      Microsoft SQL Server persistence deployment descriptor.
@@ -11,10 +11,10 @@
    <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
           name="jboss.messaging:service=PersistenceManager"
           xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
-      <depends>jboss.jca:service=DataSourceBinding,name=MSSQLDS</depends>
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <depends optional-attribute-name="ChannelMapper">jboss.messaging:service=ChannelMapper</depends>
-      <attribute name="DataSource">java:/MSSQLDS</attribute>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="UsingBatchUpdates">true</attribute>
       <attribute name="SqlProperties"><![CDATA[
@@ -44,7 +44,7 @@ INSERT_MESSAGE=INSERT INTO JMS_MESSAGE (MESSAGEID, RELIABLE, EXPIRATION, TIMESTA
 UPDATE_MESSAGE_CHANNELCOUNT=UPDATE JMS_MESSAGE SET CHANNELCOUNT=? WHERE MESSAGEID=?
 DELETE_MESSAGE=DELETE FROM JMS_MESSAGE WHERE MESSAGEID=?
 MESSAGEID_COLUMN=MESSAGEID
-UPDATE_UNRELIABLE_CHANNELCOUNT=UPDATE JMS_MESSAGE M SET M.CHANNELCOUNT = M.CHANNELCOUNT - 1 WHERE M.MESSAGEID IN (SELECT MR.MESSAGEID FROM JMS_MESSAGE_REFERENCE MR WHERE MR.RELIABLE = 'N' AND MR.CHANNELID = ?)
+UPDATE_UNRELIABLE_CHANNELCOUNT=UPDATE JMS_MESSAGE SET CHANNELCOUNT = CHANNELCOUNT - 1 WHERE MESSAGEID IN (SELECT MR.MESSAGEID FROM JMS_MESSAGE_REFERENCE MR WHERE MR.RELIABLE = 'N' AND MR.CHANNELID = ?)
 DELETE_UNREFFED_MESSAGES=DELETE FROM JMS_MESSAGE WHERE CHANNELCOUNT = 0
 CREATE_TRANSACTION=CREATE TABLE JMS_TRANSACTION (TRANSACTIONID BIGINT, BRANCH_QUAL IMAGE, FORMAT_ID INTEGER, GLOBAL_TXID IMAGE, PRIMARY KEY (TRANSACTIONID))
 INSERT_TRANSACTION=INSERT INTO JMS_TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?)
@@ -64,9 +64,9 @@ SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNELID) FROM JMS_MESSAGE_REFERENCE
    <mbean code="org.jboss.jms.server.plugin.JDBCChannelMapper"
           name="jboss.messaging:service=ChannelMapper"
           xmbean-dd="xmdesc/JDBCChannelMapper-xmbean.xml">
-      <depends>jboss.jca:service=DataSourceBinding,name=MSSQLDS</depends>
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="DataSource">java:/MSSQLDS</attribute>
+      <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="SqlProperties"><![CDATA[
 CREATE_USER_TABLE=CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USERID))

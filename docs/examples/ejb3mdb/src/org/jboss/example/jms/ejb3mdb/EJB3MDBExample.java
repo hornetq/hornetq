@@ -8,7 +8,6 @@ package org.jboss.example.jms.ejb3mdb;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
-import javax.ejb.MessageDrivenContext;
 
 import javax.naming.InitialContext;
 import javax.jms.TextMessage;
