@@ -21,10 +21,6 @@
 */
 package org.jboss.test.messaging.tools;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.rmi.Naming;
 import java.util.Hashtable;
 import java.util.Set;
@@ -49,6 +45,7 @@ import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
  * is also use to start/stop a remote server.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -74,9 +71,7 @@ public class ServerManagement
 
    private static final int RMI_SERVER_LOOKUP_RETRIES = 10;
 
-   private static Server server;
-   private static volatile Process process;
-   private static Thread vmStarter;
+   private static Server[] servers = new Server[RMITestServer.RMI_REGISTRY_PORTS.length];
 
    public static boolean isLocal()
    {
@@ -90,25 +85,42 @@ public class ServerManagement
 
    public static Server getServer()
    {
-      return server;
+      return getServer(0);
    }
-
+   
+   public static Server getServer(int i)
+   {
+      Server s = servers[i];
+      
+      if (s == null)
+      {
+         throw new IllegalStateException("Server " + i + " is not started!");
+      }
+      
+      return s;
+   }
+   
    public static synchronized void create() throws Exception
    {
-      if (server != null)
+      create(0);
+   }
+
+   public static synchronized void create(int index) throws Exception
+   {
+      if (servers[index] != null)
       {
          return;
       }
 
       if (isLocal())
       {
-         server = new LocalTestServer();
+         servers[index] = new LocalTestServer();
          return;
       }
 
-      server = acquireRemote(RMI_SERVER_LOOKUP_RETRIES);
+      servers[index] = acquireRemote(RMI_SERVER_LOOKUP_RETRIES, index);
 
-      if (server != null)
+      if (servers[index] != null)
       {
          // RMI server started
          return;
@@ -121,14 +133,19 @@ public class ServerManagement
       // but when running such a test from a forking ant, ant blocks forever waiting for *this* VM
       // to exit. That's why I require the remote server to be started in advance.
 
-      throw new IllegalStateException("The RMI server doesn't seem to be started. " +
+      throw new IllegalStateException("The RMI server " + index + " doesn't seem to be started. " +
                                       "Start it and re-run the test.");
 
    }
-
+   
    public static synchronized void start(String config) throws Exception
    {
-      create();
+      start(config, 0, false);
+   }
+
+   public static synchronized void start(String config, int index, boolean clustered) throws Exception
+   {
+      create(index);
 
       if (isLocal())
       {
@@ -141,106 +158,99 @@ public class ServerManagement
       
       MessageIdGeneratorFactory.instance.clear();      
 
-      server.start(config);
+      //Now start the server
+      servers[index].start(config, clustered);
 
       log.debug("server started");
    }
 
    public static synchronized void stop() throws Exception
    {
-      if (server != null)
-      {
-         server.stop();
-      }
+      insureStarted();
+      
+      servers[0].stop();      
    }
 
    public static synchronized void destroy() throws Exception
    {
       stop();
 
-      server.destroy();
+      servers[0].destroy();
 
-      if (isRemote())
-      {
-         log.debug("destroying the remote server VM");
-         process.destroy();
-         log.debug("remote server VM destroyed");
-      }
-      server = null;
+      servers[0] = null;
    }
 
    public static void disconnect() throws Exception
    {
       if (isRemote())
       {
-         server = null;
-         process = null;
-         if (vmStarter != null)
-         {
-            vmStarter.interrupt();
-            vmStarter = null;
-         }
+         servers[0] = null;
       }
    }
 
    public static ObjectName deploy(String mbeanConfiguration) throws Exception
    {
       insureStarted();
-      return server.deploy(mbeanConfiguration);
+      return servers[0].deploy(mbeanConfiguration);
    }
 
    public static void undeploy(ObjectName on) throws Exception
    {
       insureStarted();
-      server.undeploy(on);
+      servers[0].undeploy(on);
    }
 
    public static Object getAttribute(ObjectName on, String attribute) throws Exception
    {
       insureStarted();
-      return server.getAttribute(on, attribute);
+      return servers[0].getAttribute(on, attribute);
    }
 
    public static void setAttribute(ObjectName on, String name, String valueAsString)
       throws Exception
    {
       insureStarted();
-      server.setAttribute(on, name, valueAsString);
+      servers[0].setAttribute(on, name, valueAsString);
    }
 
    public static Object invoke(ObjectName on, String operationName,
                                Object[] params, String[] signature) throws Exception
    {
       insureStarted();
-      return server.invoke(on, operationName, params, signature);
+      return servers[0].invoke(on, operationName, params, signature);
    }
 
    public static Set query(ObjectName pattern) throws Exception
    {
       insureStarted();
-      return server.query(pattern);
+      return servers[0].query(pattern);
    }
 
    public static UserTransaction getUserTransaction() throws Exception
    {
       insureStarted();
-      return server.getUserTransaction();
+      return servers[0].getUserTransaction();
+   }
+   
+   public static void log(int level, String text)
+   {
+      log(level, text, 0);
    }
 
-   public static void log(int level, String text)
+   public static void log(int level, String text, int index)
    {
       if (isRemote())
       {
-         if (server == null)
+         if (servers[index] == null)
          {
-            log.debug("The remote server has not been created yet " +
+            log.debug("The remote server " + index + " has not been created yet " +
                       "so this log won't make it to the server!");
             return;
          }
 
          try
          {
-            server.log(level, text);
+            servers[index].log(level, text);
          }
          catch(Exception e)
          {
@@ -251,7 +261,7 @@ public class ServerManagement
 
    public static void startServerPeer() throws Exception
    {
-      startServerPeer(null, null, null);
+      startServerPeer(0, null, null);
    }
 
    /**
@@ -259,30 +269,30 @@ public class ServerManagement
     * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
     * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
     */
-   public static void startServerPeer(String serverPeerID,
+   public static void startServerPeer(int serverPeerID,
                                       String defaultQueueJNDIContext,
                                       String defaultTopicJNDIContext) throws Exception
    {
       insureStarted();
-      server.startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext);
+      servers[0].startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, false);
    }
 
    public static void stopServerPeer() throws Exception
    {
       insureStarted();
-      server.stopServerPeer();
+      servers[0].stopServerPeer();
    }
 
    public static boolean isServerPeerStarted() throws Exception
    {
       insureStarted();
-      return server.isServerPeerStarted();
+      return servers[0].isServerPeerStarted();
    }
 
    public static ObjectName getServerPeerObjectName() throws Exception
    {
       insureStarted();
-      return server.getServerPeerObjectName();
+      return servers[0].getServerPeerObjectName();
    }
 
    /**
@@ -292,7 +302,7 @@ public class ServerManagement
    public static Set getConnectorSubsystems() throws Exception
    {
       insureStarted();
-      return server.getConnectorSubsystems();
+      return servers[0].getConnectorSubsystems();
    }
 
    /**
@@ -303,7 +313,7 @@ public class ServerManagement
                                                  ServerInvocationHandler handler) throws Exception
    {
       insureStarted();
-      server.addServerInvocationHandler(subsystem, handler);
+      servers[0].addServerInvocationHandler(subsystem, handler);
    }
 
    /**
@@ -314,46 +324,55 @@ public class ServerManagement
       throws Exception
    {
       insureStarted();
-      server.removeServerInvocationHandler(subsystem);
+      servers[0].removeServerInvocationHandler(subsystem);
    }
 
    public static MessageStore getMessageStore() throws Exception
    {
       insureStarted();
-      return server.getMessageStore();
+      return servers[0].getMessageStore();
    }
 
    public static DestinationManager getDestinationManager()
       throws Exception
    {
       insureStarted();
-      return server.getDestinationManager();
+      return servers[0].getDestinationManager();
    }
 
    public static PersistenceManager getPersistenceManager()
       throws Exception
    {
       insureStarted();
-      return server.getPersistenceManager();
+      return servers[0].getPersistenceManager();
    }
 
    public static void configureSecurityForDestination(String destName, String config)
       throws Exception
    {
       insureStarted();
-      server.configureSecurityForDestination(destName, config);
+      servers[0].configureSecurityForDestination(destName, config);
    }
 
    public static void setDefaultSecurityConfig(String config) throws Exception
    {
       insureStarted();
-      server.setDefaultSecurityConfig(config);
+      servers[0].setDefaultSecurityConfig(config);
    }
 
    public static String getDefaultSecurityConfig() throws Exception
    {
       insureStarted();
-      return server.getDefaultSecurityConfig();
+      return servers[0].getDefaultSecurityConfig();
+   }
+   
+   /**
+    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+    */
+   public static void deployClusteredTopic(String name, int serverIndex) throws Exception
+   {
+      insureStarted(serverIndex);
+      servers[serverIndex].deployTopic(name, null, true);
    }
 
    /**
@@ -370,7 +389,7 @@ public class ServerManagement
    public static void deployTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
-      server.deployTopic(name, jndiName);
+      servers[0].deployTopic(name, jndiName, false);
    }
 
    /**
@@ -389,7 +408,7 @@ public class ServerManagement
                                   int downCacheSize) throws Exception
    {
       insureStarted();
-      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
+      servers[0].deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, false);
    }
 
    /**
@@ -399,6 +418,14 @@ public class ServerManagement
    {
       undeployDestination(false, name);
    }
+   
+   /**
+    * Simulates a topic un-deployment (deleting the topic descriptor from the deploy directory).
+    */
+   public static void undeployTopic(String name, int serverIndex) throws Exception
+   {
+      undeployDestination(false, name, serverIndex);
+   }
 
    /**
     * Creates a topic programatically.
@@ -406,7 +433,7 @@ public class ServerManagement
    public static void createTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
-      server.createTopic(name, jndiName);
+      servers[0].createTopic(name, jndiName);
    }
 
    /**
@@ -414,7 +441,16 @@ public class ServerManagement
     */
    public static boolean destroyTopic(String name) throws Exception
    {
-      return server.destroyDestination(false, name);
+      return servers[0].destroyDestination(false, name);
+   }
+   
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
+   public static void deployClusteredQueue(String name, int serverIndex) throws Exception
+   {
+      insureStarted(serverIndex);
+      servers[serverIndex].deployQueue(name, null, true);
    }
 
    /**
@@ -431,7 +467,7 @@ public class ServerManagement
    public static void deployQueue(String name, String jndiName) throws Exception
    {
       insureStarted();
-      server.deployQueue(name, jndiName);
+      servers[0].deployQueue(name, jndiName, false);
    }
 
    /**
@@ -450,7 +486,7 @@ public class ServerManagement
                                   int downCacheSize) throws Exception
    {
       insureStarted();
-      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
+      servers[0].deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, false);
    }
 
    /**
@@ -460,6 +496,14 @@ public class ServerManagement
    {
       undeployDestination(true, name);
    }
+   
+   /**
+    * Simulates a queue un-deployment (deleting the queue descriptor from the deploy directory).
+    */
+   public static void undeployQueue(String name, int serverIndex) throws Exception
+   {
+      undeployDestination(true, name, serverIndex);
+   }
 
    /**
     * Creates a queue programatically.
@@ -467,7 +511,7 @@ public class ServerManagement
    public static void createQueue(String name, String jndiName) throws Exception
    {
       insureStarted();
-      server.createQueue(name, jndiName);
+      servers[0].createQueue(name, jndiName);
    }
 
    /**
@@ -475,7 +519,7 @@ public class ServerManagement
     */
    public static boolean destroyQueue(String name) throws Exception
    {
-      return server.destroyDestination(true, name);
+      return servers[0].destroyDestination(true, name);
    }
 
    /**
@@ -485,7 +529,17 @@ public class ServerManagement
    private static void undeployDestination(boolean isQueue, String name) throws Exception
    {
       insureStarted();
-      server.undeployDestination(isQueue, name);
+      servers[0].undeployDestination(isQueue, name);
+   }
+   
+   /**
+    * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
+    * directory).
+    */
+   private static void undeployDestination(boolean isQueue, String name, int serverIndex) throws Exception
+   {
+      insureStarted(serverIndex);
+      servers[serverIndex].undeployDestination(isQueue, name);
    }
 
    public static void deployConnectionFactory(String objectName,
@@ -496,7 +550,7 @@ public class ServerManagement
                                               int defaultTempQueueDownCacheSize)
       throws Exception
    {
-      server.deployConnectionFactory(objectName,
+      servers[0].deployConnectionFactory(objectName,
                                      jndiBindings,
                                      prefetchSize,
                                      defaultTempQueueFullSize,
@@ -509,19 +563,19 @@ public class ServerManagement
                                               int prefetchSize)
       throws Exception
    {
-      server.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+      servers[0].deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
    
    public static void deployConnectionFactory(String objectName,
                                               String[] jndiBindings)
       throws Exception
    {
-      server.deployConnectionFactory(objectName, jndiBindings);
+      servers[0].deployConnectionFactory(objectName, jndiBindings);
    }
 
    public static void undeployConnectionFactory(ObjectName objectName) throws Exception
    {
-      server.undeployConnectionFactory(objectName);
+      servers[0].undeployConnectionFactory(objectName);
    }
 
    public static Hashtable getJNDIEnvironment()
@@ -532,8 +586,13 @@ public class ServerManagement
       }
       else
       {
-         return RemoteInitialContextFactory.getJNDIEnvironment();
+         return getJNDIEnvironment(0);
       }
+   }
+   
+   public static Hashtable getJNDIEnvironment(int index)
+   {
+      return RemoteInitialContextFactory.getJNDIEnvironment(index);      
    }
 
    // Attributes ----------------------------------------------------
@@ -550,19 +609,24 @@ public class ServerManagement
 
    private static void insureStarted() throws Exception
    {
-      if (server == null)
+      insureStarted(0);
+   }
+   
+   private static void insureStarted(int index) throws Exception
+   {
+      if (servers[index] == null)
       {
-         throw new Exception("The server has not been created!");
+         throw new Exception("The server " + index + " has not been created!");
       }
-      if (!server.isStarted())
+      if (!servers[index].isStarted())
       {
-         throw new Exception("The server has not been started!");
+         throw new Exception("The server " + index + " has not been started!");
       }
    }
 
-   private static Server acquireRemote(int initialRetries)
+   private static Server acquireRemote(int initialRetries, int index)
    {
-      String name = "//localhost:" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.RMI_SERVER_NAME;
+      String name = "//localhost:" + RMITestServer.RMI_REGISTRY_PORTS[index] + "/" + RMITestServer.RMI_SERVER_NAME;
       Server s = null;
       int retries = initialRetries;
       while(s == null && retries > 0)
@@ -598,138 +662,138 @@ public class ServerManagement
 
    // Inner classes -------------------------------------------------
 
-   static class VMStarter implements Runnable
-   {
-      public void run()
-      {
-         // start a remote java process that runs a TestServer
-
-         String userDir = System.getProperty("user.dir");
-         String javaClassPath = System.getProperty("java.class.path");
-         String fileSeparator = System.getProperty("file.separator");
-         String javaHome = System.getProperty("java.home");
-         String moduleOutput = System.getProperty("module.output");
-
-         String osName = System.getProperty("os.name").toLowerCase();
-         boolean isWindows = osName.indexOf("windows") != -1;
-
-         String javaExecutable =
-            javaHome + fileSeparator + "bin" + fileSeparator + "java" + (isWindows ? ".exe" : "");
-
-         String[] cmdarray = new String[]
-         {
-            javaExecutable,
-            "-cp",
-            javaClassPath,
-            "-Dmodule.output=" + moduleOutput,
-            "-Dremote.test.suffix=-remote",
-            "org.jboss.test.messaging.tools.jmx.rmi.TestServer",
-         };
-
-         String[] environment;
-         if (isWindows)
-         {
-            environment = new String[]
-            {
-               "SYSTEMROOT=C:\\WINDOWS" // TODO get this from environment, as it may be diffrent on different machines
-            };
-         }
-         else
-         {
-            environment = new String[0];
-         }
-
-         Runtime runtime = Runtime.getRuntime();
-
-         try
-         {
-            log.debug("creating external process");
-
-            Thread stdoutLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDOUT),
-                                             "Remote VM STDOUT Logging Thread");
-            Thread stderrLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDERR),
-                                             "Remote VM STDERR Logging Thread");
-
-            stdoutLogger.setDaemon(true);
-            stdoutLogger.setDaemon(true);
-            stdoutLogger.start();
-            stderrLogger.start();
-
-            process = runtime.exec(cmdarray, environment, new File(userDir));
-         }
-         catch(Exception e)
-         {
-            log.error("Error spawning remote server", e);
-         }
-      }
-   }
-
-   /**
-    * This logger is used to get and display the output generated at stdout or stderr by the
-    * RMI server VM.
-    */
-   static class RemoteProcessLogger implements Runnable
-   {
-      public static final int STDOUT = 0;
-      public static final int STDERR = 1;
-
-      private int type;
-      private BufferedReader br;
-      private PrintStream out;
-
-      public RemoteProcessLogger(int type)
-      {
-         this.type = type;
-
-         if (type == STDOUT)
-         {
-            out = System.out;
-         }
-         else if (type == STDERR)
-         {
-            out = System.err;
-         }
-         else
-         {
-            throw new IllegalArgumentException("Unknown type " + type);
-         }
-      }
-
-      public void run()
-      {
-         while(process == null)
-         {
-            try
-            {
-               Thread.sleep(50);
-            }
-            catch(InterruptedException e)
-            {
-               // OK
-            }
-         }
-
-         if (type == STDOUT)
-         {
-            br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-         }
-         else if (type == STDERR)
-         {
-            br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-         }
-
-         String line;
-         try
-         {
-            while((line = br.readLine()) != null)
-            {
-               out.println(line);
-            }
-         }
-         catch(Exception e)
-         {
-            log.error("failed to read from process " + process, e);
-         }
-      }
-   }
+//   static class VMStarter implements Runnable
+//   {
+//      public void run()
+//      {
+//         // start a remote java process that runs a TestServer
+//
+//         String userDir = System.getProperty("user.dir");
+//         String javaClassPath = System.getProperty("java.class.path");
+//         String fileSeparator = System.getProperty("file.separator");
+//         String javaHome = System.getProperty("java.home");
+//         String moduleOutput = System.getProperty("module.output");
+//
+//         String osName = System.getProperty("os.name").toLowerCase();
+//         boolean isWindows = osName.indexOf("windows") != -1;
+//
+//         String javaExecutable =
+//            javaHome + fileSeparator + "bin" + fileSeparator + "java" + (isWindows ? ".exe" : "");
+//
+//         String[] cmdarray = new String[]
+//         {
+//            javaExecutable,
+//            "-cp",
+//            javaClassPath,
+//            "-Dmodule.output=" + moduleOutput,
+//            "-Dremote.test.suffix=-remote",
+//            "org.jboss.test.messaging.tools.jmx.rmi.TestServer",
+//         };
+//
+//         String[] environment;
+//         if (isWindows)
+//         {
+//            environment = new String[]
+//            {
+//               "SYSTEMROOT=C:\\WINDOWS" // TODO get this from environment, as it may be diffrent on different machines
+//            };
+//         }
+//         else
+//         {
+//            environment = new String[0];
+//         }
+//
+//         Runtime runtime = Runtime.getRuntime();
+//
+//         try
+//         {
+//            log.debug("creating external process");
+//
+//            Thread stdoutLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDOUT),
+//                                             "Remote VM STDOUT Logging Thread");
+//            Thread stderrLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDERR),
+//                                             "Remote VM STDERR Logging Thread");
+//
+//            stdoutLogger.setDaemon(true);
+//            stdoutLogger.setDaemon(true);
+//            stdoutLogger.start();
+//            stderrLogger.start();
+//
+//            process = runtime.exec(cmdarray, environment, new File(userDir));
+//         }
+//         catch(Exception e)
+//         {
+//            log.error("Error spawning remote server", e);
+//         }
+//      }
+//   }
+//
+//   /**
+//    * This logger is used to get and display the output generated at stdout or stderr by the
+//    * RMI server VM.
+//    */
+//   static class RemoteProcessLogger implements Runnable
+//   {
+//      public static final int STDOUT = 0;
+//      public static final int STDERR = 1;
+//
+//      private int type;
+//      private BufferedReader br;
+//      private PrintStream out;
+//
+//      public RemoteProcessLogger(int type)
+//      {
+//         this.type = type;
+//
+//         if (type == STDOUT)
+//         {
+//            out = System.out;
+//         }
+//         else if (type == STDERR)
+//         {
+//            out = System.err;
+//         }
+//         else
+//         {
+//            throw new IllegalArgumentException("Unknown type " + type);
+//         }
+//      }
+//
+//      public void run()
+//      {
+//         while(process == null)
+//         {
+//            try
+//            {
+//               Thread.sleep(50);
+//            }
+//            catch(InterruptedException e)
+//            {
+//               // OK
+//            }
+//         }
+//
+//         if (type == STDOUT)
+//         {
+//            br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//         }
+//         else if (type == STDERR)
+//         {
+//            br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//         }
+//
+//         String line;
+//         try
+//         {
+//            while((line = br.readLine()) != null)
+//            {
+//               out.println(line);
+//            }
+//         }
+//         catch(Exception e)
+//         {
+//            log.error("failed to read from process " + process, e);
+//         }
+//      }
+//   }
 }

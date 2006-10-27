@@ -74,14 +74,13 @@ public class ClientCrashNegativeLeaseTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all");
-
+      localServer.start("all", false);
 
       //Set lease period to -1 --> this should disable leasing so the state won't be cleared up
       
       localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "-1");
        
-      localServer.deployQueue("Queue", null);
+      localServer.deployQueue("Queue", null, false);
           
       // Connect to the remote server, but don't start a servicecontainer on it. We are only using
       // the remote server to open a client connection to the local server.
@@ -119,7 +118,7 @@ public class ClientCrashNegativeLeaseTest extends MessagingTestCase
       
       // Now we should have a client connection from the remote server to the local server
       
-      remoteServer.exit();
+      remoteServer.destroy();
       log.trace("killed remote server");
         
       // Wait for connection resources to be cleared up

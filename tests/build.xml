@@ -67,6 +67,9 @@
    <property name="stress.tests.database" value="mysql"/>
    <property name="stress.tests.serialization" value="jms"/>
 
+   <!-- Clustering tests -->
+   <property name="clustering.tests.database" value="mysql"/>
+
    <!--
         Project paths.
    -->
@@ -134,7 +137,7 @@
        JDBC Drivers.
    -->
    <path id="any.jdbc.driver.classpath">
-	       <fileset dir="${tests.root}/lib/jdbc-drivers" includes="*.jar"/>
+          <fileset dir="${tests.root}/lib/jdbc-drivers" includes="*.jar"/>
    </path>
 
 
@@ -274,6 +277,23 @@
       </java>
    </target>
 
+   <target name="start-rmi-server-clustering" depends="init"
+           description="Starts the RMI server used by clustering tests">
+
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
+         <sysproperty key="test.registry.index" value="${test.registry.index}"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${clustering.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+         <classpath refid="test.execution.classpath"/>
+      </java>
+   </target>
+
    <target name="start-rmi-server-stress" depends="init"
            description="Starts the RMI server used by remote stress tests">
 
@@ -293,6 +313,14 @@
            description="Stops the RMI server used by remote tests">
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
             classpathref="test.execution.classpath"/>
+   </target>
+
+   <target name="stop-rmi-server-clustering" depends="init"
+           description="Stops the RMI server used by clustering tests">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
+            classpathref="test.execution.classpath">
+         <sysproperty key="test.registry.index" value="${test.registry.index}"/>
+      </java>
    </target>
 
    <!-- ======================================================================================== -->
@@ -349,6 +377,7 @@
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
+               <exclude name="**/jms/clustering/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -421,11 +450,11 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <!-- <include name="org/jboss/test/messaging/jms/JMSTest.class"/> -->
                <include name="**/messaging/jms/ReferenceableTest.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/jms/clustering/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -461,7 +490,6 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <!-- <include name="**/jms/stress/**/*Test.class"/> -->
                <include name="**/jms/stress/StressTest.class"/>
             </fileset>
          </batchtest>
@@ -523,20 +551,18 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <!--
-               <include name="org/jboss/test/messaging/jms/JMSTest.class"/>
-               -->
-               <include name="org/jboss/test/messaging/jms/**/*Test.class"/>
-               <exclude name="org/jboss/test/messaging/jms/stress/**"/>
-               <exclude name="org/jboss/test/messaging/jms/server/**"/>
-               <exclude name="org/jboss/test/messaging/jms/persistence/**"/>
-               <exclude name="org/jboss/test/messaging/jms/ReferencingTest.class"/>
-               <exclude name="org/jboss/test/messaging/jms/PersistenceTest.class"/>
-               <exclude name="org/jboss/test/messaging/jms/crash/*Test.class"/>
-               <exclude name="org/jboss/test/messaging/jms/MemLeakTest.class"/>
-               <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
-               <exclude name="org/jboss/test/messaging/jms/JCAWrapperTest.class"/>
+               <include name="**/jms/**/*Test.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/server/**"/>
+               <exclude name="**/jms/persistence/**"/>
+               <exclude name="**/jms/ReferencingTest.class"/>
+               <exclude name="**/jms/PersistenceTest.class"/>
+               <exclude name="**/jms/crash/*Test.class"/>
+               <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/jms/ManifestTest.class"/>
+               <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
+               <exclude name="**/jms/clustering/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -600,6 +626,100 @@
       <antcall target="stop-rmi-server"/>
 
    </target>
+
+   <target name="clustering-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs the clustering tests">
+
+      <!-- Stop the rmi servers in case a previous run aborted -->
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.registry.index" value="0"/>
+      </antcall>
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.registry.index" value="1"/>
+      </antcall>
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.registry.index" value="2"/>
+      </antcall>
+
+      <!-- Start 3 rmi servers -->
+
+      <antcall target="start-rmi-server-clustering">
+         <param name="test.registry.index" value="0"/>
+      </antcall>
+      <antcall target="start-rmi-server-clustering">
+         <param name="test.registry.index" value="1"/>
+      </antcall>
+      <antcall target="start-rmi-server-clustering">
+         <param name="test.registry.index" value="2"/>
+      </antcall>
+
+      <mkdir dir="${build.tests.reports}"/>
+
+      <echo message=""/>
+      <echo message="Running clustering tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="yes"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${clustering.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath>
+            <path refid="test.execution.classpath"/>
+
+            <!-- Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+            <!--
+            <path refid="jboss.test.classpath"/>
+            -->
+         </classpath>
+
+         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
+
+         <sysproperty key="messaging-test-configuration" value="Clustering"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-Clustering.xml"/>
+
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/jms/clustering/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.registry.index" value="0"/>
+      </antcall>
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.registry.index" value="1"/>
+      </antcall>
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.registry.index" value="2"/>
+      </antcall>
+
+   </target>
+
 
    <target name="crash-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
       description="Runs crash tests">
@@ -724,6 +844,7 @@
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
+               <exclude name="**/jms/clustering/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

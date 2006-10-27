@@ -44,7 +44,7 @@ import org.jboss.remoting.ServerInvocationHandler;
  */
 public interface Server extends Remote
 {
-   void start(String containerConfig) throws Exception;
+   void start(String containerConfig, boolean clustered) throws Exception;
    void stop() throws Exception;
    void destroy() throws Exception;
 
@@ -77,9 +77,10 @@ public interface Server extends Remote
     * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
     * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
     */
-   void startServerPeer(String serverPeerID,
+   void startServerPeer(int serverPeerID,
                         String defaultQueueJNDIContext,
-                        String defaultTopicJNDIContext) throws Exception;
+                        String defaultTopicJNDIContext,
+                        boolean clustered) throws Exception;
    void stopServerPeer() throws Exception;
    boolean isServerPeerStarted() throws Exception;
 
@@ -133,13 +134,13 @@ public interface Server extends Remote
    /**
     * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
     */
-   void deployTopic(String name, String jndiName) throws Exception;
+   void deployTopic(String name, String jndiName, boolean clustered) throws Exception;
 
    /**
     * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
     */
    void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-                    int downCacheSize) throws Exception;
+                    int downCacheSize, boolean clustered) throws Exception;
 
    /**
     * Creates a topic programatically.
@@ -149,13 +150,13 @@ public interface Server extends Remote
    /**
     * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
     */
-   void deployQueue(String name, String jndiName) throws Exception;
+   void deployQueue(String name, String jndiName, boolean clustered) throws Exception;
 
    /**
     * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
     */
    void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-                    int downCacheSize) throws Exception;
+                    int downCacheSize, boolean clustered) throws Exception;
 
    /**
     * Creates a queue programatically.
@@ -206,8 +207,6 @@ public interface Server extends Remote
     *         ServerManagement.toElement().
     */
    String getDefaultSecurityConfig() throws Exception;
-
-   void exit() throws Exception;
 
    /**
     * Executes a command on the server

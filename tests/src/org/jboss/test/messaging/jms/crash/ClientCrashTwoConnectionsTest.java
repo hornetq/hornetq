@@ -76,16 +76,15 @@ public class ClientCrashTwoConnectionsTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all");
-
+      localServer.start("all", false);
 
       // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
       // the default, whatever that is ...
 
       localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "3000");
        
-      localServer.deployQueue("Queue", null);
-      localServer.deployTopic("Topic", null);
+      localServer.deployQueue("Queue", null, false);
+      localServer.deployTopic("Topic", null, false);
           
       // Connect to the remote server, but don't start a servicecontainer on it. We are only using
       // the remote server to open a client connection to the local server.
@@ -123,7 +122,7 @@ public class ClientCrashTwoConnectionsTest extends MessagingTestCase
       log.info("we have = " + ((SimpleConnectionManager)cm).getClients().size() + " clients registered on SimpleconnectionManager");
       
       // Now we should have a client connection from the remote server to the local server
-      remoteServer.exit();
+      remoteServer.destroy();
       log.info("killed remote server");
         
       // Wait for connection resources to be cleared up

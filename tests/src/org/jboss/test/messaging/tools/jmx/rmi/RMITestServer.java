@@ -56,12 +56,17 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    private RMINamingDelegate namingDelegate;
 
-   public static final int RMI_REGISTRY_PORT = 25989;
+   //public static final int RMI_REGISTRY_PORT = 25989;
+   
+   //We allow for up to 5 rmi test servers running simultaneously
+   public static final int[] RMI_REGISTRY_PORTS = 
+      new int[] {25989, 25990, 25991, 25992, 25993};
+   
    public static final String RMI_SERVER_NAME = "messaging-rmi-server";
    public static final String NAMING_SERVER_NAME = "naming-rmi-server";
 
    private static Registry registry;
-
+   
    public static void main(String[] args) throws Exception
    {
       log.debug("initializing RMI runtime");
@@ -73,14 +78,27 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       }
 
       log.info("bind address: " + host);
+      
+      int index;
+      String registryIndex = System.getProperty("test.registry.index");
+      if (registryIndex == null)
+      {
+         //Use the 0th port
+         index = 0;
+      }
+      else
+      {
+         index = Integer.parseInt(registryIndex);         
+      }
+      int port = RMI_REGISTRY_PORTS[index];
 
       // let RMI know the bind address
       System.setProperty("java.rmi.server.hostname", host);
 
-      registry = LocateRegistry.createRegistry(RMI_REGISTRY_PORT);
-      log.debug("registry created");
+      registry = LocateRegistry.createRegistry(port);
+      log.debug("registry created at port: " + port);
 
-      RMITestServer testServer = new RMITestServer();
+      RMITestServer testServer = new RMITestServer(index);
       log.debug("RMI server created");
 
       registry.bind(RMI_SERVER_NAME, testServer);
@@ -108,11 +126,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       }
    }
 
-   public RMITestServer() throws Exception
+   public RMITestServer(int index) throws Exception
    {
       namingDelegate = new RMINamingDelegate();
 
-      server = new RemoteTestServer();
+      server = new RemoteTestServer(index);
    }
 
    public void configureSecurityForDestination(String destName, String config) throws Exception
@@ -125,23 +143,24 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.deploy(mbeanConfiguration);
    }
 
-   public void deployQueue(String name, String jndiName) throws Exception
+   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
    {
-      server.deployQueue(name, jndiName);
+      server.deployQueue(name, jndiName, clustered);
    }
 
-   public void deployTopic(String name, String jndiName) throws Exception
+   public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
    {
-      server.deployTopic(name, jndiName);
+      server.deployTopic(name, jndiName, clustered);
    }
    
    public void deployQueue(String name,
                            String jndiName,
                            int fullSize,
                            int pageSize,
-                           int downCacheSize) throws Exception
+                           int downCacheSize,
+                           boolean clustered) throws Exception
    {
-      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
+      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
    public void createQueue(String name, String jndiName) throws Exception
@@ -153,9 +172,10 @@ public class RMITestServer extends UnicastRemoteObject implements Server
                            String jndiName,
                            int fullSize,
                            int pageSize,
-                           int downCacheSize) throws Exception
+                           int downCacheSize,
+                           boolean clustered) throws Exception
    {
-      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
+      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
    public void createTopic(String name, String jndiName) throws Exception
@@ -197,12 +217,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
       registry.unbind(RMI_SERVER_NAME);
       registry.unbind(NAMING_SERVER_NAME);
-   }
-
-   public void exit() throws Exception
-   {
-      server.exit();
-
+      
+      //Now shutdown the process
+      
+      //TODO - we should shutdown cleanly - let main() exit - not kill the process
+      
       new Thread(new VMKiller(), "VM Killer").start();
    }
 
@@ -302,14 +321,15 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.setDefaultSecurityConfig(config);
    }
 
-   public void start(String containerConfig) throws Exception
+   public void start(String containerConfig, boolean clustered) throws Exception
    {
-      server.start(containerConfig);
+      server.start(containerConfig, clustered);
    }
 
-   public void startServerPeer(String serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext) throws Exception
+   public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
+                               String defaultTopicJNDIContext, boolean clustered) throws Exception
    {
-      server.startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext);
+      server.startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, clustered);
    }
 
    public void stop() throws Exception

@@ -53,13 +53,13 @@ public class RemoteContext implements Context
    // Attributes ----------------------------------------------------
 
    private NamingDelegate namingDelegate;
-
+   
    // Constructors --------------------------------------------------
 
-   public RemoteContext() throws Exception
+   public RemoteContext(int remoteServerIndex) throws Exception
    {
       String n =
-         "//localhost:" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.NAMING_SERVER_NAME;
+         "//localhost:" + RMITestServer.RMI_REGISTRY_PORTS[remoteServerIndex] + "/" + RMITestServer.NAMING_SERVER_NAME;
       namingDelegate = (NamingDelegate)Naming.lookup(n);
    }
 

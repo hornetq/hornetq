@@ -44,6 +44,11 @@ public class RemoteTestServer extends LocalTestServer
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
+   
+   public RemoteTestServer(int serverIndex)
+   {
+      super(serverIndex);
+   }
 
    // Server implementation -----------------------------------------
 

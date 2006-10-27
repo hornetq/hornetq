@@ -79,6 +79,8 @@ public class LocalTestServer implements Server
 
    // List<ObjectName>
    private List connFactoryObjectNames;
+   
+   private int serverIndex;
 
    // Constructors --------------------------------------------------
 
@@ -88,27 +90,41 @@ public class LocalTestServer implements Server
 
       connFactoryObjectNames = new ArrayList();
    }
+   
+   public LocalTestServer(int serverIndex)
+   {
+      this();
+      
+      this.serverIndex = serverIndex;
+   }
 
    // Server implementation -----------------------------------------
 
-   public synchronized void start(String containerConfig) throws Exception
+   public synchronized void start(String containerConfig, boolean clustered) throws Exception
    {
       if (isStarted())
       {
          return;
       }
-
+      
       log.debug("starting service container");
 
-      sc = new ServiceContainer(containerConfig, null);
+      sc = new ServiceContainer(containerConfig, null, serverIndex);
       sc.start();
+      
+      log.info("********* STARTING SERVER DATABASE TYPE IS " + sc.getDatabaseType());
+      
+      if (this.getDatabaseType().equals("hsqldb") && clustered)
+      {
+         throw new IllegalStateException("The test server cannot be started in clustered mode with hsqldb as a database - must use a shared database");
+      }
 
       if ("none".equals(containerConfig))
       {
          return;
       }
 
-      startServerPeer(null, null, null);
+      startServerPeer(serverIndex, null, null, clustered);
 
       log.info("server started");
    }
@@ -211,12 +227,15 @@ public class LocalTestServer implements Server
       return sc != null;
    }
 
-   public void startServerPeer(String serverPeerID,
+   public void startServerPeer(int serverPeerID,
                                String defaultQueueJNDIContext,
-                               String defaultTopicJNDIContext) throws Exception
+                               String defaultTopicJNDIContext,
+                               boolean clustered) throws Exception
    {
       try
-      {
+      {         
+         log.info("******* STARTING SERVER PEER WITH ID " + serverPeerID);
+         
          log.debug("creating ServerPeer instance");
    
          // we are using the "default" service deployment descriptors available in
@@ -230,8 +249,20 @@ public class LocalTestServer implements Server
          }
    
          String databaseType = sc.getDatabaseType();
-         String persistenceConfigFile =
-            "server/default/deploy/" + databaseType + "-persistence-service.xml";
+         String persistenceConfigFile;
+         
+         if (clustered && !databaseType.equals("hsqldb"))
+         {
+            //HSQL can't be used for clustered server peer - since it's not a shared database
+            
+            persistenceConfigFile =
+               "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
+         }
+         else
+         {
+            persistenceConfigFile  =
+               "server/default/deploy/" + databaseType + "-persistence-service.xml";
+         }
          
          log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
          
@@ -269,10 +300,8 @@ public class LocalTestServer implements Server
             (MBeanConfigurationElement)mdd.query("service", "ServerPeer").iterator().next();
    
          // overwrite the file configuration, if needed
-         if (serverPeerID != null)
-         {
-            serverPeerConfig.setConstructorArgumentValue(0, 0, serverPeerID);
-         }
+         serverPeerConfig.setConstructorArgumentValue(0, 0, String.valueOf(serverPeerID));
+         
          if (defaultQueueJNDIContext != null)
          {
             serverPeerConfig.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
@@ -292,9 +321,7 @@ public class LocalTestServer implements Server
    
          sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
          sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
-         
-         log.info("deploying post offices");
-         
+          
          MBeanConfigurationElement queuePostOfficeConfig =
             (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
          queuePostOfficeObjectName = sc.registerAndConfigureService(queuePostOfficeConfig);
@@ -307,8 +334,6 @@ public class LocalTestServer implements Server
          sc.invoke(topicPostOfficeObjectName, "create", new Object[0], new String[0]);
          sc.invoke(topicPostOfficeObjectName, "start", new Object[0], new String[0]);
          
-         log.info("Deployed postoffices");
-    
          log.debug("deploying connection factories");
    
          List connFactoryElements = cfdd.query("service", "ConnectionFactory");
@@ -560,15 +585,15 @@ public class LocalTestServer implements Server
          getAttribute(serverPeerObjectName, "Instance");
    }
 
-   public void deployTopic(String name, String jndiName) throws Exception
+   public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
    {
-      deployDestination(false, name, jndiName);
+      deployDestination(false, name, jndiName, clustered);
    }
 
    public void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-                           int downCacheSize) throws Exception
+                           int downCacheSize, boolean clustered) throws Exception
    {
-      deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
+      deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
    public void createTopic(String name, String jndiName) throws Exception
@@ -578,15 +603,15 @@ public class LocalTestServer implements Server
                 new String[] { "java.lang.String", "java.lang.String"} );
    }
 
-   public void deployQueue(String name, String jndiName) throws Exception
+   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
    {
-      deployDestination(true, name, jndiName);
+      deployDestination(true, name, jndiName, clustered);
    }
    
    public void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-                           int downCacheSize) throws Exception
+                           int downCacheSize, boolean clustered) throws Exception
    {
-      deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
+      deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
    public void createQueue(String name, String jndiName) throws Exception
@@ -596,7 +621,7 @@ public class LocalTestServer implements Server
                 new String[] { "java.lang.String", "java.lang.String"} );
    }
 
-   public void deployDestination(boolean isQueue, String name, String jndiName) throws Exception
+   public void deployDestination(boolean isQueue, String name, String jndiName, boolean clustered) throws Exception
    {
       String config =
          "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "QueueService" : "TopicService") + "\"" +
@@ -604,6 +629,7 @@ public class LocalTestServer implements Server
          "       xmbean-dd=\"xmdesc/" + (isQueue ? "Queue" : "Topic" ) + "-xmbean.xml\">" +
          (jndiName != null ? "    <attribute name=\"JNDIName\">" + jndiName + "</attribute>" : "") +
          "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
+         "       <attribute name=\"Clustered\">" + String.valueOf(clustered) + "</attribute>" +
          "</mbean>";
 
       MBeanConfigurationElement mbean =
@@ -618,7 +644,8 @@ public class LocalTestServer implements Server
                                  String jndiName,
                                  int fullSize,
                                  int pageSize,
-                                 int downCacheSize) throws Exception
+                                 int downCacheSize,
+                                 boolean clustered) throws Exception
    {
       log.info("deploying queue, fullsize:" + fullSize + ", ps:" + pageSize + " dc size:" + downCacheSize);
       
@@ -631,6 +658,7 @@ public class LocalTestServer implements Server
          "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
          "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
          "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
+         "    <attribute name=\"Clustered\">" + String.valueOf(clustered) + "</attribute>" +
          "</mbean>";
 
       MBeanConfigurationElement mbean =
@@ -774,11 +802,6 @@ public class LocalTestServer implements Server
       return XMLUtil.elementToString(element);
    }
    
-   public void exit() throws Exception
-   {
-      destroy();
-   }
-      
    public Object executeCommand(Command command) throws Exception
    { 
       return command.execute();

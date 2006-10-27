@@ -50,9 +50,22 @@ public class StopRMIServer
       {
          host = "localhost";
       }
+      
+      int index;
+      String registryIndex = System.getProperty("test.registry.index");
+      if (registryIndex == null)
+      {
+         //Use the 0th port
+         index = 0;
+      }
+      else
+      {
+         index = Integer.parseInt(registryIndex);         
+      }
+      int port = RMITestServer.RMI_REGISTRY_PORTS[index];
 
       String name =
-         "//" + host + ":" + RMITestServer.RMI_REGISTRY_PORT + "/" + RMITestServer.RMI_SERVER_NAME;
+         "//" + host + ":" + port + "/" + RMITestServer.RMI_SERVER_NAME;
 
       log.info("Stopping " + name);
 
@@ -67,11 +80,11 @@ public class StopRMIServer
          return;
       }
 
-      server.stop();
+      //We should shut down cleanly - not kill the process like we are currently doing
+      
+      server.destroy();
       log.info("RMI server stopped");
 
-      server.exit();
-      log.info("RMI server shut down");
    }
 
    // Attributes ----------------------------------------------------

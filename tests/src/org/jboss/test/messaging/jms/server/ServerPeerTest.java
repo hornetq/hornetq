@@ -83,7 +83,7 @@ public class ServerPeerTest extends MessagingTestCase
 
       try
       {
-         ServerManagement.startServerPeer("0", "/some-new-context", null);
+         ServerManagement.startServerPeer(0, "/some-new-context", null);
          fail("should throw exception");
       }
       catch(MessagingJMSException e)
@@ -96,7 +96,7 @@ public class ServerPeerTest extends MessagingTestCase
    {
       ServerManagement.stopServerPeer();
      
-      ServerManagement.startServerPeer("0", "/here-go-queues", "/and-here-topics/etc/etc");
+      ServerManagement.startServerPeer(0, "/here-go-queues", "/and-here-topics/etc/etc");
       
       try
       {

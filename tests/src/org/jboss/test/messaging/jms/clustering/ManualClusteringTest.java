@@ -19,9 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.jms.manual;
-
-import java.util.Properties;
+package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -38,6 +36,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 
@@ -81,66 +80,92 @@ public class ManualClusteringTest extends MessagingTestCase
    {
       super(name);
    }
+   
 
    protected void setUp() throws Exception
    {
       super.setUp();
       
-      Properties props1 = new Properties();
-      
-      props1.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props1.put(Context.PROVIDER_URL, "jnp://localhost:1199");
-      props1.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
-      
-      ic1 = new InitialContext(props1);
-      
-      Properties props2 = new Properties();
-      
-      props2.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props2.put(Context.PROVIDER_URL, "jnp://localhost:1299");
-      props2.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
-      
-      ic2 = new InitialContext(props2);
-      
-      Properties props3 = new Properties();
-      
-      props3.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props3.put(Context.PROVIDER_URL, "jnp://localhost:1399");
-      props3.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
-      
-      ic3 = new InitialContext(props3);
-      
-      queue1 = (Queue)ic1.lookup("queue/testDistributedQueue");
-      
-      queue2 = (Queue)ic2.lookup("queue/testDistributedQueue");
-      
-      queue3 = (Queue)ic3.lookup("queue/testDistributedQueue");
-            
-      topic1 = (Topic)ic1.lookup("topic/testDistributedTopic");
-      
-      topic2 = (Topic)ic2.lookup("topic/testDistributedTopic");
-      
-      topic3 = (Topic)ic3.lookup("topic/testDistributedTopic");
-      
-      cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-      
-      cf2 = (ConnectionFactory)ic2.lookup("/ConnectionFactory");
-      
-      cf3 = (ConnectionFactory)ic3.lookup("/ConnectionFactory");
-      
-      drainStuff();
+      try
+      {
+                     
+         ServerManagement.start("all", 0, true);
+         
+         ServerManagement.start("all", 1, true);
+         
+         ServerManagement.start("all", 2, true);
+         
+         ServerManagement.deployClusteredQueue("testDistributedQueue", 0);         
+         ServerManagement.deployClusteredTopic("testDistributedTopic", 0);
+         
+         ServerManagement.deployClusteredQueue("testDistributedQueue", 1);         
+         ServerManagement.deployClusteredTopic("testDistributedTopic", 1);
+         
+         ServerManagement.deployClusteredQueue("testDistributedQueue", 2);         
+         ServerManagement.deployClusteredTopic("testDistributedTopic", 2);
+               
+         ic1 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
+         
+         ic2 = new InitialContext(ServerManagement.getJNDIEnvironment(1));
+         
+         ic3 = new InitialContext(ServerManagement.getJNDIEnvironment(2));
+               
+         queue1 = (Queue)ic1.lookup("queue/testDistributedQueue");
+         
+         queue2 = (Queue)ic2.lookup("queue/testDistributedQueue");
+         
+         queue3 = (Queue)ic3.lookup("queue/testDistributedQueue");
+               
+         topic1 = (Topic)ic1.lookup("topic/testDistributedTopic");
+         
+         topic2 = (Topic)ic2.lookup("topic/testDistributedTopic");
+         
+         topic3 = (Topic)ic3.lookup("topic/testDistributedTopic");
+         
+         cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+         
+         cf2 = (ConnectionFactory)ic2.lookup("/ConnectionFactory");
+         
+         cf3 = (ConnectionFactory)ic3.lookup("/ConnectionFactory");
+         
+         drainQueues();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         throw e;
+      }
    }
 
    protected void tearDown() throws Exception
    {
-      super.tearDown();
-      
-      ic1.close();
-      
-      ic2.close();
+      try
+      {
+         super.tearDown();
+         
+         ServerManagement.undeployQueue("testDistributedQueue", 0);         
+         ServerManagement.undeployTopic("testDistributedTopic", 0);
+         
+         ServerManagement.undeployQueue("testDistributedQueue", 1);         
+         ServerManagement.undeployTopic("testDistributedTopic", 1);
+         
+         ServerManagement.undeployQueue("testDistributedQueue", 2);         
+         ServerManagement.undeployTopic("testDistributedTopic", 2);
+         
+         ic1.close();
+         
+         ic2.close();
+         
+         ic3.close();                  
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         throw e;
+      }
    }
    
-   protected void drainStuff() throws Exception
+   protected void drainQueues() throws Exception
    {
       Connection conn1 = null;
       
@@ -166,7 +191,7 @@ public class ManualClusteringTest extends MessagingTestCase
          
          MessageConsumer cons2 = sess2.createConsumer(queue2);
          
-         MessageConsumer cons3 = sess3.createConsumer(queue2);
+         MessageConsumer cons3 = sess3.createConsumer(queue3);
          
          conn1.start();
          
@@ -203,6 +228,7 @@ public class ManualClusteringTest extends MessagingTestCase
          if (conn3 != null) conn3.close();
       }
    }
+    
    
    public void testClusteredQueueLocalConsumerNonPersistent() throws Exception
    {
@@ -213,18 +239,7 @@ public class ManualClusteringTest extends MessagingTestCase
    {
       clusteredQueueLocalConsumer(true);
    }
-   
-   public void testClusteredQueueNoLocalConsumerNonPersistent() throws Exception
-   {
-      clusteredQueueNoLocalConsumer(false);
-   }
-   
-   public void testClusteredQueueNoLocalConsumerPersistent() throws Exception
-   {
-      clusteredQueueNoLocalConsumer(true);
-   }
-   
-   
+        
    public void testClusteredTopicNonDurableNonPersistent() throws Exception
    {
       clusteredTopicNonDurable(false);
@@ -234,8 +249,7 @@ public class ManualClusteringTest extends MessagingTestCase
    {
       clusteredTopicNonDurable(true);
    }
-   
-   
+      
    public void testClusteredTopicNonDurableWithSelectorsNonPersistent() throws Exception
    {
       clusteredTopicNonDurableWithSelectors(false);
@@ -264,16 +278,6 @@ public class ManualClusteringTest extends MessagingTestCase
    public void testClusteredTopicSharedDurableLocalConsumerPersistent() throws Exception
    {
       clusteredTopicSharedDurableLocalConsumer(true);
-   }
-   
-   public void testClusteredTopicSharedDurableNoLocalConsumerNonPersistent() throws Exception
-   {
-      clusteredTopicSharedDurableNoLocalConsumer(false);
-   }
-   
-   public void testClusteredTopicSharedDurableNoLocalConsumerPersistent() throws Exception
-   {
-      clusteredTopicSharedDurableNoLocalConsumer(true);
    }
    
    public void testClusteredTopicSharedDurableNoLocalSubNonPersistent() throws Exception
@@ -428,91 +432,6 @@ public class ManualClusteringTest extends MessagingTestCase
          if (conn3 != null) conn3.close();
       }
    }
-   
-   
-   
-   
-   /*
-    * Create a consumer on two nodes out of three
-    * Send messages from the third node
-    * Ensure that the messages are received from the other two nodes in 
-    * round robin order.
-    * (Note that this test depends on us using the default router which has
-    * this round robin behaviour)
-    */
-   protected void clusteredQueueNoLocalConsumer(boolean persistent) throws Exception
-   {
-      Connection conn1 = null;
-      
-      Connection conn2 = null;
-      
-      Connection conn3 = null;
-      try
-      {
-         conn1 = cf1.createConnection();
-         
-         conn2 = cf2.createConnection();
-         
-         conn3 = cf3.createConnection();
-           
-         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons2 = sess2.createConsumer(queue2);
-         
-         MessageConsumer cons3 = sess3.createConsumer(queue3);
-         
-         conn2.start();
-         
-         conn3.start();
-         
-         //Send at node1
-         
-         MessageProducer prod1 = sess1.createProducer(queue1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
-         final int NUM_MESSAGES = 100;
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess1.createTextMessage("message" + i);
-            
-            prod1.send(tm);
-         }
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i * 2, tm.getText());
-         }
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + (i * 2 + 1), tm.getText());
-         }
-      
-      }
-      finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
-      }
-   }
-   
    
    
    /*
@@ -795,6 +714,32 @@ public class ManualClusteringTest extends MessagingTestCase
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                  
+         try         
+         {
+            sess1.unsubscribe("sub1");
+         }
+         catch (Exception ignore) {}
+         try         
+         {
+            sess2.unsubscribe("sub2");
+         }
+         catch (Exception ignore) {}
+         try         
+         {
+            sess3.unsubscribe("sub3");
+         }
+         catch (Exception ignore) {}
+         try         
+         {
+            sess1.unsubscribe("sub4");
+         }
+         catch (Exception ignore) {}
+         try         
+         {
+            sess2.unsubscribe("sub5");
+         }
+         catch (Exception ignore) {}
          
          MessageConsumer cons1 = sess1.createDurableSubscriber(topic1, "sub1");
          
@@ -936,6 +881,22 @@ public class ManualClusteringTest extends MessagingTestCase
          
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
+         try         
+         {
+            sess1.unsubscribe("sub1");
+         }
+         catch (Exception ignore) {}
+         try         
+         {
+            sess2.unsubscribe("sub1");
+         }
+         catch (Exception ignore) {}
+         try         
+         {
+            sess3.unsubscribe("sub1");
+         }
+         catch (Exception ignore) {}
+         
          MessageConsumer cons1 = sess1.createDurableSubscriber(topic1, "sub1");
          
          MessageConsumer cons2 = sess2.createDurableSubscriber(topic2, "sub1");
@@ -1065,117 +1026,6 @@ public class ManualClusteringTest extends MessagingTestCase
    }
    
    
-   /*
-    * Create shared durable subs on multiple nodes, but without consumer on local node
-    * even thought there is durable sub
-    * should round robin
-    * note that this test assumes round robin
-    */
-   protected void clusteredTopicSharedDurableNoLocalConsumer(boolean persistent) throws Exception
-   {
-      Connection conn1 = null;
-      
-      Connection conn2 = null;
-      
-      Connection conn3 = null;
-      try
-      {
-         conn1 = cf1.createConnection();
-         
-         conn2 = cf2.createConnection();
-         
-         conn3 = cf3.createConnection();
-         
-         conn1.setClientID("wib1");
-         
-         conn2.setClientID("wib1");
-         
-         conn3.setClientID("wib1");
-           
-         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons1 = sess1.createDurableSubscriber(topic1, "sub1");
-         
-         //Now close it on node 1
-         conn1.close();
-         
-         conn1 = cf1.createConnection();
-         
-         conn1.setClientID("wib1");         
-         
-         sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         //This means the durable sub is inactive on node1
-         
-         MessageConsumer cons2 = sess2.createDurableSubscriber(topic2, "sub1");
-         
-         MessageConsumer cons3 = sess3.createDurableSubscriber(topic3, "sub1");
-         
-         conn2.start();
-         
-         conn3.start();
-         
-         //Send at node1
-         
-         //Should round robin between the other 2 since there is no active consumer on sub1 on node1
-         
-         MessageProducer prod1 = sess1.createProducer(topic1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
-         final int NUM_MESSAGES = 100;
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess1.createTextMessage("message" + i);
-            
-            prod1.send(tm);
-         }
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i * 2, tm.getText());
-         }
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + (i * 2 + 1), tm.getText());
-         }
-         
-         cons2.close();
-         
-         cons3.close();
-         
-         sess1.unsubscribe("sub1");
-         
-         sess2.unsubscribe("sub1");
-         
-         sess3.unsubscribe("sub1");
-      
-      }
-      finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
-      }
-   }
-   
-   
    
    /*
     * Create shared durable subs on multiple nodes, but without sub on local node
@@ -1206,6 +1056,17 @@ public class ManualClusteringTest extends MessagingTestCase
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         try         
+         {
+            sess2.unsubscribe("sub1");
+         }
+         catch (Exception ignore) {}
+         try         
+         {
+            sess3.unsubscribe("sub1");
+         }
+         catch (Exception ignore) {}
                   
          MessageConsumer cons2 = sess2.createDurableSubscriber(topic2, "sub1");
          

@@ -188,6 +188,10 @@ public class ServiceContainer
 
    private List toUnbindAtExit;
    private String ipAddressOrHostName;
+   
+   //There may be many service containers on the same machine, so we need to distinguish them
+   //so we don't start up multiple servers with services running on the same port
+   private int serverIndex;
 
    // Static --------------------------------------------------------
 
@@ -247,9 +251,14 @@ public class ServiceContainer
 
    // Constructors --------------------------------------------------
 
-   public ServiceContainer(String sevicesToStart) throws Exception
+   public ServiceContainer(String servicesToStart) throws Exception
    {
-      this(sevicesToStart, null);
+      this(servicesToStart, null);
+   }
+   
+   public ServiceContainer(String sevicesToStart, int serverIndex) throws Exception
+   {
+      this(sevicesToStart, null, serverIndex);
    }
 
    /**
@@ -265,6 +274,15 @@ public class ServiceContainer
       this.tm = tm;
       parseConfig(sevicesToStart);
       toUnbindAtExit = new ArrayList();
+      this.serverIndex = 0;
+   }
+   
+   public ServiceContainer(String sevicesToStart, TransactionManager tm, int serverIndex) throws Exception
+   {
+      this.tm = tm;
+      parseConfig(sevicesToStart);
+      toUnbindAtExit = new ArrayList();
+      this.serverIndex = serverIndex;
    }
 
    // Public --------------------------------------------------------
@@ -1117,14 +1135,16 @@ public class ServiceContainer
                       "socket.check_connection=false&" +
                       "leasePeriod=20000";
 
+      int portNumber = 9111 + serverIndex;
+      
       String locatorURI;
       if (multiplex)
       {
-         locatorURI = "multiplex://" + ipAddressOrHostName + ":9111" + params;
+         locatorURI = "multiplex://" + ipAddressOrHostName + ":" + portNumber + params;
       }
       else
       {
-         locatorURI = "socket://" + ipAddressOrHostName + ":9111" + params;
+         locatorURI = "socket://" + ipAddressOrHostName + ":" + portNumber + params;
       }
 
       log.debug("Using the following locator uri:" + locatorURI);

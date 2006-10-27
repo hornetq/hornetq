@@ -74,11 +74,11 @@ public class ClientCrashLargeLeaseTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all");
+      localServer.start("all", false);
 
       localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "30000");
        
-      localServer.deployQueue("Queue", null);
+      localServer.deployQueue("Queue", null, false);
           
       // Connect to the remote server, but don't start a servicecontainer on it. We are only using
       // the remote server to open a client connection to the local server.
@@ -116,7 +116,7 @@ public class ClientCrashLargeLeaseTest extends MessagingTestCase
       
       // Now we should have a client connection from the remote server to the local server
       
-      remoteServer.exit();
+      remoteServer.destroy();
       log.trace("killed remote server");
         
       // Wait for connection resources to be cleared up

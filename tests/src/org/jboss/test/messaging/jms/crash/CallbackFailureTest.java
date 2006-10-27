@@ -78,9 +78,9 @@ public class CallbackFailureTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       //Start all the services locally
-      localServer.start("all");
+      localServer.start("all", false);
             
-      localServer.deployQueue("Queue", null);
+      localServer.deployQueue("Queue", null, false);
            
       //Connect to the remote server, but don't start a servicecontainer on it
       //We are only using the remote server to open a client connection to the local server
@@ -121,7 +121,7 @@ public class CallbackFailureTest extends MessagingTestCase
       
       String remotingSessionId = (String)remoteServer.executeCommand(command);
       
-      remoteServer.exit();
+      remoteServer.destroy();
         
       //we have removed the exception listener so the server side resouces shouldn't be cleared up
       

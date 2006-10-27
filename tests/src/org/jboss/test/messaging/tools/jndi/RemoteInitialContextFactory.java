@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.tools.jndi;
 
 import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 
 import java.util.Hashtable;
 
@@ -43,19 +44,21 @@ public class RemoteInitialContextFactory implements InitialContextFactory
 
    // Static --------------------------------------------------------
 
-   private static RemoteContext initialContext;
-
+   private static RemoteContext[] initialContexts = new RemoteContext[RMITestServer.RMI_REGISTRY_PORTS.length];
+   
+   private static final String REMOTE_SERVER_INDEX_KEY_NAME = "jboss.messaging.test.remoteserverindex";
 
    /**
     * @return the JNDI environment to use to get this InitialContextFactory.
     */
-   public static Hashtable getJNDIEnvironment()
+   public static Hashtable getJNDIEnvironment(int index)
    {
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
               "org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory");
       env.put("java.naming.provider.url", "");
       env.put("java.naming.factory.url.pkgs", "");
+      env.put(REMOTE_SERVER_INDEX_KEY_NAME, String.valueOf(index));
       return env;
    }
 
@@ -67,11 +70,20 @@ public class RemoteInitialContextFactory implements InitialContextFactory
 
    public Context getInitialContext(Hashtable environment) throws NamingException
    {
-      if (initialContext == null)
+      String s = (String)environment.get(REMOTE_SERVER_INDEX_KEY_NAME);
+      
+      if (s == null)
+      {
+         throw new IllegalArgumentException("Initial context environment must contain entry for " + REMOTE_SERVER_INDEX_KEY_NAME);
+      }
+      
+      int remoteServerIndex = Integer.parseInt(s);
+      
+      if (initialContexts[remoteServerIndex] == null)
       {
          try
          {
-            initialContext = new RemoteContext();
+            initialContexts[remoteServerIndex] = new RemoteContext(remoteServerIndex);
          }
          catch(Exception e)
          {
@@ -79,7 +91,7 @@ public class RemoteInitialContextFactory implements InitialContextFactory
             throw new NamingException("Cannot get the remote context");
          }
       }
-      return initialContext;
+      return initialContexts[remoteServerIndex];
    }
 
    // Package protected ---------------------------------------------
