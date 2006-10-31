@@ -61,12 +61,12 @@
 
    <programlisting>
    &lt;mbean code="org.jboss.messaging.core.plugin.ClusteredPostOfficeService"
-         name="jboss.messaging:service=TopicPostOffice"
+         name="jboss.messaging:service=QueuePostOffice"
          xmbean-dd="xmdesc/ClusteredPostOffice-xmbean.xml"&gt;
          &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
          &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
          &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
-         &lt;attribute name="PostOfficeName"&gt;Clustered Topic&lt;/attribute&gt;
+         &lt;attribute name="PostOfficeName"&gt;Clustered Queue&lt;/attribute&gt;
          &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
          &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
          &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
@@ -75,7 +75,7 @@
    DELETE_BINDING=DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
    LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
          ]]&gt;&lt;/attribute&gt;
-         &lt;attribute name="GroupName"&gt;Topic&lt;/attribute&gt;
+         &lt;attribute name="GroupName"&gt;Queue&lt;/attribute&gt;
          &lt;attribute name="StateTimeout"&gt;5000&lt;/attribute&gt;
          &lt;attribute name="CastTimeout"&gt;5000&lt;/attribute&gt;
          &lt;attribute name="StatsSendPeriod"&gt;10000&lt;/attribute&gt;
@@ -85,7 +85,7 @@
          &lt;attribute name="AsyncChannelConfig"&gt;
             &lt;config&gt;
                &lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-              mcast_port="45569" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+              mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
               mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/&gt;
                &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
                &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
@@ -105,7 +105,7 @@
          &lt;attribute name="SyncChannelConfig"&gt;
             &lt;config&gt;
                &lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-              mcast_port="45570" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+              mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
               mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/&gt;
                &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
                &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
@@ -161,7 +161,8 @@
      <para>
         The fully qualified class name of the class that implements the MessagePullPolicy.
         To specify different message pull policies this can be changed.
-        In the Alpha1 release only the NullMessagePullPolicy is stable.
+        To disable message redistribution specify org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy.
+        To enable default message redistribution specify org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy.
      </para>
    </section>
 
