@@ -490,7 +490,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/stress/StressTest.class"/>
+               <include name="**/jms/stress/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -618,7 +618,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="org/jboss/test/messaging/jms/stress/**/*Test.class"/>
+               <include name="**/jms/stress/**/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
