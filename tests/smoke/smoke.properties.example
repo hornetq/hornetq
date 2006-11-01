@@ -12,6 +12,8 @@ jboss403SP1.home=C:\\work\\src\\jboss-4.0.3SP1-src\\build\\output\\jboss-4.0.3SP
 jboss403SP1-installer.home=C:\\work\\jnlp\\jboss-4.0.3SP1
 jboss404GA.home=C:\\work\\src\\jboss-4.0.4.GA-src\\build\\output\\jboss-4.0.4.GA
 jboss404GA-installer.home=C:\\work\\jnlp\\jboss-4.0.4.GA
+jboss405GA.home=C:\\work\\src\\jboss-4.0.5.GA-src\\build\\output\\jboss-4.0.5.GA
+jboss405GA-installer.home=C:\\work\\jnlp\\jboss-4.0.5.GA
 
 jboss500Alpha.home=C:\\work\\src\\cvs\\jboss-head\\build\\output\\jboss-5.0.0.Alpha
 
