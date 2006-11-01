@@ -17,9 +17,9 @@
    <property name="jboss.configuration" value="messaging-smoke-test"/>
    <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
    <property name="smoke.test.type" value="installation"/>
-	
-	<property name="password" value="admin"/>
-	<property name="user" value="admin"/>
+
+   <property name="password" value="admin"/>
+   <property name="user" value="admin"/>
 
    <!--
         By default, each test (installation or compatiblity) runs all examples. If you want to
@@ -76,6 +76,12 @@
 
       <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
 
+
+      <!-- Note on installer versions.
+      When installing versions to test via the JBoss installer, make sure call by value is *not*
+      selected in the installation process. The reason for testing installer versions is to test
+      the arrangement where JBoss is configured for all pass by reference -->
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -85,22 +91,12 @@
          <param name="jboss.home" value="${jboss402.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-<!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
 
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403-installer.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
--->
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-      	
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -117,11 +113,11 @@
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA.home}"/>
       </antcall>
- 
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA-installer.home}"/>
       </antcall>
-  
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA.home}"/>
          <param name="release.admin.target" value="standalone"/>
@@ -129,25 +125,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-<!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405CR1.home}"/>
-      </antcall>
 
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405CR1.home}"/>
-         <param name="release.admin.target" value="standalone"/>
-         <param name="run.mdb.example" value="false"/>
-         <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405CR1ejb3.home}"/>
-         <param name="no.java4" value="true"/>
-         <param name="run.ejb3mdb.example" value="true"/>
-      </antcall>
--->
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss405GA.home}"/>
       </antcall>
@@ -163,7 +141,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
- 
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss405GAejb3.home}"/>
          <param name="no.java4" value="true"/>
@@ -279,16 +257,16 @@
 
       <antcall target="start"/>
       <antcall target="record-running-jboss-instance"/>
-      <antcall target="sleep"><param name="sleep.interval" value="35"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="45"/></antcall>
 
       <antcall target="ping-jms-server"/>
 
       <antcall target="deploy-scoped-queue"/>
-      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-queue"/>
 
       <antcall target="deploy-scoped-topic"/>
-      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-topic">
          <param name="example.topic.name" value="SmokeTestTopic"/>
       </antcall>
@@ -367,7 +345,7 @@
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
       </antcall>
 
-      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
 
       <antcall target="ping-topic">
          <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
@@ -395,7 +373,7 @@
          <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
       </antcall>
 
-      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
 
       <antcall target="ping-topic">
          <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
@@ -762,14 +740,14 @@
 
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
             dir="${jboss.home}/bin">
- 			<arg line="-help"/>
-      	<classpath>
+         <arg line="-help"/>
+         <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>
       </java>
 
    </target>
-	
+
    <target name="ping-jms-server">
 
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
@@ -864,8 +842,8 @@
          <jvmarg value="-Xmx128m"/>
          <arg line="-s jnp://localhost:${jnpPort} -S"/>
          <!-- <arg value="-S"/> -->
-      	<arg value="--user=${user}"/>
-      	<arg value="--password=${password}"/>
+         <arg value="--user=${user}"/>
+         <arg value="--password=${password}"/>
          <classpath>
             <pathelement location="${jboss.home}/bin/shutdown.jar"/>
             <pathelement location="${jboss.home}/client/jbossall-client.jar"/>

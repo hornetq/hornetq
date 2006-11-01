@@ -90,7 +90,7 @@ public class StatelessSessionExampleBean implements SessionBean
       }
    }
 
-   public List browse(String queueName) throws Exception
+   public int browse(String queueName) throws Exception
    {
       InitialContext ic = new InitialContext();
       Queue queue = (Queue)ic.lookup(queueName);
@@ -111,7 +111,7 @@ public class StatelessSessionExampleBean implements SessionBean
             list.add(e.nextElement());
          }
 
-         return list;
+         return list.size();
       }
       finally
       {

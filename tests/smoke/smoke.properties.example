@@ -4,18 +4,15 @@
 
 #JBoss AS 4.0.0 and 4.0.1 are not supported
 
-jboss401sp1.home=C:\\work\\src\\jboss-4.0.1sp1-src\\build\\output\\jboss-4.0.1sp1
-jboss402.home=C:\\work\\src\\jboss-4.0.2-src\\build\\output\\jboss-4.0.2
-jboss403.home=C:\\work\\src\\jboss-4.0.3-src\\build\\output\\jboss-4.0.3
-jboss403-installer.home=C:\\work\\jnlp\\jboss-4.0.3
-jboss403SP1.home=C:\\work\\src\\jboss-4.0.3SP1-src\\build\\output\\jboss-4.0.3SP1
-jboss403SP1-installer.home=C:\\work\\jnlp\\jboss-4.0.3SP1
-jboss404GA.home=C:\\work\\src\\jboss-4.0.4.GA-src\\build\\output\\jboss-4.0.4.GA
-jboss404GA-installer.home=C:\\work\\jnlp\\jboss-4.0.4.GA
-jboss405GA.home=C:\\work\\src\\jboss-4.0.5.GA-src\\build\\output\\jboss-4.0.5.GA
-jboss405GA-installer.home=C:\\work\\jnlp\\jboss-4.0.5.GA
-
-jboss500Alpha.home=C:\\work\\src\\cvs\\jboss-head\\build\\output\\jboss-5.0.0.Alpha
+jboss401sp1.home=C:\\dev\jboss-4.0.1sp1-src\\build\\output\\jboss-4.0.1sp1
+jboss402.home=C:\\dev\\jboss-4.0.2-src\\build\\output\\jboss-4.0.2
+jboss403SP1.home=C:\\dev\\jboss-4.0.3SP1-src\\build\\output\\jboss-4.0.3SP1
+jboss403SP1-installer.home=C:\\dev\\jboss-4.0.3SP1-installer
+jboss404GA.home=C:\\dev\\jboss-4.0.4.GA-src\\build\\output\\jboss-4.0.4.GA
+jboss404GA-installer.home=C:\\dev\\jboss-4.0.4.GA0-installer
+jboss405GA.home=C:\\dev\\jboss-4.0.5.GA-src\\build\\output\\jboss-4.0.5.GA
+jboss405GA-installer.home=C:\\dev\\jboss-4.0.5.GA-installer
+jboss405GAejb3.home=C:\\dev\\jboss-4.0.5.GA-installer-ejb3
 
 #
 # Compatibility test configuration

@@ -67,7 +67,7 @@ public class Client extends ExampleSupport
 
 
       bean.drain(queueName);
-            
+
 
 
 
@@ -75,17 +75,14 @@ public class Client extends ExampleSupport
       log("The " + text + " message was successfully sent to the " + queueName + " queue");
 
 
-      List list = bean.browse(queueName);
+      int num = bean.browse(queueName);
 
 
 
-      assertEquals(1, list.size());
-      assertEquals("Hello!", ((TextMessage)list.get(0)).getText());
+      assertEquals(1, num);
 
 
-
-      log("Queue browse result: " + ((TextMessage)list.get(0)).getText());
-
+      log("Queue browse result: " + num);
 
 
 
