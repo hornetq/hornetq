@@ -57,8 +57,8 @@
    <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
 
    <property name="jms.version.major" value="1"/>
-   <property name="jms.version.minor" value="2"/>
-   <property name="jms.version" value="1.2"/>
+   <property name="jms.version.minor" value="1"/>
+   <property name="jms.version" value="1.1"/>
 
    <!--
         Jar manifest version information.
