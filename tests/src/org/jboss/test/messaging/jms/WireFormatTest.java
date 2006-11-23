@@ -77,7 +77,7 @@ public class WireFormatTest extends MessagingTestCase
    private static final Logger log = Logger.getLogger(WireFormatTest.class);
 
    // TODO - replace with a dynamic value
-   private static final byte CURRENT_VERSION = 7;
+   private static final byte CURRENT_VERSION = 8;
 
    // Static --------------------------------------------------------
       
