@@ -16,30 +16,34 @@
         This Connector will basically run as a standalone http server
    -->
    <mbean code="org.jboss.remoting.transport.Connector"
-      name="jboss.messaging:service=Connector,transport=HTTP"
-      display-name="Messaging HTTP transport Connector">
-
-      <!--
-           Since there are no special configuration properties for this invoker, will just use
-           the following to declare the invoker and not within the 'invoker' element within the
-           'Configuration' attribute below. IMPORTANT to note can only be either 'InvokerLocator'
-           attribute OR 'invoker' element, not both.
-      -->
-      <attribute name="InvokerLocator">http://${jboss.bind.address}:7488</attribute>
+          name="jboss.messaging:service=Connector,transport=http"
+          display-name="HTTP transport Connector">
       <attribute name="Configuration">
          <config>
+            <invoker transport="http">
+               <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <attribute name="serializationtype" isParam="true">jms</attribute>
+               <attribute name="dataType" isParam="true">jms</attribute>
+               <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
+               <attribute name="serverBindPort">4458</attribute>
+               <attribute name="leasePeriod">20000</attribute>
+               <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
+               <attribute name="callbackPollPeriod" isParam="true">100</attribute>
+            </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
             </handlers>
          </config>
       </attribute>
+      <depends>jboss.messaging:service=NetworkRegistry</depends>
    </mbean>
-
+   
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
       name="jboss.messaging.destination:service=SecureConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=HTTP</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=http</depends>
       <attribute name="JNDIBindings">
          <bindings>
             <binding>/HttpConnectionFactory</binding>

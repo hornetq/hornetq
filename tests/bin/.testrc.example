@@ -14,6 +14,13 @@ DEBUG_OPTS=$DEBUG_OPTS_SHMEM
 #
 TEST_DATABASE=hsqldb
 #
+# The transport to run tests with. Valid values: "socket", "http". The value specified here
+# overrides the value specified in container.xml.
+#
+TEST_REMOTING=socket
+
+
+#
 #
 # util
 #

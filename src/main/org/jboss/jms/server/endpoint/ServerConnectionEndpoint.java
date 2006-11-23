@@ -33,7 +33,7 @@ import javax.jms.JMSException;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.client.remoting.CallbackServerFactory;
+import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
@@ -56,6 +56,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.ConcurrentReaderHashSet;
 import org.jboss.remoting.Client;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -118,7 +119,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    private MessageStore ms;
    
-   private Client callbackClient;
+   private ServerInvokerCallbackHandler callbackHandler;
    
    private byte usingVersion;
    
@@ -427,21 +428,31 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
    
    //IOC
-   public void setCallbackClient(Client client)
+   public void setCallbackHandler(ServerInvokerCallbackHandler handler)
    {
-      callbackClient = client;
-
-      // TODO not sure if this is the best way to do this, but the callbackClient needs to have
-      //      its "subsystem" set, otherwise remoting cannot find the associated
-      //      ServerInvocationHandler on the callback server
-      callbackClient.setSubsystem(CallbackServerFactory.JMS_CALLBACK_SUBSYSTEM);
-
-      // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
-      // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
-      // This can make a massive difference on performance. We also do this in
-      // JMSRemotingConnection.setupConnection
-      callbackClient.setMarshaller(new JMSWireFormat());
-      callbackClient.setUnMarshaller(new JMSWireFormat());
+      callbackHandler = handler;
+      Client callbackClient = callbackHandler.getCallbackClient();
+      
+      if (callbackClient != null)
+      {
+         // TODO not sure if this is the best way to do this, but the callbackClient needs to have
+         //      its "subsystem" set, otherwise remoting cannot find the associated
+         //      ServerInvocationHandler on the callback server
+         callbackClient.setSubsystem(CallbackManager.JMS_CALLBACK_SUBSYSTEM);
+         
+         // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
+         // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
+         // This can make a massive difference on performance. We also do this in
+         // JMSRemotingConnection.setupConnection
+         
+         callbackClient.setMarshaller(new JMSWireFormat());
+         callbackClient.setUnMarshaller(new JMSWireFormat());
+      }
+      else
+      {
+         log.debug("ServerInvokerCallbackHandler callback Client is not available: " +
+                   "must be using pull callbacks");
+      }
    }
    
    // IOC
@@ -494,9 +505,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    // Protected -----------------------------------------------------
    
-   protected Client getCallbackClient()
+   protected ServerInvokerCallbackHandler getCallbackHandler()
    {
-      return callbackClient;
+      return callbackHandler;
    }   
    
    protected int getConnectionID()

@@ -264,8 +264,8 @@ public class LocalTestServer implements Server
                "server/default/deploy/" + databaseType + "-persistence-service.xml";
          }
          
-         log.info("********* LOADING CONFIG FILE: " + persistenceConfigFile);
-         
+         log.info("Loading persistence configuration file " + persistenceConfigFile);
+
          URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
          if (persistenceConfigFileURL == null)
          {

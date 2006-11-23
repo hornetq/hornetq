@@ -247,7 +247,18 @@ public class MessageCallbackHandler
             // Ignore
             return new HandleMessageResponse(false, 0);
          }
-                                      
+
+         // Asynchronously confirm delivery on client
+
+         try
+         {
+            sessionExecutor.execute(new ConfirmDelivery(msgs.size()));
+         }
+         catch (InterruptedException e)
+         {
+            log.warn("Thread interrupted", e);
+         }
+
          // Put the messages in the buffer and notify any waiting receive()
          
          processMessages(msgs);
@@ -756,6 +767,26 @@ public class MessageCallbackHandler
          }
       }
    }
+
+   /*
+    * Used to asynchronously confirm to the server message arrival (delivery) on client.
+    */
+   private class ConfirmDelivery implements Runnable
+   {
+      int count;
+
+      ConfirmDelivery(int count)
+      {
+         this.count = count;
+      }
+
+      public void run()
+      {
+         if (trace) { log.trace("confirming delivery on client of " + count + " message(s)"); }
+         consumerDelegate.confirmDelivery(count);
+      }
+   }
+
 }
 
 

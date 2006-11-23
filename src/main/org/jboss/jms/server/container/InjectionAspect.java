@@ -55,7 +55,7 @@ public class InjectionAspect
     {
        MethodInvocation mi = (MethodInvocation)invocation;
        
-       // First we inject the callback client for the connection
+       // First we inject the callback handler for the connection
        
        ServerInvokerCallbackHandler handler =
           (ServerInvokerCallbackHandler)mi.getMetaData(MetaDataConstants.JMS,
@@ -73,7 +73,7 @@ public class InjectionAspect
        
        ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)advised.getEndpoint();
        
-       endpoint.setCallbackClient(handler.getCallbackClient());
+       endpoint.setCallbackHandler(handler);
        
        // Then we inject the remoting session id of the client
        String sessionId =

@@ -84,10 +84,10 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       int id = serverPeer.getNextObjectID();
 
       ServerConnectionFactoryEndpoint endpoint =
-         new ServerConnectionFactoryEndpoint(id, serverPeer, clientID, jndiBindings,
-                                             prefetchSize, defaultTempQueueFullSize,
-                                             defaultTempQueuePageSize,
-                                             defaultTempQueueDownCacheSize);
+         new ServerConnectionFactoryEndpoint(id, serverPeer, clientID,
+                                             jndiBindings, prefetchSize,
+                                             defaultTempQueueFullSize,
+                                             defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
 
       ClientConnectionFactoryDelegate delegate =
          new ClientConnectionFactoryDelegate(id, locatorURI, serverPeer.getVersion(),

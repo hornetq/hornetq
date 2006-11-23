@@ -29,6 +29,7 @@
    <property name="run.queue.example" value="true"/>
    <property name="run.topic.example" value="true"/>
    <property name="run.mdb.example" value="true"/>
+   <property name="run.http.example" value="true"/>
    <property name="run.stateless.example" value="true"/>
    <property name="run.ejb3mdb.example" value="false"/>
    <property name="run.secure-socket.example" value="true"/>
@@ -76,11 +77,12 @@
 
       <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
 
-
-      <!-- Note on installer versions.
-      When installing versions to test via the JBoss installer, make sure call by value is *not*
-      selected in the installation process. The reason for testing installer versions is to test
-      the arrangement where JBoss is configured for all pass by reference -->
+      <!--
+          Note on installer versions.
+          When installing versions to test via the JBoss installer, make sure call by value is *not*
+          selected in the installation process. The reason for testing installer versions is to test
+          the arrangement where JBoss is configured for all pass by reference
+      -->
 
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
@@ -311,6 +313,12 @@
          <param name="jboss.home" value="${jboss.home}"/>
       </antcall>
 
+      <antcall target="run-example">
+         <param name="example.name" value="http"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.home" value="${jboss.home}"/>
+      </antcall>
+
       <!-- ====================================================  -->
       <!--                                                       -->
       <!--  End of example list                                  -->
@@ -450,6 +458,10 @@
             <and>
                <equals arg1="${example.name}" arg2="secure-socket"/>
                <istrue value="${run.secure-socket.example}"/>
+            </and>
+            <and>
+               <equals arg1="${example.name}" arg2="http"/>
+               <istrue value="${run.http.example}"/>
             </and>
          </or>
       </condition>

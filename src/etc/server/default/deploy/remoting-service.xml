@@ -24,6 +24,7 @@
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
                <attribute name="serverBindPort">4457</attribute>
                <attribute name="leasePeriod">20000</attribute>
+               <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
@@ -32,6 +33,37 @@
       </attribute>
       <depends>jboss.messaging:service=NetworkRegistry</depends>
    </mbean>
+
+   <!--
+        HTTP Connector example
+   -->
+   <!--
+   <mbean code="org.jboss.remoting.transport.Connector"
+          name="jboss.messaging:service=Connector,transport=http"
+          display-name="HTTP transport Connector">
+      <attribute name="Configuration">
+         <config>
+            <invoker transport="http">
+               <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
+               <!== Serialization type must be jms - do not change! ==>
+               <attribute name="serializationtype" isParam="true">jms</attribute>
+               <attribute name="dataType" isParam="true">jms</attribute>
+               <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
+               <attribute name="serverBindPort">4458</attribute>
+               <attribute name="leasePeriod">20000</attribute>
+               <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
+               <attribute name="callbackPollPeriod" isParam="true">100</attribute>
+            </invoker>
+            <handlers>
+               <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
+            </handlers>
+         </config>
+      </attribute>
+      <depends>jboss.messaging:service=NetworkRegistry</depends>
+   </mbean>
+   -->
+
 
    <!-- TODO: Do I need this> -->
    <mbean code="org.jboss.remoting.network.NetworkRegistry"

@@ -55,6 +55,8 @@ import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.callback.Callback;
+import org.jboss.remoting.invocation.InternalInvocation;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.message.MessageTest;
 import org.jboss.util.id.GUID;
@@ -1115,7 +1117,7 @@ public class WireFormatTest extends MessagingTestCase
          
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, dr);
          
-         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
+         InvocationRequest ir = new InvocationRequest("dummySessionId", null, mm, null, null, null);
          
          wf.write(ir, oos);
          
@@ -1132,6 +1134,9 @@ public class WireFormatTest extends MessagingTestCase
          
          //Second byte should be CALLBACK
          assertEquals(JMSWireFormat.CALLBACK, dis.readByte());
+         
+         //Next should be sessionID
+         assertEquals("dummySessionId", dis.readUTF());
          
          //Next int should be server id
          assertEquals(76543, dis.readInt());
@@ -1200,7 +1205,15 @@ public class WireFormatTest extends MessagingTestCase
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
-         mm = (MessagingMarshallable)ir2.getParameter();
+         InternalInvocation ii = (InternalInvocation) ir2.getParameter();
+         
+         Object[] parameters = ii.getParameters();
+         
+         assertNotNull(parameters);
+         
+         Callback callback = (Callback) parameters[0];
+         
+         mm = (MessagingMarshallable)callback.getParameter();
          
          assertEquals(77, mm.getVersion());
                   

@@ -75,6 +75,7 @@ class ServiceContainerConfiguration
    private String database;
    private Map dbConfigurations;
    private String serializationType;
+   private String remotingTransport;
 
    // Constructors --------------------------------------------------
 
@@ -140,6 +141,14 @@ class ServiceContainerConfiguration
    {
       return serializationType;
    }
+   
+   /**
+    * @return the transport the container wants the Remoting Connector to use.
+    */
+   public String getRemotingTransport()
+   {
+      return remotingTransport;
+   }
 
    // Package protected ---------------------------------------------
 
@@ -152,6 +161,7 @@ class ServiceContainerConfiguration
       Reader reader = new InputStreamReader(is);
       String currentDatabase = null;
       String currentSerializationType = null;
+      String currentRemotingTransport = null;
 
       try
       {
@@ -190,6 +200,10 @@ class ServiceContainerConfiguration
                {
                   currentSerializationType = XMLUtil.getTextContent(n);
                }
+               else if ("remoting-transport".equals(name))
+               {
+                  currentRemotingTransport = XMLUtil.getTextContent(n);
+               }
                else
                {
                   throw new Exception("Unexpected child <" + name + "> of node " +
@@ -200,6 +214,7 @@ class ServiceContainerConfiguration
 
          setCurrentDatabase(currentDatabase);
          setCurrentSerializationType(currentSerializationType);
+         setCurrentRemotingTransport(currentRemotingTransport);
       }
       finally
       {
@@ -232,6 +247,16 @@ class ServiceContainerConfiguration
          serializationType = xmlConfigSerializationType;
       }
    }
+   
+   private void setCurrentRemotingTransport(String xmlRemotingTransport)
+   {
+      remotingTransport = System.getProperty("test.remoting");
+      if (remotingTransport == null)
+      {
+         remotingTransport = xmlRemotingTransport;
+      }
+   }
+   
 
    private void validate() throws Exception
    {

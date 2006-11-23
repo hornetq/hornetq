@@ -1125,9 +1125,15 @@ public class MessageConsumerTest extends MessagingTestCase
 
           MessageConsumer cons1 = sess.createConsumer(queue);
 
+          log.trace("closing cons1");
+
           cons1.close();
 
+          log.trace("cons1 closed");
+
           MessageConsumer cons2 = sess.createConsumer(queue);
+
+          log.trace("cons2 created");
 
           Message r1 = cons2.receive();
           Message r2 = cons2.receive();

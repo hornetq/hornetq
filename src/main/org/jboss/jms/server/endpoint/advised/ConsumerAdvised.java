@@ -73,6 +73,12 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
    {
       endpoint.more();
    }
+
+   public void confirmDelivery(int count)
+   {
+      endpoint.confirmDelivery(count);
+   }
+
   
    // AdvisedSupport overrides --------------------------------------
 

@@ -45,6 +45,11 @@ if [ "$TEST_SERIALIZATION" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.serialization=$TEST_SERIALIZATION"
 fi
 
+if [ "$TEST_REMOTING" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dtest.remoting=$TEST_REMOTING"
+fi
+
+
 if [ "$USE_EXISTENT_TEST_CLASSPATH_FILE" = "true" ]; then
    CLASSPATH_FILE="$reldir/.test.execution.classpath"
 else

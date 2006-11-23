@@ -32,7 +32,6 @@ import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.remoting.HandleMessageResponse;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
@@ -56,6 +55,7 @@ import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.util.Future;
+import org.jboss.remoting.callback.Callback;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -79,6 +79,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    // Static --------------------------------------------------------
 
    private static final int MAX_DELIVERY_ATTEMPTS = 10;
+   private static final int MESSAGES_IN_TRANSIT_WAIT_COUNT = 100;
 
    // Attributes ----------------------------------------------------
 
@@ -122,6 +123,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    private Object lock;
 
    private Map deliveries;
+
+   private Object messagesInTransitLock;
+   private int messagesInTransitCount; // access only from a region guarded by messagesInTransitLock
    
    // Constructors --------------------------------------------------
 
@@ -193,6 +197,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       
       // prompt delivery
       messageQueue.deliver(false);
+
+      messagesInTransitLock = new Object();
+      messagesInTransitCount = 0;
       
       log.debug(this + " constructed");
    }
@@ -254,8 +261,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {
             return delivery;
          }
-   
-         deliveries.put(new Long(ref.getMessageID()), delivery);                 
+
+         deliveries.put(new Long(ref.getMessageID()), delivery);
    
          // We don't send the message as-is, instead we create a MessageProxy instance. This allows
          // local fields such as deliveryCount to be handled by the proxy but global data to be
@@ -404,34 +411,39 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {           
       try
       {
-         /*
-         Set clientConsumerFull to false
-         NOTE! This must be done using a Runnable on the delivery executor - this is to
-         prevent the following race condition:
-         1) Messages are delivered to the client, causing it to be full
-         2) The messages are consumed very quickly on the client causing more to be called()
-         3) more() hits the server BEFORE the deliverer thread has returned from delivering to the client
-         causing clientConsumerFull to be set to false and adding a deliverer to the queue.
-         4) The deliverer thread returns and sets clientConsumerFull to true
-         5) The next deliverer runs but doesn't do anything since clientConsumerFull = true even
-         though the client needs messages
-         */
-         this.executor.execute(new Runnable() { public void run() { clientConsumerFull = false; } });         
+         // Set clientConsumerFull to false.
+         //
+         // NOTE! This must be done using a Runnable on the delivery executor - this is to prevent
+         // the following race condition:
+         //  1) Messages are delivered to the client, causing it to be full.
+         //  2) The messages are consumed very quickly on the client causing more() to be called.
+         //  3) more() hits the server BEFORE the deliverer thread has returned from delivering to
+         //     the client causing clientConsumerFull to be set to false and adding a deliverer to
+         //     the queue.
+         //  4) The deliverer thread returns and sets clientConsumerFull to true.
+         //  5) The next deliverer runs but doesn't do anything since clientConsumerFull = true even
+         //     though the client needs messages.
+
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               if (trace) { log.trace(ServerConsumerEndpoint.this + " is notified that client wants more() messages"); }
+               clientConsumerFull = false;
+            }
+         });
                            
-         //Run a deliverer to deliver any existing ones
-         this.executor.execute(new Deliverer());
+         // Run a deliverer to deliver any existing ones
+         executor.execute(new Deliverer());
          
-         //TODO Why do we need to wait for it to execute??
-         //Why not just return immediately?
+         // TODO Why do we need to wait for it to execute? Why not just return immediately?
          
-         //Now wait for it to execute
+         // Now wait for it to execute
          Future result = new Future();
-         
          this.executor.execute(new Waiter(result));
-         
          result.getResult();
                   
-         //Now we know the deliverer has delivered any outstanding messages to the client buffer
+         // Now we know the deliverer has delivered any outstanding messages to the client buffer
          
          messageQueue.deliver(false);
       }
@@ -444,8 +456,25 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " more");
       }
    }
-   
-   
+
+   public void confirmDelivery(int count)
+   {
+      synchronized(messagesInTransitLock)
+      {
+         messagesInTransitCount -= count;
+
+         if (trace) { log.trace("confirming delivery of " + count + " message(s), messages in transit " + messagesInTransitCount); }
+
+         if (messagesInTransitCount < 0)
+         {
+            log.error(this + " has an invalid messages in transit count (" +
+                      messagesInTransitCount + ")");
+         }
+
+         messagesInTransitLock.notifyAll();
+      }
+   }
+
    // Public --------------------------------------------------------
    
    public String toString()
@@ -633,18 +662,37 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // Flush any messages waiting to be sent to the client.
          this.executor.execute(new Deliverer());
          
-         // Now wait for it to execute.
-         Future result = new Future();
-         this.executor.execute(new Waiter(result));
-         result.getResult();
-             
+         if (trace) { log.trace(this + " flushed all remaining messages (if any) to the client"); }
+
          // Now we know any deliverer has delivered any outstanding messages to the client buffer.
       }
       catch (InterruptedException e)
       {
          log.warn("Thread interrupted", e);
       }
-            
+
+      // Make sure there are no messages in transit between server and client
+
+      synchronized(messagesInTransitLock)
+      {
+         int loopCount = 0;
+         while(messagesInTransitCount > 0 && loopCount < MESSAGES_IN_TRANSIT_WAIT_COUNT)
+         {
+            log.debug(this + " waiting for " + messagesInTransitCount + " message(s) in transit " +
+                      "to reach the client, " + (loopCount + 1) + " lock grab attempts.");
+            messagesInTransitLock.wait(500);
+            loopCount ++;
+         }
+
+         if (loopCount >= MESSAGES_IN_TRANSIT_WAIT_COUNT)
+         {
+            throw new IllegalStateException("Maximum number of lock grab attempts exceeded, " +
+                                            "giving up to wait for messages in transit");
+         }
+
+         if (trace) { log.trace(this + " has no messages in transit"); }
+      }
+
       // Now we know that there are no in flight messages on the way to the client consumer, but
       // there may be messages still in the toDeliver list since the client consumer might be full,
       // so we need to cancel these.
@@ -685,7 +733,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
      
    private void checkDeliveryCount(SimpleDelivery del)
    {
-      //TODO - We need to put the message in a DLQ
+      // TODO - We need to put the message in a DLQ
       // For now we just ack it otherwise the message will keep being retried and we'll never get
       // anywhere
       if (del.getReference().getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
@@ -716,8 +764,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       public void run()
       {
-         // Is there anything to deliver?
-         // This is ok outside lock - is volatile.
+         // Is there anything to deliver? This is ok outside lock - is volatile.
          if (clientConsumerFull)
          {
             if (trace) { log.trace(this + " client consumer full, do nothing"); }
@@ -749,30 +796,33 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          int serverId = connection.getServerPeer().getServerPeerID();
 
+         // TODO How can we ensure that messages for the same consumer aren't delivered
+         // concurrently to the same consumer on different threads?
+
+         ClientDelivery del = new ClientDelivery(list, serverId, id);
+         MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), del);
+         Callback callback = new Callback(mm);
+
          try
          {
             if (trace) { log.trace(ServerConsumerEndpoint.this + " handing " + list.size() + " message(s) over to the remoting layer"); }
 
-            ClientDelivery del = new ClientDelivery(list, serverId, id);
-
-            // TODO How can we ensure that messages for the same consumer aren't delivered
-            // concurrently to the same consumer on different threads?
-            MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), del);
-
-            MessagingMarshallable resp = (MessagingMarshallable)connection.getCallbackClient().invoke(mm);
+            synchronized(messagesInTransitLock)
+            {
+               connection.getCallbackHandler().handleCallback(callback);
+               messagesInTransitCount += list.size();
+            }
 
             if (trace) { log.trace(ServerConsumerEndpoint.this + " handed messages over to the remoting layer"); }
 
-            HandleMessageResponse result = (HandleMessageResponse)resp.getLoad();
+            // We are NOT using Remoting's facility of acknowledging callbacks. A callback is sent
+            // asynchronously, and there is no confirmation that the callback reached the client or
+            // not.
 
-            // For now we don't look at how many messages are accepted since they all will be.
-            // The field is a placeholder for the future.
-            if (result.clientIsFull())
-            {
-               // Stop the server sending any more messages to the client.
-               // This is ok outside lock.
-               clientConsumerFull = true;
-            }
+            // TODO Previously, synchronous server-to-client invocations were used by the client
+            // to report back whether is full or not. This cannot be achieved with asynchronous
+            // callbacks, so the client must explicitely sent this information to the server,
+            // with an invocation on its own.
          }
          catch(Throwable t)
          {
@@ -868,5 +918,4 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          delList.add(new Long(messageID));
       }
    }
-   
 }

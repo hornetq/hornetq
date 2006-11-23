@@ -90,10 +90,10 @@
       <componentref name="jboss/common" version="snapshot"/>
       <componentref name="jboss/aop" version="1.5.0.GA"/>
       <componentref name="jboss/serialization" version="1.0.3.GA"/>
-      <componentref name="jboss/remoting" version="2.2.0.Alpha2"/>
+      <componentref name="jboss/remoting" version="2.2.0.Alpha4"/>
 
       <!-- Need this otherwise project doesn't build in Eclipse -->
-      <componentref name="apache-logging" version="1.0.5.GA-jboss"/>
+      <componentref name="apache-logging" version="1.0.4.1jboss"/>
 
       <!--
            Dependencies required to test the project.
@@ -104,7 +104,6 @@
       <componentref name="apache-xerces" version="2.7.1"/> <!-- needed by org.jboss.logging.Log4jLoggerPlugin -->
       <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5"/>
       <componentref name="jboss/jbossxb" version="1.0.0.CR6"/>
-
 
    </build>
 

@@ -127,6 +127,8 @@ public class ServiceContainer
    public static String USER_TRANSACTION_JNDI_NAME = "UserTransaction";
    public static String JCA_JMS_CONNECTION_FACTORY_JNDI_NAME = "java:/JCAConnectionFactory";
 
+   public static long HTTP_CONNECTOR_CALLBACK_POLL_PERIOD = 102;
+
    static
    {
       try
@@ -182,15 +184,14 @@ public class ServiceContainer
    private boolean transaction;
    private boolean database;
    private boolean jca;
-   private boolean remotingSocket;
-   private boolean remotingMultiplex;
+   private boolean remoting;
    private boolean security;
 
    private List toUnbindAtExit;
    private String ipAddressOrHostName;
    
-   //There may be many service containers on the same machine, so we need to distinguish them
-   //so we don't start up multiple servers with services running on the same port
+   // There may be many service containers on the same machine, so we need to distinguish them
+   // so we don't start up multiple servers with services running on the same port
    private int serverIndex;
 
    // Static --------------------------------------------------------
@@ -365,14 +366,12 @@ public class ServiceContainer
                                    DEFAULTDS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
             startWrapperDataSourceService();
          }
-         if (remotingSocket)
+         
+         if (remoting)
          {
-            startRemoting(false);
+            startRemoting();
          }
-         if (remotingMultiplex)
-         {
-            startRemoting(true);
-         }
+         
          if (security)
          {
             startSecurityManager();
@@ -395,9 +394,10 @@ public class ServiceContainer
 
          loadJNDIContexts();
 
+         String transport = config.getRemotingTransport();
          log.info("remoting = \"" +
-            (remotingSocket ? "socket" : (remotingMultiplex ? "multiplex" : "disabled")) + "\", " +
-            "serialization = \"" + "jms" + "\", " + 
+            (remoting ? transport : "disabled") + "\", " +
+            "serialization = \"" + config.getSerializationType() + "\", " + 
             "database = \"" + getDatabaseType() + "\"");
          log.debug(this + " started");
       }
@@ -1116,38 +1116,44 @@ public class ServiceContainer
       stopService(managedConnFactoryObjectName);
    }
 
-   private void startRemoting(boolean multiplex) throws Exception
+   private void startRemoting() throws Exception
    {
       SerializationStreamFactory.setManagerClassName(
                "jms", "org.jboss.jms.server.remoting.MessagingSerializationManager");
               
       RemotingJMXWrapper mbean;
 
+      // TODO - use remoting-service.xml parameters, not these ...
+
       //String serializationType = config.getSerializationType();
-      
       String serializationType = "jms";
+      String transport = config.getRemotingTransport();
       
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=" + serializationType + "&" +
                       "dataType=jms&" +
-                      "timeout=0&" +
                       "socket.check_connection=false&" +
-                      "leasePeriod=20000";
+                      "clientLeasePeriod=20000&" +
+                      "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore";
 
-      int portNumber = 9111 + serverIndex;
-      
-      String locatorURI;
-      if (multiplex)
+      // specific parameters per transport
+
+      if ("http".equals(transport))
       {
-         locatorURI = "multiplex://" + ipAddressOrHostName + ":" + portNumber + params;
+         params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD;
       }
       else
       {
-         locatorURI = "socket://" + ipAddressOrHostName + ":" + portNumber + params;
+         params += "timeout=0&";
       }
 
-      log.debug("Using the following locator uri:" + locatorURI);
+//      int freePort = PortUtil.findFreePort(ipAddressOrHostName);
+
+      int freePort = 9111;
+      String locatorURI = transport + "://" + ipAddressOrHostName + ":" + freePort + params;
+
+      log.debug("Using locator uri: " + locatorURI);
 
       InvokerLocator locator = new InvokerLocator(locatorURI);
 
@@ -1299,7 +1305,7 @@ public class ServiceContainer
             transaction = true;
             database = true;
             jca = true;
-            remotingSocket = true;
+            remoting = true;
             security = true;
          }
          else if ("transaction".equals(tok))
@@ -1328,19 +1334,10 @@ public class ServiceContainer
          }
          else if ("remoting".equals(tok))
          {
-            remotingSocket = true;
+            remoting = true;
             if (minus)
             {
-               remotingSocket = false;
-            }
-
-         }
-         else if ("remoting-multiplex".equals(tok))
-         {
-            remotingMultiplex = true;
-            if (minus)
-            {
-               remotingMultiplex = false;
+               remoting = false;
             }
 
          }
@@ -1357,7 +1354,7 @@ public class ServiceContainer
             transaction = false;
             database = false;
             jca = false;
-            remotingSocket = false;
+            remoting = false;
             security = false;
          }
          else

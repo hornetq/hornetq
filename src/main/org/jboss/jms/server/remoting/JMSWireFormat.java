@@ -37,8 +37,8 @@ import javax.jms.Message;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.remoting.CallbackServerFactory;
 import org.jboss.jms.client.remoting.HandleMessageResponse;
+import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
@@ -50,6 +50,8 @@ import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
+import org.jboss.remoting.callback.Callback;
+import org.jboss.remoting.invocation.InternalInvocation;
 import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.serial.io.JBossObjectInputStream;
@@ -81,7 +83,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    private static final Logger log = Logger.getLogger(JMSWireFormat.class);
    
-   private static boolean usingJBossSerialization;
+   private static boolean usingJBossSerialization = true;
 
    // The request codes  - start from zero
 
@@ -103,6 +105,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte HANDLE_MESSAGE_RESPONSE = 103;
    protected static final byte BROWSE_MESSAGE_RESPONSE = 104;
    protected static final byte BROWSE_MESSAGES_RESPONSE = 105;
+   protected static final byte CALLBACK_LIST = 106;
 
 
    // Static --------------------------------------------------------
@@ -122,21 +125,27 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    {
       trace = log.isTraceEnabled();
    }
-   
-   
 
    // Marshaller implementation -------------------------------------
 
    public void write(Object obj, OutputStream out) throws IOException
    {          
-      //Sanity check
-      if (!(out instanceof MessagingObjectOutputStream))
+      DataOutputStream dos = null;
+      
+      // This won't be necessary: see JBREM-597.
+      if (out instanceof MessagingObjectOutputStream)
       {
-         throw new IllegalStateException("Must be MessagingObjectOutputStream");
+         dos = (DataOutputStream)(((MessagingObjectOutputStream)out).getUnderlyingStream());
+      }
+      else if (out instanceof DataOutputStream)
+      {
+         dos = (DataOutputStream)out;
+      }
+      else
+      {
+         dos = new DataOutputStream(out);
       }
       
-      DataOutputStream dos = (DataOutputStream)(((MessagingObjectOutputStream)out).getUnderlyingStream());
-            
       handleVersion(obj, dos);
 
       try
@@ -148,8 +157,25 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             InvocationRequest req = (InvocationRequest)obj;
    
             Object param;
-   
-            if (req.getParameter() instanceof MessagingMarshallable)
+            
+            // Unwrap Callback.
+            if (req.getParameter() instanceof InternalInvocation)
+            {
+               InternalInvocation ii = (InternalInvocation) req.getParameter();
+               Object[] params = ii.getParameters();
+               
+               if (params != null && params.length > 0 && params[0] instanceof Callback)
+               {
+                  Callback callback = (Callback) params[0];
+                  MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
+                  param = mm.getLoad();
+               }
+               else
+               {
+                  param = req.getParameter();
+               }
+            }
+            else if (req.getParameter() instanceof MessagingMarshallable)
             {
                param = ((MessagingMarshallable)req.getParameter()).getLoad();
             }
@@ -299,6 +325,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                ClientDelivery dr = (ClientDelivery)param;
    
                dos.writeByte(CALLBACK);
+               
+               dos.writeUTF(req.getSessionId());
    
                dr.write(dos);
    
@@ -409,6 +437,37 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                if (trace) { log.trace("wrote browse message response"); }
             }
+            else if (res instanceof ArrayList &&
+                     ((ArrayList) res).size() > 0 &&
+                     ((ArrayList) res).get(0) instanceof Callback)
+            {
+               // Comes from polled Callbacks.
+               ArrayList callbackList = (ArrayList)res;
+               dos.write(CALLBACK_LIST);
+               dos.writeUTF(resp.getSessionId());
+               dos.writeInt(callbackList.size());
+               
+               Iterator it = callbackList.iterator();
+               while (it.hasNext())
+               {
+                  Callback callback = (Callback)it.next();
+
+                  // We don't use acknowledgeable push callbacks
+
+//                  Map payload = callback.getReturnPayload();
+//                  String guid = (String)payload.get(ServerInvokerCallbackHandler.CALLBACK_ID);
+//                  dos.writeUTF(guid);
+//                  String listenerId = (String)payload.get(Client.LISTENER_ID_KEY);
+//                  dos.writeUTF(listenerId);
+//                  String acks = (String)payload.get(ServerInvokerCallbackHandler.REMOTING_ACKNOWLEDGES_PUSH_CALLBACKS);
+//                  dos.writeUTF(acks);
+                  
+                  MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
+                  ClientDelivery delivery = (ClientDelivery)mm.getLoad();
+                  delivery.write(dos);
+                  dos.flush();
+               }
+            }
             else
             {
                dos.write(SERIALIZED);
@@ -441,14 +500,22 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    public Object read(InputStream in, Map map) throws IOException, ClassNotFoundException
    {      
-      // Sanity check
-      if (!(in instanceof MessagingObjectInputStream))
+      DataInputStream dis = null;
+      
+      // This won't be necessary: see JBREM-597.
+      if (in instanceof MessagingObjectInputStream)
       {
-         throw new IllegalStateException("Must be MessagingObjectInputStream");
+         dis = (DataInputStream)(((MessagingObjectInputStream)in).getUnderlyingStream());
+      }
+      else if (in instanceof DataInputStream)
+      {
+         dis = (DataInputStream) in;
+      }
+      else
+      {
+         dis = new DataInputStream(in);
       }
       
-      DataInputStream dis = (DataInputStream)(((MessagingObjectInputStream)in).getUnderlyingStream());
-
       // First byte read is always version
 
       byte version = dis.readByte();
@@ -693,17 +760,50 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }
             case CALLBACK:
             {
+               String sessionId = dis.readUTF();
                ClientDelivery dr = new ClientDelivery();
                
                dr.read(dis);
-   
-               InvocationRequest request =
-                  new InvocationRequest(null, CallbackServerFactory.JMS_CALLBACK_SUBSYSTEM,
-                                        new MessagingMarshallable(version, dr), null, null, null);
+
+               // Recreate Callback.
+               MessagingMarshallable mm = new MessagingMarshallable(version, dr);
+               Callback callback = new Callback(mm);
+               InternalInvocation ii
+                  = new InternalInvocation(InternalInvocation.HANDLECALLBACK, new Object[]{callback});
+               InvocationRequest request
+                  = new InvocationRequest(sessionId, CallbackManager.JMS_CALLBACK_SUBSYSTEM,
+                                          ii, null, null, null);
    
                if (trace) { log.trace("read callback()"); }
    
                return request;
+            }
+            case CALLBACK_LIST:
+            {
+               // Recreate ArrayList of Callbacks (for Callback polling).
+               String sessionId = dis.readUTF();
+               int size = dis.readInt();
+               ArrayList callbackList = new ArrayList(size);
+               for (int i = 0; i < size; i++)
+               {
+                  // We don't use acknowledgeable push callbacks
+
+//                  String guid = dis.readUTF();
+//                  String listenerId = dis.readUTF();
+//                  String acks = dis.readUTF();
+                  ClientDelivery delivery = new ClientDelivery();
+                  delivery.read(dis);
+                  MessagingMarshallable mm = new MessagingMarshallable(version, delivery);
+                  Callback callback = new Callback(mm);
+//                  HashMap payload = new HashMap();
+//                  payload.put(ServerInvokerCallbackHandler.CALLBACK_ID, guid);
+//                  payload.put(Client.LISTENER_ID_KEY, listenerId);
+//                  payload.put(ServerInvokerCallbackHandler.REMOTING_ACKNOWLEDGES_PUSH_CALLBACKS, acks);
+//                  callback.setReturnPayload(payload);
+                  callbackList.add(callback);
+               }
+
+               return new InvocationResponse(sessionId, callbackList, false, null);
             }
             default:
             {
@@ -823,9 +923,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          ois = new ObjectInputStream(is);
       }
       
-      Object obj = ois.readObject();
-      
-      return obj;
+      return ois.readObject();
    }
 
    // Inner classes -------------------------------------------------

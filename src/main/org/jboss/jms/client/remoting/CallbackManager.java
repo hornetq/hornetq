@@ -24,13 +24,11 @@ package org.jboss.jms.client.remoting;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.MBeanServer;
-
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.callback.Callback;
+import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -39,85 +37,91 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * 
  * A CallbackManager.
  * 
- * The CallbackManager is an InvocationHandler used for handling callbacks to message consumers
- * The callback is received and dispatched off to the relevant consumer
+ * The CallbackManager is an InvocationHandler used for handling callbacks to message consumers.
+ * The callback is received and dispatched off to the relevant consumer.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
  *
  * CallbackManager.java,v 1.1 2006/02/01 17:38:30 timfox Exp
  */
-public class CallbackManager implements ServerInvocationHandler
+public class CallbackManager implements InvokerCallbackHandler
 {
+   // Constants -----------------------------------------------------
+
+   protected static final Logger log = Logger.getLogger(CallbackManager.class);
+
+   public static final String JMS_CALLBACK_SUBSYSTEM = "CALLBACK";
+
+   // Static --------------------------------------------------------
+
+   protected static CallbackManager theManager;
+
+   // Attributes ----------------------------------------------------
+
    protected Map callbackHandlers;
+
+   // Constructors --------------------------------------------------
 
    public CallbackManager()
    {
       callbackHandlers = new ConcurrentReaderHashMap();
    }
-   
-   public void registerHandler(int serverId, int consumerId, MessageCallbackHandler handler)
-   {
-      Long lookup = calcLookup(serverId, consumerId);
-      
-      callbackHandlers.put(lookup, handler);
-   }
-   
-   public void unregisterHandler(int serverId, int consumerId)
-   {
-      Long lookup = calcLookup(serverId, consumerId);
-      
-      callbackHandlers.remove(lookup);
-   }
-   
-   private Long calcLookup(int serverId, int consumerId)
-   {
-      long id1 = serverId;
-      
-      id1 <<= 32;
-       
-      long id2 = consumerId;
-      
-      long lookup = id1 | id2;
-      
-      return new Long(lookup);
-   }
-   
-   public void addListener(InvokerCallbackHandler arg0)
-   { 
-   }
 
-   public Object invoke(InvocationRequest ir) throws Throwable
+   // InvokerCallbackHandler implementation -------------------------
+
+   public void handleCallback(Callback callback) throws HandleCallbackException
    {
-      MessagingMarshallable mm = (MessagingMarshallable)ir.getParameter();
-      
+      MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
       ClientDelivery dr = (ClientDelivery)mm.getLoad();
-        
-      Long lookup = calcLookup(dr.getServerId(), dr.getConsumerId());
-         
+      Long lookup = computeLookup(dr.getServerId(), dr.getConsumerId());
       List msgs = dr.getMessages();
 
-      MessageCallbackHandler handler =
-         (MessageCallbackHandler)callbackHandlers.get(lookup);
-      
+      MessageCallbackHandler handler = (MessageCallbackHandler)callbackHandlers.get(lookup);
+
       if (handler == null)
       {
-         throw new IllegalStateException("Cannot find handler for consumer: " + dr.getConsumerId() +  " and server " + dr.getServerId());
+         throw new IllegalStateException("Cannot find handler for consumer: " + dr.getConsumerId() +
+                                         " and server " + dr.getServerId());
       }
-      
-      return new MessagingMarshallable(mm.getVersion(), handler.handleMessage(msgs));
+
+      handler.handleMessage(msgs);
    }
 
-   public void removeListener(InvokerCallbackHandler arg0)
+   // Public --------------------------------------------------------
+
+   public void registerHandler(int serverID, int consumerID, MessageCallbackHandler handler)
    {
+      Long lookup = computeLookup(serverID, consumerID);
+
+      callbackHandlers.put(lookup, handler);
    }
 
-   public void setInvoker(ServerInvoker arg0)
-   { 
-   }
-
-   public void setMBeanServer(MBeanServer arg0)
+   public void unregisterHandler(int serverID, int consumerID)
    {
+      Long lookup = computeLookup(serverID, consumerID);
+
+      callbackHandlers.remove(lookup);
    }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   private Long computeLookup(int serverID, int consumerID)
+   {
+      long id1 = serverID;
+
+      id1 <<= 32;
+
+      long lookup = id1 | consumerID;
+
+      return new Long(lookup);
+   }
+
+   // Inner classes -------------------------------------------------
 
 }

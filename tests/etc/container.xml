@@ -68,6 +68,11 @@
 
    <serialization-type>jms</serialization-type>
 
+   <!--
+       Supported values: "socket", "http"
+   -->
+   <remoting-transport>socket</remoting-transport>
+
 </container>
 
 

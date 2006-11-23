@@ -457,6 +457,9 @@
       <copy todir="${build.scoped-sar}" file="${jboss.aop.lib}/jboss-aop.jar"/>
       <copy todir="${build.scoped-sar}" file="${javassist.javassist.lib}/javassist.jar"/>
       <copy todir="${build.scoped-sar}" file="${trove.trove.lib}/trove.jar"/>
+      <copy todir="${build.scoped-sar}" file="${apache.tomcat.lib}/tomcat-coyote.jar"/>
+      <copy todir="${build.scoped-sar}" file="${apache.tomcat.lib}/tomcat-http.jar"/>
+      <copy todir="${build.scoped-sar}" file="${apache.tomcat.lib}/tomcat-util.jar"/>
 
       <mkdir dir="${build.scoped-sar}/tmp"/>
 
@@ -576,6 +579,10 @@
       <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.naming.lib}/jnp-client.jar"/>
       <unjar dest="${project.output}/jboss-messaging-client" src="${oswego.concurrent.lib}/concurrent.jar"/>
       <unjar dest="${project.output}/jboss-messaging-client" src="${apache.log4j.lib}/log4j.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${apache.logging.lib}/commons-logging.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${apache.tomcat.lib}/tomcat-coyote.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${apache.tomcat.lib}/tomcat-http.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${apache.tomcat.lib}/tomcat-util.jar"/>
       <jar jarfile="${build.lib}/jboss-messaging-client.jar">
          <fileset dir="${build.classes}">
             <include name="org/jboss/**"/>

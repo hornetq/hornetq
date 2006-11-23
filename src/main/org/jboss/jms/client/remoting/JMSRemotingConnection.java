@@ -29,8 +29,7 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
-import org.jboss.remoting.transport.Connector;
+import org.jboss.remoting.callback.CallbackPoller;
 
 
 /**
@@ -51,6 +50,8 @@ public class JMSRemotingConnection
 {
    // Constants -----------------------------------------------------
 
+   public static final String CALLBACK_POLL_PERIOD_DEFAULT = "100";
+
    private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
 
    // Static --------------------------------------------------------
@@ -59,19 +60,15 @@ public class JMSRemotingConnection
 
    protected Client client;
    protected boolean clientPing;
-   protected Connector callbackServer;
    protected InvokerLocator serverLocator;
    protected CallbackManager callbackManager;
-
-   private InvokerCallbackHandler dummyCallbackHandler;
 
    // Constructors --------------------------------------------------
 
    public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Throwable
-   { 
+   {
       serverLocator = new InvokerLocator(serverLocatorURI);
       this.clientPing = clientPing;
-      dummyCallbackHandler = new DummyCallbackHandler();
 
       log.debug(this + " created");
    }
@@ -91,11 +88,7 @@ public class JMSRemotingConnection
 
       if (log.isTraceEnabled()) { log.trace(this + " created client"); }
 
-      // Get the callback server
-
-      callbackServer = CallbackServerFactory.instance.getCallbackServer(serverLocator);
-      callbackManager = (CallbackManager)callbackServer.getInvocationHandlers()[0];
-
+      callbackManager = new CallbackManager();
       client.connect();
 
       // We explicitly set the Marshaller since otherwise remoting tries to resolve the marshaller
@@ -106,11 +99,61 @@ public class JMSRemotingConnection
       client.setMarshaller(new JMSWireFormat());
       client.setUnMarshaller(new JMSWireFormat());
 
-      // We add a dummy callback handler only to trigger the addListener method on the
-      // JMSServerInvocationHandler to be called, which allows the server to get hold of a reference
-      // to the callback client so it can make callbacks
+      // For socket transport allow true push callbacks, with callback Connector.
+      // For http transport, simulate push callbacks.
+      boolean doPushCallbacks = "socket".equals(serverLocator.getProtocol());
+      if (doPushCallbacks)
+      {
+         if (log.isTraceEnabled()) log.trace("doing push callbacks");
+         HashMap metadata = new HashMap();
+         metadata.put(InvokerLocator.DATATYPE, "jms");
+         metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms");
 
-      client.addListener(dummyCallbackHandler, callbackServer.getLocator());
+         String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
+         if (bindAddress != null)
+         {
+            metadata.put(Client.CALLBACK_SERVER_HOST, bindAddress);
+         }
+
+         String propertyPort = System.getProperty("jboss.messaging.callback.bind.port");
+         if (propertyPort != null)
+         {
+            metadata.put(Client.CALLBACK_SERVER_PORT, propertyPort);
+         }
+
+         client.addListener(callbackManager, metadata, null, true);
+      }
+      else
+      {
+         if (log.isTraceEnabled()) log.trace("simulating push callbacks");
+
+         HashMap metadata = new HashMap();
+
+         // "jboss.messaging.callback.pollPeriod" system property, if set, has the highest priority ...
+         String callbackPollPeriod = System.getProperty("jboss.messaging.callback.pollPeriod");
+         if (callbackPollPeriod == null)
+         {
+            // followed by the value configured on the HTTP connector ("callbackPollPeriod") ...
+            callbackPollPeriod = (String)serverLocator.getParameters().get("callbackPollPeriod");
+            if (callbackPollPeriod == null)
+            {
+               // followed by the hardcoded value.
+               callbackPollPeriod = CALLBACK_POLL_PERIOD_DEFAULT;
+            }
+         }
+
+         metadata.put(CallbackPoller.CALLBACK_POLL_PERIOD, callbackPollPeriod);
+
+         String reportPollingStatistics =
+            System.getProperty("jboss.messaging.callback.reportPollingStatistics");
+
+         if (reportPollingStatistics != null)
+         {
+            metadata.put(CallbackPoller.REPORT_STATISTICS, reportPollingStatistics);
+         }
+
+         client.addListener(callbackManager, metadata);
+      }
 
       log.debug(this + " started");
    }
@@ -122,14 +165,10 @@ public class JMSRemotingConnection
       // explicitly remove the callback listener, to avoid race conditions on server
       // (http://jira.jboss.org/jira/browse/JBMESSAGING-535)
 
-      client.removeListener(dummyCallbackHandler);
-      dummyCallbackHandler = null;
-      
-      CallbackServerFactory.instance.stopCallbackServer(serverLocator.getProtocol());
-      
+      client.removeListener(callbackManager);
       client.disconnect();
-      
-      log.debug(this + " closed");      
+
+      log.debug(this + " closed");
    }
 
    public Client getInvokingClient()
