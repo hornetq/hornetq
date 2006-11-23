@@ -15,10 +15,7 @@
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/stateless/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/topic/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/gen-parsers" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/perf/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/perf/tests" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/output" />
     </content>
