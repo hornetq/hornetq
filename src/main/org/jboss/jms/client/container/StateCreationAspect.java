@@ -140,9 +140,12 @@ public class StateCreationAspect
       int prefetchSize =
          ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.PREFETCH_SIZE)).intValue();
       
+      int maxDeliveries = 
+         ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.MAX_DELIVERIES)).intValue();
+      
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector,
-                           noLocal, consumerID, connectionConsumer, prefetchSize);
+                           noLocal, consumerID, connectionConsumer, prefetchSize, maxDeliveries);
       
       delegate.setState(consumerState);
       return consumerDelegate;

@@ -38,7 +38,7 @@ import org.jboss.remoting.serialization.SerializationStreamFactory;
 
 /**
  * Base class for all client-side delegate classes.
- * 
+ *
  * Client-side delegate classes provide an empty implementation of the appropriate delegate
  * interface. The classes are advised using JBoss AOP to provide the client side advice stack.
  * The methods in the delegate class will never actually be invoked since they will either be
@@ -47,7 +47,7 @@ import org.jboss.remoting.serialization.SerializationStreamFactory;
  * The delegates are created on the server and serialized back to the client. When they arrive on
  * the client, the init() method is called which causes the advices to be bound to the advised
  * class.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *
@@ -66,9 +66,9 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    // Attributes ----------------------------------------------------
 
    protected int id;
-   
+
    protected HierarchicalState state;
-   
+
    private boolean trace;
 
    // Static --------------------------------------------------------
@@ -77,12 +77,12 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    public DelegateSupport(int objectID)
    {
-      this.id = objectID;    
+      this.id = objectID;
       trace = log.isTraceEnabled();
    }
-   
+
    public DelegateSupport()
-   {      
+   {
    }
 
    // Interceptor implementation ------------------------------------
@@ -104,9 +104,9 @@ public abstract class DelegateSupport implements Interceptor, Serializable
                                            Dispatcher.OID,
                                            new Integer(id),
                                            PayloadKey.AS_IS);
-      
+
       byte version = getState().getVersionToUse().getProviderIncrementingVersion();
-      
+
       MessagingMarshallable request = new MessagingMarshallable(version, invocation);
       MessagingMarshallable response = (MessagingMarshallable)getClient().invoke(request, null);
 
@@ -121,17 +121,17 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    {
       return state;
    }
-   
+
    public void setState(HierarchicalState state)
    {
       this.state = state;
    }
-   
+
    /**
     *  Add Invoking interceptor and prepare the stack for invocations.
     */
    public void init()
-   {          
+   {
       ((Advised)this)._getInstanceAdvisor().appendInterceptor(this);
 
       checkMarshallers();
@@ -150,7 +150,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    {
       return ((Advised)this)._getInstanceAdvisor().getMetaData();
    }
-   
+
    protected abstract Client getClient() throws Exception;
 
 
@@ -168,21 +168,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       {
          return;
       }
-      
-      //We explicitly associate the datatype "jms" with our custom SerializationManager
-      //This is vital for performance reasons.
-      try
-      {
-//         SerializationStreamFactory.setManagerClassName(
-//            "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
-         SerializationStreamFactory.setManagerClassName(
-                  "jms", "org.jboss.jms.server.remoting.MessagingSerializationManager");
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to set SerializationManager, e");
-      }
-      
+
       checked = true;
    }
 

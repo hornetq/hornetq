@@ -51,15 +51,17 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    // Attributes ----------------------------------------------------
    
    protected int bufferSize;
+   protected int maxDeliveries;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConsumerDelegate(int objectID, int bufferSize)
+   public ClientConsumerDelegate(int objectID, int bufferSize, int maxDeliveries)
    {
       super(objectID);
       this.bufferSize = bufferSize;
+      this.maxDeliveries = maxDeliveries;
    }
    
    public ClientConsumerDelegate()
@@ -177,6 +179,8 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
                                 new Integer(id), PayloadKey.TRANSIENT);
       getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.PREFETCH_SIZE,
                                 new Integer(bufferSize), PayloadKey.TRANSIENT);
+      getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.MAX_DELIVERIES,
+                                new Integer(maxDeliveries), PayloadKey.TRANSIENT);
    }
 
    public String toString()

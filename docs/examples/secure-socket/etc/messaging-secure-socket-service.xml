@@ -29,6 +29,8 @@
                <attribute name="serverBindPort">5457</attribute>
                <attribute name="leasePeriod">20000</attribute>
                <attribute name="serverSocketFactory">jboss.messaging:service=ServerSocketFactory,type=SSL</attribute>
+               <attribute name="clientSocketClass" isParam="true">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>
+               <attribute name="serverSocketClass">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>

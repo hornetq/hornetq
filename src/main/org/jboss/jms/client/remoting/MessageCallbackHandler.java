@@ -56,7 +56,7 @@ public class MessageCallbackHandler
    
    // Static --------------------------------------------------------
    
-   private static boolean trace;
+   private static boolean trace;      
    
    static
    {
@@ -64,27 +64,29 @@ public class MessageCallbackHandler
       trace = log.isTraceEnabled();
    }
      
-   // Hardcoded for now
-   private static final int MAX_REDELIVERIES = 10;
-      
    public static void callOnMessage(SessionDelegate sess,
                                     MessageListener listener,
                                     int consumerID,
                                     boolean isConnectionConsumer,
                                     MessageProxy m,
-                                    int ackMode)
+                                    int ackMode,
+                                    int maxDeliveries)
       throws JMSException
    {
       preDeliver(sess, consumerID, m, isConnectionConsumer);
                   
       int tries = 0;
       
+      boolean cancel = false;
+      
       while (true)
       {
          try
          {
             if (trace) { log.trace("calling listener's onMessage(" + m + ")"); }
-
+            
+            m.incDeliveryCount();
+            
             listener.onMessage(m);
 
             if (trace) { log.trace("listener's onMessage() finished"); }
@@ -101,23 +103,19 @@ public class MessageCallbackHandler
    
             if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
             {
-               // We redeliver at certain number of times
-               if (tries < MAX_REDELIVERIES)
-               {
-                  m.setJMSRedelivered(true);
-                  
-                  // TODO delivery count although optional should be global so we need to send it
-                  // back to the server but this has performance hit so perhaps we just don't
-                  // support it?
-                  m.incDeliveryCount();
-                  
+               // We redeliver a certain number of times
+               if (tries < maxDeliveries)
+               {                            
                   tries++;
                }
                else
                {
                   log.error("Max redeliveries has occurred for message: " + m.getJMSMessageID());
                   
-                  //TODO - Send to DLQ
+                  // postdeliver will do a cancel rather than an ack which will cause the mesage
+                  // to end up in the DLQ
+                  
+                  cancel = true;
                   
                   break;
                }
@@ -136,7 +134,7 @@ public class MessageCallbackHandler
       if (!sess.isClosed())
       {
          // postDeliver only if the session is not closed
-         postDeliver(sess, isConnectionConsumer);
+         postDeliver(sess, isConnectionConsumer, cancel);
       }
    }
    
@@ -154,52 +152,41 @@ public class MessageCallbackHandler
       }         
    }
    
-   protected static void postDeliver(SessionDelegate sess, boolean isConnectionConsumer)
-      throws JMSException
+   protected static void postDeliver(SessionDelegate sess, boolean isConnectionConsumer,
+                                     boolean cancel) throws JMSException
    {
       // If this is the callback-handler for a connection consumer we don't want to acknowledge or
       // add anything to the tx for this session
       if (!isConnectionConsumer)
       {
-         sess.postDeliver();
+         sess.postDeliver(cancel);
       }         
    }
    
    // Attributes ----------------------------------------------------
       
    private LinkedList buffer;
-   
    private SessionDelegate sessionDelegate;
-   
    private ConsumerDelegate consumerDelegate;
-   
    private int consumerID;
-   
    private boolean isConnectionConsumer;
-   
    private volatile Thread receiverThread;
-   
    private MessageListener listener;
-    
    private int ackMode;
-      
    private boolean closed;
-   
    private Object mainLock;
-   
    private boolean serverSending;
-   
    private int bufferSize;
-   
    private QueuedExecutor sessionExecutor;
-   
    private boolean listenerRunning;
+   private int maxDeliveries;
         
    // Constructors --------------------------------------------------
 
    public MessageCallbackHandler(boolean isCC, int ackMode,                                
                                  SessionDelegate sess, ConsumerDelegate cons, int consumerID,
-                                 int bufferSize, QueuedExecutor sessionExecutor)
+                                 int bufferSize, QueuedExecutor sessionExecutor,
+                                 int maxDeliveries)
    {
       if (bufferSize < 1)
       {
@@ -207,24 +194,16 @@ public class MessageCallbackHandler
       }
               
       this.bufferSize = bufferSize;
-
       buffer = new LinkedList();
-
       isConnectionConsumer = isCC;
-      
       this.ackMode = ackMode;
-
       this.sessionDelegate = sess;
-
       this.consumerDelegate = cons;
-      
       this.consumerID = consumerID;
-      
       this.serverSending = true;
-      
-      mainLock = new Object();                  
-      
+      mainLock = new Object();
       this.sessionExecutor = sessionExecutor;
+      this.maxDeliveries = maxDeliveries;
    }
         
    // Public --------------------------------------------------------
@@ -464,7 +443,7 @@ public class MessageCallbackHandler
                // message is acknowledged so it gets removed from the queue/subscription.
                preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
                
-               postDeliver(sessionDelegate, isConnectionConsumer);
+               postDeliver(sessionDelegate, isConnectionConsumer, false);
                
                if (!m.getMessage().isExpired())
                {
@@ -498,6 +477,8 @@ public class MessageCallbackHandler
          //but now it is empty, so we tell the server to start sending again
          consumerDelegate.more();
       }
+      
+      m.incDeliveryCount();
       
       return m;
    }    
@@ -736,7 +717,7 @@ public class MessageCallbackHandler
          {
             try
             {
-               callOnMessage(sessionDelegate, listener, consumerID, false, mp, ackMode);
+               callOnMessage(sessionDelegate, listener, consumerID, false, mp, ackMode, maxDeliveries);
             }
             catch (JMSException e)
             {

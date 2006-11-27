@@ -24,7 +24,6 @@ package org.jboss.jms.client.container;
 import javax.jms.IllegalStateException;
 import javax.jms.Message;
 import javax.jms.TransactionInProgressException;
-import javax.jms.Session;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -190,7 +189,7 @@ public class TransactionAspect
          MethodInvocation mi = (MethodInvocation)invocation;
          MessageProxy proxy = (MessageProxy)mi.getArguments()[0];
          int consumerID = ((Integer)mi.getArguments()[1]).intValue();
-         AckInfo info = new AckInfo(proxy, consumerID, Session.SESSION_TRANSACTED);
+         AckInfo info = new AckInfo(proxy, consumerID);
          ConnectionState connState = (ConnectionState)state.getParent();
 
          if (trace) { log.trace("sending acknowlegment transactionally, queueing on resource manager"); }

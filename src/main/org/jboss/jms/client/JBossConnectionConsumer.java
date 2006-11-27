@@ -102,6 +102,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    protected Object closeLock = new Object();      
    
+   protected int maxDeliveries;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -151,6 +153,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
 
       this.consumerID = state.getConsumerID();      
+      
+      this.maxDeliveries = state.getMaxDeliveries();
 
       id = threadId.increment();
       internalThread = new Thread(this, "Connection Consumer for dest " + destination + " id=" + id);
@@ -298,7 +302,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                for (int i = 0; i < mesList.size(); i++)
                {
                   MessageProxy m = (MessageProxy)mesList.get(i);
-                  session.addAsfMessage(m, consumerID, cons);
+                  session.addAsfMessage(m, consumerID, cons, maxDeliveries);
                   if (trace) { log.trace("added " + m + " to session"); }
                }
 

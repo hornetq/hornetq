@@ -130,22 +130,28 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    public void write(Object obj, OutputStream out) throws IOException
    {          
-      DataOutputStream dos = null;
+      DataOutputStream dos;
       
-      // This won't be necessary: see JBREM-597.
-      if (out instanceof MessagingObjectOutputStream)
-      {
-         dos = (DataOutputStream)(((MessagingObjectOutputStream)out).getUnderlyingStream());
-      }
-      else if (out instanceof DataOutputStream)
+      if (out instanceof DataOutputStream)
       {
          dos = (DataOutputStream)out;
       }
       else
       {
+         //Further sanity check
+         if (out instanceof ObjectOutputStream)
+         {
+            throw new IllegalArgumentException("Invalid stream - are you sure you have configured socket wrappers?");
+         }
+         
+         //This would be the case for the HTTP transport for example
+         //Wrap the stream
+         
+         //TODO Ideally remoting would let us wrap this before invoking the marshaller
+         //but this does not appear to be possible
          dos = new DataOutputStream(out);
       }
-      
+                  
       handleVersion(obj, dos);
 
       try
@@ -499,20 +505,26 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    // UnMarshaller implementation -----------------------------------
 
    public Object read(InputStream in, Map map) throws IOException, ClassNotFoundException
-   {      
-      DataInputStream dis = null;
+   {            
+      DataInputStream dis;
       
-      // This won't be necessary: see JBREM-597.
-      if (in instanceof MessagingObjectInputStream)
+      if (in instanceof DataInputStream)
       {
-         dis = (DataInputStream)(((MessagingObjectInputStream)in).getUnderlyingStream());
-      }
-      else if (in instanceof DataInputStream)
-      {
-         dis = (DataInputStream) in;
+         dis = (DataInputStream)in;         
       }
       else
-      {
+      {        
+         //Further sanity check
+         if (in instanceof ObjectInputStream)
+         {
+            throw new IllegalArgumentException("Invalid stream - are you sure you have configured socket wrappers?");
+         }
+         
+         //This would be the case for the HTTP transport for example
+         //Wrap the stream
+         
+         //TODO Ideally remoting would let us wrap this before invoking the marshaller
+         //but this does not appear to be possible
          dis = new DataInputStream(in);
       }
       

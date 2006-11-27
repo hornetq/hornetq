@@ -303,7 +303,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void postDeliver() throws JMSException
+   public void postDeliver(boolean cancel) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -403,7 +403,8 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons)
+   public void addAsfMessage(MessageProxy m, int consumerID,
+                             ConsumerDelegate cons, int maxDeliveries)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

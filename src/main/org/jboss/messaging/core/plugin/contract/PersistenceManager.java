@@ -40,13 +40,16 @@ public interface PersistenceManager extends MessagingComponent
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
    void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
-    
+   
+   void updateDeliveryCount(long channelID, MessageReference ref) throws Exception;
+   
+
    // XA Recovery functionality
    
    List retrievePreparedTransactions() throws Exception;
       
    // Paging functionality - TODO we should split this out into its own interface
-   
+
    void pageReferences(long channelID, List references, boolean paged) throws Exception;
    
    void removeDepagedReferences(long channelID, List refs) throws Exception;

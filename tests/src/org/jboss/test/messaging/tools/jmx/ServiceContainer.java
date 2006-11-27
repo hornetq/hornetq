@@ -189,7 +189,7 @@ public class ServiceContainer
 
    private List toUnbindAtExit;
    private String ipAddressOrHostName;
-   
+
    // There may be many service containers on the same machine, so we need to distinguish them
    // so we don't start up multiple servers with services running on the same port
    private int serverIndex;
@@ -256,7 +256,7 @@ public class ServiceContainer
    {
       this(servicesToStart, null);
    }
-   
+
    public ServiceContainer(String sevicesToStart, int serverIndex) throws Exception
    {
       this(sevicesToStart, null, serverIndex);
@@ -277,7 +277,7 @@ public class ServiceContainer
       toUnbindAtExit = new ArrayList();
       this.serverIndex = 0;
    }
-   
+
    public ServiceContainer(String sevicesToStart, TransactionManager tm, int serverIndex) throws Exception
    {
       this.tm = tm;
@@ -366,12 +366,12 @@ public class ServiceContainer
                                    DEFAULTDS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
             startWrapperDataSourceService();
          }
-         
+
          if (remoting)
          {
             startRemoting();
          }
-         
+
          if (security)
          {
             startSecurityManager();
@@ -397,7 +397,7 @@ public class ServiceContainer
          String transport = config.getRemotingTransport();
          log.info("remoting = \"" +
             (remoting ? transport : "disabled") + "\", " +
-            "serialization = \"" + config.getSerializationType() + "\", " + 
+            "serialization = \"" + config.getSerializationType() + "\", " +
             "database = \"" + getDatabaseType() + "\"");
          log.debug(this + " started");
       }
@@ -492,37 +492,37 @@ public class ServiceContainer
    {
       return mbeanServer.invoke(on, "getInstance", new Object[0], new String[0]);
    }
-   
+
    public Properties getPersistenceManagerSQLProperties() throws Exception
    {
       String databaseType = getDatabaseType();
-      
+
       String persistenceConfigFile =
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
-      
+
       log.info("********* Using config file: " + persistenceConfigFile);
-      
+
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
       {
          throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
       }
-      
+
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-      
+
       MBeanConfigurationElement persistenceManagerConfig =
          (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
-      
+
       String props = persistenceManagerConfig.getAttributeValue("SqlProperties");
-      
+
       if (props != null)
-      {         
+      {
          ByteArrayInputStream is = new ByteArrayInputStream(props.getBytes());
-         
+
          Properties sqlProperties = new Properties();
-         
-         sqlProperties.load(is);      
-         
+
+         sqlProperties.load(is);
+
          return sqlProperties;
       }
       else
@@ -530,37 +530,37 @@ public class ServiceContainer
          return null;
       }
    }
-   
+
    public Properties getPostOfficeSQLProperties() throws Exception
    {
       String databaseType = getDatabaseType();
-      
+
       String persistenceConfigFile =
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
-      
+
       log.info("********* Using config file: " + persistenceConfigFile);
-      
+
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
       {
          throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
       }
-      
+
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-      
+
       MBeanConfigurationElement postOfficeConfig =
          (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
-      
+
       String props = postOfficeConfig.getAttributeValue("SqlProperties");
-      
+
       if (props != null)
-      {         
+      {
          ByteArrayInputStream is = new ByteArrayInputStream(props.getBytes());
-         
+
          Properties sqlProperties = new Properties();
-         
-         sqlProperties.load(is);      
-         
+
+         sqlProperties.load(is);
+
          return sqlProperties;
       }
       else
@@ -568,11 +568,11 @@ public class ServiceContainer
          return null;
       }
    }
-   
+
    public Properties getClusteredPostOfficeSQLProperties() throws Exception
    {
       String databaseType = getDatabaseType();
-      
+
       String persistenceConfigFile;
       if (databaseType.equals("hsqldb"))
       {
@@ -584,30 +584,30 @@ public class ServiceContainer
          persistenceConfigFile =
             "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
       }
-      
+
       log.info("********* Using config file: " + persistenceConfigFile);
-      
+
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
       {
          throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
       }
-      
+
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-      
+
       MBeanConfigurationElement postOfficeConfig =
          (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
-      
+
       String props = postOfficeConfig.getAttributeValue("SqlProperties");
-      
+
       if (props != null)
-      {         
+      {
          ByteArrayInputStream is = new ByteArrayInputStream(props.getBytes());
-         
+
          Properties sqlProperties = new Properties();
-         
-         sqlProperties.load(is);      
-         
+
+         sqlProperties.load(is);
+
          return sqlProperties;
       }
       else
@@ -627,7 +627,7 @@ public class ServiceContainer
       }
       return mbeanServer.queryNames(pattern, null);
    }
-  
+
    /**
     * Creates and registers a service based on the MBean service descriptor element. Supports
     * XMBeans. The implementing class and the ObjectName are inferred from the mbean element. If
@@ -780,7 +780,7 @@ public class ServiceContainer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    /**
     * Note that this method makes no assumption on whether the service was created or started, nor
     * does it attempt to create/start the service.
@@ -791,7 +791,7 @@ public class ServiceContainer
    {
       mbeanServer.registerMBean(service, on);
       log.debug(service + " registered as " + on);
-   }  
+   }
 
    private void readConfigurationFile() throws Exception
    {
@@ -1118,24 +1118,28 @@ public class ServiceContainer
 
    private void startRemoting() throws Exception
    {
-      SerializationStreamFactory.setManagerClassName(
-               "jms", "org.jboss.jms.server.remoting.MessagingSerializationManager");
-              
       RemotingJMXWrapper mbean;
 
       // TODO - use remoting-service.xml parameters, not these ...
 
-      //String serializationType = config.getSerializationType();
-      String serializationType = "jms";
-      String transport = config.getRemotingTransport();
+      String serializationType = config.getSerializationType();
       
+      //TODO - Actually serializationType is irrelevant since we pass a
+      //DataOutput/InputStream into the marshaller and don't use serialization apart
+      //from one specific case with a JMS ObjectMessage in which case Java serialization
+      //is always currently used - (we could make this configurable)
+                  
+      String transport = config.getRemotingTransport();
+
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=" + serializationType + "&" +
                       "dataType=jms&" +
                       "socket.check_connection=false&" +
                       "clientLeasePeriod=20000&" +
-                      "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore";
+                      "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
+                      "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
+                      "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper";
 
       // specific parameters per transport
 
@@ -1145,7 +1149,7 @@ public class ServiceContainer
       }
       else
       {
-         params += "timeout=0&";
+         params += "&timeout=0";
       }
 
 //      int freePort = PortUtil.findFreePort(ipAddressOrHostName);
@@ -1209,7 +1213,7 @@ public class ServiceContainer
       try
       {
          log.info("************************** Deleting all data from database");
-         
+
          InitialContext ctx = new InitialContext();
 
          TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
@@ -1282,7 +1286,7 @@ public class ServiceContainer
       }
       catch (SQLException e)
       {
-         //Ignore - tables might not exist      
+         //Ignore - tables might not exist
       }
    }
 

@@ -44,10 +44,8 @@ public class AckInfo implements Streamable
    
    protected long messageID;
    protected int consumerID;
+   protected int deliveryCount;
 
-   // One of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE, etc.
-   private int ackMode;
-   
    protected MessageProxy msg;
    
    // Static --------------------------------------------------------
@@ -60,28 +58,17 @@ public class AckInfo implements Streamable
 
    public AckInfo(MessageProxy proxy, int consumerID)
    {
-      this(proxy, consumerID, -1);
-   }
-
-   /**
-    * @param ackMode - one of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE, etc.
-    */
-   public AckInfo(MessageProxy proxy, int consumerID, int ackMode)
-   {
       this.msg = proxy;
       this.messageID = proxy.getMessage().getMessageID();
       this.consumerID = consumerID;
-      this.ackMode = ackMode;
    }
    
-   /**
-    * @param ackMode - one of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE, etc.
-    */
-   public AckInfo(long messageID, int consumerID, int ackMode)
+   //Only used for testing
+   public AckInfo(long messageID, int consumerID, int deliveryCount)
    {
       this.messageID = messageID;
       this.consumerID = consumerID;
-      this.ackMode = ackMode;
+      this.deliveryCount = deliveryCount;
    }
 
    // Public --------------------------------------------------------
@@ -100,15 +87,17 @@ public class AckInfo implements Streamable
    {
       return msg;
    }
-
-   /**
-    *
-    * @return one of Session.AUTO_ACKNOWLEDGE, Session.CLIENT_ACKNOWLEDGE ..., or -1 if it has not
-    *         previously set
-    */
-   public int getAckMode()
+   
+   public int getDeliveryCount()
    {
-      return ackMode;
+      if (msg == null)
+      {
+         return deliveryCount;
+      }
+      else
+      {
+         return msg.getDeliveryCount();
+      }
    }
 
    public String toString()
@@ -122,12 +111,21 @@ public class AckInfo implements Streamable
    {
      out.writeLong(messageID);
      out.writeInt(consumerID);
+     if (msg != null)
+     {
+        out.writeInt(msg.getDeliveryCount());
+     }
+     else
+     {
+        out.writeInt(deliveryCount);
+     }
    }
 
    public void read(DataInputStream in) throws Exception
    {
       messageID = in.readLong();
       consumerID = in.readInt();
+      deliveryCount = in.readInt();
    }
    
    // Class YYY overrides -------------------------------------------

@@ -342,7 +342,7 @@
       <antcall target="remote-tests"/>  <!-- default remoting configuration (socket) -->
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
-      </antcall>                                                                         
+      </antcall>
    </target>
 
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
@@ -872,7 +872,7 @@
       <!--
           CallbackFailureTest over "http" does not make sense
       -->
-                                                                                                 
+
    </target>
 
 

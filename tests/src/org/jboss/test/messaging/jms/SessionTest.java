@@ -37,8 +37,8 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
-import javax.naming.InitialContext;
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
@@ -143,6 +143,7 @@ public class SessionTest extends MessagingTestCase
       
       conn.close();
       
+      assertEquals(0, cState.getResourceManager().size());
    }
 
    public void testCreateProducer() throws Exception
@@ -535,7 +536,7 @@ public class SessionTest extends MessagingTestCase
       conn.start();
       TextMessage rm = (TextMessage)s.createConsumer(queue).receive(1000);
 
-      assertEquals("bex", m.getText());
+      assertEquals("bex", rm.getText());
 
       conn.close();
    }

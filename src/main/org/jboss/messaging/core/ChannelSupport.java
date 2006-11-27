@@ -555,8 +555,7 @@ public abstract class ChannelSupport implements Channel
                {
                   // Reference is not expired
 
-                  // Attempt to push the ref to a receiver, so increment the delivery count
-                  ref.incrementDeliveryCount();
+                  // Attempt to push the ref to a receiver
 
                   Delivery del = router.handle(this, ref, null);
 
@@ -564,23 +563,17 @@ public abstract class ChannelSupport implements Channel
                   
                   if (del == null)
                   {
-                     // No receiver, broken receiver or full receiver so we stop delivering; also
-                     // we need to decrement the delivery count, as no real delivery has been actually performed
-
+                     // No receiver, broken receiver or full receiver so we stop delivering
                      if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
 
-                     ref.decrementDeliveryCount();
-                     
                      break;
                   }
                   else if (!del.isSelectorAccepted())
                   {
                      // No receiver accepted the message because no selectors matched, so we create
                      // an iterator (if we haven't already created it) to iterate through the refs
-                     // in the channel. No delivery was really performed, so we decrement the delivery count
-
-                     ref.decrementDeliveryCount();
-
+                     // in the channel. No delivery was really performed
+                     
                      if (iter == null)
                      {
                         iter = messageRefs.iterator();
@@ -788,8 +781,8 @@ public abstract class ChannelSupport implements Channel
       if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); }
       
       return removed;
-   }     
-
+   }    
+   
    protected InMemoryCallback getCallback(Transaction tx, boolean synchronous)
    {
       InMemoryCallback callback = (InMemoryCallback) tx.getCallback(this);            
@@ -811,6 +804,8 @@ public abstract class ChannelSupport implements Channel
 
       return callback;
    }
+
+   
    
    protected boolean cancelInternal(Delivery del) throws Exception
    {
@@ -829,9 +824,17 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         messageRefs.addFirst(del.getReference(), del.getReference().getPriority());
+         MessageReference ref = del.getReference();
          
-         if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }
+         messageRefs.addFirst(ref, ref.getPriority());
+         
+         //We may need to update the delivery count in the database
+         if (ref.isReliable())
+         {
+            pm.updateDeliveryCount(this.channelID, ref);
+         }
+         
+         if (trace) { log.trace(this + " added " + ref + " back into state"); }
       }
       
       return removed;

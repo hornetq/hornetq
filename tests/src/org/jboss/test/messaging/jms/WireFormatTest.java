@@ -26,7 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
-import java.io.ObjectInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,8 +46,6 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
-import org.jboss.jms.server.remoting.MessagingObjectInputStream;
-import org.jboss.jms.server.remoting.MessagingObjectOutputStream;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.TxState;
@@ -266,7 +265,8 @@ public class WireFormatTest extends MessagingTestCase
          
          long messageID = 123456;
          int consumerID = 65432;
-         AckInfo ack = new AckInfo(messageID, consumerID, -1);
+         int deliveryCount = 765;
+         AckInfo ack = new AckInfo(messageID, consumerID, deliveryCount);
          
          Object[] args = new Object[] { ack };
          
@@ -278,7 +278,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
          
@@ -311,6 +311,7 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(ack.getMessageID(), ack2.getMessageID());
          assertEquals(ack.getConsumerID(), ack2.getConsumerID());
+         assertEquals(ack.getDeliveryCount(), ack2.getDeliveryCount());
          
          //Now eos
          try
@@ -325,7 +326,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -356,9 +357,9 @@ public class WireFormatTest extends MessagingTestCase
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         AckInfo ackA = new AckInfo(1524, 71627, -1);
-         AckInfo ackB = new AckInfo(987987, 45354, -1);
-         AckInfo ackC = new AckInfo(32423, 4533, -1);
+         AckInfo ackA = new AckInfo(1524, 71627, 32);
+         AckInfo ackB = new AckInfo(987987, 45354, 21);
+         AckInfo ackC = new AckInfo(32423, 4533, 6);
          
          List acks = new ArrayList();
          acks.add(ackA);
@@ -375,7 +376,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
                   
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
       
          wf.write(ir, oos);
          
@@ -411,6 +412,7 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(ackA.getMessageID(), ack.getMessageID());
          assertEquals(ackA.getConsumerID(), ack.getConsumerID());
+         assertEquals(ackA.getDeliveryCount(), ack.getDeliveryCount());
          
          ack = new AckInfo();
          
@@ -418,6 +420,7 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(ackB.getMessageID(), ack.getMessageID());
          assertEquals(ackB.getConsumerID(), ack.getConsumerID());
+         assertEquals(ackB.getDeliveryCount(), ack.getDeliveryCount());
          
          ack = new AckInfo();
          
@@ -425,6 +428,7 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(ackC.getMessageID(), ack.getMessageID());
          assertEquals(ackC.getConsumerID(), ack.getConsumerID());
+         assertEquals(ackC.getDeliveryCount(), ack.getDeliveryCount());
          
          
          //Now eos
@@ -440,7 +444,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         ObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -498,7 +502,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -517,7 +521,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
                                  
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -559,7 +563,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -576,7 +580,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
             
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -603,7 +607,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -620,7 +624,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
                   
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -658,7 +662,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
          
@@ -709,7 +713,8 @@ public class WireFormatTest extends MessagingTestCase
          MessageTest.ensureEquivalent(m, m2);
          
          bis.reset();
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         
+         InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -734,7 +739,7 @@ public class WireFormatTest extends MessagingTestCase
          JBossMessage m = new JBossMessage(123);
          MessageTest.configureMessage(m);
          
-         AckInfo info = new AckInfo(123, 456, -1);
+         AckInfo info = new AckInfo(123, 456, 66);
          
          TxState state = new TxState();
          state.getMessages().add(m);
@@ -758,7 +763,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
         
@@ -812,10 +817,11 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(info.getConsumerID(), info2.getConsumerID());
          assertEquals(info.getMessageID(), info2.getMessageID());
+         assertEquals(info.getDeliveryCount(), info2.getDeliveryCount());
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -853,8 +859,8 @@ public class WireFormatTest extends MessagingTestCase
          
          List ids = new ArrayList();
          
-         AckInfo ack1 = new AckInfo(1254, 78123, -1);
-         AckInfo ack2 = new AckInfo(786, 8979, -1);
+         AckInfo ack1 = new AckInfo(1254, 78123, 22);
+         AckInfo ack2 = new AckInfo(786, 8979, 461);
          ids.add(ack1);
          ids.add(ack2);
          
@@ -870,7 +876,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
         
@@ -915,9 +921,14 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(ack1.getMessageID(), rack1.getMessageID());
          
+         assertEquals(ack1.getDeliveryCount(), rack1.getDeliveryCount());
+         
          assertEquals(ack2.getConsumerID(), rack2.getConsumerID());
          
          assertEquals(ack2.getMessageID(), rack2.getMessageID());
+         
+         assertEquals(ack2.getDeliveryCount(), rack2.getDeliveryCount());
+         
           
          //should be eos
                 
@@ -934,7 +945,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -970,7 +981,7 @@ public class WireFormatTest extends MessagingTestCase
          InvocationResponse resp = new InvocationResponse(null, mm, false, null);
 
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
          
          wf.write(resp, oos);
          oos.flush();
@@ -1000,7 +1011,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
 
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
 
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -1030,7 +1041,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
                   
          wf.write(ir, oos);
          
@@ -1068,7 +1079,7 @@ public class WireFormatTest extends MessagingTestCase
          }
          
          bis.reset();
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -1113,7 +1124,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
          
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, dr);
          
@@ -1201,7 +1212,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
          
@@ -1252,7 +1263,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -1289,7 +1300,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          
@@ -1313,7 +1324,7 @@ public class WireFormatTest extends MessagingTestCase
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
-         MessagingObjectOutputStream oos = new MessagingObjectOutputStream(new DataOutputStream(bos));
+         OutputStream oos = new DataOutputStream(bos);
          
          wf.write(ir, oos);
          
@@ -1350,7 +1361,7 @@ public class WireFormatTest extends MessagingTestCase
          
          bis.reset();
          
-         MessagingObjectInputStream ois = new MessagingObjectInputStream(new DataInputStream(bis));
+         InputStream ois = new DataInputStream(bis);
          
          InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
          

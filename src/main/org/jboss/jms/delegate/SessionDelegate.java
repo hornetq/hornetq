@@ -67,7 +67,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    void preDeliver(MessageProxy proxy, int consumerID) throws JMSException;
    
-   void postDeliver() throws JMSException;
+   void postDeliver(boolean cancel) throws JMSException;
    
    MessageListener getMessageListener() throws JMSException;
    
@@ -77,7 +77,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    XAResource getXAResource();
    
-   void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons);
+   void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons, int maxDeliveries);
    
    boolean getTransacted();
    
@@ -94,6 +94,4 @@ public interface SessionDelegate extends SessionEndpoint
    ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
    
    void acknowledgeAll() throws JMSException;
-
-
 }

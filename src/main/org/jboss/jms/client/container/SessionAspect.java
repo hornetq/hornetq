@@ -21,14 +21,13 @@
   */
 package org.jboss.jms.client.container;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 import javax.jms.IllegalStateException;
 import javax.jms.Session;
-import javax.jms.JMSException;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -69,9 +68,44 @@ public class SessionAspect
 
    public Object handleClosing(Invocation invocation) throws Throwable
    {
-      // Send to the server all acknowledgments accumulated in toAck. This is useful, for example,
-      // when a message listener close the session from its onMessage().
-      acknowledgeOnClosing(invocation);
+      MethodInvocation mi = (MethodInvocation)invocation;
+      SessionState state = getState(invocation);
+      SessionDelegate del = (SessionDelegate)mi.getTargetObject();
+      
+      int ackMode = state.getAcknowledgeMode();
+
+      // select eligible acknowledgments
+      List acks = new ArrayList();
+      List cancels = new ArrayList();
+      for(Iterator i = state.getToAck().iterator(); i.hasNext(); )
+      {
+         AckInfo ack = (AckInfo)i.next();
+         if (ackMode == Session.AUTO_ACKNOWLEDGE ||
+             ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+         {
+            acks.add(ack);            
+         }
+         else
+         {
+            cancels.add(ack);
+         }
+         i.remove();
+      }
+      
+      // On closing we acknowlege any AUTO_ACKNOWLEDGE or DUPS_OK_ACKNOWLEDGE, since the session
+      // might have closed before the onMessage had finished executing.
+      // We cancel any client ack or transactional, we do this explicitly so we can pass the updated
+      // delivery count information from client to server. We could just do this on the server but
+      // we would lose delivery count info.
+
+      if (!acks.isEmpty())
+      {
+         del.acknowledgeBatch(acks);
+      }
+      if (!cancels.isEmpty())
+      {
+         del.cancelDeliveries(cancels);
+      }
 
       return invocation.invokeNext();
    }
@@ -111,7 +145,7 @@ public class SessionAspect
          Object[] args = mi.getArguments();
          MessageProxy mp = (MessageProxy)args[0];
          int consumerID = ((Integer)args[1]).intValue();
-         AckInfo info = new AckInfo(mp, consumerID, ackMode);
+         AckInfo info = new AckInfo(mp, consumerID);
          
          state.getToAck().add(info);
          
@@ -144,6 +178,13 @@ public class SessionAspect
       
       int ackMode = state.getAcknowledgeMode();
       
+      boolean cancel = ((Boolean)mi.getArguments()[0]).booleanValue();
+      
+      if (cancel && ackMode != Session.AUTO_ACKNOWLEDGE && ackMode != Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         throw new IllegalStateException("Ack mode must be AUTO_ACKNOWLEDGE or DUPS_OK_ACKNOWLEDGE");
+      }
+      
       if (ackMode == Session.AUTO_ACKNOWLEDGE ||
           ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
           ackMode != Session.CLIENT_ACKNOWLEDGE && state.getCurrentTxId() == null)
@@ -156,10 +197,26 @@ public class SessionAspect
          if (!state.isRecoverCalled())
          {
             if (trace) { log.trace("acknowledging NON-transactionally"); }
-
+                        
             List acks = state.getToAck();
+            
+            // Sanity check
+            if (acks.size() != 1)
+            {
+               throw new IllegalStateException("Should only be one entry in list. " +
+                                               "There are " + acks.size());
+            }
+            
             AckInfo ack = (AckInfo)acks.get(0);
-            sd.acknowledge(ack);
+            
+            if (cancel)
+            {
+               sd.cancelDeliveries(acks);
+            }
+            else
+            {
+               sd.acknowledge(ack);
+            }
             state.getToAck().clear();
          }
          else
@@ -246,12 +303,7 @@ public class SessionAspect
       for (int i = toRedeliver.size() - 1; i >= 0; i--)
       {
          AckInfo info = (AckInfo)toRedeliver.get(i);
-         MessageProxy proxy = info.getMessage();
-         proxy.setJMSRedelivered(true);
-         
-         //TODO delivery count although optional should be global so we need to send it back to the
-         //     server but this has performance hit so perhaps we just don't support it?
-         proxy.incDeliveryCount();
+         MessageProxy proxy = info.getMessage();        
          
          MessageCallbackHandler handler = state.getCallbackHandler(info.getConsumerID());
               
@@ -307,35 +359,6 @@ public class SessionAspect
       return (SessionState)((DelegateSupport)inv.getTargetObject()).getState();
    }
 
-   /**
-    * The method sends to server all eligible acknowlegments (those that are NOT CLIIENT_ACKNOWLEDGE
-    * for example)
-    */
-   private void acknowledgeOnClosing(Invocation invocation) throws JMSException
-   {
-      MethodInvocation mi = (MethodInvocation)invocation;
-      SessionState state = getState(invocation);
-      SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-
-      // select eligible acknowledgments
-      List acks = new ArrayList();
-      for(Iterator i = state.getToAck().iterator(); i.hasNext(); )
-      {
-         AckInfo ack = (AckInfo)i.next();
-         if (ack.getAckMode() == Session.AUTO_ACKNOWLEDGE ||
-             ack.getAckMode() == Session.DUPS_OK_ACKNOWLEDGE)
-         {
-            acks.add(ack);
-            i.remove();
-         }
-      }
-
-      if (!acks.isEmpty())
-      {
-         del.acknowledgeBatch(acks);
-      }
-   }
-    
    // Inner Classes -------------------------------------------------
    
 }

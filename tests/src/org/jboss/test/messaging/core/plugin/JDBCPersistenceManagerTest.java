@@ -884,7 +884,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertEquals(m1.isExpired(), m2.isExpired());
       assertEquals(m1.getTimestamp(), m2.getTimestamp());
       assertEquals(m1.getPriority(), m2.getPriority());
-      assertEquals(m1.isRedelivered(), m2.isRedelivered());
+      assertEquals(m1.getDeliveryCount(), m2.getDeliveryCount());
       Map m1Headers = m1.getHeaders();
       Map m2Headers = m2.getHeaders();
       checkMapsEquivalent(m1Headers, m2Headers);

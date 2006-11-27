@@ -158,13 +158,19 @@ public class AcknowledgementTest extends MessagingTestCase
          pub.publish(m);
          sess.commit();
          
+         log.info("sent messages");
+         
          //receive but rollback
          TextMessage m2 = (TextMessage)sub.receive(3000);
+         
+         log.info("received");
             
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
          
          sess.rollback();
+         
+         log.info("rolled back");
          
          conn.close();
          conn = cf.createTopicConnection();

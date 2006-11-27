@@ -42,6 +42,7 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.plugin.IdManager;
@@ -49,13 +50,13 @@ import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -93,13 +94,17 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private String defaultQueueJNDIContext;
    private String defaultTopicJNDIContext;
-   
+
    private int queuedExecutorPoolSize = 200;
 
    private boolean started;
 
    private int objectIDSequence = 1;
-   
+
+   private int maxDeliveryAttempts = 10;
+
+   private String dlqName;
+
    // wired components
 
    private DestinationJNDIMapper destinationJNDIMapper;
@@ -113,24 +118,24 @@ public class ServerPeer extends ServiceMBeanSupport
    private IdManager transactionIdManager;
    private MemoryManager memoryManager;
    private QueuedExecutorPool queuedExecutorPool;
-   private MessageStore messageStore;   
+   private MessageStore messageStore;
 
    // plugins
 
    protected ObjectName persistenceManagerObjectName;
    protected PersistenceManager persistenceManager;
-   
+
    protected ObjectName queuePostOfficeObjectName;
    protected DefaultPostOffice queuePostOffice;
-   
+
    protected ObjectName topicPostOfficeObjectName;
    protected DefaultPostOffice topicPostOffice;
-     
+
    protected ObjectName jmsUserManagerObjectName;
    protected JMSUserManager jmsUserManager;
-   
+
    //Other stuff
-   
+
    private JMSServerInvocationHandler handler;
 
    // We keep a map of consumers to prevent us to recurse through the attached session in order to
@@ -153,7 +158,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
       // Some wired components need to be started here
       securityStore = new SecurityMetadataStore();
-      
+
       consumers = new ConcurrentReaderHashMap();
 
       version = Version.instance();
@@ -167,38 +172,40 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       try
       {
+         log.debug("starting ServerPeer");
+
          if (started)
          {
             return;
          }
-         
+
          log.debug(this + " starting");
-         
+
          if (queuedExecutorPoolSize < 1)
          {
             throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
          }
          queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
-            
+
          loadClientAOPConfig();
-   
+
          loadServerAOPConfig();
-   
+
          MBeanServer mbeanServer = getServer();
-   
+
          // Acquire references to plugins. Each plug-in will be accessed directly via a reference
          // circumventing the MBeanServer. However, they are installed as services to take advantage
          // of their automatically-creating management interface.
-   
+
          persistenceManager = (PersistenceManager)mbeanServer.
             getAttribute(persistenceManagerObjectName, "Instance");
 
          jmsUserManager = (JMSUserManager)mbeanServer.
             getAttribute(jmsUserManagerObjectName, "Instance");
-         
+
          //We get references to some plugins lazily to avoid problems with circular
          //MBean dependencies
-            
+
          // Create the wired components
          messageIdManager = new IdManager("MESSAGE_ID", 4096, persistenceManager);
          channelIdManager = new IdManager("CHANNEL_ID", 10, persistenceManager);
@@ -208,36 +215,36 @@ public class ServerPeer extends ServiceMBeanSupport
          connectionManager = new SimpleConnectionManager();
          connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
-         messageStore = new SimpleMessageStore();         
+         messageStore = new SimpleMessageStore();
          txRepository = new TransactionRepository(persistenceManager, transactionIdManager);
- 
+
          // Start the wired components
-   
+
          messageIdManager.start();
          channelIdManager.start();
          transactionIdManager.start();
          destinationJNDIMapper.start();
          connFactoryJNDIMapper.start();
          connectionManager.start();
-         connectorManager.start();         
+         connectorManager.start();
          memoryManager.start();
          messageStore.start();
          securityStore.start();
          txRepository.start();
-         
+
          initializeRemoting(mbeanServer);
-   
+
          //createRecoverable();
-   
+
          started = true;
-   
+
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
-            getServerPeerID()+ "] started");      
+            getServerPeerID()+ "] started");
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
-      } 
+      }
    }
 
    public synchronized void stopService() throws Exception
@@ -248,15 +255,15 @@ public class ServerPeer extends ServiceMBeanSupport
          {
             return;
          }
-   
+
          log.debug(this + " stopping");
-   
+
          started = false;
-   
+
          //removeRecoverable();
-        
-         // Stop the wired components         
-         
+
+         // Stop the wired components
+
          messageIdManager.stop();
          messageIdManager = null;
          channelIdManager.stop();
@@ -269,7 +276,7 @@ public class ServerPeer extends ServiceMBeanSupport
          connFactoryJNDIMapper = null;
          connectionManager.stop();
          connectionManager = null;
-         connectorManager.start(); 
+         connectorManager.start();
          connectorManager = null;
          memoryManager.stop();
          memoryManager = null;
@@ -279,22 +286,42 @@ public class ServerPeer extends ServiceMBeanSupport
          securityStore = null;
          txRepository.stop();
          txRepository = null;
-   
+
          unloadServerAOPConfig();
-   
+
          // TODO unloadClientAOPConfig();
-         
+
          queuedExecutorPool.shutdown();
-                  
+
          log.info("JMS " + this + " stopped");
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " stopService");
-      } 
+      }
    }
 
    // JMX Attributes ------------------------------------------------
+
+   public String getDLQName()
+   {
+      return dlqName;
+   }
+
+   public void setDLQName(String dlqName)
+   {
+      this.dlqName = dlqName;
+   }
+
+   public int getMaxDeliveryAttempts()
+   {
+      return maxDeliveryAttempts;
+   }
+
+   public void setMaxDeliveryAttempts(int attempts)
+   {
+      this.maxDeliveryAttempts = attempts;
+   }
 
    public ObjectName getPersistenceManager()
    {
@@ -305,7 +332,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       persistenceManagerObjectName = on;
    }
-   
+
    public ObjectName getQueuePostOffice()
    {
       return queuePostOfficeObjectName;
@@ -315,7 +342,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       queuePostOfficeObjectName = on;
    }
-   
+
    public ObjectName getTopicPostOffice()
    {
       return topicPostOfficeObjectName;
@@ -325,7 +352,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       topicPostOfficeObjectName = on;
    }
-   
+
    public ObjectName getJmsUserManager()
    {
       return jmsUserManagerObjectName;
@@ -335,7 +362,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       jmsUserManagerObjectName = on;
    }
-   
+
    public Object getInstance()
    {
       return this;
@@ -395,12 +422,12 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       try
       {
-         securityStore.setSecurityDomain(securityDomain);      
+         securityStore.setSecurityDomain(securityDomain);
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " setSecurityDomain");
-      } 
+      }
    }
 
    public String getSecurityDomain()
@@ -422,7 +449,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return messageIdManager;
    }
-   
+
    public IdManager getChannelIdManager()
    {
       return channelIdManager;
@@ -432,17 +459,17 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return handler;
    }
-   
+
    public int getQueuedExecutorPoolSize()
    {
       return queuedExecutorPoolSize;
    }
-   
+
    public void setQueuedExecutorPoolSize(int poolSize)
    {
       this.queuedExecutorPoolSize = poolSize;
    }
-   
+
    // JMX Operations ------------------------------------------------
 
    public String createQueue(String name, String jndiName) throws Exception
@@ -454,7 +481,7 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " createQueue");
-      } 
+      }
    }
 
    public String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
@@ -466,7 +493,7 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " createQueue(2)");
-      } 
+      }
    }
 
    public boolean destroyQueue(String name) throws Exception
@@ -478,7 +505,7 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " destroyQueue");
-      } 
+      }
    }
 
    public String createTopic(String name, String jndiName) throws Exception
@@ -490,7 +517,7 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " createTopic");
-      } 
+      }
    }
 
    public String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
@@ -502,7 +529,7 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " createTopic(2)");
-      } 
+      }
    }
 
    public boolean destroyTopic(String name) throws Exception
@@ -514,7 +541,7 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " destroyTopic");
-      } 
+      }
    }
 
    public Set getDestinations() throws Exception
@@ -526,10 +553,32 @@ public class ServerPeer extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " getDestinations");
-      } 
+      }
    }
 
-   // Public --------------------------------------------------------     
+   // Public --------------------------------------------------------
+
+   public Queue getDLQ() throws Exception
+   {
+      if (dlqName == null)
+      {
+         //No DLQ name specified so there is no DLQ
+         return null;
+      }
+
+      PostOffice queuePostOffice = getQueuePostOfficeInstance();
+
+      Binding binding = queuePostOffice.getBindingForQueueName(dlqName);
+      
+      if (binding != null && binding.getQueue().isActive())
+      {
+         return binding.getQueue();
+      }
+      else
+      {
+         return null;
+      }   
+   }
 
    public TransactionRepository getTxRepository()
    {
@@ -550,7 +599,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return version;
    }
-   
+
    // access to hard-wired server extensions
 
    public SecurityManager getSecurityManager()
@@ -577,12 +626,12 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return connectorManager;
    }
-   
+
    public MessageStore getMessageStore()
    {
       return messageStore;
    }
-   
+
    public MemoryManager getMemoryManager()
    {
       return memoryManager;
@@ -594,23 +643,24 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return persistenceManager;
    }
-   
+
    public JMSUserManager getJmsUserManagerInstance()
    {
       return jmsUserManager;
    }
-   
+
    public PostOffice getQueuePostOfficeInstance() throws Exception
    {
       // We get the reference lazily to avoid problems with MBean circular dependencies
       if (queuePostOffice == null)
       {
+         //TODO - why is this DefaultPostOffice and not just PostOffice??
          queuePostOffice = (DefaultPostOffice)getServer().
             getAttribute(queuePostOfficeObjectName, "Instance");
       }
       return queuePostOffice;
    }
-      
+
    public PostOffice getTopicPostOfficeInstance() throws Exception
    {
       // We get the reference lazily to avoid problems with MBean circular dependencies
@@ -619,9 +669,9 @@ public class ServerPeer extends ServiceMBeanSupport
          topicPostOffice = (DefaultPostOffice)getServer().
             getAttribute(topicPostOfficeObjectName, "Instance");
       }
-      return topicPostOffice;        
+      return topicPostOffice;
    }
-      
+
    public synchronized int getNextObjectID()
    {
       return objectIDSequence++;
@@ -643,7 +693,7 @@ public class ServerPeer extends ServiceMBeanSupport
       log.debug(this + " removing consumer " + consumerID + " from the cache");
       return (ServerConsumerEndpoint)consumers.remove(consumerID);
    }
-   
+
    public QueuedExecutorPool getQueuedExecutorPool()
    {
       return queuedExecutorPool;
@@ -716,14 +766,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
-      // We explicitly associate the datatype "jms" with the java SerializationManager
-      // This is vital for performance reasons.
-//      SerializationStreamFactory.setManagerClassName(
-//         "jms", "org.jboss.remoting.serialization.impl.jboss.JBossSerializationManager");
-      SerializationStreamFactory.setManagerClassName(
-             "jms", "org.jboss.jms.server.remoting.MessagingSerializationManager");
-      
-
       JMSWireFormat wf = new JMSWireFormat();
 
       MarshalFactory.addMarshaller("jms", wf, wf);
@@ -855,7 +897,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
       String destType = isQueue ? "Queue" : "Topic";
       String className = "org.jboss.jms.server.destination." + destType + "Service";
-      
+
       String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
       ObjectName on = new ObjectName(ons);
 
@@ -870,7 +912,7 @@ public class ServerPeer extends ServiceMBeanSupport
          "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
          "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
          "</mbean>";
-      
+
       return createDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize,
                                        pageSize, downCacheSize);
    }

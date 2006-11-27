@@ -44,6 +44,8 @@ if [ "$ENV_TEST_REMOTING" != "" ]; then
    TEST_REMOTING=$ENV_TEST_REMOTING
 fi
 
+TEST_REMOTING=http
+
 #
 # We should use the same test execution classpath as the ant <junit> task, so we run ant to get
 # it from there.

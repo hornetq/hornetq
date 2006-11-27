@@ -188,7 +188,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
             sb.append(name).append(" - ").append(m.headers.get(name)).append('\n');
          }
       }
-      sb.append("              redelivered:   ").append(m.redelivered).append('\n');
+      sb.append("              redelivered:   ").append(m.deliveryCount >= 1).append('\n');
       sb.append("              priority:      ").append(m.priority).append('\n');
       sb.append("              deliveryCount: ").append(m.deliveryCount).append('\n');
 
@@ -336,7 +336,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          setJMSDestination(foreign.getJMSDestination());
       }
       setJMSDeliveryMode(foreign.getJMSDeliveryMode());
-      setJMSRedelivered(foreign.getJMSRedelivered());
+      setDeliveryCount(foreign.getJMSRedelivered() ? 1 : 0);
       setJMSExpiration(foreign.getJMSExpiration());
       setJMSPriority(foreign.getJMSPriority());
       setJMSType(foreign.getJMSType());
@@ -480,12 +480,19 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public boolean getJMSRedelivered() throws JMSException
    {
-      return isRedelivered();
+      return deliveryCount >= 2;
    }
 
    public void setJMSRedelivered(boolean redelivered) throws JMSException
    {
-      setRedelivered(redelivered);
+      if (deliveryCount == 1)
+      {
+         deliveryCount++;
+      }
+      else
+      {
+         //do nothing
+      }
    }
 
    /**

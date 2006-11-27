@@ -1,32 +1,32 @@
 /*
-  * JBoss, Home of Professional Open Source
-  * Copyright 2005, JBoss Inc., and individual contributors as indicated
-  * by the @authors tag. See the copyright.txt in the distribution for a
-  * full listing of individual contributors.
-  *
-  * This is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU Lesser General Public License as
-  * published by the Free Software Foundation; either version 2.1 of
-  * the License, or (at your option) any later version.
-  *
-  * This software is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  * Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this software; if not, write to the Free
-  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  */
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.jms.client.state;
 
 import java.util.Collections;
 
 import javax.jms.Destination;
 
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.server.Version;
 
@@ -54,14 +54,16 @@ public class ConsumerState extends HierarchicalStateSupport
    private MessageCallbackHandler messageCallbackHandler;
    
    private int prefetchSize;
-
+   
    private SessionState parent;
-
+   
    private ConsumerDelegate delegate;
-
+   
+   private int maxDeliveries;
+   
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
-                        String selector, boolean noLocal, int consumerID, boolean isCC,
-                        int prefetchSize)
+            String selector, boolean noLocal, int consumerID, boolean isCC,
+            int prefetchSize, int maxDeliveries)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
@@ -71,20 +73,21 @@ public class ConsumerState extends HierarchicalStateSupport
       this.consumerID = consumerID;
       this.isConnectionConsumer = isCC;
       this.prefetchSize = prefetchSize;
+      this.maxDeliveries = maxDeliveries;
    }
-
-
-    public DelegateSupport getDelegate()
-    {
-        return (DelegateSupport)delegate;
-    }
-
-    public void setDelegate(DelegateSupport delegate)
-    {
-        this.delegate = (ConsumerDelegate)delegate;
-    }
-
-
+   
+   
+   public DelegateSupport getDelegate()
+   {
+      return (DelegateSupport)delegate;
+   }
+   
+   public void setDelegate(DelegateSupport delegate)
+   {
+      this.delegate = (ConsumerDelegate)delegate;
+   }
+   
+   
    public Destination getDestination()
    {
       return destination;
@@ -129,13 +132,22 @@ public class ConsumerState extends HierarchicalStateSupport
    {
       return prefetchSize;
    }
-    public HierarchicalState getParent() {
-        return parent;
-    }
-
-    public void setParent(HierarchicalState parent) {
-        this.parent=(SessionState)parent;
-    }
+   
+   public HierarchicalState getParent()
+   {
+      return parent;
+   }
+   
+   public void setParent(HierarchicalState parent)
+   {
+      this.parent=(SessionState)parent;
+   }
+   
+   public int getMaxDeliveries()
+   {
+      return maxDeliveries;
+   }
+   
 }
 
 

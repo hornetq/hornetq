@@ -80,7 +80,6 @@ public class MessageProxy implements Message, Serializable
    protected transient boolean bodyReadOnly;
 
    protected int deliveryCount;
-   protected transient boolean jmsRedelivered;
 
    // Constructors --------------------------------------------------
 
@@ -177,13 +176,24 @@ public class MessageProxy implements Message, Serializable
    public boolean getJMSRedelivered() throws JMSException
    {
       //Always handled in the delegate
-      return jmsRedelivered;
+      //This is because when sending a message to a topic (for instance)
+      //with multiple subscriptions all in the same VM, then we don't copy the original
+      //message for performance reasons, unless necessary, but each reference might have
+      //it's own value for delivery count
+      return deliveryCount >= 2;
    }
 
    public void setJMSRedelivered(boolean redelivered) throws JMSException
    {
       //Always handled in the delegate
-      jmsRedelivered = redelivered;
+      if (deliveryCount == 1)
+      {
+         deliveryCount++;
+      }
+      else
+      {
+         //do nothing
+      }
    }
 
    public String getJMSType() throws JMSException
@@ -407,8 +417,6 @@ public class MessageProxy implements Message, Serializable
       propertiesReadOnly = true;
 
       bodyReadOnly = true;
-
-      this.jmsRedelivered = deliveryCount > 1;
    }
 
    public JBossMessage getMessage()
@@ -423,7 +431,7 @@ public class MessageProxy implements Message, Serializable
    
    public void incDeliveryCount()
    {
-      this.deliveryCount++;
+      this.deliveryCount++;            
    }
 
    public String toString()

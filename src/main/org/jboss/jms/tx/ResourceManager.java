@@ -331,6 +331,11 @@ public class ResourceManager
          sess.redeliver(acks);
       }  
    }
+   
+   public int size()
+   {
+      return transactions.size();
+   }
 
    // Protected ------------------------------------------------------
    

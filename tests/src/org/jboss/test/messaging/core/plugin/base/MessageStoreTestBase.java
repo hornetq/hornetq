@@ -72,7 +72,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       assertEquals(m.getExpiration(), ref.getExpiration());
       assertEquals(m.getTimestamp(), ref.getTimestamp());
       assertEquals(m.getPriority(), ref.getPriority());
-      assertFalse(ref.isRedelivered());
+      assertEquals(0, ref.getDeliveryCount());
 
       Map messageHeaders = m.getHeaders();
       Map refHeaders = ref.getHeaders();

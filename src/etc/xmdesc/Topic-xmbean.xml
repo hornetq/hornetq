@@ -87,7 +87,7 @@
       <name>DownCacheSize</name>
       <type>int</type>
    </attribute>
-   
+
    <attribute access="read-write" getMethod="isClustered" setMethod="setClustered">
       <description>Is this a clustered destination?</description>
       <name>Clustered</name>

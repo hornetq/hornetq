@@ -82,7 +82,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    // Constants -----------------------------------------------------
    
    private static final Logger log = Logger.getLogger(JDBCPersistenceManager.class); 
-   
+
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -1402,6 +1402,57 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }
    
+   public void updateDeliveryCount(long channelID, MessageReference ref) throws Exception
+   {
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      PreparedStatement psReference = null;
+      
+      Connection conn = ds.getConnection();
+       
+      try
+      {                                    
+         psReference = conn.prepareStatement(getSQLStatement("UPDATE_DELIVERYCOUNT"));
+         
+         psReference.setInt(1, ref.getDeliveryCount());
+         
+         psReference.setLong(2, channelID);
+         
+         psReference.setLong(3, ref.getMessageID());
+         
+         int rows = psReference.executeUpdate();                         
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (psReference != null)
+         {
+            try
+            {
+               psReference.close();
+            }
+            catch (Throwable t)
+            {
+            }
+         }         
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable t)
+            {
+            }
+         }
+         wrap.end();                        
+      }  
+   }
+   
    public void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception
    {      
       if (tx != null)
@@ -1668,7 +1719,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    public String toString()
    {
       return "JDBCPersistenceManager[" + Integer.toHexString(hashCode()) + "]";
-   }
+   }   
    
    // Package protected ---------------------------------------------
    
@@ -3229,6 +3280,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("UPDATE_RELIABLE_REFS_NOT_PAGED", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNELID=?");       
       map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ?");
       map.put("SELECT_EXISTS_REF", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ? AND MESSAGEID = ?");
+      map.put("UPDATE_DELIVERYCOUNT", "UPDATE JMS_MESSAGE_REFERENCE SET DELIVERYCOUNT = ? WHERE CHANNELID = ? AND MESSAGEID = ?");
       //Message
       map.put("LOAD_MESSAGES",
               "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, " +

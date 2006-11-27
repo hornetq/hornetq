@@ -45,6 +45,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
@@ -76,9 +77,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private static final Logger log = Logger.getLogger(ServerConsumerEndpoint.class);
 
-   // Static --------------------------------------------------------
+   // Static --------------------------------------------------------  
 
-   private static final int MAX_DELIVERY_ATTEMPTS = 10;
    private static final int MESSAGES_IN_TRANSIT_WAIT_COUNT = 100;
 
    // Attributes ----------------------------------------------------
@@ -123,7 +123,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    private Object lock;
 
    private Map deliveries;
-
+   
+   private Queue dlq;
+   
    private Object messagesInTransitLock;
    private int messagesInTransitCount; // access only from a region guarded by messagesInTransitLock
    
@@ -132,8 +134,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    protected ServerConsumerEndpoint(int id, PagingFilteredQueue messageQueue, String queueName,
                                     ServerSessionEndpoint sessionEndpoint,
                                     String selector, boolean noLocal, JBossDestination dest,
-                                    int prefetchSize)
-                                    throws InvalidSelectorException
+                                    int prefetchSize, Queue dlq)
+      throws InvalidSelectorException
    {
       if (trace) { log.trace("constructing consumer endpoint " + id); }
 
@@ -142,6 +144,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.queueName = queueName;
       this.sessionEndpoint = sessionEndpoint;
       this.prefetchSize = prefetchSize;
+      this.dlq = dlq;
 
       // We always created with clientConsumerFull = true. This prevents the SCD sending messages to
       // the client before the client has fully finished creating the MessageCallbackHandler.
@@ -254,9 +257,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {
             return delivery;
          }
-            
-         checkDeliveryCount(delivery);
-         
+                 
          if (delivery.isDone())
          {
             return delivery;
@@ -600,16 +601,54 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       messageQueue.deliver(false);
    }
    
-   protected void cancelDelivery(Long messageID) throws Throwable
+   protected void sendToDLQ(Long messageID, Transaction tx) throws Throwable
    {
       Delivery del = (Delivery)deliveries.remove(messageID);
+      
       if (del != null)
-      {     
-          del.cancel();
+      { 
+         log.warn(del.getReference() + " has exceed maximum delivery attempts and will be sent to the DLQ");
+         
+         if (dlq != null)
+         {         
+            //reset delivery count to zero
+            del.getReference().setDeliveryCount(0);
+            
+            dlq.handle(null, del.getReference(), tx);
+            
+            del.acknowledge(tx);           
+         }
+         else
+         {
+            log.warn("Cannot send to DLQ since DLQ has not been deployed! The message will be removed");
+            
+            del.acknowledge(tx);
+         }
       }
       else
       {
-          throw new IllegalStateException("Cannot find delivery to cancel:" + id);
+         throw new IllegalStateException("Cannot find delivery to send to DLQ:" + id);
+      }
+      
+   }
+   
+   protected void cancelDelivery(Long messageID, int deliveryCount) throws Throwable
+   {
+      Delivery del = (Delivery)deliveries.remove(messageID);
+      
+      if (del != null)
+      {                               
+         //Cancel back to the queue
+         
+         //Update the delivery count
+           
+         del.getReference().setDeliveryCount(deliveryCount);
+              
+         del.cancel();         
+      }
+      else
+      {
+         throw new IllegalStateException("Cannot find delivery to cancel:" + id);
       }
    }
                
@@ -705,7 +744,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             {
                MessageProxy proxy = (MessageProxy)toDeliver.get(i);
                long id = proxy.getMessage().getMessageID();
-               cancelDelivery(new Long(id));
+               cancelDelivery(new Long(id), proxy.getMessage().getDeliveryCount());
             }
          }
                  
@@ -730,27 +769,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          if (trace) { log.trace(this + " removed from the queue"); }
       }
    }
-     
-   private void checkDeliveryCount(SimpleDelivery del)
-   {
-      // TODO - We need to put the message in a DLQ
-      // For now we just ack it otherwise the message will keep being retried and we'll never get
-      // anywhere
-      if (del.getReference().getDeliveryCount() > MAX_DELIVERY_ATTEMPTS)
-      {
-         log.warn(del.getReference() + " has exceed maximum delivery attempts and will be removed");
-         
-         try
-         {
-            del.acknowledge(null);
-         }
-         catch (Throwable t)
-         {
-            log.error("Failed to acknowledge delivery", t);
-         }
-      }                 
-   }
-   
+
    // Inner classes -------------------------------------------------   
    
    /*

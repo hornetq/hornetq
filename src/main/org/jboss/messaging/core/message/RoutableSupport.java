@@ -57,7 +57,6 @@ public abstract class RoutableSupport implements Routable
    protected long expiration;
    protected long timestamp;
    protected Map headers;
-   protected boolean redelivered;
    protected byte priority;
    protected int deliveryCount;   
 
@@ -111,7 +110,6 @@ public abstract class RoutableSupport implements Routable
       this.timestamp = timestamp;
       this.priority = priority;
       this.deliveryCount = deliveryCount;
-      this.redelivered = deliveryCount >= 2;
       if (headers == null)
       {
          this.headers = new HashMap();
@@ -129,7 +127,6 @@ public abstract class RoutableSupport implements Routable
       this.expiration = other.expiration;
       this.timestamp = other.timestamp;
       this.headers = new HashMap(other.headers);
-      this.redelivered = other.redelivered;
       this.deliveryCount = other.deliveryCount;
       this.priority = other.priority;  
    }
@@ -155,17 +152,7 @@ public abstract class RoutableSupport implements Routable
    {
       return timestamp;
    }
-
-   public boolean isRedelivered()
-   {
-      return redelivered;
-   }
-
-   public void setRedelivered(boolean redelivered)
-   {
-      this.redelivered = redelivered;      
-   }
-   
+ 
    public void setReliable(boolean reliable)
    {
       this.reliable = reliable;
@@ -189,10 +176,6 @@ public abstract class RoutableSupport implements Routable
    public void setDeliveryCount(int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
-      if (deliveryCount > 0)
-      {
-         this.redelivered = true;
-      }
    }
 
    public Serializable putHeader(String name, Serializable value)
@@ -244,7 +227,7 @@ public abstract class RoutableSupport implements Routable
       out.writeLong(expiration);
       out.writeLong(timestamp);
       StreamUtils.writeMap(out, headers, true);
-      out.writeBoolean(redelivered);
+    //  out.writeBoolean(redelivered);
       out.writeByte(priority);
       out.writeInt(deliveryCount);
    }
@@ -264,7 +247,7 @@ public abstract class RoutableSupport implements Routable
       {
          headers = (HashMap)m;
       }
-      redelivered = in.readBoolean();
+     // redelivered = in.readBoolean();
       priority = in.readByte();
       deliveryCount = in.readInt();
    }

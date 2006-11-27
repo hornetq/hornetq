@@ -28,8 +28,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -589,11 +589,10 @@ public class TransactedSessionTest extends MessagingTestCase
          tm = (TextMessage)cons.receive();
 
          assertEquals("a message", tm.getText());
-         
-         log.info("del count2:" + tm.getIntProperty("JMSXDeliveryCount"));
+ 
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
 
          assertTrue(tm.getJMSRedelivered());
-         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
       }
       finally
       {

@@ -130,6 +130,7 @@ public class AsfAspect
       MessageProxy m = (MessageProxy)mi.getArguments()[0];
       int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
       ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
+      int maxDeliveries = ((Integer)mi.getArguments()[3]).intValue();
       
       if (m == null)
       {
@@ -140,6 +141,7 @@ public class AsfAspect
       holder.msg = m;
       holder.consumerID = theConsumerID;
       holder.consumerDelegate = cons;
+      holder.maxDeliveries = maxDeliveries;
       
       msgs.add(holder);
 
@@ -163,7 +165,7 @@ public class AsfAspect
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
          
          MessageCallbackHandler.callOnMessage(del, sessionListener, holder.consumerID, false,
-                                              holder.msg, ackMode);                          
+                                              holder.msg, ackMode, holder.maxDeliveries);                          
       }
       
       return null;
@@ -187,5 +189,6 @@ public class AsfAspect
       MessageProxy msg;
       int consumerID;
       ConsumerDelegate consumerDelegate;
+      int maxDeliveries;
    }
 }

@@ -8,7 +8,7 @@
 
   <!-- The JMS provider loader -->
    <mbean code="org.jboss.jms.jndi.JMSProviderLoader"
-          name="jboss.mq:service=JMSProviderLoader,name=JMSProvider">
+          name="jboss.messaging:service=JMSProviderLoader,name=JMSProvider">
       <attribute name="ProviderName">DefaultJMSProvider</attribute>
       <attribute name="ProviderAdapterClass">org.jboss.jms.jndi.JNDIProviderAdapter</attribute>
       <attribute name="FactoryRef">java:/XAConnectionFactory</attribute>

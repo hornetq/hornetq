@@ -90,10 +90,13 @@ public class TransactionRepository implements MessagingComponent
    public List getPreparedTransactions()
    {
       ArrayList prepared = new ArrayList();
+      
       Iterator iter = globalToLocalMap.values().iterator();
+      
       while (iter.hasNext())
       {
          Transaction tx = (Transaction)iter.next();
+         
          if (tx.xid != null && tx.getState() == Transaction.STATE_PREPARED)
          {
             prepared.add(tx.getXid());
@@ -118,7 +121,9 @@ public class TransactionRepository implements MessagingComponent
          while (iter.hasNext())
          {
             Xid xid = (Xid)iter.next();
-            Transaction tx = createTransaction(xid);            
+            
+            Transaction tx = createTransaction(xid);   
+            
             tx.state = Transaction.STATE_PREPARED;
             
             //Load the references for this transaction
@@ -145,20 +150,17 @@ public class TransactionRepository implements MessagingComponent
 	   final Xid id = transaction.getXid();
 	   final int state = transaction.getState();
 	   
-	   if (id==null)
+	   if (id == null)
 	   {
-		   Exception ex = new Exception();
-		   log.warn("DeleteTransaction was called for non XA transaction",ex);
-		   return;
+		   throw new IllegalArgumentException("DeleteTransaction was called for non XA transaction");
 	   }
 
-	   if (state!=Transaction.STATE_COMMITTED && state!=Transaction.STATE_ROLLEDBACK)
+	   if (state != Transaction.STATE_COMMITTED && state != Transaction.STATE_ROLLEDBACK)
 	   {
 		   throw new TransactionException("Transaction with xid " + id + " can't be removed as it's not yet commited or rolledback: (Current state is " + Transaction.stateToString(state));
 	   }
 	   
-	   globalToLocalMap.remove(id);
-	   
+	   globalToLocalMap.remove(id);	   
    }
    
    public Transaction createTransaction(Xid xid) throws Exception

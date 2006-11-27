@@ -93,7 +93,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       super.tearDown();
    }
 
-   public void testSimpleJMSXDeliverCount() throws Exception
+   public void testSimpleJMSXDeliveryCount() throws Exception
    {
       Connection conn = cf.createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);

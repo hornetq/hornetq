@@ -93,7 +93,7 @@
       <componentref name="jboss/remoting" version="2.2.0.Alpha4"/>
 
       <!-- Need this otherwise project doesn't build in Eclipse -->
-      <componentref name="apache-logging" version="1.0.4.1jboss"/>
+      <componentref name="apache-logging" version="1.0.5.GA-jboss"/>
 
       <!--
            Dependencies required to test the project.

@@ -118,7 +118,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
             throw new IllegalStateException( "The " + (isQueue() ? "queue" : "topic") + " " +
                                              "name was not properly set in the service's" +
                                              "ObjectName");
-         }
+         }                  
          
          destination.setName(name);                   
       }
@@ -134,7 +134,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    }
    
    // JMX managed attributes ----------------------------------------
-
+   
    public String getJNDIName()
    {
       return destination.getJndiName();

@@ -151,6 +151,18 @@
       <name>QueuedExecutorPoolSize</name>
       <type>int</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getMaxDeliveryAttempts" setMethod="setMaxDeliveryAttempts">
+      <description>The maximum delivery attempts for destinations</description>
+      <name>MaxDeliveryAttempts</name>
+      <type>int</type>
+   </attribute>  
+   
+   <attribute access="read-write" getMethod="getDLQName" setMethod="setDLQName">
+      <description>The JNDI name of the DLQ</description>
+      <name>DLQName</name>
+      <type>java.lang.String</type>
+   </attribute>     
 
    <!-- Managed operations -->
 

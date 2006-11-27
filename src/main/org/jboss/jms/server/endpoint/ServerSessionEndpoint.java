@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.server.endpoint;
 
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,6 +66,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
+import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.util.id.GUID;
 
@@ -101,6 +104,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    private PersistenceManager pm;
    private MessageStore ms;
+
    private DestinationManager dm;
    private IdManager idm;
    private QueuedExecutorPool pool;
@@ -108,7 +112,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private PostOffice topicPostOffice;
    private PostOffice queuePostOffice;
    private int nodeId;
-
+   private int maxDeliveryAttempts;
+   private Queue dlq;
 
    // Constructors --------------------------------------------------
 
@@ -133,6 +138,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       consumers = new HashMap();
 		browsers = new HashMap();
+      
+      dlq = sp.getDLQ();
+      tr = sp.getTxRepository();
+      maxDeliveryAttempts = sp.getMaxDeliveryAttempts();
    }
 
    // SessionDelegate implementation --------------------------------
@@ -385,11 +394,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
          ServerConsumerEndpoint ep =
             new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(), binding.getQueue().getName(),
-                                       this, selectorString, noLocal, jmsDestination, prefetchSize);
+                                       this, selectorString, noLocal, jmsDestination, prefetchSize, dlq);
 
          JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
 
-         ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, prefetchSize);
+         ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, prefetchSize, maxDeliveryAttempts);
 
          putConsumerEndpoint(consumerID, ep); // caching consumer locally
 
@@ -585,7 +594,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
       }
    }
-
+   
    public void cancelDeliveries(List ackInfos) throws JMSException
    {
       try
@@ -594,6 +603,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
          Set consumers = new HashSet();
 
+         List forDLQ = null;
+         
          for (int i = ackInfos.size() - 1; i >= 0; i--)
          {
             AckInfo ack = (AckInfo)ackInfos.get(i);
@@ -607,10 +618,58 @@ public class ServerSessionEndpoint implements SessionEndpoint
                throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
             }
 
-            consumer.cancelDelivery(new Long(ack.getMessageID()));
+            if (ack.getDeliveryCount() >= maxDeliveryAttempts)
+            {
+               if (forDLQ == null)
+               {
+                  forDLQ = new ArrayList();
+               }
+               
+               forDLQ.add(ack);
+            }
+            else
+            {            
+               consumer.cancelDelivery(new Long(ack.getMessageID()), ack.getDeliveryCount());
+            }
+            
             consumers.add(consumer);
          }
 
+         //Send stuff to DLQ
+         
+         if (forDLQ != null)
+         {
+            //We do this in a tx so we don't end up with the message in both the original queue
+            //and the dlq if it fails half way through
+            Transaction tx = tr.createTransaction();
+            
+            try
+            {               
+               for (int i = forDLQ.size() - 1; i >= 0; i--)
+               {
+                  AckInfo ack = (AckInfo)forDLQ.get(i);
+                  
+                  ServerConsumerEndpoint consumer =
+                     this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
+         
+                  if (consumer == null)
+                  {
+                     throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
+                  }
+                  
+                  consumer.sendToDLQ(new Long(ack.getMessageID()), tx);                              
+               }
+               
+               tx.commit();
+            }
+            catch (Throwable t)
+            {
+               tx.rollback();
+               
+               throw t;
+            }
+         }
+         
          // need to prompt delivery for all consumers
 
          for(Iterator i = consumers.iterator(); i.hasNext(); )

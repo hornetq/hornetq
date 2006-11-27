@@ -30,16 +30,14 @@ import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.callback.CallbackPoller;
+import org.jboss.remoting.transport.socket.MicroSocketClientInvoker;
+import org.jboss.remoting.transport.socket.SocketServerInvoker;
 
 
 /**
  * Encapsulates the state and behaviour from jboss remoting needed for a JMS connection.
  * 
- * Each JMS connection maintains a single Client instance for invoking on the server, and a
- * Connector instance that represents the callback server used to receive push callbacks from the
- * server.
- * Only Connector is maintained per protocol
- * 
+ * Each JMS connection maintains a single Client instance for invoking on the server
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
@@ -107,8 +105,10 @@ public class JMSRemotingConnection
          if (log.isTraceEnabled()) log.trace("doing push callbacks");
          HashMap metadata = new HashMap();
          metadata.put(InvokerLocator.DATATYPE, "jms");
-         metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms");
-
+         metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms"); //Not actually used at present - but it does no harm         
+         metadata.put(MicroSocketClientInvoker.CLIENT_SOCKET_CLASS_FLAG, "org.jboss.jms.client.remoting.ClientSocketWrapper");
+         metadata.put(SocketServerInvoker.SERVER_SOCKET_CLASS_FLAG, "org.jboss.jms.server.remoting.ServerSocketWrapper");
+         
          String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
          if (bindAddress != null)
          {

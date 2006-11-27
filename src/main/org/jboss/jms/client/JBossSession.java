@@ -502,9 +502,9 @@ public class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons)
+   void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons, int maxDeliveries)
    {
-      delegate.addAsfMessage(m, consumerID, cons);
+      delegate.addAsfMessage(m, consumerID, cons, maxDeliveries);
    }
       
    // Protected -----------------------------------------------------

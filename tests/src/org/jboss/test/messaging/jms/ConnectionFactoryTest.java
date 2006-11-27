@@ -266,6 +266,8 @@ public class ConnectionFactoryTest extends MessagingTestCase
                "<attribute name=\"timeout\">0</attribute>\n" +
                "<attribute name=\"serverBindAddress\">localhost</attribute>\n" +
                "<attribute name=\"leasePeriod\">20000</attribute>\n" +  
+               "<attribute name=\"clientSocketClass\" isParam=\"true\">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>\n" +
+               "<attribute name=\"serverSocketClass\">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>\n" +
             "</invoker>\n" +
             "<handlers>\n" +
                "<handler subsystem=\"JMS\">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>\n" +

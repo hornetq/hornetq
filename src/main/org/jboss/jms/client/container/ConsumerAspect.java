@@ -76,11 +76,12 @@ public class ConsumerAspect
       int consumerID = consumerState.getConsumerID();
       int prefetchSize = consumerState.getPrefetchSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
+      int maxDeliveries = consumerState.getMaxDeliveries();
       
       MessageCallbackHandler messageHandler =
          new MessageCallbackHandler(isCC, sessionState.getAcknowledgeMode(),
                                     sessionDelegate, consumerDelegate, consumerID,
-                                    prefetchSize, sessionExecutor);
+                                    prefetchSize, sessionExecutor, maxDeliveries);
       
       sessionState.addCallbackHandler(messageHandler);
       

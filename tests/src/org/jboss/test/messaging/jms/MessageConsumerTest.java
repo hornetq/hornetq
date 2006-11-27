@@ -3026,14 +3026,12 @@ public class MessageConsumerTest extends MessagingTestCase
       //don't acknowledge it
       sess1.close();
 
-      log.debug("sess1 closed");
-
       Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       MessageConsumer cons2 = sess2.createConsumer(queue);
       TextMessage tm3 = (TextMessage)cons2.receive(3000);
       assertNotNull(tm3);
       assertEquals("testRedeliveredDifferentSessions", tm3.getText());
-
+      
       assertTrue(tm3.getJMSRedelivered());
    }
 

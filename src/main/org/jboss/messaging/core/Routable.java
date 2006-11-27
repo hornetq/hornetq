@@ -83,22 +83,11 @@ public interface Routable extends Streamable
    void setPriority(byte priority);
 
    /**
-    * @return true if the delivery of this message had to be repeated at least once.
-    */
-   boolean isRedelivered();
-
-   void setRedelivered(boolean redelivered);
-   
-   /**
     * @return the number of times delivery has been attempted for this routable
     */
    int getDeliveryCount();
    
    void setDeliveryCount(int deliveryCount);
-   
-   void incrementDeliveryCount();
-   
-   void decrementDeliveryCount();
    
    /**
     * Binds a header. If the header map previously contained a mapping for this name, the old value
