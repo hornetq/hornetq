@@ -24,7 +24,6 @@ package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
@@ -35,16 +34,20 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
+import org.jboss.messaging.core.plugin.contract.ConditionFactory;
+import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouter;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouter;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.QueueStats;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.test.messaging.core.SimpleConditionFactory;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.plugin.base.PostOfficeTestBase;
@@ -353,13 +356,18 @@ public class DefaultRouterTest extends PostOfficeTestBase
       
       ClusterRouterFactory rf = new DefaultRouterFactory();
       
+      FailoverMapper mapper = new DefaultFailoverMapper();
+      
+      ConditionFactory cf = new SimpleConditionFactory();      
+      
       DefaultClusteredPostOffice postOffice = 
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                                 sc.getClusteredPostOfficeSQLProperties(), true, nodeId, "Clustered", ms, pm, tr, ff, pool,
+                                 sc.getClusteredPostOfficeSQLProperties(), true, nodeId, 
+                                 "Clustered", ms, pm, tr, ff, cf, pool,
                                  groupName,
                                  JGroupsUtil.getControlStackProperties(),
                                  JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, rf, 1000);
+                                 5000, 5000, redistPolicy, rf, mapper, 1000);
       
       postOffice.start();      
       

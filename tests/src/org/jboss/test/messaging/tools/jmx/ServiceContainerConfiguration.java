@@ -6,19 +6,18 @@
  */
 package org.jboss.test.messaging.tools.jmx;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.w3c.dom.NamedNodeMap;
-import org.jboss.jms.util.XMLUtil;
-import org.jboss.jms.util.XMLException;
-
 import java.io.InputStream;
-import java.io.Reader;
 import java.io.InputStreamReader;
-import java.util.StringTokenizer;
-import java.util.Map;
+import java.io.Reader;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+import org.jboss.jms.util.XMLException;
+import org.jboss.jms.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -29,6 +28,8 @@ import java.util.HashMap;
 class ServiceContainerConfiguration
 {
    // Constants -----------------------------------------------------
+
+   public static final boolean DEFAULT_CLUSTERED_MODE = false;
 
    // Static --------------------------------------------------------
 
@@ -76,6 +77,7 @@ class ServiceContainerConfiguration
    private Map dbConfigurations;
    private String serializationType;
    private String remotingTransport;
+   private Boolean clusteredMode;
 
    // Constructors --------------------------------------------------
 
@@ -101,7 +103,7 @@ class ServiceContainerConfiguration
       {
     	  databaseType="mssql";
       }
-      return databaseType; 
+      return databaseType;
    }
 
    public String getDatabaseConnectionURL()
@@ -150,6 +152,14 @@ class ServiceContainerConfiguration
       return remotingTransport;
    }
 
+   /**
+    * @return the clustered mode in which the container should run an individual test.
+    */
+   public boolean isClustered()
+   {
+      return clusteredMode.booleanValue();
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -162,6 +172,7 @@ class ServiceContainerConfiguration
       String currentDatabase = null;
       String currentSerializationType = null;
       String currentRemotingTransport = null;
+      boolean currentClusteredMode = DEFAULT_CLUSTERED_MODE;
 
       try
       {
@@ -204,6 +215,10 @@ class ServiceContainerConfiguration
                {
                   currentRemotingTransport = XMLUtil.getTextContent(n);
                }
+               else if ("clustered".equals(name))
+               {
+                  currentClusteredMode = Boolean.getBoolean(XMLUtil.getTextContent(n));
+               }
                else
                {
                   throw new Exception("Unexpected child <" + name + "> of node " +
@@ -215,6 +230,7 @@ class ServiceContainerConfiguration
          setCurrentDatabase(currentDatabase);
          setCurrentSerializationType(currentSerializationType);
          setCurrentRemotingTransport(currentRemotingTransport);
+         setCurrentClusteredMode(currentClusteredMode);
       }
       finally
       {
@@ -236,8 +252,8 @@ class ServiceContainerConfiguration
    }
 
    /**
-    * Always the value of "test.serialization" system property takes precedence over the c
-    * onfiguration file value.
+    * Always the value of "test.serialization" system property takes precedence over the
+    * configuration file value.
     */
    private void setCurrentSerializationType(String xmlConfigSerializationType)
    {
@@ -257,6 +273,24 @@ class ServiceContainerConfiguration
       }
    }
    
+
+   /**
+    * Always the value of "test.clustered" system property takes precedence over the configuration
+    * file value.
+    */
+   private void setCurrentClusteredMode(boolean xmlClusteredMode) throws Exception
+   {
+      String s = System.getProperty("test.clustered");
+      if (s != null)
+      {
+         clusteredMode = Boolean.valueOf(s);
+      }
+
+      if (clusteredMode == null)
+      {
+         clusteredMode = new Boolean(xmlClusteredMode);
+      }
+   }
 
    private void validate() throws Exception
    {

@@ -93,7 +93,7 @@ public class ConsumerAspect
       //Now we have finished creating the client consumer, we can tell the SCD
       //we are ready
       consumerDelegate.more();
-      
+
       return consumerDelegate;
    }
    

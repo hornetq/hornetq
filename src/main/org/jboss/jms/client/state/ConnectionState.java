@@ -23,8 +23,10 @@ package org.jboss.jms.client.state;
 
 import java.util.HashSet;
 
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import javax.jms.ExceptionListener;
+
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.Version;
@@ -47,81 +49,181 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 public class ConnectionState extends HierarchicalStateSupport
 {
    private static final Logger log = Logger.getLogger(ConnectionState.class);
-   
+
    private JMSRemotingConnection remotingConnection;
-   
+
    private ResourceManager resourceManager;
-   
+
    private MessageIdGenerator idGenerator;
-   
+
    private int serverID;
-   
+
    private Version versionToUse;
 
    private ConnectionDelegate delegate;
-    
+
+   // This is filled from and for the HA interceptors only
+   private transient String user;
+
+   // This is filled from and for the HA interceptors only
+   private transient String password;
+
+   protected boolean started;
+
+
+   /** This property used to be delcared on ConnectionAspect */
+   private String clientID;
+
+    /** This property used to be delcared on ConnectionAspect */
+   private ExceptionListener exceptionListener;
+
+    /** This property used to be delcared on ConnectionAspect */
+   private boolean justCreated = true;
+
+    /** This property used to be delcared on ConnectionAspect */
+   private boolean listenerAdded;
+   
+   
    public ConnectionState(int serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection, Version versionToUse,
                           ResourceManager rm, MessageIdGenerator gen)
       throws Exception
    {
       super(null, (DelegateSupport)delegate);
-      
+
       if (log.isTraceEnabled()) { log.trace("Creating connection state"); }
-      
+
       children = new SyncSet(new HashSet(), new WriterPreferenceReadWriteLock());
-            
+
       this.remotingConnection = remotingConnection;
-      
+
       this.versionToUse = versionToUse;
-      
+
       this.resourceManager = rm;
-      
+
       this.idGenerator = gen;
-      
+
       this.serverID = serverID;
    }
-    
+
    public ResourceManager getResourceManager()
    {
       return resourceManager;
    }
-   
+
    public MessageIdGenerator getIdGenerator()
    {
       return idGenerator;
    }
-   
+
    public JMSRemotingConnection getRemotingConnection()
    {
       return remotingConnection;
    }
-   
+
+   public void setRemotingConnection(JMSRemotingConnection remotingConnection)
+   {
+       this.remotingConnection=remotingConnection;
+   }
+
    public Version getVersionToUse()
    {
       return versionToUse;
    }
-   
+
    public int getServerID()
    {
       return serverID;
    }
 
 
-    public DelegateSupport getDelegate()
+   public DelegateSupport getDelegate()
+   {
+      return (DelegateSupport) delegate;
+   }
+
+   public void setDelegate(DelegateSupport delegate)
+   {
+      this.delegate = (ConnectionDelegate) delegate;
+   }
+
+   /**
+    * Connection doesn't have a parent
+    */
+   public void setParent(HierarchicalState parent)
+   {
+   }
+
+   public boolean isStarted()
+   {
+      return started;
+   }
+
+   public void setStarted(boolean started)
+   {
+      this.started = started;
+   }
+
+
+   public String getPassword()
+   {
+      return password;
+   }
+
+   public void setPassword(String password)
+   {
+      this.password = password;
+   }
+
+   public String getUser()
+   {
+      return user;
+   }
+
+   public void setUser(String user)
+   {
+      this.user = user;
+   }
+
+   public String getClientID()
     {
-        return (DelegateSupport)delegate;
+        return clientID;
     }
 
-    public void setDelegate(DelegateSupport delegate)
+    public void setClientID(String clientID)
     {
-        this.delegate=(ConnectionDelegate)delegate;
+        this.clientID = clientID;
     }
 
-    /** Connection doesn't have a parent */
-    public void setParent(HierarchicalState parent)
+    public ExceptionListener getExceptionListener()
     {
+        return exceptionListener;
     }
+
+    public void setExceptionListener(ExceptionListener exceptionListener)
+    {
+        this.exceptionListener = exceptionListener;
+    }
+
+    public boolean isJustCreated()
+    {
+        return justCreated;
+    }
+
+    public void setJustCreated(boolean justCreated)
+    {
+        this.justCreated = justCreated;
+    }
+
+    public boolean isListenerAdded()
+    {
+        return listenerAdded;
+    }
+
+    public void setListenerAdded(boolean listenerAdded)
+    {
+        this.listenerAdded = listenerAdded;
+    }    
 
     /** Connection doesn't have a parent */
     public HierarchicalState getParent()
@@ -129,5 +231,11 @@ public class ConnectionState extends HierarchicalStateSupport
         return null;
     }
 
-    
+    public void copy(ConnectionState newState)
+    {
+        this.serverID = newState.serverID;
+        this.idGenerator = newState.idGenerator;
+    }
+
+
 }

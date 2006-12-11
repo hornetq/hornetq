@@ -379,7 +379,30 @@ public class ConnectionTest extends MessagingTestCase
       conn.close();
 
    }
-
+   
+   /*
+    * See http://jira.jboss.com/jira/browse/JBMESSAGING-635
+    * 
+    * This needs to be run remotely to see the exception
+    */
+   public void testConnectionListenerBug() throws Exception
+   {
+      for (int i = 0; i < 500; i++)
+      {
+         Connection conn = cf.createConnection();
+         
+         MyExceptionListener listener = new MyExceptionListener();
+         
+         conn.setExceptionListener(listener);
+         
+         conn.close();        
+         
+         //The problem with this test is I would need to capture the output and search
+         //for NullPointerException!!!
+                  
+      } 
+   }
+   
    // TODO - Decide if valid and uncomment or get rid of it!
 
 //   Commented out for now, since how can i make the server fail from a test?   

@@ -23,10 +23,10 @@ package org.jboss.test.messaging.tools.jmx.rmi;
 
 import java.rmi.Remote;
 import java.util.Set;
-
+import java.util.List;
 import javax.management.ObjectName;
+import javax.management.NotificationListener;
 import javax.transaction.UserTransaction;
-
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -44,9 +44,15 @@ import org.jboss.remoting.ServerInvocationHandler;
  */
 public interface Server extends Remote
 {
-   void start(String containerConfig, boolean clustered) throws Exception;
+   void start(String containerConfig) throws Exception;
+
    void stop() throws Exception;
-   void destroy() throws Exception;
+
+   /**
+    * For a remote server, it "abruptly" kills the VM running the server. For a local server
+    * it just stops the server.
+    */
+   void kill() throws Exception;
 
    /**
     * Deploys and registers a service based on the MBean service descriptor element, specified as
@@ -55,11 +61,20 @@ public interface Server extends Remote
     * they are applied to the service instance.
     */
    ObjectName deploy(String mbeanConfiguration) throws Exception;
+
    void undeploy(ObjectName on) throws Exception;
+
    Object getAttribute(ObjectName on, String attribute) throws Exception;
+
    void setAttribute(ObjectName on, String name, String valueAsString) throws Exception;
+
    Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
       throws Exception;
+
+   void addNotificationListener(ObjectName on, NotificationListener listener) throws Exception;
+
+   void removeNotificationListener(ObjectName on, NotificationListener listener) throws Exception;
+
    /**
     * Returns a set of ObjectNames corresponding to installed services.
     */
@@ -118,13 +133,6 @@ public interface Server extends Remote
    DestinationManager getDestinationManager() throws Exception;
 
    PersistenceManager getPersistenceManager() throws Exception;
-
-   /**
-    * Only for in-VM use!
-    */
-   PostOffice getQueuePostOffice() throws Exception;
-   
-   PostOffice getTopicPostOffice() throws Exception;
 
    /**
     * Only for in-VM use
@@ -218,5 +226,18 @@ public interface Server extends Remote
    Object executeCommand(Command command) throws Exception;
 
    UserTransaction getUserTransaction() throws Exception;
+
+   /**
+    * Returns a Set containing the nodeID (as Integers) of all cluster members at the time of the
+    * call.
+    *
+    * USE IT ONLY FOR CLUSTERING TESTS!
+    */
+   Set getNodeIDView() throws Exception;
+
+   /**
+    * @return List<Notification>
+    */
+   List pollNotificationListener(long listenerID) throws Exception;
 
 }

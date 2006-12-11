@@ -28,9 +28,9 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.BrowserState;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
@@ -38,11 +38,15 @@ import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
+import org.jboss.jms.server.Version;
+import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
@@ -58,6 +62,7 @@ import org.jboss.jms.tx.ResourceManagerFactory;
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org>Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org>Clebert Suconic</a>
  *
  * $Id$
  */
@@ -77,23 +82,49 @@ public class StateCreationAspect
 
    public Object handleCreateConnectionDelegate(Invocation inv) throws Throwable
    {
-      ClientConnectionFactoryDelegate cfd = (ClientConnectionFactoryDelegate)inv.getTargetObject();
-      ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)inv.invokeNext();
-      connectionDelegate.init();
-
-      int serverID = cfd.getServerID();
-
-      ResourceManager rm = ResourceManagerFactory.instance.checkOutResourceManager(serverID);
-      MessageIdGenerator gen =
-         MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
-
-      ConnectionState connectionState =
-         new ConnectionState(serverID, connectionDelegate,
-                             connectionDelegate.getRemotingConnection(),
-                             cfd.getVersionToUse(), rm, gen);
-
-      connectionDelegate.setState(connectionState);
-      return connectionDelegate;
+      ConnectionFactoryDelegate cfd = (ConnectionFactoryDelegate)inv.getTargetObject();
+      
+      CreateConnectionResult res = (CreateConnectionResult)inv.invokeNext();
+      
+      ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)res.getDelegate();
+      
+      if (connectionDelegate != null)
+      {
+         
+         connectionDelegate.init();
+         
+         SimpleMetaData md = ((Advised)connectionDelegate)._getInstanceAdvisor().getMetaData();
+         
+         int serverID =
+            ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.SERVER_ID)).intValue();
+         
+         Version connectionVersion = 
+            (Version)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONNECTION_VERSION);
+         
+         JMSRemotingConnection connection = 
+            (JMSRemotingConnection)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_CONNECTION);
+         
+         if (connectionVersion == null)
+         {
+            throw new IllegalStateException("Connection version is null");
+         }
+         
+         // We have one resource manager per unique server
+         ResourceManager rm = ResourceManagerFactory.instance.checkOutResourceManager(serverID);
+         
+         //We have one message id generator per unique server
+         MessageIdGenerator gen =
+            MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
+         
+         ConnectionState connectionState =
+            new ConnectionState(serverID, connectionDelegate,
+                     connection,
+                     connectionVersion, rm, gen);
+         
+         connectionDelegate.setState(connectionState);
+      }
+      
+      return res;
    }
    
    public Object handleCreateSessionDelegate(Invocation invocation) throws Throwable
@@ -129,7 +160,8 @@ public class StateCreationAspect
       MethodInvocation mi = (MethodInvocation)invocation;
       Destination dest = (Destination)mi.getArguments()[0];
       String selector = (String)mi.getArguments()[1];
-      boolean noLocal = ((Boolean)mi.getArguments()[2]).booleanValue();    
+      boolean noLocal = ((Boolean)mi.getArguments()[2]).booleanValue();
+      String subscriptionName = (String)mi.getArguments()[3];
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
 
       SimpleMetaData md = ((Advised)consumerDelegate)._getInstanceAdvisor().getMetaData();
@@ -144,9 +176,10 @@ public class StateCreationAspect
          ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.MAX_DELIVERIES)).intValue();
       
       ConsumerState consumerState =
-         new ConsumerState(sessionState, consumerDelegate, dest, selector,
-                           noLocal, consumerID, connectionConsumer, prefetchSize, maxDeliveries);
-      
+         new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,
+                           subscriptionName, consumerID, connectionConsumer, prefetchSize,
+                           maxDeliveries);
+
       delegate.setState(consumerState);
       return consumerDelegate;
    }
@@ -178,14 +211,19 @@ public class StateCreationAspect
    
    public Object handleCreateBrowserDelegate(Invocation invocation) throws Throwable
    {
+      MethodInvocation mi = (MethodInvocation)invocation;
+
       BrowserDelegate browserDelegate = (BrowserDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)browserDelegate;
       
       delegate.init();
       
       SessionState sessionState = (SessionState)getState(invocation);
-      
-      BrowserState state = new BrowserState(sessionState, browserDelegate);
+
+      JBossDestination destination = (JBossDestination)mi.getArguments()[0];
+      String selector = (String)mi.getArguments()[1];
+
+      BrowserState state = new BrowserState(sessionState, browserDelegate, destination, selector);
       
       delegate.setState(state);
       return browserDelegate;

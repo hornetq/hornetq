@@ -21,44 +21,23 @@
   */
 package org.jboss.test.messaging.core.plugin.postoffice;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-
 import org.jboss.jms.selector.Selector;
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.plugin.IdManager;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.SimpleCondition;
 import org.jboss.test.messaging.core.SimpleFilter;
-import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.plugin.base.PostOfficeTestBase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
-import org.jboss.tm.TransactionManagerService;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -124,12 +103,12 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          
          
          Binding binding1 =
-            office1.bindQueue("condition1", queue1);
+            office1.bindQueue(new SimpleCondition("condition1"), queue1);
          
          //Binding twice with the same name should fail      
          try
          {
-            Binding bindFail = office1.bindQueue("condition1", queue1);
+            Binding bindFail = office1.bindQueue(new SimpleCondition("condition1"), queue1);
             fail();
          }
          catch (IllegalArgumentException e)
@@ -141,7 +120,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          PagingFilteredQueue queue2 = new PagingFilteredQueue("nonDurableQueue", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
-            office1.bindQueue("condition2", queue2);
+            office1.bindQueue(new SimpleCondition("condition2"), queue2);
          
          //Check they're there
          
@@ -231,60 +210,60 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 =
-            office.bindQueue("condition1", queue1);
+            office.bindQueue(new SimpleCondition("condition1"), queue1);
          
          PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding2 =
-            office.bindQueue("condition1", queue2);
+            office.bindQueue(new SimpleCondition("condition1"), queue2);
          
          PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding3 =
-            office.bindQueue("condition1", queue3);
+            office.bindQueue(new SimpleCondition("condition1"), queue3);
          
          PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding4 =
-            office.bindQueue("condition1", queue4);
+            office.bindQueue(new SimpleCondition("condition1"), queue4);
          
          PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding5 =
-            office.bindQueue("condition2", queue5);
+            office.bindQueue(new SimpleCondition("condition2"), queue5);
          
          PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding6 =
-            office.bindQueue("condition2", queue6);
+            office.bindQueue(new SimpleCondition("condition2"), queue6);
          
          PagingFilteredQueue queue7 = new PagingFilteredQueue("queue7", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding7 =
-            office.bindQueue("condition2", queue7);
+            office.bindQueue(new SimpleCondition("condition2"), queue7);
          
          PagingFilteredQueue queue8 = new PagingFilteredQueue("queue8", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding8 =
-            office.bindQueue("condition2", queue8);
+            office.bindQueue(new SimpleCondition("condition2"), queue8);
          
          
-         Collection bindings = office.listBindingsForCondition("dummy");
+         Collection bindings = office.listBindingsForCondition(new SimpleCondition("dummy"));
          assertNotNull(bindings);
          assertTrue(bindings.isEmpty());
          
          //We don't match on substrings
-         bindings = office.listBindingsForCondition("condition123");
+         bindings = office.listBindingsForCondition(new SimpleCondition("condition123"));
          assertNotNull(bindings);
          assertTrue(bindings.isEmpty());
          
          //We don't currently support hierarchies
-         bindings = office.listBindingsForCondition("condition1.subcondition");
+         bindings = office.listBindingsForCondition(new SimpleCondition("condition1.subcondition"));
          assertNotNull(bindings);
          assertTrue(bindings.isEmpty());
          
          //We currently just do an exact match
-         bindings = office.listBindingsForCondition("condition1");
+         bindings = office.listBindingsForCondition(new SimpleCondition("condition1"));
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -294,7 +273,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          assertEquivalent((Binding)iter.next(), binding3);
          assertEquivalent((Binding)iter.next(), binding4);
          
-         bindings = office.listBindingsForCondition("condition2");
+         bindings = office.listBindingsForCondition(new SimpleCondition("condition2"));
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -357,32 +336,32 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding1 =
-            postOffice.bindQueue("topic1", queue1);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
          PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding2 =
-            postOffice.bindQueue("topic1", queue2);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue2);
          
          PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding3 =
-            postOffice.bindQueue("topic1", queue3);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue3);
          
          PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding4 =
-            postOffice.bindQueue("topic2", queue4);
+            postOffice.bindQueue(new SimpleCondition("topic2"), queue4);
          
          PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding5 =
-            postOffice.bindQueue("topic2", queue5);
+            postOffice.bindQueue(new SimpleCondition("topic2"), queue5);
          
          PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding6 =
-            postOffice.bindQueue("topic2", queue6);
+            postOffice.bindQueue(new SimpleCondition("topic2"), queue6);
       
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
@@ -412,7 +391,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Message msg1 = CoreMessageFactory.createCoreMessage(1);      
          MessageReference ref1 = ms.reference(msg1);
          
-         boolean routed = postOffice.route(ref1, "topic1", null);      
+         boolean routed = postOffice.route(ref1, new SimpleCondition("topic1"), null);      
          assertTrue(routed);
          
          List msgs = receiver1.getMessages();
@@ -450,7 +429,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Message msg2 = CoreMessageFactory.createCoreMessage(2);      
          MessageReference ref2 = ms.reference(msg2);
          
-         routed = postOffice.route(ref2, "topic2", null);      
+         routed = postOffice.route(ref2, new SimpleCondition("topic2"), null);      
          assertTrue(routed);
          
          msgs = receiver1.getMessages();
@@ -509,7 +488,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding1 =
-            postOffice.bindQueue("condition1", queue1);
+            postOffice.bindQueue(new SimpleCondition("condition1"), queue1);
               
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.add(receiver1);
@@ -519,7 +498,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Message msg1 = CoreMessageFactory.createCoreMessage(1);      
          MessageReference ref1 = ms.reference(msg1);
          
-         boolean routed = postOffice.route(ref1, "this won't match anything", null);      
+         boolean routed = postOffice.route(ref1, new SimpleCondition("this won't match anything"), null);      
          
          assertFalse(routed);
                
@@ -561,17 +540,17 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), filter);         
          
          Binding binding1 =
-            postOffice.bindQueue("topic1", queue1);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
          PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding2 =
-            postOffice.bindQueue("topic1", queue2);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue2);
          
          PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding3 =
-            postOffice.bindQueue("topic1", queue3);   
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue3);   
          
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
@@ -582,15 +561,15 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          
          Message msg1 = CoreMessageFactory.createCoreMessage(1);      
          MessageReference ref1 = ms.reference(msg1);         
-         boolean routed = postOffice.route(ref1, "topic1", null);      
+         boolean routed = postOffice.route(ref1, new SimpleCondition("topic1"), null);      
          assertTrue(routed);
          Message msg2 = CoreMessageFactory.createCoreMessage(2);      
          MessageReference ref2 = ms.reference(msg2);         
-         routed = postOffice.route(ref2, "topic1", null);      
+         routed = postOffice.route(ref2, new SimpleCondition("topic1"), null);      
          assertTrue(routed);
          Message msg3 = CoreMessageFactory.createCoreMessage(3);      
          MessageReference ref3 = ms.reference(msg3);         
-         routed = postOffice.route(ref3, "topic1", null);      
+         routed = postOffice.route(ref3, new SimpleCondition("topic1"), null);      
          assertTrue(routed);
          
          List msgs = receiver1.getMessages();
@@ -663,32 +642,32 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding1 =
-            postOffice.bindQueue("topic1", queue1);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
          PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding2 =
-            postOffice.bindQueue("topic1", queue2);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue2);
          
          PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
          
          Binding binding3 =
-            postOffice.bindQueue("topic1", queue3);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue3);
          
          PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);         
          
          Binding binding4 =
-            postOffice.bindQueue("topic2", queue4);
+            postOffice.bindQueue(new SimpleCondition("topic2"), queue4);
          
          PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);         
          
          Binding binding5 =
-            postOffice.bindQueue("topic2", queue5);
+            postOffice.bindQueue(new SimpleCondition("topic2"), queue5);
          
          PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);         
          
          Binding binding6 =
-            postOffice.bindQueue("topic2", queue6);
+            postOffice.bindQueue(new SimpleCondition("topic2"), queue6);
       
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.add(receiver1);
@@ -713,7 +692,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Message msg1 = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
          MessageReference ref1 = ms.reference(msg1);
          
-         boolean routed = postOffice.route(ref1, "topic1", null);      
+         boolean routed = postOffice.route(ref1, new SimpleCondition("topic1"), null);      
          assertTrue(routed);
          
          List msgs = receiver1.getMessages();
@@ -766,7 +745,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Message msg2 = CoreMessageFactory.createCoreMessage(2, persistentMessage, null);      
          MessageReference ref2 = ms.reference(msg2);
          
-         routed = postOffice.route(ref2, "topic2", null);      
+         routed = postOffice.route(ref2, new SimpleCondition("topic2"), null);      
          assertTrue(routed);
          
          msgs = receiver4.getMessages();
@@ -837,12 +816,12 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 =
-            postOffice.bindQueue("topic1", queue1);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
          PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
-            postOffice.bindQueue("topic1", queue2);
+            postOffice.bindQueue(new SimpleCondition("topic1"), queue2);
           
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.add(receiver1);
@@ -861,9 +840,9 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          
          Transaction tx = tr.createTransaction();
          
-         boolean routed = postOffice.route(ref1, "topic1", tx);            
+         boolean routed = postOffice.route(ref1, new SimpleCondition("topic1"), tx);            
          assertTrue(routed);
-         routed = postOffice.route(ref2, "topic1", tx);            
+         routed = postOffice.route(ref2, new SimpleCondition("topic1"), tx);            
          assertTrue(routed);
                
          List msgs = queue1.browse();
@@ -919,9 +898,9 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          
          tx = tr.createTransaction();
          
-         routed = postOffice.route(ref3, "topic1", tx);            
+         routed = postOffice.route(ref3, new SimpleCondition("topic1"), tx);            
          assertTrue(routed);
-         routed = postOffice.route(ref4, "topic1", tx);            
+         routed = postOffice.route(ref4, new SimpleCondition("topic1"), tx);            
          assertTrue(routed);
                
          msgs = queue1.browse();
@@ -953,9 +932,9 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Message msg6 = CoreMessageFactory.createCoreMessage(6, persistentMessage, null);      
          MessageReference ref6 = ms.reference(msg6);
                
-         routed = postOffice.route(ref5, "topic1", null);            
+         routed = postOffice.route(ref5, new SimpleCondition("topic1"), null);            
          assertTrue(routed);
-         routed = postOffice.route(ref6, "topic1", null);            
+         routed = postOffice.route(ref6, new SimpleCondition("topic1"), null);            
          assertTrue(routed);
          
          msgs = receiver1.getMessages();
@@ -1020,9 +999,9 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Message msg8 = CoreMessageFactory.createCoreMessage(8, persistentMessage, null);      
          MessageReference ref8 = ms.reference(msg8);
                
-         routed = postOffice.route(ref7, "topic1", null);            
+         routed = postOffice.route(ref7, new SimpleCondition("topic1"), null);            
          assertTrue(routed);
-         routed = postOffice.route(ref8, "topic1", null);            
+         routed = postOffice.route(ref8, new SimpleCondition("topic1"), null);            
          assertTrue(routed);
          
          msgs = receiver1.getMessages();

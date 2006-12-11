@@ -23,8 +23,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.Iterator;
-import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;

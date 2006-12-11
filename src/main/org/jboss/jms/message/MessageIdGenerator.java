@@ -55,6 +55,11 @@ public class MessageIdGenerator
 
    protected ConnectionFactoryDelegate cfd;
 
+   public ConnectionFactoryDelegate getDelegate()
+   {
+       return cfd;
+   }
+
    // Constructors --------------------------------------------------
 
    public MessageIdGenerator(ConnectionFactoryDelegate cfd, int blockSize)  throws JMSException

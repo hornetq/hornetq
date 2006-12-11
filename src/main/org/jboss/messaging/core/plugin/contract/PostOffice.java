@@ -41,25 +41,28 @@ import org.jboss.messaging.core.tx.Transaction;
  * there is a single binding per queue.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
  *
  */
 public interface PostOffice extends MessagingComponent
-{   
-   Binding bindQueue(String condition, Queue queue) throws Exception;
+{
+   String getOfficeName();
    
+   Binding bindQueue(Condition condition, Queue queue) throws Exception;
 
    Binding unbindQueue(String queueName) throws Throwable;
-   
+
    /**
     * List the bindings that match the specified condition
     * @param condition
     * @return
     * @throws Exception
     */
-   Collection listBindingsForCondition(String condition) throws Exception;
+   Collection listBindingsForCondition(Condition condition) throws Exception;
    
    /**
     * Get the binding for the specified queue name
@@ -68,7 +71,7 @@ public interface PostOffice extends MessagingComponent
     * @throws Exception
     */
    Binding getBindingForQueueName(String queueName) throws Exception;
-   
+
    /**
     * Route a reference.
     * @param ref
@@ -79,7 +82,11 @@ public interface PostOffice extends MessagingComponent
     * @return true if ref was accepted by at least one queue
     * @throws Exception
     */
-   boolean route(MessageReference ref, String condition, Transaction tx) throws Exception;   
+   boolean route(MessageReference ref, Condition condition, Transaction tx) throws Exception; 
    
+   /**
+    * 
+    * @return true if it is a non clustered post office
+    */
    boolean isLocal();
 }

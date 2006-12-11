@@ -72,6 +72,8 @@ public class MessagingJMSException extends JMSException
          {
             setLinkedException(new Exception(cause));
          }
+
+         this.initCause(cause);
       }
    }
 

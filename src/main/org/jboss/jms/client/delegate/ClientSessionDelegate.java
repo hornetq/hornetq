@@ -51,6 +51,7 @@ import org.jboss.remoting.Client;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -187,6 +188,19 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean connectionConsumer) throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * @see org.jboss.jms.server.endpoint.ServerSessionEndpoint#failOverConsumer(org.jboss.jms.destination.JBossDestination, String, boolean, String, boolean, long, int) 
+    * @see org.jboss.jms.client.container.StateCreationAspect#handleCreateConsumerDelegate(org.jboss.aop.joinpoint.Invocation)
+    * */
+   public ConsumerDelegate failOverConsumer(JBossDestination jmsDestination,
+                                            String selectorString,
+                                            boolean noLocal,  String subscriptionName,
+                                            boolean connectionConsumer,
+                                            long oldChannelID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

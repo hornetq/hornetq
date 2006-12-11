@@ -18,6 +18,7 @@
    <aspect class="org.jboss.jms.client.container.AsfAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.BrowserAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ConnectionAspect" scope="PER_INSTANCE"/>
+   <aspect class="org.jboss.jms.client.container.HAAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.FactoryAspect" scope="PER_INSTANCE"/>
 
    <!-- ConnectionFactory Stack-->        
@@ -27,6 +28,9 @@
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->createConnectionDelegate(..))">
       <advice name="handleCreateConnectionDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
+   </bind>  
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->createConnectionDelegate(..))">
+      <advice name="handleCreateConnectionDelegate" aspect="org.jboss.jms.client.container.HAAspect"/>
    </bind>
                
    <!-- Connection Stack -->   
@@ -35,6 +39,12 @@
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>      
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>               
    </bind>  
+    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->start())">
+       <advice name="handleStart" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
+    </bind>
+    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->stop())">
+       <advice name="handleStop" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
+    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createConnectionConsumer(..))">
       <advice name="handleCreateConnectionConsumer" aspect="org.jboss.jms.client.container.AsfAspect"/>
    </bind>
@@ -61,8 +71,9 @@
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createSessionDelegate(..))">
       <advice name="handleCreateSessionDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
-   </bind>   
-   
+   </bind>
+    
+
    <!-- Session Stack -->   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
@@ -147,7 +158,13 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>   
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->failOverConsumer(..))">
+      <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>
+   </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
+      <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
+   </bind>
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->failOverConsumer(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createProducerDelegate(..))">

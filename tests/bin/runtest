@@ -21,6 +21,7 @@ reldir=`dirname $0`
 
 ENV_TEST_DATABASE=$TEST_DATABASE
 ENV_TEST_SERIALIZATION=$TEST_SERIALIZATION
+ENV_TEST_CLUSTERED=$TEST_CLUSTERED
 ENV_TEST_REMOTING=$TEST_REMOTING
 
 if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
@@ -39,6 +40,9 @@ fi
 if [ "$ENV_TEST_SERIALIZATION" != "" ]; then
    TEST_SERIALIZATION=$ENV_TEST_SERIALIZATION
 fi
+if [ "$ENV_TEST_CLUSTERED" != "" ]; then
+   TEST_CLUSTERED=$ENV_TEST_CLUSTERED
+fi
 
 if [ "$ENV_TEST_REMOTING" != "" ]; then
    TEST_REMOTING=$ENV_TEST_REMOTING
@@ -51,7 +55,7 @@ TEST_REMOTING=http
 # it from there.
 #
 
-ant -Dtest.execution.classpath.file=bin/.test.execution.classpath -f $reldir/../build.xml get-test-execution-classpath
+ant -Dtest.execution.classpath.file=bin/.test.execution.classpath -f $reldir/../build.xml compile get-test-execution-classpath
 CLASSPATH=`cat $reldir/.test.execution.classpath`
 
 outputdir="$reldir/../output"
@@ -97,27 +101,83 @@ while [ "$1" != "" ]; do
         REMOTE_TEST="-Dremote=true"
     fi
     if [ "$1" = "-remotedebug" ]; then
-        REMOTE_DEBUG_FLAG="-debug"
+        remote_debug=true
+    fi
+    if [ "$1" = "0" -o "$1" = "1" -o "$1" = "2" ]; then
+        remote_debug_index=$1
+    fi
+    if [ "$1" = "-clustered" ]; then
+        TEST_CLUSTERED=true
     fi
     shift
 done
 
-JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE -Dtest.serialization=$TEST_SERIALIZATION -Dtest.remoting=$TEST_REMOTING -Dbuild.lib=../../output/lib"
+JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE -Dtest.serialization=$TEST_SERIALIZATION -Dtest.clustered=$TEST_CLUSTERED -Dtest.remoting=$TEST_REMOTING -Dbuild.lib=../../output/lib"
 
 if [ "$TARGET_TEST" != "" ]; then
    TARGET_TEST="-t $TARGET_TEST"
 fi
 
+if [ "$remote_debug" = "true" ]; then
+   if [ "$remote_debug_index" = "" ]; then
+      REMOTE_DEBUG_FLAG_0="-debug"
+   elif [ "$remote_debug_index" = "1" ]; then
+      REMOTE_DEBUG_FLAG_1="-debug"
+   elif [ "$remote_debug_index" = "2" ]; then
+      REMOTE_DEBUG_FLAG_2="-debug"
+   elif [ "$remote_debug_index" = "3" ]; then
+      REMOTE_DEBUG_FLAG_3="-debug"
+   else
+      echo "Invalid argument: $remote_debug_index"
+      exit 1
+   fi
+fi
+
 if [ "$isRemote" = "true" ]; then
-  export TEST_DATABASE TEST_SERIALIZATION TEST_REMOTING
-  $reldir/start-rmi-server $REMOTE_DEBUG_FLAG -use-existent-test-classpath-file
+
+  export TEST_DATABASE TEST_SERIALIZATION TEST_CLUSTERED TEST_REMOTING
+
+  $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_0 -use-existent-test-classpath-file -index 0
+
+  if [ "$TEST_CLUSTERED" = "true" ]; then
+
+     # start the second remote server
+     $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_1 -use-existent-test-classpath-file -index 1
+
+     # start the third remote server
+     $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_2 -use-existent-test-classpath-file -index 2
+
+     # start the fourth remote server
+     $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_3 -use-existent-test-classpath-file -index 3
+
+  fi
 fi
 
 
 $JAVA_HOME/bin/java $JAVA_OPTS -cp "$CLASSPATH" \
 org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
 
+
+#
+# stop the servers in the reverse order
+#
+
 if [ "$isRemote" = "true" ]; then
-  $reldir/stop-rmi-server -use-existent-test-classpath-file
+
+    if [ "$TEST_CLUSTERED" = "true" ]; then
+
+       # stop the fourth remote server
+       $reldir/stop-rmi-server -use-existent-test-classpath-file -index 3
+
+       # stop the third remote server
+       $reldir/stop-rmi-server -use-existent-test-classpath-file -index 2
+
+       # stop the second remote server
+       $reldir/stop-rmi-server -use-existent-test-classpath-file -index 1
+
+    fi
+
+  $reldir/stop-rmi-server -use-existent-test-classpath-file -index 0
+
 fi
 

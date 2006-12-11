@@ -78,6 +78,7 @@ public class JMSRemotingConnection
       // Enable client pinging. Server leasing is enabled separately on the server side
 
       Map config = new HashMap();
+      
       config.put(Client.ENABLE_LEASE, String.valueOf(clientPing));
 
       client = new Client(serverLocator, config);
@@ -168,6 +169,7 @@ public class JMSRemotingConnection
       client.removeListener(callbackManager);
       client.disconnect();
 
+      client=null;
       log.debug(this + " closed");
    }
 

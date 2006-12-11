@@ -537,7 +537,7 @@ public abstract class ChannelSupport implements Channel
          ListIterator iter = null;
          
          MessageReference ref = null;
-         
+
          while (true)
          {           
             synchronized (deliveryLock)

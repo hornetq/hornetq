@@ -150,20 +150,6 @@ public class SecurityAspect
       return invocation.invokeNext();
    }   
    
-   public Object handleGetMessageNow(Invocation invocation) throws Throwable
-   {           
-      checkConsumerAccess(invocation);
-            
-      return invocation.invokeNext();
-   }   
-   
-   public Object handleActivate(Invocation invocation) throws Throwable
-   {           
-      checkConsumerAccess(invocation);
-      
-      return invocation.invokeNext();
-   } 
-   
    protected void checkConsumerAccess(Invocation invocation) throws Throwable
    {
       ConsumerAdvised del = (ConsumerAdvised)invocation.getTargetObject();

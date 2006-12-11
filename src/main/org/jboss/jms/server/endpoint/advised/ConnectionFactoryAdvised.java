@@ -22,9 +22,8 @@
 package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
-
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
+import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
@@ -58,10 +57,12 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
 
    // ConnectionFactoryEndpoint implementation -----------------------
 
-   public ConnectionDelegate createConnectionDelegate(String username, String password)
+   public CreateConnectionResult createConnectionDelegate(String username,
+                                                          String password,
+                                                          int failedNodeId)
       throws JMSException
    {
-      return endpoint.createConnectionDelegate(username, password);
+      return endpoint.createConnectionDelegate(username, password, failedNodeId);
    }
 
    public byte[] getClientAOPConfig() throws JMSException
@@ -95,9 +96,5 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-
-
-
 
 }

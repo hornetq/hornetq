@@ -60,6 +60,7 @@ public class CallbackManager implements InvokerCallbackHandler
 
    // Attributes ----------------------------------------------------
 
+   // Map<Long(lookup)-MessageCallbackHandler>
    protected Map callbackHandlers;
 
    // Constructors --------------------------------------------------
@@ -98,11 +99,11 @@ public class CallbackManager implements InvokerCallbackHandler
       callbackHandlers.put(lookup, handler);
    }
 
-   public void unregisterHandler(int serverID, int consumerID)
+   public MessageCallbackHandler unregisterHandler(int serverID, int consumerID)
    {
       Long lookup = computeLookup(serverID, consumerID);
 
-      callbackHandlers.remove(lookup);
+      return (MessageCallbackHandler)callbackHandlers.remove(lookup);
    }
 
    // Package protected ---------------------------------------------

@@ -38,6 +38,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ConnectionManager;
+import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
@@ -107,9 +108,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private ServerPeer serverPeer;
 
    // access to server's extensions
-   private PostOffice queuePostOffice;
-   
-   private PostOffice topicPostOffice;
+   private PostOffice postOffice;
    
    private SecurityManager sm;
    
@@ -145,9 +144,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       tr = serverPeer.getTxRepository();
       cm = serverPeer.getConnectionManager();
       ms = serverPeer.getMessageStore();
-      queuePostOffice = serverPeer.getQueuePostOfficeInstance();
-      topicPostOffice = serverPeer.getTopicPostOfficeInstance();
-      
+      postOffice = serverPeer.getPostOfficeInstance();
+ 
       started = false;
 
       this.connectionID = serverPeer.getNextObjectID();
@@ -308,7 +306,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
             if (dest.isQueue())
             {     
-               queuePostOffice.unbindQueue(dest.getName());               
+               postOffice.unbindQueue(dest.getName());               
             }
             else
             {
@@ -610,14 +608,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          if (dest.isQueue())
          {
-            if (!queuePostOffice.route(ref, dest.getName(), tx))
+            if (!postOffice.route(ref, new JMSCondition(true, dest.getName()), tx))
             {
                throw new JMSException("Failed to route message");
             }
          }
          else
          {
-            topicPostOffice.route(ref, dest.getName(), tx);   
+            postOffice.route(ref, new JMSCondition(false, dest.getName()), tx);   
          }
       }
       finally

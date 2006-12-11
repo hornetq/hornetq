@@ -88,6 +88,11 @@ public class JMSTest extends MessagingTestCase
       super.tearDown();
    }
    
+   public void testNoop() throws Exception
+   {
+      log.info("noop");
+   }
+
    public void test_NonPersistent_NonTransactional() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");

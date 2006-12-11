@@ -22,23 +22,12 @@
    <!-- Note that Hypersonic CANNOT be used for clustered post offices -->
 
    <mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
-      name="jboss.messaging:service=QueuePostOffice"
+      name="jboss.messaging:service=PostOffice"
       xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="PostOfficeName">Queue</attribute>
-      <attribute name="DataSource">java:/DefaultDS</attribute>
-      <attribute name="CreateTablesOnStartup">true</attribute>
-   </mbean>
-
-   <mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
-      name="jboss.messaging:service=TopicPostOffice"
-      xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="PostOfficeName">Topic</attribute>
+      <attribute name="PostOfficeName">JMS</attribute>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
    </mbean>

@@ -235,7 +235,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          //Load the unpaged references
          InitialLoadInfo ili = pm.getInitialReferenceInfos(channelID, fullSize);
-
+         
          if (ili.getMaxPageOrdering() != null)            
          {
             firstPagingOrder = ili.getMinPageOrdering().longValue();
@@ -249,22 +249,24 @@ public abstract class PagingChannelSupport extends ChannelSupport
             firstPagingOrder = nextPagingOrder = 0;
          }
          
-         Map refMap = processReferences(ili.getRefInfos()); 
-        
+         log.info("Channel " + this.channelID + " loading " + ili.getRefInfos().size() + " references");
+         
+         Map refMap = processReferences(ili.getRefInfos());
+         
          Iterator iter = ili.getRefInfos().iterator();
          while (iter.hasNext())
          {
             ReferenceInfo info = (ReferenceInfo)iter.next();
-
+            
             addFromRefInfo(info, refMap);
-         }                    
+         }
          
          //Maybe we need to load some paged refs
          
          while (checkLoad()) {}
       }
-   }      
-    
+   }
+   
       
    public void unload() throws Exception
    {

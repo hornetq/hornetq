@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.plugin.postoffice;
 
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.plugin.contract.Condition;
 
 /**
  * A Binding
@@ -36,7 +37,12 @@ public interface Binding
 {
    public int getNodeId();
    
-   public String getCondition();
+   public Condition getCondition();
    
    public Queue getQueue();
+
+   public boolean isFailed();
+
+   public void setFailed(boolean failed);
+
 }

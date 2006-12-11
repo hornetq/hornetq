@@ -38,16 +38,23 @@ import org.jboss.jms.tx.AckInfo;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * 
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+   *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public interface SessionEndpoint extends Closeable
-{ 
+{
+   ConsumerDelegate failOverConsumer(JBossDestination jmsDestination,
+                                     String selectorString,
+                                     boolean noLocal,  String subscriptionName,
+                                     boolean connectionConsumer,
+                                     long oldchannelID) throws JMSException;
+
    ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
-                                           boolean connectionConsumer) throws JMSException;   
+                                           boolean connectionConsumer) throws JMSException;
    
    BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
       throws JMSException;

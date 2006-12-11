@@ -289,12 +289,13 @@
            description="Starts the RMI server used by clustering tests">
 
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
-         <sysproperty key="test.registry.index" value="${test.registry.index}"/>
+         <sysproperty key="test.server.index" value="${test.server.index}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="remote.test.suffix" value="-remote-${test.server.index}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.clustered" value="true"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -328,7 +329,7 @@
            description="Stops the RMI server used by clustering tests">
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
             classpathref="test.execution.classpath">
-         <sysproperty key="test.registry.index" value="${test.registry.index}"/>
+         <sysproperty key="test.server.index" value="${test.server.index}"/>
       </java>
    </target>
 
@@ -651,25 +652,39 @@
       <!-- Stop the rmi servers in case a previous run aborted -->
 
       <antcall target="stop-rmi-server-clustering">
-         <param name="test.registry.index" value="0"/>
+         <param name="test.server.index" value="3"/>
       </antcall>
+
       <antcall target="stop-rmi-server-clustering">
-         <param name="test.registry.index" value="1"/>
+         <param name="test.server.index" value="2"/>
       </antcall>
+
       <antcall target="stop-rmi-server-clustering">
-         <param name="test.registry.index" value="2"/>
+         <param name="test.server.index" value="1"/>
       </antcall>
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.server.index" value="0"/>
+      </antcall>
+
+
 
       <!-- Start 3 rmi servers -->
 
       <antcall target="start-rmi-server-clustering">
-         <param name="test.registry.index" value="0"/>
+         <param name="test.server.index" value="0"/>
       </antcall>
+
       <antcall target="start-rmi-server-clustering">
-         <param name="test.registry.index" value="1"/>
+         <param name="test.server.index" value="1"/>
       </antcall>
+
       <antcall target="start-rmi-server-clustering">
-         <param name="test.registry.index" value="2"/>
+         <param name="test.server.index" value="2"/>
+      </antcall>
+
+      <antcall target="start-rmi-server-clustering">
+         <param name="test.server.index" value="3"/>
       </antcall>
 
       <mkdir dir="${build.tests.reports}"/>
@@ -677,6 +692,13 @@
       <echo message=""/>
       <echo message="Running clustering tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
       <echo message=""/>
+
+      <!--
+
+           By default, clustered tests are run in a "remote" configuration (the clustered
+           nodes physically live in different VMs. If you want to test a co-located clustered
+           configuration, use bin/runtest -clustered
+      -->
 
       <junit printsummary="${junit.printsummary}"
              fork="${junit.fork}"
@@ -691,20 +713,22 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.clustered" value="true"/>
          <jvmarg value="-Xmx512M"/>
-         <!--
-         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
-         -->
+
          <classpath>
             <path refid="test.execution.classpath"/>
-
-            <!-- Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
             <!--
-            <path refid="jboss.test.classpath"/>
+                Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done
+            -->
+            <!--
+                 <path refid="jboss.test.classpath"/>
             -->
          </classpath>
 
-         <!-- Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done -->
+         <!--
+              Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done
+         -->
          <!--
          <sysproperty key="jboss-junit-configuration" value="Remote"/>
          <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
@@ -722,18 +746,31 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/clustering/*Test.class"/>
+               <!--
+               <include name="**/jms/clustering/SimpleClusteringTest.class"/>
+               -->
             </fileset>
          </batchtest>
       </junit>
 
+      <!--
+          Stop the servers in the reverse order, so the VM that runs the RMI registry dies last.
+      -->
+
       <antcall target="stop-rmi-server-clustering">
-         <param name="test.registry.index" value="0"/>
+         <param name="test.server.index" value="3"/>
       </antcall>
+
       <antcall target="stop-rmi-server-clustering">
-         <param name="test.registry.index" value="1"/>
+         <param name="test.server.index" value="2"/>
       </antcall>
+
       <antcall target="stop-rmi-server-clustering">
-         <param name="test.registry.index" value="2"/>
+         <param name="test.server.index" value="1"/>
+      </antcall>
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.server.index" value="0"/>
       </antcall>
 
    </target>

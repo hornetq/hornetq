@@ -42,38 +42,42 @@ class BindingInfo implements Streamable
    
    private String queueName;   
    
-   private String condition;   
+   private String conditionText;   
    
    private String filterString; 
    
    private long channelId;   
    
    private boolean durable;
+
+   private boolean failed;
    
    BindingInfo()
    {      
    }
    
-   BindingInfo(int nodeId, String queueName, String condition, String filterString,
-               long channelId, boolean durable)
+   BindingInfo(int nodeId, String queueName, String conditionText, String filterString,
+               long channelId, boolean durable, boolean failed)
    {
       this.nodeId = nodeId;
       
       this.queueName = queueName;
       
-      this.condition = condition;
+      this.conditionText = conditionText;
       
       this.filterString = filterString;
       
       this.channelId = channelId;
       
       this.durable = durable;
+
+      this.failed = failed;
    }
 
    public void execute(PostOfficeInternal office) throws Exception
    {
-      office.addBindingFromCluster(nodeId, queueName, condition,
-                                   filterString, channelId, durable);
+      office.addBindingFromCluster(nodeId, queueName, conditionText,
+                                   filterString, channelId, durable, failed);
       
    }
    
@@ -83,7 +87,7 @@ class BindingInfo implements Streamable
       
       queueName = in.readUTF();
       
-      condition = in.readUTF();
+      conditionText = in.readUTF();
       
       filterString = (String)StreamUtils.readObject(in, false);   
       
@@ -98,7 +102,7 @@ class BindingInfo implements Streamable
       
       out.writeUTF(queueName);
       
-      out.writeUTF(condition);
+      out.writeUTF(conditionText);
       
       StreamUtils.writeObject(out, filterString, false, false);
       
@@ -112,9 +116,9 @@ class BindingInfo implements Streamable
       return channelId;
    }
 
-   String getCondition()
+   String getConditionText()
    {
-      return condition;
+      return conditionText;
    }
 
    boolean isDurable()
@@ -135,5 +139,15 @@ class BindingInfo implements Streamable
    String getQueueName()
    {
       return queueName;
+   }
+
+   public boolean isFailed()
+   {
+      return failed;
+   }
+
+   public void setFailed(boolean failed)
+   {
+      this.failed = failed;
    }
 }

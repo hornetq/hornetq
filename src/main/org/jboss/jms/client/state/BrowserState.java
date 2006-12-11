@@ -21,9 +21,10 @@
   */
 package org.jboss.jms.client.state;
 
-import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.server.Version;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.server.Version;
 
 /**
  * State corresponding to a browser
@@ -41,36 +42,50 @@ public class BrowserState extends HierarchicalStateSupport
    private SessionState parent;
    private BrowserDelegate delegate;
 
-   public BrowserState(SessionState parent, BrowserDelegate delegate)
+   // Data used to recreate the Browser in case of failover
+   private JBossDestination jmsDestination;
+   private String messageSelector;
+
+   public BrowserState(SessionState parent, BrowserDelegate delegate, JBossDestination jmsDestination, String selector)
    {
       super(parent, (DelegateSupport)delegate);
+      this.jmsDestination=jmsDestination;
+      this.messageSelector=selector;
    }
 
-
-
-    public DelegateSupport getDelegate()
-    {
-        return (DelegateSupport)delegate;
-    }
-    public void setDelegate(DelegateSupport delegate)
-    {
-        this.delegate=(BrowserDelegate)delegate;
-    }
-
+   public DelegateSupport getDelegate()
+   {
+      return (DelegateSupport)delegate;
+   }
+   public void setDelegate(DelegateSupport delegate)
+   {
+      this.delegate=(BrowserDelegate)delegate;
+   }
 
    public Version getVersionToUse()
    {
       return parent.getVersionToUse();
    }
 
-    public void setParent(HierarchicalState parent)
-    {
-        this.parent=(SessionState)parent;
-    }
-    public HierarchicalState getParent()
-    {
-        return parent;
-    }
+
+   public org.jboss.jms.destination.JBossDestination getJmsDestination()
+   {
+      return jmsDestination;
+   }
+
+   public String getMessageSelector()
+   {
+      return messageSelector;
+   }
+
+   public void setParent(HierarchicalState parent)
+   {
+      this.parent=(SessionState)parent;
+   }
+   public HierarchicalState getParent()
+   {
+      return parent;
+   }
 
 }
 

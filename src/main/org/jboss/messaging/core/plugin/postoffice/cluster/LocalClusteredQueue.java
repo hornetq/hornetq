@@ -21,17 +21,9 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -39,8 +31,6 @@ import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Future;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
@@ -141,6 +131,12 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    {
       return nodeId;
    }
+
+
+   public String toString()
+   {
+      return "LocalClusteredQueue[" + this.getChannelID() + "/" + this.getName() +"]"; 
+   }
    
    /*
     * This is the same as the normal handle() method on the Channel except it doesn't
@@ -151,6 +147,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       throws Exception
    {
       if (trace) { log.trace("Handling ref from cluster: " + ref); }
+      
+      log.info("********** Handling ref from cluster: " + ref);
       
       if (filter != null && !filter.accept(ref))
       {

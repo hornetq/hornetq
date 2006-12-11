@@ -17,6 +17,12 @@
       <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
    </attribute>
 
+   <attribute access="read-only" getMethod="getNodeIDView">
+      <description>The set containing cluster group members' node IDs</description>
+      <name>NodeIDView</name>
+      <type>java.util.Set</type>
+   </attribute>
+
    <attribute access="read-write" getMethod="getDataSource" setMethod="setDataSource">
       <description>The JNDI name of the DataSource used by this ChannelMapper instance</description>
       <name>DataSource</name>
@@ -109,10 +115,27 @@
 
    <!-- Managed operations -->
 
-   <operation>
-      <description>JBoss Service lifecycle operation</description>
-      <name>create</name>
-   </operation>
+    <operation>
+       <description>JBoss Service lifecycle operation</description>
+       <name>create</name>
+    </operation>
+
+    <operation>
+       <description>Prepares a failover from a given node</description>
+       <name>failOver</name>
+        <parameter>
+          <description>The Failed ID </description>
+          <name>failedId</name>
+          <type>int</type>
+        </parameter>
+
+    </operation>
+
+    <operation>
+       <description>List Defined Bindings</description>
+       <name>listBindings</name>
+       <return-type>java.lang.String</return-type>
+    </operation>
 
    <operation>
       <description>JBoss Service lifecycle operation</description>
@@ -122,6 +145,16 @@
    <operation>
       <description>JBoss Service lifecycle operation</description>
       <name>stop</name>
+   </operation>
+
+   <operation>
+      <description></description>
+      <name>stop</name>
+      <parameter>
+        <description>Should we send a notification about leaving cluster</description>
+        <name>sendNotification</name>
+        <type>boolean</type>
+      </parameter>
    </operation>
 
    <operation>

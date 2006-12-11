@@ -35,9 +35,34 @@ import java.util.Hashtable;
  */
 public class InVMInitialContextFactoryBuilder implements InitialContextFactoryBuilder
 {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   public InVMInitialContextFactoryBuilder()
+   {
+   }
+
+   // InitialContextFactoryBuilder implementation -------------------
+
    public InitialContextFactory createInitialContextFactory(Hashtable environment)
          throws NamingException
    {
       return new InVMInitialContextFactory();
    }
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

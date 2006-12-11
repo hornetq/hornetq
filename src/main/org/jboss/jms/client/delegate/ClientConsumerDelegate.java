@@ -50,22 +50,32 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    // Attributes ----------------------------------------------------
    
-   protected int bufferSize;
+   // This should not be exposed other than through meta data
+   private int bufferSize;
    protected int maxDeliveries;
+
+   // This should not be exposed other than through meta data
+   private long channelId;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConsumerDelegate(int objectID, int bufferSize, int maxDeliveries)
+   public ClientConsumerDelegate(int objectID, long channelId, int bufferSize, int maxDeliveries)
    {
       super(objectID);
       this.bufferSize = bufferSize;
+      this.channelId = channelId;
       this.maxDeliveries = maxDeliveries;
    }
    
    public ClientConsumerDelegate()
    {      
+   }
+
+   public long getChannelId()
+   {
+       return channelId;
    }
 
    // ConsumerDelegate implementation -------------------------------
@@ -185,7 +195,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    public String toString()
    {
-      return "ConsumerDelegate[" + id + "]";
+      return "ConsumerDelegate[" + id + "](ChannelId=" + this.channelId+")" ;
    }
 
    // Protected -----------------------------------------------------
@@ -196,6 +206,20 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
          getInvokingClient();
    }
+
+   public void copyState(DelegateSupport newDelegate)
+   {
+      super.copyState(newDelegate);
+      this.channelId = ((ClientConsumerDelegate)newDelegate).channelId;
+      this.getMetaData().removeMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID);
+      this.getMetaData().addMetaData(MetaDataConstants.JMS,
+                                     MetaDataConstants.CONSUMER_ID,
+                                     newDelegate.getMetaData().
+                                        getMetaData(MetaDataConstants.JMS,
+                                                    MetaDataConstants.CONSUMER_ID),
+                                     PayloadKey.TRANSIENT);
+   }
+
 
    // Package Private -----------------------------------------------
 

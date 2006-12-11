@@ -23,7 +23,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-
 import org.jboss.messaging.util.Streamable;
 
 /**
@@ -79,11 +78,6 @@ abstract class ClusterRequest implements Streamable
             request = new QueueStatsRequest();
             break;
          }
-         case SendNodeIdRequest.TYPE:
-         {
-            request = new SendNodeIdRequest();
-            break;
-         }
          case SendTransactionRequest.TYPE:
          {
             request = new SendTransactionRequest();
@@ -97,6 +91,21 @@ abstract class ClusterRequest implements Streamable
          case RollbackPullRequest.TYPE:
          {
             request = new RollbackPullRequest();
+            break;
+         }
+         case LeaveClusterRequest.TYPE:
+         {
+            request = new LeaveClusterRequest();
+            break;
+         }
+         case PutReplicantRequest.TYPE:
+         {
+            request = new PutReplicantRequest();
+            break;
+         }
+         case RemoveReplicantRequest.TYPE:
+         {
+            request = new RemoveReplicantRequest();
             break;
          }
          default:

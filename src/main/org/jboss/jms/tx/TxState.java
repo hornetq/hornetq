@@ -95,6 +95,21 @@ public class TxState implements Streamable
    {
       this.state = state;
    }
+
+
+   /** Navigate on ACK and change consumer ids on every ACK not sent yet */
+   public void handleFailover(int oldConsumerID, int newConsumerID)
+   {
+       for (Iterator ackIterator = acks.iterator(); ackIterator.hasNext(); )
+       {
+           AckInfo ackInfo = (AckInfo)ackIterator.next();
+           
+           if (ackInfo.getConsumerID() == oldConsumerID)
+           {
+               ackInfo.setConsumerID(newConsumerID);
+           }
+       }
+   }
     
    // Streamable implementation ---------------------------------
    

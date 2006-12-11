@@ -46,6 +46,16 @@ public class MetaDataConstants
    public static final String VERSION_NUMBER = "VERSION_NUMBER";
    
    public static final String JMS_CLIENT_VM_ID = "JMS_CLIENT_VM_ID";
+
+   public static final String CF_DELEGATES = "CF_DELEGATES";
    
+   public static final String SERVER_ID = "SERVER_ID";
+   
+   public static final String REMOTING_CONNECTION = "REMOTING_CONNECTION";
+   
+   public static final String FAILOVER_MAP = "CF_FAIL_IND";
+   
+   public static final String CONNECTION_VERSION = "CONNECTION_VERSION";
+
    public static final String MAX_DELIVERIES = "MAX_DELS";
 }

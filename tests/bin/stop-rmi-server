@@ -27,9 +27,16 @@ while [ "$1" != "" ]; do
         fi
     elif [ "$1" = "-use-existent-test-classpath-file" ]; then
         USE_EXISTENT_TEST_CLASSPATH_FILE=true;
+    elif [ "$1" = "-index" ]; then
+        shift
+        index=$1
     fi
     shift
 done
+
+if [ "$index" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dtest.server.index=$index"
+fi
 
 if [ "$USE_EXISTENT_TEST_CLASSPATH_FILE" = "true" ]; then
    CLASSPATH_FILE="$reldir/.test.execution.classpath"

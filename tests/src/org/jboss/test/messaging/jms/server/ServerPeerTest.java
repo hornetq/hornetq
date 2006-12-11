@@ -21,15 +21,14 @@
   */
 package org.jboss.test.messaging.jms.server;
 
-import javax.naming.InitialContext;
-import javax.naming.Context;
-import javax.naming.NameNotFoundException;
 import javax.jms.Queue;
 import javax.jms.Topic;
-
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.MessagingJMSException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

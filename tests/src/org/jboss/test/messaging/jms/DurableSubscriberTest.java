@@ -133,12 +133,15 @@ public class DurableSubscriberTest extends MessagingTestCase
 
       conn.start();
 
-      TextMessage tm = (TextMessage)durable.receive();
+      TextMessage tm = (TextMessage)durable.receive(1000);
       assertEquals("k", tm.getText());
 
       Message m = durable.receive(1000);
       assertNull(m);
+      
+      conn.close();
    }
+      
 
    /**
     * JMS 1.1 6.11.1: A client can change an existing durable subscription by creating a durable
@@ -184,6 +187,8 @@ public class DurableSubscriberTest extends MessagingTestCase
 
       ServerManagement.undeployTopic("CompletelyNewTopic");
       ServerManagement.undeployTopic("CompletelyNewTopic2");
+      
+      conn.close();
    }
 
    /**
@@ -258,6 +263,8 @@ public class DurableSubscriberTest extends MessagingTestCase
       assertNull(m);
       
       ServerManagement.undeployTopic("CompletelyNewTopic2");
+      
+      conn.close();
    }
 
    /**
@@ -462,6 +469,8 @@ public class DurableSubscriberTest extends MessagingTestCase
       {
          // OK
       }
+      
+      c.close();
    }
 
 

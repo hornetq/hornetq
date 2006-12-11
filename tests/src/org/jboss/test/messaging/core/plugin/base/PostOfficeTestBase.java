@@ -39,6 +39,8 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.IdManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
+import org.jboss.messaging.core.plugin.contract.Condition;
+import org.jboss.messaging.core.plugin.contract.ConditionFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
@@ -46,6 +48,7 @@ import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.core.SimpleConditionFactory;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -85,6 +88,8 @@ public class PostOfficeTestBase extends MessagingTestCase
    
    protected QueuedExecutorPool pool;
    
+   protected ConditionFactory conditionFactory;
+   
    // Constructors --------------------------------------------------
 
    public PostOfficeTestBase(String name)
@@ -121,6 +126,8 @@ public class PostOfficeTestBase extends MessagingTestCase
       
       channelIdManager = new IdManager("CHANNEL_ID", 10, pm);
       channelIdManager.start();
+      
+      conditionFactory = new SimpleConditionFactory();
             
       log.debug("setup done");
    }
@@ -147,9 +154,11 @@ public class PostOfficeTestBase extends MessagingTestCase
    {
       FilterFactory ff = new SimpleFilterFactory();
       
+      ConditionFactory cf= new SimpleConditionFactory();
+      
       DefaultPostOffice postOffice = 
          new DefaultPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                            sc.getPostOfficeSQLProperties(), true, 1, "Simple", ms, pm, tr, ff, pool);
+                            sc.getPostOfficeSQLProperties(), true, 1, "Simple", ms, pm, tr, ff, cf, pool);
       
       postOffice.start();      
       
@@ -261,7 +270,7 @@ public class PostOfficeTestBase extends MessagingTestCase
    
    private static long msgCount;
    
-   protected List sendMessages(String condition, boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
+   protected List sendMessages(String conditionText, boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
    {
       List list = new ArrayList();
       
@@ -270,6 +279,8 @@ public class PostOfficeTestBase extends MessagingTestCase
          Message msg = CoreMessageFactory.createCoreMessage(msgCount++, persistent, null);      
          
          MessageReference ref = ms.reference(msg);         
+         
+         Condition condition = conditionFactory.createCondition(conditionText);
          
          boolean routed = office.route(ref, condition, null);         
          

@@ -498,6 +498,11 @@ public class MessageCallbackHandler
    {
       return consumerID;
    }
+
+   public void setConsumerId(int consumerId)
+   {
+       this.consumerID=consumerId;
+   }
    
    public void addToFrontOfBuffer(MessageProxy proxy)
    {

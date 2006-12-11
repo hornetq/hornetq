@@ -44,7 +44,7 @@ class MessageRequest extends ClusterRequest
 {
    static final int TYPE = 3;
    
-   private String routingKey;   
+   private String routingConditionText;   
    
    private Message message;
    
@@ -54,9 +54,9 @@ class MessageRequest extends ClusterRequest
    {      
    }
    
-   MessageRequest(String routingKey, Message message, Map queueNameNodeIdMap)
+   MessageRequest(String routingConditionText, Message message, Map queueNameNodeIdMap)
    {
-      this.routingKey = routingKey;
+      this.routingConditionText = routingConditionText;
       
       this.message = message;
       
@@ -65,7 +65,7 @@ class MessageRequest extends ClusterRequest
    
    Object execute(PostOfficeInternal office) throws Exception
    {
-      office.routeFromCluster(message, routingKey, queueNameNodeIdMap);      
+      office.routeFromCluster(message, routingConditionText, queueNameNodeIdMap);      
       return null;
    }  
    
@@ -76,7 +76,7 @@ class MessageRequest extends ClusterRequest
    
    public void read(DataInputStream in) throws Exception
    {
-      routingKey = in.readUTF();
+      routingConditionText = in.readUTF();
       
       byte type = in.readByte();
       message = MessageFactory.createMessage(type);
@@ -87,7 +87,7 @@ class MessageRequest extends ClusterRequest
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(routingKey);
+      out.writeUTF(routingConditionText);
       
       out.writeByte(message.getType());      
       message.write(out);

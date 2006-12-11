@@ -54,6 +54,8 @@ class UnbindRequest extends ClusterRequest
 
    Object execute(PostOfficeInternal office) throws Exception
    {
+      // TODO: Due to failoever we can't guarantee unique key by nodeId and queueName any more.
+      // We might need to revist this
       office.removeBindingFromCluster(nodeId, queueName);
       
       return null;

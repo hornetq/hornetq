@@ -21,13 +21,10 @@
   */
 package org.jboss.test.messaging.jms.server;
 
-import java.util.Set;
-
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
-
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;

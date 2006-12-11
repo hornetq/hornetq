@@ -43,12 +43,14 @@ public class RMINamingDelegate extends UnicastRemoteObject implements NamingDele
    // Attributes ----------------------------------------------------
 
    private InitialContextAccess ica;
+   private int serverIndex;
 
    // Constructors --------------------------------------------------
 
-   public RMINamingDelegate() throws Exception
+   public RMINamingDelegate(int serverIndex) throws Exception
    {
       super();
+      this.serverIndex = serverIndex;
       ica = new InitialContextAccess();
    }
 
@@ -87,7 +89,7 @@ public class RMINamingDelegate extends UnicastRemoteObject implements NamingDele
       {
          if (ic == null)
          {
-            ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+            ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment(serverIndex));
          }
          return ic;
       }

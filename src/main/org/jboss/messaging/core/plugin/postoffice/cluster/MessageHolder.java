@@ -41,7 +41,7 @@ import org.jboss.messaging.util.Streamable;
  */
 class MessageHolder implements Streamable
 {
-   private String routingKey;
+   private String routingKeyText;
    
    private Message message;
    
@@ -51,9 +51,9 @@ class MessageHolder implements Streamable
    {      
    }
    
-   MessageHolder(String routingKey, Message message, Map queueNameToNodeIdMap)
+   MessageHolder(String routingKeyText, Message message, Map queueNameToNodeIdMap)
    {
-      this.routingKey = routingKey;
+      this.routingKeyText = routingKeyText;
       
       this.message = message;
       
@@ -62,7 +62,7 @@ class MessageHolder implements Streamable
    
    String getRoutingKey()
    {
-      return routingKey;
+      return routingKeyText;
    }
    
    Message getMessage()
@@ -77,7 +77,7 @@ class MessageHolder implements Streamable
 
    public void read(DataInputStream in) throws Exception
    {
-      routingKey = in.readUTF();
+      routingKeyText = in.readUTF();
       
       byte type = in.readByte();
         
@@ -89,7 +89,7 @@ class MessageHolder implements Streamable
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeUTF(routingKey);
+      out.writeUTF(routingKeyText);
       
       out.writeByte(message.getType());      
       message.write(out);

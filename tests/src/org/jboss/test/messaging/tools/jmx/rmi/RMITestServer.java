@@ -25,10 +25,13 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Set;
-
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 import javax.management.ObjectName;
+import javax.management.NotificationListener;
 import javax.transaction.UserTransaction;
-
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
@@ -48,94 +51,105 @@ import org.jboss.remoting.ServerInvocationHandler;
  */
 public class RMITestServer extends UnicastRemoteObject implements Server
 {
-   private static final long serialVersionUID = -368445344011004778L;
+   // Constants -----------------------------------------------------
 
+   public static final String RMI_SERVER_PREFIX = "messaging_rmi_server_";
+   public static final String NAMING_SERVER_PREFIX = "naming_rmi_server_";
+
+   public static final int DEFAULT_REGISTRY_PORT = 22555;
+   public static final int DEFAULT_SERVER_INDEX = 0;
+   public static final String DEFAULT_SERVER_HOST = "localhost";
+
+   private static final long serialVersionUID = -368445344011004778L;
    private static final Logger log = Logger.getLogger(RMITestServer.class);
 
-   protected RemoteTestServer server;
+   // Static --------------------------------------------------------
 
-   private RMINamingDelegate namingDelegate;
-
-   //public static final int RMI_REGISTRY_PORT = 25989;
-   
-   //We allow for up to 5 rmi test servers running simultaneously
-   public static final int[] RMI_REGISTRY_PORTS = 
-      new int[] {25989, 25990, 25991, 25992, 25993};
-   
-   public static final String RMI_SERVER_NAME = "messaging-rmi-server";
-   public static final String NAMING_SERVER_NAME = "naming-rmi-server";
-
-   private static Registry registry;
-   
    public static void main(String[] args) throws Exception
    {
       log.debug("initializing RMI runtime");
 
       String host = System.getProperty("test.bind.address");
+
       if (host == null)
       {
-         host = "localhost";
+         host = DEFAULT_SERVER_HOST;
       }
 
-      log.info("bind address: " + host);
-      
-      int index;
-      String registryIndex = System.getProperty("test.registry.index");
-      if (registryIndex == null)
+      int serverIndex = DEFAULT_SERVER_INDEX;
+
+      String s = System.getProperty("test.server.index");
+
+      if (s != null)
       {
-         //Use the 0th port
-         index = 0;
+         serverIndex = Integer.parseInt(s);
       }
-      else
-      {
-         index = Integer.parseInt(registryIndex);         
-      }
-      int port = RMI_REGISTRY_PORTS[index];
+
+      log.info("RMI server " + serverIndex + ", bind address " + host);
+
+      RMITestServer testServer = new RMITestServer(serverIndex);
+      log.debug("RMI server " + serverIndex + " created");
 
       // let RMI know the bind address
       System.setProperty("java.rmi.server.hostname", host);
 
-      registry = LocateRegistry.createRegistry(port);
-      log.debug("registry created at port: " + port);
+      Registry registry;
 
-      RMITestServer testServer = new RMITestServer(index);
-      log.debug("RMI server created");
-
-      registry.bind(RMI_SERVER_NAME, testServer);
-      registry.bind(NAMING_SERVER_NAME, testServer.getNamingDelegate());
-
-      log.info("RMI server bound");
-   }
-
-   public class VMKiller implements Runnable
-   {
-      public void run()
+      // try to bind first
+      try
       {
-         log.info("shutting down the VM");
+         registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
+         registry.bind(RMI_SERVER_PREFIX + serverIndex, testServer);
+         registry.bind(NAMING_SERVER_PREFIX + serverIndex, testServer.getNamingDelegate());
 
-         try
-         {
-            Thread.sleep(250);
-         }
-         catch(Exception e)
-         {
-            log.warn("interrupted while sleeping", e);
-         }
-
-         System.exit(0);
       }
+      catch(Exception e)
+      {
+         log.info("Failure using an existing registry, trying creating it");
+
+         // try to create it
+         registry = LocateRegistry.createRegistry(DEFAULT_REGISTRY_PORT);
+
+         registry.bind(RMI_SERVER_PREFIX + serverIndex, testServer);
+         registry.bind(NAMING_SERVER_PREFIX + serverIndex, testServer.getNamingDelegate());
+      }
+
+      log.info("RMI server " + serverIndex + " bound");
    }
+
+   // Attributes ----------------------------------------------------
+
+   protected RemoteTestServer server;
+   private RMINamingDelegate namingDelegate;
+   // Map<Long-ProxyNotificationListener>
+   private Map proxyListeners;
+
+   // Constructors --------------------------------------------------
 
    public RMITestServer(int index) throws Exception
    {
-      namingDelegate = new RMINamingDelegate();
-
+      namingDelegate = new RMINamingDelegate(index);
       server = new RemoteTestServer(index);
+      proxyListeners = new HashMap();
    }
 
-   public void configureSecurityForDestination(String destName, String config) throws Exception
+   // Server implementation -----------------------------------------
+
+   public void start(String containerConfig) throws Exception
    {
-      server.configureSecurityForDestination(destName, config);
+      server.start(containerConfig);
+   }
+
+   public void stop() throws Exception
+   {
+      server.stop();
+      namingDelegate.reset();
+   }
+
+   public synchronized void kill() throws Exception
+   {
+      // Kills the server without doing any graceful shutdown. For graceful shutdown use stop().
+      new Thread(new VMKiller(), "VM Killer").start();
    }
 
    public ObjectName deploy(String mbeanConfiguration) throws Exception
@@ -143,29 +157,159 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.deploy(mbeanConfiguration);
    }
 
-   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
+   public void undeploy(ObjectName on) throws Exception
    {
-      server.deployQueue(name, jndiName, clustered);
+      server.undeploy(on);
+   }
+
+   public Object getAttribute(ObjectName on, String attribute) throws Exception
+   {
+      return server.getAttribute(on, attribute);
+   }
+
+   public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
+   {
+      server.setAttribute(on, name, valueAsString);
+   }
+
+   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
+      throws Exception
+   {
+      return server.invoke(on, operationName, params, signature);
+   }
+
+   public void addNotificationListener(ObjectName on, NotificationListener listener)
+      throws Exception
+   {
+      if (!(listener instanceof NotificationListenerID))
+      {
+         throw new IllegalArgumentException("A RMITestServer can only handle NotificationListenerIDs!");
+      }
+
+      long id = ((NotificationListenerID)listener).getID();
+
+      ProxyNotificationListener pl = new ProxyNotificationListener();
+
+      synchronized(proxyListeners)
+      {
+         proxyListeners.put(new Long(id), pl);
+      }
+
+      server.addNotificationListener(on, pl);
+   }
+
+   public void removeNotificationListener(ObjectName on, NotificationListener listener)
+      throws Exception
+   {
+
+      if (!(listener instanceof NotificationListenerID))
+      {
+         throw new IllegalArgumentException("A RMITestServer can only handle NotificationListenerIDs!");
+      }
+
+      long id = ((NotificationListenerID)listener).getID();
+
+      ProxyNotificationListener pl = null;
+
+      synchronized(proxyListeners)
+      {
+         pl = (ProxyNotificationListener)proxyListeners.remove(new Long(id));
+      }
+
+      server.removeNotificationListener(on, pl);
+   }
+
+   public Set query(ObjectName pattern) throws Exception
+   {
+      return server.query(pattern);
+   }
+
+   public String getDatabaseType()
+   {
+      return server.getDatabaseType();
+   }
+
+   public void log(int level, String text) throws Exception
+   {
+      server.log(level, text);
+   }
+
+   public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
+                               String defaultTopicJNDIContext, boolean clustered) throws Exception
+   {
+      server.
+         startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, clustered);
+   }
+
+   public void stopServerPeer() throws Exception
+   {
+      server.stopServerPeer();
+   }
+
+   public boolean isServerPeerStarted() throws Exception
+   {
+      return server.isServerPeerStarted();
+   }
+
+   public ObjectName getServerPeerObjectName() throws Exception
+   {
+      return server.getServerPeerObjectName();
+   }
+
+   public boolean isStarted() throws Exception
+   {
+      return server.isStarted();
+   }
+
+   public Set getConnectorSubsystems() throws Exception
+   {
+      return server.getConnectorSubsystems();
+   }
+
+   public void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
+      throws Exception
+   {
+      server.addServerInvocationHandler(subsystem, handler);
+   }
+
+   public void removeServerInvocationHandler(String subsystem) throws Exception
+   {
+      server.removeServerInvocationHandler(subsystem);
+   }
+
+   public MessageStore getMessageStore() throws Exception
+   {
+      return server.getMessageStore();
+   }
+
+   public DestinationManager getDestinationManager() throws Exception
+   {
+      return server.getDestinationManager();
+   }
+
+   public PersistenceManager getPersistenceManager() throws Exception
+   {
+      return server.getPersistenceManager();
+   }
+
+   public PostOffice getQueuePostOffice() throws Exception
+   {
+      return server.getQueuePostOffice();
+   }
+
+   public PostOffice getTopicPostOffice() throws Exception
+   {
+      return server.getTopicPostOffice();
+   }
+
+   public ServerPeer getServerPeer() throws Exception
+   {
+      return server.getServerPeer();
    }
 
    public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
    {
       server.deployTopic(name, jndiName, clustered);
-   }
-   
-   public void deployQueue(String name,
-                           String jndiName,
-                           int fullSize,
-                           int pageSize,
-                           int downCacheSize,
-                           boolean clustered) throws Exception
-   {
-      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-   }
-
-   public void createQueue(String name, String jndiName) throws Exception
-   {
-      server.createQueue(name, jndiName);
    }
 
    public void deployTopic(String name,
@@ -183,12 +327,42 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.createTopic(name, jndiName);
    }
 
+   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
+   {
+      server.deployQueue(name, jndiName, clustered);
+   }
+
+   public void deployQueue(String name,
+                           String jndiName,
+                           int fullSize,
+                           int pageSize,
+                           int downCacheSize,
+                           boolean clustered) throws Exception
+   {
+      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+   }
+
+   public void createQueue(String name, String jndiName) throws Exception
+   {
+      server.createQueue(name, jndiName);
+   }
+
+   public void undeployDestination(boolean isQueue, String name) throws Exception
+   {
+      server.undeployDestination(isQueue, name);
+   }
+
+   public boolean destroyDestination(boolean isQueue, String name) throws Exception
+   {
+      return server.destroyDestination(isQueue, name);
+   }
+
    public void deployConnectionFactory(String objectName, String[] jndiBindings)
       throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings);
    }
-   
+
    public void deployConnectionFactory(String objectName, String[] jndiBindings, int prefetchSize)
       throws Exception
    {
@@ -211,109 +385,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.undeployConnectionFactory(objectName);
    }
 
-   public synchronized void destroy() throws Exception
+   public void configureSecurityForDestination(String destName, String config) throws Exception
    {
-      server.destroy();
-
-      registry.unbind(RMI_SERVER_NAME);
-      registry.unbind(NAMING_SERVER_NAME);
-      
-      //Now shutdown the process
-      
-      //TODO - we should shutdown cleanly - let main() exit - not kill the process
-      
-      new Thread(new VMKiller(), "VM Killer").start();
-   }
-
-   public Object getAttribute(ObjectName on, String attribute) throws Exception
-   {
-      return server.getAttribute(on, attribute);
-   }
-
-   public Set getConnectorSubsystems() throws Exception
-   {
-      return server.getConnectorSubsystems();
-   }
-
-   public void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
-      throws Exception
-   {
-      server.addServerInvocationHandler(subsystem, handler);
-   }
-
-   public void removeServerInvocationHandler(String subsystem) throws Exception
-   {
-      server.removeServerInvocationHandler(subsystem);
-   }
-
-   public String getDefaultSecurityConfig() throws Exception
-   {
-      return server.getDefaultSecurityConfig();
-   }
-
-   public DestinationManager getDestinationManager() throws Exception
-   {
-      return server.getDestinationManager();
-   }
-
-   public MessageStore getMessageStore() throws Exception
-   {
-      return server.getMessageStore();
-   }
-
-   public PersistenceManager getPersistenceManager() throws Exception
-   {
-      return server.getPersistenceManager();
-   }
-   
-   public PostOffice getQueuePostOffice() throws Exception
-   {
-      return server.getQueuePostOffice();
-   }
-   
-   public PostOffice getTopicPostOffice() throws Exception
-   {
-      return server.getTopicPostOffice();
-   }
-
-   public ObjectName getServerPeerObjectName() throws Exception
-   {
-      return server.getServerPeerObjectName();
-   }
-
-   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature) throws Exception
-   {
-      return server.invoke(on, operationName, params, signature);
-   }
-
-   public boolean isServerPeerStarted() throws Exception
-   {
-      return server.isServerPeerStarted();
-   }
-
-   public boolean isStarted() throws Exception
-   {
-      return server.isStarted();
-   }
-
-   public void log(int level, String text) throws Exception
-   {
-      server.log(level, text);
-   }
-
-   public Set query(ObjectName pattern) throws Exception
-   {
-      return server.query(pattern);
-   }
-
-   public String getDatabaseType()
-   {
-      return server.getDatabaseType();
-   }
-
-   public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
-   {
-      server.setAttribute(on, name, valueAsString);
+      server.configureSecurityForDestination(destName, config);
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception
@@ -321,42 +395,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.setDefaultSecurityConfig(config);
    }
 
-   public void start(String containerConfig, boolean clustered) throws Exception
+   public String getDefaultSecurityConfig() throws Exception
    {
-      server.start(containerConfig, clustered);
-   }
-
-   public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
-                               String defaultTopicJNDIContext, boolean clustered) throws Exception
-   {
-      server.startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, clustered);
-   }
-
-   public void stop() throws Exception
-   {
-      server.stop();
-
-      namingDelegate.reset();
-   }
-
-   public void stopServerPeer() throws Exception
-   {
-      server.stopServerPeer();
-   }
-
-   public void undeploy(ObjectName on) throws Exception
-   {
-      server.undeploy(on);
-   }
-
-   public void undeployDestination(boolean isQueue, String name) throws Exception
-   {
-      server.undeployDestination(isQueue, name);
-   }
-
-   public boolean destroyDestination(boolean isQueue, String name) throws Exception
-   {
-      return server.destroyDestination(isQueue, name);
+      return server.getDefaultSecurityConfig();
    }
 
    public Object executeCommand(Command command) throws Exception
@@ -364,18 +405,64 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.executeCommand(command);
    }
 
-   public ServerPeer getServerPeer() throws Exception
-   {
-      return server.getServerPeer();
-   }
-
    public UserTransaction getUserTransaction() throws Exception
    {
       return server.getUserTransaction();
    }
 
+   public Set getNodeIDView() throws Exception
+   {
+      return server.getNodeIDView();
+   }
+
+   public List pollNotificationListener(long listenerID) throws Exception
+   {
+      ProxyNotificationListener pl = null;
+
+      synchronized(proxyListeners)
+      {
+         pl = (ProxyNotificationListener)proxyListeners.get(new Long(listenerID));
+      }
+
+      if (pl == null)
+      {
+         return Collections.EMPTY_LIST;
+      }
+
+      return pl.drain();
+   }
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
    private RMINamingDelegate getNamingDelegate()
    {
       return namingDelegate;
+   }
+
+   // Inner classes -------------------------------------------------
+
+   public class VMKiller implements Runnable
+   {
+      public void run()
+      {
+         log.info("shutting down the VM");
+
+         try
+         {
+            Thread.sleep(250);
+         }
+         catch(Exception e)
+         {
+            log.warn("interrupted while sleeping", e);
+         }
+
+         System.exit(0);
+      }
    }
 }

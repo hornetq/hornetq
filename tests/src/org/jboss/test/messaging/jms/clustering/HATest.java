@@ -1,0 +1,864 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.test.messaging.jms.clustering;
+
+import java.util.Map;
+import java.util.Set;
+
+import javax.jms.Connection;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClusteredClientConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
+import org.jboss.test.messaging.tools.ServerManagement;
+
+/**
+ * 
+ * A HATest
+ *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision: 1.1 $</tt>
+ *
+ * $Id$
+ *
+ */
+public class HATest extends ClusteringTestBase
+{
+   
+   // Constants -----------------------------------------------------
+   
+   // Static --------------------------------------------------------
+   
+   // Attributes ----------------------------------------------------
+   
+   // Constructors --------------------------------------------------
+   
+   public HATest(String name)
+   {
+      super(name);
+   }
+   
+   // Public --------------------------------------------------------
+   
+   /*
+    * Test that connections created using a clustered connection factory are created round robin on
+    * different servers
+    */
+   public void testRoundRobinConnectionCreation() throws Exception
+   {
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+      
+      ClusteredClientConnectionFactoryDelegate delegate =
+         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+      
+      log.info ("number of delegates = " + delegate.getDelegates().length);
+      log.info ("number of servers = " + ServerManagement.getServer(0).getNodeIDView().size());
+      
+      assertEquals(3, delegate.getDelegates().length);
+      
+      ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
+      
+      ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
+      
+      ClientConnectionFactoryDelegate cf3 = delegate.getDelegates()[2];
+      
+      assertEquals(0, cf1.getServerId());
+      
+      assertEquals(1, cf2.getServerId());
+      
+      assertEquals(2, cf3.getServerId());
+      
+      assertEquals(3, ServerManagement.getServer(0).getNodeIDView().size());
+      
+      Connection conn1 = null;
+      
+      Connection conn2 = null;
+      
+      Connection conn3 = null;
+      
+      Connection conn4 = null;
+      
+      Connection conn5 = null;
+      
+      try
+      {         
+         conn1 = factory.createConnection();
+         
+         conn2 = factory.createConnection();
+         
+         conn3 = factory.createConnection();
+         
+         conn4 = factory.createConnection();
+         
+         conn5 = factory.createConnection();
+         
+         ConnectionState state1 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn1).getDelegate()).getState());
+         
+         ConnectionState state2 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn2).getDelegate()).getState());
+         
+         ConnectionState state3 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn3).getDelegate()).getState());
+         
+         ConnectionState state4 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn4).getDelegate()).getState());
+         
+         ConnectionState state5 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn5).getDelegate()).getState());
+         
+         int serverID1 = state1.getServerID();
+         
+         int serverID2 = state2.getServerID();
+         
+         int serverID3 = state3.getServerID();
+         
+         int serverID4 = state4.getServerID();
+         
+         int serverID5 = state5.getServerID();
+         
+         log.info("server id 1: " + serverID1);
+         
+         log.info("server id 2: " + serverID2);
+         
+         log.info("server id 3: " + serverID3);
+         
+         log.info("server id 4: " + serverID4);
+         
+         log.info("server id 5: " + serverID5);
+         
+         assertEquals(0, serverID1);
+         
+         assertEquals(1, serverID2);
+         
+         assertEquals(2, serverID3);
+         
+         assertEquals(0, serverID4);
+         
+         assertEquals(1, serverID5);
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+         
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
+         
+         if (conn4 != null)
+         {
+            conn4.close();
+         }
+         
+         if (conn5 != null)
+         {
+            conn5.close();
+         }
+      }
+      
+   }
+ 
+   /*
+    * Test that the failover mapping is created correctly and updated properly when nodes leave
+    * or join
+    */
+   public void testDefaultFailoverMap() throws Exception
+   {     
+      {
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+         
+         ClusteredClientConnectionFactoryDelegate delegate =
+            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         
+         assertEquals(3, ServerManagement.getServer(0).getNodeIDView().size());
+         
+         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+         
+         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
+         
+         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
+         
+         ClientConnectionFactoryDelegate cf3 = delegate.getDelegates()[2];
+         
+         //The order here depends on the order the servers were started in
+         
+         //If any servers get stopped and then started then the order will change
+    
+         log.info("cf1 serverid=" + cf1.getServerId());
+         
+         log.info("cf2 serverid=" + cf2.getServerId());
+         
+         log.info("cf3 serverid=" + cf3.getServerId());
+         
+         
+         assertEquals(0, cf1.getServerId());
+         
+         assertEquals(1, cf2.getServerId());
+         
+         assertEquals(2, cf3.getServerId());
+         
+         Map failoverMap = delegate.getFailoverMap();
+         
+         assertEquals(3, delegates.length);
+         
+         assertEquals(3, failoverMap.size());
+         
+         // Default failover policy just chooses the node to the right
+         
+         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         
+         assertEquals(cf3.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+         
+         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf3.getServerId()))).intValue());
+      }
+      
+      //Now cleanly stop one of the servers
+            
+      log.info("************** STOPPING SERVER 0");
+      ServerManagement.stop(0);
+      
+      log.info("server stopped");
+      
+      assertEquals(2, ServerManagement.getServer(1).getNodeIDView().size());
+      
+      {         
+         //Lookup another connection factory
+         
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic1.lookup("/ConnectionFactory");
+         
+         log.info("Got connection factory");
+         
+         ClusteredClientConnectionFactoryDelegate delegate =
+            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         
+         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+         
+         Map failoverMap = delegate.getFailoverMap();
+         
+         log.info("Got failover map");
+         
+         assertEquals(2, delegates.length);
+         
+         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
+         
+         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
+         
+         //Order here depends on order servers were started in
+         
+         log.info("cf1 serverid=" + cf1.getServerId());
+         
+         log.info("cf2 serverid=" + cf2.getServerId());
+         
+         assertEquals(1, cf1.getServerId());
+         
+         assertEquals(2, cf2.getServerId());
+         
+         
+         assertEquals(2, failoverMap.size());
+         
+         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         
+         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+      }
+      
+      //Cleanly stop another server
+      
+      log.info("Server 1 is started: " + ServerManagement.getServer(1).isServerPeerStarted());
+      
+      ServerManagement.stop(1);
+      
+      assertEquals(1, ServerManagement.getServer(2).getNodeIDView().size());
+      
+      {         
+         //Lookup another connection factory
+         
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic2.lookup("/ConnectionFactory");
+         
+         ClusteredClientConnectionFactoryDelegate delegate =
+            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         
+         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+         
+         Map failoverMap = delegate.getFailoverMap();
+         
+         assertEquals(1, delegates.length);
+         
+         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
+         
+         assertEquals(2, cf1.getServerId());
+         
+         
+         assertEquals(1, failoverMap.size());
+         
+         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+      }
+            
+      //Restart server 0
+      
+      ServerManagement.start("all", 0);
+      
+      {
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+         
+         log.info("Got connection factory");
+         
+         ClusteredClientConnectionFactoryDelegate delegate =
+            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         
+         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+         
+         Map failoverMap = delegate.getFailoverMap();
+         
+         log.info("Got failover map");
+         
+         assertEquals(2, delegates.length);
+         
+         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
+         
+         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
+         
+         log.info("cf1 serverid=" + cf1.getServerId());
+         
+         log.info("cf2 serverid=" + cf2.getServerId());
+         
+         assertEquals(2, cf1.getServerId());
+         
+         assertEquals(0, cf2.getServerId());
+         
+         
+         assertEquals(2, failoverMap.size());
+         
+         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         
+         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+      }
+      
+      
+      //Restart server 1
+      
+      ServerManagement.start("all", 1);
+      
+      {
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic1.lookup("/ConnectionFactory");
+         
+         log.info("Got connection factory");
+         
+         ClusteredClientConnectionFactoryDelegate delegate =
+            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         
+         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+         
+         Map failoverMap = delegate.getFailoverMap();
+         
+         log.info("Got failover map");
+         
+         assertEquals(3, delegates.length);
+         
+         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
+         
+         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
+         
+         ClientConnectionFactoryDelegate cf3 = delegate.getDelegates()[2];
+         
+         log.info("cf1 serverid=" + cf1.getServerId());
+         
+         log.info("cf2 serverid=" + cf2.getServerId());
+         
+         log.info("cf3 serverid=" + cf3.getServerId());
+         
+         assertEquals(2, cf1.getServerId());
+         
+         assertEquals(0, cf2.getServerId());
+         
+         assertEquals(1, cf3.getServerId());
+         
+         
+         assertEquals(3, failoverMap.size());
+         
+         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         
+         assertEquals(cf3.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+         
+         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf3.getServerId()))).intValue());
+      }            
+   }
+   
+   public void testSimpleFailover() throws Exception
+   {
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+      
+      ClusteredClientConnectionFactoryDelegate delegate =
+         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+
+      Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
+      assertEquals(3, nodeIDView.size());
+      
+      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+      
+      ClientConnectionFactoryDelegate cf1 = delegates[0];
+      
+      ClientConnectionFactoryDelegate cf2 = delegates[1];
+      
+      ClientConnectionFactoryDelegate cf3 = delegates[2];
+      
+      int server0Id = cf1.getServerId();
+      
+      int server1Id = cf2.getServerId();
+      
+      int server2Id = cf3.getServerId();
+      
+      log.info("server 0 id: " + server0Id);
+      
+      log.info("server 1 id: " + server1Id);
+      
+      log.info("server 2 id: " + server2Id);
+                  
+      Map failoverMap = delegate.getFailoverMap();
+      
+      log.info(failoverMap.get(new Integer(server0Id)));
+      log.info(failoverMap.get(new Integer(server1Id)));
+      log.info(failoverMap.get(new Integer(server2Id)));
+      
+      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
+      
+      // server 1 should failover onto server 2
+      
+      assertEquals(server2Id, server1FailoverId);
+      
+      Connection conn = null;
+      
+      try
+      {
+      
+         //Get a connection on server 1
+         conn = factory.createConnection(); //connection on server 0
+         
+         conn.close();
+         
+         conn = factory.createConnection(); //connection on server 1
+         
+         JBossConnection jbc = (JBossConnection)conn;
+         
+         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
+         
+         ConnectionState state = (ConnectionState)del.getState();
+         
+         int initialServerID = state.getServerID();
+         
+         assertEquals(1, initialServerID);
+                           
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess.createProducer(queue1);
+         
+         MessageConsumer cons = sess.createConsumer(queue1);
+         
+         final int NUM_MESSAGES = 100;
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess.createTextMessage("message:" + i);
+            
+            prod.send(tm);
+         }
+         
+         //So now, messages should be in queue1 on server 1
+         //So we now kill server 1
+         //Which should cause transparent failover of connection conn onto server 1
+         
+         log.info("************ KILLING (CRASHING) SERVER 1");
+         
+         ServerManagement.getServer(1).kill();
+
+         log.info("killed server, now waiting");
+         
+         Thread.sleep(5000);
+         
+         log.info("done wait");
+         
+         state = (ConnectionState)del.getState();
+         
+         int finalServerID = state.getServerID();
+         
+         log.info("final server id= " + finalServerID);
+         
+         //server id should now be 2
+         
+         assertEquals(2, finalServerID);
+         
+         conn.start();
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(1000);
+            
+            log.info("message is " + tm);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message:" + i, tm.getText());
+         }
+         log.info("done");
+      }
+      finally
+      {         
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      }
+      
+   }
+   
+//   public void testEvenSimplerFailover() throws Exception
+//   {
+//      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+//                  
+//      Connection conn = null;
+//      
+//      try
+//      {
+//         conn = factory.createConnection();
+//                           
+//         log.info("************ KILLING (CRASHING) SERVER 0");
+//         
+//         ServerManagement.getServer(0).destroy();
+//         
+//         log.info("killed server, now waiting");
+//         
+//         Thread.sleep(25000);
+//         
+//         log.info("done wait");                
+//      }
+//      finally
+//      {         
+//         if (conn != null)
+//         {
+//            try
+//            {
+//               conn.close();
+//            }
+//            catch (Exception e)
+//            {
+//               e.printStackTrace();
+//            }
+//         }
+//      }
+//      
+//   }
+   
+   
+// public void testConnectionFactoryConnect() throws Exception
+// {
+// try
+// {
+// JBossConnectionFactory factory =  (JBossConnectionFactory )ic2.lookup("/ConnectionFactory");
+// ClusteredClientConnectionFactoryDelegate delegate =
+// (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+// log.info ("number of delegates = " + delegate.getDelegates().length);
+// log.info ("number of servers = " + ServerManagement.getServer(0).getNumberOfNodesOnCluster());
+// 
+// delegate.init();
+// 
+// for (int i = 0; i < 3; i++)
+// {
+// int failNode = delegate.getDelegates()[0].getFailoverNode(i);
+// log.info("Failover node for server" + i + " = " + failNode);
+// log.info("InvokerLocator for server " + i + " = " + delegate.getDelegates()[i].getServerLocatorURI());
+// 
+// assertEquals("Server1 should have the same failoverMapping",
+// failNode, delegate.getDelegates()[1].getFailoverNode(i));
+// assertEquals("Server2 should have the same failoverMapping",
+// failNode, delegate.getDelegates()[2].getFailoverNode(i));
+// }
+// 
+// assertEquals(3, ServerManagement.getServer(0).getNumberOfNodesOnCluster());
+// assertEquals(3, delegate.getDelegates().length);
+// 
+// 
+// ServerManagement.log(ServerManagement.INFO,"Stopping server 2 as part of testConnectionFactoryConnect");
+// ServerManagement.stop(2,true);
+// 
+// ServerManagement.log(ServerManagement.INFO,"##### Looking up ConnectionFactory at testConnectionFactoryConnect");
+// 
+// factory =  (JBossConnectionFactory )ic2.lookup("/ConnectionFactory");
+// delegate = (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+// 
+// assertEquals(2, ServerManagement.getServer(0).getNumberOfNodesOnCluster());
+// assertEquals(2, delegate.getDelegates().length);
+// }
+// finally
+// {
+// ServerManagement.start("all", 2);
+// }
+// 
+// 
+// }
+   
+   
+// public void testTopicSubscriber() throws Exception
+// {
+// try
+// {
+// log.info("++testTopicSubscriber");
+// 
+// 
+// JBossConnectionFactory jbcf1 = (JBossConnectionFactory)cf;
+// assertTrue(jbcf1.getDelegate() instanceof ClusteredClientConnectionFactoryDelegate);
+// 
+// log.info(">>Lookup Queue");
+// Destination destination = (Destination) ic2.lookup("topic/testDistributedTopic");
+// 
+// log.info("Creating connection server1");
+// JBossConnection conn = (JBossConnection) cf.createConnection();
+// conn.setClientID("testClient");
+// conn.start();
+// 
+// JBossSession session = (JBossSession) conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+// ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate) session.getDelegate();
+// SessionState sessionState = (SessionState) clientSessionDelegate.getState();
+// 
+// MessageConsumer consumerHA = session.createDurableSubscriber((Topic) destination, "T1");
+// JBossMessageConsumer jbossConsumerHA = (JBossMessageConsumer) consumerHA;
+// 
+// org.jboss.jms.client.delegate.ClientConsumerDelegate clientDelegate = (org.jboss.jms.client.delegate.ClientConsumerDelegate) jbossConsumerHA.getDelegate();
+// ConsumerState consumerState = (ConsumerState) clientDelegate.getState();
+// 
+// log.info("subscriptionName=" + consumerState.getSubscriptionName());
+// 
+// 
+// log.info(">>Creating Producer");
+// MessageProducer producer = session.createProducer(destination);
+// log.info(">>creating Message");
+// Message message = session.createTextMessage("Hello Before");
+// log.info(">>sending Message");
+// producer.send(message);
+// session.commit();
+// 
+// receiveMessage("consumerHA", consumerHA, true, false);
+// 
+// session.commit();
+// //if (true) return;
+// 
+// Object txID = sessionState.getCurrentTxId();
+// 
+// producer.send(session.createTextMessage("Hello again before failover"));
+// 
+// ClientConnectionDelegate delegate = (ClientConnectionDelegate) conn.getDelegate();
+// 
+// ServerManagement.stop(0, false);
+// 
+// Thread.sleep(25000);
+// 
+// //System.out.println("Kill server1"); Thread.sleep(10000);
+// 
+// message = session.createTextMessage("Hello After");
+// log.info(">>Sending new message");
+// producer.send(message);
+// 
+// assertEquals(txID, sessionState.getCurrentTxId());
+// System.out.println("TransactionID on client = " + txID);
+// log.info(">>Final commit");
+// 
+// /* JBossConnection connSecondServer = (JBossConnection)this.factoryServer2.createConnection();
+// connSecondServer.start();
+// JBossSession sessionSecondServer = (JBossSession)connSecondServer.createSession(false,Session.AUTO_ACKNOWLEDGE);
+// MessageConsumer consumerSecondServer = sessionSecondServer.createConsumer(destination); */
+// 
+// session.commit();
+// 
+// /* receiveMessage("consumerSecondServer",consumerSecondServer,true,false);
+// receiveMessage("consumerSecondServer",consumerSecondServer,true,false);
+// receiveMessage("consumerSecondServer",consumerSecondServer,true,true); */
+// 
+// log.info("Calling alternate receiver");
+// receiveMessage("consumerHA", consumerHA, true, false);
+// receiveMessage("consumerHA", consumerHA, true, false);
+// receiveMessage("consumerHA", consumerHA, true, true);
+// 
+// 
+// session.commit();
+// 
+// }
+// finally
+// {
+// // restart the server as it was probably stopped (tearDown will need that)
+// ServerManagement.start("all", 0);
+// }
+// }
+   
+// 
+// public void testQueueHA() throws Exception
+// {
+// log.info("++testTopicSubscriber");
+// 
+// log.info(">>Lookup Queue");
+// Destination destination = (Destination) ic1.lookup("queue/testDistributedQueue");
+// 
+// log.info("Creating connection server1");
+// JBossConnection conn = (JBossConnection) cf1.createConnection();
+// conn.setClientID("testClient");
+// conn.start();
+// 
+// JBossSession session = (JBossSession) conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+// ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate) session.getDelegate();
+// SessionState sessionState = (SessionState) clientSessionDelegate.getState();
+// 
+// MessageConsumer consumerHA = session.createConsumer(destination);
+// JBossMessageConsumer jbossConsumerHA = (JBossMessageConsumer) consumerHA;
+// 
+// org.jboss.jms.client.delegate.ClientConsumerDelegate clientDelegate = (org.jboss.jms.client.delegate.ClientConsumerDelegate) jbossConsumerHA.getDelegate();
+// ConsumerState consumerState = (ConsumerState) clientDelegate.getState();
+// 
+// log.info("subscriptionName=" + consumerState.getSubscriptionName());
+// 
+// 
+// log.info(">>Creating Producer");
+// MessageProducer producer = session.createProducer(destination);
+// log.info(">>creating Message");
+// Message message = session.createTextMessage("Hello Before");
+// log.info(">>sending Message");
+// producer.send(message);
+// session.commit();
+// 
+// session.commit();
+// //if (true) return;
+// 
+// Object txID = sessionState.getCurrentTxId();
+// 
+// ClientConnectionDelegate delegate = (ClientConnectionDelegate) conn.getDelegate();
+// 
+// JMSRemotingConnection originalRemoting = delegate.getRemotingConnection();
+// 
+// log.info(">>Creating alternate connection");
+// JBossConnection conn2 = (JBossConnection) cf2.createConnection();
+// log.info("NewConnectionCreated=" + conn2);
+// 
+// log.info(">>Failling over");
+// assertSame(originalRemoting, delegate.getRemotingConnection());
+// conn.getDelegate().failOver(conn2.getDelegate());
+// 
+// try
+// {
+// originalRemoting.stop();
+// } catch (Throwable throwable)
+// {
+// throwable.printStackTrace();
+// }
+// 
+// 
+// assertNotSame(originalRemoting, delegate.getRemotingConnection());
+// 
+// //System.out.println("Kill server1"); Thread.sleep(10000);
+// assertEquals(txID, sessionState.getCurrentTxId());
+// System.out.println("TransactionID on client = " + txID);
+// log.info(">>Final commit");
+// 
+// session.commit();
+// 
+// log.info("Calling alternate receiver");
+// receiveMessage("consumerHA", consumerHA, true, false);
+// receiveMessage("consumerHA", consumerHA, true, true);
+// 
+// session.commit();
+// 
+// for (int i = 0; i < 30; i++)
+// {
+// log.info("Message Sent " + i);
+// producer.send(session.createTextMessage("Message " + i));
+// }
+// session.commit();
+// 
+// Thread.sleep(5000);
+// 
+// TextMessage messageLoop = null;
+// while (!((messageLoop = (TextMessage) consumerHA.receive(5000)) == null))
+// {
+// log.info("Message received = " + messageLoop.getText());
+// }
+// 
+// }
+   
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+   
+   // Private -------------------------------------------------------
+   
+//   private void receiveMessage(String text, MessageConsumer consumer, boolean shouldAssert, boolean shouldBeNull) throws Exception
+//   {
+//      MessageProxy message = (MessageProxy) consumer.receive(3000);
+//      TextMessage txtMessage = (TextMessage) message;
+//      if (message != null)
+//      {
+//         log.info(text + ": messageID from messageReceived=" + message.getMessage().getMessageID() + " message = " + message + " content=" + txtMessage.getText());
+//      } else
+//      {
+//         log.info(text + ": Message received was null");
+//      }
+//      if (shouldAssert)
+//      {
+//         if (shouldBeNull)
+//         {
+//            assertNull(message);
+//         } else
+//         {
+//            assertNotNull(message);
+//         }
+//      }
+//   }
+   
+   // Inner classes -------------------------------------------------
+   
+}

@@ -21,6 +21,7 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -42,17 +43,20 @@ import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
  */
 interface PostOfficeInternal extends ClusteredPostOffice
 {
-   void addBindingFromCluster(int nodeId, String queueName, String condition,
-                              String filterString, long channelId, boolean durable)
+   void addBindingFromCluster(int nodeId, String queueName, String conditionText,
+                              String filterString, long channelId, boolean durable, boolean failed)
       throws Exception;
    
    void removeBindingFromCluster(int nodeId, String queueName)
       throws Exception;
+ 
+   void handleNodeLeft(int nodeId) throws Exception;
    
-   void handleAddressNodeMapping(NodeAddressInfo info, int nodeId)
-      throws Exception;
+   void putReplicantLocally(int nodeId, Serializable key, Serializable replicant) throws Exception;
    
-   void routeFromCluster(Message message, String routingKey, Map queueNameNodeIdMap) throws Exception;
+   boolean removeReplicantLocally(int nodeId, Serializable key) throws Exception;
+   
+   void routeFromCluster(Message message, String routingKeyText, Map queueNameNodeIdMap) throws Exception;
    
    void asyncSendRequest(ClusterRequest request) throws Exception;
    

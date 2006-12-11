@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
 
@@ -120,7 +121,7 @@ class CastMessagesCallback implements TxCallback
     */
    private long checkChannelID;
    
-   void addMessage(String routingKey, Message message, Map queueNameToNodeIdMap,
+   void addMessage(Condition routingKey, Message message, Map queueNameToNodeIdMap,
                    int lastNodeId, long channelID)
    {
       //If we only ever send messages to the same node for this tx, then we can unicast rather than multicast
@@ -141,7 +142,7 @@ class CastMessagesCallback implements TxCallback
          }
       }
       
-      MessageHolder holder = new MessageHolder(routingKey, message, queueNameToNodeIdMap);
+      MessageHolder holder = new MessageHolder(routingKey.toText(), message, queueNameToNodeIdMap);
       
       if (message.isReliable())
       {

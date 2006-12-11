@@ -22,7 +22,6 @@
 package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
-
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.ServerPeer;
@@ -49,26 +48,26 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    private static final Logger log = Logger.getLogger(ServerConnectionFactoryEndpoint.class);
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    private ServerPeer serverPeer;
-   
+
    private String clientID;
-   
+
    private int id;
-   
+
    private JNDIBindings jndiBindings;
-   
+
    private int prefetchSize;
-   
+
    protected int defaultTempQueueFullSize;
-   
+
    protected int defaultTempQueuePageSize;
-   
+
    protected int defaultTempQueueDownCacheSize;
 
- 
+
    // Constructors --------------------------------------------------
 
    /**
@@ -95,49 +94,79 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // ConnectionFactoryDelegate implementation ----------------------
    
-   public ConnectionDelegate createConnectionDelegate(String username, String password)
-      throws JMSException
+   public CreateConnectionResult createConnectionDelegate(String username, String password,
+                                                          int failedNodeId)
+      throws JMSException      
    {
       try
       {
-         log.debug("creating a new connection for user " + username);
-         
-         // authenticate the user
-         serverPeer.getSecurityManager().authenticate(username, password);
-         
-         // see if there is a preconfigured client id for the user
-         if (username != null)
+         if (failedNodeId == -1)
          {
+            //Just a standard createConnection
+            return new CreateConnectionResult(createConnectionDelegateInternal(username, password));            
+         }
+         else
+         {
+            //Failover
+            //Wait for server side failover to complete
+            int failoverNodeId = serverPeer.waitForFailover(failedNodeId);
             
-            
-            String preconfClientID =
-               serverPeer.getJmsUserManagerInstance().getPreConfiguredClientID(username);
-            
-            if (preconfClientID != null)
+            if (failoverNodeId == -1 || failoverNodeId != serverPeer.getServerPeerID())
             {
-               clientID = preconfClientID;
+               //We are on the wrong node - or no failover has occurred
+               return new CreateConnectionResult(failoverNodeId);
+            }
+            else
+            {
+               //We are on the right node, and failover has completed
+               //we can now create a connection delegate
+               return new CreateConnectionResult(createConnectionDelegateInternal(username,
+                                                                                  password));
             }
          }
-   
-         // create the corresponding "server-side" connection endpoint and register it with the
-         // server peer's ClientManager
-         ServerConnectionEndpoint endpoint =
-            new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize,
-                     defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
-   
-         int connectionID = endpoint.getConnectionID();
-   
-         ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
-         JMSDispatcher.instance.registerTarget(new Integer(connectionID), connAdvised);
-         
-         log.debug("created and registered " + endpoint);
-   
-         return new ClientConnectionDelegate(connectionID);
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " createConnectionDelegate");
+         throw ExceptionUtil.handleJMSInvocation(t, this + " createFailoverConnectionDelegate");
       }
+      
+   }
+   
+   private ConnectionDelegate createConnectionDelegateInternal(String username, String password)
+      throws Exception
+   {
+      log.debug("creating a new connection for user " + username);        
+
+      // authenticate the user
+      serverPeer.getSecurityManager().authenticate(username, password);
+
+      // see if there is a preconfigured client id for the user
+      if (username != null)
+      {
+         String preconfClientID =
+            serverPeer.getJmsUserManagerInstance().getPreConfiguredClientID(username);
+
+         if (preconfClientID != null)
+         {
+            clientID = preconfClientID;
+         }
+      }
+
+      // create the corresponding "server-side" connection endpoint and register it with the
+      // server peer's ClientManager
+      ServerConnectionEndpoint endpoint =
+         new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize,
+                                      defaultTempQueueFullSize, defaultTempQueuePageSize,
+                                      defaultTempQueueDownCacheSize);
+
+      int connectionID = endpoint.getConnectionID();
+
+      ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
+      JMSDispatcher.instance.registerTarget(new Integer(connectionID), connAdvised);
+
+      log.debug("created and registered " + endpoint);
+
+      return new ClientConnectionDelegate(connectionID, serverPeer.getServerPeerID());
    }
    
    public byte[] getClientAOPConfig() throws JMSException

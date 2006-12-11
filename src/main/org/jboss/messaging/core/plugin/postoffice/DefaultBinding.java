@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.plugin.postoffice;
 
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.plugin.contract.Condition;
 
 /**
  * 
@@ -37,36 +38,55 @@ public class DefaultBinding implements Binding
 {
    private int nodeId;
    
-   private String condition;
+   private Condition condition;
    
    private Queue queue;
-       
+
+   private boolean failed;
+
    public DefaultBinding()
-   {      
+   {
    }
 
-   public DefaultBinding(int nodeId, String condition, Queue queue)
+   public DefaultBinding(int nodeId, Condition condition, Queue queue, boolean failed)
    {
       this.nodeId = nodeId;
-      
-      this.condition = condition;     
-      
+
+      this.condition = condition;
+
       this.queue = queue;
+
+      this.failed = failed;
    }
-   
+
    public int getNodeId()
    {
       return nodeId;
    }
-      
-   public String getCondition()
+
+   public Condition getCondition()
    {
       return condition;
    }
-   
+
    public Queue getQueue()
    {
       return queue;
+   }
+
+   public boolean isFailed()
+   {
+      return failed;
+   }
+
+   public void setFailed(boolean failed)
+   {
+      this.failed = failed;
+   }
+
+   public String toString()
+   {
+       return "Node" + nodeId + " condition=" + condition + " queue=" + queue + " queueClass=" + queue.getClass().getName();
    }
    
 }

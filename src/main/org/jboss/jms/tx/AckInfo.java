@@ -82,6 +82,12 @@ public class AckInfo implements Streamable
    {
       return consumerID;
    }
+
+   /** Used to change ack's id during failover */
+   public void setConsumerID(int consumerID)
+   {
+       this.consumerID=consumerID;
+   }
    
    public MessageProxy getMessage()
    {

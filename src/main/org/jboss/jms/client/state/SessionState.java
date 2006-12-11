@@ -32,6 +32,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.MessagingXAResource;
+import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -47,6 +48,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  */
 public class SessionState extends HierarchicalStateSupport
 {
+
+   protected static Logger log = Logger.getLogger(SessionState.class);
+
    private int acknowledgeMode;
    
    private boolean transacted;
@@ -200,6 +204,16 @@ public class SessionState extends HierarchicalStateSupport
    public List getCallbackHandlers()
    {
       return new ArrayList(callbackHandlers.values());
+   }
+
+   /*** used for HA Handling */
+   public void cleanCallBackHandlers()
+   {
+       if (log.isTraceEnabled())
+       {
+           log.trace("Clearing callBackHandlers size=" + callbackHandlers.size());
+       }
+       callbackHandlers.clear();
    }
 
 }

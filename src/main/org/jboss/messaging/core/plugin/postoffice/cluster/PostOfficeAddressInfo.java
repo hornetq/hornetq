@@ -23,13 +23,17 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.Serializable;
 
 import org.jboss.messaging.util.Streamable;
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 
 /**
- * A NodeAddressInfo
+ * 
+ * A PostOfficeAddressInfo
+ * 
+ * Holds the addresses used by a clustered post office
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -37,42 +41,46 @@ import org.jgroups.stack.IpAddress;
  * $Id$
  *
  */
-class NodeAddressInfo implements Streamable
+class PostOfficeAddressInfo implements Streamable, Serializable
 {
+   // Constants -----------------------------------------------------
+
+   private static final long serialVersionUID = 8462102430717730566L;
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private Address syncChannelAddress;
-   
    private Address asyncChannelAddress;
-   
-   public NodeAddressInfo()
-   {     
+
+   // Constructors --------------------------------------------------
+
+   public PostOfficeAddressInfo()
+   {
    }
-   
-   NodeAddressInfo(Address syncChannelAddress, Address asyncChannelAddress)
+
+   PostOfficeAddressInfo(Address syncChannelAddress, Address asyncChannelAddress)
    {
       this.syncChannelAddress = syncChannelAddress;
-      
       this.asyncChannelAddress = asyncChannelAddress;
    }
-   
-   Address getSyncChannelAddress()
-   {
-      return syncChannelAddress;
-   }
-   
-   Address getAsyncChannelAddress()
-   {
-      return asyncChannelAddress;
-   }
-   
+
+   // Streamable implementation -------------------------------------
+
    public void read(DataInputStream in) throws Exception
    {
       syncChannelAddress = new IpAddress();
-      
+
       syncChannelAddress.readFrom(in);
-      
+
       asyncChannelAddress = new IpAddress();
-      
+
       asyncChannelAddress.readFrom(in);
+
+      byte[] byteInput = new byte[in.readInt()];
+
+      in.read(byteInput);
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -81,15 +89,46 @@ class NodeAddressInfo implements Streamable
       {
          throw new IllegalStateException("Address must be IpAddress");
       }
-      
+
       if (!(asyncChannelAddress instanceof IpAddress))
       {
          throw new IllegalStateException("Address must be IpAddress");
       }
-      
+
       syncChannelAddress.writeTo(out);
-      
-      asyncChannelAddress.writeTo(out);  
+
+      asyncChannelAddress.writeTo(out);
    }
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("[");
+      sb.append("synch addr ").append(syncChannelAddress);
+      sb.append(", asynch addr ").append(asyncChannelAddress);
+      sb.append("]");
+
+      return sb.toString();
+   }
+
+
+   // Package protected ---------------------------------------------
+
+   Address getSyncChannelAddress()
+   {
+      return syncChannelAddress;
+   }
+
+   Address getAsyncChannelAddress()
+   {
+      return asyncChannelAddress;
+   }
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

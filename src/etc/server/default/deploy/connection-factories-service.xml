@@ -13,6 +13,8 @@
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
+      <depends>jboss.messaging:service=QueuePostOffice</depends>
+
       <attribute name="JNDIBindings">
          <bindings>
             <binding>/ConnectionFactory</binding>
@@ -21,6 +23,8 @@
             <binding>java:/XAConnectionFactory</binding>
          </bindings>
       </attribute>
+      
+      <attribute name="Clustered">true</attribute>
    </mbean>
 
 </server>

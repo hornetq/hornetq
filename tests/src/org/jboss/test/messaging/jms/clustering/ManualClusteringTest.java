@@ -22,21 +22,15 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 
 /**
  * 
@@ -50,249 +44,99 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class ManualClusteringTest extends MessagingTestCase
+public class ManualClusteringTest extends ClusteringTestBase
 {
-   protected Context ic1;
-   
-   protected Context ic2;
-   
-   protected Context ic3;
-   
-   protected Queue queue1;
-   
-   protected Topic topic1;
-   
-   protected Queue queue2;
-   
-   protected Topic topic2;
-   
-   protected Queue queue3;
-   
-   protected Topic topic3;
-   
-   protected ConnectionFactory cf1;
-   
-   protected ConnectionFactory cf2;
-   
-   protected ConnectionFactory cf3;
-     
+
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
    public ManualClusteringTest(String name)
    {
       super(name);
    }
-   
 
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      
-      try
-      {
-                     
-         ServerManagement.start("all", 0, true);
-         
-         ServerManagement.start("all", 1, true);
-         
-         ServerManagement.start("all", 2, true);
-         
-         ServerManagement.deployClusteredQueue("testDistributedQueue", 0);         
-         ServerManagement.deployClusteredTopic("testDistributedTopic", 0);
-         
-         ServerManagement.deployClusteredQueue("testDistributedQueue", 1);         
-         ServerManagement.deployClusteredTopic("testDistributedTopic", 1);
-         
-         ServerManagement.deployClusteredQueue("testDistributedQueue", 2);         
-         ServerManagement.deployClusteredTopic("testDistributedTopic", 2);
-               
-         ic1 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
-         
-         ic2 = new InitialContext(ServerManagement.getJNDIEnvironment(1));
-         
-         ic3 = new InitialContext(ServerManagement.getJNDIEnvironment(2));
-               
-         queue1 = (Queue)ic1.lookup("queue/testDistributedQueue");
-         
-         queue2 = (Queue)ic2.lookup("queue/testDistributedQueue");
-         
-         queue3 = (Queue)ic3.lookup("queue/testDistributedQueue");
-               
-         topic1 = (Topic)ic1.lookup("topic/testDistributedTopic");
-         
-         topic2 = (Topic)ic2.lookup("topic/testDistributedTopic");
-         
-         topic3 = (Topic)ic3.lookup("topic/testDistributedTopic");
-         
-         cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         cf2 = (ConnectionFactory)ic2.lookup("/ConnectionFactory");
-         
-         cf3 = (ConnectionFactory)ic3.lookup("/ConnectionFactory");
-         
-         drainQueues();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-   }
+   // Public --------------------------------------------------------
 
-   protected void tearDown() throws Exception
-   {
-      try
-      {
-         super.tearDown();
-         
-         ServerManagement.undeployQueue("testDistributedQueue", 0);         
-         ServerManagement.undeployTopic("testDistributedTopic", 0);
-         
-         ServerManagement.undeployQueue("testDistributedQueue", 1);         
-         ServerManagement.undeployTopic("testDistributedTopic", 1);
-         
-         ServerManagement.undeployQueue("testDistributedQueue", 2);         
-         ServerManagement.undeployTopic("testDistributedTopic", 2);
-         
-         ic1.close();
-         
-         ic2.close();
-         
-         ic3.close();                  
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-   }
-   
-   protected void drainQueues() throws Exception
-   {
-      Connection conn1 = null;
-      
-      Connection conn2 = null;
-      
-      Connection conn3 = null;
-            
-      try
-      {
-         conn1 = cf1.createConnection();
-         
-         conn2 = cf2.createConnection();
-         
-         conn3 = cf3.createConnection();
-           
-         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons1 = sess1.createConsumer(queue1);
-         
-         MessageConsumer cons2 = sess2.createConsumer(queue2);
-         
-         MessageConsumer cons3 = sess3.createConsumer(queue3);
-         
-         conn1.start();
-         
-         conn2.start();
-         
-         conn3.start();
-         
-         Message msg = null;
-         
-         do
-         {
-            msg = cons1.receive(1000);
-         }
-         while (msg != null);
-         
-         do
-         {
-            msg = cons2.receive(1000);
-         }
-         while (msg != null);
-         
-         do
-         {
-            msg = cons3.receive(1000);
-         }
-         while (msg != null);
-      }
-      finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
-      }
-   }
-    
-   
    public void testClusteredQueueLocalConsumerNonPersistent() throws Exception
    {
       clusteredQueueLocalConsumer(false);
    }
-   
+
    public void testClusteredQueueLocalConsumerPersistent() throws Exception
    {
       clusteredQueueLocalConsumer(true);
    }
-        
+
    public void testClusteredTopicNonDurableNonPersistent() throws Exception
    {
       clusteredTopicNonDurable(false);
    }
-   
+
    public void testClusteredTopicNonDurablePersistent() throws Exception
    {
       clusteredTopicNonDurable(true);
    }
-      
+
    public void testClusteredTopicNonDurableWithSelectorsNonPersistent() throws Exception
    {
       clusteredTopicNonDurableWithSelectors(false);
    }
-   
+
    public void testClusteredTopicNonDurableWithSelectorsPersistent() throws Exception
    {
       clusteredTopicNonDurableWithSelectors(true);
    }
-   
+
    public void testClusteredTopicDurableNonPersistent() throws Exception
    {
       clusteredTopicDurable(false);
    }
-   
+
    public void testClusteredTopicDurablePersistent() throws Exception
    {
       clusteredTopicDurable(true);
    }
-   
+
    public void testClusteredTopicSharedDurableLocalConsumerNonPersistent() throws Exception
    {
       clusteredTopicSharedDurableLocalConsumer(false);
    }
-   
+
    public void testClusteredTopicSharedDurableLocalConsumerPersistent() throws Exception
    {
       clusteredTopicSharedDurableLocalConsumer(true);
    }
-   
+
    public void testClusteredTopicSharedDurableNoLocalSubNonPersistent() throws Exception
    {
       clusteredTopicSharedDurableNoLocalSub(false);
    }
-   
+
    public void testClusteredTopicSharedDurableNoLocalSubPersistent() throws Exception
    {
       clusteredTopicSharedDurableNoLocalSub(true);
    }
-   
-   
-   
-   
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+  
+
    /*
     * Create a consumer on each queue on each node.
     * Send messages in turn from all nodes.
@@ -301,307 +145,319 @@ public class ManualClusteringTest extends MessagingTestCase
    protected void clusteredQueueLocalConsumer(boolean persistent) throws Exception
    {
       Connection conn1 = null;
-      
       Connection conn2 = null;
-      
       Connection conn3 = null;
+
       try
       {
-         conn1 = cf1.createConnection();
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn1 = cf.createConnection();
+         conn2 = cf.createConnection();
+         conn3 = cf.createConnection();
          
-         conn2 = cf2.createConnection();
+         log.info("Created connections");
          
-         conn3 = cf3.createConnection();
-           
+         checkConnectionsDifferentServers(conn1, conn2, conn3);
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons1 = sess1.createConsumer(queue1);
+         log.info("Created sessions");
+
+         MessageConsumer cons1 = sess1.createConsumer(queue0);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
+         MessageConsumer cons3 = sess3.createConsumer(queue2);
          
-         MessageConsumer cons2 = sess2.createConsumer(queue2);
-         
-         MessageConsumer cons3 = sess3.createConsumer(queue3);
-         
+         log.info("Created consumers");
+
          conn1.start();
-         
          conn2.start();
-         
          conn3.start();
-         
-         //Send at node1
-         
-         MessageProducer prod1 = sess1.createProducer(queue1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 0
+
+         MessageProducer prod = sess1.createProducer(queue0);
+
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          final int NUM_MESSAGES = 100;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("message" + i);
-            
-            prod1.send(tm);
+
+            prod.send(tm);
          }
          
+         log.info("Sent messages");
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(1000);
-            
+
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
-         }
-         
+         }                 
+
          Message m = cons2.receive(2000);
-         
+
          assertNull(m);
-         
+
          m = cons3.receive(2000);
-         
+
          assertNull(m);
-         
-         // Send at node2
-         
-         MessageProducer prod2 = sess2.createProducer(queue2);
-         
-         prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 1
+
+         MessageProducer prod1 = sess2.createProducer(queue1);
+
+         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess2.createTextMessage("message" + i);
-            
-            prod2.send(tm);
+
+            prod1.send(tm);
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-            
+
             assertNotNull(tm);
-            
+
             assertEquals("message" + i, tm.getText());
          }
-         
+
          m = cons1.receive(2000);
-         
+
          assertNull(m);
-         
+
          m = cons3.receive(2000);
-         
+
          assertNull(m);
-         
-         // Send at node3
-         
-         MessageProducer prod3 = sess3.createProducer(queue3);
-         
-         prod3.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 2
+
+         MessageProducer prod2 = sess3.createProducer(queue2);
+
+         prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess3.createTextMessage("message" + i);
-            
-            prod3.send(tm);
+
+            prod2.send(tm);
          }
-            
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons3.receive(1000);
-            
+
             assertNotNull(tm);
-            
+
             assertEquals("message" + i, tm.getText());
          }
-         
+
          m = cons1.receive(2000);
-         
+
          assertNull(m);
-         
+
          m = cons2.receive(2000);
-         
-         assertNull(m);         
+
+         assertNull(m);
       }
       finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
       }
    }
-   
-   
+
+   // Private -------------------------------------------------------
+
    /*
     * Create non durable subscriptions on all nodes of the cluster.
     * Ensure all messages are receive as appropriate
     */
-   public void clusteredTopicNonDurable(boolean persistent) throws Exception
+   private void clusteredTopicNonDurable(boolean persistent) throws Exception
    {
       Connection conn1 = null;
-      
       Connection conn2 = null;
-      
       Connection conn3 = null;
       try
       {
-         conn1 = cf1.createConnection();
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn1 = cf.createConnection();
+         conn2 = cf.createConnection();
+         conn3 = cf.createConnection();
          
-         conn2 = cf2.createConnection();
+         log.info("Created connections");
          
-         conn3 = cf3.createConnection();
-           
+         checkConnectionsDifferentServers(conn1, conn2, conn3);
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons1 = sess1.createConsumer(topic1);
-         
-         MessageConsumer cons2 = sess2.createConsumer(topic2);
-         
-         MessageConsumer cons3 = sess3.createConsumer(topic3);
-         
-         MessageConsumer cons4 = sess1.createConsumer(topic1);
-         
-         MessageConsumer cons5 = sess2.createConsumer(topic2);
-            
+
+         MessageConsumer cons1 = sess1.createConsumer(topic0);
+         MessageConsumer cons2 = sess2.createConsumer(topic1);
+         MessageConsumer cons3 = sess3.createConsumer(topic2);
+
+         MessageConsumer cons4 = sess1.createConsumer(topic0);
+
+         MessageConsumer cons5 = sess2.createConsumer(topic1);
+
          conn1.start();
-         
          conn2.start();
-         
          conn3.start();
-         
-         //Send at node1
-         
-         MessageProducer prod1 = sess1.createProducer(topic1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 0
+
+         MessageProducer prod = sess1.createProducer(topic0);
+
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          final int NUM_MESSAGES = 100;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("message" + i);
-            
-            prod1.send(tm);
+
+            prod.send(tm);
          }
-            
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(1000);
-            
+
             assertNotNull(tm);
-                        
-            assertEquals("message" + i, tm.getText());                        
+
+            assertEquals("message" + i, tm.getText());
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-                      
+
             assertNotNull(tm);
-            
+
             assertEquals("message" + i, tm.getText());
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons3.receive(1000);
-                        
+
             assertNotNull(tm);
-             
+
             assertEquals("message" + i, tm.getText());
-         } 
-         
+         }
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons4.receive(1000);
-                        
+
             assertNotNull(tm);
-             
+
             assertEquals("message" + i, tm.getText());
-         } 
-         
+         }
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons5.receive(1000);
-                        
+
             assertNotNull(tm);
-             
+
             assertEquals("message" + i, tm.getText());
-         } 
+         }
       }
       finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
       }
    }
-   
-   
-   
-   
+
    /*
     * Create non durable subscriptions on all nodes of the cluster.
     * Include some with selectors
     * Ensure all messages are receive as appropriate
     */
-   public void clusteredTopicNonDurableWithSelectors(boolean persistent) throws Exception
+   private void clusteredTopicNonDurableWithSelectors(boolean persistent) throws Exception
    {
       Connection conn1 = null;
-      
       Connection conn2 = null;
-      
       Connection conn3 = null;
+
       try
       {
-         conn1 = cf1.createConnection();
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn1 = cf.createConnection();
+         conn2 = cf.createConnection();
+         conn3 = cf.createConnection();
          
-         conn2 = cf2.createConnection();
+         log.info("Created connections");
          
-         conn3 = cf3.createConnection();
-                             
+         checkConnectionsDifferentServers(conn1, conn2, conn3);
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons1 = sess1.createConsumer(topic1);
-         
-         MessageConsumer cons2 = sess2.createConsumer(topic2);
-         
-         MessageConsumer cons3 = sess3.createConsumer(topic3);
-         
-         MessageConsumer cons4 = sess1.createConsumer(topic1, "COLOUR='red'");
-         
-         MessageConsumer cons5 = sess2.createConsumer(topic2, "COLOUR='blue'");
-            
+
+         MessageConsumer cons1 = sess1.createConsumer(topic0);
+         MessageConsumer cons2 = sess2.createConsumer(topic1);
+         MessageConsumer cons3 = sess3.createConsumer(topic2);
+
+         MessageConsumer cons4 = sess1.createConsumer(topic0, "COLOUR='red'");
+
+         MessageConsumer cons5 = sess2.createConsumer(topic1, "COLOUR='blue'");
+
          conn1.start();
-         
          conn2.start();
-         
          conn3.start();
-         
-         //Send at node1
-         
-         MessageProducer prod1 = sess1.createProducer(topic1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 0
+
+         MessageProducer prod = sess1.createProducer(topic0);
+
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          final int NUM_MESSAGES = 100;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("message" + i);
-            
+
             int c = i % 3;
             if (c == 0)
             {
@@ -611,422 +467,423 @@ public class ManualClusteringTest extends MessagingTestCase
             {
                tm.setStringProperty("COLOUR", "blue");
             }
-            
-            prod1.send(tm);
+
+            prod.send(tm);
          }
-            
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(1000);
-            
+
             assertNotNull(tm);
-                        
-            assertEquals("message" + i, tm.getText());                        
+
+            assertEquals("message" + i, tm.getText());
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-                      
+
             assertNotNull(tm);
-            
+
             assertEquals("message" + i, tm.getText());
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons3.receive(1000);
-                        
+
             assertNotNull(tm);
-             
+
             assertEquals("message" + i, tm.getText());
-         } 
-         
+         }
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             int c = i % 3;
-            
+
             if (c == 0)
             {
                TextMessage tm = (TextMessage)cons4.receive(1000);
-                           
+
                assertNotNull(tm);
-                
+
                assertEquals("message" + i, tm.getText());
             }
-         } 
-         
+         }
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             int c = i % 3;
-            
+
             if (c == 1)
             {
                TextMessage tm = (TextMessage)cons5.receive(1000);
-                           
+
                assertNotNull(tm);
-                
+
                assertEquals("message" + i, tm.getText());
             }
-         } 
+         }
       }
       finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
       }
    }
-   
-   
-   
+
+
+
    /*
     * Create durable subscriptions on all nodes of the cluster.
     * Include a couple with selectors
     * Ensure all messages are receive as appropriate
     * None of the durable subs are shared
     */
-   public void clusteredTopicDurable(boolean persistent) throws Exception
+   private void clusteredTopicDurable(boolean persistent) throws Exception
    {
       Connection conn1 = null;
-      
       Connection conn2 = null;
-      
       Connection conn3 = null;
       try
       {
-         conn1 = cf1.createConnection();
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn1 = cf.createConnection();
+         conn2 = cf.createConnection();
+         conn3 = cf.createConnection();
          
-         conn2 = cf2.createConnection();
+         log.info("Created connections");
          
-         conn3 = cf3.createConnection();
-         
+         checkConnectionsDifferentServers(conn1, conn2, conn3);
+
          conn1.setClientID("wib1");
-         
          conn2.setClientID("wib1");
-         
          conn3.setClientID("wib1");
-           
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                  
-         try         
+
+         try
          {
-            sess1.unsubscribe("sub1");
+            sess1.unsubscribe("sub");
          }
          catch (Exception ignore) {}
-         try         
+         try
          {
-            sess2.unsubscribe("sub2");
+            sess2.unsubscribe("sub1");
          }
          catch (Exception ignore) {}
-         try         
+         try
          {
-            sess3.unsubscribe("sub3");
+            sess3.unsubscribe("sub2");
          }
          catch (Exception ignore) {}
-         try         
+         try
          {
-            sess1.unsubscribe("sub4");
+            sess1.unsubscribe("sub3");
          }
          catch (Exception ignore) {}
-         try         
+         try
          {
-            sess2.unsubscribe("sub5");
+            sess2.unsubscribe("sub4");
          }
          catch (Exception ignore) {}
-         
-         MessageConsumer cons1 = sess1.createDurableSubscriber(topic1, "sub1");
-         
-         MessageConsumer cons2 = sess2.createDurableSubscriber(topic2, "sub2");
-         
-         MessageConsumer cons3 = sess3.createDurableSubscriber(topic3, "sub3");
-         
-         MessageConsumer cons4 = sess1.createDurableSubscriber(topic1, "sub4");
-         
-         MessageConsumer cons5 = sess2.createDurableSubscriber(topic2, "sub5");
-            
+
+         MessageConsumer cons1 = sess1.createDurableSubscriber(topic0, "sub");
+         MessageConsumer cons2 = sess2.createDurableSubscriber(topic1, "sub1");
+         MessageConsumer cons3 = sess3.createDurableSubscriber(topic2, "sub2");
+         MessageConsumer cons4 = sess1.createDurableSubscriber(topic0, "sub3");
+         MessageConsumer cons5 = sess2.createDurableSubscriber(topic1, "sub4");
+
          conn1.start();
-         
          conn2.start();
-         
          conn3.start();
-         
-         //Send at node1
-         
-         MessageProducer prod1 = sess1.createProducer(topic1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 0
+
+         MessageProducer prod = sess1.createProducer(topic0);
+
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          final int NUM_MESSAGES = 100;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess1.createTextMessage("message" + i);
-            
-            prod1.send(tm);
+            TextMessage tm = sess2.createTextMessage("message" + i);
+
+            prod.send(tm);
          }
-            
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(1000);
-            
+
             assertNotNull(tm);
-                        
-            assertEquals("message" + i, tm.getText());                        
+
+            assertEquals("message" + i, tm.getText());
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-                      
+
             assertNotNull(tm);
-            
+
             assertEquals("message" + i, tm.getText());
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons3.receive(1000);
-                        
+
             assertNotNull(tm);
-             
+
             assertEquals("message" + i, tm.getText());
-         } 
-         
+         }
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons4.receive(1000);
-                        
+
             assertNotNull(tm);
-             
+
             assertEquals("message" + i, tm.getText());
-         } 
-         
+         }
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons5.receive(1000);
-                        
+
             assertNotNull(tm);
-             
+
             assertEquals("message" + i, tm.getText());
-         } 
-         
+         }
+
          cons1.close();
-         
          cons2.close();
-         
          cons3.close();
-         
          cons4.close();
-         
          cons5.close();
-         
-         sess1.unsubscribe("sub1");
-         
-         sess2.unsubscribe("sub2");
-         
-         sess3.unsubscribe("sub3");
-         
-         sess1.unsubscribe("sub4");
-         
-         sess2.unsubscribe("sub5");
-         
+
+         sess1.unsubscribe("sub");
+         sess2.unsubscribe("sub1");
+         sess3.unsubscribe("sub2");
+         sess1.unsubscribe("sub3");
+         sess2.unsubscribe("sub4");
+
       }
       finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
       }
    }
-   
-   
-   
-   
+
+
+
+
    /*
     * Create shared durable subs on multiple nodes, the local instance should always get the message
     */
    protected void clusteredTopicSharedDurableLocalConsumer(boolean persistent) throws Exception
    {
       Connection conn1 = null;
-      
       Connection conn2 = null;
-      
       Connection conn3 = null;
       try
+
       {
-         conn1 = cf1.createConnection();
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn1 = cf.createConnection();
+         conn2 = cf.createConnection();
+         conn3 = cf.createConnection();
          
-         conn2 = cf2.createConnection();
+         log.info("Created connections");
          
-         conn3 = cf3.createConnection();
-         
+         checkConnectionsDifferentServers(conn1, conn2, conn3);
          conn1.setClientID("wib1");
-         
          conn2.setClientID("wib1");
-         
          conn3.setClientID("wib1");
-           
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         try         
+
+         try
          {
-            sess1.unsubscribe("sub1");
+            sess1.unsubscribe("sub");
          }
          catch (Exception ignore) {}
-         try         
+         try
          {
-            sess2.unsubscribe("sub1");
+            sess2.unsubscribe("sub");
          }
          catch (Exception ignore) {}
-         try         
+         try
          {
-            sess3.unsubscribe("sub1");
+            sess3.unsubscribe("sub");
          }
          catch (Exception ignore) {}
-         
-         MessageConsumer cons1 = sess1.createDurableSubscriber(topic1, "sub1");
-         
-         MessageConsumer cons2 = sess2.createDurableSubscriber(topic2, "sub1");
-         
-         MessageConsumer cons3 = sess3.createDurableSubscriber(topic3, "sub1");
-         
+
+         MessageConsumer cons1 = sess1.createDurableSubscriber(topic0, "sub");
+         MessageConsumer cons2 = sess2.createDurableSubscriber(topic1, "sub");
+         MessageConsumer cons3 = sess3.createDurableSubscriber(topic2, "sub");
+
          conn1.start();
-         
          conn2.start();
-         
          conn3.start();
-         
-         //Send at node1
-         
-         MessageProducer prod1 = sess1.createProducer(topic1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 0
+
+         MessageProducer prod = sess1.createProducer(topic0);
+
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          final int NUM_MESSAGES = 100;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("message" + i);
-            
-            prod1.send(tm);
+
+            prod.send(tm);
          }
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(1000);
-            
+
             assertNotNull(tm);
-            
+
             assertEquals("message" + i, tm.getText());
          }
-         
+
          Message m = cons2.receive(2000);
-         
+
          assertNull(m);
-         
+
          m = cons3.receive(2000);
-         
+
          assertNull(m);
-         
-         // Send at node2
-         
-         MessageProducer prod2 = sess2.createProducer(topic2);
-         
-         prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess2.createTextMessage("message" + i);
-            
-            prod2.send(tm);
-         }
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
-            
-            assertNotNull(tm);
-               
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         m = cons1.receive(2000);
-         
-         assertNull(m);
-         
-         m = cons3.receive(2000);
-         
-         assertNull(m);
-         
-         // Send at node3
-         
-         MessageProducer prod3 = sess3.createProducer(topic3);
-         
-         prod3.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 1
+
+         MessageProducer prod1 = sess2.createProducer(topic1);
+
+         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess3.createTextMessage("message" + i);
-            
-            prod3.send(tm);
+
+            prod1.send(tm);
          }
-           
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons2.receive(1000);
+
+            assertNotNull(tm);
+
+            assertEquals("message" + i, tm.getText());
+         }
+
+         m = cons1.receive(2000);
+
+         assertNull(m);
+
+         m = cons3.receive(2000);
+
+         assertNull(m);
+
+         // Send at node 2
+
+         MessageProducer prod2 = sess3.createProducer(topic2);
+
+         prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess3.createTextMessage("message" + i);
+
+            prod2.send(tm);
+         }
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons3.receive(1000);
-            
+
             assertNotNull(tm);
-            
+
             assertEquals("message" + i, tm.getText());
          }
-         
+
          m = cons1.receive(2000);
-         
+
          assertNull(m);
-         
+
          m = cons2.receive(2000);
-         
-         assertNull(m);         
-         
+
+         assertNull(m);
+
          cons1.close();
-         
          cons2.close();
-         
          cons3.close();
-         
-         //Need to unsubscribe on any node that the durable sub was created on
-         
-         sess1.unsubscribe("sub1");
-         
-         sess2.unsubscribe("sub1");
-         
-         sess3.unsubscribe("sub1");
+
+         // Need to unsubscribe on any node that the durable sub was created on
+
+         sess1.unsubscribe("sub");
+         sess2.unsubscribe("sub");
+         sess3.unsubscribe("sub");
       }
       finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
       }
    }
-   
-   
-   
+
+
+
    /*
     * Create shared durable subs on multiple nodes, but without sub on local node
     * should round robin
@@ -1035,105 +892,110 @@ public class ManualClusteringTest extends MessagingTestCase
    protected void clusteredTopicSharedDurableNoLocalSub(boolean persistent) throws Exception
    {
       Connection conn1 = null;
-      
       Connection conn2 = null;
-      
       Connection conn3 = null;
+
       try
       {
-         conn1 = cf1.createConnection();
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn1 = cf.createConnection();
+         conn2 = cf.createConnection();
+         conn3 = cf.createConnection();
          
-         conn2 = cf2.createConnection();
+         log.info("Created connections");
          
-         conn3 = cf3.createConnection();
+         checkConnectionsDifferentServers(conn1, conn2, conn3);
          
          conn2.setClientID("wib1");
-         
          conn3.setClientID("wib1");
-           
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         try         
+
+         try
          {
-            sess2.unsubscribe("sub1");
+            sess2.unsubscribe("sub");
          }
          catch (Exception ignore) {}
-         try         
+         try
          {
-            sess3.unsubscribe("sub1");
+            sess3.unsubscribe("sub");
          }
          catch (Exception ignore) {}
-                  
-         MessageConsumer cons2 = sess2.createDurableSubscriber(topic2, "sub1");
-         
-         MessageConsumer cons3 = sess3.createDurableSubscriber(topic3, "sub1");
-         
+
+         MessageConsumer cons1 = sess2.createDurableSubscriber(topic1, "sub");
+         MessageConsumer cons2 = sess3.createDurableSubscriber(topic2, "sub");
+
          conn2.start();
-         
          conn3.start();
-         
-         //Send at node1
-         
-         //Should round robin between the other 2 since there is no active consumer on sub1 on node1
-         
-         MessageProducer prod1 = sess1.createProducer(topic1);
-         
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
+         // Send at node 0
+
+         //Should round robin between the other 2 since there is no active consumer on sub  on node 0
+
+         MessageProducer prod = sess1.createProducer(topic0);
+
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
          final int NUM_MESSAGES = 100;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("message" + i);
-            
-            prod1.send(tm);
+
+            prod.send(tm);
          }
-         
+
+         for (int i = 0; i < NUM_MESSAGES / 2; i++)
+         {
+            TextMessage tm = (TextMessage)cons1.receive(1000);
+
+            assertNotNull(tm);
+
+            assertEquals("message" + i * 2, tm.getText());
+         }
+
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-            
+
             assertNotNull(tm);
-            
-            assertEquals("message" + i * 2, tm.getText());
-         }
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
-            
-            assertNotNull(tm);
-            
+
             assertEquals("message" + (i * 2 + 1), tm.getText());
          }
-         
+
+         cons1.close();
          cons2.close();
-         
-         cons3.close();
-         
-         sess2.unsubscribe("sub1");
-         
-         sess3.unsubscribe("sub1");
-      
+
+         sess2.unsubscribe("sub");
+         sess3.unsubscribe("sub");
+
       }
       finally
-      {      
-         if (conn1 != null) conn1.close();
-         
-         if (conn2 != null) conn2.close();
-         
-         if (conn3 != null) conn3.close();
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
       }
    }
 
    class MyListener implements MessageListener
    {
       private int i;
-      
+
       MyListener(int i)
       {
          this.i = i;
@@ -1144,7 +1006,7 @@ public class ManualClusteringTest extends MessagingTestCase
          try
          {
             int count = m.getIntProperty("count");
-            
+
             log.info("Listener " + i + " received message " + count);
          }
          catch (Exception e)
@@ -1152,7 +1014,12 @@ public class ManualClusteringTest extends MessagingTestCase
             e.printStackTrace();
          }
       }
-      
+
    }
+
+
+   // Inner classes -------------------------------------------------
+
    
+
 }

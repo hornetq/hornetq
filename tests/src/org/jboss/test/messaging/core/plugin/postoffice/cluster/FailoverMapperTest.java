@@ -1,0 +1,60 @@
+/*
+   * JBoss, Home of Professional Open Source
+   * Copyright 2005, JBoss Inc., and individual contributors as indicated
+   * by the @authors tag. See the copyright.txt in the distribution for a
+   * full listing of individual contributors.
+   *
+   * This is free software; you can redistribute it and/or modify it
+   * under the terms of the GNU Lesser General Public License as
+   * published by the Free Software Foundation; either version 2.1 of
+   * the License, or (at your option) any later version.
+   *
+   * This software is distributed in the hope that it will be useful,
+   * but WITHOUT ANY WARRANTY; without even the implied warranty of
+   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+   * Lesser General Public License for more details.
+   *
+   * You should have received a copy of the GNU Lesser General Public
+   * License along with this software; if not, write to the Free
+   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+   */
+
+package org.jboss.test.messaging.core.plugin.postoffice.cluster;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import junit.framework.TestCase;
+
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
+
+/**
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @version <tt>$Revision:$</tt>
+ *          <p/>
+ *          $Id:$
+ */
+public class FailoverMapperTest extends TestCase
+{
+
+   public void testMapper()
+   {
+      Set set = new HashSet();
+
+      set.add(new Integer(50));
+      set.add(new Integer(25));
+      set.add(new Integer(15));
+
+      DefaultFailoverMapper mapper = new DefaultFailoverMapper();
+      Map map = mapper.generateMapping(set);
+
+      assertEquals(new Integer(15),map.get(new Integer(25)));
+      assertEquals(new Integer(50),map.get(new Integer(15)));
+      assertEquals(new Integer(25),map.get(new Integer(50)));
+      
+   }
+
+
+}

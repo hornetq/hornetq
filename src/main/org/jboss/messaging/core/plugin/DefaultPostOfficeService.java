@@ -25,10 +25,12 @@ import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.selector.SelectorFactory;
+import org.jboss.jms.server.JMSConditionFactory;
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.FilterFactory;
+import org.jboss.messaging.core.plugin.contract.ConditionFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -100,6 +102,12 @@ public class DefaultPostOfficeService extends JDBCServiceSupport
       }
       this.officeName = name;
    }
+
+    public String listBindings()
+    {
+        return postOffice.printBindingInformation();
+    }
+
    
    // ServiceMBeanSupport overrides ---------------------------------
    
@@ -129,10 +137,12 @@ public class DefaultPostOfficeService extends JDBCServiceSupport
          int nodeId = serverPeer.getServerPeerID();
          
          FilterFactory ff = new SelectorFactory();
+         
+         ConditionFactory cf = new JMSConditionFactory();
                
          postOffice = new DefaultPostOffice(ds, tm, sqlProperties,
                                          createTablesOnStartup,
-                                         nodeId, officeName, ms, pm, tr, ff, pool);
+                                         nodeId, officeName, ms, pm, tr, ff, cf, pool);
          
          postOffice.start();
          

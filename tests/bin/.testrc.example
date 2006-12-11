@@ -13,13 +13,23 @@ DEBUG_OPTS=$DEBUG_OPTS_SHMEM
 # (the database configuration definition MUST exist in tests/etc/container.xml)
 #
 TEST_DATABASE=hsqldb
+
 #
 # The transport to run tests with. Valid values: "socket", "http". The value specified here
 # overrides the value specified in container.xml.
 #
+
 TEST_REMOTING=socket
 
-
+#
+# Each test can be run in clustered or non-clustered mode. However, setting CLUSTERED to "true"
+# doesn't guarantee that the test will be actually run in clustered mode, the test database must
+# be also permitting sharing over a LAN. "mysql" allows this, "hsqldb" doesn't. The test will
+# quickly fail in such a situation.
+# It is also possible to configure a test to run in clustered mode by using the "-clustered"
+# switch.
+#
+CLUSTERED=true
 #
 #
 # util

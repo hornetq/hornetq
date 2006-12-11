@@ -23,9 +23,9 @@
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>    
       <depends optional-attribute-name="JMSUserManager">jboss.messaging:service=JMSUserManager</depends>
+      <depends>jboss.messaging:service=Connector,transport=socket</depends>
 
-	   <attribute name="QueuePostOffice">jboss.messaging:service=QueuePostOffice</attribute>
-	   <attribute name="TopicPostOffice">jboss.messaging:service=TopicPostOffice</attribute>
+	   <attribute name="PostOffice">jboss.messaging:service=PostOffice</attribute>
 
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
       <attribute name="DefaultSecurityConfig">

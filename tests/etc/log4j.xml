@@ -37,7 +37,11 @@
    </category>
 
    <category name="org.jgroups">
-      <priority value="WARN"/>
+      <priority value="TRACE"/>
+   </category>
+
+   <category name="org.jboss.remoting">
+         <priority value="TRACE"/>
    </category>
 
    <category name="org.jboss">

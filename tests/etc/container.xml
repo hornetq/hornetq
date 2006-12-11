@@ -73,6 +73,19 @@
    -->
    <remoting-transport>socket</remoting-transport>
 
+   <!--
+      Specifies whether to start a clustered messaging server or not. If "test.clustered" is set,
+      the value of the system property takes precedence. Supported values are "true" or "false".
+
+      Setting "clustered" to "true" doesn't guarantee that the test will be actually run in
+      clustered mode, the test database must be also permitting sharing over a LAN. "mysql" allows
+      this, "hsqldb" doesn't. The test will quickly fail in such a situation.
+   -->
+
+   <!--
+   <clustered>true</clustered>
+   -->
+
 </container>
 
 

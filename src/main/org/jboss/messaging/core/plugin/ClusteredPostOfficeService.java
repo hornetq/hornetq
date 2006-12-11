@@ -22,21 +22,32 @@
 package org.jboss.messaging.core.plugin;
 
 import javax.management.ObjectName;
+import javax.management.NotificationListener;
+import javax.management.NotificationFilter;
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanNotificationInfo;
 import javax.transaction.TransactionManager;
-
 import org.jboss.jms.selector.SelectorFactory;
+import org.jboss.jms.server.JMSConditionFactory;
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.FilterFactory;
+import org.jboss.messaging.core.plugin.contract.ConditionFactory;
+import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.Peer;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
+
+import java.util.Set;
+import java.util.Collections;
 
 /**
  * A ClusteredPostOfficeService
@@ -44,57 +55,86 @@ import org.w3c.dom.Element;
  * MBean wrapper for a clustered post office
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
  *
  */
-public class ClusteredPostOfficeService extends JDBCServiceSupport
+public class ClusteredPostOfficeService extends JDBCServiceSupport implements Peer
 {
-   private DefaultClusteredPostOffice postOffice;
-   
-   private ObjectName serverPeerObjectName;
-   
-   private String officeName;
-   
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private boolean started;
-   
+
    private Element syncChannelConfig;
-   
    private Element asyncChannelConfig;
-   
+
+   private ObjectName serverPeerObjectName;
+
+   private String officeName;
    private long stateTimeout = 5000;
-   
    private long castTimeout = 5000;
-     
    private String groupName;
-   
    private long statsSendPeriod = 1000;
-   
    private String clusterRouterFactory;
-   
    private String messagePullPolicy;
-   
-   // Constructors --------------------------------------------------------
-   
-   public ClusteredPostOfficeService()
-   {      
-   }
-   
-   // ServerPlugin implementation ------------------------------------------
-   
+
+   private DefaultClusteredPostOffice postOffice;
+
+   // Constructors --------------------------------------------------
+
+   // ServerPlugin implementation -----------------------------------
+
    public MessagingComponent getInstance()
    {
       return postOffice;
    }
-   
-   // MBean attributes -----------------------------------------------------
-   
+
+   // Peer implementation -------------------------------------------
+
+   public Set getNodeIDView()
+   {
+      if (postOffice == null)
+      {
+         return Collections.EMPTY_SET;
+      }
+
+      return postOffice.getNodeIDView();
+   }
+
+   // NotificationBroadcaster implementation ------------------------
+
+   public void addNotificationListener(NotificationListener listener,
+                                       NotificationFilter filter,
+                                       Object object) throws IllegalArgumentException
+   {
+      postOffice.addNotificationListener(listener, filter, object);
+   }
+
+   public void removeNotificationListener(NotificationListener listener)
+      throws ListenerNotFoundException
+   {
+      postOffice.removeNotificationListener(listener);
+   }
+
+   public MBeanNotificationInfo[] getNotificationInfo()
+   {
+      return postOffice.getNotificationInfo();
+   }
+
+
+   // MBean attributes ----------------------------------------------
+
    public synchronized ObjectName getServerPeer()
    {
       return serverPeerObjectName;
    }
-   
+
    public synchronized void setServerPeer(ObjectName on)
    {
       if (started)
@@ -104,12 +144,12 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       }
       this.serverPeerObjectName = on;
    }
-   
+
    public synchronized String getPostOfficeName()
    {
       return officeName;
    }
-   
+
    public synchronized void setPostOfficeName(String name)
    {
       if (started)
@@ -119,7 +159,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
       }
       this.officeName = name;
    }
-   
+
    public void setSyncChannelConfig(Element config) throws Exception
    {
       syncChannelConfig = config;
@@ -129,7 +169,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
    {
       return syncChannelConfig;
    }
-   
+
    public void setAsyncChannelConfig(Element config) throws Exception
    {
       asyncChannelConfig = config;
@@ -139,147 +179,161 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport
    {
       return asyncChannelConfig;
    }
-   
+
    public void setStateTimeout(long timeout)
    {
       this.stateTimeout = timeout;
    }
-   
+
    public long getStateTimeout()
    {
       return stateTimeout;
    }
-   
+
    public void setCastTimeout(long timeout)
    {
       this.castTimeout = timeout;
    }
-   
+
    public long getCastTimeout()
    {
       return castTimeout;
    }
-   
+
    public void setGroupName(String groupName)
    {
       this.groupName = groupName;
    }
-   
+
    public String getGroupName()
    {
       return groupName;
    }
-   
+
    public void setStatsSendPeriod(long period)
    {
       this.statsSendPeriod = period;
    }
-   
+
    public long getStatsSendPeriod()
    {
       return statsSendPeriod;
    }
-   
+
    public String getClusterRouterFactory()
    {
       return clusterRouterFactory;
    }
-   
+
    public String getMessagePullPolicy()
    {
       return messagePullPolicy;
    }
-   
+
    public void setClusterRouterFactory(String clusterRouterFactory)
    {
       this.clusterRouterFactory = clusterRouterFactory;
    }
-   
+
    public void setMessagePullPolicy(String messagePullPolicy)
    {
       this.messagePullPolicy = messagePullPolicy;
    }
-   
+
+   public String listBindings()
+   {
+      return postOffice.printBindingInformation();
+   }
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
    // ServiceMBeanSupport overrides ---------------------------------
-   
+
    protected synchronized void startService() throws Exception
    {
       if (started)
       {
          throw new IllegalStateException("Service is already started");
       }
-      
+
       super.startService();
-      
+
       try
-      {  
+      {
          TransactionManager tm = getTransactionManagerReference();
-                           
+
          ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
-         
          MessageStore ms = serverPeer.getMessageStore();
-         
          TransactionRepository tr = serverPeer.getTxRepository();
-         
          PersistenceManager pm = serverPeer.getPersistenceManagerInstance();
-         
          QueuedExecutorPool pool = serverPeer.getQueuedExecutorPool();
-                  
          int nodeId = serverPeer.getServerPeerID();
-         
+
          Class clazz = Class.forName(messagePullPolicy);
-         
          MessagePullPolicy pullPolicy = (MessagePullPolicy)clazz.newInstance();
-         
          clazz = Class.forName(clusterRouterFactory);
-         
+
          ClusterRouterFactory rf = (ClusterRouterFactory)clazz.newInstance();
-         
+
+         ConditionFactory cf = new JMSConditionFactory();
+                  
          FilterFactory ff = new SelectorFactory();
-            
-         postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties, createTablesOnStartup,
-                                               nodeId, officeName, ms,
-                                               pm, tr, ff, pool, 
-                                               groupName,
-                                               syncChannelConfig, asyncChannelConfig,
-                                               stateTimeout, castTimeout,
-                                               pullPolicy, rf,
-                                               statsSendPeriod);
-         
+         FailoverMapper mapper = new DefaultFailoverMapper();
+
+         postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties,
+                                                      createTablesOnStartup,
+                                                      nodeId, officeName, ms,
+                                                      pm, tr, ff, cf, pool,
+                                                      groupName,
+                                                      syncChannelConfig,
+                                                      asyncChannelConfig,
+                                                      stateTimeout, castTimeout,
+                                                      pullPolicy, rf,
+                                                      mapper,
+                                                      statsSendPeriod);
+
          postOffice.start();
-         
-         started = true;         
+
+         started = true;
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
-      } 
+      }
    }
-   
+
    protected void stopService() throws Exception
    {
       if (!started)
       {
          throw new IllegalStateException("Service is not started");
       }
-      
-      super.stopService();      
-      
+
+      super.stopService();
+
       try
-      {      
+      {
          postOffice.stop();
-         
+
          postOffice = null;
-               
+
          started = false;
-         
+
          log.debug(this + " stopped");
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
-      } 
+      }
    }
-      
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }
 

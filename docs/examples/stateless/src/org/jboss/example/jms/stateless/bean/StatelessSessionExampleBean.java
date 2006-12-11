@@ -6,15 +6,14 @@
  */
 package org.jboss.example.jms.stateless.bean;
 
-import javax.jms.*;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.jms.*;
 import javax.naming.InitialContext;
-import java.rmi.RemoteException;
-import java.util.List;
-import java.util.Enumeration;
-import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

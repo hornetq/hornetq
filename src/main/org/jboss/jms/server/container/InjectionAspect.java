@@ -24,6 +24,7 @@ package org.jboss.jms.server.container;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
@@ -66,51 +67,55 @@ public class InjectionAspect
           throw new IllegalStateException("Can't find handler");
        }
        
-       ClientConnectionDelegate del = (ClientConnectionDelegate)invocation.invokeNext();
+       CreateConnectionResult res = (CreateConnectionResult)invocation.invokeNext();
+       ClientConnectionDelegate del = (ClientConnectionDelegate)res.getDelegate();
        
-       ConnectionAdvised advised = 
-          (ConnectionAdvised)JMSDispatcher.instance.getRegistered(new Integer(del.getID()));
-       
-       ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)advised.getEndpoint();
-       
-       endpoint.setCallbackHandler(handler);
-       
-       // Then we inject the remoting session id of the client
-       String sessionId =
-          (String)mi.getMetaData(MetaDataConstants.JMS,
-                                 MetaDataConstants.REMOTING_SESSION_ID);
-       
-       if (sessionId == null)
-       {
-          throw new IllegalStateException("Can't find session id");
+       if (del != null)
+       {          
+          ConnectionAdvised advised = 
+             (ConnectionAdvised)JMSDispatcher.instance.getRegistered(new Integer(del.getID()));
+          
+          ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)advised.getEndpoint();
+          
+          endpoint.setCallbackHandler(handler);
+          
+          // Then we inject the remoting session id of the client
+          String sessionId =
+             (String)mi.getMetaData(MetaDataConstants.JMS,
+                                    MetaDataConstants.REMOTING_SESSION_ID);
+          
+          if (sessionId == null)
+          {
+             throw new IllegalStateException("Can't find session id");
+          }
+          
+          // Then we inject the unique id of the client VM
+          String jmsClientVMID =
+             (String)mi.getMetaData(MetaDataConstants.JMS,
+                                    MetaDataConstants.JMS_CLIENT_VM_ID);
+          
+          if (jmsClientVMID == null)
+          {
+             throw new IllegalStateException("Can't find jms client id");
+          }
+          
+          endpoint.setRemotingInformation(jmsClientVMID, sessionId);       
+          
+          // Then we inject the version number from to be used
+          
+          Byte ver =
+             (Byte)mi.getMetaData(MetaDataConstants.JMS,
+                                  MetaDataConstants.VERSION_NUMBER);
+          
+          if (ver == null)
+          {
+             throw new IllegalStateException("Can't find version");
+          }
+          
+          endpoint.setUsingVersion(ver.byteValue());
        }
        
-       // Then we inject the unique id of the client VM
-       String jmsClientVMID =
-          (String)mi.getMetaData(MetaDataConstants.JMS,
-                                 MetaDataConstants.JMS_CLIENT_VM_ID);
-       
-       if (jmsClientVMID == null)
-       {
-          throw new IllegalStateException("Can't find jms client id");
-       }
-       
-       endpoint.setRemotingInformation(jmsClientVMID, sessionId);       
-       
-       // Then we inject the version number from to be used
-       
-       Byte ver =
-          (Byte)mi.getMetaData(MetaDataConstants.JMS,
-                                 MetaDataConstants.VERSION_NUMBER);
-       
-       if (ver == null)
-       {
-          throw new IllegalStateException("Can't find version");
-       }
-       
-       endpoint.setUsingVersion(ver.byteValue());
-       
-       return del;
+       return res;
     }
     
     // Package protected ---------------------------------------------

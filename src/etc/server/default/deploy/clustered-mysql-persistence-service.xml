@@ -58,19 +58,19 @@ SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNELID) FROM JMS_MESSAGE_REFERENCE
    </mbean>
 
    <mbean code="org.jboss.messaging.core.plugin.ClusteredPostOfficeService"
-      name="jboss.messaging:service=QueuePostOffice"
+      name="jboss.messaging:service=PostOffice"
       xmbean-dd="xmdesc/ClusteredPostOffice-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="PostOfficeName">Clustered Queue</attribute>
+      <attribute name="PostOfficeName">Clustered JMS</attribute>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="SqlProperties"><![CDATA[
-CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)
-INSERT_BINDING=INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID) VALUES (?, ?, ?, ?, ?, ?)
+CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, IS_FAILED_OVER VARCHAR(1))
+INSERT_BINDING=INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_OVER) VALUES (?, ?, ?, ?, ?, ?, ?)
 DELETE_BINDING=DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
-LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
+LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_OVER FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
       ]]></attribute>
       <attribute name="GroupName">Queue</attribute>
       <attribute name="StateTimeout">5000</attribute>
@@ -87,7 +87,8 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
             <AUTOCONF down_thread="false" up_thread="false"/>
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
-            <FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+            <FD_SOCK down_thread="false" up_thread="false"/>
+            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>            
             <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
             <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
                          retransmit_timeout="100,200,600,1200,2400,4800"/>
@@ -107,71 +108,8 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_PO
             <AUTOCONF down_thread="false" up_thread="false"/>
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
-            <FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
-            <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
-            <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
-                         retransmit_timeout="100,200,600,1200,2400,4800"/>
-            <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
-            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
-            <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
-            <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
-            <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
-            <pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/>
-         </config>
-      </attribute>
-   </mbean>
-
-   <mbean code="org.jboss.messaging.core.plugin.ClusteredPostOfficeService"
-      name="jboss.messaging:service=TopicPostOffice"
-      xmbean-dd="xmdesc/ClusteredPostOffice-xmbean.xml">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="PostOfficeName">Clustered Topic</attribute>
-      <attribute name="DataSource">java:/DefaultDS</attribute>
-      <attribute name="CreateTablesOnStartup">true</attribute>
-      <attribute name="SqlProperties"><![CDATA[
-CREATE_POSTOFFICE_TABLE=CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT)
-INSERT_BINDING=INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID) VALUES (?, ?, ?, ?, ?, ?)
-DELETE_BINDING=DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
-LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
-      ]]></attribute>
-      <attribute name="GroupName">Topic</attribute>
-      <attribute name="StateTimeout">5000</attribute>
-      <attribute name="CastTimeout">5000</attribute>
-      <attribute name="StatsSendPeriod">10000</attribute>
-      <attribute name="MessagePullPolicy">org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</attribute>
-      <attribute name="ClusterRouterFactory">org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory</attribute>
-
-      <attribute name="AsyncChannelConfig">
-         <config>
-            <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45569" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/>
-            <AUTOCONF down_thread="false" up_thread="false"/>
-            <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
-            <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
-            <FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
-            <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
-            <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
-                         retransmit_timeout="100,200,600,1200,2400,4800"/>
-            <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
-            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
-            <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
-            <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
-            <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
-         </config>
-      </attribute>
-
-      <attribute name="SyncChannelConfig">
-         <config>
-            <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45570" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/>
-            <AUTOCONF down_thread="false" up_thread="false"/>
-            <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
-            <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
-            <FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+            <FD_SOCK down_thread="false" up_thread="false"/>
+            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>            
             <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
             <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
                          retransmit_timeout="100,200,600,1200,2400,4800"/>

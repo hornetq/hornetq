@@ -201,7 +201,107 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
-  <component name="libraryTable" />
+  <component name="libraryTable">
+    <library name="jboss-common-core">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common-core/lib/jboss-common-core.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common-core/lib/jboss-common-core-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="jboss-logging-log4j">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common-logging-log4j/lib/jboss-logging-log4j.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common-logging-log4j/lib/jboss-logging-log4j-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="jboss-logging-spi">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common-logging-spi/lib/jboss-logging-spi.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common-logging-spi/lib/jboss-logging-spi-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="jboss-aop">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-aop.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jboss-remoting">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/remoting/lib/jboss-remoting.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/remoting/lib/jboss-remoting-src.zip!/" />
+      </SOURCES>
+    </library>
+    <library name="jboss-serialization">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/serialization/lib/jboss-serialization.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jgroups">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/jgroups/lib/jgroups.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="junit">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/junit/lib/junit.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="hsqldb">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/hsqldb/lib/hsqldb.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="javassist">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/javassist/lib/javassist.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="concurrent">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/oswego-concurrent/lib/concurrent.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jboss-j2ee">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/jboss-j2ee.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jboss-j2se">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/jboss-j2se.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+  </component>
   <component name="uidesigner-configuration">
     <option name="INSTRUMENT_CLASSES" value="true" />
     <option name="COPY_FORMS_RUNTIME_TO_OUTPUT" value="true" />

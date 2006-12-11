@@ -24,10 +24,14 @@ package org.jboss.test.messaging.tools;
 import java.rmi.Naming;
 import java.util.Hashtable;
 import java.util.Set;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.Iterator;
 import javax.management.ObjectName;
+import javax.management.NotificationListener;
+import javax.management.Notification;
 import javax.transaction.UserTransaction;
-
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.logging.Logger;
@@ -37,6 +41,7 @@ import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
+import org.jboss.test.messaging.tools.jmx.rmi.NotificationListenerID;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 
@@ -53,6 +58,8 @@ import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 public class ServerManagement
 {
    // Constants -----------------------------------------------------
+
+   public static final int MAX_SERVER_COUNT = 10;
 
    // logging levels used by the remote client to forward log output on a remote server
    public static int FATAL = 0;
@@ -71,7 +78,10 @@ public class ServerManagement
 
    private static final int RMI_SERVER_LOOKUP_RETRIES = 10;
 
-   private static Server[] servers = new Server[RMITestServer.RMI_REGISTRY_PORTS.length];
+   private static Server[] servers = new Server[MAX_SERVER_COUNT];
+
+   // Map<NotificationListener - NotificationListenerPoller>
+   private static Map notificationListenerPollers = new HashMap();
 
    public static boolean isLocal()
    {
@@ -114,7 +124,7 @@ public class ServerManagement
 
       if (isLocal())
       {
-         servers[index] = new LocalTestServer();
+         servers[index] = new LocalTestServer(index);
          return;
       }
 
@@ -140,10 +150,10 @@ public class ServerManagement
    
    public static synchronized void start(String config) throws Exception
    {
-      start(config, 0, false);
+      start(config, 0);
    }
 
-   public static synchronized void start(String config, int index, boolean clustered) throws Exception
+   public static synchronized void start(String config, int index) throws Exception
    {
       create(index);
 
@@ -158,26 +168,58 @@ public class ServerManagement
       
       MessageIdGeneratorFactory.instance.clear();      
 
-      //Now start the server
-      servers[index].start(config, clustered);
+      // Now start the server
+      servers[index].start(config);
 
       log.debug("server started");
    }
 
    public static synchronized void stop() throws Exception
    {
-      insureStarted();
-      
-      servers[0].stop();      
+      stop(0);
    }
 
+   public static synchronized void stop(int index) throws Exception
+   {
+      if (servers[index] == null)
+      {
+         log.warn("Server " + index + " has not been created, so it cannot be stopped");
+         return;
+      }
+
+      if (!servers[index].isStarted())
+      {
+         log.warn("Server " + index + " either has not been started, or it is stopped already");
+         return;
+      }
+
+      servers[index].stop();
+   }
+
+   /**
+    * TODO - this methods should be removed, to not be confused with kill(index)
+    * @deprecated
+    */
    public static synchronized void destroy() throws Exception
    {
       stop();
-
-      servers[0].destroy();
-
+      servers[0].kill();
       servers[0] = null;
+   }
+
+   /**
+    * Abruptly kills the VM running the specified server.
+    */
+   public static synchronized void kill(int index) throws Exception
+   {
+      if (servers[index] == null)
+      {
+         log.warn("Server " + index + " has not been created, so it cannot be killed");
+         return;
+      }
+
+      servers[index].kill();
+      servers[index] = null;
    }
 
    public static void disconnect() throws Exception
@@ -218,6 +260,59 @@ public class ServerManagement
    {
       insureStarted();
       return servers[0].invoke(on, operationName, params, signature);
+   }
+
+   public static void addNotificationListener(int serverIndex, ObjectName on,
+                                              NotificationListener listener) throws Exception
+   {
+      insureStarted(serverIndex);
+
+      if (isLocal())
+      {
+         // add the listener directly to the server
+         servers[serverIndex].addNotificationListener(on, listener);
+      }
+      else
+      {
+         // is remote, need to poll
+         NotificationListenerPoller p =
+            new NotificationListenerPoller((Server)servers[serverIndex], on, listener);
+
+         synchronized(notificationListenerPollers)
+         {
+            notificationListenerPollers.put(listener, p);
+         }
+
+         new Thread(p, "Poller for " + Integer.toHexString(p.hashCode())).start();
+      }
+   }
+
+   public static void removeNotificationListener(int serverIndex, ObjectName on,
+                                                 NotificationListener listener) throws Exception
+   {
+      insureStarted(serverIndex);
+
+      if (isLocal())
+      {
+         // remove the listener directly
+         servers[serverIndex].removeNotificationListener(on, listener);
+      }
+      else
+      {
+         // is remote
+
+         NotificationListenerPoller p = null;
+         synchronized(notificationListenerPollers)
+         {
+            p = (NotificationListenerPoller)notificationListenerPollers.remove(listener);
+         }
+
+         if (p != null)
+         {
+            // stop the polling thread
+            p.stop();
+         }
+      }
    }
 
    public static Set query(ObjectName pattern) throws Exception
@@ -536,12 +631,13 @@ public class ServerManagement
     * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
     * directory).
     */
-   private static void undeployDestination(boolean isQueue, String name, int serverIndex) throws Exception
+   private static void undeployDestination(boolean isQueue, String name, int serverIndex)
+      throws Exception
    {
       insureStarted(serverIndex);
       servers[serverIndex].undeployDestination(isQueue, name);
    }
-
+                                                                                                                
    public static void deployConnectionFactory(String objectName,
                                               String[] jndiBindings,
                                               int prefetchSize,
@@ -580,19 +676,19 @@ public class ServerManagement
 
    public static Hashtable getJNDIEnvironment()
    {
+      return getJNDIEnvironment(0);
+   }
+   
+   public static Hashtable getJNDIEnvironment(int serverIndex)
+   {
       if (isLocal())
       {
-         return InVMInitialContextFactory.getJNDIEnvironment();
+         return InVMInitialContextFactory.getJNDIEnvironment(serverIndex);
       }
       else
       {
-         return getJNDIEnvironment(0);
+         return RemoteInitialContextFactory.getJNDIEnvironment(serverIndex);
       }
-   }
-   
-   public static Hashtable getJNDIEnvironment(int index)
-   {
-      return RemoteInitialContextFactory.getJNDIEnvironment(index);      
    }
 
    // Attributes ----------------------------------------------------
@@ -626,17 +722,23 @@ public class ServerManagement
 
    private static Server acquireRemote(int initialRetries, int index)
    {
-      String name = "//localhost:" + RMITestServer.RMI_REGISTRY_PORTS[index] + "/" + RMITestServer.RMI_SERVER_NAME;
+      String name =
+         "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
+         RMITestServer.RMI_SERVER_PREFIX + index;
+
       Server s = null;
       int retries = initialRetries;
+
       while(s == null && retries > 0)
       {
          int attempt = initialRetries - retries + 1;
          try
          {
-            log.info("trying to connect to the remote RMI server" +
+            log.info("trying to connect to the remote RMI server " + index + 
                      (attempt == 1 ? "" : ", attempt " + attempt));
+
             s = (Server)Naming.lookup(name);
+
             log.info("connected to the remote server");
          }
          catch(Exception e)
@@ -796,4 +898,63 @@ public class ServerManagement
 //         }
 //      }
 //   }
+
+   private static long listenerIDCounter = 0;
+
+   static class NotificationListenerPoller implements Runnable
+   {
+      public static final int POLL_INTERVAL = 500;
+
+      private long id;
+      private Server server;
+      private NotificationListener listener;
+      private volatile boolean running;
+
+      private synchronized static long generateID()
+      {
+         return listenerIDCounter++;
+      }
+
+      NotificationListenerPoller(Server server, ObjectName on, NotificationListener listener)
+         throws Exception
+      {
+         id = generateID();
+         this.server = server;
+
+         server.addNotificationListener(on, new NotificationListenerID(id));
+
+         this.listener = listener;
+         this.running = true;
+      }
+
+      public void run()
+      {
+         while(running)
+         {
+            try
+            {
+               List notifications = server.pollNotificationListener(id);
+
+               for(Iterator i = notifications.iterator(); i.hasNext(); )
+               {
+                  Notification n = (Notification)i.next();
+                  listener.handleNotification(n, null);
+               }
+
+               Thread.sleep(POLL_INTERVAL);
+            }
+            catch(Exception e)
+            {
+               log.error(e);
+               stop();
+            }
+         }
+      }
+
+      public void stop()
+      {
+         running = false;
+      }
+   }
+
 }

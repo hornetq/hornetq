@@ -37,12 +37,7 @@
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->activate(..))">
-      <advice name="handleActivate" aspect="org.jboss.jms.server.container.SecurityAspect"/>
-   </bind>
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->getMessageNow(..))">
-      <advice name="handleGetMessageNow" aspect="org.jboss.jms.server.container.SecurityAspect"/>
-   </bind>
+
 
    <!-- Browser -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.BrowserAdvised->$implementing{org.jboss.jms.server.endpoint.BrowserEndpoint}(..))">

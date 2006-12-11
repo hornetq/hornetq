@@ -21,12 +21,12 @@
   */
 package org.jboss.jms.util;
 
+import java.util.StringTokenizer;
+import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
 import javax.naming.NamingEnumeration;
-import javax.naming.Binding;
-import java.util.StringTokenizer;
+import javax.naming.NamingException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -101,7 +101,19 @@ public class JNDIUtil
          context = createContext(c, jndiName.substring(0, idx));
          name = jndiName.substring(idx + 1);
       }
-      context.bind(name, o);
+      boolean failed=false;
+      try
+      {
+         context.rebind(name,o);
+      }
+      catch (Exception ignored)
+      {
+         failed=true;
+      }
+      if (failed)
+      {
+         context.bind(name, o);
+      }
    }
 
    // Attributes ----------------------------------------------------

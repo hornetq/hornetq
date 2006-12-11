@@ -22,18 +22,9 @@
 package org.jboss.test.messaging.jms.server.destination;
 
 import java.util.List;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-
 import org.jboss.test.messaging.jms.server.destination.base.DestinationManagementTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

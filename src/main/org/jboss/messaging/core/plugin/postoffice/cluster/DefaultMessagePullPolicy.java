@@ -41,7 +41,6 @@ public class DefaultMessagePullPolicy implements MessagePullPolicy
 {
    private static final Logger log = Logger.getLogger(DefaultMessagePullPolicy.class);
    
-   
    public ClusteredQueue chooseQueue(List queues)
    {
       Iterator iter = queues.iterator();

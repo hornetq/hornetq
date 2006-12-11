@@ -119,6 +119,19 @@ public class ResourceManager
       
       tx.getMessages().add(m);
    }
+
+    /**
+     * Navigate on ACK and change consumer ids on every ACK not sent yet.
+     */
+    public void handleFailover(Object xid, int oldConsumerID, int newConsumerID)
+    {
+        if (trace) { log.trace("handleFailover:: Transfering consumer id on ACKs from  " + oldConsumerID + " to " + newConsumerID); }
+
+        TxState tx = getTx(xid);
+        
+        tx.handleFailover(oldConsumerID, newConsumerID);
+    }
+
    
    /**
     * Add an acknowledgement to the transaction
@@ -171,6 +184,7 @@ public class ResourceManager
          rollbackLocal(xid, connection);
          
          JMSException e = new MessagingTransactionRolledBackException(t.getMessage());
+         e.initCause(t);
          
          throw e;         
       }

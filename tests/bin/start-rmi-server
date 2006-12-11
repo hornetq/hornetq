@@ -20,22 +20,35 @@ else
     SEP=":"
 fi
 
+index=0
+
 while [ "$1" != "" ]; do
     if [ "$1" = "-debug" ]; then
-        if [ $cygwin = false ]; then
-            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
-        else
-            JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=y,address=rmiserver"
-        fi
+         debug=true
+    elif [ "$1" = "-index" ]; then
+        shift
+        index=$1
     elif [ "$1" = "-use-existent-test-classpath-file" ]; then
         USE_EXISTENT_TEST_CLASSPATH_FILE=true;
     fi
     shift
 done
 
+echo
+echo "Starting remoting server $index ..."
+echo
+
+if [ "$debug" = true ]; then
+    if [ $cygwin = false ]; then
+        JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=12348"
+    else
+        JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=rmiserver_$index"
+    fi
+fi
+
 mkdir -p $reldir/../output/logs
 
-JAVA_OPTS="$JAVA_OPTS -Xmx768M -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote"
+JAVA_OPTS="$JAVA_OPTS -Xmx768M -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote-$index"
 
 if [ "$TEST_DATABASE" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.database=$TEST_DATABASE"
@@ -45,10 +58,17 @@ if [ "$TEST_SERIALIZATION" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.serialization=$TEST_SERIALIZATION"
 fi
 
+if [ "$TEST_CLUSTERED" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dtest.clustered=$TEST_CLUSTERED"
+fi
+
+if [ "$index" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dtest.server.index=$index"
+fi
+
 if [ "$TEST_REMOTING" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.remoting=$TEST_REMOTING"
 fi
-
 
 if [ "$USE_EXISTENT_TEST_CLASSPATH_FILE" = "true" ]; then
    CLASSPATH_FILE="$reldir/.test.execution.classpath"
@@ -68,4 +88,4 @@ CLASSPATH=`cat $CLASSPATH_FILE`
 JAVA_OPTS="$JAVA_OPTS -Xmx768M"
 
 java $JAVA_OPTS -cp $CLASSPATH -Dtest.bind.address=localhost \
-org.jboss.test.messaging.tools.jmx.rmi.RMITestServer &
+org.jboss.test.messaging.tools.jmx.rmi.RMITestServer $port &

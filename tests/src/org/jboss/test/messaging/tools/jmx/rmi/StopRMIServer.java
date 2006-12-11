@@ -21,10 +21,9 @@
 */
 package org.jboss.test.messaging.tools.jmx.rmi;
 
-import org.jboss.logging.Logger;
-
-import java.rmi.Naming;
 import java.rmi.ConnectException;
+import java.rmi.Naming;
+import org.jboss.logging.Logger;
 
 /**
  * A utility to stop runaway rmi servers.
@@ -52,20 +51,20 @@ public class StopRMIServer
       }
       
       int index;
-      String registryIndex = System.getProperty("test.registry.index");
-      if (registryIndex == null)
+
+      String serverIndex = System.getProperty("test.server.index");
+      if (serverIndex == null)
       {
-         //Use the 0th port
-         index = 0;
+         index = RMITestServer.DEFAULT_SERVER_INDEX;
       }
       else
       {
-         index = Integer.parseInt(registryIndex);         
+         index = Integer.parseInt(serverIndex);
       }
-      int port = RMITestServer.RMI_REGISTRY_PORTS[index];
 
       String name =
-         "//" + host + ":" + port + "/" + RMITestServer.RMI_SERVER_NAME;
+         "//" + host + ":" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
+         RMITestServer.RMI_SERVER_PREFIX + index;
 
       log.info("Stopping " + name);
 
@@ -80,9 +79,12 @@ public class StopRMIServer
          return;
       }
 
-      //We should shut down cleanly - not kill the process like we are currently doing
+      // We should shut down cleanly - not kill the process like we are currently doing
       
-      server.destroy();
+      server.kill();
+
+      // The last RMI server will take with it the registry too
+
       log.info("RMI server stopped");
 
    }

@@ -23,7 +23,9 @@ package org.jboss.jms.server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,8 +39,8 @@ import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
@@ -50,13 +52,16 @@ import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.contract.ReplicationListener;
+import org.jboss.messaging.core.plugin.contract.Replicator;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.FailoverStatus;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
-import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.marshal.MarshalFactory;
+import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -105,6 +110,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private String dlqName;
 
+   private Object failoverStatusLock;
+      
    // wired components
 
    private DestinationJNDIMapper destinationJNDIMapper;
@@ -125,11 +132,11 @@ public class ServerPeer extends ServiceMBeanSupport
    protected ObjectName persistenceManagerObjectName;
    protected PersistenceManager persistenceManager;
 
-   protected ObjectName queuePostOfficeObjectName;
-   protected DefaultPostOffice queuePostOffice;
+   protected ObjectName postOfficeObjectName;
+   protected PostOffice postOffice;
 
-   protected ObjectName topicPostOfficeObjectName;
-   protected DefaultPostOffice topicPostOffice;
+//   protected ObjectName topicPostOfficeObjectName;
+//   protected PostOffice topicPostOffice;
 
    protected ObjectName jmsUserManagerObjectName;
    protected JMSUserManager jmsUserManager;
@@ -162,6 +169,8 @@ public class ServerPeer extends ServiceMBeanSupport
       consumers = new ConcurrentReaderHashMap();
 
       version = Version.instance();
+      
+      failoverStatusLock = new Object();
 
       started = false;
    }
@@ -333,25 +342,25 @@ public class ServerPeer extends ServiceMBeanSupport
       persistenceManagerObjectName = on;
    }
 
-   public ObjectName getQueuePostOffice()
+   public ObjectName getPostOffice()
    {
-      return queuePostOfficeObjectName;
+      return postOfficeObjectName;
    }
 
-   public void setQueuePostOffice(ObjectName on)
+   public void setPostOffice(ObjectName on)
    {
-      queuePostOfficeObjectName = on;
+      postOfficeObjectName = on;
    }
 
-   public ObjectName getTopicPostOffice()
-   {
-      return topicPostOfficeObjectName;
-   }
-
-   public void setTopicPostOffice(ObjectName on)
-   {
-      topicPostOfficeObjectName = on;
-   }
+//   public ObjectName getTopicPostOffice()
+//   {
+//      return topicPostOfficeObjectName;
+//   }
+//
+//   public void setTopicPostOffice(ObjectName on)
+//   {
+//      topicPostOfficeObjectName = on;
+//   }
 
    public ObjectName getJmsUserManager()
    {
@@ -566,9 +575,9 @@ public class ServerPeer extends ServiceMBeanSupport
          return null;
       }
 
-      PostOffice queuePostOffice = getQueuePostOfficeInstance();
+      PostOffice postOffice = getPostOfficeInstance();
 
-      Binding binding = queuePostOffice.getBindingForQueueName(dlqName);
+      Binding binding = postOffice.getBindingForQueueName(dlqName);
       
       if (binding != null && binding.getQueue().isActive())
       {
@@ -649,27 +658,37 @@ public class ServerPeer extends ServiceMBeanSupport
       return jmsUserManager;
    }
 
-   public PostOffice getQueuePostOfficeInstance() throws Exception
+   public PostOffice getPostOfficeInstance() throws Exception
    {
       // We get the reference lazily to avoid problems with MBean circular dependencies
-      if (queuePostOffice == null)
+      if (postOffice == null)
       {
-         //TODO - why is this DefaultPostOffice and not just PostOffice??
-         queuePostOffice = (DefaultPostOffice)getServer().
-            getAttribute(queuePostOfficeObjectName, "Instance");
+         postOffice = (PostOffice)getServer().
+            getAttribute(postOfficeObjectName, "Instance");
+
+         // We also inject the replicator dependency into the ConnectionFactoryJNDIMapper. This is
+         // a bit messy but we have a circular dependency POJOContainer should be able to help us
+         // here. Yes, this is nasty.
+
+         if (!postOffice.isLocal())
+         {
+            Replicator rep = (Replicator)postOffice;
+            connFactoryJNDIMapper.injectReplicator(rep);
+            rep.registerListener(new FailoverListener());
+
+         }
       }
-      return queuePostOffice;
+      return postOffice;
    }
 
-   public PostOffice getTopicPostOfficeInstance() throws Exception
+   public Replicator getReplicator() throws Exception
    {
-      // We get the reference lazily to avoid problems with MBean circular dependencies
-      if (topicPostOffice == null)
+      PostOffice postOffice = getPostOfficeInstance();
+      if (!(postOffice instanceof Replicator))
       {
-         topicPostOffice = (DefaultPostOffice)getServer().
-            getAttribute(topicPostOfficeObjectName, "Instance");
+         throw new  IllegalAccessException("This operations is only legal on clustering configurations");
       }
-      return topicPostOffice;
+      return (Replicator)postOffice;
    }
 
    public synchronized int getNextObjectID()
@@ -698,7 +717,131 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return queuedExecutorPool;
    }
-
+   
+   /*
+    * Wait for failover from the specified node to complete
+    */
+   public int waitForFailover(int failedNodeId) throws Exception
+   {
+      //This node may be failing over for another node - in which case we must wait for that to be complete
+      
+      log.info("Waiting for failover for failedNodeId: " + failedNodeId);
+      
+      Replicator replicator = getReplicator();
+      
+      //TODO - these must be configurable
+      final long FAILOVER_START_TIMEOUT = 15000;
+      
+      final long FAILOVER_COMPLETE_TIMEOUT = 25000;
+      
+      long startToWait = FAILOVER_START_TIMEOUT;
+      
+      long completeToWait = FAILOVER_COMPLETE_TIMEOUT;
+                     
+      //Must lock here
+      synchronized (failoverStatusLock)
+      {         
+         while (true)
+         {         
+            //TODO we shouldn't have a dependency on DefaultClusteredPostOffice - where should we put the constants?
+            Map replicants = replicator.get(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY);
+            
+            log.info("Got replicants");
+            
+            boolean foundEntry = false;
+                        
+            if (replicants != null)
+            {
+               Iterator iter = replicants.entrySet().iterator();
+               
+               while (iter.hasNext())
+               {
+                  Map.Entry entry = (Map.Entry)iter.next();
+                  
+                  Integer nid = (Integer)entry.getKey();
+                  
+                  FailoverStatus status = (FailoverStatus)entry.getValue();
+                  
+                  if (status.isFailedOverForNode(failedNodeId))
+                  {
+                     log.info("Fail over is complete on node " + nid);
+                     //Got the node - failover has completed
+                     return nid.intValue();  
+                  }
+                  else if (status.isFailingOverForNode(failedNodeId))
+                  {
+                     log.info("Fail over is in progress on node " + nid);
+                     
+                     //A server has started failing over for the failed node, but not completed
+                     //if it's not this node then we immediately return so the connection can be redirected to
+                     //another node
+                     if (nid.intValue() != this.getServerPeerID())
+                     {
+                        return nid.intValue();
+                     }
+                     
+                     //Otherwise we wait for failover to complete
+                     
+                     if (completeToWait <= 0)
+                     {
+                        //Give up now
+                        log.info("Already waited long enough for failover to complete, giving up");
+                        return -1;
+                     }
+                     
+                     //Note - we have to count the time since other unrelated nodes may fail and wake
+                     //up the lock - in this case we don't want to give up too early
+                     long start = System.currentTimeMillis();       
+                     try
+                     {
+                        log.info("Waiting for failover to complete");
+                        failoverStatusLock.wait(completeToWait);
+                     }
+                     catch (InterruptedException ignore)
+                     {                  
+                     }
+                     completeToWait -= System.currentTimeMillis() - start;
+                    
+                     foundEntry = true;
+                  }
+               }        
+            }
+            
+            if (!foundEntry)
+            {              
+               //No trace of failover happening
+               //so we wait a maximum of FAILOVER_START_TIMEOUT for some replicated data to arrive
+               //This should arrive fairly quickly since this is added at the beginning of the failover process
+               //If it doesn't arrive it would imply that no failover has actually happened on the server
+               //or the timeout is too short.
+               //It is possible that no failover has actually happened on the server, if for example there
+               //is a problem with the client side network but the server side network is ok.
+   
+               if (startToWait <= 0)
+               {
+                  //Don't want to wait again
+                  log.info("Already waited long enough for failover to start, giving up");
+                  return -1;
+               }
+               
+               //Note - we have to count the time since other unrelated nodes may fail and wake
+               //up the lock - in this case we don't want to give up too early
+               long start = System.currentTimeMillis(); 
+               try
+               {
+                  log.info("Waiting for failover to start");
+                  failoverStatusLock.wait(startToWait);
+                  log.info("Finished waiting for failover to start");
+               }
+               catch (InterruptedException ignore)
+               {                  
+               }
+               startToWait -= System.currentTimeMillis() - start;              
+            }
+         }        
+      }
+   }
+   
    public String toString()
    {
       return "ServerPeer [" + getServerPeerID() + "]";
@@ -943,5 +1086,23 @@ public class ServerPeer extends ServiceMBeanSupport
    }
 
    // Inner classes -------------------------------------------------
+   
+   private class FailoverListener implements ReplicationListener
+   {
+      public void onReplicationChange(Serializable key, Map updatedReplicantMap, boolean added, int originatingNodeId)
+      {
+         if (key.equals(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY))
+         {
+            //We have a failover status change - notify anyone waiting
+            
+            log.info("Got replication change on failed over map, notifying those waiting on lock");
+            
+            synchronized (failoverStatusLock)
+            {
+               failoverStatusLock.notifyAll();
+            }
+         }
+      }      
+   }
 
 }

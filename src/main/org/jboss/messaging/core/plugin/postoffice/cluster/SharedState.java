@@ -23,16 +23,21 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Streamable;
 
 /**
  * A SharedState
+ * 
+ * This encapsulates the shared state maintained across the cluster
+ * This comprise the bindings, and the arbitrary replicated data
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -44,17 +49,17 @@ class SharedState implements Streamable
 {  
    private List bindings;
    
-   private Map nodeIdAddressMap;
+   private Map replicatedData;
    
    SharedState()
    {      
    }
    
-   SharedState(List bindings, Map nodeIdAddressMap)
+   SharedState(List bindings, Map replicatedData)
    {
       this.bindings = bindings;
       
-      this.nodeIdAddressMap = nodeIdAddressMap;
+      this.replicatedData = replicatedData;
    }
    
    List getBindings()
@@ -62,42 +67,46 @@ class SharedState implements Streamable
       return bindings;
    }
    
-   Map getNodeIdAddressMap()
+   Map getReplicatedData()
    {
-      return nodeIdAddressMap;
+      return replicatedData;
    }
 
    public void read(DataInputStream in) throws Exception
    {
       int size = in.readInt();      
+      
       bindings = new ArrayList(size);
+      
       for (int i = 0; i < size; i++)
       {
          BindingInfo bb = new BindingInfo();
+         
          bb.read(in);
+         
          bindings.add(bb);
       }
       
       size = in.readInt();
       
-      nodeIdAddressMap = new HashMap(size);
+      replicatedData = new HashMap(size);
       
       for (int i = 0; i < size; i++)
       {
-         int nodeId = in.readInt();
+         Serializable key = (Serializable)StreamUtils.readObject(in, true);
          
-         NodeAddressInfo info = new NodeAddressInfo();
+         HashMap replicants = StreamUtils.readMap(in, false);
          
-         info.read(in);
-         
-         nodeIdAddressMap.put(new Integer(nodeId), info);
+         replicatedData.put(key, replicants);
       }
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       out.writeInt(bindings.size());
+      
       Iterator iter = bindings.iterator();
+      
       while (iter.hasNext())
       {
          BindingInfo info = (BindingInfo)iter.next();
@@ -105,21 +114,21 @@ class SharedState implements Streamable
          info.write(out);
       }
       
-      out.writeInt(nodeIdAddressMap.size());
+      out.writeInt(replicatedData.size());
       
-      iter = nodeIdAddressMap.entrySet().iterator();
+      iter = replicatedData.entrySet().iterator();
       
       while (iter.hasNext())
       {
          Map.Entry entry = (Map.Entry)iter.next();
          
-         Integer nodeId = (Integer)entry.getKey();
+         Serializable key = (Serializable)entry.getKey();         
          
-         out.writeInt(nodeId.intValue());
+         StreamUtils.writeObject(out, key, true, true);
          
-         NodeAddressInfo info = (NodeAddressInfo)entry.getValue();
+         Map replicants = (Map)entry.getValue();
          
-         info.write(out);
+         StreamUtils.writeMap(out, replicants, false);
       }
    }
 }

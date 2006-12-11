@@ -19,14 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.plugin.postoffice.cluster;
+package org.jboss.test.messaging.core;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.plugin.contract.Condition;
 
 /**
- * A SendNodeIdRequest
- * 
+ * A SimpleCondition
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -34,50 +33,40 @@ import java.io.DataOutputStream;
  * $Id$
  *
  */
-class SendNodeIdRequest extends ClusterRequest
+public class SimpleCondition implements Condition
 {
-   static final int TYPE = 7;
-
-   private NodeAddressInfo info;
+   private String name;
    
-   private int nodeId;
-   
-   SendNodeIdRequest()
-   {      
-   }
-   
-   SendNodeIdRequest(NodeAddressInfo info, int nodeId)
+   public SimpleCondition(String name)
    {
-      this.info = info;
-      
-      this.nodeId = nodeId;      
-   }
-   
-   Object execute(PostOfficeInternal office) throws Exception
-   {
-      office.handleAddressNodeMapping(info, nodeId);
-      
-      return null;
-   }
-   
-   byte getType()
-   {
-      return TYPE;
+      this.name = name;
    }
 
-   public void read(DataInputStream in) throws Exception
+   public boolean matches(Condition routingCondition, MessageReference ref)
    {
-      info = new NodeAddressInfo();
-      
-      info.read(in);
-      
-      nodeId = in.readInt();
+      return equals(routingCondition);            
    }
 
-   public void write(DataOutputStream out) throws Exception
+   public String toText()
    {
-      info.write(out);
-      
-      out.writeInt(nodeId);   
+      return name;
    }
+   
+   public boolean equals(Object other)
+   {
+      if (!(other instanceof SimpleCondition))
+      {
+         return false;
+      }
+      
+      SimpleCondition sother = (SimpleCondition)other;
+      
+      return sother.name.equals(this.name);
+   }
+   
+   public int hashCode()
+   {
+      return name.hashCode();
+   }
+
 }

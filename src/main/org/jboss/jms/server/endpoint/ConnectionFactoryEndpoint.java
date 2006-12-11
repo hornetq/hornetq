@@ -23,7 +23,6 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.messaging.core.plugin.IdBlock;
 
 /**
@@ -37,8 +36,10 @@ import org.jboss.messaging.core.plugin.IdBlock;
  * $Id$
  */
 public interface ConnectionFactoryEndpoint
-{
-   ConnectionDelegate createConnectionDelegate(String username, String password)
+{ 
+   CreateConnectionResult createConnectionDelegate(String username,
+                                                   String password, 
+                                                   int failedNodeId)
       throws JMSException;
    
    byte[] getClientAOPConfig() throws JMSException;

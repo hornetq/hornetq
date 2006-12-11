@@ -149,7 +149,9 @@
               present in ./lib, it will take precedence over the corresponding repository instance.
     -->
    <path id="jboss.dependencies.classpath">
-      <path refid="jboss.common.classpath"/>
+      <path refid="jboss.common.core.classpath"/>
+      <path refid="jboss.common.logging.log4j.classpath"/>
+      <path refid="jboss.common.logging.spi.classpath"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.serialization.classpath"/>
@@ -467,7 +469,7 @@
            We need org/jboss/util/collection.SoftValueHashMap which was moved. See
            http://jira.jboss.org/jira/browse/JBMESSAGING-281 for more details.
       -->
-      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar" >
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.core.lib}/jboss-common-core.jar" >
          <patternset>
             <include name="org/jboss/util/collection/SoftValueHashMap*.class"/>
             <!--
@@ -488,7 +490,7 @@
       <!--
            I also need org.jboss.util.stream.*
       -->
-      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.lib}/jboss-common.jar">
+      <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.core.lib}/jboss-common-core.jar">
          <patternset>
             <include name="org/jboss/util/stream/**"/>
          </patternset>
@@ -573,7 +575,9 @@
       <unjar dest="${project.output}/jboss-messaging-client" src="${javassist.javassist.lib}/javassist.jar"/>
       <unjar dest="${project.output}/jboss-messaging-client" src="${trove.trove.lib}/trove.jar"/>
       <unjar dest="${project.output}/jboss-messaging-client" src="${build.scoped-sar}/jboss-common-softvaluehashmap.jar"/>
-      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.common.lib}/jboss-common-client.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.common.core.lib}/jboss-common-core.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.common.logging.log4j.lib}/jboss-logging-log4j.jar"/>
+      <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.common.logging.spi.lib}/jboss-logging-spi.jar"/>
       <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.j2ee.lib}/jboss-j2ee.jar"/>
       <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.j2se.lib}/jboss-j2se.jar"/>
       <unjar dest="${project.output}/jboss-messaging-client" src="${jboss.naming.lib}/jnp-client.jar"/>

@@ -40,7 +40,7 @@ import org.jboss.jms.delegate.ConsumerDelegate;
  *
  * $Id$
  */
-class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber, Serializable
+public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber, Serializable
 {   
    // Constants -----------------------------------------------------  
    
@@ -116,6 +116,11 @@ class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubsc
    public boolean getNoLocal() throws JMSException
    {
       return delegate.getNoLocal();
+   }
+
+   public ConsumerDelegate getDelegate()
+   {
+       return delegate;
    }
 
    // Public --------------------------------------------------------

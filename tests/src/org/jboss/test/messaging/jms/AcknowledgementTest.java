@@ -21,6 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -37,12 +38,9 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -113,6 +111,7 @@ public class AcknowledgementTest extends MessagingTestCase
       try
       {
          conn = cf.createTopicConnection();
+         System.out.println("******   ClientID = " + conn.getClientID());
          TopicSession sess = conn.createTopicSession(true, 0);
          TopicPublisher pub = sess.createPublisher(topic);
          pub.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -437,9 +436,11 @@ public class AcknowledgementTest extends MessagingTestCase
 	public void testIndividualClientAcknowledge() throws Exception
    {
 		
-		Connection conn = cf.createConnection();     
-		
-		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+		Connection conn = cf.createConnection();
+      for (int i=0; i<20; i++) System.out.println("*******************************************");
+      System.out.println("clientID = " + conn.getClientID());
+
+      Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
 		
 		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);

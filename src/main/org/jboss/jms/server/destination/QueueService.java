@@ -9,6 +9,7 @@ package org.jboss.jms.server.destination;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
@@ -78,7 +79,7 @@ public class QueueService extends DestinationServiceSupport
       
       try
       {                           
-         postOffice = serverPeer.getQueuePostOfficeInstance();
+         postOffice = serverPeer.getPostOfficeInstance();
          
          destination.setPostOffice(postOffice);
 
@@ -106,13 +107,17 @@ public class QueueService extends DestinationServiceSupport
             
             PagingFilteredQueue queue;
             
+            JMSCondition queueCond = new JMSCondition(true, destination.getName());
+            
             if (postOffice.isLocal())
             {
                queue = new PagingFilteredQueue(destination.getName(), idm.getId(), ms, pm, true, true,                        
                                                executor, null,
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
                
-               postOffice.bindQueue(destination.getName(), queue);
+               
+               
+               postOffice.bindQueue(queueCond, queue);
             }
             else
             {               
@@ -124,11 +129,11 @@ public class QueueService extends DestinationServiceSupport
                
                if (destination.isClustered())
                {               
-                  cpo.bindClusteredQueue(destination.getName(), (LocalClusteredQueue)queue);
+                  cpo.bindClusteredQueue(queueCond, (LocalClusteredQueue)queue);
                }
                else
                {
-                  cpo.bindQueue(destination.getName(), (LocalClusteredQueue)queue);
+                  cpo.bindQueue(queueCond, (LocalClusteredQueue)queue);
                }
             }                        
          }

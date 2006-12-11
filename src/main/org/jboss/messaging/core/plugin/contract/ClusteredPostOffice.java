@@ -25,19 +25,23 @@ import java.util.Collection;
 
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
+import org.jboss.messaging.core.plugin.postoffice.cluster.Peer;
 
 /**
  * 
  * A ClusteredPostOffice
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
  *
  */
-public interface ClusteredPostOffice extends PostOffice
+public interface ClusteredPostOffice extends PostOffice, Peer
 {
+   public static final String VIEW_CHANGED_NOTIFICATION = "VIEW_CHANGED";
+
    /**
     * Bind a queue to the post office under a specific condition
     * such that it is available across the cluster
@@ -46,15 +50,17 @@ public interface ClusteredPostOffice extends PostOffice
     * @return
     * @throws Exception
     */
-   Binding bindClusteredQueue(String condition, LocalClusteredQueue queue) throws Exception;
-   
+   Binding bindClusteredQueue(Condition condition, LocalClusteredQueue queue) throws Exception;
+
    /**
     * Unbind a clustered queue from the post office
     * @param queueName The unique name of the queue
     * @return
     * @throws Throwable
     */
-   Binding unbindClusteredQueue(String queueName) throws Throwable;         
-   
-   Collection listAllBindingsForCondition(String condition) throws Exception;
+   Binding unbindClusteredQueue(String queueName) throws Throwable;
+
+   Collection listAllBindingsForCondition(Condition condition) throws Exception;
+
+   Binding getBindingforChannelId(long channelId) throws Exception;
 }

@@ -63,13 +63,19 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    private static final Logger log = Logger.getLogger(DelegateSupport.class);
 
+   private static boolean trace = log.isTraceEnabled();
+
    // Attributes ----------------------------------------------------
 
+   //This is set on the server
    protected int id;
 
-   protected HierarchicalState state;
-
-   private boolean trace;
+   //This is set on the client
+   //The reason we don't use the meta-data to store the state for the delegate is to avoid
+   //the extra HashMap lookup that would entail.
+   //This can be significant since the state could be queried for many aspects
+   //in an a single invocation
+   protected transient HierarchicalState state;
 
    // Static --------------------------------------------------------
 
@@ -78,7 +84,6 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    public DelegateSupport(int objectID)
    {
       this.id = objectID;
-      trace = log.isTraceEnabled();
    }
 
    public DelegateSupport()
@@ -137,10 +142,20 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       checkMarshallers();
    }
 
-   public int getID()
-   {
-      return id;
-   }
+    public int getID()
+    {
+       return id;
+    }
+
+    /**
+     * During HA events, a new object is created on the new server and the state on that new object
+     * has to be transfered to this actual object. For example, a Connection will have to assume the
+     * ObjectID of the new connection endpoint and the new RemotingConnection.
+     */
+    public void copyState(DelegateSupport newDelegate)
+    {
+        id = newDelegate.getID();
+    }
 
    // Package protected ---------------------------------------------
 

@@ -13,12 +13,11 @@ import java.util.List;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
 
 /**
  * A deployable JBoss Messaging topic.
@@ -64,15 +63,17 @@ public class TopicService extends DestinationServiceSupport
       
       try
       {
-         postOffice = serverPeer.getTopicPostOfficeInstance();
+         postOffice = serverPeer.getPostOfficeInstance();
 
          if (postOffice == null)
           throw new IllegalArgumentException("Post Office instance not found. Check your destination configuration.");
 
          destination.setPostOffice(postOffice);
-           
+         
+         JMSCondition topicCond = new JMSCondition(false, destination.getName());
+                    
          // We deploy any queues corresponding to pre-existing durable subscriptions
-         Collection bindings = postOffice.listBindingsForCondition(destination.getName());
+         Collection bindings = postOffice.listBindingsForCondition(topicCond);
          Iterator iter = bindings.iterator();
          while (iter.hasNext())
          {
@@ -113,7 +114,9 @@ public class TopicService extends DestinationServiceSupport
          //First we remove any data for a non durable sub - a non durable sub might have data in the
          //database since it might have paged
          
-         Collection bindings = postOffice.listBindingsForCondition(destination.getName());
+         JMSCondition topicCond = new JMSCondition(false, destination.getName());         
+         
+         Collection bindings = postOffice.listBindingsForCondition(topicCond);
          
          Iterator iter = bindings.iterator();
          while (iter.hasNext())            

@@ -21,13 +21,10 @@
 */
 package org.jboss.example.jms.stateless.client;
 
-import org.jboss.example.jms.common.ExampleSupport;
-import org.jboss.example.jms.stateless.bean.StatelessSessionExampleHome;
-import org.jboss.example.jms.stateless.bean.StatelessSessionExample;
-
 import javax.naming.InitialContext;
-import javax.jms.TextMessage;
-import java.util.List;
+import org.jboss.example.jms.common.ExampleSupport;
+import org.jboss.example.jms.stateless.bean.StatelessSessionExample;
+import org.jboss.example.jms.stateless.bean.StatelessSessionExampleHome;
 
 /**
  * This example deploys a simple Stateless Session Bean that is used as a proxy to send and receive

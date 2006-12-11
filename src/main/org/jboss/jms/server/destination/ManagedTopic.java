@@ -29,6 +29,7 @@ import java.util.List;
 import javax.jms.InvalidSelectorException;
 
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
@@ -52,12 +53,14 @@ public class ManagedTopic extends ManagedDestination
    
    public ManagedTopic(String name, int fullSize, int pageSize, int downCacheSize)
    {
-      super(name, fullSize, pageSize, downCacheSize);
+      super(name, fullSize, pageSize, downCacheSize);           
    }
 
    public void removeAllMessages() throws Throwable
    {
-      Collection subs = postOffice.listBindingsForCondition(name);
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = postOffice.listBindingsForCondition(topicCond);
       
       //XXX How to lock down all subscriptions?
       Iterator iter = subs.iterator();
@@ -71,14 +74,18 @@ public class ManagedTopic extends ManagedDestination
    
    public int subscriptionCount() throws Exception
    {
-      Collection subs = postOffice.listBindingsForCondition(name);
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = postOffice.listBindingsForCondition(topicCond);
       
       return subs.size();         
    }
    
    public int subscriptionCount(boolean durable) throws Exception
    {
-      Collection subs = postOffice.listBindingsForCondition(name);
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = postOffice.listBindingsForCondition(topicCond);
       
       Iterator iter = subs.iterator();
       
@@ -99,14 +106,18 @@ public class ManagedTopic extends ManagedDestination
    
    public String listSubscriptionsAsText() throws Exception
    {
-      Collection subs = postOffice.listBindingsForCondition(name);
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = postOffice.listBindingsForCondition(topicCond);
       
       return getSubscriptionsAsText(subs, true) + getSubscriptionsAsText(subs, false);
    }
    
    public String listSubscriptionsAsText(boolean durable) throws Exception
    {
-      Collection subs = postOffice.listBindingsForCondition(name);
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = postOffice.listBindingsForCondition(topicCond);
       
       return getSubscriptionsAsText(subs, durable);
    }
@@ -114,7 +125,9 @@ public class ManagedTopic extends ManagedDestination
    public List listMessagesDurableSub(String subName, String clientID, String selector)
       throws Exception
    {
-      Collection subs = postOffice.listBindingsForCondition(name);
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = postOffice.listBindingsForCondition(topicCond);
       
       return getMessagesFromDurableSub(subs, subName, clientID, trimSelector(selector));
    }
@@ -122,7 +135,9 @@ public class ManagedTopic extends ManagedDestination
    public List listMessagesNonDurableSub(long channelID, String selector)
       throws Exception
    {
-      Collection subs = postOffice.listBindingsForCondition(name);
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = postOffice.listBindingsForCondition(topicCond);
       
       return getMessagesFromNonDurableSub(subs, channelID, trimSelector(selector));
    }

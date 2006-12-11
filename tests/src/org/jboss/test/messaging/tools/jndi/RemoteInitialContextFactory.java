@@ -21,14 +21,12 @@
 */
 package org.jboss.test.messaging.tools.jndi;
 
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
-
 import java.util.Hashtable;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -44,21 +42,19 @@ public class RemoteInitialContextFactory implements InitialContextFactory
 
    // Static --------------------------------------------------------
 
-   private static RemoteContext[] initialContexts = new RemoteContext[RMITestServer.RMI_REGISTRY_PORTS.length];
-   
-   private static final String REMOTE_SERVER_INDEX_KEY_NAME = "jboss.messaging.test.remoteserverindex";
-
    /**
     * @return the JNDI environment to use to get this InitialContextFactory.
     */
-   public static Hashtable getJNDIEnvironment(int index)
+   public static Hashtable getJNDIEnvironment(int serverIndex)
    {
+      log.info("Returning remote context... server index:" + serverIndex);
+      
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
               "org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory");
       env.put("java.naming.provider.url", "");
       env.put("java.naming.factory.url.pkgs", "");
-      env.put(REMOTE_SERVER_INDEX_KEY_NAME, String.valueOf(index));
+      env.put(Constants.SERVER_INDEX_PROPERTY_NAME, Integer.toString(serverIndex));
       return env;
    }
 
@@ -70,28 +66,28 @@ public class RemoteInitialContextFactory implements InitialContextFactory
 
    public Context getInitialContext(Hashtable environment) throws NamingException
    {
-      String s = (String)environment.get(REMOTE_SERVER_INDEX_KEY_NAME);
+      String s = (String)environment.get(Constants.SERVER_INDEX_PROPERTY_NAME);
       
       if (s == null)
       {
-         throw new IllegalArgumentException("Initial context environment must contain entry for " + REMOTE_SERVER_INDEX_KEY_NAME);
+         throw new IllegalArgumentException("Initial context environment must contain " +
+                                            "entry for " + Constants.SERVER_INDEX_PROPERTY_NAME);
       }
-      
+
+      log.info("Created initial context for " + s);
+
       int remoteServerIndex = Integer.parseInt(s);
-      
-      if (initialContexts[remoteServerIndex] == null)
+
+      try
       {
-         try
-         {
-            initialContexts[remoteServerIndex] = new RemoteContext(remoteServerIndex);
-         }
-         catch(Exception e)
-         {
-            log.error("Cannot get the remote context", e);
-            throw new NamingException("Cannot get the remote context");
-         }
+         return new RemoteContext(remoteServerIndex);
       }
-      return initialContexts[remoteServerIndex];
+      catch(Exception e)
+      {
+         log.error("Cannot get the remote context", e);
+         throw new NamingException("Cannot get the remote context");
+      }
+
    }
 
    // Package protected ---------------------------------------------

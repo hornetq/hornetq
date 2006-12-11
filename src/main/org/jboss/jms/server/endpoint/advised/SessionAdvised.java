@@ -40,6 +40,7 @@ import org.jboss.jms.tx.AckInfo;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -88,6 +89,17 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
                                                   boolean connectionConsumer) throws JMSException
    {
       return endpoint.createConsumerDelegate(destination, selector, noLocal, subscriptionName, connectionConsumer);
+   }
+   
+   public ConsumerDelegate failOverConsumer(JBossDestination jmsDestination,
+                                            String selectorString,
+                                            boolean noLocal,  String subscriptionName,
+                                            boolean connectionConsumer,
+                                            long oldChannelID) throws JMSException
+   {
+      return endpoint.failOverConsumer(jmsDestination, selectorString, noLocal,
+                                       subscriptionName, connectionConsumer,
+                                       oldChannelID);
    }
 
    public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)

@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms.crash;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.naming.InitialContext;
-
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -74,7 +73,7 @@ public class ClientCrashZeroLeaseTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all", false);
+      localServer.start("all");
 
       //Set lease period to 0 --> this should disable leasing so the state won't be cleared up
       
@@ -118,7 +117,7 @@ public class ClientCrashZeroLeaseTest extends MessagingTestCase
       
       // Now we should have a client connection from the remote server to the local server
       
-      remoteServer.destroy();
+      remoteServer.kill();
       log.trace("killed remote server");
         
       // Wait for connection resources to be cleared up

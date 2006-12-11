@@ -22,12 +22,14 @@
 package org.jboss.test.messaging.tools.jmx;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -36,9 +38,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
@@ -46,6 +45,7 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
+import javax.management.NotificationListener;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -53,15 +53,17 @@ import javax.naming.spi.NamingManager;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-
 import org.hsqldb.Server;
 import org.hsqldb.persist.HsqlProperties;
 import org.jboss.jms.jndi.JNDIProviderAdapter;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.util.XMLUtil;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
+import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService;
 import org.jboss.resource.adapter.jms.JmsManagedConnectionFactory;
@@ -76,14 +78,12 @@ import org.jboss.system.ServiceCreator;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
+import org.jboss.test.messaging.tools.jndi.Constants;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.serialization.SerializationStreamFactory;
 
 
 /**
@@ -303,16 +303,19 @@ public class ServiceContainer
          //TODO: need to think more about this; if I don't do it, though, bind() fails because it tries to use "java.naming.provider.url"
          try
          {
-            NamingManager.setInitialContextFactoryBuilder(new InVMInitialContextFactoryBuilder());
+            NamingManager.
+               setInitialContextFactoryBuilder(new InVMInitialContextFactoryBuilder());
          }
          catch(IllegalStateException e)
          {
             // OK
          }
 
-         Hashtable t = InVMInitialContextFactory.getJNDIEnvironment();
+         Hashtable t = InVMInitialContextFactory.getJNDIEnvironment(serverIndex);
          System.setProperty("java.naming.factory.initial",
                             (String)t.get("java.naming.factory.initial"));
+         System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME,
+                            Integer.toString(serverIndex));
 
          initialContext = new InitialContext();
 
@@ -395,10 +398,13 @@ public class ServiceContainer
          loadJNDIContexts();
 
          String transport = config.getRemotingTransport();
-         log.info("remoting = \"" +
-            (remoting ? transport : "disabled") + "\", " +
-            "serialization = \"" + config.getSerializationType() + "\", " +
-            "database = \"" + getDatabaseType() + "\"");
+
+         log.info("Remoting type: ........... " + (remoting ? transport : "DISABLED"));
+         log.info("Serialization type: ...... " + config.getSerializationType());
+         log.info("Database: ................ " + config.getDatabaseType());
+         log.info("Clustering mode: ......... " +
+            (this.isClustered() ? "CLUSTERED" : "NON-CLUSTERED"));
+
          log.debug(this + " started");
       }
       catch(Throwable e)
@@ -699,6 +705,18 @@ public class ServiceContainer
       return mbeanServer.getAttribute(on, name);
    }
 
+   public void addNotificationListener(ObjectName on, NotificationListener listener)
+      throws Exception
+   {
+      mbeanServer.addNotificationListener(on, listener, null, null);
+   }
+
+   public void removeNotificationListener(ObjectName on, NotificationListener listener)
+      throws Exception
+   {
+      mbeanServer.removeNotificationListener(on, listener);
+   }
+
    public void bindDefaultJMSProvider() throws Exception
    {
       JNDIProviderAdapter pa = new JNDIProviderAdapter();
@@ -768,6 +786,11 @@ public class ServiceContainer
    public String getDatabaseType()
    {
       return config.getDatabaseType();
+   }
+
+   public boolean isClustered()
+   {
+      return config.isClustered();
    }
 
    public String toString()
@@ -1123,12 +1146,12 @@ public class ServiceContainer
       // TODO - use remoting-service.xml parameters, not these ...
 
       String serializationType = config.getSerializationType();
-      
+
       //TODO - Actually serializationType is irrelevant since we pass a
       //DataOutput/InputStream into the marshaller and don't use serialization apart
       //from one specific case with a JMS ObjectMessage in which case Java serialization
       //is always currently used - (we could make this configurable)
-                  
+
       String transport = config.getRemotingTransport();
 
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
@@ -1212,7 +1235,7 @@ public class ServiceContainer
    {
       try
       {
-         log.info("************************** Deleting all data from database");
+         log.info("DELETING ALL DATA FROM DATABASE!");
 
          InitialContext ctx = new InitialContext();
 

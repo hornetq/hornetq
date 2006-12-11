@@ -21,14 +21,9 @@
   */
 package org.jboss.test.messaging.jms.crash;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
+import javax.jms.*;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -78,7 +73,7 @@ public class CallbackFailureTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       //Start all the services locally
-      localServer.start("all", false);
+      localServer.start("all");
             
       localServer.deployQueue("Queue", null, false);
            
@@ -121,7 +116,7 @@ public class CallbackFailureTest extends MessagingTestCase
       
       String remotingSessionId = (String)remoteServer.executeCommand(command);
       
-      remoteServer.destroy();
+      remoteServer.kill();
         
       //we have removed the exception listener so the server side resouces shouldn't be cleared up
       

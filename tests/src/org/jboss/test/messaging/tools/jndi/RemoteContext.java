@@ -23,13 +23,7 @@ package org.jboss.test.messaging.tools.jndi;
 
 import java.rmi.Naming;
 import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NameParser;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-
+import javax.naming.*;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.test.messaging.tools.jmx.rmi.NamingDelegate;
@@ -59,7 +53,11 @@ public class RemoteContext implements Context
    public RemoteContext(int remoteServerIndex) throws Exception
    {
       String n =
-         "//localhost:" + RMITestServer.RMI_REGISTRY_PORTS[remoteServerIndex] + "/" + RMITestServer.NAMING_SERVER_NAME;
+         "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
+          RMITestServer.NAMING_SERVER_PREFIX + remoteServerIndex;
+      
+      log.info("Using this url for rmi server lookup " + n);
+      
       namingDelegate = (NamingDelegate)Naming.lookup(n);
    }
 

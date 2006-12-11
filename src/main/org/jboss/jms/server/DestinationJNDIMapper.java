@@ -21,22 +21,12 @@
   */
 package org.jboss.jms.server;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.*;
 import javax.jms.InvalidDestinationException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
-
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTemporaryQueue;
-import org.jboss.jms.destination.JBossTemporaryTopic;
-import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.destination.*;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.util.MessagingJMSException;

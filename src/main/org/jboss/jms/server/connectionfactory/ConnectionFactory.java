@@ -7,7 +7,6 @@
 package org.jboss.jms.server.connectionfactory;
 
 import javax.management.ObjectName;
-
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
@@ -35,9 +34,9 @@ public class ConnectionFactory extends ServiceMBeanSupport
    // Attributes ----------------------------------------------------
 
    protected String clientID;
-   protected int connectionFactoryID;
    protected JNDIBindings jndiBindings;
    protected int prefetchSize = 150;
+   protected boolean clustered;
    
    protected int defaultTempQueueFullSize = 75000;
    protected int defaultTempQueuePageSize = 2000;
@@ -107,9 +106,12 @@ public class ConnectionFactory extends ServiceMBeanSupport
                   new String[] {"org.jboss.remoting.ConnectionListener"});                     
          }
          
-         connectionFactoryID = connectionFactoryManager.
-            registerConnectionFactory(clientID, jndiBindings, locatorURI, enablePing, prefetchSize,
-                     defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
+         //We use the MBean service name to uniquely identify the cf
+         
+         connectionFactoryManager.
+            registerConnectionFactory(this.getName(), clientID, jndiBindings, locatorURI, enablePing, prefetchSize,
+                     defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
+                     clustered);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
          String info =
@@ -139,7 +141,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
       {
          started = false;
          
-         connectionFactoryManager.unregisterConnectionFactory(connectionFactoryID);
+         connectionFactoryManager.unregisterConnectionFactory(this.getName(), clustered);
          
          connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
          
@@ -244,6 +246,21 @@ public class ConnectionFactory extends ServiceMBeanSupport
    public ObjectName getConnector()
    {
       return connectorObjectName;
+   }
+   
+   public boolean isClustered()
+   {
+      return clustered;
+   }
+   
+   public void setClustered(boolean clustered)
+   {
+      if (started)
+      {
+         log.warn("Clustered can only be changed when connection factory is stopped");
+         return;
+      }
+      this.clustered = clustered;
    }
 
    // JMX managed operations ----------------------------------------

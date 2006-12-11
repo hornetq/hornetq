@@ -27,6 +27,7 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.JMSCondition;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 
@@ -54,7 +55,9 @@ public class ManagedQueue extends ManagedDestination
 
    public int getMessageCount() throws Exception
    {
-      Binding binding = (Binding)postOffice.listBindingsForCondition(name).iterator().next();
+      JMSCondition queueCond = new JMSCondition(true, name);
+      
+      Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
       
       if (binding == null)
       {
@@ -68,7 +71,9 @@ public class ManagedQueue extends ManagedDestination
    
    public void removeAllMessages() throws Throwable
    {
-      Binding binding = (Binding)postOffice.listBindingsForCondition(name).iterator().next();
+      JMSCondition queueCond = new JMSCondition(true, name);
+      
+      Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
       
       if (binding == null)
       {
@@ -91,7 +96,9 @@ public class ManagedQueue extends ManagedDestination
          }
       }
       
-      Binding binding = (Binding)postOffice.listBindingsForCondition(name).iterator().next();
+      JMSCondition queueCond = new JMSCondition(true, name);
+      
+      Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
       
       if (binding == null)
       {

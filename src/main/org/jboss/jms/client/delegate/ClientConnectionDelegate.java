@@ -28,11 +28,13 @@ import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 import javax.transaction.xa.Xid;
 
+import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.remoting.Client;
 
@@ -41,6 +43,7 @@ import org.jboss.remoting.Client;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -54,15 +57,20 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Attributes ----------------------------------------------------
 
-   private transient JMSRemotingConnection remotingConnection;
+   // This should not be exposed other than through meta data
+   private int serverId;
 
+   private transient JMSRemotingConnection remotingConnection;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClientConnectionDelegate(int objectID)
+   public ClientConnectionDelegate(int objectID, int serverId)
    {
       super(objectID);
+      
+      this.serverId = serverId;
    }
 
    public ClientConnectionDelegate()
@@ -115,6 +123,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
+    * @see org.jboss.jms.server.endpoint.advised.ConnectionAdvised#createSessionDelegate(boolean, int, boolean)
     */
    public SessionDelegate createSessionDelegate(boolean transacted,
                                                 int acknowledgmentMode,
@@ -209,6 +218,13 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public String toString()
    {
       return "ConnectionDelegate[" + id + "]";
+   }
+
+   public void init()
+   {
+      super.init();
+      getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.SERVER_ID,
+                                new Integer(serverId), PayloadKey.TRANSIENT);
    }
 
    public void setRemotingConnection(JMSRemotingConnection conn)

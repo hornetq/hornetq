@@ -28,8 +28,8 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
+ *          <p/>
+ *          $Id$
  */
 public interface ConnectionFactoryManager extends MessagingComponent
 {
@@ -39,14 +39,13 @@ public interface ConnectionFactoryManager extends MessagingComponent
     *
     * @return an identifier that uniques identifies the registered ConnectionFactory.
     */
-   int registerConnectionFactory(String clientID, JNDIBindings jndiBindings,
+   void registerConnectionFactory(String uniqueName, String clientID, JNDIBindings jndiBindings,
                                  String locatorURI, boolean clientPing,
                                  int prefetchSize,
                                  int defaultTempQueueFullSize,
                                  int defaultTempQueuePageSize,
-                                 int defaultTempQueueDownCacheSize) throws Exception;
+                                 int defaultTempQueueDownCacheSize,
+                                 boolean clustered) throws Exception;
 
-   void unregisterConnectionFactory(int connectionFactoryID) throws Exception;
-
-   javax.jms.ConnectionFactory getConnectionFactory(int connectionFactoryID);
+   void unregisterConnectionFactory(String uniqueName, boolean clustered) throws Exception;
 }

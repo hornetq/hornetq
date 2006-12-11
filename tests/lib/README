@@ -1,1 +1,6 @@
-jms-ra.jar      JBoss 4.0.4.GA
+jms-ra.jar                     JBoss 4.0.4.GA
+jboss-jca.jar                  JBoss 4.0.4.GA
+jboss-common-jdbc-wrapper.jar  JBoss 4.0.4.GA
+jboss-local-jdbc.jar           JBoss 4.0.4.GA 
+
+

@@ -107,6 +107,8 @@ public class RemoteQueueStub implements ClusteredQueue
       {
          Delivery del = new SimpleDelivery(this, reference, false, false);
          
+         log.info("********** doesn't match filter");
+         
          return del;
       }
       
@@ -126,6 +128,8 @@ public class RemoteQueueStub implements ClusteredQueue
             return null;
          }
       }
+      
+      log.info("*********** accepting message:" + reference);
   
       return new SimpleDelivery(this, reference, false);      
    }
@@ -263,5 +267,9 @@ public class RemoteQueueStub implements ClusteredQueue
    {
       return true;
    }
-   
+
+   public String toString()
+   {
+      return "RemoteQueueStub(node=" + this.nodeId + " name=" + this.name + " channelId=" + this.id + ")";
+   }
 }

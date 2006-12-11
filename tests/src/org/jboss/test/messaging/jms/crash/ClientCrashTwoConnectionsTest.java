@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms.crash;
 import javax.jms.ConnectionFactory;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
-
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.logging.Logger;
@@ -76,7 +75,7 @@ public class ClientCrashTwoConnectionsTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all", false);
+      localServer.start("all");
 
       // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
       // the default, whatever that is ...
@@ -122,7 +121,7 @@ public class ClientCrashTwoConnectionsTest extends MessagingTestCase
       log.info("we have = " + ((SimpleConnectionManager)cm).getClients().size() + " clients registered on SimpleconnectionManager");
       
       // Now we should have a client connection from the remote server to the local server
-      remoteServer.destroy();
+      remoteServer.kill();
       log.info("killed remote server");
         
       // Wait for connection resources to be cleared up

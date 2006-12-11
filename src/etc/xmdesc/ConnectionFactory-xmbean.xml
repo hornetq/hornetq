@@ -81,6 +81,12 @@
       <name>Connector</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="isClustered" setMethod="setClustered">
+      <description>Is this a clustered connection factory?</description>
+      <name>Clustered</name>
+      <type>boolean</type>
+   </attribute>    
 
    <!-- Managed operations -->
 

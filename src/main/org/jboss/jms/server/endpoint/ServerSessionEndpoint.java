@@ -45,6 +45,7 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;
@@ -66,6 +67,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RemoteQueueStub;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.util.id.GUID;
@@ -74,9 +76,10 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * Concrete implementation of SessionEndpoint.
- *
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -109,8 +112,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private IdManager idm;
    private QueuedExecutorPool pool;
    private TransactionRepository tr;
-   private PostOffice topicPostOffice;
-   private PostOffice queuePostOffice;
+   private PostOffice postOffice;
    private int nodeId;
    private int maxDeliveryAttempts;
    private Queue dlq;
@@ -129,8 +131,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       pm = sp.getPersistenceManagerInstance();
       ms = sp.getMessageStore();
       dm = sp.getDestinationManager();
-      topicPostOffice = sp.getTopicPostOfficeInstance();
-      queuePostOffice = sp.getQueuePostOfficeInstance();
+      postOffice = sp.getPostOfficeInstance();     
       idm = sp.getChannelIdManager();
       pool = sp.getQueuedExecutorPool();
       nodeId = sp.getServerPeerID();
@@ -145,7 +146,73 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
 
    // SessionDelegate implementation --------------------------------
+      
+   public ConsumerDelegate failOverConsumer(JBossDestination jmsDestination,
+                                            String selectorString,
+                                            boolean noLocal,  String subscriptionName,
+                                            boolean connectionConsumer,
+                                            long oldChannelID) throws JMSException
+   {
+      //TODO we must ensure that the server side failover has completed first before
+      //letting this method run
+      
+      try
+      {
+         // fail over channel
+         if (postOffice.isLocal())
+         {
+            throw new IllegalStateException("Cannot failover on a non clustered post office!");
+         }
 
+         // this is a Clustered operation... so postOffice here must be Clustered
+         Binding binding = ((ClusteredPostOffice)postOffice).getBindingforChannelId(oldChannelID);
+         if (binding == null)
+         {
+            throw new IllegalStateException("Can't find failed over channel " + oldChannelID);
+         }
+         
+         // TODO - Remove this log.info before merging into trunk
+         if (binding.getQueue() instanceof RemoteQueueStub)
+         {
+            log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((RemoteQueueStub)binding.getQueue()).getChannelID());
+         }
+         else
+         {
+            log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((PagingFilteredQueue)binding.getQueue()).getChannelID());
+         }
+         
+         int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
+         
+         int prefetchSize = connectionEndpoint.getPrefetchSize();
+         
+         ServerConsumerEndpoint ep =
+            new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
+                                       binding.getQueue().getName(), this, selectorString, noLocal,
+                                       jmsDestination, prefetchSize, dlq);
+
+         
+         JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
+         
+         ClientConsumerDelegate stub =
+            new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
+                                       prefetchSize, maxDeliveryAttempts);
+
+         
+         putConsumerEndpoint(consumerID, ep); // caching consumer locally
+         
+         connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
+         
+         return stub;
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " createConsumerDelegate");
+      }
+   }
+
+   /*
+    * Please don't put failover logic in here
+    */
 	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
                                                   String selectorString,
                                                   boolean noLocal,
@@ -198,6 +265,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
          if (jmsDestination.isTopic())
          {
+            JMSCondition topicCond = new JMSCondition(false, jmsDestination.getName());
+            
             if (subscriptionName == null)
             {
                // non-durable subscription
@@ -208,7 +277,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
                PagingFilteredQueue q;
 
-               if (topicPostOffice.isLocal())
+               if (postOffice.isLocal())
                {
                   q = new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,
                                               executor, selector,
@@ -216,25 +285,25 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
 
-                  binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);
+                  binding = postOffice.bindQueue(topicCond, q);
                }
                else
                {
-                  q = new LocalClusteredQueue(topicPostOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,
+                  q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,
                                               executor, selector, tr,
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
 
-                  ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                  ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
 
                   if (mDest.isClustered())
                   {
-                     binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
+                     binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
                   }
                   else
                   {
-                     binding = cpo.bindQueue(jmsDestination.getName(), q);
+                     binding = cpo.bindQueue(topicCond, q);
                   }
                }
             }
@@ -256,7 +325,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
                String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
 
-               binding = topicPostOffice.getBindingForQueueName(name);
+               binding = postOffice.getBindingForQueueName(name);
 
                if (binding == null)
                {
@@ -267,7 +336,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   QueuedExecutor executor = (QueuedExecutor)pool.get();
                   PagingFilteredQueue q;
 
-                  if (topicPostOffice.isLocal())
+                  if (postOffice.isLocal())
                   {
                      q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
                                                  executor, selector,
@@ -275,25 +344,25 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                  mDest.getPageSize(),
                                                  mDest.getDownCacheSize());
 
-                     binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);
+                     binding = postOffice.bindQueue(topicCond, q);
                   }
                   else
                   {
-                     q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,
+                     q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
                                                  executor, selector, tr,
                                                  mDest.getFullSize(),
                                                  mDest.getPageSize(),
                                                  mDest.getDownCacheSize());
 
-                     ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                     ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
 
                      if (mDest.isClustered())
                      {
-                        binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
+                        binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
                      }
                      else
                      {
-                        binding = cpo.bindQueue(jmsDestination.getName(), q);
+                        binding = cpo.bindQueue(topicCond, q);
                      }
                   }
                }
@@ -329,15 +398,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
                      // Unbind the durable subscription
 
-                     if (mDest.isClustered() && !topicPostOffice.isLocal())
+                     if (mDest.isClustered() && !postOffice.isLocal())
                      {
-                        ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                        ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
 
                         cpo.unbindClusteredQueue(name);
                      }
                      else
                      {
-                        topicPostOffice.unbindQueue(name);
+                        postOffice.unbindQueue(name);
                      }
 
                      // create a fresh new subscription
@@ -345,32 +414,32 @@ public class ServerSessionEndpoint implements SessionEndpoint
                      QueuedExecutor executor = (QueuedExecutor)pool.get();
                      PagingFilteredQueue q;
 
-                     if (topicPostOffice.isLocal())
+                     if (postOffice.isLocal())
                      {
                         q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
                                                     executor, selector,
                                                     mDest.getFullSize(),
                                                     mDest.getPageSize(),
                                                     mDest.getDownCacheSize());
-                        binding = topicPostOffice.bindQueue(jmsDestination.getName(), q);
+                        binding = postOffice.bindQueue(topicCond, q);
                      }
                      else
                      {
-                        q = new LocalClusteredQueue(topicPostOffice, nodeId, name, idm.getId(), ms, pm, true, true,
+                        q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
                                                     executor, selector, tr,
                                                     mDest.getFullSize(),
                                                     mDest.getPageSize(),
                                                     mDest.getDownCacheSize());
 
-                        ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
+                        ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
 
                         if (mDest.isClustered())
                         {
-                           binding = cpo.bindClusteredQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
+                           binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
                         }
                         else
                         {
-                           binding = cpo.bindQueue(jmsDestination.getName(), (LocalClusteredQueue)q);
+                           binding = cpo.bindQueue(topicCond, (LocalClusteredQueue)q);
                         }
                      }
                   }
@@ -382,7 +451,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             //Consumer on a jms queue
 
             //Let's find the binding
-            binding = queuePostOffice.getBindingForQueueName(jmsDestination.getName());
+            binding = postOffice.getBindingForQueueName(jmsDestination.getName());
 
             if (binding == null)
             {
@@ -393,19 +462,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
          int prefetchSize = connectionEndpoint.getPrefetchSize();
 
          ServerConsumerEndpoint ep =
-            new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(), binding.getQueue().getName(),
-                                       this, selectorString, noLocal, jmsDestination, prefetchSize, dlq);
-
+            new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
+                                       binding.getQueue().getName(), this, selectorString, noLocal,
+                                       jmsDestination, prefetchSize, dlq);
+          
          JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
 
-         ClientConsumerDelegate stub = new ClientConsumerDelegate(consumerID, prefetchSize, maxDeliveryAttempts);
-
+         ClientConsumerDelegate stub =
+            new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
+                                       prefetchSize, maxDeliveryAttempts);
+                       
          putConsumerEndpoint(consumerID, ep); // caching consumer locally
-
+         
          connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
-
+         
          log.debug("created and registered " + ep);
-
+   
          return stub;
       }
       catch (Throwable t)
@@ -413,7 +485,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " createConsumerDelegate");
       }
    }
-
+	
 	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination, String messageSelector)
 	   throws JMSException
 	{
@@ -423,37 +495,37 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	   {
    	      throw new IllegalStateException("Session is closed");
    	   }
-
+   	   
    	   if (jmsDestination == null)
    	   {
    	      throw new InvalidDestinationException("null destination");
    	   }
-
+         
          if (jmsDestination.isTopic())
          {
             throw new IllegalStateException("Cannot browse a topic");
          }
-
+   	   
          if (dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue()) == null)
          {
             throw new InvalidDestinationException("No such destination: " + jmsDestination);
          }
-
-         Binding binding = queuePostOffice.getBindingForQueueName(jmsDestination.getName());
-
+         
+         Binding binding = postOffice.getBindingForQueueName(jmsDestination.getName()); // todo
+         
    	   int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
-
+   	   
    	   ServerBrowserEndpoint ep =
    	      new ServerBrowserEndpoint(this, browserID, (PagingFilteredQueue)binding.getQueue(), messageSelector);
-
+   	   
    	   putBrowserDelegate(browserID, ep);
-
+   	   
          JMSDispatcher.instance.registerTarget(new Integer(browserID), new BrowserAdvised(ep));
-
+   	   
    	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
-
+   	   
          log.debug("created and registered " + ep);
-
+   
    	   return stub;
       }
       catch (Throwable t)
@@ -470,14 +542,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-
+         
          ManagedDestination dest = (ManagedDestination)dm.getDestination(name, true);
-
+         
          if (dest == null)
          {
             throw new JMSException("There is no administratively defined queue with name:" + name);
-         }
-
+         }        
+   
          return new JBossQueue(dest.getName());
       }
       catch (Throwable t)
@@ -494,14 +566,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-
+         
          ManagedDestination dest = (ManagedDestination)dm.getDestination(name, false);
-
+                  
          if (dest == null)
          {
             throw new JMSException("There is no administratively defined topic with name:" + name);
-         }
-
+         }        
+   
          return new JBossTopic(name);
       }
       catch (Throwable t)
@@ -518,21 +590,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is already closed");
          }
-
+         
          if (trace) log.trace(this + " close()");
-
+               
          // clone to avoid ConcurrentModificationException
          HashSet consumerSet = new HashSet(consumers.values());
-
+         
          for(Iterator i = consumerSet.iterator(); i.hasNext(); )
          {
             ((ServerConsumerEndpoint)i.next()).remove();
-         }
-
+         }           
+         
          connectionEndpoint.removeSessionDelegate(sessionID);
-
+         
          JMSDispatcher.instance.unregisterTarget(new Integer(sessionID));
-
+         
          closed = true;
       }
       catch (Throwable t)
@@ -540,7 +612,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " close");
       }
    }
-
+   
    public void closing() throws JMSException
    {
       // currently does nothing
@@ -551,11 +623,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       return closed;
    }
-
+   
    public void send(JBossMessage message) throws JMSException
    {
       try
-      {
+      {       
          connectionEndpoint.sendMessage(message, null);
       }
       catch (Throwable t)
@@ -563,17 +635,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " send");
       }
    }
-
+   
    public void acknowledgeBatch(List ackInfos) throws JMSException
-   {
+   {      
       try
       {
          Iterator iter = ackInfos.iterator();
-
+         
          while (iter.hasNext())
          {
             AckInfo ackInfo = (AckInfo)iter.next();
-
+            
             acknowledgeInternal(ackInfo);
          }
       }
@@ -582,42 +654,42 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeBatch");
       }
    }
-
+   
    public void acknowledge(AckInfo ackInfo) throws JMSException
    {
       try
       {
-         acknowledgeInternal(ackInfo);
+         acknowledgeInternal(ackInfo);      
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
       }
    }
-   
+
    public void cancelDeliveries(List ackInfos) throws JMSException
    {
       try
       {
          // deliveries must be cancelled in reverse order
-
+          
          Set consumers = new HashSet();
-
+         
          List forDLQ = null;
          
          for (int i = ackInfos.size() - 1; i >= 0; i--)
          {
             AckInfo ack = (AckInfo)ackInfos.get(i);
-
+            
             // We look in the global map since the message might have come from connection consumer
             ServerConsumerEndpoint consumer =
                this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
-
+   
             if (consumer == null)
             {
                throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
             }
-
+            
             if (ack.getDeliveryCount() >= maxDeliveryAttempts)
             {
                if (forDLQ == null)
@@ -634,7 +706,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             consumers.add(consumer);
          }
-
+         
          //Send stuff to DLQ
          
          if (forDLQ != null)
@@ -671,7 +743,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          
          // need to prompt delivery for all consumers
-
+         
          for(Iterator i = consumers.iterator(); i.hasNext(); )
          {
             ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)i.next();
@@ -697,15 +769,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
          }
          connectionEndpoint.addTemporaryDestination(dest);
-
+         
          //Register with the destination manager
-
+         
          ManagedDestination mDest;
-
+         
          int fullSize = connectionEndpoint.getDefaultTempQueueFullSize();
          int pageSize = connectionEndpoint.getDefaultTempQueuePageSize();
          int downCacheSize = connectionEndpoint.getDefaultTempQueueDownCacheSize();
-
+         
          if (dest.isTopic())
          {
             mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize);
@@ -714,29 +786,27 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize);
          }
-
+         
          dm.registerDestination(mDest);
-
+         
          if (dest.isQueue())
          {
             QueuedExecutor executor = (QueuedExecutor)pool.get();
-
-            PagingFilteredQueue q =
+            
+            PagingFilteredQueue q = 
                new PagingFilteredQueue(dest.getName(), idm.getId(), ms, pm, true, false,
-                                       executor, null, fullSize, pageSize, downCacheSize);
-
-
-
+                                       executor, null, fullSize, pageSize, downCacheSize);                        
+            
             //Make a binding for this queue
-            queuePostOffice.bindQueue(dest.getName(), q);
-         }
+            postOffice.bindQueue(new JMSCondition(true, dest.getName()), q);
+         }         
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " addTemporaryDestination");
       }
    }
-
+   
    public void deleteTemporaryDestination(JBossDestination dest) throws JMSException
    {
       try
@@ -745,37 +815,37 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-
+   
          if (!dest.isTemporary())
          {
             throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
          }
-
+         
          ManagedDestination mDest = dm.getDestination(dest.getName(), dest.isQueue());
-
+         
          if (mDest == null)
          {
             throw new InvalidDestinationException("No such destination: " + dest);
          }
-
+                  
          if (dest.isQueue())
          {
             //Unbind
-            queuePostOffice.unbindQueue(dest.getName());
+            postOffice.unbindQueue(dest.getName());
          }
          else
          {
-            //Topic
-            Collection bindings = topicPostOffice.listBindingsForCondition(dest.getName());
-
+            //Topic            
+            Collection bindings = postOffice.listBindingsForCondition(new JMSCondition(false, dest.getName()));
+            
             if (!bindings.isEmpty())
             {
                throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
             }
          }
-
-         dm.unregisterDestination(mDest);
-
+         
+         dm.unregisterDestination(mDest);         
+            
          connectionEndpoint.removeTemporaryDestination(dest);
       }
       catch (Throwable t)
@@ -783,11 +853,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " deleteTemporaryDestination");
       }
    }
-
+   
    public void unsubscribe(String subscriptionName) throws JMSException
    {
       log.debug(this + " unsubscribing " + subscriptionName);
-
+      
       try
       {
          if (closed)
@@ -798,51 +868,56 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new InvalidDestinationException("Destination is null");
          }
-
+   
          String clientID = connectionEndpoint.getClientID();
-
+   
          if (clientID == null)
          {
             throw new JMSException("null clientID on connection");
          }
-
+         
          String queueName = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
-
-         Binding binding = topicPostOffice.getBindingForQueueName(queueName);
-
+         
+         Binding binding = postOffice.getBindingForQueueName(queueName);
+         
          if (binding == null)
          {
             throw new InvalidDestinationException("Cannot find durable subscription with name " +
                                                   subscriptionName + " to unsubscribe");
          }
-
+         
          // Section 6.11. JMS 1.1.
          // "It is erroneous for a client to delete a durable subscription while it has an active
          // TopicSubscriber for it or while a message received by it is part of a current
          // transaction or has not been acknowledged in the session."
-
+         
          Queue sub = binding.getQueue();
-
+         
          if (sub.numberOfReceivers() != 0)
          {
             throw new IllegalStateException("Cannot unsubscribe durable subscription " +
                                             subscriptionName + " since it has active subscribers");
          }
-
+         
          //Look up the topic
-         ManagedDestination mDest = dm.getDestination(binding.getCondition(), false);
-
+         
+         JMSCondition topicCond = (JMSCondition)binding.getCondition();
+         
+         String topicName = topicCond.getName();
+         
+         ManagedDestination mDest = dm.getDestination(topicName, false);
+         
          //Unbind it
-
-         if (mDest.isClustered() && !topicPostOffice.isLocal())
+    
+         if (mDest.isClustered() && !postOffice.isLocal())
          {
-            ClusteredPostOffice cpo = (ClusteredPostOffice)topicPostOffice;
-
+            ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
+            
             cpo.unbindClusteredQueue(queueName);
          }
          else
-         {
-            topicPostOffice.unbindQueue(queueName);
+         {         
+            postOffice.unbindQueue(queueName);
          }
       }
       catch (Throwable t)
@@ -850,9 +925,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " unsubscribe");
       }
    }
-
+    
    // Public --------------------------------------------------------
-
+   
    public ServerConnectionEndpoint getConnectionEndpoint()
    {
       return connectionEndpoint;
@@ -872,9 +947,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       return consumers.keySet();
    }
-
+   
    // Protected -----------------------------------------------------
-
+   
    protected void acknowledgeInternal(AckInfo ackInfo) throws Throwable
    {
       //If the message was delivered via a connection consumer then the message needs to be acked
@@ -887,10 +962,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          throw new IllegalArgumentException("Cannot find consumer id: " + ackInfo.getConsumerID());
       }
-
+      
       consumer.acknowledge(ackInfo.getMessageID());
    }
-
+   
    protected ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint d)
    {
       if (trace) { log.trace(this + " caching consumer " + consumerID); }
@@ -901,23 +976,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
    }
-
+   
    protected ServerConsumerEndpoint removeConsumerEndpoint(int consumerID)
    {
       if (trace) { log.trace(this + " removing consumer " + consumerID + " from cache"); }
       return (ServerConsumerEndpoint)consumers.remove(new Integer(consumerID));
    }
-
+   
    protected ServerBrowserEndpoint putBrowserDelegate(int browserID, ServerBrowserEndpoint sbd)
    {
       return (ServerBrowserEndpoint)browsers.put(new Integer(browserID), sbd);
    }
-
+   
    protected ServerBrowserEndpoint getBrowserDelegate(int browserID)
    {
       return (ServerBrowserEndpoint)browsers.get(new Integer(browserID));
    }
-
+   
    protected ServerBrowserEndpoint removeBrowserDelegate(int browserID)
    {
       return (ServerBrowserEndpoint)browsers.remove(new Integer(browserID));
@@ -943,7 +1018,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
          }
       }
-   }
+   }   
 
    // Private -------------------------------------------------------
 

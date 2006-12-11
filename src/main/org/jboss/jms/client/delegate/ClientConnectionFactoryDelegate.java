@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
+import org.jboss.aop.Advised;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -33,10 +34,10 @@ import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.server.remoting.MetaDataConstants;
@@ -66,39 +67,63 @@ public class ClientConnectionFactoryDelegate
 
    // Attributes ----------------------------------------------------
 
+   //This data is needed in order to create a connection
    protected String serverLocatorURI;
    protected Version serverVersion;
-   protected int serverID;
-   protected boolean clientPing;
 
-   private boolean trace;
+   // This property is used on redirect on failover logic (verify if a new delegate could be used during a failover)
+   protected int serverId;
+   protected boolean clientPing;
+   
+   private transient boolean trace;
 
    // Static --------------------------------------------------------
+   
+   /*
+    * Calculate what version to use.
+    * The client itself has a version, but we also support other versions of servers lower if the
+    * connection version is lower (backwards compatibility)
+    */
+   public static Version getVersionToUse(Version connectionVersion)
+   {
+      Version clientVersion = Version.instance();
+
+      Version versionToUse;
+
+      if (connectionVersion.getProviderIncrementingVersion() <= clientVersion.getProviderIncrementingVersion())
+      {
+         versionToUse = connectionVersion;
+      }
+      else
+      {
+         versionToUse = clientVersion;
+      }
+
+      return versionToUse;
+   }
 
    // Constructors --------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(int objectID, String serverLocatorURI,
-                                          Version serverVersion, int serverID,
+   public ClientConnectionFactoryDelegate(int objectID, int serverId, String serverLocatorURI,
+                                          Version serverVersion,
                                           boolean clientPing)
    {
       super(objectID);
 
+      this.serverId = serverId;
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
-      this.serverID = serverID;
       this.clientPing = clientPing;
       trace = log.isTraceEnabled();
    }
 
    // ConnectionFactoryDelegateImplementation -----------------------
-
+ 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
-    * @see org.jboss.jms.client.container.StateCreationAspect#handleCreateConnectionDelegate(org.jboss.aop.joinpoint.Invocation)
-    * @see org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint#createConnectionDelegate(String, String) 
     */
-   public ConnectionDelegate createConnectionDelegate(String username, String password)
+   public CreateConnectionResult createConnectionDelegate(String username, String password, int failedNodeId)
       throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
@@ -139,7 +164,7 @@ public class ClientConnectionFactoryDelegate
                      Dispatcher.OID,
                      new Integer(id),
                      PayloadKey.AS_IS);
-      
+
       /*
        * If the method being invoked is createConnectionDelegate then we must invoke it on the same
        * remoting client subsequently used by the connection.
@@ -151,19 +176,19 @@ public class ClientConnectionFactoryDelegate
        * difficulties in knowing when to close it.
        */
 
-      Client client; 
-      
+      Client client;
+
       JMSRemotingConnection remotingConnection = null;
 
       if ("createConnectionDelegate".equals(methodName))
       {
          // Create a new connection
-         
+
          remotingConnection = new JMSRemotingConnection(serverLocatorURI, clientPing);
          remotingConnection.start();
-         
+
          client = remotingConnection.getInvokingClient();
-         
+
          md.addMetaData(MetaDataConstants.JMS,
                         MetaDataConstants.REMOTING_SESSION_ID,
                         client.getSessionId(),
@@ -177,38 +202,40 @@ public class ClientConnectionFactoryDelegate
       else
       {
          // Create a client - make sure pinging is off
-         
+
          Map configuration = new HashMap();
 
          configuration.put(Client.ENABLE_LEASE, String.valueOf(false));
-         
-         client = new Client(new InvokerLocator(serverLocatorURI), configuration);     
-         
+
+         client = new Client(new InvokerLocator(serverLocatorURI), configuration);
+
          client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
-         
-         client.connect();         
-         
+
+         client.connect();
+
          client.setMarshaller(new JMSWireFormat());
-         client.setUnMarshaller(new JMSWireFormat());         
+         client.setUnMarshaller(new JMSWireFormat());
       }
 
-      byte v = getVersionToUse().getProviderIncrementingVersion();
-      
+      //What version should we use for invocations on this connection factory?
+      Version version = getVersionToUse(serverVersion);
+      byte v = version.getProviderIncrementingVersion();
+
       MessagingMarshallable request = new MessagingMarshallable(v, mi);
-      
+
       MessagingMarshallable response;
 
       try
       {
          response = (MessagingMarshallable)client.invoke(request, null);
-         
+
          if (trace) { log.trace("got server response for " + methodName); }
       }
       catch (Throwable t)
       {
          //If we were invoking createConnectionDelegate and failure occurs then we need to clear
          //up the JMSRemotingConnection
-         
+
          if (remotingConnection != null)
          {
             try
@@ -219,7 +246,7 @@ public class ClientConnectionFactoryDelegate
             {
             }
          }
-         
+
          throw t;
       }
       finally
@@ -227,60 +254,68 @@ public class ClientConnectionFactoryDelegate
          if (remotingConnection == null)
          {
             //Not a call to createConnectionDelegate - disconnect the client
-            
-            // client.disconnect();
+
+            //client.disconnect();
          }
       }
 
       Object ret = response.getLoad();
-      
+
       if (remotingConnection != null)
       {
          // It was a call to createConnectionDelegate - set the remoting connection to use
-         ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)ret;
          
-         connectionDelegate.setRemotingConnection(remotingConnection);
+         CreateConnectionResult res = (CreateConnectionResult)ret;
+         
+         ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)res.getDelegate();
+         
+         if (connectionDelegate != null)
+         {
+            //We set the version for the connection and the remoting connection on the meta-data
+            //this is so the StateCreationAspect can pick it up
+   
+            SimpleMetaData metaData = ((Advised)connectionDelegate)._getInstanceAdvisor().getMetaData();
+   
+            metaData.addMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_CONNECTION,
+                                 remotingConnection, PayloadKey.TRANSIENT);
+   
+            metaData.addMetaData(MetaDataConstants.JMS, MetaDataConstants.CONNECTION_VERSION,
+                                 version, PayloadKey.TRANSIENT);
+
+            connectionDelegate.setRemotingConnection(remotingConnection);
+         }
+         else
+         {
+            //Wrong server redirect on failure
+            //close the remoting connection
+            try
+            {
+               remotingConnection.stop();
+            }
+            catch (Throwable ignore)
+            {
+            }
+         }
+
       }
 
       return ret;
    }
 
-   public Version getServerVersion()
+   public String toString()
    {
-      return serverVersion;
+      return "ClientConnectionFactoryDelegate[" + id + "]";
    }
-
-   public int getServerID()
-   {
-      return serverID;
-   }
-
-   public Version getVersionToUse()
-   {
-      Version clientVersion = Version.instance();
-
-      Version versionToUse;
-
-      if (serverVersion.getProviderIncrementingVersion() <= clientVersion.getProviderIncrementingVersion())
-      {
-         versionToUse = serverVersion;
-      }
-      else
-      {
-         versionToUse = clientVersion;
-      }
-
-      return versionToUse;
-   }
-
+   
+   //This MUST ONLY be used in testing
    public String getServerLocatorURI()
    {
       return serverLocatorURI;
    }
 
-   public String toString()
+   public int getServerId()
    {
-      return "ConnectionFactoryDelegate[" + id + "]";
+      return serverId;
    }
 
    // Protected -----------------------------------------------------

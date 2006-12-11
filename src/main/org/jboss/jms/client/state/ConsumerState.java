@@ -42,17 +42,19 @@ import org.jboss.jms.server.Version;
 public class ConsumerState extends HierarchicalStateSupport
 {
    private Destination destination;
-   
+
    private String selector;
-   
+
+   String subscriptionName;
+
    private boolean noLocal;
-   
+
    private int consumerID;
-   
+
    private boolean isConnectionConsumer;
-   
+
    private MessageCallbackHandler messageCallbackHandler;
-   
+
    private int prefetchSize;
    
    private SessionState parent;
@@ -62,92 +64,105 @@ public class ConsumerState extends HierarchicalStateSupport
    private int maxDeliveries;
    
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
-            String selector, boolean noLocal, int consumerID, boolean isCC,
-            int prefetchSize, int maxDeliveries)
+                        String selector, boolean noLocal, String subscriptionName, int consumerID,
+                        boolean isCC, int prefetchSize, int maxDeliveries)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
       this.destination = dest;
       this.selector = selector;
-      this.noLocal = noLocal;      
+      this.noLocal = noLocal;
       this.consumerID = consumerID;
       this.isConnectionConsumer = isCC;
       this.prefetchSize = prefetchSize;
+      this.subscriptionName=subscriptionName;
       this.maxDeliveries = maxDeliveries;
    }
-   
-   
+
    public DelegateSupport getDelegate()
    {
       return (DelegateSupport)delegate;
    }
-   
+
    public void setDelegate(DelegateSupport delegate)
    {
       this.delegate = (ConsumerDelegate)delegate;
    }
-   
-   
+
+
    public Destination getDestination()
    {
       return destination;
    }
-   
+
    public String getSelector()
    {
       return selector;
    }
-   
+
    public boolean isNoLocal()
    {
       return noLocal;
    }
-   
+
    public int getConsumerID()
    {
       return consumerID;
    }
-   
+
    public boolean isConnectionConsumer()
    {
       return isConnectionConsumer;
    }
-   
+
    public void setMessageCallbackHandler(MessageCallbackHandler handler)
    {
       this.messageCallbackHandler = handler;
    }
-   
+
    public MessageCallbackHandler getMessageCallbackHandler()
    {
       return messageCallbackHandler;
    }
-   
+
    public Version getVersionToUse()
    {
       return parent.getVersionToUse();
    }
-   
+
    public int getPrefetchSize()
    {
       return prefetchSize;
    }
-   
+
    public HierarchicalState getParent()
    {
       return parent;
    }
-   
+
    public void setParent(HierarchicalState parent)
    {
       this.parent=(SessionState)parent;
    }
-   
+
+   public String getSubscriptionName()
+   {
+      return subscriptionName;
+   }
+
+   public void setSubscriptionName(String subscriptionName)
+   {
+      this.subscriptionName = subscriptionName;
+   }
+
+   public void copy(ConsumerState newState)
+   {
+      this.consumerID = newState.consumerID;
+   }
+
    public int getMaxDeliveries()
    {
       return maxDeliveries;
    }
-   
+
 }
-
-
