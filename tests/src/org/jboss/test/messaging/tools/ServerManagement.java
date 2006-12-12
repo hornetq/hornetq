@@ -79,7 +79,9 @@ public class ServerManagement
    private static final int RMI_SERVER_LOOKUP_RETRIES = 10;
 
    private static Server[] servers = new Server[MAX_SERVER_COUNT];
-
+   
+   private static boolean[] killed = new boolean[MAX_SERVER_COUNT];
+   
    // Map<NotificationListener - NotificationListenerPoller>
    private static Map notificationListenerPollers = new HashMap();
 
@@ -100,6 +102,11 @@ public class ServerManagement
    
    public static Server getServer(int i)
    {
+      if (killed[i])
+      {
+         log.warn("Server " + i + " cannot be got since it has been killed");
+      }
+      
       Server s = servers[i];
       
       if (s == null)
@@ -117,6 +124,13 @@ public class ServerManagement
 
    public static synchronized void create(int index) throws Exception
    {
+      if (killed[index])
+      {
+         log.warn("Server " + index + " cannot created since it has been killed");
+         
+         return;
+      }
+      
       if (servers[index] != null)
       {
          return;
@@ -155,6 +169,13 @@ public class ServerManagement
 
    public static synchronized void start(String config, int index) throws Exception
    {
+      if (killed[index])
+      {
+         log.warn("Server " + index + " cannot been started since it has been killed");
+         
+         return;
+      }
+      
       create(index);
 
       if (isLocal())
@@ -181,6 +202,13 @@ public class ServerManagement
 
    public static synchronized void stop(int index) throws Exception
    {
+      if (killed[index])
+      {
+         log.warn("Server " + index + " cannot been stopped since it has been killed");
+         
+         return;
+      }
+      
       if (servers[index] == null)
       {
          log.warn("Server " + index + " has not been created, so it cannot be stopped");
@@ -220,6 +248,13 @@ public class ServerManagement
 
       servers[index].kill();
       servers[index] = null;
+      
+      killed[index] = true;
+   }
+   
+   public static synchronized boolean isKilled(int index)
+   {
+      return killed[index];
    }
 
    public static void disconnect() throws Exception
@@ -265,6 +300,13 @@ public class ServerManagement
    public static void addNotificationListener(int serverIndex, ObjectName on,
                                               NotificationListener listener) throws Exception
    {
+      if (killed[serverIndex])
+      {
+         log.warn("Server " + serverIndex + " cannot addNotificationListener it has been killed");
+         
+         return;
+      }
+      
       insureStarted(serverIndex);
 
       if (isLocal())
@@ -290,6 +332,13 @@ public class ServerManagement
    public static void removeNotificationListener(int serverIndex, ObjectName on,
                                                  NotificationListener listener) throws Exception
    {
+      if (killed[serverIndex])
+      {
+         log.warn("Server " + serverIndex + " cannot removeNotificationListener it has been killed");
+         
+         return;
+      }
+      
       insureStarted(serverIndex);
 
       if (isLocal())
@@ -334,6 +383,13 @@ public class ServerManagement
 
    public static void log(int level, String text, int index)
    {
+      if (killed[index])
+      {
+         log.warn("Server " + index + " cannot log it has been killed");
+         
+         return;
+      }
+      
       if (isRemote())
       {
          if (servers[index] == null)
@@ -466,6 +522,11 @@ public class ServerManagement
     */
    public static void deployClusteredTopic(String name, int serverIndex) throws Exception
    {
+      if (killed[serverIndex])
+      {
+         log.warn("Server " + serverIndex + " cannot deployClusteredTopic it has been killed");
+      }
+      
       insureStarted(serverIndex);
       servers[serverIndex].deployTopic(name, null, true);
    }
@@ -519,6 +580,11 @@ public class ServerManagement
     */
    public static void undeployTopic(String name, int serverIndex) throws Exception
    {
+      if (killed[serverIndex])
+      {
+         log.warn("Server " + serverIndex + " cannot undeployTopic it has been killed");
+      }
+      
       undeployDestination(false, name, serverIndex);
    }
 
@@ -544,6 +610,11 @@ public class ServerManagement
     */
    public static void deployClusteredQueue(String name, int serverIndex) throws Exception
    {
+      if (killed[serverIndex])
+      {
+         log.warn("Server " + serverIndex + " cannot deployClusteredQueue it has been killed");
+      }
+      
       insureStarted(serverIndex);
       servers[serverIndex].deployQueue(name, null, true);
    }
@@ -597,6 +668,11 @@ public class ServerManagement
     */
    public static void undeployQueue(String name, int serverIndex) throws Exception
    {
+      if (killed[serverIndex])
+      {
+         log.warn("Server " + serverIndex + " cannot undeplyQueue it has been killed");
+      }
+      
       undeployDestination(true, name, serverIndex);
    }
 

@@ -62,7 +62,7 @@ public class ClusteringTestBase extends MessagingTestCase
    protected Topic topic0;
    protected Topic topic1;
    protected Topic topic2;
-
+   
    //No need to have 3 conncetion factories since a clustered connection factory
    //will create connections in a round robin fashion on different servers
    protected ConnectionFactory cf;
@@ -126,23 +126,22 @@ public class ClusteringTestBase extends MessagingTestCase
    protected void tearDown() throws Exception
    {
       try
-      {
-
-         if (ServerManagement.getServer(0).isStarted())
+      {                  
+         if (!ServerManagement.isKilled(0) && ServerManagement.getServer(0).isStarted())
          {
             ServerManagement.log(ServerManagement.INFO, "Undeploying Server 0", 0);
             ServerManagement.undeployQueue("testDistributedQueue", 0);
             ServerManagement.undeployTopic("testDistributedTopic", 0);
          }
 
-         if (ServerManagement.getServer(1).isStarted())
+         if (!ServerManagement.isKilled(1) && ServerManagement.getServer(1).isStarted())
          {
             ServerManagement.log(ServerManagement.INFO, "Undeploying Server 1", 1);
             ServerManagement.undeployQueue("testDistributedQueue", 1);
             ServerManagement.undeployTopic("testDistributedTopic", 1);
          }
 
-         if (ServerManagement.getServer(2).isStarted())
+         if (!ServerManagement.isKilled(2) && ServerManagement.getServer(2).isStarted())
          {
             ServerManagement.log(ServerManagement.INFO, "Undeploying Server 2", 2);
             ServerManagement.undeployQueue("testDistributedQueue", 2);
