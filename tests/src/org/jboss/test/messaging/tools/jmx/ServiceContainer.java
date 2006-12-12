@@ -63,6 +63,7 @@ import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.transport.PortUtil;
 import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService;
@@ -1175,9 +1176,7 @@ public class ServiceContainer
          params += "&timeout=0";
       }
 
-//      int freePort = PortUtil.findFreePort(ipAddressOrHostName);
-
-      int freePort = 9111;
+      int freePort = PortUtil.findFreePort(ipAddressOrHostName);
       String locatorURI = transport + "://" + ipAddressOrHostName + ":" + freePort + params;
 
       log.debug("Using locator uri: " + locatorURI);

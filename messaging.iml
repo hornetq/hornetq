@@ -40,6 +40,7 @@
     <orderEntry type="library" name="jboss-serialization" level="project" />
     <orderEntry type="library" name="jgroups" level="project" />
     <orderEntry type="library" name="junit" level="project" />
+    <orderEntry type="library" name="jboss-system" level="project" />
     <orderEntryProperties />
   </component>
   <component name="VcsManagerConfiguration">

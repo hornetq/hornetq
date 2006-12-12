@@ -170,9 +170,7 @@ public class JDBCSupport implements MessagingComponent
          throw new IllegalArgumentException("No such SQL statement: " + statementName);
       }
       
-      String statement = sqlProperties.getProperty(statementName, defaultStatement);
-      
-      return statement;
+      return sqlProperties.getProperty(statementName, defaultStatement);
    }
    
    protected Map getDefaultDMLStatements()

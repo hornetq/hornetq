@@ -106,14 +106,16 @@ public class ConnectionFactory extends ServiceMBeanSupport
                   new String[] {"org.jboss.remoting.ConnectionListener"});                     
          }
          
-         //We use the MBean service name to uniquely identify the cf
+         // We use the MBean service name to uniquely identify the connection factory
          
          connectionFactoryManager.
-            registerConnectionFactory(this.getName(), clientID, jndiBindings, locatorURI, enablePing, prefetchSize,
-                     defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
-                     clustered);
+            registerConnectionFactory(this.getName(), clientID, jndiBindings, locatorURI,
+                                      enablePing, prefetchSize, defaultTempQueueFullSize,
+                                      defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
+                                      clustered);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
+
          String info =
             "Connector " + locator.getProtocol() + "://" + locator.getHost() + ":" + locator.getPort();
                  

@@ -109,9 +109,10 @@ public class ConnectionFactoryJNDIMapper
                                                       boolean clustered)
       throws Exception
    {
-      log.info("Registering connection factory with name " + uniqueName + " bindings " + jndiBindings);
+      log.info("Registering connection factory with name " + uniqueName + " " + 
+               "bindings " + jndiBindings);
       
-      //Sanity check
+      // Sanity check
       if (delegates.containsKey(uniqueName))
       {
          throw new IllegalArgumentException("There's already a connection factory registered with name " + uniqueName);

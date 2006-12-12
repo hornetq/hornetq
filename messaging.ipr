@@ -301,6 +301,13 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="jboss-system">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/jboss-system.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
   <component name="uidesigner-configuration">
     <option name="INSTRUMENT_CLASSES" value="true" />
