@@ -97,16 +97,8 @@ public class StatsSender implements MessagingComponent
    
    class SendStatsTimerTask extends TimerTask
    {
-      private boolean stopping;
-      
-      private boolean stopped;
-      
-      private Object stopLock = new Object();
-      
-      public void run()
+      public synchronized void run()
       {
-         checkStop();
-         
          try
          {
             office.sendQueueStats();
@@ -115,45 +107,11 @@ public class StatsSender implements MessagingComponent
          {
             log.error("Failed to send statistics", e);
          }
-         
-         checkStop();
       }  
-      
-      private void checkStop()
+                        
+      synchronized void stop()
       {
-         synchronized (stopLock)
-         {            
-            if (stopping)
-            {
-               cancel();
-               
-               stopped = true;
-               
-               stopLock.notify();
-               
-               return;
-            }
-         }
-      }
-            
-      void stop()
-      {
-         synchronized (stopLock)
-         {
-            stopping = true;
-            
-            while (!stopped)
-            {
-               try
-               {
-                  stopLock.wait();               
-               }
-               catch (InterruptedException e)
-               {
-                  //Ignore
-               }
-            }
-         }
+         cancel();
       }
    }
 }

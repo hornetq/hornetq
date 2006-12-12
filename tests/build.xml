@@ -669,7 +669,7 @@
 
 
 
-      <!-- Start 3 rmi servers -->
+      <!-- Start 4 rmi servers -->
 
       <antcall target="start-rmi-server-clustering">
          <param name="test.server.index" value="0"/>
@@ -745,7 +745,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/clustering/HATest.class"/>
+               <include name="**/jms/clustering/*Test.class"/>
                <!--
                <include name="**/jms/clustering/SimpleClusteringTest.class"/>
                -->

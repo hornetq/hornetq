@@ -199,46 +199,83 @@ public class HAAspect
       
       log.info("calling createFailoverConnectionDelegate");
       
-      //Create a connection using that connection factory
-      CreateConnectionResult res =
-         newCF.createConnectionDelegate(state.getUser(), state.getPassword(), state.getServerID());
+      int tries = 0;
       
-      log.info("returned from createFailoverConnectionDelegate");
-                  
-      if (res.getDelegate() != null)
-      {
-         log.info("Got connection");
+      //We try a maximum of 10 hops
+      final int MAX_TRIES = 10;
+      
+      while (tries < MAX_TRIES)
+      {         
+         //Create a connection using that connection factory
+         CreateConnectionResult res =
+            newCF.createConnectionDelegate(state.getUser(), state.getPassword(), state.getServerID());
          
-         //We got the right server and created a new connection ok
-         
-         ClientConnectionDelegate newConnection = (ClientConnectionDelegate)res.getDelegate();
-         
-         log.info("newconnection is " + newConnection);
-         
-         failover(failedConnection, newConnection);
-      }
-      else
-      {
-         if (res.getActualFailoverNode() == -1)
+         log.info("returned from createFailoverConnectionDelegate");
+                     
+         if (res.getDelegate() != null)
          {
-            //No trace of failover was detected on the server side - this might happen if the client side
-            //network fails temporarily so the client connection breaks but the server side network is still
-            //up and running - in this case we want to retry back on the original server
+            log.info("Got connection");
             
-            //TODO TODO TODO
+            //We got the right server and created a new connection ok
             
-            log.info("No failover is occurring on server side");
-                        
+            ClientConnectionDelegate newConnection = (ClientConnectionDelegate)res.getDelegate();
+            
+            log.info("newconnection is " + newConnection);
+            
+            failover(failedConnection, newConnection);
+            
+            break;
          }
          else
          {
-            //Server side failover has occurred / is occurring but we tried the wrong node
-            //Now we must try the correct node
-            
-            //TODO TODO TODO
-            
-            log.info("*** Got wrong server!");
+            if (res.getActualFailoverNode() == -1)
+            {
+               //No trace of failover was detected on the server side - this might happen if the client side
+               //network fails temporarily so the client connection breaks but the server side network is still
+               //up and running - in this case we don't failover 
+               
+               //TODO Is this the right thing to do?
+               
+               log.trace("Client attempted to failover, but no failover had occurred on the server side");
+               
+               break;
+                           
+            }
+            else
+            {
+               //Server side failover has occurred / is occurring but we tried the wrong node
+               //Now we must try the correct node
+               
+               newCF = null;
+               
+               tries++;
+               
+               for (int i = 0; i < delegates.length; i++)
+               {
+                  ClientConnectionFactoryDelegate del = delegates[i];
+                  
+                  if (del.getServerId() == res.getActualFailoverNode())
+                  {
+                     newCF = del;
+                     
+                     break;
+                  }
+               }
+               
+               if (newCF == null)
+               {
+                  //Houston, we have a problem
+                  
+                  //TODO Could this ever happen? Should we send back the cf, or update it instead of just the id??
+                  throw new JMSException("Cannot find server with id " + res.getActualFailoverNode());
+               }               
+            }
          }
+      }
+      
+      if (tries == MAX_TRIES)
+      {
+         throw new JMSException("Cannot find correct server to failover onto");
       }
    }
    
@@ -355,8 +392,7 @@ public class HAAspect
                                         oldCallbackManager);       
                
                // We add the new consumer id to the list of old ids
-               consumerIds.add(new Integer(((ConsumerState)sessionChild).getConsumerID()));
-               
+               consumerIds.add(new Integer(((ConsumerState)sessionChild).getConsumerID()));               
             }
             else if (sessionChild instanceof BrowserState)
             {
@@ -411,16 +447,9 @@ public class HAAspect
          }                 
       }
             
-//      problem - what if the consumer has closed - but there are still acks in the session or rm?
-//               
-//      we still need to replace them but with what?
-//               
-//      in this case we can't recreate a consumer on the server since it has closed
-//      
-//      solution here is to store by session id - major reworking!!!!!!!!
-      
-      
-     // todo need to replace consumer id
+      //TODO
+      //If the session had consumers which are now closed then there is no way to recreate them on the server
+      //we need to store with session id
       
       //We must not start the connection until the end
       if (failedState.isStarted())
