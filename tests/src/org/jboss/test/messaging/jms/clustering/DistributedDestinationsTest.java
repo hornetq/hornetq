@@ -34,17 +34,15 @@ import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 
 /**
  * 
- * A ManualClusteringTest
+ * A DistributedDestinationsTest
  * 
- * Nodes must be started up in order node1, node2, node3
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
  *
  */
-public class ManualClusteringTest extends ClusteringTestBase
+public class DistributedDestinationsTest extends ClusteringTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -55,7 +53,7 @@ public class ManualClusteringTest extends ClusteringTestBase
 
    // Constructors --------------------------------------------------
 
-   public ManualClusteringTest(String name)
+   public DistributedDestinationsTest(String name)
    {
       super(name);
    }

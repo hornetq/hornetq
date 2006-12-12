@@ -111,6 +111,10 @@ public class ServerPeer extends ServiceMBeanSupport
    private String dlqName;
 
    private Object failoverStatusLock;
+   
+   private long failoverStartTimeout = 3000;
+   
+   private long failoverCompleteTimeout = 12000;
       
    // wired components
 
@@ -134,9 +138,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    protected ObjectName postOfficeObjectName;
    protected PostOffice postOffice;
-
-//   protected ObjectName topicPostOfficeObjectName;
-//   protected PostOffice topicPostOffice;
 
    protected ObjectName jmsUserManagerObjectName;
    protected JMSUserManager jmsUserManager;
@@ -352,16 +353,6 @@ public class ServerPeer extends ServiceMBeanSupport
       postOfficeObjectName = on;
    }
 
-//   public ObjectName getTopicPostOffice()
-//   {
-//      return topicPostOfficeObjectName;
-//   }
-//
-//   public void setTopicPostOffice(ObjectName on)
-//   {
-//      topicPostOfficeObjectName = on;
-//   }
-
    public ObjectName getJmsUserManager()
    {
       return jmsUserManagerObjectName;
@@ -478,6 +469,28 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       this.queuedExecutorPoolSize = poolSize;
    }
+   
+   public long getFailoverStartTimeout()
+   {
+      return this.failoverStartTimeout;
+   }
+   
+   public void setFailoverStartTimeout(long timeout)
+   {
+      this.failoverStartTimeout = timeout;
+   }
+   
+   public long getFailoverCompleteTimeout()
+   {
+      return this.failoverCompleteTimeout;
+   }
+   
+   public void setFailoverCompleteTimeout(long timeout)
+   {
+      this.failoverCompleteTimeout = timeout;
+   }
+   
+   
 
    // JMX Operations ------------------------------------------------
 
@@ -729,14 +742,11 @@ public class ServerPeer extends ServiceMBeanSupport
       
       Replicator replicator = getReplicator();
       
-      //TODO - these must be configurable
-      final long FAILOVER_START_TIMEOUT = 15000;
+      //Failover
+
+      long startToWait = failoverStartTimeout;
       
-      final long FAILOVER_COMPLETE_TIMEOUT = 25000;
-      
-      long startToWait = FAILOVER_START_TIMEOUT;
-      
-      long completeToWait = FAILOVER_COMPLETE_TIMEOUT;
+      long completeToWait = failoverCompleteTimeout;
                      
       //Must lock here
       synchronized (failoverStatusLock)
@@ -1104,5 +1114,4 @@ public class ServerPeer extends ServiceMBeanSupport
          }
       }      
    }
-
 }

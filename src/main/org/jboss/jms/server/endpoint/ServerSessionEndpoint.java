@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -186,11 +187,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          int prefetchSize = connectionEndpoint.getPrefetchSize();
          
          ServerConsumerEndpoint ep =
-            new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
+
+            new ServerConsumerEndpoint(consumerID, binding.getQueue(),
                                        binding.getQueue().getName(), this, selectorString, noLocal,
                                        jmsDestination, prefetchSize, dlq);
 
-         
          JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
          
          ClientConsumerDelegate stub =
@@ -753,6 +754,56 @@ public class ServerSessionEndpoint implements SessionEndpoint
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " cancelDeliveries");
+      }
+   }
+   
+   public void sendUnackedAckInfos(List ackInfos) throws JMSException
+   {
+      try
+      {
+         //Sort into different list for each consumer
+         Map ackMap = new HashMap();
+                  
+         for (int i = ackInfos.size() - 1; i >= 0; i--)
+         {
+            AckInfo ack = (AckInfo)ackInfos.get(i);
+            
+            ServerConsumerEndpoint consumer =
+               this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
+   
+            if (consumer == null)
+            {
+               throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
+            }
+            
+            LinkedList acks = (LinkedList)ackMap.get(consumer);
+            
+            if (acks == null)
+            {
+               acks = new LinkedList();
+               
+               ackMap.put(consumer, acks);
+            }
+            
+            acks.addFirst(new Long(ack.getMessageID()));
+         }  
+         
+         Iterator iter = ackMap.entrySet().iterator();
+         
+         while (iter.hasNext())
+         {
+            Map.Entry entry = (Map.Entry)iter.next();
+            
+            ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)entry.getKey();
+            
+            List acks = (List)entry.getValue();
+            
+            consumer.createDeliveries(acks);
+         }
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " sendUnackedAckInfos");
       }
    }
 

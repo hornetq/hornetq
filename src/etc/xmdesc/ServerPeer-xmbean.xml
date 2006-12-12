@@ -150,7 +150,19 @@
       <description>The JNDI name of the DLQ</description>
       <name>DLQName</name>
       <type>java.lang.String</type>
-   </attribute>     
+   </attribute>  
+   
+   <attribute access="read-write" getMethod="getFailoverStartTimeout" setMethod="setFailoverStartTimeout">
+      <description>The maximum amount of time to wait for failover to begin</description>
+      <name>FailoverStartTimeout</name>
+      <type>long</type>
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="getFailoverCompleteTimeout" setMethod="setFailoverCompleteTimeout">
+      <description>The maximum amount of time to wait for failover to complete</description>
+      <name>FailoverCompleteTimeout</name>
+      <type>long</type>
+   </attribute>      
 
    <!-- Managed operations -->
 

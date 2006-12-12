@@ -37,8 +37,8 @@ import javax.jms.Message;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.remoting.HandleMessageResponse;
 import org.jboss.jms.client.remoting.CallbackManager;
+import org.jboss.jms.client.remoting.HandleMessageResponse;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
@@ -95,6 +95,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte MORE = 5;
    protected static final byte SEND_TRANSACTION = 6;
    protected static final byte GET_ID_BLOCK = 7;
+   protected static final byte UNACKED_ACKINFOS = 8;
  
 
    // The response codes - start from 100
@@ -311,6 +312,28 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   dos.flush();
    
                   if (trace) { log.trace("wrote cancelDeliveries()"); }
+               }
+               else if ("sendUnackedAckInfos".equals(methodName) && mi.getArguments() != null)
+               {
+                  dos.writeByte(UNACKED_ACKINFOS);
+   
+                  writeHeader(mi, dos);
+   
+                  List ids = (List)mi.getArguments()[0];
+   
+                  dos.writeInt(ids.size());
+   
+                  Iterator iter = ids.iterator();
+   
+                  while (iter.hasNext())
+                  {
+                     AckInfo ack = (AckInfo)iter.next();
+                     ack.write(dos);
+                  }
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote sendUnackedAckInfos()"); }
                }
                else
                {
@@ -697,6 +720,35 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                                         new MessagingMarshallable(version, mi), null, null, null);
    
                if (trace) { log.trace("read cancelDeliveries()"); }
+   
+               return request;
+            }
+            case UNACKED_ACKINFOS:
+            {
+               MethodInvocation mi = readHeader(dis);
+   
+               int size = dis.readInt();
+   
+               List acks = new ArrayList(size);
+   
+               for (int i = 0; i < size; i++)
+               {
+                  AckInfo ack = new AckInfo();
+                  
+                  ack.read(dis);
+                  
+                  acks.add(ack);
+               }
+   
+               Object[] args = new Object[] {acks};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read unackedAckInfos()"); }
    
                return request;
             }

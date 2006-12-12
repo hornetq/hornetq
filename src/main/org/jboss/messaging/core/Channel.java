@@ -145,6 +145,8 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    void deactivate();
    
    boolean isActive();
+   
+   List createDeliveries(List messageIds);
 
 }
 

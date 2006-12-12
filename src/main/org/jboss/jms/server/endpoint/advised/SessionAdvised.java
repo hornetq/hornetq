@@ -147,6 +147,11 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    {
       endpoint.cancelDeliveries(ackInfos);
    }
+   
+   public void sendUnackedAckInfos(List ackInfos) throws JMSException
+   {
+      endpoint.sendUnackedAckInfos(ackInfos);
+   }
 
 
    // AdvisedSupport overrides --------------------------------------
@@ -160,6 +165,7 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    {
       return "SessionAdvised->" + endpoint;
    }
+
 
    // Public --------------------------------------------------------
 

@@ -316,6 +316,9 @@ public class MessageCallbackHandler
          // otherwise the messages wouldn't get cancelled until the corresponding session died.
          // So if another consumer in another session tried to consume from the channel before that
          // session died it wouldn't receive those messages.
+         // We can't just cancel all the messages in the SCE since some of those messages might
+         // have actually been delivered (unlike these) and we may want to acknowledge them
+         // later, after this consumer has been closed
 
          List ackInfos = new ArrayList();
 
@@ -512,6 +515,11 @@ public class MessageCallbackHandler
          
          messagesAdded();
       }
+   }
+   
+   public void clearBuffer()
+   {
+      buffer.clear();
    }
    
    // Package protected ---------------------------------------------

@@ -369,6 +369,12 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
          // TODO Auto-generated method stub
          return false;
       }
+
+      public List createDeliveries(List messageIds)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
       
    }
 

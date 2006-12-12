@@ -31,9 +31,9 @@ import javax.jms.Message;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Routable;
-import org.jboss.messaging.core.local.PagingFilteredQueue;
 
 /**
  * Concrete implementation of BrowserEndpoint.
@@ -66,7 +66,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    // Constructors --------------------------------------------------
 
    protected ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
-                                   PagingFilteredQueue destination, String messageSelector)
+                                   Channel destination, String messageSelector)
       throws JMSException
    {     
       this.session = session;

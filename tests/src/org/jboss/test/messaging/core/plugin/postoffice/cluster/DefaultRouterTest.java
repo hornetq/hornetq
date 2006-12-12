@@ -24,6 +24,7 @@ package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
@@ -607,6 +608,12 @@ public class DefaultRouterTest extends PostOfficeTestBase
       {
          // TODO Auto-generated method stub
          return false;
+      }
+
+      public List createDeliveries(List messageIds)
+      {
+         // TODO Auto-generated method stub
+         return null;
       }
       
    }

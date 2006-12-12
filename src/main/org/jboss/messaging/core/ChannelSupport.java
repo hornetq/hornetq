@@ -491,6 +491,66 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
+   
+   public List createDeliveries(List messageIds)
+   {
+      //debug
+      Iterator iter = messageIds.iterator();
+      
+      log.info("***** createdeliveries");
+      while (iter.hasNext())
+      {
+         Long l = (Long)iter.next();
+         
+         log.info("Creating delivery for " + l);
+      }
+      log.info("**** end dump");
+      
+      iter = messageIds.iterator();
+      
+      List dels = new ArrayList();
+      
+      synchronized (refLock)
+      {
+         synchronized (deliveryLock)
+         {
+            ListIterator liter = messageRefs.iterator();
+                              
+            while (iter.hasNext())
+            {
+               Long id = (Long)iter.next();
+               
+               //Scan the queue
+               while (true)
+               {               
+                  if (!liter.hasNext())
+                  {
+                     // TODO we need to look in paging state too - currently not supported
+                     
+                     throw new IllegalStateException("Cannot find ref in queue! (Might be paged!)");
+                  }
+                  
+                  MessageReference ref = (MessageReference)liter.next();
+                  
+                  if (ref.getMessageID() == id.longValue())
+                  {
+                     liter.remove();
+                     
+                     Delivery del = new SimpleDelivery(this, ref);
+                     
+                     dels.add(del);
+                                    
+                     this.deliveries.add(del);
+                     
+                     break;
+                  }
+               }
+            }  
+         }
+      }
+            
+      return dels;
+   }
 
    // Public --------------------------------------------------------
 

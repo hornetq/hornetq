@@ -11,7 +11,6 @@
 	<classpathentry kind="lib" path="lib/jboss-system.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-transaction.jar"/>
 	<classpathentry kind="lib" path="lib/jnp-client.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="tests/lib/jboss-common-jdbc-wrapper.jar"/>
 	<classpathentry kind="lib" path="tests/lib/jboss-jca.jar"/>
@@ -41,9 +40,6 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jdk14-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/pluggable-instrumentor.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-archive-browsing.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common-client.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/namespace.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar"/>
 	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/backport-util-concurrent.jar"/>
 	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-runtime.jar"/>
@@ -51,5 +47,8 @@
 	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common-logging-log4j/lib/jboss-logging-log4j.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common-logging-spi/lib/jboss-logging-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

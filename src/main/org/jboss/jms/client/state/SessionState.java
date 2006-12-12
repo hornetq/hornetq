@@ -48,7 +48,6 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  */
 public class SessionState extends HierarchicalStateSupport
 {
-
    protected static Logger log = Logger.getLogger(SessionState.class);
 
    private int acknowledgeMode;
@@ -205,16 +204,5 @@ public class SessionState extends HierarchicalStateSupport
    {
       return new ArrayList(callbackHandlers.values());
    }
-
-   /*** used for HA Handling */
-   public void cleanCallBackHandlers()
-   {
-       if (log.isTraceEnabled())
-       {
-           log.trace("Clearing callBackHandlers size=" + callbackHandlers.size());
-       }
-       callbackHandlers.clear();
-   }
-
 }
 

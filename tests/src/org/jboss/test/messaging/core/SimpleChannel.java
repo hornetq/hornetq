@@ -216,6 +216,11 @@ public class SimpleChannel implements Channel
       throw new UnsupportedOperationException();
    }
 
+   public List createDeliveries(List messageIds)
+   {
+      throw new UnsupportedOperationException();
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

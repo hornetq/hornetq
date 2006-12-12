@@ -42,6 +42,7 @@ import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
@@ -49,7 +50,6 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
@@ -87,7 +87,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private int id;
 
-   private PagingFilteredQueue messageQueue;
+   private Channel messageQueue;
    
    private String queueName;
 
@@ -131,7 +131,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    // Constructors --------------------------------------------------
 
-   protected ServerConsumerEndpoint(int id, PagingFilteredQueue messageQueue, String queueName,
+   protected ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
                                     ServerSessionEndpoint sessionEndpoint,
                                     String selector, boolean noLocal, JBossDestination dest,
                                     int prefetchSize, Queue dlq)
@@ -633,7 +633,24 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       }
       
    }
-   
+
+   protected void createDeliveries(List messageIds) throws Throwable
+   {
+      List dels = messageQueue.createDeliveries(messageIds);
+            
+      synchronized (lock)
+      {      
+         Iterator iter = dels.iterator();
+         
+         while (iter.hasNext())
+         {
+            Delivery del = (Delivery)iter.next();
+            
+            deliveries.put(new Long(del.getReference().getMessageID()), del);
+         }
+      }
+   }
+
    protected void cancelDelivery(Long messageID, int deliveryCount) throws Throwable
    {
       Delivery del = (Delivery)deliveries.remove(messageID);
@@ -653,7 +670,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          throw new IllegalStateException("Cannot find delivery to cancel:" + id);
       }
    }
-               
+           
    protected void start()
    {             
       synchronized (lock)

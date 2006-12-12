@@ -441,6 +441,15 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
    
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void sendUnackedAckInfos(List ackInfos) throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
 
    // Public --------------------------------------------------------
 
@@ -456,6 +465,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       //Use the Client in the Connection's state
       return ((ConnectionState)state.getParent()).getRemotingConnection().getInvokingClient();
    }
+
 
    // Package Private -----------------------------------------------
 

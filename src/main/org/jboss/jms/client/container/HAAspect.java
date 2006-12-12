@@ -49,6 +49,7 @@ import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.jms.tx.AckInfo;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
@@ -328,7 +329,22 @@ public class HAAspect
          failedSessionDelegate.copyState(newSessionDelegate);
          
          log.info("copied state");
-
+         
+         //Now we remove any unacked np messages - this is because we don't want to ack them
+         //since the server won't know about them and will barf
+         Iterator iter = failedSessionState.getToAck().iterator();
+         
+         while (iter.hasNext())
+         {
+            AckInfo info = (AckInfo)iter.next();
+            
+            if (!info.getMessage().getMessage().isReliable())
+            {
+               iter.remove();
+            }            
+         }
+         
+         //TODO remove any unacked from the resource manager
 
          if (trace) { log.trace("replacing session (" + failedSessionDelegate + ") with a new failover session " + newSessionDelegate); }
 
@@ -359,8 +375,32 @@ public class HAAspect
                 handleFailoverOnBrowser((BrowserState)sessionChild, newSessionDelegate);
             }
          }
+         
+         /* Now we must sent the list of unacked AckInfos to the server - so the consumers
+          * delivery lists can be repopulated
+          */
+         List ackInfos = null;
+         
+         if (!failedSessionState.isTransacted())
+         {
+            //Get the ack infos from the list in the session state
+            ackInfos = failedSessionState.getToAck();
+         }
+         else
+         {
+            //Transacted session - we need to get the acks
+            //TODO
+         }
+         
+         //TODO for a transacted session the ackinfos will be in the resource manager!!
+         
+         if (!ackInfos.isEmpty())
+         {
+            newSessionDelegate.sendUnackedAckInfos(ackInfos);
+         }
+                  
       }
-      
+            
       //We must not start the connection until the end
       if (failedState.isStarted())
       {
@@ -369,6 +409,8 @@ public class HAAspect
       
       log.info("Failover done");
    }
+   
+   
 
    private void handleFailoverOnConsumer(ClientConnectionDelegate connectionDelegate,
                                          ConnectionState failedConnectionState,
@@ -387,11 +429,11 @@ public class HAAspect
 
       ClientConsumerDelegate newConsumerDelegate = (ClientConsumerDelegate)failedSessionDelegate.
          failOverConsumer((JBossDestination)failedConsumerState.getDestination(),
-                                failedConsumerState.getSelector(),
-                                failedConsumerState.isNoLocal(),
-                                failedConsumerState.getSubscriptionName(),
-                                failedConsumerState.isConnectionConsumer(),
-                                failedConsumerDelegate.getChannelId());
+                           failedConsumerState.getSelector(),
+                           failedConsumerState.isNoLocal(),
+                           failedConsumerState.getSubscriptionName(),
+                           failedConsumerState.isConnectionConsumer(),
+                           failedConsumerDelegate.getChannelId());
 
       if (trace) { log.trace("handleFailoverOnConsumer: alternate consumer created"); }
 
@@ -418,6 +460,9 @@ public class HAAspect
 
       MessageCallbackHandler handler = cm.unregisterHandler(oldServerID, oldConsumerID);
       handler.setConsumerId(failedConsumerState.getConsumerID());
+      
+      //Clear the buffer of the handler
+      handler.clearBuffer();
 
       cm.registerHandler(failedConnectionState.getServerID(),
                          failedConsumerState.getConsumerID(),
@@ -426,8 +471,8 @@ public class HAAspect
       failedSessionState.addCallbackHandler(handler);
       
       log.info("failed over consumer");
-
    }
+   
 
    private void handleFailoverOnProducer(ProducerState failedProducerState,
                                          ClientSessionDelegate failedSessionDelegate)

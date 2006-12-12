@@ -35,6 +35,8 @@
       </attribute>
       <attribute name="MaxDeliveryAttempts">10</attribute>
       <attribute name="DLQName">DLQ</attribute>
+      <attribute name="FailoverStartTimeout">3000</attribute>
+      <attribute name="FailoverCompleteTimeout">12000</attribute>
    </mbean>
 
 </server>

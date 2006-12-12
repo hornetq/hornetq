@@ -120,5 +120,14 @@ public interface SessionEndpoint extends Closeable
     * @param ackInfos
     */
    void cancelDeliveries(List ackInfos) throws JMSException;
+   
+   
+   /**
+    * Send a list of unacked ackInfos to the server so the delivery lists can be repopulated
+    * used at failover
+    * @param ackInfos
+    * @throws JMSException
+    */
+   void sendUnackedAckInfos(List ackInfos) throws JMSException;
 }
 

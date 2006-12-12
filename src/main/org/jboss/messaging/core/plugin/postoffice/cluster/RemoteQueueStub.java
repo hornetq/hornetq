@@ -272,4 +272,9 @@ public class RemoteQueueStub implements ClusteredQueue
    {
       return "RemoteQueueStub(node=" + this.nodeId + " name=" + this.name + " channelId=" + this.id + ")";
    }
+
+   public List createDeliveries(List messageIds)
+   {
+      throw new UnsupportedOperationException();
+   }
 }
