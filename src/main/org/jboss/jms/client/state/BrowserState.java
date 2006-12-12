@@ -67,7 +67,6 @@ public class BrowserState extends HierarchicalStateSupport
       return parent.getVersionToUse();
    }
 
-
    public org.jboss.jms.destination.JBossDestination getJmsDestination()
    {
       return jmsDestination;
@@ -77,15 +76,23 @@ public class BrowserState extends HierarchicalStateSupport
    {
       return messageSelector;
    }
-
+   
    public void setParent(HierarchicalState parent)
    {
       this.parent=(SessionState)parent;
    }
+   
    public HierarchicalState getParent()
    {
       return parent;
    }
-
+   
+   // When failing over a browser, we keep the old browser's state but there are certain fields
+   // we need to update
+   public void copyState(BrowserState newState)
+   {      
+      //Actually only one field
+      this.delegate = newState.delegate;
+   }
 }
 

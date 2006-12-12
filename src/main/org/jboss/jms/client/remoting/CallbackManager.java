@@ -94,17 +94,13 @@ public class CallbackManager implements InvokerCallbackHandler
 
    public void registerHandler(int serverID, int consumerID, MessageCallbackHandler handler)
    {
-      log.info(this + " registeringHandler, serverID:" + serverID + " consumerID:" + consumerID);
-      
       Long lookup = computeLookup(serverID, consumerID);
 
       callbackHandlers.put(lookup, handler);
    }
 
    public MessageCallbackHandler unregisterHandler(int serverID, int consumerID)
-   {
-      log.info(this + " unregisteringHandler, serverID:" + serverID + " consumerID:" + consumerID);
-      
+   { 
       Long lookup = computeLookup(serverID, consumerID);
 
       return (MessageCallbackHandler)callbackHandlers.remove(lookup);

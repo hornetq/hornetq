@@ -73,8 +73,8 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
                                                    ClientConnectionFactoryDelegate[] delegates,
                                                    Map failoverMap)
    {
-      this(mainDelegate.getID(), mainDelegate.serverId, mainDelegate.serverLocatorURI,
-         mainDelegate.serverVersion, mainDelegate.clientPing, delegates, failoverMap);
+      this(mainDelegate.getID(), mainDelegate.getServerId(), mainDelegate.getServerLocatorURI(),
+           mainDelegate.getServerVersion(), mainDelegate.getClientPing(), delegates, failoverMap);
    }
 
    // DelegateSupport overrides -------------------------------------
@@ -89,18 +89,7 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
          {
             delegates[i].init();
          }
-      }
-      
-      //This doesn't seem to be used so I'm commenting it out
-
-//      // We add this to the meta data so the failOver aspect can get access to it
-//      getMetaData().addMetaData(MetaDataConstants.JMS,
-//                                MetaDataConstants.CF_DELEGATES,
-//                                delegates, PayloadKey.TRANSIENT);
-//
-//      getMetaData().addMetaData(MetaDataConstants.JMS,
-//                                MetaDataConstants.FAILOVER_MAP,
-//                                failoverMap, PayloadKey.TRANSIENT);
+      }      
    }
 
    // Public --------------------------------------------------------
@@ -112,7 +101,6 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
       return delegates;
    }
 
-   /** TODO As metadata is not working, I'm exposing this temporarily */
    public Map getFailoverMap()
    {
       return failoverMap;

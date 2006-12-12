@@ -36,6 +36,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Future;
 import org.jboss.remoting.callback.HandleCallbackException;
 
@@ -216,9 +217,9 @@ public class MessageCallbackHandler
     *         or -1 if closed
     */
    public HandleMessageResponse handleMessage(List msgs) throws HandleCallbackException
-   {            
+   {                      
       if (trace) { log.trace(this + " receiving " + msgs.size() + " message(s) from the remoting layer"); }
-                      
+            
       synchronized (mainLock)
       {
          if (closed)
@@ -516,12 +517,7 @@ public class MessageCallbackHandler
          messagesAdded();
       }
    }
-   
-   public void clearBuffer()
-   {
-      buffer.clear();
-   }
-   
+     
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -778,6 +774,22 @@ public class MessageCallbackHandler
       {
          if (trace) { log.trace("confirming delivery on client of " + count + " message(s)"); }
          consumerDelegate.confirmDelivery(count);
+      }
+   }
+   
+   public void copyState(MessageCallbackHandler newHandler)
+   {
+      synchronized (mainLock)
+      {
+         this.consumerID = newHandler.consumerID;
+         
+         this.consumerDelegate = newHandler.consumerDelegate;
+         
+         this.sessionDelegate = newHandler.sessionDelegate;
+         
+         this.serverSending = false;
+         
+         this.buffer.clear();
       }
    }
 

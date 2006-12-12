@@ -63,9 +63,12 @@ public class ConsumerState extends HierarchicalStateSupport
    
    private int maxDeliveries;
    
+   //Needed for failover
+   private long channelId;
+   
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
                         String selector, boolean noLocal, String subscriptionName, int consumerID,
-                        boolean isCC, int prefetchSize, int maxDeliveries)
+                        boolean isCC, int prefetchSize, int maxDeliveries, long channelId)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
@@ -77,6 +80,7 @@ public class ConsumerState extends HierarchicalStateSupport
       this.prefetchSize = prefetchSize;
       this.subscriptionName=subscriptionName;
       this.maxDeliveries = maxDeliveries;
+      this.channelId = channelId;
    }
 
    public DelegateSupport getDelegate()
@@ -155,14 +159,25 @@ public class ConsumerState extends HierarchicalStateSupport
       this.subscriptionName = subscriptionName;
    }
 
-   public void copy(ConsumerState newState)
-   {
-      this.consumerID = newState.consumerID;
-   }
-
    public int getMaxDeliveries()
    {
       return maxDeliveries;
+   }
+   
+   public long getChannelId()
+   {
+      return channelId;
+   }
+   
+   // When failing over a consumer, we keep the old consumer's state but there are certain fields
+   // we need to update
+   public void copyState(ConsumerState newState)
+   {      
+      this.consumerID = newState.consumerID;
+      
+      this.delegate = newState.delegate;
+      
+      this.channelId = newState.channelId;
    }
 
 }

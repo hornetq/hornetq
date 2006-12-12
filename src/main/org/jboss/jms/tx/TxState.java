@@ -26,6 +26,7 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.message.MessageFactory;
@@ -109,6 +110,32 @@ public class TxState implements Streamable
                ackInfo.setConsumerID(newConsumerID);
            }
        }
+   }
+   
+   public void getAckInfosForConsumerIds(List ackInfos, Set consumerIds)
+   {
+      for (Iterator ackIterator = acks.iterator(); ackIterator.hasNext(); )
+      {
+          AckInfo ackInfo = (AckInfo)ackIterator.next();
+          
+          if (consumerIds.contains(new Integer(ackInfo.getConsumerID())))
+          {
+              ackInfos.add(ackInfo);
+          }
+      }
+   }
+   
+   public void removeNonPersistentAcks(Set consumerIds)
+   {
+      for (Iterator ackIterator = acks.iterator(); ackIterator.hasNext(); )
+      {
+          AckInfo ackInfo = (AckInfo)ackIterator.next();
+          
+          if (!ackInfo.msg.getMessage().isReliable())
+          {
+             ackIterator.remove();
+          }
+      }
    }
     
    // Streamable implementation ---------------------------------

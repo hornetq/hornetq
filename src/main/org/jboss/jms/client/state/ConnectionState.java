@@ -70,7 +70,6 @@ public class ConnectionState extends HierarchicalStateSupport
 
    protected boolean started;
 
-
    /** This property used to be delcared on ConnectionAspect */
    private String clientID;
 
@@ -83,10 +82,9 @@ public class ConnectionState extends HierarchicalStateSupport
     /** This property used to be delcared on ConnectionAspect */
    private boolean listenerAdded;
    
-   
    public ConnectionState(int serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection, Version versionToUse,
-                          ResourceManager rm, MessageIdGenerator gen)
+                          MessageIdGenerator gen)
       throws Exception
    {
       super(null, (DelegateSupport)delegate);
@@ -99,7 +97,10 @@ public class ConnectionState extends HierarchicalStateSupport
 
       this.versionToUse = versionToUse;
 
-      this.resourceManager = rm;
+      //Each connection has it's own resource manager
+      //If we can failover all connections with the same server id at the same time
+      //then we can maintain one rm per unique server as opposed to per connection
+      this.resourceManager = new ResourceManager();
 
       this.idGenerator = gen;
 
@@ -230,12 +231,19 @@ public class ConnectionState extends HierarchicalStateSupport
     {
         return null;
     }
-
-    public void copy(ConnectionState newState)
+    
+    //When failing over a connection, we keep the old connection's state but there are certain fields
+    //we need to update
+    public void copyState(ConnectionState newState)
     {
-        this.serverID = newState.serverID;
-        this.idGenerator = newState.idGenerator;
+       this.remotingConnection = newState.remotingConnection;
+       
+       this.idGenerator = newState.idGenerator;
+       
+       this.serverID = newState.serverID;
+       
+       this.versionToUse = newState.versionToUse;
+       
+       this.delegate = newState.delegate;
     }
-
-
 }

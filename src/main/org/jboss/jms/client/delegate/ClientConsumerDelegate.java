@@ -25,11 +25,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
-import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.remoting.Client;
 
 /**
@@ -50,11 +48,10 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    // Attributes ----------------------------------------------------
    
-   // This should not be exposed other than through meta data
    private int bufferSize;
-   protected int maxDeliveries;
+   
+   private int maxDeliveries;
 
-   // This should not be exposed other than through meta data
    private long channelId;
 
    // Static --------------------------------------------------------
@@ -71,11 +68,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    
    public ClientConsumerDelegate()
    {      
-   }
-
-   public long getChannelId()
-   {
-       return channelId;
    }
 
    // ConsumerDelegate implementation -------------------------------
@@ -182,42 +174,46 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    // Public --------------------------------------------------------
 
-   public void init()
-   {
-      super.init();
-      getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID,
-                                new Integer(id), PayloadKey.TRANSIENT);
-      getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.PREFETCH_SIZE,
-                                new Integer(bufferSize), PayloadKey.TRANSIENT);
-      getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.MAX_DELIVERIES,
-                                new Integer(maxDeliveries), PayloadKey.TRANSIENT);
-   }
-
    public String toString()
    {
       return "ConsumerDelegate[" + id + "](ChannelId=" + this.channelId+")" ;
    }
+   
+   public int getPrefetchSize()
+   {
+      return bufferSize;
+   }
+   
+   public int getMaxDeliveries()
+   {
+      return maxDeliveries;
+   }
+   
+   public long getChannelId()
+   {
+      return channelId;
+   }
+   
+   public void copyAttributes(DelegateSupport newDelegate)
+   {
+      super.copyAttributes(newDelegate);
+      
+      this.bufferSize = ((ClientConsumerDelegate)newDelegate).getPrefetchSize();
+      
+      this.maxDeliveries = ((ClientConsumerDelegate)newDelegate).getMaxDeliveries();
+      
+      this.channelId = ((ClientConsumerDelegate)newDelegate).getChannelId();
+   }
 
    // Protected -----------------------------------------------------
    
+
+
    protected Client getClient()
    {
       // Use the Client in the Connection's state
       return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
          getInvokingClient();
-   }
-
-   public void copyState(DelegateSupport newDelegate)
-   {
-      super.copyState(newDelegate);
-      this.channelId = ((ClientConsumerDelegate)newDelegate).channelId;
-      this.getMetaData().removeMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID);
-      this.getMetaData().addMetaData(MetaDataConstants.JMS,
-                                     MetaDataConstants.CONSUMER_ID,
-                                     newDelegate.getMetaData().
-                                        getMetaData(MetaDataConstants.JMS,
-                                                    MetaDataConstants.CONSUMER_ID),
-                                     PayloadKey.TRANSIENT);
    }
 
 

@@ -56,102 +56,107 @@ public class ProducerState extends HierarchicalStateSupport
    private SessionState parent;
 
    private ProducerDelegate delegate;
-
+   
    public ProducerState(SessionState parent, ProducerDelegate delegate, Destination dest)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
       this.destination = dest;
    }
-
+   
    public Destination getDestination()
    {
       return destination;
    }
-
-
-    public DelegateSupport getDelegate()
-    {
-        return (DelegateSupport)delegate;
-    }
-
-    public void setDelegate(DelegateSupport delegate)
-    {
-        this.delegate=(ProducerDelegate)delegate;
-    }
-
-
-    public void setParent(HierarchicalState parent)
-    {
-        this.parent = (SessionState)parent;
-    }
-    public HierarchicalState getParent()
-    {
-        return parent;
-    }
-
-
+      
+   public DelegateSupport getDelegate()
+   {
+      return (DelegateSupport)delegate;
+   }
+   
+   public void setDelegate(DelegateSupport delegate)
+   {
+      this.delegate=(ProducerDelegate)delegate;
+   }
+      
+   public void setParent(HierarchicalState parent)
+   {
+      this.parent = (SessionState)parent;
+   }
+   
+   public HierarchicalState getParent()
+   {
+      return parent;
+   }
+      
    public void setDestination(Destination dest)
    {
       this.destination = dest;
-
+      
    }
    public boolean isDisableMessageID()
    {
       return disableMessageID;
    }
-
+   
    public void setDisableMessageID(boolean disableMessageID)
    {
       this.disableMessageID = disableMessageID;
    }
-
+   
    public boolean isDisableMessageTimestamp()
    {
       return disableMessageTimestamp;
    }
-
+   
    public void setDisableMessageTimestamp(boolean disableMessageTimestamp)
    {
       this.disableMessageTimestamp = disableMessageTimestamp;
    }
-
+   
    public int getPriority()
    {
       return priority;
    }
-
+   
    public void setPriority(int priority)
    {
       this.priority = priority;
    }
-
+   
    public long getTimeToLive()
    {
       return timeToLive;
    }
-
+   
    public void setTimeToLive(long timeToLive)
    {
       this.timeToLive = timeToLive;
    }
-
+   
    public int getDeliveryMode()
    {
       return deliveryMode;
    }
-
+   
    public void setDeliveryMode(int deliveryMode)
    {
       this.deliveryMode = deliveryMode;
    }
-
+   
    public Version getVersionToUse()
    {
       return parent.getVersionToUse();
    }
-
-
+   
+   // When failing over a producer, we keep the old producer's state but there are certain fields
+   // we need to update
+   public void copyState(ProducerState newState)
+   {      
+      //Actually only one field
+      this.delegate = newState.delegate;
+   }
+   
 }
 
 

@@ -649,6 +649,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             deliveries.put(new Long(del.getReference().getMessageID()), del);
          }
       }
+      
+      //Prompt delivery
+      messageQueue.deliver(false);
    }
 
    protected void cancelDelivery(Long messageID, int deliveryCount) throws Throwable

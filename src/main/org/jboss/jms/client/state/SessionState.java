@@ -69,64 +69,65 @@ public class SessionState extends HierarchicalStateSupport
    private List toAck;
 
    private ConnectionState parent;
+   
    private SessionDelegate delegate;
    
    private Map callbackHandlers;
    
    public SessionState(ConnectionState parent, SessionDelegate delegate,
-                       boolean transacted, int ackMode, boolean xa)
+            boolean transacted, int ackMode, boolean xa)
    {
       super(parent, (DelegateSupport)delegate);
       children = new HashSet();
       this.acknowledgeMode = ackMode;
       this.transacted = transacted;
       this.xa = xa;
-
+      
       if (xa)
       {
          // Create an XA resource
          xaResource = new MessagingXAResource(parent.getResourceManager(), this);                            
       }
-
+      
       // If session is transacted and XA, the currentTxId will be updated when the XAResource will
       // be enrolled with a global transaction.
-
+      
       if (transacted & !xa)
       {
          // Create a local tx
          currentTxId = parent.getResourceManager().createLocalTx();        
       }
-
+      
       executor = new QueuedExecutor(new LinkedQueue());
       
       toAck = new ArrayList();
-
+      
       // TODO could optimise this to use the same map of callbackmanagers (which holds refs
       // to callbackhandlers) in the connection, instead of maintaining another map
       callbackHandlers = new HashMap();
    }
-
-
-    public void setParent(HierarchicalState parent)
-    {
-        this.parent = (ConnectionState)parent;
-    }
-    public HierarchicalState getParent()
-    {
-        return parent;
-    }
-
-    public DelegateSupport getDelegate()
-    {
-        return (DelegateSupport)delegate;
-    }
-
-    public void setDelegate(DelegateSupport delegate)
-    {
-        this.delegate=(SessionDelegate)delegate;
-    }
-
-
+   
+   
+   public void setParent(HierarchicalState parent)
+   {
+      this.parent = (ConnectionState)parent;
+   }
+   public HierarchicalState getParent()
+   {
+      return parent;
+   }
+   
+   public DelegateSupport getDelegate()
+   {
+      return (DelegateSupport)delegate;
+   }
+   
+   public void setDelegate(DelegateSupport delegate)
+   {
+      this.delegate=(SessionDelegate)delegate;
+   }
+   
+   
    /**
     * @return List<AckInfo>
     */
@@ -134,7 +135,7 @@ public class SessionState extends HierarchicalStateSupport
    {
       return toAck;
    }
-    
+   
    public int getAcknowledgeMode()
    {
       return acknowledgeMode;
@@ -203,6 +204,14 @@ public class SessionState extends HierarchicalStateSupport
    public List getCallbackHandlers()
    {
       return new ArrayList(callbackHandlers.values());
+   }
+   
+   // When failing over a session, we keep the old session's state but there are certain fields
+   // we need to update
+   public void copyState(SessionState newState)
+   {      
+      //Actually only one field
+      this.delegate = newState.delegate;
    }
 }
 

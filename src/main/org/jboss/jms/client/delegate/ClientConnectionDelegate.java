@@ -28,13 +28,12 @@ import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 import javax.transaction.xa.Xid;
 
-import org.jboss.aop.util.PayloadKey;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.remoting.MetaDataConstants;
+import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.remoting.Client;
 
@@ -57,10 +56,11 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Attributes ----------------------------------------------------
 
-   // This should not be exposed other than through meta data
    private int serverId;
 
    private transient JMSRemotingConnection remotingConnection;
+   
+   private Version versionToUse;
    
    // Static --------------------------------------------------------
 
@@ -223,8 +223,6 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public void init()
    {
       super.init();
-      getMetaData().addMetaData(MetaDataConstants.JMS, MetaDataConstants.SERVER_ID,
-                                new Integer(serverId), PayloadKey.TRANSIENT);
    }
 
    public void setRemotingConnection(JMSRemotingConnection conn)
@@ -236,8 +234,32 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       return remotingConnection;
    }
+   
+   public int getServerId()
+   {
+      return serverId;
+   }
+   
+   public Version getVersionToUse()
+   {
+      return versionToUse;
+   }
+   
+   public void setVersionToUse(Version versionToUse)
+   {
+      this.versionToUse = versionToUse;
+   }
+   
+   public void copyAttributes(DelegateSupport newDelegate)
+   {
+      super.copyAttributes(newDelegate);
+      
+      this.remotingConnection = ((ClientConnectionDelegate)newDelegate).getRemotingConnection();
+      
+      this.versionToUse = ((ClientConnectionDelegate)newDelegate).getVersionToUse();
+   }
 
-   // Protected -----------------------------------------------------
+   // Protected -----------------------------------------------------   
 
    protected Client getClient()
    {

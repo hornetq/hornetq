@@ -152,7 +152,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
      * has to be transfered to this actual object. For example, a Connection will have to assume the
      * ObjectID of the new connection endpoint and the new RemotingConnection.
      */
-    public void copyState(DelegateSupport newDelegate)
+    public void copyAttributes(DelegateSupport newDelegate)
     {
         id = newDelegate.getID();
     }

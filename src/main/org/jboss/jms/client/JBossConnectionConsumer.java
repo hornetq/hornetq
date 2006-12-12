@@ -143,7 +143,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
          // call pre or postDeliver so messages won't be acked, or stored in session/tx
          sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
 
-         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
+         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true, -1);
       }
       finally
       {

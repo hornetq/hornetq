@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.jboss.aop.Advised;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -68,12 +67,13 @@ public class ClientConnectionFactoryDelegate
    // Attributes ----------------------------------------------------
 
    //This data is needed in order to create a connection
-   protected String serverLocatorURI;
-   protected Version serverVersion;
-
-   // This property is used on redirect on failover logic (verify if a new delegate could be used during a failover)
-   protected int serverId;
-   protected boolean clientPing;
+   private String serverLocatorURI;
+ 
+   private Version serverVersion;
+ 
+   private int serverId;
+   
+   private boolean clientPing;
    
    private transient boolean trace;
 
@@ -271,18 +271,9 @@ public class ClientConnectionFactoryDelegate
          
          if (connectionDelegate != null)
          {
-            //We set the version for the connection and the remoting connection on the meta-data
-            //this is so the StateCreationAspect can pick it up
-   
-            SimpleMetaData metaData = ((Advised)connectionDelegate)._getInstanceAdvisor().getMetaData();
-   
-            metaData.addMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_CONNECTION,
-                                 remotingConnection, PayloadKey.TRANSIENT);
-   
-            metaData.addMetaData(MetaDataConstants.JMS, MetaDataConstants.CONNECTION_VERSION,
-                                 version, PayloadKey.TRANSIENT);
-
             connectionDelegate.setRemotingConnection(remotingConnection);
+            
+            connectionDelegate.setVersionToUse(version);
          }
          else
          {
@@ -296,7 +287,6 @@ public class ClientConnectionFactoryDelegate
             {
             }
          }
-
       }
 
       return ret;
@@ -307,7 +297,6 @@ public class ClientConnectionFactoryDelegate
       return "ClientConnectionFactoryDelegate[" + id + "]";
    }
    
-   //This MUST ONLY be used in testing
    public String getServerLocatorURI()
    {
       return serverLocatorURI;
@@ -317,8 +306,25 @@ public class ClientConnectionFactoryDelegate
    {
       return serverId;
    }
+   
+   public boolean getClientPing()
+   {
+      return clientPing;
+   }
+   
+   public Version getServerVersion()
+   {
+      return serverVersion;
+   }
+   
+   public void copyAttributes(DelegateSupport newDelegate)
+   {
+      super.copyAttributes(newDelegate);
+   }
 
    // Protected -----------------------------------------------------
+
+   
 
    protected Client getClient()
    {

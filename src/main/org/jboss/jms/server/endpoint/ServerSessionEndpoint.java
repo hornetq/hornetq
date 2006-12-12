@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.IdManager;
@@ -117,7 +119,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private int nodeId;
    private int maxDeliveryAttempts;
    private Queue dlq;
-
+   
    // Constructors --------------------------------------------------
 
    protected ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
@@ -144,349 +146,41 @@ public class ServerSessionEndpoint implements SessionEndpoint
       dlq = sp.getDLQ();
       tr = sp.getTxRepository();
       maxDeliveryAttempts = sp.getMaxDeliveryAttempts();
-   }
 
+   }
+   
    // SessionDelegate implementation --------------------------------
-      
-   public ConsumerDelegate failOverConsumer(JBossDestination jmsDestination,
-                                            String selectorString,
-                                            boolean noLocal,  String subscriptionName,
-                                            boolean connectionConsumer,
-                                            long oldChannelID) throws JMSException
-   {
-      //TODO we must ensure that the server side failover has completed first before
-      //letting this method run
-      
-      try
-      {
-         // fail over channel
-         if (postOffice.isLocal())
-         {
-            throw new IllegalStateException("Cannot failover on a non clustered post office!");
-         }
-
-         // this is a Clustered operation... so postOffice here must be Clustered
-         Binding binding = ((ClusteredPostOffice)postOffice).getBindingforChannelId(oldChannelID);
-         if (binding == null)
-         {
-            throw new IllegalStateException("Can't find failed over channel " + oldChannelID);
-         }
-         
-         // TODO - Remove this log.info before merging into trunk
-         if (binding.getQueue() instanceof RemoteQueueStub)
-         {
-            log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((RemoteQueueStub)binding.getQueue()).getChannelID());
-         }
-         else
-         {
-            log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((PagingFilteredQueue)binding.getQueue()).getChannelID());
-         }
-         
-         int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
-         
-         int prefetchSize = connectionEndpoint.getPrefetchSize();
-         
-         ServerConsumerEndpoint ep =
-
-            new ServerConsumerEndpoint(consumerID, binding.getQueue(),
-                                       binding.getQueue().getName(), this, selectorString, noLocal,
-                                       jmsDestination, prefetchSize, dlq);
-
-         JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
-         
-         ClientConsumerDelegate stub =
-            new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
-                                       prefetchSize, maxDeliveryAttempts);
-
-         
-         putConsumerEndpoint(consumerID, ep); // caching consumer locally
-         
-         connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
-         
-         return stub;
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " createConsumerDelegate");
-      }
-   }
-
-   /*
-    * Please don't put failover logic in here
-    */
-	public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
+       
+   public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
                                                   String selectorString,
                                                   boolean noLocal,
                                                   String subscriptionName,
-                                                  boolean isCC) throws JMSException
+                                                  boolean isCC,
+                                                  long failoverChannelId) throws JMSException
    {
       try
       {
-         if (closed)
+         if (failoverChannelId == -1)
          {
-            throw new IllegalStateException("Session is closed");
-         }
-
-         if ("".equals(selectorString))
-         {
-            selectorString = null;
-         }
-
-         log.debug("creating consumer for " + jmsDestination + ", selector " + selectorString + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
-
-         ManagedDestination mDest = dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue());
-
-         if (mDest == null)
-         {
-            throw new InvalidDestinationException("No such destination: " + jmsDestination);
-         }
-
-         if (jmsDestination.isTemporary())
-         {
-            // Can only create a consumer for a temporary destination on the same connection
-            // that created it
-            if (!connectionEndpoint.hasTemporaryDestination(jmsDestination))
-            {
-               String msg = "Cannot create a message consumer on a different connection " +
-                            "to that which created the temporary destination";
-               throw new IllegalStateException(msg);
-            }
-         }
-
-         int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
-
-         Binding binding = null;
-
-         // Always validate the selector first
-         Selector selector = null;
-         if (selectorString != null)
-         {
-            selector = new Selector(selectorString);
-         }
-
-         if (jmsDestination.isTopic())
-         {
-            JMSCondition topicCond = new JMSCondition(false, jmsDestination.getName());
+            //Standard createConsumerDelegate
             
-            if (subscriptionName == null)
-            {
-               // non-durable subscription
-               if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + jmsDestination); }
-
-               //Create the non durable sub
-               QueuedExecutor executor = (QueuedExecutor)pool.get();
-
-               PagingFilteredQueue q;
-
-               if (postOffice.isLocal())
-               {
-                  q = new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,
-                                              executor, selector,
-                                              mDest.getFullSize(),
-                                              mDest.getPageSize(),
-                                              mDest.getDownCacheSize());
-
-                  binding = postOffice.bindQueue(topicCond, q);
-               }
-               else
-               {
-                  q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,
-                                              executor, selector, tr,
-                                              mDest.getFullSize(),
-                                              mDest.getPageSize(),
-                                              mDest.getDownCacheSize());
-
-                  ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-
-                  if (mDest.isClustered())
-                  {
-                     binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
-                  }
-                  else
-                  {
-                     binding = cpo.bindQueue(topicCond, q);
-                  }
-               }
-            }
-            else
-            {
-               if (jmsDestination.isTemporary())
-               {
-                  throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
-               }
-
-               // we have a durable subscription, look it up
-               String clientID = connectionEndpoint.getClientID();
-               if (clientID == null)
-               {
-                  throw new JMSException("Cannot create durable subscriber without a valid client ID");
-               }
-
-               // See if there any bindings with the same client_id.subscription_name name
-
-               String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
-
-               binding = postOffice.getBindingForQueueName(name);
-
-               if (binding == null)
-               {
-                  //Does not already exist
-
-                  if (trace) { log.trace("creating new durable subscription on " + jmsDestination); }
-
-                  QueuedExecutor executor = (QueuedExecutor)pool.get();
-                  PagingFilteredQueue q;
-
-                  if (postOffice.isLocal())
-                  {
-                     q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
-                                                 executor, selector,
-                                                 mDest.getFullSize(),
-                                                 mDest.getPageSize(),
-                                                 mDest.getDownCacheSize());
-
-                     binding = postOffice.bindQueue(topicCond, q);
-                  }
-                  else
-                  {
-                     q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
-                                                 executor, selector, tr,
-                                                 mDest.getFullSize(),
-                                                 mDest.getPageSize(),
-                                                 mDest.getDownCacheSize());
-
-                     ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-
-                     if (mDest.isClustered())
-                     {
-                        binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
-                     }
-                     else
-                     {
-                        binding = cpo.bindQueue(topicCond, q);
-                     }
-                  }
-               }
-               else
-               {
-                  //Durable sub already exists
-
-                  if (trace) { log.trace("subscription " + subscriptionName + " already exists"); }
-
-                  // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
-                  // A client can change an existing durable subscription by creating a durable
-                  // TopicSubscriber with the same name and a new topic and/or message selector.
-                  // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
-                  // one and creating a new one.
-
-                  String filterString = binding.getQueue().getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
-
-                  boolean selectorChanged =
-                     (selectorString == null && filterString != null) ||
-                     (filterString == null && selectorString != null) ||
-                     (filterString != null && selectorString != null &&
-                     !filterString.equals(selectorString));
-
-                  if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
-
-                  boolean topicChanged = !binding.getCondition().equals(jmsDestination.getName());
-
-                  if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
-
-                  if (selectorChanged || topicChanged)
-                  {
-                     if (trace) { log.trace("topic or selector changed so deleting old subscription"); }
-
-                     // Unbind the durable subscription
-
-                     if (mDest.isClustered() && !postOffice.isLocal())
-                     {
-                        ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-
-                        cpo.unbindClusteredQueue(name);
-                     }
-                     else
-                     {
-                        postOffice.unbindQueue(name);
-                     }
-
-                     // create a fresh new subscription
-
-                     QueuedExecutor executor = (QueuedExecutor)pool.get();
-                     PagingFilteredQueue q;
-
-                     if (postOffice.isLocal())
-                     {
-                        q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
-                                                    executor, selector,
-                                                    mDest.getFullSize(),
-                                                    mDest.getPageSize(),
-                                                    mDest.getDownCacheSize());
-                        binding = postOffice.bindQueue(topicCond, q);
-                     }
-                     else
-                     {
-                        q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
-                                                    executor, selector, tr,
-                                                    mDest.getFullSize(),
-                                                    mDest.getPageSize(),
-                                                    mDest.getDownCacheSize());
-
-                        ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-
-                        if (mDest.isClustered())
-                        {
-                           binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
-                        }
-                        else
-                        {
-                           binding = cpo.bindQueue(topicCond, (LocalClusteredQueue)q);
-                        }
-                     }
-                  }
-               }
-            }
+            return createConsumerDelegateInternal(jmsDestination, selectorString, noLocal, subscriptionName,
+                                                  isCC);
          }
          else
          {
-            //Consumer on a jms queue
-
-            //Let's find the binding
-            binding = postOffice.getBindingForQueueName(jmsDestination.getName());
-
-            if (binding == null)
-            {
-               throw new IllegalStateException("Cannot find binding for jms queue: " + jmsDestination.getName());
-            }
-         }
-
-         int prefetchSize = connectionEndpoint.getPrefetchSize();
-
-         ServerConsumerEndpoint ep =
-            new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
-                                       binding.getQueue().getName(), this, selectorString, noLocal,
-                                       jmsDestination, prefetchSize, dlq);
-          
-         JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
-
-         ClientConsumerDelegate stub =
-            new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
-                                       prefetchSize, maxDeliveryAttempts);
-                       
-         putConsumerEndpoint(consumerID, ep); // caching consumer locally
-         
-         connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
-         
-         log.debug("created and registered " + ep);
-   
-         return stub;
+            //Failover of consumer
+            
+            return failoverConsumer(jmsDestination, selectorString, noLocal, subscriptionName,
+                                    isCC, failoverChannelId);
+         }         
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " createConsumerDelegate");
       }
    }
-	
+      
 	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination, String messageSelector)
 	   throws JMSException
 	{
@@ -1000,23 +694,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
    
    // Protected -----------------------------------------------------
-   
-   protected void acknowledgeInternal(AckInfo ackInfo) throws Throwable
-   {
-      //If the message was delivered via a connection consumer then the message needs to be acked
-      //via the original consumer that was used to feed the connection consumer - which
-      //won't be one of the consumers of this session
-      //Therefore we always look in the global map of consumers held in the server peer
-      ServerConsumerEndpoint consumer = this.connectionEndpoint.getConsumerEndpoint(ackInfo.getConsumerID());
-
-      if (consumer == null)
-      {
-         throw new IllegalArgumentException("Cannot find consumer id: " + ackInfo.getConsumerID());
-      }
       
-      consumer.acknowledge(ackInfo.getMessageID());
-   }
-   
    protected ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint d)
    {
       if (trace) { log.trace(this + " caching consumer " + consumerID); }
@@ -1072,6 +750,341 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }   
 
    // Private -------------------------------------------------------
+   
+   private void acknowledgeInternal(AckInfo ackInfo) throws Throwable
+   {
+      //If the message was delivered via a connection consumer then the message needs to be acked
+      //via the original consumer that was used to feed the connection consumer - which
+      //won't be one of the consumers of this session
+      //Therefore we always look in the global map of consumers held in the server peer
+      ServerConsumerEndpoint consumer = this.connectionEndpoint.getConsumerEndpoint(ackInfo.getConsumerID());
+
+      if (consumer == null)
+      {
+         throw new IllegalArgumentException("Cannot find consumer id: " + ackInfo.getConsumerID());
+      }
+      
+      consumer.acknowledge(ackInfo.getMessageID());
+   }
+   
+   private ConsumerDelegate failoverConsumer(JBossDestination jmsDestination,
+            String selectorString,
+            boolean noLocal,  String subscriptionName,
+            boolean connectionConsumer,
+            long oldChannelID) throws Exception
+   {
+      //fail over channel
+      if (postOffice.isLocal())
+      {
+         throw new IllegalStateException("Cannot failover on a non clustered post office!");
+      }
+      
+      //this is a Clustered operation... so postOffice here must be Clustered
+      Binding binding = ((ClusteredPostOffice)postOffice).getBindingforChannelId(oldChannelID);
+      if (binding == null)
+      {
+         throw new IllegalStateException("Can't find failed over channel " + oldChannelID);
+      }
+      
+      // TODO - Remove this log.info before merging into trunk
+      if (binding.getQueue() instanceof RemoteQueueStub)
+      {
+         log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((RemoteQueueStub)binding.getQueue()).getChannelID());
+      }
+      else
+      {
+         log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((PagingFilteredQueue)binding.getQueue()).getChannelID());
+      }
+      
+      int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
+      
+      int prefetchSize = connectionEndpoint.getPrefetchSize();
+      
+      ServerConsumerEndpoint ep =
+         
+         new ServerConsumerEndpoint(consumerID, binding.getQueue(),
+                  binding.getQueue().getName(), this, selectorString, noLocal,
+                  jmsDestination, prefetchSize, dlq);
+      
+      JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
+      
+      ClientConsumerDelegate stub =
+         new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
+                  prefetchSize, maxDeliveryAttempts);
+      
+      
+      putConsumerEndpoint(consumerID, ep); // caching consumer locally
+      
+      connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
+      
+      return stub;
+   }
+   
+   private ConsumerDelegate createConsumerDelegateInternal(JBossDestination jmsDestination,
+            String selectorString,
+            boolean noLocal,
+            String subscriptionName,
+            boolean isCC) throws Throwable
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+      
+      if ("".equals(selectorString))
+      {
+         selectorString = null;
+      }
+      
+      log.debug("creating consumer for " + jmsDestination + ", selector " + selectorString + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
+      
+      ManagedDestination mDest = dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue());
+      
+      if (mDest == null)
+      {
+         throw new InvalidDestinationException("No such destination: " + jmsDestination);
+      }
+      
+      if (jmsDestination.isTemporary())
+      {
+         // Can only create a consumer for a temporary destination on the same connection
+         // that created it
+         if (!connectionEndpoint.hasTemporaryDestination(jmsDestination))
+         {
+            String msg = "Cannot create a message consumer on a different connection " +
+            "to that which created the temporary destination";
+            throw new IllegalStateException(msg);
+         }
+      }
+      
+      int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
+      
+      Binding binding = null;
+      
+      //Always validate the selector first
+      Selector selector = null;
+      if (selectorString != null)
+      {
+         selector = new Selector(selectorString);
+      }
+      
+      if (jmsDestination.isTopic())
+      {
+         JMSCondition topicCond = new JMSCondition(false, jmsDestination.getName());
+         
+         if (subscriptionName == null)
+         {
+            // non-durable subscription
+            if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + jmsDestination); }
+            
+            // Create the non durable sub
+            QueuedExecutor executor = (QueuedExecutor)pool.get();
+            
+            PagingFilteredQueue q;
+            
+            if (postOffice.isLocal())
+            {
+               q = new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,
+                        executor, selector,
+                        mDest.getFullSize(),
+                        mDest.getPageSize(),
+                        mDest.getDownCacheSize());
+               
+               binding = postOffice.bindQueue(topicCond, q);
+            }
+            else
+            {
+               q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,
+                        executor, selector, tr,
+                        mDest.getFullSize(),
+                        mDest.getPageSize(),
+                        mDest.getDownCacheSize());
+               
+               ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
+               
+               if (mDest.isClustered())
+               {
+                  binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
+               }
+               else
+               {
+                  binding = cpo.bindQueue(topicCond, q);
+               }
+            }
+         }
+         else
+         {
+            if (jmsDestination.isTemporary())
+            {
+               throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
+            }
+            
+            // we have a durable subscription, look it up
+            String clientID = connectionEndpoint.getClientID();
+            if (clientID == null)
+            {
+               throw new JMSException("Cannot create durable subscriber without a valid client ID");
+            }
+            
+            // See if there any bindings with the same client_id.subscription_name name
+            
+            String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
+            
+            binding = postOffice.getBindingForQueueName(name);
+            
+            if (binding == null)
+            {
+               // Does not already exist
+               
+               if (trace) { log.trace("creating new durable subscription on " + jmsDestination); }
+               
+               QueuedExecutor executor = (QueuedExecutor)pool.get();
+               PagingFilteredQueue q;
+               
+               if (postOffice.isLocal())
+               {
+                  q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
+                           executor, selector,
+                           mDest.getFullSize(),
+                           mDest.getPageSize(),
+                           mDest.getDownCacheSize());
+                  
+                  binding = postOffice.bindQueue(topicCond, q);
+               }
+               else
+               {
+                  q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
+                           executor, selector, tr,
+                           mDest.getFullSize(),
+                           mDest.getPageSize(),
+                           mDest.getDownCacheSize());
+                  
+                  ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
+                  
+                  if (mDest.isClustered())
+                  {
+                     binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
+                  }
+                  else
+                  {
+                     binding = cpo.bindQueue(topicCond, q);
+                  }
+               }
+            }
+            else
+            {
+               //Durable sub already exists
+               
+               if (trace) { log.trace("subscription " + subscriptionName + " already exists"); }
+               
+               // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
+               // A client can change an existing durable subscription by creating a durable
+               // TopicSubscriber with the same name and a new topic and/or message selector.
+               // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
+               // one and creating a new one.
+               
+               String filterString = binding.getQueue().getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
+               
+               boolean selectorChanged =
+                  (selectorString == null && filterString != null) ||
+                  (filterString == null && selectorString != null) ||
+                  (filterString != null && selectorString != null &&
+                           !filterString.equals(selectorString));
+               
+               if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
+               
+               boolean topicChanged = !binding.getCondition().equals(jmsDestination.getName());
+               
+               if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
+               
+               if (selectorChanged || topicChanged)
+               {
+                  if (trace) { log.trace("topic or selector changed so deleting old subscription"); }
+                  
+                  // Unbind the durable subscription
+                  
+                  if (mDest.isClustered() && !postOffice.isLocal())
+                  {
+                     ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
+                     
+                     cpo.unbindClusteredQueue(name);
+                  }
+                  else
+                  {
+                     postOffice.unbindQueue(name);
+                  }
+                  
+                  // create a fresh new subscription
+                  
+                  QueuedExecutor executor = (QueuedExecutor)pool.get();
+                  PagingFilteredQueue q;
+                  
+                  if (postOffice.isLocal())
+                  {
+                     q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
+                              executor, selector,
+                              mDest.getFullSize(),
+                              mDest.getPageSize(),
+                              mDest.getDownCacheSize());
+                     binding = postOffice.bindQueue(topicCond, q);
+                  }
+                  else
+                  {
+                     q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
+                              executor, selector, tr,
+                              mDest.getFullSize(),
+                              mDest.getPageSize(),
+                              mDest.getDownCacheSize());
+                     
+                     ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
+                     
+                     if (mDest.isClustered())
+                     {
+                        binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
+                     }
+                     else
+                     {
+                        binding = cpo.bindQueue(topicCond, (LocalClusteredQueue)q);
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         // Consumer on a jms queue
+         
+         // Let's find the binding
+         binding = postOffice.getBindingForQueueName(jmsDestination.getName());
+         
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for jms queue: " + jmsDestination.getName());
+         }
+      }
+      
+      int prefetchSize = connectionEndpoint.getPrefetchSize();
+      
+      ServerConsumerEndpoint ep =
+         new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
+                  binding.getQueue().getName(), this, selectorString, noLocal,
+                  jmsDestination, prefetchSize, dlq);
+      
+      JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
+      
+      ClientConsumerDelegate stub =
+         new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
+                  prefetchSize, maxDeliveryAttempts);
+      
+      putConsumerEndpoint(consumerID, ep); // caching consumer locally
+      
+      connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
+      
+      log.debug("created and registered " + ep);
+      
+      return stub;
+   }
 
    // Inner classes -------------------------------------------------
 }

@@ -23,9 +23,11 @@
 package org.jboss.jms.client.container;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.JMSException;
 
@@ -50,6 +52,7 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
@@ -77,6 +80,7 @@ public class HAAspect
    //Cache this here
    private ClientConnectionFactoryDelegate[] delegates;
    
+   //Cache this here
    private Map failoverMap;
    
    private int currentRobinIndex;
@@ -125,6 +129,7 @@ public class HAAspect
       {
          currentRobinIndex = 0;
       }
+      
       return currentDelegate;
    }
    
@@ -136,7 +141,6 @@ public class HAAspect
 
          MethodInvocation methodInvoke = (MethodInvocation)invocation;
 
-         // TODO: FIX THIS! metaData should contain CF_DELEGATES
          Object target = methodInvoke.getTargetObject();
          
          if (target instanceof ClusteredClientConnectionFactoryDelegate)
@@ -146,8 +150,6 @@ public class HAAspect
 
          if (delegates != null)
          {
-            //TODO: Fix this! metadata should contain CF_FAILOVER_INDEXES
-            //failoverIndexes = (int[])metaData.getMetaData(MetaDataConstants.JMS, MetaDataConstants.CF_FAILOVER_INDEXES);
             failoverMap = ((ClusteredClientConnectionFactoryDelegate)target).getFailoverMap();
 
             if (failoverMap == null)
@@ -167,15 +169,14 @@ public class HAAspect
       
       CreateConnectionResult res = (CreateConnectionResult)cf.createConnectionDelegate(username, password, -1);
       
-      ClientConnectionDelegate connDelegate =
-         (ClientConnectionDelegate)res.getDelegate();
+      ClientConnectionDelegate connDelegate = (ClientConnectionDelegate)res.getDelegate();
       
-      initialiseConnection(connDelegate);
+      addListener(connDelegate);
       
       return connDelegate;   
    }
    
-   private void initialiseConnection(ClientConnectionDelegate connDelegate)
+   private void addListener(ClientConnectionDelegate connDelegate)
    {
       //Add a connection listener
       
@@ -186,20 +187,19 @@ public class HAAspect
       state.getRemotingConnection().getInvokingClient().addConnectionListener(listener);
    }
 
-   
    //The connection has failed
    private void handleFailure(ClientConnectionDelegate failedConnection) throws Exception
    {
       log.info("Handling failure");
       
+      //Get the connection factory we are going to failover onto
       ClientConnectionFactoryDelegate newCF = getFailoverDelegate(failedConnection);
-
-      //TODO implement client side valve to prevent invocations occurring whilst failover is occurring
-      
+  
       ConnectionState state = (ConnectionState)((DelegateSupport)failedConnection).getState();
       
       log.info("calling createFailoverConnectionDelegate");
       
+      //Create a connection using that connection factory
       CreateConnectionResult res =
          newCF.createConnectionDelegate(state.getUser(), state.getPassword(), state.getServerID());
       
@@ -209,11 +209,11 @@ public class HAAspect
       {
          log.info("Got connection");
          
+         //We got the right server and created a new connection ok
+         
          ClientConnectionDelegate newConnection = (ClientConnectionDelegate)res.getDelegate();
          
          log.info("newconnection is " + newConnection);
-         
-         //We got the right server and created a new connection
          
          failover(failedConnection, newConnection);
       }
@@ -289,24 +289,22 @@ public class HAAspect
 
       ConnectionState failedState = (ConnectionState)failedConnection.getState();
 
-      int oldServerID = failedState.getServerID();
-
       ConnectionState newState = (ConnectionState)newConnection.getState();
-      
-      log.info("new state is: " + newState);
-
-      failedState.copy(newState);
-
-      // this is necessary so the connection will start "talking" to the new server instead
-      failedState.setRemotingConnection(newState.getRemotingConnection());
       
       if (failedState.getClientID() != null)
       {
          newConnection.setClientID(failedState.getClientID());
       }
 
-      // Transfering state from newDelegate to currentDelegate
-      failedConnection.copyState(newConnection);
+      // Transfer attributes from newDelegate to failedDelegate
+      failedConnection.copyAttributes(newConnection);
+      
+      int oldServerId = failedState.getServerID();
+      
+      CallbackManager oldCallbackManager = failedState.getRemotingConnection().getCallbackManager();
+      
+      //We need to update some of the attributes on the state
+      failedState.copyState(newState);
       
       log.info("failing over children");
 
@@ -314,46 +312,31 @@ public class HAAspect
       {
          SessionState failedSessionState = (SessionState)i.next();
 
-         log.info("Creating session");
-         
+         ClientSessionDelegate failedSessionDelegate =
+            (ClientSessionDelegate)failedSessionState.getDelegate();
+                  
          ClientSessionDelegate newSessionDelegate = (ClientSessionDelegate)newConnection.
             createSessionDelegate(failedSessionState.isTransacted(),
                                   failedSessionState.getAcknowledgeMode(),
                                   failedSessionState.isXA());
          
-         log.info("Created session");
-                  
-         ClientSessionDelegate failedSessionDelegate =
-            (ClientSessionDelegate)failedSessionState.getDelegate();
+         SessionState newSessionState = (SessionState)newSessionDelegate.getState();
 
-         failedSessionDelegate.copyState(newSessionDelegate);
+         failedSessionDelegate.copyAttributes(newSessionDelegate);
          
-         log.info("copied state");
+         //We need to update some of the attributes on the state
+         newSessionState.copyState(newSessionState);                                  
          
-         //Now we remove any unacked np messages - this is because we don't want to ack them
-         //since the server won't know about them and will barf
-         Iterator iter = failedSessionState.getToAck().iterator();
-         
-         while (iter.hasNext())
-         {
-            AckInfo info = (AckInfo)iter.next();
-            
-            if (!info.getMessage().getMessage().isReliable())
-            {
-               iter.remove();
-            }            
-         }
-         
-         //TODO remove any unacked from the resource manager
-
          if (trace) { log.trace("replacing session (" + failedSessionDelegate + ") with a new failover session " + newSessionDelegate); }
-
-         //TODO Clebert please add comment as to why this clone is necessary
-         //In general, please comment more - there is a serious lack of comments!!
+         
          List children = new ArrayList();
+         
+         // TODO Why is this clone necessary?
          children.addAll(failedSessionState.getChildren());
+         
+         Set consumerIds = new HashSet();
 
-         for(Iterator j = children.iterator(); j.hasNext(); )
+         for (Iterator j = children.iterator(); j.hasNext(); )
          {
             HierarchicalStateSupport sessionChild = (HierarchicalStateSupport)j.next();
 
@@ -362,45 +345,83 @@ public class HAAspect
                handleFailoverOnProducer((ProducerState)sessionChild, newSessionDelegate);
             }
             else if (sessionChild instanceof ConsumerState)
-            {
+            {               
                handleFailoverOnConsumer(failedConnection,
                                         failedState,
                                         failedSessionState,
                                         (ConsumerState)sessionChild,
                                         failedSessionDelegate,
-                                        oldServerID);
+                                        oldServerId,
+                                        oldCallbackManager);       
+               
+               // We add the new consumer id to the list of old ids
+               consumerIds.add(new Integer(((ConsumerState)sessionChild).getConsumerID()));
+               
             }
             else if (sessionChild instanceof BrowserState)
             {
                 handleFailoverOnBrowser((BrowserState)sessionChild, newSessionDelegate);
             }
          }
-         
+                           
          /* Now we must sent the list of unacked AckInfos to the server - so the consumers
           * delivery lists can be repopulated
           */
          List ackInfos = null;
          
-         if (!failedSessionState.isTransacted())
+         if (!failedSessionState.isTransacted() && !failedSessionState.isXA())
          {
+            /*
+            Now we remove any unacked np messages - this is because we don't want to ack them
+            since the server won't know about them and will barf
+            */
+            
+            Iterator iter = newSessionState.getToAck().iterator();
+            
+            while (iter.hasNext())
+            {
+               AckInfo info = (AckInfo)iter.next();
+               
+               if (!info.getMessage().getMessage().isReliable())
+               {
+                  iter.remove();
+               }            
+            }
+            
             //Get the ack infos from the list in the session state
             ackInfos = failedSessionState.getToAck();
          }
          else
-         {
-            //Transacted session - we need to get the acks
-            //TODO
+         {            
+            //Transacted session - we need to get the acks from the resource manager
+            //btw we have kept the old resource manager
+            ResourceManager rm = failedState.getResourceManager();
+            
+            // Remove any non persistent acks - so server doesn't barf on commit
+            
+            rm.removeNonPersistentAcks(consumerIds);
+            
+            ackInfos = rm.getAckInfosForConsumerIds(consumerIds);            
          }
-         
-         //TODO for a transacted session the ackinfos will be in the resource manager!!
          
          if (!ackInfos.isEmpty())
          {
+            log.info("Sending " + ackInfos.size() + " unacked");
             newSessionDelegate.sendUnackedAckInfos(ackInfos);
-         }
-                  
+         }                 
       }
             
+//      problem - what if the consumer has closed - but there are still acks in the session or rm?
+//               
+//      we still need to replace them but with what?
+//               
+//      in this case we can't recreate a consumer on the server since it has closed
+//      
+//      solution here is to store by session id - major reworking!!!!!!!!
+      
+      
+     // todo need to replace consumer id
+      
       //We must not start the connection until the end
       if (failedState.isStarted())
       {
@@ -410,14 +431,13 @@ public class HAAspect
       log.info("Failover done");
    }
    
-   
-
-   private void handleFailoverOnConsumer(ClientConnectionDelegate connectionDelegate,
+   private void handleFailoverOnConsumer(ClientConnectionDelegate failedConnectionDelegate,
                                          ConnectionState failedConnectionState,
                                          SessionState failedSessionState,
                                          ConsumerState failedConsumerState,
                                          ClientSessionDelegate failedSessionDelegate,
-                                         int oldServerID)
+                                         int oldServerID,
+                                         CallbackManager oldCallbackManager)
       throws JMSException
    {
       log.info("Failing over consumer");
@@ -428,47 +448,62 @@ public class HAAspect
       if (trace) { log.trace("handleFailoverOnConsumer: creating alternate consumer"); }
 
       ClientConsumerDelegate newConsumerDelegate = (ClientConsumerDelegate)failedSessionDelegate.
-         failOverConsumer((JBossDestination)failedConsumerState.getDestination(),
-                           failedConsumerState.getSelector(),
-                           failedConsumerState.isNoLocal(),
-                           failedConsumerState.getSubscriptionName(),
-                           failedConsumerState.isConnectionConsumer(),
-                           failedConsumerDelegate.getChannelId());
+         createConsumerDelegate((JBossDestination)failedConsumerState.getDestination(),
+                                 failedConsumerState.getSelector(),
+                                 failedConsumerState.isNoLocal(),
+                                 failedConsumerState.getSubscriptionName(),
+                                 failedConsumerState.isConnectionConsumer(),
+                                 failedConsumerState.getChannelId());
 
       if (trace) { log.trace("handleFailoverOnConsumer: alternate consumer created"); }
-
-      failedConsumerDelegate.copyState(newConsumerDelegate);
-
-      int oldConsumerID = failedConsumerState.getConsumerID();
+            
+      //Copy the attributes from the new consumer to the old consumer
+      failedConsumerDelegate.copyAttributes(newConsumerDelegate);
 
       ConsumerState newState = (ConsumerState)newConsumerDelegate.getState();
-      failedConsumerState.copy(newState);
+      
+      int oldConsumerID = failedConsumerState.getConsumerID();
+      
+      //Update attributes on the old state
+      failedConsumerState.copyState(newState);
 
-      if (failedSessionState.isTransacted())
+      if (failedSessionState.isTransacted() || failedSessionState.isXA())
       {
          //Replace the old consumer id with the new consumer id
          
-         //TODO what about XA?? - may have done work in many transactions - so need to replace all
+         ResourceManager rm = failedConnectionState.getResourceManager();
          
-         failedConnectionState.getResourceManager().
-            handleFailover(failedSessionState.getCurrentTxId(),
-                           oldConsumerID,
-                           failedConsumerState.getConsumerID());
+         rm.handleFailover(oldConsumerID, failedConsumerState.getConsumerID());
       }
-
-      CallbackManager cm = failedConnectionState.getRemotingConnection().getCallbackManager();
-
-      MessageCallbackHandler handler = cm.unregisterHandler(oldServerID, oldConsumerID);
-      handler.setConsumerId(failedConsumerState.getConsumerID());
+            
+      //We need to re-use the existing message callback handler
+            
+      log.info("Old server id:" + oldServerID + " old consumer id:" + oldConsumerID);
+      MessageCallbackHandler oldHandler = oldCallbackManager.unregisterHandler(oldServerID, oldConsumerID);
       
-      //Clear the buffer of the handler
-      handler.clearBuffer();
-
-      cm.registerHandler(failedConnectionState.getServerID(),
-                         failedConsumerState.getConsumerID(),
-                         handler);
+      ConnectionState newConnectionState = (ConnectionState)failedConnectionDelegate.getState();
       
-      failedSessionState.addCallbackHandler(handler);
+      CallbackManager newCallbackManager = newConnectionState.getRemotingConnection().getCallbackManager();
+      
+      log.info("New server id:" + newConnectionState.getServerID() + " new consuer id:" + newState.getConsumerID());
+      
+      //Remove the new handler
+      MessageCallbackHandler newHandler = newCallbackManager.unregisterHandler(newConnectionState.getServerID(),
+                                                                               newState.getConsumerID());
+      
+      log.info("New handler is " + System.identityHashCode(newHandler));
+      
+      //But we need to update some fields from the new one
+      oldHandler.copyState(newHandler);
+      
+      //Now we re-register the old handler with the new callback manager
+            
+      newCallbackManager.registerHandler(newConnectionState.getServerID(),
+                                         newState.getConsumerID(),
+                                         oldHandler);
+      
+      //We don't need to add the handler to the session state since it is already there - we
+      //are re-using the old handler
       
       log.info("failed over consumer");
    }
@@ -484,8 +519,10 @@ public class HAAspect
       ClientProducerDelegate failedProducerDelegate =
          (ClientProducerDelegate)failedProducerState.getDelegate();
 
-      failedProducerDelegate.copyState(newProducerDelegate);
-
+      failedProducerDelegate.copyAttributes(newProducerDelegate);
+      
+      failedProducerState.copyState((ProducerState)newProducerDelegate.getState());
+      
       if (trace) { log.trace("handling fail over on producerDelegate " + failedProducerDelegate + " destination=" + failedProducerState.getDestination()); }
    }
 
@@ -499,8 +536,10 @@ public class HAAspect
       ClientBrowserDelegate failedBrowserDelegate =
          (ClientBrowserDelegate)failedBrowserState.getDelegate();
 
-      failedBrowserDelegate.copyState(newBrowserDelegate);
-
+      failedBrowserDelegate.copyAttributes(newBrowserDelegate);
+      
+      failedBrowserState.copyState((BrowserState)newBrowserDelegate.getState());
+      
       if (trace) { log.trace("handling fail over on browserDelegate " + failedBrowserDelegate + " destination=" + failedBrowserState.getJmsDestination() + " selector=" + failedBrowserState.getMessageSelector()); }
 
    }

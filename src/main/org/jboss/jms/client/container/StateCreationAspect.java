@@ -23,11 +23,10 @@ package org.jboss.jms.client.container;
 
 import javax.jms.Destination;
 
-import org.jboss.aop.Advised;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.metadata.SimpleMetaData;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
@@ -39,7 +38,6 @@ import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
@@ -47,9 +45,6 @@ import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
-import org.jboss.jms.server.remoting.MetaDataConstants;
-import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.ResourceManagerFactory;
 
 /**
  * Maintains the hierarchy of parent and child state objects. For each delegate, this interceptor
@@ -89,28 +84,21 @@ public class StateCreationAspect
       ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)res.getDelegate();
       
       if (connectionDelegate != null)
-      {
-         
+      {         
          connectionDelegate.init();
          
-         SimpleMetaData md = ((Advised)connectionDelegate)._getInstanceAdvisor().getMetaData();
+         //SimpleMetaData md = ((Advised)connectionDelegate)._getInstanceAdvisor().getMetaData();
          
-         int serverID =
-            ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.SERVER_ID)).intValue();
+         int serverID = connectionDelegate.getServerId();
          
-         Version connectionVersion = 
-            (Version)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONNECTION_VERSION);
+         Version versionToUse = connectionDelegate.getVersionToUse();
          
-         JMSRemotingConnection connection = 
-            (JMSRemotingConnection)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_CONNECTION);
+         JMSRemotingConnection connection = connectionDelegate.getRemotingConnection();
          
-         if (connectionVersion == null)
+         if (versionToUse == null)
          {
             throw new IllegalStateException("Connection version is null");
          }
-         
-         // We have one resource manager per unique server
-         ResourceManager rm = ResourceManagerFactory.instance.checkOutResourceManager(serverID);
          
          //We have one message id generator per unique server
          MessageIdGenerator gen =
@@ -118,8 +106,7 @@ public class StateCreationAspect
          
          ConnectionState connectionState =
             new ConnectionState(serverID, connectionDelegate,
-                     connection,
-                     connectionVersion, rm, gen);
+                                connection, versionToUse, gen);
          
          connectionDelegate.setState(connectionState);
       }
@@ -150,7 +137,7 @@ public class StateCreationAspect
    
    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
    {
-      ConsumerDelegate consumerDelegate = (ConsumerDelegate)invocation.invokeNext();
+      ClientConsumerDelegate consumerDelegate = (ClientConsumerDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)consumerDelegate;
       
       delegate.init();
@@ -164,21 +151,18 @@ public class StateCreationAspect
       String subscriptionName = (String)mi.getArguments()[3];
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
 
-      SimpleMetaData md = ((Advised)consumerDelegate)._getInstanceAdvisor().getMetaData();
+      int consumerID = consumerDelegate.getID();
       
-      int consumerID =
-         ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.CONSUMER_ID)).intValue();
+      int prefetchSize = consumerDelegate.getPrefetchSize();
       
-      int prefetchSize =
-         ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.PREFETCH_SIZE)).intValue();
+      int maxDeliveries = consumerDelegate.getMaxDeliveries();
       
-      int maxDeliveries = 
-         ((Integer)md.getMetaData(MetaDataConstants.JMS, MetaDataConstants.MAX_DELIVERIES)).intValue();
+      long channelId = consumerDelegate.getChannelId();
       
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,
                            subscriptionName, consumerID, connectionConsumer, prefetchSize,
-                           maxDeliveries);
+                           maxDeliveries, channelId);
 
       delegate.setState(consumerState);
       return consumerDelegate;

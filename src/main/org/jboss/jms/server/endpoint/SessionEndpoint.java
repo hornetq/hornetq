@@ -46,15 +46,10 @@ import org.jboss.jms.tx.AckInfo;
  */
 public interface SessionEndpoint extends Closeable
 {
-   ConsumerDelegate failOverConsumer(JBossDestination jmsDestination,
-                                     String selectorString,
-                                     boolean noLocal,  String subscriptionName,
-                                     boolean connectionConsumer,
-                                     long oldchannelID) throws JMSException;
-
    ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
-                                           boolean connectionConsumer) throws JMSException;
+                                           boolean connectionConsumer,
+                                           long failoverChannelID) throws JMSException;
    
    BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
       throws JMSException;

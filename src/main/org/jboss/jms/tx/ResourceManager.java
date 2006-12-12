@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
@@ -72,11 +73,7 @@ public class ResourceManager
    private static final Logger log = Logger.getLogger(ResourceManager.class);
    
    // Constructors --------------------------------------------------
-   
-   protected ResourceManager()
-   {      
-   }
-   
+    
    // Public --------------------------------------------------------
    
    public TxState getTx(Object xid)
@@ -123,13 +120,55 @@ public class ResourceManager
     /**
      * Navigate on ACK and change consumer ids on every ACK not sent yet.
      */
-    public void handleFailover(Object xid, int oldConsumerID, int newConsumerID)
+    public void handleFailover(int oldConsumerID, int newConsumerID)
     {
         if (trace) { log.trace("handleFailover:: Transfering consumer id on ACKs from  " + oldConsumerID + " to " + newConsumerID); }
 
-        TxState tx = getTx(xid);
+        //TODO need to lock the rm while this is happening
         
-        tx.handleFailover(oldConsumerID, newConsumerID);
+        //Note we need to replace ids for *all* transactions - this is because, for XA
+        //the session might have done work in many transactions
+        Iterator iter = this.transactions.values().iterator();
+        
+        while (iter.hasNext())
+        {
+           TxState tx = (TxState)iter.next();
+           
+           tx.handleFailover(oldConsumerID, newConsumerID);
+        }                
+    }
+    
+    /*
+     * Get all the ackinfos with a consumer id in the specified set
+     */
+    public List getAckInfosForConsumerIds(Set consumerIds)
+    {
+       Iterator iter = this.transactions.values().iterator();
+       
+       List ackInfos = new ArrayList();
+       
+       while (iter.hasNext())
+       {
+          TxState tx = (TxState)iter.next();
+          
+          tx.getAckInfosForConsumerIds(ackInfos, consumerIds);
+       }
+       
+       return ackInfos;
+    }
+    
+    public void removeNonPersistentAcks(Set consumerIds)
+    {
+       Iterator iter = this.transactions.values().iterator();
+       
+       List ackInfos = new ArrayList();
+       
+       while (iter.hasNext())
+       {
+          TxState tx = (TxState)iter.next();
+          
+          tx.removeNonPersistentAcks(consumerIds);
+       }
     }
 
    
