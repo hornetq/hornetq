@@ -635,11 +635,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    public void putReplicantLocally(int originatorNodeID, Serializable key, Serializable replicant)
       throws Exception
    {
-      log.info("##########putReplicantLocally received, before lock");
 
       synchronized (replicatedData)
       {
-         log.info("putReplicantLocally received, after lock");
+         log.debug(this + " puts replicant locally: " + key + "->" + replicant);
+
          Map m = (Map)replicatedData.get(key);
 
          if (m == null)
@@ -652,9 +652,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          m.put(new Integer(originatorNodeID), replicant);
 
          notifyListeners(key, m, true, originatorNodeID);
-      }
 
-      log.info("putReplicantLocally, completed");
+         if (trace) { log.trace(this + " putReplicantLocally completed"); }
+      }
    }
 
    /**
@@ -664,7 +664,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       synchronized (replicatedData)
       {
-         log.info(this.currentNodeId + " removing key " + key + " from node " + originatorNodeID);
+         if (trace) { log.trace(this + " removes " + originatorNodeID + "'s replicant locally for key " + key); }
 
          Map m = (Map)replicatedData.get(key);
 
@@ -1323,9 +1323,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    /**
     * Check for any transactions that need to be committed or rolled back
     */
-   public void check(Integer nodeId) throws Throwable
+   public void checkTransactions(Integer nodeId) throws Throwable
    {
-      if (trace) { log.trace(this.currentNodeId + " checking for any stranded transactions for node " + nodeId); }
+      if (trace) { log.trace(this + " checking for any stranded transactions for node " + nodeId); }
 
       synchronized (holdingArea)
       {
@@ -1343,11 +1343,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             {
                ClusterTransaction tx = (ClusterTransaction)entry.getValue();
 
-               if (trace) { log.trace("Found transaction " + tx + " in holding area"); }
+               if (trace) { log.trace("found transaction " + tx + " in holding area"); }
 
                boolean commit = tx.check(this);
 
-               if (trace) { log.trace(this.currentNodeId + " transaction " + tx + " will be committed?: " + commit); }
+               if (trace) { log.trace("transaction " + tx + " will be " + (commit ? "COMMITTED" : "ROLLED BACK")); }
 
                if (commit)
                {
@@ -1360,11 +1360,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                toRemove.add(id);
 
-               if (trace) { log.trace(this.currentNodeId + " resolved " + tx); }
+               if (trace) { log.trace("resolved " + tx); }
             }
          }
 
-         //Remove the transactions from the holding area
+         // Remove the transactions from the holding area
 
          iter = toRemove.iterator();
 
@@ -1375,7 +1375,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             holdingArea.remove(id);
          }
       }
-      if (trace) { log.trace(this.currentNodeId + " check complete"); }
+      if (trace) { log.trace(this + " transaction check complete"); }
    }
 
    public int getNodeId()
@@ -1703,7 +1703,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    private void removeDataForNode(Integer nodeToRemove) throws Exception
    {
-      log.info("Node " + nodeToRemove + " requested to leave cluster");
+      log.debug(this + " cleaning local data for node " + nodeToRemove);
 
       lock.writeLock().acquire();
 
@@ -1715,26 +1715,22 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          {
             List toRemove = new ArrayList();
 
-            Iterator iter = nameMap.values().iterator();
-
-            while (iter.hasNext())
+            for(Iterator i = nameMap.values().iterator(); i.hasNext(); )
             {
-               Binding binding = (Binding)iter.next();
+               Binding binding = (Binding)i.next();
 
                if (!binding.getQueue().isRecoverable())
                {
-                  //We only remove the non durable bindings - we still need to be able to handle
-                  //messages for a durable subscription "owned" by a node that is not active any more!
+                  // We only remove the non durable bindings - we still need to be able to handle
+                  // messages for a durable subscription "owned" by a node that is not active any
+                  // more!
                   toRemove.add(binding);
                }
             }
 
-            iter = toRemove.iterator();
-
-            while (iter.hasNext())
+            for(Iterator i = toRemove.iterator(); i.hasNext(); )
             {
-               Binding binding = (Binding)iter.next();
-
+               Binding binding = (Binding)i.next();
                removeBinding(nodeToRemove.intValue(), binding.getQueue().getName());
             }
          }
@@ -1750,7 +1746,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          for(Iterator i = replicatedData.entrySet().iterator(); i.hasNext(); )
          {
             Map.Entry entry = (Map.Entry)i.next();
-
             String key = (String)entry.getKey();
             Map replicants = (Map)entry.getValue();
 
@@ -1761,7 +1756,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                i.remove();
             }
 
-            // Need to trigger listeners
             notifyListeners(key, replicants, false, nodeToRemove.intValue());
          }
       }
@@ -1779,7 +1773,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          for (Iterator i = replicationListeners.iterator(); i.hasNext(); )
          {
             ReplicationListener listener = (ReplicationListener)i.next();
-
             listener.onReplicationChange(key, updatedReplicantMap, added, originatorNodeId);
          }
       }
@@ -1792,36 +1785,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       if (trace) { log.trace(this + " sending synch request " + request); }
 
-      byte[] bytes = writeRequest(request);
-
-      Message message = new Message(null, null, bytes);
+      Message message = new Message(null, null, writeRequest(request));
 
       controlMessageDispatcher.castMessage(null, message, GroupRequest.GET_ALL, castTimeout);
 
       if (trace) { log.trace(this + " request sent OK"); }
    }
-
-   //DEBUG ONLY - remove this
-   private void dumpNodeIdAddressMap(Map map) throws Exception
-   {
-      log.info("** DUMPING NODE ADDRESS MAPPING");
-
-      Iterator iter = map.entrySet().iterator();
-
-      while (iter.hasNext())
-      {
-         Map.Entry entry = (Map.Entry)iter.next();
-
-         Integer theNodeId = (Integer)entry.getKey();
-
-         PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
-
-         log.info("node id: " + theNodeId +" --------->(async:sync) " + info.getAsyncChannelAddress() + ":" + info.getSyncChannelAddress());
-      }
-
-      log.info("** END DUMP");
-   }
-
 
    //TODO - this is a bit tortuous - needs optimising
    private Integer getNodeIdForSyncAddress(Address address) throws Exception
@@ -1835,33 +1804,20 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             throw new IllegalStateException("Cannot find node id -> address mapping");
          }
 
-         this.dumpNodeIdAddressMap(map);
+         Integer nid = null;
 
-         Iterator iter = map.entrySet().iterator();
-
-         log.info("iterating, looking for " + address);
-
-         Integer theNodeId = null;
-         while (iter.hasNext())
+         for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
          {
-            Map.Entry entry = (Map.Entry)iter.next();
-
+            Map.Entry entry = (Map.Entry)i.next();
             PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
-
-            log.info("info synch channel address: " + info.getSyncChannelAddress());
 
             if (info.getSyncChannelAddress().equals(address))
             {
-               log.info("equal");
-               theNodeId = (Integer)entry.getKey();
+               nid = (Integer)entry.getKey();
                break;
             }
-            else
-            {
-               log.info("Not equal");
-            }
          }
-         return theNodeId;
+         return nid;
       }
    }
 
@@ -2061,11 +2017,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    private void nodeJoined(Address address) throws Exception
    {
-      if (trace) { log.trace(this + ": " + address + " joined"); }
+      log.debug(this + ": " + address + " joined");
 
-      log.info(this.currentNodeId + " Node with address: " + address + " joined");
-
-      //Currently does nothing
+      // Currently does nothing
    }
 
    /*
@@ -2073,277 +2027,230 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    private void nodeLeft(Address address) throws Throwable
    {
-      if (trace) { log.trace(this + ": " + address + " left"); }
+      log.debug(this + ": " + address + " left");
 
-      log.info(this.currentNodeId + " Node with address: " + address + " left");
+      Integer nid = getNodeIdForSyncAddress(address);
 
-      Integer theNodeId = getNodeIdForSyncAddress(address);
-
-      if (theNodeId == null)
+      if (nid == null)
       {
-         throw new IllegalStateException(this.currentNodeId + " Cannot find node id for address " + address);
+         throw new IllegalStateException(this + " cannot find node ID for address " + address);
       }
 
-      boolean crashed = !this.leaveMessageReceived(theNodeId);
+      boolean crashed = !this.leaveMessageReceived(nid);
 
-      if (trace) { log.trace("Node " + address + " id: " + theNodeId +" has left the group, crashed = " + crashed); }
+      log.debug(this + ": node " + nid + " has " + (crashed ? "crashed" : "cleanly left the group"));
 
-      //Cleanup any hanging transactions - we do this irrespective of whether we crashed
-      check(theNodeId);
+      // Cleanup any hanging transactions - we do this irrespective of whether we crashed
+      checkTransactions(nid);
 
       synchronized (failoverMap)
       {
-         //Need to evaluate this before we regenerate the failover map
-         Integer failoverNode = (Integer)failoverMap.get(theNodeId);
+         // Need to evaluate this before we regenerate the failover map
+         Integer failoverNode = (Integer)failoverMap.get(nid);
 
          if (failoverNode == null)
          {
-            throw new IllegalStateException("Cannot find failover node for node " + theNodeId);
+            throw new IllegalStateException(this + " cannot find failover node for node " + nid);
          }
 
-         //debug dump failover map
+         // Remove any replicant data and non durable bindings for the node - again we need to do
+         // this irrespective of whether we crashed. This will notify any listeners which will
+         // recalculate the connection factory delegates and failover delegates.
 
-         Iterator iter = failoverMap.entrySet().iterator();
+         removeDataForNode(nid);
 
-         log.info("Dumping failover map");
-         while (iter.hasNext())
+         if (currentNodeId == failoverNode.intValue() && crashed)
          {
-            Map.Entry entry = (Map.Entry)iter.next();
+            // The node crashed and we are the failover node so let's perform failover
 
-            Integer nodeId = (Integer)entry.getKey();
-
-            Integer failoverNodeId = (Integer)entry.getValue();
-
-            log.info("node->failover node: " + nodeId + " --> " + failoverNodeId);
-         }
-         log.info("end dump");
-
-         //end debug
-
-         boolean isFailover = failoverNode.intValue() == this.currentNodeId;
-
-         log.info("Am I failover node for node " + theNodeId + "? " + isFailover);
-
-         log.info("Crashed: " + crashed);
-
-         //Remove any replicant data and non durable bindings for the node - again we need to do this
-         //irrespective of whether we crashed
-         //This will notify any listeners which will recalculate the connection factory delegates and failover delegates
-         removeDataForNode(theNodeId);
-
-         if (crashed && isFailover)
-         {
-            //The node crashed and we are the failover node
-            //so let's perform failover
+            log.info(this + ": I am the failover node for node " + nid + " that crashed");
 
             //TODO server side valve
 
-            failOver(theNodeId.intValue());
+            performFailover(nid);
          }
       }
    }
 
    /**
-    *  Verifies changes on the View deciding if a node joined or left the cluster.
-    */
-   private void verifyMembership(View oldView, View newView) throws Throwable
-   {
-      if (oldView != null)
-      {
-         for (Iterator i = oldView.getMembers().iterator(); i.hasNext(); )
-         {
-            Address address = (Address)i.next();
-            if (!newView.containsMember(address))
-            {
-               nodeLeft(address);
-            }
-         }
-      }
-
-      for (Iterator i = newView.getMembers().iterator(); i.hasNext(); )
-      {
-         Address address = (Address)i.next();
-         if (oldView == null || !oldView.containsMember(address))
-         {
-            nodeJoined(address);
-         }
-      }
-   }
-
-   /**
-    * This method fails over all the queues from node <failedNodeId> onto this node
-    * It is triggered when a JGroups view change occurs due to a member leaving and
-    * it's determined the member didn't leave cleanly
+    * This method fails over all the queues from node <failedNodeId> onto this node. It is triggered
+    * when a JGroups view change occurs due to a member leaving and it's determined the member
+    * didn't leave cleanly.
     *
-    * @param failedNodeId
+    * @param failedNodeID
     * @throws Exception
     */
-   private void failOver(int failedNodeId) throws Exception
+   private void performFailover(Integer failedNodeID) throws Exception
    {
-      //Need to lock
+      // Need to lock
       lock.writeLock().acquire();
 
       try
       {
-         log.info(this.currentNodeId + " is performing failover for node " + failedNodeId);
+         log.debug(this + " performing failover for failed node " + failedNodeID);
 
-         /*
-         We make sure a FailoverStatus object is put in the replicated data for the node
-         The real failover node will always add this in.
-         This means that each node knows which node has really started the failover for another node, and
-         which node did failover for other nodes in the past
-         We cannot rely on the failoverMap for this, since that will regenerated once failover is done,
-         because of the change in membership.
-         And clients may failover after that and need to know if they have the correct node.
-         Since this is the first thing we do after detecting failover, it should be very quick that
-         all nodes know, however there is still a chance that a client tries to failover before
-         the information is replicated.
-         */
+         // We make sure a FailoverStatus object is put in the replicated data for the node. The
+         // real failover node will always add this in. This means that each node knows which node
+         // has really started the failover for another node, and which node did failover for other
+         // nodes in the past.
+         // We cannot rely on the failoverMap for this, since that will regenerated once failover is
+         // done, because of the change in membership. And clients may failover after that and need
+         // to know if they have the correct node. Since this is the first thing we do after
+         // detecting failover, it should be very quick that all nodes know, however there is still
+         // a chance that a client tries to failover before the information is replicated.
 
-         Map replicants = (Map)get(FAILED_OVER_FOR_KEY);
-
-         FailoverStatus status = (FailoverStatus)replicants.get(new Integer(currentNodeId));
+         Map failoverData = (Map)get(FAILED_OVER_FOR_KEY);
+         FailoverStatus status = (FailoverStatus)failoverData.get(new Integer(currentNodeId));
 
          if (status == null)
          {
             status = new FailoverStatus();
          }
 
-         status.startFailingOverForNode(failedNodeId);
+         status.startFailingOverForNode(failedNodeID);
 
-         log.info("Putting state that failover is starting");
+         log.debug(this + " announcing the cluster it is starting failover procedure");
 
          put(FAILED_OVER_FOR_KEY, status);
 
-         log.info("Put state that failover is starting");
+         log.debug(this + " announced the cluster it is starting failover procedure");
 
-         //Get the map of queues for the failed node
+         // Get the map of queues for the failed node
 
-         Map subMaps = (Map)nameMaps.get(new Integer(failedNodeId));
-         if (subMaps==null || subMaps.size()==0)
+         Map subMaps = (Map)nameMaps.get(failedNodeID);
+
+         if (subMaps == null || subMaps.size() == 0)
          {
-            log.warn("Couldn't find any binding to failOver from serverId=" +failedNodeId);
-            return;
+            log.warn(this + " couldn't find any binding to fail over from server " + failedNodeID);
+         }
+         else
+         {
+            // Compile a list of the queue names to remove.
+            // Note that any non durable bindings will already have been removed (in
+            // removeDataForNode()) when the node leave was detected, so if there are any non durable
+            // bindings left here then this is an error.
+
+            // We iterate through twice to avoid ConcurrentModificationException
+
+            ArrayList namesToRemove = new ArrayList();
+
+            for (Iterator i = subMaps.entrySet().iterator(); i.hasNext();)
+            {
+               Map.Entry entry = (Map.Entry)i.next();
+               Binding binding = (Binding )entry.getValue();
+
+               // Sanity check
+               if (!binding.getQueue().isRecoverable())
+               {
+                  throw new IllegalStateException("Found non recoverable queue in map, " +
+                     "these should have been removed!");
+               }
+
+               // Sanity check
+               if (!binding.getQueue().isClustered())
+               {
+                  throw new IllegalStateException("Queue " + binding.getQueue().getName() +
+                     " is not clustered!");
+               }
+
+               ClusteredQueue queue = (ClusteredQueue)binding.getQueue();
+
+               // Sanity check
+               if (queue.isLocal())
+               {
+                  throw new IllegalStateException("Queue " + binding.getQueue().getName() +
+                     " is local!");
+               }
+
+               namesToRemove.add(entry);
+            }
+
+            if (trace) { log.trace("deleting " + namesToRemove.size() + " bindings from old node"); }
+
+            for (Iterator i = namesToRemove.iterator(); i.hasNext(); )
+            {
+               Map.Entry entry = (Map.Entry)i.next();
+               Binding binding = (Binding)entry.getValue();
+               RemoteQueueStub stub = (RemoteQueueStub)binding.getQueue();
+               String queueName = (String)entry.getKey();
+
+               // First the binding is removed from the in memory condition and name maps ...
+               removeBinding(failedNodeID.intValue(), queueName);
+
+               // ... then deleted from the database
+               deleteBinding(failedNodeID.intValue(), queueName);
+
+               log.debug(this + " deleted binding for " + queueName);
+
+               // Note we do not need to send an unbind request across the cluster - this is because
+               // when the node crashes a view change will hit the other nodes and that will cause all
+               // binding data for that node to be removed anyway.
+
+               // If there is already a queue registered with the same name, then we set a flag
+               // "failed" on the binding and then the queue will go into a special list of failed
+               // bindings otherwise we treat at as a normal queue.
+               // This is because we cannot deal with more than one queue with the same name. Any new
+               // consumers will always only connect to queues in the main name map. This may mean that
+               // queues in the failed map have messages stranded in them if consumers disconnect
+               // (since no more can reconnect). However we message redistribution activated other
+               // queues will be able to consume from them.
+
+               //TODO allow message redistribution for queues in the failed list
+
+               boolean failed = internalGetBindingForQueueName(queueName) != null;
+
+               if (!failed)
+               {
+                  log.debug(this + " did not have a " + queueName +
+                     " queue so it's assuming it as a regular queue");
+               }
+               else
+               {
+                  log.info(this + " has already a " + queueName + " queue so adding to failed map");
+               }
+
+               // Create a new binding
+               Binding newBinding = createBinding(currentNodeId, binding.getCondition(),
+                                                  stub.getName(), stub.getChannelID(),
+                                                  stub.getFilter(), stub.isRecoverable(), failed);
+
+               // Insert it into the database
+               insertBinding(newBinding);
+
+               LocalClusteredQueue clusteredQueue = (LocalClusteredQueue)newBinding.getQueue();
+
+               clusteredQueue.deactivate();
+               clusteredQueue.load();
+               clusteredQueue.activate();
+
+               log.debug(this + " loaded " + clusteredQueue);
+
+               // Add the new binding in memory
+               addBinding(newBinding);
+
+               // Send a bind request so other nodes add it too
+               sendBindRequest(binding.getCondition(), clusteredQueue,newBinding);
+
+               //FIXME there is a problem in the above code.
+               //If the server crashes between deleting the binding from the database
+               //and creating the new binding in the database, then the binding will be completely
+               //lost from the database when the server is resurrected.
+               //To remedy, both db operations need to be done in the same JBDC tx
+            }
          }
 
-         //Compile a list of the queue names to remove
-         //Note that any non durable bindings will already have been removed (in removeDataForNode()) when the
-         //node leave was detected, so if there are any non durable bindings left here then
-         //this is an error
-
-         //We iterate through twice to avoid ConcurrentModificationException
-         ArrayList namesToRemove = new ArrayList();
-         for (Iterator iterNames = subMaps.entrySet().iterator(); iterNames.hasNext();)
-         {
-            Map.Entry entry = (Map.Entry)iterNames.next();
-
-            Binding binding = (Binding )entry.getValue();
-
-            //Sanity check
-            if (!binding.getQueue().isRecoverable())
-            {
-               throw new IllegalStateException("Find non recoverable queue in map, these should have been removed!");
-            }
-
-            //Sanity check
-            if (!binding.getQueue().isClustered())
-            {
-               throw new IllegalStateException("Queue is not clustered!: " + binding.getQueue().getName());
-            }
-
-            ClusteredQueue queue = (ClusteredQueue) binding.getQueue();
-
-            //Sanity check
-            if (queue.isLocal())
-            {
-               throw new IllegalStateException("Queue is local!: " + binding.getQueue().getName());
-            }
-            namesToRemove.add(entry);
-         }
-
-         log.info("Deleting " + namesToRemove.size() + " bindings from old node");
-
-         for (Iterator iterNames = namesToRemove.iterator(); iterNames.hasNext();)
-         {
-            Map.Entry entry = (Map.Entry)iterNames.next();
-
-            Binding binding = (Binding)entry.getValue();
-
-            RemoteQueueStub stub = (RemoteQueueStub)binding.getQueue();
-
-            String queueName = (String)entry.getKey();
-
-            //First the binding is removed from the in memory condition and name maps
-            this.removeBinding(failedNodeId, queueName);
-
-            //Then deleted from the database
-            this.deleteBinding(failedNodeId, queueName);
-
-            log.info("deleted binding for " + queueName);
-
-            //Note we do not need to send an unbind request across the cluster - this is because
-            //when the node crashes a view change will hit the other nodes and that will cause
-            //all binding data for that node to be removed anyway
-
-            //If there is already a queue registered with the same name, then we set a flag "failed" on the
-            //binding and then the queue will go into a special list of failed bindings
-            //otherwise we treat at as a normal queue
-            //This is because we cannot deal with more than one queue with the same name
-            //Any new consumers will always only connect to queues in the main name map
-            //This may mean that queues in the failed map have messages stranded in them if consumers
-            //disconnect (since no more can reconnect)
-            //However we message redistribution activated other queues will be able to consume from them.
-            //TODO allow message redistribution for queues in the failed list
-            boolean failed = this.internalGetBindingForQueueName(queueName) != null;
-
-            if (!failed)
-            {
-               log.info("The current node didn't have a queue " + queueName + " so it's assuming the queue as a regular queue");
-            }
-            else
-            {
-               log.info("There is already a queue with that name so adding to failed map");
-            }
-
-            //Create a new binding
-            Binding newBinding = this.createBinding(this.currentNodeId, binding.getCondition(),
-                                                    stub.getName(), stub.getChannelID(),
-                                                    stub.getFilter(), stub.isRecoverable(), failed);
-
-            log.info("Created new binding");
-
-            //Insert it into the database
-            insertBinding(newBinding);
-
-            LocalClusteredQueue clusteredQueue = (LocalClusteredQueue )newBinding.getQueue();
-
-            clusteredQueue.deactivate();
-            clusteredQueue.load();
-            clusteredQueue.activate();
-
-            log.info("Loaded queue");
-
-            //Add the new binding in memory
-            addBinding(newBinding);
-
-            //Send a bind request so other nodes add it too
-            sendBindRequest(binding.getCondition(), clusteredQueue,newBinding);
-
-            //FIXME there is a problem in the above code.
-            //If the server crashes between deleting the binding from the database
-            //and creating the new binding in the database, then the binding will be completely
-            //lost from the database when the server is resurrected.
-            //To remedy, both db operations need to be done in the same JBDC tx
-         }
-
-         log.info("Server side fail over is now complete");
+         log.info(this + ": server side fail over is now complete");
 
          //TODO - should this be in a finally? I'm not sure
          status.finishFailingOver();
 
-         log.info("Putting state that failover has completed");
+         log.debug(this + " announcing the cluster that failover procedure is complete");
+
          put(FAILED_OVER_FOR_KEY, status);
-         log.info("Put state that failover has completed");
+
+         log.debug(this + " announced the cluster that failover procedure is complete");
+
+         sendJMXNotification(FAILOVER_COMPLETED_NOTIFICATION);
       }
       finally
       {
@@ -2369,33 +2276,37 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       Notification n = new Notification(notificationType, "", 0l);
       nbSupport.sendNotification(n);
+      log.debug(this + " sent " + notificationType + " JMX notification");
    }
 
-   private void handleViewAccepted(View newView)
+   private String dumpClusterMap(Map map)
    {
-      //TODO: (by Clebert) Most JBoss Services use info on viewAccepted,
-      //TODO:     can't we do the same since this is pretty useful?
-      log.info(currentNodeId  + " got new view: " + newView + " postOffice:"
-               + DefaultClusteredPostOffice.this.getOfficeName());
+      StringBuffer sb = new StringBuffer("\n");
 
-      // JGroups will make sure this method is never called by more than one thread concurrently
-
-      View oldView = currentView;
-      currentView = newView;
-
-      try
+      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
       {
-         verifyMembership(oldView, newView);
-         sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
+         Map.Entry entry = (Map.Entry)i.next();
+         Integer nodeID = (Integer)entry.getKey();
+         PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
+         sb.append("             ").append("nodeID ").append(nodeID).append(" - ").append(info).append("\n");
       }
-      catch (Throwable e)
-      {
-         log.error("Caught Exception in MembershipListener", e);
-         IllegalStateException e2 = new IllegalStateException(e.getMessage());
-         e2.setStackTrace(e.getStackTrace());
-         throw e2;
-      }
+      return sb.toString();
    }
+
+   private String dumpFailoverMap(Map map)
+   {
+      StringBuffer sb = new StringBuffer("\n");
+
+      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         Integer primary = (Integer)entry.getKey();
+         Integer secondary = (Integer)entry.getValue();
+         sb.append("             ").append(primary).append("->").append(secondary).append("\n");
+      }
+      return sb.toString();
+   }
+
 
    // Inner classes -------------------------------------------------------------------
 
@@ -2416,8 +2327,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          }
          try
          {
-            // TODO: Make it trace
-            log.info("getState:" + DefaultClusteredPostOffice.this.getOfficeName());
+            if (trace) { log.trace(this + " got state"); }
             return getStateAsBytes();
          }
          catch (Exception e)
@@ -2451,9 +2361,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             }
             try
             {
-               // TODO: Make it trace
-               log.info("setState:" + DefaultClusteredPostOffice.this.getOfficeName());
                processStateBytes(bytes);
+               if (trace) { log.trace(this + " has set state"); }
             }
             catch (Exception e)
             {
@@ -2526,7 +2435,50 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       public void run()
       {
-         handleViewAccepted(newView);
+         //TODO: (by Clebert) Most JBoss Services use info on viewAccepted,
+         //TODO:     can't we do the same since this is pretty useful?
+         log.info(DefaultClusteredPostOffice.this  + " got new view: " + newView);
+
+         // JGroups will make sure this method is never called by more than one thread concurrently
+
+         View oldView = currentView;
+         currentView = newView;
+
+         try
+         {
+            // Act on membership change, on both cases when an old member left or a new member joined
+
+            if (oldView != null)
+            {
+               for (Iterator i = oldView.getMembers().iterator(); i.hasNext(); )
+               {
+                  Address address = (Address)i.next();
+                  if (!newView.containsMember(address))
+                  {
+                     // this is where the failover happens, if necessary
+                     nodeLeft(address);
+                  }
+               }
+            }
+
+            for (Iterator i = newView.getMembers().iterator(); i.hasNext(); )
+            {
+               Address address = (Address)i.next();
+               if (oldView == null || !oldView.containsMember(address))
+               {
+                  nodeJoined(address);
+               }
+            }
+
+            sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
+         }
+         catch (Throwable e)
+         {
+            log.error("Caught Exception in MembershipListener", e);
+            IllegalStateException e2 = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
+         }
       }
    }
 
@@ -2558,14 +2510,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       public void receive(Message message)
       {
-         if (trace) { log.trace(currentNodeId + " received message " + message + " on async channel"); }
+         if (trace) { log.trace(this + " received " + message + " on the ASYNC channel"); }
 
          try
          {
             byte[] bytes = message.getBuffer();
 
             ClusterRequest request = readRequest(bytes);
-
             request.execute(DefaultClusteredPostOffice.this);
          }
          catch (Throwable e)
@@ -2590,7 +2541,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       public Object handle(Message message)
       {
-         if (trace) { log.info(currentNodeId + " received message " + message + " on sync channel"); }
+         if (trace) { log.trace(DefaultClusteredPostOffice.this + ".RequestHandler received " + message + " on the SYNC channel"); }
+
          try
          {
             byte[] bytes = message.getBuffer();
@@ -2611,37 +2563,23 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    /*
     * We use this class to respond to node address mappings being added or removed from the cluster
-    * and then recalculate the node->failover node mapping
-    *
+    * and then recalculate the node->failover node mapping.
     */
    private class NodeAddressMapListener implements ReplicationListener
    {
-
-      public void onReplicationChange(Serializable key, Map updatedReplicantMap, boolean added,
-                                      int originatorNodeId)
+      public void onReplicationChange(Serializable key, Map updatedReplicantMap,
+                                      boolean added, int originatorNodeId)
       {
          if (key instanceof String && ((String)key).equals(ADDRESS_INFO_KEY))
          {
-            log.info(currentNodeId + " got node address change");
+            log.debug("Cluster map:\n" + dumpClusterMap(updatedReplicantMap));
 
-            try
-            {
-               //DEBUG only
-               dumpNodeIdAddressMap(updatedReplicantMap);
-            }
-            catch (Exception ignore)
-            {
-            }
+            // A node-address mapping has been added/removed from global state, we need to update
+            // the failover map.
+            failoverMap = failoverMapper.generateMapping(updatedReplicantMap.keySet());
 
-            //A node-address mapping has been added/removed from global state-
-            //We need to update the failover map
-            generateFailoverMap(updatedReplicantMap);
+            log.debug("Failover map:\n" + dumpFailoverMap(failoverMap));
          }
       }
-
-      private void generateFailoverMap(Map nodeAddressMap)
-      {
-         failoverMap = failoverMapper.generateMapping(nodeAddressMap.keySet());
-      }      
    }
 }

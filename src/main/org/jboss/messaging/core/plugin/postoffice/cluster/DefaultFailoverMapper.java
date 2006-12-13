@@ -45,22 +45,21 @@ public class DefaultFailoverMapper implements FailoverMapper
 {
    private static final Logger log = Logger.getLogger(DefaultFailoverMapper.class);
 
-   /*
-    * Generate a mapping given a set of nodes - nodes will be sorted by the method
+   /**
+    * Generate a mapping given a set of nodes - nodes will be sorted by the method.
+    *
     * @see org.jboss.messaging.core.plugin.contract.FailoverMapper#generateMapping(java.util.Set)
     */
    public Map generateMapping(Set nodes)
    {
       Integer[] nodesArr = (Integer[])nodes.toArray(new Integer[nodes.size()]);
       
-      //First sort them so every node has a consistent view
+      // First sort them so every node has a consistent view
       Arrays.sort(nodesArr);
       
       int s = nodes.size();
       
-      log.info("Generating failover mapping, node size= "+ s);
-
-      //There is no need for the map to be linked
+      // There is no need for the map to be linked
       Map failoverNodes = new HashMap(s);
       
       for (int i = 0; i < s; i++)
@@ -74,7 +73,7 @@ public class DefaultFailoverMapper implements FailoverMapper
          
          failoverNodes.put(nodesArr[i], nodesArr[j]);
       }
-      
+
       return failoverNodes;
    }
 

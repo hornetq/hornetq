@@ -41,6 +41,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.Peer;
 public interface ClusteredPostOffice extends PostOffice, Peer
 {
    public static final String VIEW_CHANGED_NOTIFICATION = "VIEW_CHANGED";
+   public static final String FAILOVER_COMPLETED_NOTIFICATION = "FAILOVER_COMPLETED";
 
    /**
     * Bind a queue to the post office under a specific condition

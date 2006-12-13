@@ -24,7 +24,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -40,59 +39,81 @@ import java.util.Set;
  */
 public class FailoverStatus implements Serializable
 {
+   // Constants -----------------------------------------------------
+
    private static final long serialVersionUID = -2668162690753929133L;
 
-   //The set of nodes the server has completed failover for since it was last restarted
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // The set of nodes the server has completed failover for since it was last restarted
    private Set failedOverForNodes;
-   
-   //The node the server is currently failing over for (if any)
+
+   // The node the server is currently failing over for (if any)
    private int currentlyFailingOverForNode;
-   
-   //Is the server currently failing over?
+
+   // Is the server currently failing over?
    private boolean failingOver;
-   
+
+   // Constructors --------------------------------------------------
+
    public FailoverStatus()
-   {      
+   {
       failedOverForNodes = new LinkedHashSet();
    }
-   
-   public void startFailingOverForNode(int nodeId)
+
+   // Public --------------------------------------------------------
+
+   public void startFailingOverForNode(Integer nodeID)
    {
       if (failingOver)
       {
          throw new IllegalStateException("Already failing over for node " + currentlyFailingOverForNode);
       }
-      
-      currentlyFailingOverForNode = nodeId;
-      
+
+      currentlyFailingOverForNode = nodeID.intValue();
       failingOver = true;
    }
-   
+
    public void finishFailingOver()
    {
       if (!failingOver)
       {
          throw new IllegalStateException("The node is not currently failing over");
       }
-      
+
       failedOverForNodes.add(new Integer(currentlyFailingOverForNode));
-      
+
       failingOver = false;
    }
-   
+
    public Set getFailedOverForNodes()
    {
       return Collections.unmodifiableSet(failedOverForNodes);
    }
-   
+
    public boolean isFailedOverForNode(int nodeId)
    {
       return failedOverForNodes.contains(new Integer(nodeId));
    }
-   
+
    public boolean isFailingOverForNode(int nodeId)
    {
       return failingOver && currentlyFailingOverForNode == nodeId;
    }
-   
+
+   public String toString()
+   {
+      return "FailoverStatus[" + currentlyFailingOverForNode + "]";
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }

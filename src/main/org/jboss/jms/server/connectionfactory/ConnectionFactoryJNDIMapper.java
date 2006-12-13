@@ -67,6 +67,8 @@ public class ConnectionFactoryJNDIMapper
    private static final String CF_PREFIX = "CF_";
    
    // Attributes ----------------------------------------------------
+
+   private boolean trace = log.isTraceEnabled();
    
    protected Context initialContext;
    protected ServerPeer serverPeer;
@@ -109,8 +111,7 @@ public class ConnectionFactoryJNDIMapper
                                                       boolean clustered)
       throws Exception
    {
-      log.info("Registering connection factory with name " + uniqueName + " " + 
-               "bindings " + jndiBindings);
+      log.debug(this + " registering connection factory '" + uniqueName + "', bindings: " + jndiBindings);
       
       // Sanity check
       if (delegates.containsKey(uniqueName))
@@ -267,7 +268,6 @@ public class ConnectionFactoryJNDIMapper
    public synchronized void onReplicationChange(Serializable key, Map updatedReplicantMap,
                                                 boolean added, int originatingNodeId)
    {
-      log.info("Got replication call " + key + " node=" + serverPeer.getServerPeerID() + " replicants=" + updatedReplicantMap + " added=");
       try
       {         
          if (!(key instanceof String))
@@ -279,31 +279,26 @@ public class ConnectionFactoryJNDIMapper
 
          if (sKey.equals(DefaultClusteredPostOffice.ADDRESS_INFO_KEY))
          {
-           /* 
-            We respond to changes in the node-address mapping
-            This will be replicated whan a node joins / leaves the group
-            When this happens we need to recalculate the failoverMap
-            and rebind all connection factories with the new mapping
-            We cannot just reference a single map since the objects are bound in JNDI
-            in serialized form
-            */
-            log.info("responding to node - adress info change. Recalculating mapping and rebinding cfs");
-            
+            log.debug(this + " received address mapping change " + updatedReplicantMap);
+
+            // We respond to changes in the node-address mapping. This will be replicated whan a
+            // node joins / leaves the group. When this happens we need to recalculate the
+            // failoverMap and rebind all connection factories with the new mapping. We cannot just
+            // reference a single map since the objects are bound in JNDI in serialized form.
+
             recalculateFailoverMap(updatedReplicantMap);
             
-            //rebind
-            Iterator iter = endpoints.entrySet().iterator();
-            
-            while (iter.hasNext())
+            // Rebind
+
+            for(Iterator i = endpoints.entrySet().iterator(); i.hasNext(); )
             {
-               Map.Entry entry = (Map.Entry)iter.next();
-               
+               Map.Entry entry = (Map.Entry)i.next();
                String uniqueName = (String)entry.getKey();
-               
                ServerConnectionFactoryEndpoint endpoint =
                   (ServerConnectionFactoryEndpoint)entry.getValue();
                
-               ClusteredClientConnectionFactoryDelegate del = (ClusteredClientConnectionFactoryDelegate)delegates.get(uniqueName);
+               ClusteredClientConnectionFactoryDelegate del =
+                  (ClusteredClientConnectionFactoryDelegate)delegates.get(uniqueName);
                
                if (del == null)
                {
@@ -311,26 +306,23 @@ public class ConnectionFactoryJNDIMapper
                }
                
                del.setFailoverMap(failoverMap);
-               
                rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
             }
-            
          }
          else if (sKey.startsWith(CF_PREFIX) && originatingNodeId != serverPeer.getServerPeerID())
          {
-            /*
-            A connection factory has been deployed / undeployed - we need to update the local delegate arrays inside the clustered
-            connection factories with the same name
-            We don't recalculate the failover map since the number of nodes in the group hasn't changed
-            We also ignore any local changes since the cf will already be bound locally with the new
-            local delegate in the array
-            */
-            
+            // A connection factory has been deployed / undeployed - we need to update the local
+            // delegate arrays inside the clustered connection factories with the same name. We
+            // don't recalculate the failover map since the number of nodes in the group hasn't
+            // changed. We also ignore any local changes since the cf will already be bound locally
+            // with the new local delegate in the array
+
             String uniqueName = sKey.substring(CF_PREFIX.length());
-            
-            log.info("Connection factory with unique name " + uniqueName + " has been added / removed");
-            
-            ClusteredClientConnectionFactoryDelegate del = (ClusteredClientConnectionFactoryDelegate)delegates.get(uniqueName);
+
+            log.debug(this + " received '" + uniqueName + "' connection factory update " + updatedReplicantMap);
+
+            ClusteredClientConnectionFactoryDelegate del =
+               (ClusteredClientConnectionFactoryDelegate)delegates.get(uniqueName);
             
             if (del == null)
             {
@@ -338,10 +330,9 @@ public class ConnectionFactoryJNDIMapper
             }
             
             ClientConnectionFactoryDelegate[] delArr = 
-               (ClientConnectionFactoryDelegate[])updatedReplicantMap.values().toArray(new ClientConnectionFactoryDelegate[updatedReplicantMap.size()]);
+               (ClientConnectionFactoryDelegate[])updatedReplicantMap.values().
+                  toArray(new ClientConnectionFactoryDelegate[updatedReplicantMap.size()]);
 
-            log.info("Updating delsArr with size " + delArr.length);
-            
             del.setDelegates(delArr);
             
             ServerConnectionFactoryEndpoint endpoint =
@@ -353,8 +344,7 @@ public class ConnectionFactoryJNDIMapper
             }
             
             rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
-            
-         }            
+         }
       }
       catch (Exception e)
       {
@@ -369,6 +359,11 @@ public class ConnectionFactoryJNDIMapper
       this.replicator = replicator;
       
       replicator.registerListener(this);
+   }
+
+   public String toString()
+   {
+      return "Server[" + serverPeer.getServerPeerID() + "].ConnFactoryJNDIMapper";
    }
    
    // Package protected ---------------------------------------------
@@ -385,22 +380,22 @@ public class ConnectionFactoryJNDIMapper
    private void recalculateFailoverMap(Map nodeAddressMap) throws Exception
    {     
       FailoverMapper mapper = replicator.getFailoverMapper();
-      
       failoverMap = mapper.generateMapping(nodeAddressMap.keySet());
    }
    
    /**
     * @param localDelegates - Map<Integer(nodeId) - ClientConnectionFactoryDelegate>
     */
-   private ClusteredClientConnectionFactoryDelegate createClusteredDelegate(Map localDelegates) throws Exception
+   private ClusteredClientConnectionFactoryDelegate createClusteredDelegate(Map localDelegates)
+      throws Exception
    {
-      //TODO: make it trace after the code is stable
-      log.info("Updating FailoverDelegates " + localDelegates.size() + " on serverPeer:" + serverPeer.getServerPeerID());
+      if (trace) { log.trace(this + " updating failover delegates, map size " + localDelegates.size()); }
 
       ClientConnectionFactoryDelegate[] delArr = 
-         (ClientConnectionFactoryDelegate[])localDelegates.values().toArray(new ClientConnectionFactoryDelegate[localDelegates.size()]);
+         (ClientConnectionFactoryDelegate[])localDelegates.values().
+            toArray(new ClientConnectionFactoryDelegate[localDelegates.size()]);
 
-      //If the map is not cached - generate it now
+      // If the map is not cached - generate it now
       
       if (failoverMap == null)
       {
@@ -414,12 +409,13 @@ public class ConnectionFactoryJNDIMapper
          recalculateFailoverMap(nodeAddressMap);
       }
 
-      // The main delegated is needed for the construction of ClusteredClientConnectionFactoryDelegate
-      // ClusteredClientConnectionFactoryDelegate extends ClientConnectionFactoryDelegate and it will
-      // need the current server's delegate properties to be bound to ObjectId, ServerLocator and
-      // other connection properties.
-      //
-      // The ClusteredCFDelegate will copy these properties on its contructor defined bellow after this loop
+      // The main delegated is needed for the construction of
+      // ClusteredClientConnectionFactoryDelegate. ClusteredClientConnectionFactoryDelegate extends
+      // ClientConnectionFactoryDelegate and it will need the current server's delegate properties
+      // to be bound to ObjectId, ServerLocator and other connection properties.
+      // The ClusteredCFDelegate will copy these properties on its contructor defined bellow after
+      // this loop.
+
       ClientConnectionFactoryDelegate mainDelegate = null;
       
       for(Iterator i = localDelegates.values().iterator(); i.hasNext();)
@@ -431,7 +427,8 @@ public class ConnectionFactoryJNDIMapper
              // sanity check
              if (mainDelegate != null)
              {
-                throw new IllegalStateException("There are two servers with serverID=" + this.serverPeer.getServerPeerID() + ", verify your clustering configuration");
+                throw new IllegalStateException("There are two servers with serverID=" +
+                   this.serverPeer.getServerPeerID() + ", verify your clustering configuration");
              }
              mainDelegate = del;
           }
@@ -453,7 +450,7 @@ public class ConnectionFactoryJNDIMapper
          for(Iterator i = jndiNames.iterator(); i.hasNext(); )
          {
             String jndiName = (String)i.next();
-            log.info("Rebinding " + jndiName + " CF=" + cf );
+            log.debug(this + " rebinding " + cf + " as " + jndiName);
             JNDIUtil.rebind(ic, jndiName, cf);
          }
       }

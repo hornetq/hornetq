@@ -118,7 +118,17 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
 
    public String toString()
    {
-      return "ClusteredClientConnectionFactoryDelegate[" + id + "] with delegates.length = " + (delegates==null?"null":Integer.toString(delegates.length));
+      StringBuffer sb = new StringBuffer("ClusteredConnFactoryDelegate[ID=");
+      sb.append(id).append("][");
+      if (delegates == null)
+      {
+         sb.append("0]");
+      }
+      else
+      {
+         sb.append(delegates.length).append("]");
+      }
+      return sb.toString();
    }
 
    // Package protected ---------------------------------------------

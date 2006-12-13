@@ -294,7 +294,7 @@ public class ClientConnectionFactoryDelegate
 
    public String toString()
    {
-      return "ClientConnectionFactoryDelegate[" + id + "]";
+      return "ClientConnectionFactoryDelegate[ID=" + id + "]";
    }
    
    public String getServerLocatorURI()

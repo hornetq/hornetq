@@ -56,7 +56,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public static final String RMI_SERVER_PREFIX = "messaging_rmi_server_";
    public static final String NAMING_SERVER_PREFIX = "naming_rmi_server_";
 
-   public static final int DEFAULT_REGISTRY_PORT = 22555;
+   public static final int DEFAULT_REGISTRY_PORT = 33777;
    public static final int DEFAULT_SERVER_INDEX = 0;
    public static final String DEFAULT_SERVER_HOST = "localhost";
 

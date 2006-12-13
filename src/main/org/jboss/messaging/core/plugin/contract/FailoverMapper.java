@@ -37,5 +37,8 @@ import java.util.Set;
  */
 public interface FailoverMapper
 {
+   /**
+    * @param nodes Set<Integer>.
+    */
    Map generateMapping(Set nodes);
 }

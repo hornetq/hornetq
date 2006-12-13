@@ -756,8 +756,6 @@ public class ServerPeer extends ServiceMBeanSupport
             //TODO we shouldn't have a dependency on DefaultClusteredPostOffice - where should we put the constants?
             Map replicants = replicator.get(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY);
             
-            log.info("Got replicants");
-            
             boolean foundEntry = false;
                         
             if (replicants != null)
@@ -1099,14 +1097,15 @@ public class ServerPeer extends ServiceMBeanSupport
    
    private class FailoverListener implements ReplicationListener
    {
-      public void onReplicationChange(Serializable key, Map updatedReplicantMap, boolean added, int originatingNodeId)
+      public void onReplicationChange(Serializable key, Map updatedReplicantMap,
+                                      boolean added, int originatingNodeId)
       {
          if (key.equals(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY))
          {
-            //We have a failover status change - notify anyone waiting
-            
-            log.info("Got replication change on failed over map, notifying those waiting on lock");
-            
+            // We have a failover status change - notify anyone waiting
+
+            log.debug(ServerPeer.this + ".FailoverListener got failover event, notifying those waiting on lock");
+
             synchronized (failoverStatusLock)
             {
                failoverStatusLock.notifyAll();

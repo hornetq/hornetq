@@ -308,6 +308,34 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="jboss-common-jdbc-wrapper">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/tests/lib/jboss-common-jdbc-wrapper.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jboss-jca">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/tests/lib/jboss-jca.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jboss-local-jdbc">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/tests/lib/jboss-local-jdbc.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="jms-ra">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/tests/lib/jms-ra.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
   <component name="uidesigner-configuration">
     <option name="INSTRUMENT_CLASSES" value="true" />

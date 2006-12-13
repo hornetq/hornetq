@@ -41,6 +41,10 @@
     <orderEntry type="library" name="jgroups" level="project" />
     <orderEntry type="library" name="junit" level="project" />
     <orderEntry type="library" name="jboss-system" level="project" />
+    <orderEntry type="library" name="jboss-common-jdbc-wrapper" level="project" />
+    <orderEntry type="library" name="jboss-jca" level="project" />
+    <orderEntry type="library" name="jboss-local-jdbc" level="project" />
+    <orderEntry type="library" name="jms-ra" level="project" />
     <orderEntryProperties />
   </component>
   <component name="VcsManagerConfiguration">

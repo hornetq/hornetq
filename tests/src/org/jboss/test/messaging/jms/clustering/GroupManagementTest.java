@@ -59,7 +59,7 @@ public class GroupManagementTest extends MessagingTestCase
 
    public void testJoinNotification() throws Exception
    {
-      ViewChangeNotificationListener listener = new ViewChangeNotificationListener();
+      ClusterEventNotificationListener listener = new ClusterEventNotificationListener();
       ObjectName postOfficeObjectName = new ObjectName("jboss.messaging:service=PostOffice");
 
       try
@@ -257,7 +257,7 @@ public class GroupManagementTest extends MessagingTestCase
 
    public void testDirtyLeaveOneNode() throws Exception
    {
-      ViewChangeNotificationListener viewChange = new ViewChangeNotificationListener();
+      ClusterEventNotificationListener clusterEvent = new ClusterEventNotificationListener();
       ObjectName postOfficeObjectName = new ObjectName("jboss.messaging:service=PostOffice");
 
       try
@@ -273,7 +273,7 @@ public class GroupManagementTest extends MessagingTestCase
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
 
-         ServerManagement.addNotificationListener(0, postOfficeObjectName, viewChange);
+         ServerManagement.addNotificationListener(0, postOfficeObjectName, clusterEvent);
 
          // Make node 1 to "dirty" leave the cluster, by killing the VM running it.
 
@@ -285,7 +285,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Wait for membership change notification
 
-         if (!viewChange.viewChanged(120000))
+         if (!clusterEvent.viewChanged(120000))
          {
             fail("Did not receive view change after killing server 2!");
          }
@@ -297,7 +297,7 @@ public class GroupManagementTest extends MessagingTestCase
       }
       finally
       {
-         ServerManagement.removeNotificationListener(0, postOfficeObjectName, viewChange);
+         ServerManagement.removeNotificationListener(0, postOfficeObjectName, clusterEvent);
 
          ServerManagement.stop(1);
          ServerManagement.stop(0);
@@ -306,7 +306,7 @@ public class GroupManagementTest extends MessagingTestCase
 
    public void testDirtyLeaveTwoNodes() throws Exception
    {
-      ViewChangeNotificationListener viewChange = new ViewChangeNotificationListener();
+      ClusterEventNotificationListener clusterEvent = new ClusterEventNotificationListener();
       ObjectName postOfficeObjectName = new ObjectName("jboss.messaging:service=PostOffice");
 
       try
@@ -324,7 +324,7 @@ public class GroupManagementTest extends MessagingTestCase
          assertTrue(view.contains(new Integer(1)));
          assertTrue(view.contains(new Integer(2)));
 
-         ServerManagement.addNotificationListener(0, postOfficeObjectName, viewChange);
+         ServerManagement.addNotificationListener(0, postOfficeObjectName, clusterEvent);
 
          // Make node 2 to "dirty" leave the cluster, by killing the VM running it.
 
@@ -334,12 +334,14 @@ public class GroupManagementTest extends MessagingTestCase
          log.info("######## KILLED 2");
          log.info("########");
 
-         // Wait for membership change notification
+         // Wait for FAILOVER_COMPLETED notification
 
-         if (!viewChange.viewChanged(120000))
+         if (!clusterEvent.failoverCompleted(120000))
          {
-            fail("Did not receive view change after killing server 2!");
+            fail("Did not receive a FAILOVER_COMPLETED event after killing server 2!");
          }
+
+         log.info("received FAILOVER_COMPLETED");
 
          view = ServerManagement.getServer(1).getNodeIDView();
 
@@ -355,12 +357,14 @@ public class GroupManagementTest extends MessagingTestCase
          log.info("######## KILLED 1");
          log.info("########");
 
-         // Wait for membership change notification
+         // Wait for FAILOVER_COMPLETED notification
 
-         if (!viewChange.viewChanged(120000))
+         if (!clusterEvent.failoverCompleted(120000))
          {
-            fail("Did not receive view change after killing server 1!");
+            fail("Did not receive a FAILOVER_COMPLETED event after killing server 1!");
          }
+
+         log.info("received FAILOVER_COMPLETED");
 
          view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -370,7 +374,7 @@ public class GroupManagementTest extends MessagingTestCase
       }
       finally
       {
-         ServerManagement.removeNotificationListener(0, postOfficeObjectName, viewChange);
+         ServerManagement.removeNotificationListener(0, postOfficeObjectName, clusterEvent);
 
          ServerManagement.stop(2);
          ServerManagement.stop(1);
@@ -398,45 +402,71 @@ public class GroupManagementTest extends MessagingTestCase
 
    // Inner classes -------------------------------------------------
 
-   private class ViewChangeNotificationListener implements NotificationListener
+   private class ClusterEventNotificationListener implements NotificationListener
    {
-      private Slot slot;
+      private Slot viewChange;
+      private Slot failoverCompleted;
 
-      ViewChangeNotificationListener()
+      ClusterEventNotificationListener()
       {
-         slot = new Slot();
+         viewChange = new Slot();
+         failoverCompleted = new Slot();
       }
 
       public void handleNotification(Notification notification, Object object)
       {
+         String type = notification.getType();
 
-         if (!ClusteredPostOffice.VIEW_CHANGED_NOTIFICATION.equals(notification.getType()))
+         log.info("received " + type + " notification");
+
+         if (ClusteredPostOffice.VIEW_CHANGED_NOTIFICATION.equals(type))
          {
-            // ignore it
-            return;
+            try
+            {
+               viewChange.put(Boolean.TRUE);
+            }
+            catch(InterruptedException e)
+            {
+               log.error(e);
+            }
          }
-
-         log.info("received VIEW_CHANGED notification");
-
-         try
+         else if (ClusteredPostOffice.FAILOVER_COMPLETED_NOTIFICATION.equals(type))
          {
-            slot.put(Boolean.TRUE);
+            try
+            {
+               failoverCompleted.put(Boolean.TRUE);
+            }
+            catch(InterruptedException e)
+            {
+               log.error(e);
+            }
          }
-         catch(InterruptedException e)
+         else
          {
-            log.error(e);
+            log.info("Ignoring notification " + type);
          }
       }
 
       public boolean viewChanged(long timeout) throws InterruptedException
       {
-         Boolean result = (Boolean)slot.poll(timeout);
+         Boolean result = (Boolean)viewChange.poll(timeout);
          if (result == null)
          {
             return false;
          }
          return result.booleanValue();
       }
+
+      public boolean failoverCompleted(long timeout) throws InterruptedException
+      {
+         Boolean result = (Boolean)failoverCompleted.poll(timeout);
+         if (result == null)
+         {
+            return false;
+         }
+         return result.booleanValue();
+      }
+
    }
 
 }

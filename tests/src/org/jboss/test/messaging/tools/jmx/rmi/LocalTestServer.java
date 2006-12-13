@@ -136,7 +136,7 @@ public class LocalTestServer implements Server
 
          startServerPeer(serverIndex, null, null, sc.isClustered());
 
-         log.info("server started");
+         log.info("Server " + serverIndex + " started");
       }
       finally
       {
