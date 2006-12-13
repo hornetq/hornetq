@@ -158,7 +158,6 @@ public class ClusteringTestBase extends MessagingTestCase
    private void drainQueues() throws Exception
    {
       Connection[] conn = new Connection[nodeCount];
-      int[] serverID = new int[nodeCount];
 
       try
       {
@@ -185,7 +184,10 @@ public class ClusteringTestBase extends MessagingTestCase
             do
             {
                msg = c.receive(1000);
-               log.info("Drained message " + msg + " on node " + i);
+               if (msg != null)
+               {
+                  log.info("Drained message " + msg + " on node " + i);
+               }
             }
             while (msg != null);
          }
