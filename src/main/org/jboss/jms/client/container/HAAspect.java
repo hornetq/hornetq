@@ -53,6 +53,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.util.Valve;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
@@ -69,6 +70,8 @@ import org.jboss.remoting.ConnectionListener;
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
+ *
+ * TODO: Make some log.info as log.trace after the code is final
  *
  */
 public class HAAspect
@@ -576,10 +579,12 @@ public class HAAspect
    private class Listener implements ConnectionListener
    {
       private ClientConnectionDelegate connection;
+      private Valve valve;
       
       Listener(ClientConnectionDelegate connection)
       {
          this.connection = connection;
+         this.valve = new Valve();
          
          log.info("************* CREATING LISTENER");
       }
@@ -589,8 +594,39 @@ public class HAAspect
          try
          {
             log.info("********* EXCEPTION DETECTED", throwable);
-            
-            handleFailure(connection);
+
+            // it references Valve to a local variable.
+            // Since we reset the valve at the end, we need to guarantee we will have the same Valve instance
+            // from the moment we enter this method.
+            Valve localValve = null;
+            synchronized (this)
+            {
+               localValve = valve;
+            }
+
+            // We can't have more than one exception being caught at the same time.
+            // On that case we will open the valve and any other thread opening the valve
+            // will wait until its completion
+            if (localValve.open())
+            {
+               try
+               {
+                  log.info("********* HANDLING FAILOVER");
+                  handleFailure(connection);
+               }
+               finally
+               {
+                  localValve.close();
+                  synchronized (this)
+                  {
+                     valve = new Valve();
+                  }
+               }
+            }
+            else
+            {
+               log.info("********* ANOTHER THREAD WAS RESPONSIBLE FOR FAILOVER AS THE VALVE WAS CLOSED");
+            }
          }
          catch (Throwable e)
          {
