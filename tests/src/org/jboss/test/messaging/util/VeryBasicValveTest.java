@@ -85,10 +85,10 @@ public class VeryBasicValveTest extends TestCase
                {
                   counter ++;
                }
+               valve.close();
             }
 
             //log.info("Thread " + threadId + " is now closing the valve");
-            valve.close();
 
          }
          catch (Exception e)
