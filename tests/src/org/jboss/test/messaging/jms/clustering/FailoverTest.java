@@ -82,9 +82,9 @@ public class FailoverTest extends ClusteringTestBase
          log.info("######## KILLED NODE 1");
          log.info("########");
 
-         // TODO - this shouldn't be necessary if we have the client valve in place         
+         // TODO - this shouldn't be necessary if we have the client valve in place
          log.info("Sleeping for 1 min");
-         Thread.sleep(60000);
+         Thread.sleep(30000);
 
          // we must receive the message
 

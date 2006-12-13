@@ -72,8 +72,7 @@ public class ClosedInterceptor implements Interceptor
    private int inUseCount;
 
    // The identity of the delegate this interceptor is associated with
-   private Integer id;
-   private String delegateType;
+   private DelegateIdentity id;
 
    // Static --------------------------------------------------------
 
@@ -106,7 +105,7 @@ public class ClosedInterceptor implements Interceptor
       }
       else
       {
-         sb.append(delegateType).append("[").append(id.intValue()).append("]");
+         sb.append(id.getType()).append("[").append(id.getID()).append("]");
       }
       return sb.toString();
    }
@@ -129,7 +128,7 @@ public class ClosedInterceptor implements Interceptor
       // logging purposes. It makes sense, since it's an PER_INSTANCE interceptor
       if (id == null)
       {
-         getIdentity(invocation);
+         id = DelegateIdentity.getIdentity(invocation);
       }
 
       String methodName = ((MethodInvocation) invocation).getMethod().getName();
@@ -318,14 +317,6 @@ public class ClosedInterceptor implements Interceptor
    // Package Private ------------------------------------------------
 
    // Private --------------------------------------------------------
-
-   private void getIdentity(Invocation i)
-   {
-      DelegateSupport ds = (DelegateSupport)i.getTargetObject();
-      id = new Integer(ds.getID());
-      delegateType = ds.getClass().getName();
-      delegateType = delegateType.substring(delegateType.lastIndexOf('.') + 1);
-   }
 
    // Inner Classes --------------------------------------------------
 
