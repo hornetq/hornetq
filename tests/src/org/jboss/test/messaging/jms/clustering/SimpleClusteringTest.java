@@ -101,11 +101,6 @@ public class SimpleClusteringTest extends ClusteringTestBase
 
    }
    
-//   public void testKill() throws Exception
-//   {
-//      ServerManagement.getServer(0).kill();
-//   }
-
    public void testDistributedTopic() throws Exception
    {
       Connection conn = null;
@@ -126,15 +121,15 @@ public class SimpleClusteringTest extends ClusteringTestBase
          SimpleMessageListener ml1 = new SimpleMessageListener();
          SimpleMessageListener ml2 = new SimpleMessageListener();
 
-         s.createConsumer(topic0).setMessageListener(ml);
-         s1.createConsumer(topic0).setMessageListener(ml1);
-         s2.createConsumer(topic0).setMessageListener(ml2);
+         s.createConsumer(topic[0]).setMessageListener(ml);
+         s1.createConsumer(topic[0]).setMessageListener(ml1);
+         s2.createConsumer(topic[0]).setMessageListener(ml2);
 
          conn.start();
          conn1.start();
          conn2.start();
 
-         s.createProducer(topic0).send(s.createTextMessage("boom"));
+         s.createProducer(topic[0]).send(s.createTextMessage("boom"));
 
          TextMessage rm = null;
 
@@ -163,9 +158,7 @@ public class SimpleClusteringTest extends ClusteringTestBase
          {
             conn2.close();
          }
-
       }
-
    }
 
    // Package protected ---------------------------------------------
@@ -174,6 +167,8 @@ public class SimpleClusteringTest extends ClusteringTestBase
 
    protected void setUp() throws Exception
    {
+      nodeCount = 3;
+
       super.setUp();
 
       log.debug("setup done");

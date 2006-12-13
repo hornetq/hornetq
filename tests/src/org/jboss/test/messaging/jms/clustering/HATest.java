@@ -77,7 +77,7 @@ public class HATest extends ClusteringTestBase
     */
    public void testRoundRobinConnectionCreation() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
       
       ClusteredClientConnectionFactoryDelegate delegate =
          (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
@@ -200,7 +200,7 @@ public class HATest extends ClusteringTestBase
    public void testDefaultFailoverMap() throws Exception
    {     
       {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
          
          ClusteredClientConnectionFactoryDelegate delegate =
             (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
@@ -259,7 +259,7 @@ public class HATest extends ClusteringTestBase
       {         
          //Lookup another connection factory
          
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic1.lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ConnectionFactory");
          
          log.info("Got connection factory");
          
@@ -307,7 +307,7 @@ public class HATest extends ClusteringTestBase
       {         
          //Lookup another connection factory
          
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic2.lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[2].lookup("/ConnectionFactory");
          
          ClusteredClientConnectionFactoryDelegate delegate =
             (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
@@ -333,7 +333,7 @@ public class HATest extends ClusteringTestBase
       ServerManagement.start("all", 0);
       
       {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
          
          log.info("Got connection factory");
          
@@ -374,7 +374,7 @@ public class HATest extends ClusteringTestBase
       ServerManagement.start("all", 1);
       
       {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic1.lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ConnectionFactory");
          
          log.info("Got connection factory");
          
@@ -420,7 +420,7 @@ public class HATest extends ClusteringTestBase
    
    public void testSimpleFailover() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
       
       ClusteredClientConnectionFactoryDelegate delegate =
          (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
@@ -484,9 +484,9 @@ public class HATest extends ClusteringTestBase
                            
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue1);
+         MessageProducer prod = sess.createProducer(queue[1]);
          
-         MessageConsumer cons = sess.createConsumer(queue1);
+         MessageConsumer cons = sess.createConsumer(queue[1]);
          
          final int NUM_MESSAGES = 100;
          
@@ -497,7 +497,7 @@ public class HATest extends ClusteringTestBase
             prod.send(tm);
          }
          
-         //So now, messages should be in queue1 on server 1
+         //So now, messages should be in queue[1] on server 1
          //So we now kill server 1
          //Which should cause transparent failover of connection conn onto server 1
          
@@ -555,7 +555,7 @@ public class HATest extends ClusteringTestBase
    
    public void testFailoverWithUnackedMessagesClientAcknowledge() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
       
       ClusteredClientConnectionFactoryDelegate delegate =
          (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
@@ -618,9 +618,9 @@ public class HATest extends ClusteringTestBase
                            
          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue1);
+         MessageProducer prod = sess.createProducer(queue[1]);
          
-         MessageConsumer cons = sess.createConsumer(queue1);
+         MessageConsumer cons = sess.createConsumer(queue[1]);
          
          final int NUM_MESSAGES = 100;
          
@@ -645,7 +645,7 @@ public class HATest extends ClusteringTestBase
             assertEquals("message:" + i, tm.getText());
          }
          
-         //So now, messages should be in queue1 on server 1
+         //So now, messages should be in queue[1] on server 1
          //So we now kill server 1
          //Which should cause transparent failover of connection conn onto server 1
          
@@ -699,7 +699,7 @@ public class HATest extends ClusteringTestBase
          
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         cons = sess.createConsumer(queue1);
+         cons = sess.createConsumer(queue[1]);
          
          Message m = cons.receive(500);
          
@@ -726,7 +726,7 @@ public class HATest extends ClusteringTestBase
    
    public void testFailoverWithUnackedMessagesTransactional() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
       
       ClusteredClientConnectionFactoryDelegate delegate =
          (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
@@ -789,9 +789,9 @@ public class HATest extends ClusteringTestBase
                            
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
          
-         MessageProducer prod = sess.createProducer(queue1);
+         MessageProducer prod = sess.createProducer(queue[1]);
          
-         MessageConsumer cons = sess.createConsumer(queue1);
+         MessageConsumer cons = sess.createConsumer(queue[1]);
          
          final int NUM_MESSAGES = 100;
          
@@ -818,7 +818,7 @@ public class HATest extends ClusteringTestBase
             assertEquals("message:" + i, tm.getText());
          }
          
-         //So now, messages should be in queue1 on server 1
+         //So now, messages should be in queue[1] on server 1
          //So we now kill server 1
          //Which should cause transparent failover of connection conn onto server 1
          
@@ -872,7 +872,7 @@ public class HATest extends ClusteringTestBase
          
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         cons = sess.createConsumer(queue1);
+         cons = sess.createConsumer(queue[1]);
          
          Message m = cons.receive(500);
          
@@ -902,7 +902,7 @@ public class HATest extends ClusteringTestBase
    
 //   public void testEvenSimplerFailover() throws Exception
 //   {
-//      JBossConnectionFactory factory =  (JBossConnectionFactory )ic0.lookup("/ConnectionFactory");
+//      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
 //                  
 //      Connection conn = null;
 //      
@@ -942,7 +942,7 @@ public class HATest extends ClusteringTestBase
 // {
 // try
 // {
-// JBossConnectionFactory factory =  (JBossConnectionFactory )ic2.lookup("/ConnectionFactory");
+// JBossConnectionFactory factory =  (JBossConnectionFactory )ic[2].lookup("/ConnectionFactory");
 // ClusteredClientConnectionFactoryDelegate delegate =
 // (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
 // log.info ("number of delegates = " + delegate.getDelegates().length);
@@ -971,7 +971,7 @@ public class HATest extends ClusteringTestBase
 // 
 // ServerManagement.log(ServerManagement.INFO,"##### Looking up ConnectionFactory at testConnectionFactoryConnect");
 // 
-// factory =  (JBossConnectionFactory )ic2.lookup("/ConnectionFactory");
+// factory =  (JBossConnectionFactory )ic[2].lookup("/ConnectionFactory");
 // delegate = (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
 // 
 // assertEquals(2, ServerManagement.getServer(0).getNumberOfNodesOnCluster());
@@ -997,7 +997,7 @@ public class HATest extends ClusteringTestBase
 // assertTrue(jbcf1.getDelegate() instanceof ClusteredClientConnectionFactoryDelegate);
 // 
 // log.info(">>Lookup Queue");
-// Destination destination = (Destination) ic2.lookup("topic/testDistributedTopic");
+// Destination destination = (Destination) ic[2].lookup("topic/testDistributedTopic");
 // 
 // log.info("Creating connection server1");
 // JBossConnection conn = (JBossConnection) cf.createConnection();
@@ -1083,7 +1083,7 @@ public class HATest extends ClusteringTestBase
 // log.info("++testTopicSubscriber");
 // 
 // log.info(">>Lookup Queue");
-// Destination destination = (Destination) ic1.lookup("queue/testDistributedQueue");
+// Destination destination = (Destination) ic[1].lookup("queue/testDistributedQueue");
 // 
 // log.info("Creating connection server1");
 // JBossConnection conn = (JBossConnection) cf1.createConnection();
@@ -1175,7 +1175,11 @@ public class HATest extends ClusteringTestBase
    
    protected void setUp() throws Exception
    {
+      nodeCount = 3;
+
       super.setUp();
+
+      log.debug("setup done");
    }
    
    protected void tearDown() throws Exception

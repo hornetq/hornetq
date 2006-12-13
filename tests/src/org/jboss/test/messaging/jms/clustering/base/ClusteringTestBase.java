@@ -40,6 +40,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 /**
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision:$</tt>
  * $Id:$
  */
@@ -51,20 +52,15 @@ public class ClusteringTestBase extends MessagingTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected Context ic0;
-   protected Context ic1;
-   protected Context ic2;
+   protected int nodeCount;
 
-   protected Queue queue0;
-   protected Queue queue1;
-   protected Queue queue2;
+   protected Context[] ic;
+   protected Queue queue[];
+   protected Topic topic[];
 
-   protected Topic topic0;
-   protected Topic topic1;
-   protected Topic topic2;
-   
-   //No need to have 3 conncetion factories since a clustered connection factory
-   //will create connections in a round robin fashion on different servers
+   // No need to have multiple conncetion factories since a clustered connection factory will create
+   // connections in a round robin fashion on different servers.
+
    protected ConnectionFactory cf;
 
    // Constructors --------------------------------------------------
@@ -84,181 +80,126 @@ public class ClusteringTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      String banner =
-         "####################################################### Start " +
-         (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
-
-      ServerManagement.log(ServerManagement.INFO,banner);
-
-      try
+      if (nodeCount < 1)
       {
-         startServer(0);
-         startServer(1);
-         startServer(2);
-
-         log.info("Deployed destinations ok");
-
-         ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
-         ic1 = new InitialContext(ServerManagement.getJNDIEnvironment(1));
-         ic2 = new InitialContext(ServerManagement.getJNDIEnvironment(2));
-
-         //We only need to lookup one connection factory since it will be a clustered cf
-         //so we will actually create connections on different servers (round robin)
-         cf = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-
-         queue0 = (Queue)ic0.lookup("queue/testDistributedQueue");
-         queue1 = (Queue)ic1.lookup("queue/testDistributedQueue");
-         queue2 = (Queue)ic2.lookup("queue/testDistributedQueue");
-
-         topic0 = (Topic)ic0.lookup("topic/testDistributedTopic");
-         topic1 = (Topic)ic1.lookup("topic/testDistributedTopic");
-         topic2 = (Topic)ic2.lookup("topic/testDistributedTopic");
-
-         drainQueues();
+         throw new Exception("Node count not defined! Initalize nodeCount in the test's setUp()");
       }
-      catch (Exception e)
+
+      ic = new Context[nodeCount];
+      queue = new Queue[nodeCount];
+      topic = new Topic[nodeCount];
+
+      for(int i = 0; i < nodeCount; i++)
       {
-         e.printStackTrace();
-         throw e;
+         ServerManagement.start("all", i);
+         ServerManagement.deployClusteredQueue("testDistributedQueue", i);
+         ServerManagement.deployClusteredTopic("testDistributedTopic", i);
+
+         ic[i] = new InitialContext(ServerManagement.getJNDIEnvironment(i));
+         queue[i] = (Queue)ic[i].lookup("queue/testDistributedQueue");
+         topic[i] = (Topic)ic[i].lookup("topic/testDistributedTopic");
       }
+
+      // We only need to lookup one connection factory since it will be clustered so we will
+      // actually create connections on different servers (round robin).
+      cf = (ConnectionFactory)ic[0].lookup("/ConnectionFactory");
+
+      drainQueues();
    }
 
    protected void tearDown() throws Exception
    {
-      try
-      {                  
-         if (!ServerManagement.isKilled(0) && ServerManagement.getServer(0).isStarted())
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server 0", 0);
-            ServerManagement.undeployQueue("testDistributedQueue", 0);
-            ServerManagement.undeployTopic("testDistributedTopic", 0);
-         }
 
-         if (!ServerManagement.isKilled(1) && ServerManagement.getServer(1).isStarted())
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server 1", 1);
-            ServerManagement.undeployQueue("testDistributedQueue", 1);
-            ServerManagement.undeployTopic("testDistributedTopic", 1);
-         }
-
-         if (!ServerManagement.isKilled(2) && ServerManagement.getServer(2).isStarted())
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server 2", 2);
-            ServerManagement.undeployQueue("testDistributedQueue", 2);
-            ServerManagement.undeployTopic("testDistributedTopic", 2);
-         }
-
-         ic0.close();
-         ic1.close();
-         ic2.close();
-
-         super.tearDown();
-      }
-      catch (Exception e)
+      for(int i = 0; i < nodeCount; i++)
       {
-         e.printStackTrace();
-         throw e;
+         if (!ServerManagement.isKilled(i) && ServerManagement.getServer(i).isStarted())
+         {
+            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+            ServerManagement.undeployQueue("testDistributedQueue", i);
+            ServerManagement.undeployTopic("testDistributedTopic", i);
+         }
+
+         ic[i].close();
       }
+
+      super.tearDown();
    }
 
-   protected void checkConnectionsDifferentServers(Connection conn, Connection conn1, Connection conn2)
+   protected void checkConnectionsDifferentServers(Connection[] conn) throws Exception
    {
-      ConnectionState state0 =
-         (ConnectionState)(((DelegateSupport)((JBossConnection)conn).getDelegate()).getState());
-      ConnectionState state1 =
-         (ConnectionState)(((DelegateSupport)((JBossConnection)conn1).getDelegate()).getState());
-      ConnectionState state2 =
-         (ConnectionState)(((DelegateSupport)((JBossConnection)conn2).getDelegate()).getState());
-
-      int serverID0 = state0.getServerID();
-      int serverID1 = state1.getServerID();
-      int serverID2 = state2.getServerID();
-
-      log.info("Server 0 ID: " + serverID0);
-      log.info("Server 1 ID: " + serverID1);
-      log.info("Server 2 ID: " + serverID2);
-
-      assertTrue(serverID0 != serverID1);
-      assertTrue(serverID1 != serverID2);
-   }
-
-   protected void drainQueues() throws Exception
-   {
-      Connection conn0 = null;
-      Connection conn1 = null;
-      Connection conn2 = null;
-
-      try
+      int[] serverID = new int[conn.length];
+      for(int i = 0; i < conn.length; i++)
       {
-         //Since the cf is clustered, this will create connections on 3 different nodes
-         //(round robin)
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
-
-         checkConnectionsDifferentServers(conn0, conn1, conn2);
-
-         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageConsumer cons0 = sess0.createConsumer(queue0);
-         MessageConsumer cons1 = sess1.createConsumer(queue1);
-         MessageConsumer cons2 = sess2.createConsumer(queue2);
-
-         conn0.start();
-         conn1.start();
-         conn2.start();
-
-         Message msg = null;
-
-         do
-         {
-            msg = cons0.receive(1000);
-            log.info("1 Drained message " + msg);
-         }
-         while (msg != null);
-
-         do
-         {
-            msg = cons1.receive(1000);
-            log.info("2 Drained message " + msg);
-         }
-         while (msg != null);
-
-         do
-         {
-            msg = cons2.receive(1000);
-            log.info("3 Drained message " + msg);
-         }
-         while (msg != null);
+         ConnectionState state = (ConnectionState)(((DelegateSupport)((JBossConnection)conn[i]).
+            getDelegate()).getState());
+         serverID[i] = state.getServerID();
       }
-      finally
+
+      for(int i = 0; i < nodeCount; i++)
       {
-         if (conn0 != null)
+         for(int j = 0; j < nodeCount; j++)
          {
-            conn0.close();
-         }
+            if (i == j)
+            {
+               continue;
+            }
 
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-
-         if (conn2 != null)
-         {
-            conn2.close();
+            if (serverID[i] == serverID[j])
+            {
+               fail("Connections " + i + " and " + j +
+                  " are pointing to the same physical node (" + serverID[i] + ")");
+            }
          }
       }
    }
 
    // Private -------------------------------------------------------
 
-   private void startServer(int serverIndex) throws Exception
+   private void drainQueues() throws Exception
    {
-      ServerManagement.start("all", serverIndex);
-      ServerManagement.deployClusteredQueue("testDistributedQueue", serverIndex);
-      ServerManagement.deployClusteredTopic("testDistributedTopic", serverIndex);
+      Connection[] conn = new Connection[nodeCount];
+      int[] serverID = new int[nodeCount];
+
+      try
+      {
+         // TODO This is a dangerous hack, relying on an arbitrary distribution algorithm
+         // (round-robin in this case). If we want a connection to a specific node, we should be
+         // able to look up something like "/ConnectionFactory0"
+
+         for(int i = 0; i < nodeCount; i++)
+         {
+            conn[i] = cf.createConnection();
+         }
+
+         // Safety check, making sure we get connections to distinct nodes
+
+         checkConnectionsDifferentServers(conn);
+
+         for(int i = 0; i < nodeCount; i++)
+         {
+            Session s = conn[i].createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageConsumer c = s.createConsumer(queue[i]);
+            conn[i].start();
+
+            Message msg = null;
+            do
+            {
+               msg = c.receive(1000);
+               log.info("Drained message " + msg + " on node " + i);
+            }
+            while (msg != null);
+         }
+      }
+      finally
+      {
+         for(int i = 0; i < nodeCount; i++)
+         {
+            if (conn[i] != null)
+            {
+               conn[i].close();
+            }
+         }
+      }
    }
 
    // Inner classes -------------------------------------------------

@@ -126,14 +126,17 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
    protected void setUp() throws Exception
    {
+      nodeCount = 3;
+
       super.setUp();
+
+      log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
       super.tearDown();
    }
-  
 
    /*
     * Create a consumer on each queue on each node.
@@ -156,7 +159,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          
          log.info("Created connections");
          
-         checkConnectionsDifferentServers(conn1, conn2, conn3);
+         checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -164,9 +167,9 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          
          log.info("Created sessions");
 
-         MessageConsumer cons1 = sess1.createConsumer(queue0);
-         MessageConsumer cons2 = sess2.createConsumer(queue1);
-         MessageConsumer cons3 = sess3.createConsumer(queue2);
+         MessageConsumer cons1 = sess1.createConsumer(queue[0]);
+         MessageConsumer cons2 = sess2.createConsumer(queue[1]);
+         MessageConsumer cons3 = sess3.createConsumer(queue[2]);
          
          log.info("Created consumers");
 
@@ -176,7 +179,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 0
 
-         MessageProducer prod = sess1.createProducer(queue0);
+         MessageProducer prod = sess1.createProducer(queue[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -210,7 +213,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 1
 
-         MessageProducer prod1 = sess2.createProducer(queue1);
+         MessageProducer prod1 = sess2.createProducer(queue[1]);
 
          prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -240,7 +243,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 2
 
-         MessageProducer prod2 = sess3.createProducer(queue2);
+         MessageProducer prod2 = sess3.createProducer(queue[2]);
 
          prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -308,19 +311,19 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          
          log.info("Created connections");
          
-         checkConnectionsDifferentServers(conn1, conn2, conn3);
+         checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons1 = sess1.createConsumer(topic0);
-         MessageConsumer cons2 = sess2.createConsumer(topic1);
-         MessageConsumer cons3 = sess3.createConsumer(topic2);
+         MessageConsumer cons1 = sess1.createConsumer(topic[0]);
+         MessageConsumer cons2 = sess2.createConsumer(topic[1]);
+         MessageConsumer cons3 = sess3.createConsumer(topic[2]);
 
-         MessageConsumer cons4 = sess1.createConsumer(topic0);
+         MessageConsumer cons4 = sess1.createConsumer(topic[0]);
 
-         MessageConsumer cons5 = sess2.createConsumer(topic1);
+         MessageConsumer cons5 = sess2.createConsumer(topic[1]);
 
          conn1.start();
          conn2.start();
@@ -328,7 +331,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 0
 
-         MessageProducer prod = sess1.createProducer(topic0);
+         MessageProducer prod = sess1.createProducer(topic[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -426,19 +429,19 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          
          log.info("Created connections");
          
-         checkConnectionsDifferentServers(conn1, conn2, conn3);
+         checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons1 = sess1.createConsumer(topic0);
-         MessageConsumer cons2 = sess2.createConsumer(topic1);
-         MessageConsumer cons3 = sess3.createConsumer(topic2);
+         MessageConsumer cons1 = sess1.createConsumer(topic[0]);
+         MessageConsumer cons2 = sess2.createConsumer(topic[1]);
+         MessageConsumer cons3 = sess3.createConsumer(topic[2]);
 
-         MessageConsumer cons4 = sess1.createConsumer(topic0, "COLOUR='red'");
+         MessageConsumer cons4 = sess1.createConsumer(topic[0], "COLOUR='red'");
 
-         MessageConsumer cons5 = sess2.createConsumer(topic1, "COLOUR='blue'");
+         MessageConsumer cons5 = sess2.createConsumer(topic[1], "COLOUR='blue'");
 
          conn1.start();
          conn2.start();
@@ -446,7 +449,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 0
 
-         MessageProducer prod = sess1.createProducer(topic0);
+         MessageProducer prod = sess1.createProducer(topic[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -566,7 +569,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          
          log.info("Created connections");
          
-         checkConnectionsDifferentServers(conn1, conn2, conn3);
+         checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
 
          conn1.setClientID("wib1");
          conn2.setClientID("wib1");
@@ -602,11 +605,11 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          }
          catch (Exception ignore) {}
 
-         MessageConsumer cons1 = sess1.createDurableSubscriber(topic0, "sub");
-         MessageConsumer cons2 = sess2.createDurableSubscriber(topic1, "sub1");
-         MessageConsumer cons3 = sess3.createDurableSubscriber(topic2, "sub2");
-         MessageConsumer cons4 = sess1.createDurableSubscriber(topic0, "sub3");
-         MessageConsumer cons5 = sess2.createDurableSubscriber(topic1, "sub4");
+         MessageConsumer cons1 = sess1.createDurableSubscriber(topic[0], "sub");
+         MessageConsumer cons2 = sess2.createDurableSubscriber(topic[1], "sub1");
+         MessageConsumer cons3 = sess3.createDurableSubscriber(topic[2], "sub2");
+         MessageConsumer cons4 = sess1.createDurableSubscriber(topic[0], "sub3");
+         MessageConsumer cons5 = sess2.createDurableSubscriber(topic[1], "sub4");
 
          conn1.start();
          conn2.start();
@@ -614,7 +617,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 0
 
-         MessageProducer prod = sess1.createProducer(topic0);
+         MessageProducer prod = sess1.createProducer(topic[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -704,13 +707,10 @@ public class DistributedDestinationsTest extends ClusteringTestBase
       }
    }
 
-
-
-
    /*
     * Create shared durable subs on multiple nodes, the local instance should always get the message
     */
-   protected void clusteredTopicSharedDurableLocalConsumer(boolean persistent) throws Exception
+   private void clusteredTopicSharedDurableLocalConsumer(boolean persistent) throws Exception
    {
       Connection conn1 = null;
       Connection conn2 = null;
@@ -726,7 +726,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          
          log.info("Created connections");
          
-         checkConnectionsDifferentServers(conn1, conn2, conn3);
+         checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
          conn1.setClientID("wib1");
          conn2.setClientID("wib1");
          conn3.setClientID("wib1");
@@ -751,9 +751,9 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          }
          catch (Exception ignore) {}
 
-         MessageConsumer cons1 = sess1.createDurableSubscriber(topic0, "sub");
-         MessageConsumer cons2 = sess2.createDurableSubscriber(topic1, "sub");
-         MessageConsumer cons3 = sess3.createDurableSubscriber(topic2, "sub");
+         MessageConsumer cons1 = sess1.createDurableSubscriber(topic[0], "sub");
+         MessageConsumer cons2 = sess2.createDurableSubscriber(topic[1], "sub");
+         MessageConsumer cons3 = sess3.createDurableSubscriber(topic[2], "sub");
 
          conn1.start();
          conn2.start();
@@ -761,7 +761,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 0
 
-         MessageProducer prod = sess1.createProducer(topic0);
+         MessageProducer prod = sess1.createProducer(topic[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -793,7 +793,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 1
 
-         MessageProducer prod1 = sess2.createProducer(topic1);
+         MessageProducer prod1 = sess2.createProducer(topic[1]);
 
          prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -823,7 +823,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          // Send at node 2
 
-         MessageProducer prod2 = sess3.createProducer(topic2);
+         MessageProducer prod2 = sess3.createProducer(topic[2]);
 
          prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
@@ -887,7 +887,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
     * should round robin
     * note that this test assumes round robin
     */
-   protected void clusteredTopicSharedDurableNoLocalSub(boolean persistent) throws Exception
+   private void clusteredTopicSharedDurableNoLocalSub(boolean persistent) throws Exception
    {
       Connection conn1 = null;
       Connection conn2 = null;
@@ -903,7 +903,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          
          log.info("Created connections");
          
-         checkConnectionsDifferentServers(conn1, conn2, conn3);
+         checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
          
          conn2.setClientID("wib1");
          conn3.setClientID("wib1");
@@ -923,8 +923,8 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          }
          catch (Exception ignore) {}
 
-         MessageConsumer cons1 = sess2.createDurableSubscriber(topic1, "sub");
-         MessageConsumer cons2 = sess3.createDurableSubscriber(topic2, "sub");
+         MessageConsumer cons1 = sess2.createDurableSubscriber(topic[1], "sub");
+         MessageConsumer cons2 = sess3.createDurableSubscriber(topic[2], "sub");
 
          conn2.start();
          conn3.start();
@@ -933,7 +933,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          //Should round robin between the other 2 since there is no active consumer on sub  on node 0
 
-         MessageProducer prod = sess1.createProducer(topic0);
+         MessageProducer prod = sess1.createProducer(topic[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
