@@ -113,6 +113,8 @@ public class VeryBasicValveTest extends TestCase
          thread[i].start();
       }
 
+      Thread.sleep(1000);
+
       synchronized (startSemaphore)
       {
          started=true;
