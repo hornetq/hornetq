@@ -53,7 +53,6 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.util.Valve;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
@@ -580,12 +579,10 @@ public class HAAspect
    private class ConnectionFailureListener implements ConnectionListener
    {
       private ClientConnectionDelegate cd;
-      private Valve valve;
 
       ConnectionFailureListener(ClientConnectionDelegate cd)
       {
          this.cd = cd;
-         this.valve = new Valve();
       }
 
       // ConnectionListener implementation ---------------------------
@@ -595,40 +592,7 @@ public class HAAspect
          try
          {
             log.debug(this + " is being notified of connection failure: " + throwable);
-
-            // It references Valve to a local variable. Since we reset the valve at the end, we need
-            // to guarantee we will have the same Valve instance from the moment we entered this
-            // method.
-
-            Valve localValve = null;
-            synchronized (this)
-            {
-               localValve = valve;
-            }
-
-            // We can't have more than one exception being caught at the same time. On that case we
-            // will open the valve and any other thread opening the valve will wait until
-            // its completion.
-
-            if (localValve.open())
-            {
-               try
-               {
-                  handleFailure(cd);
-               }
-               finally
-               {
-                  localValve.close();
-                  synchronized (this)
-                  {
-                     valve = new Valve();
-                  }
-               }
-            }
-            else
-            {
-               log.debug(this + ": Another thread was responsible for failover as the valve was closed");
-            }
+            handleFailure(cd);
          }
          catch (Throwable e)
          {
