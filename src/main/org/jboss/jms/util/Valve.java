@@ -49,7 +49,7 @@ package org.jboss.jms.util;
    <p>After its usage if you decide to reset you should just create a new Valve in a safe synchronized block, so
         if any other thread still using the variable you do it in a safe way </p>
 
- * @see org.jboss.test.messaging.jms.VeryBasicValveTest
+ * @see org.jboss.test.messaging.util.VeryBasicValveTest
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *  */
 public class Valve
