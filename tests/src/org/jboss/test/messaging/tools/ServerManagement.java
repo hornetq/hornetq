@@ -236,7 +236,51 @@ public class ServerManagement
    }
 
    /**
-    * Abruptly kills the VM running the specified server.
+    * For a local test, is a noop, but for a remote test, the method call spawns a new VM.
+    * The remote server so created is no different from a server started using start-rmi-server
+    * script.
+    */
+   public static synchronized void spawn(int index) throws Exception
+   {
+      if (servers[index] != null)
+      {
+         throw new Exception("The server " + index + " has been created already!");
+      }
+
+      // in the remote case, make sure the VM with the given index isn't already up
+      if (isRemote() && acquireRemote(3, index) != null)
+      {
+         throw new Exception("The remote server " + index + " seems to be already up!");
+      }
+
+
+      StringBuffer sb = new StringBuffer();
+
+      sb.append("java").append(' ');
+
+      sb.append("-Xmx512M").append(' ');
+
+      sb.append("-Dmodule.output=./../output").append(' ');
+
+      sb.append("-Dremote.test.suffix=-remote-").append(index).append(' ');
+
+      sb.append("-Dtest.server.index=").append(index).append(' ');
+
+      sb.append("-Dtest.bind.address=localhost").append(' ');
+
+      sb.append("-cp").append(' ').append(System.getProperty("java.class.path")).append(' ');
+
+      sb.append("org.jboss.test.messaging.tools.jmx.rmi.RMITestServer");
+
+      //System.out.println(sb.toString());
+
+      Runtime.getRuntime().exec(sb.toString());
+
+      log.info("VM for Server " + index + " spawned");
+   }
+
+   /**
+    * Abruptly kills the VM running the specified server, simulating a crash.
     */
    public static synchronized void kill(int index) throws Exception
    {
@@ -247,8 +291,10 @@ public class ServerManagement
       }
 
       servers[index].kill();
+
+      log.info("Server " + index + " killed");
+
       servers[index] = null;
-      
       killed[index] = true;
    }
    
@@ -279,9 +325,16 @@ public class ServerManagement
 
    public static Object getAttribute(ObjectName on, String attribute) throws Exception
    {
-      insureStarted();
-      return servers[0].getAttribute(on, attribute);
+      return getAttribute(0, on, attribute);
    }
+
+   public static Object getAttribute(int serverIndex, ObjectName on, String attribute)
+      throws Exception
+   {
+      insureStarted(serverIndex);
+      return servers[serverIndex].getAttribute(on, attribute);
+   }
+
 
    public static void setAttribute(ObjectName on, String name, String valueAsString)
       throws Exception

@@ -88,7 +88,15 @@ public class RemoteContext implements Context
 
    public void bind(String name, Object obj) throws NamingException
    {
-      throw new NotYetImplementedException();
+      try
+      {
+         namingDelegate.bind(name, obj);
+      }
+      catch(Exception e)
+      {
+         log.error("naming operation failed", e);
+         throw new NamingException(e.getMessage());
+      }
    }
 
    public void rebind(Name name, Object obj) throws NamingException

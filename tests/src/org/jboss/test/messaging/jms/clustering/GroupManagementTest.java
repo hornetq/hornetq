@@ -382,6 +382,50 @@ public class GroupManagementTest extends MessagingTestCase
       }
    }
 
+   public void testSpawnServer() throws Exception
+   {
+
+      ObjectName postOfficeObjectName = new ObjectName("jboss.messaging:service=PostOffice");
+      ClusterEventNotificationListener clusterEvent = new ClusterEventNotificationListener();
+
+      try
+      {
+         // Start with a 1 node cluster
+
+         ServerManagement.start("all", 0);
+
+         Set view = ServerManagement.getServer(0).getNodeIDView();
+
+         assertEquals(1, view.size());
+         assertTrue(view.contains(new Integer(0)));
+
+         ServerManagement.addNotificationListener(0, postOfficeObjectName, clusterEvent);
+
+         ServerManagement.spawn(10);
+         ServerManagement.start("all", 10);
+
+         if (!clusterEvent.viewChanged(120000))
+         {
+            fail("Did not receive a VIEW_CHANGED event after spawning new server!");
+         }
+
+         view = ServerManagement.getServer(1).getNodeIDView();
+
+         assertEquals(2, view.size());
+         assertTrue(view.contains(new Integer(0)));
+         assertTrue(view.contains(new Integer(10)));
+
+         //ServerManagement.kill(10);
+
+      }
+      finally
+      {
+         ServerManagement.removeNotificationListener(0, postOfficeObjectName, clusterEvent);
+         ServerManagement.stop(0);
+      }
+   }
+
+
 
 
    // Package protected ---------------------------------------------

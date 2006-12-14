@@ -61,6 +61,11 @@ public class RMINamingDelegate extends UnicastRemoteObject implements NamingDele
       return getInitialContext().lookup(name);
    }
 
+   public void bind(String name, Object obj) throws Exception
+   {
+      getInitialContext().bind(name, obj);
+   }
+
    // Public --------------------------------------------------------
 
    public void reset()

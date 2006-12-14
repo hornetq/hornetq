@@ -41,6 +41,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.Serializable;
 
 
 /**
@@ -49,12 +50,14 @@ import java.util.ArrayList;
  *
  * $Id$
  */
-public class InVMContext implements Context
+public class InVMContext implements Context, Serializable
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = 385743957345L;
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected Map map;
@@ -283,9 +286,9 @@ public class InVMContext implements Context
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
 
    private String trimSlashes(String s)

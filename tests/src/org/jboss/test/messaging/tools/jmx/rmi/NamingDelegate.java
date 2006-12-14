@@ -34,4 +34,6 @@ import java.rmi.Remote;
 public interface NamingDelegate extends Remote
 {
    Object lookup(String name) throws Exception;
+
+   void bind(String name, Object obj) throws Exception;
 }
