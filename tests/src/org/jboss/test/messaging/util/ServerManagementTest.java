@@ -10,7 +10,6 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import javax.naming.InitialContext;
-import javax.naming.Context;
 import javax.management.ObjectName;
 
 /**
@@ -103,6 +102,39 @@ public class ServerManagementTest extends MessagingTestCase
          ServerManagement.kill(7);
       }
    }
+
+   /**
+    * Needs to be run in clustered mode.
+    */
+   public void testRessurect() throws Exception
+   {
+
+      if (!ServerManagement.isClustered())
+      {
+         fail("This test must be run in clustered mode!");
+      }
+
+      ServerManagement.start("all", 1);
+
+      ServerManagement.kill(1);
+
+      // wait a bit for the server to die
+      
+      log.info("Sleeping for 10 seconds ...");
+
+      Thread.sleep(10000);
+
+      // resurrect the server
+
+      ServerManagement.spawn(1);
+      ServerManagement.start("all", 1);
+
+      Integer index = (Integer)ServerManagement.
+         getAttribute(1, new ObjectName("jboss.messaging:service=ServerPeer"), "serverPeerID");
+
+      assertEquals(1, index.intValue());
+   }
+
 
    // Package protected ---------------------------------------------
 

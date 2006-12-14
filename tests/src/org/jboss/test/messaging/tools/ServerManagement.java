@@ -95,6 +95,35 @@ public class ServerManagement
       return !isLocal();
    }
 
+   public static boolean isClustered()
+   {
+      return "true".equals(System.getProperty("test.clustered"));
+   }
+
+   public static synchronized boolean isKilled(int index)
+   {
+      return killed[index];
+   }
+
+   public static synchronized boolean isStarted(int index)
+   {
+      Server s = servers[index];
+
+      if (s == null)
+      {
+         return false;
+      }
+
+      try
+      {
+         return s.isStarted();
+      }
+      catch(Exception e)
+      {
+         return false;
+      }
+   }
+
    public static Server getServer()
    {
       return getServer(0);
@@ -276,6 +305,8 @@ public class ServerManagement
 
       Runtime.getRuntime().exec(sb.toString());
 
+      killed[index] = false;
+
       log.info("VM for Server " + index + " spawned");
    }
 
@@ -298,11 +329,6 @@ public class ServerManagement
       killed[index] = true;
    }
    
-   public static synchronized boolean isKilled(int index)
-   {
-      return killed[index];
-   }
-
    public static void disconnect() throws Exception
    {
       if (isRemote())

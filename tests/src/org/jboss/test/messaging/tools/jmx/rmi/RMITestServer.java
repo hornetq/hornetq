@@ -453,6 +453,23 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       {
          log.info("shutting down the VM");
 
+
+         try
+         {
+            // unregister myself from the RMI registry
+
+            Registry registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
+            registry.unbind(RMI_SERVER_PREFIX + server.getServerIndex());
+
+            log.info("unregistred from " + registry);
+
+
+         }
+         catch(Exception e)
+         {
+            log.error("Failed to unregister", e);
+         }
+
          try
          {
             Thread.sleep(250);

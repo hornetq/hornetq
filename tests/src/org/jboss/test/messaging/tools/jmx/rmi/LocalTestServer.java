@@ -833,6 +833,11 @@ public class LocalTestServer implements Server
 
    // Public --------------------------------------------------------
 
+   public int getServerIndex()
+   {
+      return serverIndex;
+   }
+
    // Package protected ---------------------------------------------
 
    ServiceContainer getServiceContainer()

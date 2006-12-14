@@ -112,7 +112,7 @@ public class ClusteringTestBase extends MessagingTestCase
 
       for(int i = 0; i < nodeCount; i++)
       {
-         if (!ServerManagement.isKilled(i) && ServerManagement.getServer(i).isStarted())
+         if (ServerManagement.isStarted(i))
          {
             ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
             ServerManagement.undeployQueue("testDistributedQueue", i);
