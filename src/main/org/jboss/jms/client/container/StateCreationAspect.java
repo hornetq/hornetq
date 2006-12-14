@@ -30,6 +30,7 @@ import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.state.BrowserState;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
@@ -98,7 +99,13 @@ public class StateCreationAspect
 
          int serverID = connectionDelegate.getServerID();
          Version versionToUse = connectionDelegate.getVersionToUse();
-         JMSRemotingConnection remotingConn = connectionDelegate.getRemotingConnection();
+         JMSRemotingConnection remotingConnection = connectionDelegate.getRemotingConnection();
+
+         // install the consolidated remoting connection listener; it will be de-installed on
+         // connection closing by ConnectionAspect
+
+         ConsolidatedRemotingConnectionListener listener = new ConsolidatedRemotingConnectionListener();
+         remotingConnection.getInvokingClient().addConnectionListener(listener);
 
          if (versionToUse == null)
          {
@@ -106,10 +113,12 @@ public class StateCreationAspect
          }
 
          // We have one message id generator per unique server
-         MessageIdGenerator g = MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
+         MessageIdGenerator idGenerator =
+            MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
 
          ConnectionState connectionState =
-            new ConnectionState(serverID, connectionDelegate, remotingConn, versionToUse, g);
+            new ConnectionState(serverID, connectionDelegate, remotingConnection,
+                                listener, versionToUse, idGenerator);
 
          connectionDelegate.setState(connectionState);
 

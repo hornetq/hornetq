@@ -147,12 +147,13 @@ public class HAAspect
 
       if(trace) { log.trace(this + " got local connection delegate " + cd); }
 
-      // Add a connection listener to detect failure
+      // Add a connection listener to detect failure; the consolidated remoting connection listener
+      // must be already in place and configured
 
       ConnectionListener listener = new ConnectionFailureListener(cd);
-      ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
-      if(trace) { log.trace(this + " registering " + listener + " on " + cd); }
-      state.getRemotingConnection().getInvokingClient().addConnectionListener(listener);
+
+      ((ConnectionState)((DelegateSupport)cd).getState()).
+         getRemotingConnectionListener().addDelegateListener(listener);
 
       return new CreateConnectionResult(cd);
    }

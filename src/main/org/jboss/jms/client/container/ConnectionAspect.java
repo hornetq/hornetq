@@ -23,17 +23,17 @@ package org.jboss.jms.client.container;
 
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionMetaData;
+import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.ConnectionListener;
 
 /**
  * Handles operations related to the connection
@@ -47,22 +47,23 @@ import org.jboss.remoting.ConnectionListener;
  *
  * $Id$
  */
-public class ConnectionAspect implements ConnectionListener
+public class ConnectionAspect
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(ConnectionAspect.class);
    
    // Static --------------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ConnectionAspect.class);
-   private static boolean trace = log.isTraceEnabled();
-   
+
    // Attributes ----------------------------------------------------
-   
-   
+
    protected JBossConnectionMetaData connMetaData;
    
    protected ConnectionState state;
-   
+
+   // The identity of the delegate this interceptor is associated with
+   private Integer id;
+
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
@@ -108,40 +109,21 @@ public class ConnectionAspect implements ConnectionListener
    
    public Object handleGetExceptionListener(Invocation invocation) throws Throwable
    {
-      ConnectionState currentState = getConnectionState(invocation);
-      currentState.setJustCreated(false);
+      ConnectionState state = getConnectionState(invocation);
+      state.setJustCreated(false);
       
-      return currentState.getExceptionListener();
+      return state.getRemotingConnectionListener().getJMSExceptionListener();
    }
    
    public Object handleSetExceptionListener(Invocation invocation) throws Throwable
    {
-      ConnectionState currentState = getConnectionState(invocation);
-      currentState.setJustCreated(false);
+      ConnectionState state = getConnectionState(invocation);
+      state.setJustCreated(false);
       
       MethodInvocation mi = (MethodInvocation)invocation;
-      
-      currentState.setExceptionListener((ExceptionListener)mi.getArguments()[0]);
-      
-      Client client = getConnectionState(invocation).getRemotingConnection().getInvokingClient();
-      
-      if (client == null)
-      {
-         throw new java.lang.IllegalStateException("Cannot find remoting client");
-      }
-      
-      if (currentState.getExceptionListener() != null)
-      {
-         client.addConnectionListener(this);
-         currentState.setListenerAdded(true);
-      }
-      else
-      {
-         if (currentState.isListenerAdded())
-         {
-            client.removeConnectionListener(this);
-         }
-      }
+      ExceptionListener exceptionListener = (ExceptionListener)mi.getArguments()[0];
+      state.getRemotingConnectionListener().addJMSExceptionListener(exceptionListener);
+
       return null;
    }
    
@@ -184,63 +166,44 @@ public class ConnectionAspect implements ConnectionListener
    {
       Object ret = invocation.invokeNext();
       
-      // Remove any exception listener
-      ConnectionState currentState = getConnectionState(invocation);
-      
-      Client client = getConnectionState(invocation).getRemotingConnection().getInvokingClient();
-      
-      if (currentState.isListenerAdded())
-      {
-         client.removeConnectionListener(this);
-      }
-            
       ConnectionState state = getConnectionState(invocation);
-      
+
+      JMSRemotingConnection remotingConnection = state.getRemotingConnection();
+
+      // remove the consolidated remoting connection listener
+      ConsolidatedRemotingConnectionListener listener = state.getRemotingConnectionListener();
+      listener.clear();
+
+      Client client = remotingConnection.getInvokingClient();
+      boolean removed = client.removeConnectionListener(listener);
+
+      log.debug(this + (removed ? " removed " : " failed to remove ") +
+                "the consolidated remoting connection listener from " + client);
+
       // Finished with the connection - we need to shutdown callback server
-      state.getRemotingConnection().stop();
+      remotingConnection.stop();
        
-      // Remove reference to message id generator
+      // Remove reference to message ID generator
       MessageIdGeneratorFactory.instance.checkInGenerator(state.getServerID());
-      
+
       return ret;
    }
-   
-   
-   // ConnectionListener implementation -----------------------------------------------------------
-   
-   public void handleConnectionException(Throwable t, Client c)
+
+   public String toString()
    {
-      log.error("Caught exception from connection", t);
-      
-      if (state.getExceptionListener()!= null)
+      StringBuffer sb = new StringBuffer("ConnectionAspect[");
+
+      if (id == null)
       {
-         JMSException j = null;
-         if (t instanceof Error)
-         {
-            final String msg = "Caught Error on underlying connection";
-            log.error(msg, t);
-            j = new JMSException(msg + ": " + t.getMessage());
-         }
-         else if (t instanceof Exception)
-         {
-            Exception e =(Exception)t;
-            j = new JMSException("Throwable received from underlying connection");
-            j.setLinkedException(e);
-         }
-         else
-         {
-            //Some other Throwable subclass
-            final String msg = "Caught Throwable on underlying connection";
-            log.error(msg, t);
-            j = new JMSException(msg + ": " + t.getMessage());
-         }
-         synchronized (state.getExceptionListener())
-         {
-            state.getExceptionListener().onException(j);
-         }
+         sb.append("UNINITIALIZED]");
       }
+      else
+      {
+         sb.append(id).append("]");
+      }
+      return sb.toString();
    }
-   
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -249,12 +212,14 @@ public class ConnectionAspect implements ConnectionListener
    
    private ConnectionState getConnectionState(Invocation invocation)
    {
-      if (state==null)
+      if (state == null)
       {
          ClientConnectionDelegate currentDelegate =
             ((ClientConnectionDelegate)invocation.getTargetObject());
          
          state = (ConnectionState)currentDelegate.getState();
+         id = new Integer(state.getDelegate().getID());
+
       }
       return state;
    }

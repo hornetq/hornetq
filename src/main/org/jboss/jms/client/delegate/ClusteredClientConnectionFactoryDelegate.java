@@ -119,7 +119,7 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("ClusteredConnFactoryDelegate[");
+      StringBuffer sb = new StringBuffer("ClusteredConnectionFactoryDelegate[");
       sb.append(id).append("][");
       if (delegates == null)
       {

@@ -23,11 +23,10 @@ package org.jboss.jms.client.state;
 
 import java.util.HashSet;
 
-import javax.jms.ExceptionListener;
-
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.Version;
@@ -53,6 +52,8 @@ public class ConnectionState extends HierarchicalStateSupport
 
    private JMSRemotingConnection remotingConnection;
 
+   private ConsolidatedRemotingConnectionListener remotingConnectionListener;
+
    private ResourceManager resourceManager;
 
    private MessageIdGenerator idGenerator;
@@ -75,16 +76,12 @@ public class ConnectionState extends HierarchicalStateSupport
    private String clientID;
 
     /** This property used to be delcared on ConnectionAspect */
-   private ExceptionListener exceptionListener;
-
-    /** This property used to be delcared on ConnectionAspect */
    private boolean justCreated = true;
 
-    /** This property used to be delcared on ConnectionAspect */
-   private boolean listenerAdded;
-   
    public ConnectionState(int serverID, ConnectionDelegate delegate,
-                          JMSRemotingConnection remotingConnection, Version versionToUse,
+                          JMSRemotingConnection remotingConnection,
+                          ConsolidatedRemotingConnectionListener remotingConnectionListener,
+                          Version versionToUse,
                           MessageIdGenerator gen)
       throws Exception
    {
@@ -96,6 +93,9 @@ public class ConnectionState extends HierarchicalStateSupport
 
       this.remotingConnection = remotingConnection;
       this.versionToUse = versionToUse;
+
+      this.remotingConnectionListener = remotingConnectionListener;
+      remotingConnectionListener.setConnectionState(this);
 
       // Each connection has its own resource manager. If we can failover all connections with the
       // same server id at the same time then we can maintain one rm per unique server as opposed to
@@ -121,9 +121,9 @@ public class ConnectionState extends HierarchicalStateSupport
       return remotingConnection;
    }
 
-   public void setRemotingConnection(JMSRemotingConnection remotingConnection)
+   public ConsolidatedRemotingConnectionListener getRemotingConnectionListener()
    {
-       this.remotingConnection=remotingConnection;
+      return remotingConnectionListener;
    }
 
    public Version getVersionToUse()
@@ -193,16 +193,6 @@ public class ConnectionState extends HierarchicalStateSupport
       this.clientID = clientID;
    }
 
-   public ExceptionListener getExceptionListener()
-   {
-      return exceptionListener;
-   }
-
-   public void setExceptionListener(ExceptionListener exceptionListener)
-   {
-      this.exceptionListener = exceptionListener;
-   }
-
    public boolean isJustCreated()
    {
       return justCreated;
@@ -213,17 +203,9 @@ public class ConnectionState extends HierarchicalStateSupport
       this.justCreated = justCreated;
    }
 
-   public boolean isListenerAdded()
-   {
-      return listenerAdded;
-   }
-
-   public void setListenerAdded(boolean listenerAdded)
-   {
-      this.listenerAdded = listenerAdded;
-   }
-
-   /** Connection doesn't have a parent */
+   /**
+    * Connection doesn't have a parent
+    */
    public HierarchicalState getParent()
    {
       return null;
