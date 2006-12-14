@@ -26,6 +26,7 @@ import java.util.HashSet;
 import javax.jms.ExceptionListener;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
@@ -89,21 +90,19 @@ public class ConnectionState extends HierarchicalStateSupport
    {
       super(null, (DelegateSupport)delegate);
 
-      if (log.isTraceEnabled()) { log.trace("Creating connection state"); }
+      if (log.isTraceEnabled()) { log.trace(this + " constructing connection state"); }
 
       children = new SyncSet(new HashSet(), new WriterPreferenceReadWriteLock());
 
       this.remotingConnection = remotingConnection;
-
       this.versionToUse = versionToUse;
 
-      //Each connection has it's own resource manager
-      //If we can failover all connections with the same server id at the same time
-      //then we can maintain one rm per unique server as opposed to per connection
+      // Each connection has its own resource manager. If we can failover all connections with the
+      // same server id at the same time then we can maintain one rm per unique server as opposed to
+      // per connection.
       this.resourceManager = new ResourceManager();
 
       this.idGenerator = gen;
-
       this.serverID = serverID;
    }
 
@@ -246,4 +245,9 @@ public class ConnectionState extends HierarchicalStateSupport
        
        this.delegate = newState.delegate;
     }
+
+   public String toString()
+   {
+      return "ConnectionState[" + ((ClientConnectionDelegate)delegate).getID() + "]";
+   }
 }

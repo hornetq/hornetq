@@ -422,7 +422,7 @@ public class ConnectionFactoryJNDIMapper
       {
          ClientConnectionFactoryDelegate del = (ClientConnectionFactoryDelegate)i.next();
             
-          if (del.getServerId() == this.serverPeer.getServerPeerID())
+          if (del.getServerID() == this.serverPeer.getServerPeerID())
           {
              // sanity check
              if (mainDelegate != null)

@@ -117,10 +117,12 @@ public class HAAspect
       if (delegates == null)
       {
          // not clustered, pass the invocation through
+         if(trace) { log.trace(this + " detecting non-clustered connection creation request, letting it pass through"); }
+
          return invocation.invokeNext();
       }
 
-      // clustered
+      // clustered, stopping the invocation here and re-send it as non-clustered down the stack
 
       // TODO: this should be in loop while we get exceptions creating connections, always trying
       //       the next Delegate when we get an exception.
@@ -130,15 +132,29 @@ public class HAAspect
 
       ClientConnectionFactoryDelegate cfDelegate = getDelegateRoundRobin();
 
+      if(trace) { log.trace(this + " detecting clustered connection creation request, choosing " + cfDelegate + " as target"); }
+
       // Now create a connection delegate for this
 
       MethodInvocation mi = (MethodInvocation)invocation;
       String username = (String)mi.getArguments()[0];
       String password = (String)mi.getArguments()[1];
 
-      ClientConnectionDelegate cd = createConnection(cfDelegate, username, password);
+      CreateConnectionResult res = (CreateConnectionResult)cfDelegate.
+         createConnectionDelegate(username, password, -1);
 
-      return new CreateConnectionResult(cd);
+      ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
+
+      if(trace) { log.trace(this + " got local connection delegate " + cd); }
+
+      // Add a connection listener to detect failure
+
+      ConnectionListener listener = new ConnectionFailureListener(cd);
+      ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
+      if(trace) { log.trace(this + " registering " + listener + " on " + cd); }
+      state.getRemotingConnection().getInvokingClient().addConnectionListener(listener);
+
+      return new CreateConnectionResult(cd); 
    }
 
    public String toString()
@@ -204,25 +220,6 @@ public class HAAspect
       return currentDelegate;
    }
 
-   private ClientConnectionDelegate createConnection(ClientConnectionFactoryDelegate cfd,
-                                                     String username,
-                                                     String password)
-      throws Exception
-   {
-      CreateConnectionResult res =
-         (CreateConnectionResult)cfd.createConnectionDelegate(username, password, -1);
-
-      ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
-
-      // Add a connection listener to detect failure
-
-      ConnectionListener listener = new ConnectionFailureListener(cd);
-      ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
-      state.getRemotingConnection().getInvokingClient().addConnectionListener(listener);
-
-      return cd;
-   }
-
    /**
     * @return a failover ClientConnectionFactoryDelegate or null if a suitable delegate cannot be
     *         found.
@@ -235,7 +232,7 @@ public class HAAspect
 
       for (int i = 0; i < delegates.length; i++)
       {
-         if (delegates[i].getServerId() == failoverServerID.intValue())
+         if (delegates[i].getServerID() == failoverServerID.intValue())
          {
             return delegates[i];
          }
@@ -251,7 +248,7 @@ public class HAAspect
 
       int failedServerID = failedConnState.getServerID();
 
-      log.debug(this + " handling failure on connection to node " + failedServerID);
+      log.debug(this + " handling failed connection to node " + failedServerID);
 
       // Get the default connection factory delegate we are going to failover onto
 
@@ -308,7 +305,7 @@ public class HAAspect
 
          for (int i = 0; i < delegates.length; i++)
          {
-            if (delegates[i].getServerId() == actualServerID)
+            if (delegates[i].getServerID() == actualServerID)
             {
                failoverDelegate = delegates[i];
                continue outer;

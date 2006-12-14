@@ -59,7 +59,7 @@ public class FailoverTest extends ClusteringTestBase
 
          conn.close();
 
-         // create a connection to a node we'll kill soon
+         // create a connection to a node we'll kill soon (node 1)
 
          conn = cf.createConnection();
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -74,6 +74,8 @@ public class FailoverTest extends ClusteringTestBase
 
          assertEquals(1, nodeID);
 
+         log.info("consumer created");
+
          // kill node 1
 
          ServerManagement.kill(1);
@@ -84,7 +86,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // TODO - this shouldn't be necessary if we have the client valve in place
          log.info("Sleeping for 1 min");
-         Thread.sleep(30000);
+         Thread.sleep(20000);
 
          // we must receive the message
 

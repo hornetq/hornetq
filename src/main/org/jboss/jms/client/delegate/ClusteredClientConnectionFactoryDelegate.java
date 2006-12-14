@@ -56,7 +56,8 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
 
    // Constructors --------------------------------------------------
 
-   public ClusteredClientConnectionFactoryDelegate(int objectID, int serverId, String serverLocatorURI,
+   public ClusteredClientConnectionFactoryDelegate(int objectID, int serverId,
+                                                   String serverLocatorURI,
                                                    Version serverVersion, boolean clientPing,
                                                    ClientConnectionFactoryDelegate[] delegates,
                                                    Map failoverMap)
@@ -66,14 +67,16 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
       this.failoverMap = failoverMap;
    }
 
-   // Some of the properties of ClientConnectionFactoryDelegate are not exposed..
+   // Some of the properties of ClientConnectionFactoryDelegate are not exposed.
    // I didn't want to expose then while I needed another delegate's properties to perform a copy.
-   // So, I created this Constructor so I could have access into protected members inside an extension class
+   // So, I created this Constructor so I could have access into protected members inside an
+   // extension class.
+
    public ClusteredClientConnectionFactoryDelegate(ClientConnectionFactoryDelegate mainDelegate,
                                                    ClientConnectionFactoryDelegate[] delegates,
                                                    Map failoverMap)
    {
-      this(mainDelegate.getID(), mainDelegate.getServerId(), mainDelegate.getServerLocatorURI(),
+      this(mainDelegate.getID(), mainDelegate.getServerID(), mainDelegate.getServerLocatorURI(),
            mainDelegate.getServerVersion(), mainDelegate.getClientPing(), delegates, failoverMap);
    }
 
@@ -94,8 +97,6 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
 
    // Public --------------------------------------------------------
 
-
-   // Only be used in testing
    public ClientConnectionFactoryDelegate[] getDelegates()
    {
       return delegates;
@@ -122,11 +123,19 @@ public class ClusteredClientConnectionFactoryDelegate extends ClientConnectionFa
       sb.append(id).append("][");
       if (delegates == null)
       {
-         sb.append("0]");
+         sb.append("-]");
       }
       else
       {
-         sb.append(delegates.length).append("]");
+         for(int i = 0; i < delegates.length; i++)
+         {
+            sb.append(delegates[i].getServerID());
+            if (i < delegates.length - 1)
+            {
+               sb.append(',');
+            }
+         }
+         sb.append("]");
       }
       return sb.toString();
    }

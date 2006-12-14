@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.jms.TextMessage;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
@@ -50,11 +48,17 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public class DefaultRouter implements ClusterRouter
 {
+   // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(DefaultRouter.class);
-   
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private boolean trace = log.isTraceEnabled();
-      
-   //MUST be an arraylist for fast index access
+
+   // MUST be an arraylist for fast index access
    private ArrayList nonLocalQueues;
 
    private ArrayList failedOverQueues;
@@ -63,25 +67,170 @@ public class DefaultRouter implements ClusterRouter
 
    private int target;
 
+   // Constructors --------------------------------------------------
+
    public DefaultRouter()
    {
       nonLocalQueues = new ArrayList();
       failedOverQueues = new ArrayList();
    }
 
-   public int size()
+   // Receiver implementation ---------------------------------------
+
+   public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
    {
-      return nonLocalQueues.size() + (localQueue == null ? 0 : 1);
+      if (trace) { log.trace(this + " routing " + reference); }
+
+      // Favour the local queue or the failedOver queue in round robin
+
+      if (!failedOverQueues.isEmpty())
+      {
+         if (trace) { log.trace(this + " round robin on failedover queue, current target " + target);}
+
+         LocalClusteredQueue queueToUse = null;
+
+         if (target == -1)
+         {
+            queueToUse = (LocalClusteredQueue)this.localQueue;
+         }
+         else
+         {
+            queueToUse = (LocalClusteredQueue)failedOverQueues.get(target);
+         }
+
+         incTargetFailedOver();
+
+         Delivery del = queueToUse.handle(observer, reference, tx);
+
+         if (trace) { log.trace(this + " routed to failed queue, using failedOver round robbing, returned " + del); }
+
+         return del;
+      }
+      else if (localQueue != null)
+      {
+         // The only time the local queue won't accept is if the selector doesn't match, in which
+         // case it won't match at any other nodes too so no point in trying them
+
+         Delivery del = localQueue.handle(observer, reference, tx);
+
+         if (trace) { log.trace(this + " routed to local queue, it returned " + del); }
+
+         return del;
+      }
+      else
+      {
+         // There is no local shared queue. We round robin among the rest.
+
+         if (!nonLocalQueues.isEmpty())
+         {
+            ClusteredQueue queue = (ClusteredQueue)nonLocalQueues.get(target);
+
+            Delivery del = queue.handle(observer, reference, tx);
+
+            if (trace) { log.trace(this + " routed to remote queue, it returned " + del); }
+
+            incTarget();
+
+            // Again, if the selector doesn't match then it won't on any others so no point trying
+            // them.
+
+            return del;
+         }
+      }
+
+      if (trace) { log.trace(this + " no queues to route to so return null"); }
+
+      return null;
    }
 
-   public ClusteredQueue getLocalQueue()
+   // Distributor implementation ------------------------------------
+
+   public boolean contains(Receiver queue)
    {
-      return localQueue;
+      return localQueue == queue || nonLocalQueues.contains(queue);
+   }
+
+   public Iterator iterator()
+   {
+      List queues = new ArrayList();
+
+      if (localQueue != null)
+      {
+         queues.add(localQueue);
+      }
+
+      queues.addAll(nonLocalQueues);
+
+      return queues.iterator();
    }
 
    public boolean add(Receiver receiver)
    {
       return add(receiver,false);
+   }
+
+   public boolean remove(Receiver queue)
+   {
+      if (localQueue == queue)
+      {
+         localQueue = null;
+
+         return true;
+      }
+      else
+      {
+         if (nonLocalQueues.remove(queue))
+         {
+            if (target >= nonLocalQueues.size() - 1)
+            {
+               target = nonLocalQueues.size() - 1;
+            }
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+      }
+   }
+
+   public void clear()
+   {
+      nonLocalQueues.clear();
+      localQueue = null;
+      target = 0;
+   }
+
+   public int numberOfReceivers()
+   {
+      return nonLocalQueues.size() + (localQueue != null ? 1 : 0);
+   }
+
+
+   // ClusterRouter implementation ----------------------------------
+
+   public List getQueues()
+   {
+      List queues = new ArrayList();
+
+      if (localQueue != null)
+      {
+         queues.add(localQueue);
+      }
+
+      queues.addAll(nonLocalQueues);
+
+      return queues;
+   }
+
+   public List getFailedQueues()
+   {
+      return failedOverQueues;
+   }
+
+   public ClusteredQueue getLocalQueue()
+   {
+      return localQueue;
    }
 
    public boolean add(Receiver receiver, boolean failedOver)
@@ -111,140 +260,23 @@ public class DefaultRouter implements ClusterRouter
       return true;
    }
 
-   public void clear()
+   // Public --------------------------------------------------------
+
+   public int size()
    {
-      nonLocalQueues.clear();
-
-      localQueue = null;
-
-      target = 0;
+      return nonLocalQueues.size() + (localQueue == null ? 0 : 1);
    }
 
-   public boolean contains(Receiver queue)
+   public String toString()
    {
-      return localQueue == queue || nonLocalQueues.contains(queue);
+      return "DefaultRouter[" + Integer.toHexString(hashCode()) + "]";
    }
 
-   public Iterator iterator()
-   {
-      List queues = new ArrayList();
+   // Package protected ---------------------------------------------
 
-      if (localQueue != null)
-      {
-         queues.add(localQueue);
-      }
+   // Protected -----------------------------------------------------
 
-      queues.addAll(nonLocalQueues);
-
-      return queues.iterator();
-   }
-
-   public boolean remove(Receiver queue)
-   {
-      if (localQueue == queue)
-      {
-         localQueue = null;
-
-         return true;
-      }
-      else
-      {
-         if (nonLocalQueues.remove(queue))
-         {
-            if (target >= nonLocalQueues.size() - 1)
-            {
-               target = nonLocalQueues.size() - 1;
-            }
-            return true;
-         }
-         else
-         {
-            return false;
-         }
-      }
-   }
-
-   public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
-   {
-      if (trace) { log.trace(this + " routing ref " + reference); }
-
-      //Favour the local queue or the failedOver queue in round robin
-
-      if (!failedOverQueues.isEmpty())
-      {
-         if (trace) { log.trace("Round robin on FailedOver queue, currentTarget=" + target);}
-         
-         LocalClusteredQueue queueToUse = null;
-
-         if (target == -1)
-         {
-            queueToUse = (LocalClusteredQueue)this.localQueue; 
-         }
-         else
-         {
-            queueToUse = (LocalClusteredQueue)failedOverQueues.get(target);
-         }
-
-         incTargetFailedOver();
-         
-         log.info("***************** Routing to failed over queue");
-         Delivery del = queueToUse.handle(observer, reference, tx);
-
-         if (trace) { log.trace(this+" routed to failed queue, using failedOver round robbing, returned " + del); }
-         
-         return del;
-      }
-      else if (localQueue != null)
-      {
-         //The only time the local queue won't accept is if the selector doesn't
-         //match - in which case it won't match at any other nodes too so no point
-         //in trying them
-         
-         //debug
-         try
-         {
-            TextMessage tm = (TextMessage)reference.getMessage();
-            
-            log.info("*********** Routing to local queue: " + tm.getText() + " id:" + System.identityHashCode(localQueue) );
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-
-         Delivery del = localQueue.handle(observer, reference, tx);
-
-         if (trace) { log.trace(this + " routed to local queue, it returned " + del); }
-
-         return del;
-      }
-      else
-      {
-         //There is no local shared queue
-         //We round robin among the rest
-
-         if (!nonLocalQueues.isEmpty())
-         {
-            ClusteredQueue queue = (ClusteredQueue)nonLocalQueues.get(target);
-
-            queue = (ClusteredQueue)nonLocalQueues.get(target);
-
-            log.info("************ Routing to non local queue");
-            Delivery del = queue.handle(observer, reference, tx);
-
-            if (trace) { log.trace(this + " routed to remote queue, it returned " + del); }
-
-            incTarget();
-
-            //Again, if the selector doesn't match then it won't on any others so no point trying them
-            return del;
-         }
-      }
-
-      if (trace) { log.trace(this + " no queues to route to so return null"); }
-
-      return null;
-   }
+   // Private -------------------------------------------------------
 
    private void incTargetFailedOver()
    {
@@ -267,30 +299,8 @@ public class DefaultRouter implements ClusterRouter
       }
    }
 
+   // Inner classes -------------------------------------------------
 
-   public java.util.List getFailedQueues()
-   {
-      return failedOverQueues;
-   }
-
-   public List getQueues()
-   {
-      List queues = new ArrayList();
-
-      if (localQueue != null)
-      {
-         queues.add(localQueue);
-      }
-
-      queues.addAll(nonLocalQueues);
-
-      return queues;
-   }
-
-   public int numberOfReceivers()
-   {
-      return nonLocalQueues.size() + (localQueue != null ? 1 : 0);
-   }
 }
 
 

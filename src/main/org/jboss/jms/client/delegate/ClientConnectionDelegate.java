@@ -56,7 +56,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Attributes ----------------------------------------------------
 
-   private int serverId;
+   private int serverID;
 
    private transient JMSRemotingConnection remotingConnection;
    
@@ -70,7 +70,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       super(objectID);
       
-      this.serverId = serverId;
+      this.serverID = serverId;
    }
 
    public ClientConnectionDelegate()
@@ -217,7 +217,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public String toString()
    {
-      return "ConnectionDelegate[" + id + "]";
+      return "ConnectionDelegate[" + id + ", " + serverID + "]";
    }
 
    public void init()
@@ -235,9 +235,9 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       return remotingConnection;
    }
    
-   public int getServerId()
+   public int getServerID()
    {
-      return serverId;
+      return serverID;
    }
    
    public Version getVersionToUse()

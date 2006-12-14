@@ -93,11 +93,11 @@ public class HATest extends ClusteringTestBase
       
       ClientConnectionFactoryDelegate cf3 = delegate.getDelegates()[2];
       
-      assertEquals(0, cf1.getServerId());
+      assertEquals(0, cf1.getServerID());
       
-      assertEquals(1, cf2.getServerId());
+      assertEquals(1, cf2.getServerID());
       
-      assertEquals(2, cf3.getServerId());
+      assertEquals(2, cf3.getServerID());
       
       assertEquals(3, ServerManagement.getServer(0).getNodeIDView().size());
       
@@ -219,18 +219,18 @@ public class HATest extends ClusteringTestBase
          
          //If any servers get stopped and then started then the order will change
     
-         log.info("cf1 serverid=" + cf1.getServerId());
+         log.info("cf1 serverid=" + cf1.getServerID());
          
-         log.info("cf2 serverid=" + cf2.getServerId());
+         log.info("cf2 serverid=" + cf2.getServerID());
          
-         log.info("cf3 serverid=" + cf3.getServerId());
+         log.info("cf3 serverid=" + cf3.getServerID());
          
          
-         assertEquals(0, cf1.getServerId());
+         assertEquals(0, cf1.getServerID());
          
-         assertEquals(1, cf2.getServerId());
+         assertEquals(1, cf2.getServerID());
          
-         assertEquals(2, cf3.getServerId());
+         assertEquals(2, cf3.getServerID());
          
          Map failoverMap = delegate.getFailoverMap();
          
@@ -240,11 +240,11 @@ public class HATest extends ClusteringTestBase
          
          // Default failover policy just chooses the node to the right
          
-         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
          
-         assertEquals(cf3.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+         assertEquals(cf3.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
          
-         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf3.getServerId()))).intValue());
+         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf3.getServerID()))).intValue());
       }
       
       //Now cleanly stop one of the servers
@@ -280,20 +280,20 @@ public class HATest extends ClusteringTestBase
          
          //Order here depends on order servers were started in
          
-         log.info("cf1 serverid=" + cf1.getServerId());
+         log.info("cf1 serverid=" + cf1.getServerID());
          
-         log.info("cf2 serverid=" + cf2.getServerId());
+         log.info("cf2 serverid=" + cf2.getServerID());
          
-         assertEquals(1, cf1.getServerId());
+         assertEquals(1, cf1.getServerID());
          
-         assertEquals(2, cf2.getServerId());
+         assertEquals(2, cf2.getServerID());
          
          
          assertEquals(2, failoverMap.size());
          
-         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
          
-         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
       }
       
       //Cleanly stop another server
@@ -320,12 +320,12 @@ public class HATest extends ClusteringTestBase
          
          ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
          
-         assertEquals(2, cf1.getServerId());
+         assertEquals(2, cf1.getServerID());
          
          
          assertEquals(1, failoverMap.size());
          
-         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
       }
             
       //Restart server 0
@@ -352,20 +352,20 @@ public class HATest extends ClusteringTestBase
          
          ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
          
-         log.info("cf1 serverid=" + cf1.getServerId());
+         log.info("cf1 serverid=" + cf1.getServerID());
          
-         log.info("cf2 serverid=" + cf2.getServerId());
+         log.info("cf2 serverid=" + cf2.getServerID());
          
-         assertEquals(2, cf1.getServerId());
+         assertEquals(2, cf1.getServerID());
          
-         assertEquals(0, cf2.getServerId());
+         assertEquals(0, cf2.getServerID());
          
          
          assertEquals(2, failoverMap.size());
          
-         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
          
-         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
       }
       
       
@@ -395,26 +395,26 @@ public class HATest extends ClusteringTestBase
          
          ClientConnectionFactoryDelegate cf3 = delegate.getDelegates()[2];
          
-         log.info("cf1 serverid=" + cf1.getServerId());
+         log.info("cf1 serverid=" + cf1.getServerID());
          
-         log.info("cf2 serverid=" + cf2.getServerId());
+         log.info("cf2 serverid=" + cf2.getServerID());
          
-         log.info("cf3 serverid=" + cf3.getServerId());
+         log.info("cf3 serverid=" + cf3.getServerID());
          
-         assertEquals(2, cf1.getServerId());
+         assertEquals(2, cf1.getServerID());
          
-         assertEquals(0, cf2.getServerId());
+         assertEquals(0, cf2.getServerID());
          
-         assertEquals(1, cf3.getServerId());
+         assertEquals(1, cf3.getServerID());
          
          
          assertEquals(3, failoverMap.size());
          
-         assertEquals(cf2.getServerId(), ((Integer)failoverMap.get(new Integer(cf1.getServerId()))).intValue());
+         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
          
-         assertEquals(cf3.getServerId(), ((Integer)failoverMap.get(new Integer(cf2.getServerId()))).intValue());
+         assertEquals(cf3.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
          
-         assertEquals(cf1.getServerId(), ((Integer)failoverMap.get(new Integer(cf3.getServerId()))).intValue());
+         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf3.getServerID()))).intValue());
       }            
    }
    
@@ -436,11 +436,11 @@ public class HATest extends ClusteringTestBase
       
       ClientConnectionFactoryDelegate cf3 = delegates[2];
       
-      int server0Id = cf1.getServerId();
+      int server0Id = cf1.getServerID();
       
-      int server1Id = cf2.getServerId();
+      int server1Id = cf2.getServerID();
       
-      int server2Id = cf3.getServerId();
+      int server2Id = cf3.getServerID();
       
       log.info("server 0 id: " + server0Id);
       
@@ -571,11 +571,11 @@ public class HATest extends ClusteringTestBase
       
       ClientConnectionFactoryDelegate cf3 = delegates[2];
       
-      int server0Id = cf1.getServerId();
+      int server0Id = cf1.getServerID();
       
-      int server1Id = cf2.getServerId();
+      int server1Id = cf2.getServerID();
       
-      int server2Id = cf3.getServerId();
+      int server2Id = cf3.getServerID();
       
       log.info("server 0 id: " + server0Id);
       
@@ -742,11 +742,11 @@ public class HATest extends ClusteringTestBase
       
       ClientConnectionFactoryDelegate cf3 = delegates[2];
       
-      int server0Id = cf1.getServerId();
+      int server0Id = cf1.getServerID();
       
-      int server1Id = cf2.getServerId();
+      int server1Id = cf2.getServerID();
       
-      int server2Id = cf3.getServerId();
+      int server2Id = cf3.getServerID();
       
       log.info("server 0 id: " + server0Id);
       

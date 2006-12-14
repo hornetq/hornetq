@@ -733,7 +733,7 @@ public abstract class ChannelSupport implements Channel
             if (persist && ref.isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
-               if (trace) { log.trace(this + "adding " + ref + " to database non-transactionally"); }
+               if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
 
                pm.addReference(channelID, ref, null);        
             }
@@ -753,7 +753,7 @@ public abstract class ChannelSupport implements Channel
          }
          else
          {
-            if (trace) { log.trace(this + "adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx)); }
+            if (trace) { log.trace(this + " adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx)); }
 
             if (ref.isReliable() && !acceptReliableMessages)
             {
@@ -776,7 +776,7 @@ public abstract class ChannelSupport implements Channel
             if (persist && ref.isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
-               if (trace) { log.trace(this + "adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
+               if (trace) { log.trace(this + " adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
 
                pm.addReference(channelID, ref, tx);
             }

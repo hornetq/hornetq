@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.jms.TextMessage;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.management.NotificationBroadcasterSupport;
@@ -693,14 +692,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKeyText,
                                 Map queueNameNodeIdMap) throws Exception
    {
-      if (trace)
-      {
-         log.trace(this.currentNodeId + " routing from cluster, message: " + message + " routing key " +
-                  routingKeyText + " map " + queueNameNodeIdMap);
-      }
-
-      log.info(this.currentNodeId + " routing from cluster, message: " + message + " routing key " +
-               routingKeyText + " map " + queueNameNodeIdMap);
+      if (trace) { log.trace(this + " routing from cluster " + message + ", routing key " + routingKeyText + ", map " + queueNameNodeIdMap); }
 
       Condition routingKey = conditionFactory.createCondition(routingKeyText);
 
@@ -1136,19 +1128,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    public boolean route(MessageReference ref, Condition condition, Transaction tx) throws Exception
    {
-      if (trace) { log.trace(this.currentNodeId + " Routing " + ref + " with condition " + condition + " and transaction " + tx); }
-
-      //debug
-      try
-      {
-         TextMessage tm = (TextMessage)ref.getMessage();
-
-         log.info(this.currentNodeId + " *********** Routing ref: " + tm.getText() + " with condition " + condition + " and transaction " + tx);
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      if (trace) { log.trace(this + " routing " + ref + " with condition '" + condition + "'" + (tx == null ? "" : " transactionally in " + tx)); }
 
       if (ref == null)
       {
@@ -1174,19 +1154,22 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          if (cb != null)
          {
+            if (trace) { log.trace(this + " found clustered bindings " + cb); }
+
             if (tx == null && ref.isReliable())
             {
-               if (!(cb.getDurableCount() == 0 || (cb.getDurableCount() == 1 && cb.getLocalDurableCount() == 1)))
+               if (!(cb.getDurableCount() == 0 ||
+                    (cb.getDurableCount() == 1 && cb.getLocalDurableCount() == 1)))
                {
                   // When routing a persistent message without a transaction then we may need to
                   // start an internal transaction in order to route it. This is so we can guarantee
                   // the message is delivered to all or none of the subscriptions. We need to do
-                  // this if there is anything other than. No durable subs or exactly one local
-                  // durable sub.
+                  // this if there is anything other than. No durable subscriptions or exactly one
+                  // local durable subscription.
 
                   startInternalTx = true;
 
-                  if (trace) { log.trace(this.currentNodeId + " Starting internal transaction since more than one durable sub or remote durable subs"); }
+                  if (trace) { log.trace(this + " starting internal transaction since it needs to deliver persistent message to more than one durable sub or remote durable subs"); }
                }
             }
 
@@ -1217,17 +1200,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   ClusteredQueue queue = (ClusteredQueue)del.getObserver();
 
-                  if (trace) { log.trace(this.currentNodeId + " Routing message to queue or stub:" + queue.getName() + " on node " + queue.getNodeId() + " local:" + queue.isLocal()); }
-
-                  log.info(this.currentNodeId + " Routing message to queue or stub:" +
-                           queue.getName() + " on node " + queue.getNodeId() + " local:" +
-                           queue.isLocal());
+                  if (trace) { log.trace(this + " successfully routed message to " + (queue.isLocal() ? "local"  : "remote")+ " destination '" + queue.getName() + "' on node " + queue.getNodeId()); }
 
                   if (router.numberOfReceivers() > 1)
                   {
-                     //We have now chosen which one will receive the message so we need to add this
-                     //information to a map which will get sent when casting - so the the queue
-                     //on the receiving node knows whether to receive the message
+                     // We have now chosen which one will receive the message so we need to add this
+                     // information to a map which will get sent when casting - so the the queue on
+                     // the receiving node knows whether to receive the message.
+
                      if (queueNameNodeIdMap == null)
                      {
                         queueNameNodeIdMap = new HashMap();
@@ -1238,40 +1218,42 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   if (!queue.isLocal())
                   {
-                     //We need to send the message remotely
+                     // We need to send the message remotely
                      numberRemote++;
 
                      lastNodeId = queue.getNodeId();
-
                      lastChannelId = queue.getChannelID();
                   }
                }
             }
 
-            //Now we've sent the message to any local queues, we might also need
-            //to send the message to the other office instances on the cluster if there are
-            //queues on those nodes that need to receive the message
+            // Now we've sent the message to any local queues, we might also need to send the
+            // message to the other office instances on the cluster if there are queues on those
+            // nodes that need to receive the message.
 
-            //TODO - there is an innefficiency here, numberRemote does not take into account that more than one
-            //of the number remote may be on the same node, so we could end up multicasting
-            //when unicast would do
+            //TODO - there is an innefficiency here, numberRemote does not take into account that
+            //       more than one of the number remote may be on the same node, so we could end up
+            //       multicasting when unicast would do
+
             if (numberRemote > 0)
             {
                if (tx == null)
                {
                   if (numberRemote == 1)
                   {
-                     if (trace) { log.trace(this.currentNodeId + " unicasting message to " + lastNodeId); }
+                     if (trace) { log.trace(this + " unicasting message to " + lastNodeId); }
 
-                     //Unicast - only one node is interested in the message
-                     asyncSendRequest(new MessageRequest(condition.toText(), ref.getMessage(), null), lastNodeId);
+                     // Unicast - only one node is interested in the message
+                     asyncSendRequest(new MessageRequest(condition.toText(),
+                                                         ref.getMessage(), null), lastNodeId);
                   }
                   else
                   {
-                     if (trace) { log.trace(this.currentNodeId + " multicasting message to group"); }
+                     if (trace) { log.trace(this + " multicasting message to group"); }
 
-                     //Multicast - more than one node is interested
-                     asyncSendRequest(new MessageRequest(condition.toText(), ref.getMessage(), queueNameNodeIdMap));
+                     // Multicast - more than one node is interested
+                     asyncSendRequest(new MessageRequest(condition.toText(),
+                                                         ref.getMessage(), queueNameNodeIdMap));
                   }
                }
                else
@@ -1280,30 +1262,35 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   if (callback == null)
                   {
-                     callback = new CastMessagesCallback(currentNodeId, tx.getId(), DefaultClusteredPostOffice.this, failBeforeCommit, failAfterCommit);
+                     callback = new CastMessagesCallback(currentNodeId, tx.getId(),
+                                                         DefaultClusteredPostOffice.this,
+                                                         failBeforeCommit, failAfterCommit);
 
-                     //This callback MUST be executed first
+                     // This callback MUST be executed first
 
-                     //Execution order is as follows:
-                     //Before commit:
-                     //1. Cast messages across network - get added to holding area (if persistent) on receiving
-                     //nodes
-                     //2. Persist messages in persistent store
-                     //After commit
-                     //1. Cast commit message across network
+                     // Execution order is as follows:
+                     //
+                     // Before commit:
+                     // 1. Cast messages across network - get added to holding area (if persistent)
+                     //    on receiving nodes.
+                     // 2. Persist messages in persistent store.
+                     //
+                     // After commit
+                     //
+                     // 1. Cast commit message across network.
+
                      tx.addFirstCallback(callback, this);
                   }
 
                   callback.addMessage(condition, ref.getMessage(), queueNameNodeIdMap,
-                                      numberRemote == 1 ? lastNodeId : -1,
-                                      lastChannelId);
+                                      numberRemote == 1 ? lastNodeId : -1, lastChannelId);
                }
             }
 
             if (startInternalTx)
             {
                tx.commit();
-               if (trace) { log.trace("Committed internal transaction"); }
+               if (trace) { log.trace(this + " committed internal transaction"); }
             }
          }
       }

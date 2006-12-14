@@ -45,6 +45,7 @@ import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.logging.Logger;
 
 /**
  * Maintains the hierarchy of parent and child state objects. For each delegate, this interceptor
@@ -55,22 +56,26 @@ import org.jboss.jms.server.endpoint.CreateConnectionResult;
  * 
  * This interceptor is PER_VM.
  * 
- * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org>Ovidiu Feodorov</a>
- * @author <a href="mailto:clebert.suconic@jboss.org>Clebert Suconic</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  * $Id$
  */
 public class StateCreationAspect
 {
    // Constants -----------------------------------------------------
-   
+
+   private static final Logger log = Logger.getLogger(StateCreationAspect.class);
+
    // Attributes ----------------------------------------------------
-   
+
+   private boolean trace = log.isTraceEnabled();
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
 
    // Interceptor implementation -----------------------------------
@@ -78,72 +83,68 @@ public class StateCreationAspect
    public Object handleCreateConnectionDelegate(Invocation inv) throws Throwable
    {
       ConnectionFactoryDelegate cfd = (ConnectionFactoryDelegate)inv.getTargetObject();
-      
+
       CreateConnectionResult res = (CreateConnectionResult)inv.invokeNext();
-      
+
+      if(trace) { log.trace("got " + res + " on return"); }
+
       ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)res.getDelegate();
-      
+
       if (connectionDelegate != null)
-      {         
+      {
          connectionDelegate.init();
-         
-         //SimpleMetaData md = ((Advised)connectionDelegate)._getInstanceAdvisor().getMetaData();
-         
-         int serverID = connectionDelegate.getServerId();
-         
+
+         int serverID = connectionDelegate.getServerID();
          Version versionToUse = connectionDelegate.getVersionToUse();
-         
-         JMSRemotingConnection connection = connectionDelegate.getRemotingConnection();
-         
+         JMSRemotingConnection remotingConn = connectionDelegate.getRemotingConnection();
+
          if (versionToUse == null)
          {
             throw new IllegalStateException("Connection version is null");
          }
-         
-         //We have one message id generator per unique server
-         MessageIdGenerator gen =
-            MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
-         
+
+         // We have one message id generator per unique server
+         MessageIdGenerator g = MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
+
          ConnectionState connectionState =
-            new ConnectionState(serverID, connectionDelegate,
-                                connection, versionToUse, gen);
-         
+            new ConnectionState(serverID, connectionDelegate, remotingConn, versionToUse, g);
+
          connectionDelegate.setState(connectionState);
       }
-      
+
       return res;
    }
-   
+
    public Object handleCreateSessionDelegate(Invocation invocation) throws Throwable
    {
       SessionDelegate sessionDelegate = (SessionDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)sessionDelegate;
-      
+
       delegate.init();
-      
+
       ConnectionState connectionState = (ConnectionState)getState(invocation);
-      
+
       MethodInvocation mi = (MethodInvocation)invocation;
       boolean transacted = ((Boolean)mi.getArguments()[0]).booleanValue();
       int ackMode = ((Integer)mi.getArguments()[1]).intValue();
       boolean xa = ((Boolean)mi.getArguments()[2]).booleanValue();
-      
+
       SessionState sessionState =
          new SessionState(connectionState, sessionDelegate, transacted, ackMode, xa);
-      
+
       delegate.setState(sessionState);
       return delegate;
    }
-   
+
    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
    {
       ClientConsumerDelegate consumerDelegate = (ClientConsumerDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)consumerDelegate;
-      
+
       delegate.init();
-      
+
       SessionState sessionState = (SessionState)getState(invocation);
-      
+
       MethodInvocation mi = (MethodInvocation)invocation;
       Destination dest = (Destination)mi.getArguments()[0];
       String selector = (String)mi.getArguments()[1];
@@ -152,13 +153,13 @@ public class StateCreationAspect
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
 
       int consumerID = consumerDelegate.getID();
-      
+
       int prefetchSize = consumerDelegate.getPrefetchSize();
-      
+
       int maxDeliveries = consumerDelegate.getMaxDeliveries();
-      
+
       long channelId = consumerDelegate.getChannelId();
-      
+
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,
                            subscriptionName, consumerID, connectionConsumer, prefetchSize,
@@ -167,63 +168,63 @@ public class StateCreationAspect
       delegate.setState(consumerState);
       return consumerDelegate;
    }
-   
+
    public Object handleCreateProducerDelegate(Invocation invocation) throws Throwable
    {
       // ProducerDelegates are not created on the server
-      
+
       ProducerDelegate producerDelegate = new ClientProducerDelegate();
       DelegateSupport delegate = (DelegateSupport)producerDelegate;
-            
+
       SessionState sessionState = (SessionState)getState(invocation);
-      
+
       MethodInvocation mi = (MethodInvocation)invocation;
       Destination dest = ((Destination)mi.getArguments()[0]);
-      
+
 
       ProducerState producerState = new ProducerState(sessionState, producerDelegate, dest);
-      
+
       delegate.setState(producerState);
 
       // send an arbitrary invocation into the producer delegate, this will trigger AOP stack
       // initialization and AOP aspect class loading, using the "good" class loader, which is set
       // now. This will save us from having to switch the thread context class loader on every send.
       producerDelegate.getDeliveryMode();
-      
+
       return producerDelegate;
    }
-   
+
    public Object handleCreateBrowserDelegate(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation)invocation;
 
       BrowserDelegate browserDelegate = (BrowserDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)browserDelegate;
-      
+
       delegate.init();
-      
+
       SessionState sessionState = (SessionState)getState(invocation);
 
       JBossDestination destination = (JBossDestination)mi.getArguments()[0];
       String selector = (String)mi.getArguments()[1];
 
       BrowserState state = new BrowserState(sessionState, browserDelegate, destination, selector);
-      
+
       delegate.setState(state);
       return browserDelegate;
    }
-      
+
    // Protected ------------------------------------------------------
 
    // Package Private ------------------------------------------------
 
    // Private --------------------------------------------------------
-   
+
    private HierarchicalState getState(Invocation inv)
    {
       return ((DelegateSupport)inv.getTargetObject()).getState();
    }
-   
+
    // Inner Classes --------------------------------------------------
 }
 

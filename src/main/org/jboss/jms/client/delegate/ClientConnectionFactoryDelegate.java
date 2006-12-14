@@ -71,7 +71,7 @@ public class ClientConnectionFactoryDelegate
  
    private Version serverVersion;
  
-   private int serverId;
+   private int serverID;
    
    private boolean clientPing;
    
@@ -110,7 +110,7 @@ public class ClientConnectionFactoryDelegate
    {
       super(objectID);
 
-      this.serverId = serverId;
+      this.serverID = serverId;
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
       this.clientPing = clientPing;
@@ -294,7 +294,7 @@ public class ClientConnectionFactoryDelegate
 
    public String toString()
    {
-      return "ClientConnectionFactoryDelegate[" + id + "]";
+      return "ClientConnectionFactoryDelegate[" + id + ", " + serverID + "]";
    }
    
    public String getServerLocatorURI()
@@ -302,9 +302,9 @@ public class ClientConnectionFactoryDelegate
       return serverLocatorURI;
    }
 
-   public int getServerId()
+   public int getServerID()
    {
-      return serverId;
+      return serverID;
    }
    
    public boolean getClientPing()

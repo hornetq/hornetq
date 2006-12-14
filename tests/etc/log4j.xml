@@ -42,7 +42,7 @@
    </category>
 
    <category name="org.jboss.remoting">
-         <priority value="TRACE"/>
+      <priority value="INFO"/>
    </category>
 
    <category name="org.jboss">

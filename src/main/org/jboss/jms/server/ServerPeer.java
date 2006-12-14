@@ -738,11 +738,11 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       //This node may be failing over for another node - in which case we must wait for that to be complete
       
-      log.info("Waiting for failover for failedNodeId: " + failedNodeId);
+      log.info(this + " waiting for server-side failover from failed node " + failedNodeId);
       
       Replicator replicator = getReplicator();
       
-      //Failover
+      // Failover
 
       long startToWait = failoverStartTimeout;
       

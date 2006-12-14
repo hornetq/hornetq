@@ -94,27 +94,30 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // ConnectionFactoryDelegate implementation ----------------------
    
-   public CreateConnectionResult createConnectionDelegate(String username, String password,
-                                                          int failedNodeId)
+   public CreateConnectionResult createConnectionDelegate(String username,
+                                                          String password,
+                                                          int failedNodeID)
       throws JMSException      
    {
       try
       {
-         if (failedNodeId == -1)
+         if (failedNodeID == -1)
          {
-            //Just a standard createConnection
+            // Just a standard createConnection
             return new CreateConnectionResult(createConnectionDelegateInternal(username, password));            
          }
          else
          {
-            //Failover
-            //Wait for server side failover to complete
-            int failoverNodeId = serverPeer.waitForFailover(failedNodeId);
+            log.debug(this + " creating a failover connection " +
+                      "to replace connection to failed node " + failedNodeID);
+
+            // Wait for server side failover to complete
+            int failoverNodeID = serverPeer.waitForFailover(failedNodeID);
             
-            if (failoverNodeId == -1 || failoverNodeId != serverPeer.getServerPeerID())
+            if (failoverNodeID == -1 || failoverNodeID != serverPeer.getServerPeerID())
             {
                //We are on the wrong node - or no failover has occurred
-               return new CreateConnectionResult(failoverNodeId);
+               return new CreateConnectionResult(failoverNodeID);
             }
             else
             {
@@ -204,6 +207,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public JNDIBindings getJNDIBindings()
    {
       return jndiBindings;
+   }
+
+   public String toString()
+   {
+      return "ConnectionFactoryEndpoint[" + id + "]";
    }
 
    // Package protected ---------------------------------------------
