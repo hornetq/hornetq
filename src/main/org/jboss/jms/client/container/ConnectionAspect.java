@@ -184,7 +184,7 @@ public class ConnectionAspect implements ConnectionListener
    {
       Object ret = invocation.invokeNext();
       
-      //Remove any exception listener
+      // Remove any exception listener
       ConnectionState currentState = getConnectionState(invocation);
       
       Client client = getConnectionState(invocation).getRemotingConnection().getInvokingClient();

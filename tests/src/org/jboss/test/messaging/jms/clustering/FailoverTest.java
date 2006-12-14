@@ -86,7 +86,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // TODO - this shouldn't be necessary if we have the client valve in place
          log.info("Sleeping for 1 min");
-         Thread.sleep(20000);
+         Thread.sleep(15000);
 
          // we must receive the message
 

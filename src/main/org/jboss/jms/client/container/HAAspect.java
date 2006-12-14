@@ -154,7 +154,7 @@ public class HAAspect
       if(trace) { log.trace(this + " registering " + listener + " on " + cd); }
       state.getRemotingConnection().getInvokingClient().addConnectionListener(listener);
 
-      return new CreateConnectionResult(cd); 
+      return new CreateConnectionResult(cd);
    }
 
    public String toString()
@@ -241,14 +241,15 @@ public class HAAspect
       return null;
    }
 
-   private void handleFailure(ClientConnectionDelegate failedConnDelegate) throws Exception
+   private void handleConnectionFailure(ClientConnectionDelegate failedConnDelegate)
+      throws Exception
    {
+      log.debug(this + " handling failed connection " + failedConnDelegate);
+
       ConnectionState failedConnState =
          (ConnectionState)((DelegateSupport)failedConnDelegate).getState();
 
       int failedServerID = failedConnState.getServerID();
-
-      log.debug(this + " handling failed connection to node " + failedServerID);
 
       // Get the default connection factory delegate we are going to failover onto
 
@@ -589,7 +590,7 @@ public class HAAspect
          try
          {
             log.debug(this + " is being notified of connection failure: " + throwable);
-            handleFailure(cd);
+            handleConnectionFailure(cd);
          }
          catch (Throwable e)
          {
@@ -599,7 +600,7 @@ public class HAAspect
 
       public String toString()
       {
-         return "ConnectionFailureListener[" + Integer.toHexString(hashCode()) + "]";
+         return "ConnectionFailureListener[" + cd + "]";
       }
    }
 }

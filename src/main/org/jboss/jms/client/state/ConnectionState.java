@@ -136,7 +136,6 @@ public class ConnectionState extends HierarchicalStateSupport
       return serverID;
    }
 
-
    public DelegateSupport getDelegate()
    {
       return (DelegateSupport) delegate;
@@ -164,7 +163,6 @@ public class ConnectionState extends HierarchicalStateSupport
       this.started = started;
    }
 
-
    public String getPassword()
    {
       return password;
@@ -186,65 +184,61 @@ public class ConnectionState extends HierarchicalStateSupport
    }
 
    public String getClientID()
-    {
-        return clientID;
-    }
+   {
+      return clientID;
+   }
 
-    public void setClientID(String clientID)
-    {
-        this.clientID = clientID;
-    }
+   public void setClientID(String clientID)
+   {
+      this.clientID = clientID;
+   }
 
-    public ExceptionListener getExceptionListener()
-    {
-        return exceptionListener;
-    }
+   public ExceptionListener getExceptionListener()
+   {
+      return exceptionListener;
+   }
 
-    public void setExceptionListener(ExceptionListener exceptionListener)
-    {
-        this.exceptionListener = exceptionListener;
-    }
+   public void setExceptionListener(ExceptionListener exceptionListener)
+   {
+      this.exceptionListener = exceptionListener;
+   }
 
-    public boolean isJustCreated()
-    {
-        return justCreated;
-    }
+   public boolean isJustCreated()
+   {
+      return justCreated;
+   }
 
-    public void setJustCreated(boolean justCreated)
-    {
-        this.justCreated = justCreated;
-    }
+   public void setJustCreated(boolean justCreated)
+   {
+      this.justCreated = justCreated;
+   }
 
-    public boolean isListenerAdded()
-    {
-        return listenerAdded;
-    }
+   public boolean isListenerAdded()
+   {
+      return listenerAdded;
+   }
 
-    public void setListenerAdded(boolean listenerAdded)
-    {
-        this.listenerAdded = listenerAdded;
-    }    
+   public void setListenerAdded(boolean listenerAdded)
+   {
+      this.listenerAdded = listenerAdded;
+   }
 
-    /** Connection doesn't have a parent */
-    public HierarchicalState getParent()
-    {
-        return null;
-    }
-    
-    //When failing over a connection, we keep the old connection's state but there are certain fields
-    //we need to update
-    public void copyState(ConnectionState newState)
-    {
-       this.remotingConnection = newState.remotingConnection;
-       
-       this.idGenerator = newState.idGenerator;
-       
-       this.serverID = newState.serverID;
-       
-       this.versionToUse = newState.versionToUse;
-       
-       this.delegate = newState.delegate;
-    }
+   /** Connection doesn't have a parent */
+   public HierarchicalState getParent()
+   {
+      return null;
+   }
+
+   //When failing over a connection, we keep the old connection's state but there are certain fields
+   //we need to update
+   public void copyState(ConnectionState newState)
+   {
+      this.remotingConnection = newState.remotingConnection;
+      this.idGenerator = newState.idGenerator;
+      this.serverID = newState.serverID;
+      this.versionToUse = newState.versionToUse;
+      this.delegate = newState.delegate;
+   }
 
    public String toString()
    {
