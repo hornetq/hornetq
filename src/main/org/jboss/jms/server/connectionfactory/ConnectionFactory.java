@@ -109,7 +109,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
          // We use the MBean service name to uniquely identify the connection factory
          
          connectionFactoryManager.
-            registerConnectionFactory(this.getName(), clientID, jndiBindings, locatorURI,
+            registerConnectionFactory(getServiceName().toString(), clientID, jndiBindings, locatorURI,
                                       enablePing, prefetchSize, defaultTempQueueFullSize,
                                       defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
                                       clustered);
@@ -143,7 +143,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
       {
          started = false;
          
-         connectionFactoryManager.unregisterConnectionFactory(this.getName(), clustered);
+         connectionFactoryManager.unregisterConnectionFactory(getServiceName().toString(), clustered);
          
          connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
          
