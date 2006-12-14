@@ -37,30 +37,60 @@ import org.jboss.jms.delegate.ConnectionDelegate;
  */
 public class CreateConnectionResult implements Serializable
 {
+   // Constants -----------------------------------------------------
+
    private static final long serialVersionUID = 4311863642735135167L;
-   
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private ConnectionDelegate delegate;
-   
-   private int actualFailoverNodeId;
-   
-   public CreateConnectionResult(ConnectionDelegate del)
+
+   private int actualFailoverNodeID;
+
+   // Constructors --------------------------------------------------
+
+   public CreateConnectionResult(ConnectionDelegate delegate)
    {
-      this.delegate = del;
+      this(delegate, Integer.MIN_VALUE);
    }
-   
-   public CreateConnectionResult(int actualFailoverNode)
+
+   public CreateConnectionResult(int actualFailoverNodeID)
    {
-      this.actualFailoverNodeId = actualFailoverNode;
+      this(null, actualFailoverNodeID);
    }
-   
+
+   private CreateConnectionResult(ConnectionDelegate delegate,
+                                  int actualFailoverNodeId)
+   {
+      this.delegate = delegate;
+      this.actualFailoverNodeID = actualFailoverNodeId;
+   }
+
+   // Public --------------------------------------------------------
+
    public ConnectionDelegate getDelegate()
    {
       return delegate;
    }
-   
-   public int getActualFailoverNode()
+
+   public int getActualFailoverNodeID()
    {
-      return actualFailoverNodeId;
+      return actualFailoverNodeID;
    }
+
+   public String toString()
+   {
+      return "CreateConnectionResult[" + delegate + ", failover node " + actualFailoverNodeID + "]";
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

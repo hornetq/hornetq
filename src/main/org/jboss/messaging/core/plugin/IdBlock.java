@@ -76,4 +76,9 @@ public class IdBlock implements Streamable
       out.writeLong(high);
    }
 
+   public String toString()
+   {
+      return "IdBlock[" + low + "-" + high + "]";
+   }
+
 }

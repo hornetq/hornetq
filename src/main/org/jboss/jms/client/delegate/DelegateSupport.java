@@ -34,7 +34,6 @@ import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.serialization.SerializationStreamFactory;
 
 /**
  * Base class for all client-side delegate classes.
@@ -67,27 +66,28 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    // Attributes ----------------------------------------------------
 
-   //This is set on the server
+   // This is set on the server.
    protected int id;
 
-   //This is set on the client
-   //The reason we don't use the meta-data to store the state for the delegate is to avoid
-   //the extra HashMap lookup that would entail.
-   //This can be significant since the state could be queried for many aspects
-   //in an a single invocation
+   // This is set on the client.
+   // The reason we don't use the meta-data to store the state for the delegate is to avoid the
+   // extra HashMap lookup that would entail. This can be significant since the state could be
+   // queried for many aspects in an a single invocation.
    protected transient HierarchicalState state;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DelegateSupport(int objectID)
+   public DelegateSupport(int id)
    {
-      this.id = objectID;
+      this.id = id;
+      this.state = null;
    }
 
    public DelegateSupport()
    {
+      this(Integer.MIN_VALUE);
    }
 
    // Interceptor implementation ------------------------------------
@@ -142,20 +142,20 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       checkMarshallers();
    }
 
-    public int getID()
-    {
-       return id;
-    }
+   public int getID()
+   {
+      return id;
+   }
 
-    /**
-     * During HA events, a new object is created on the new server and the state on that new object
-     * has to be transfered to this actual object. For example, a Connection will have to assume the
-     * ObjectID of the new connection endpoint and the new RemotingConnection.
-     */
-    public void copyAttributes(DelegateSupport newDelegate)
-    {
-        id = newDelegate.getID();
-    }
+   /**
+    * During HA events, a new object is created on the new server and the state on that new object
+    * has to be transfered to this actual object. For example, a Connection will have to assume the
+    * ObjectID of the new connection endpoint and the new RemotingConnection.
+    */
+   public void copyAttributes(DelegateSupport newDelegate)
+   {
+      id = newDelegate.getID();
+   }
 
    // Package protected ---------------------------------------------
 

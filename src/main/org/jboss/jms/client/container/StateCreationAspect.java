@@ -86,12 +86,14 @@ public class StateCreationAspect
 
       CreateConnectionResult res = (CreateConnectionResult)inv.invokeNext();
 
-      if(trace) { log.trace("got " + res + " on return"); }
-
       ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)res.getDelegate();
 
-      if (connectionDelegate != null)
+      if (connectionDelegate != null && connectionDelegate.getState() == null)
       {
+         // no state set yet, initialize and configure it
+
+         if(trace) { log.trace(connectionDelegate + " not configured, configuring ..."); }
+
          connectionDelegate.init();
 
          int serverID = connectionDelegate.getServerID();
@@ -110,6 +112,10 @@ public class StateCreationAspect
             new ConnectionState(serverID, connectionDelegate, remotingConn, versionToUse, g);
 
          connectionDelegate.setState(connectionState);
+
+         // the delegate is completely configured now; will use this state to avoid redundant
+         // configuration on a double pass through StateCreationAspect, which happens for clustered
+         // connections
       }
 
       return res;

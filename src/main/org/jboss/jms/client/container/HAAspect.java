@@ -282,7 +282,7 @@ public class HAAspect
 
          // Did not get a valid connection to the node we've just tried
 
-         int actualServerID = r.getActualFailoverNode();
+         int actualServerID = r.getActualFailoverNodeID();
 
          if (actualServerID == -1)
          {
