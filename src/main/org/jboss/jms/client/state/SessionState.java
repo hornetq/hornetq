@@ -27,8 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.MessagingXAResource;
@@ -50,6 +51,8 @@ public class SessionState extends HierarchicalStateSupport
 {
    protected static Logger log = Logger.getLogger(SessionState.class);
 
+   private int sessionId;
+   
    private int acknowledgeMode;
    
    private boolean transacted;
@@ -74,10 +77,13 @@ public class SessionState extends HierarchicalStateSupport
    
    private Map callbackHandlers;
    
-   public SessionState(ConnectionState parent, SessionDelegate delegate,
-            boolean transacted, int ackMode, boolean xa)
+   public SessionState(ConnectionState parent, ClientSessionDelegate delegate,
+                       boolean transacted, int ackMode, boolean xa)
    {
       super(parent, (DelegateSupport)delegate);
+      
+      this.sessionId = delegate.getID();
+      
       children = new HashSet();
       this.acknowledgeMode = ackMode;
       this.transacted = transacted;
@@ -206,12 +212,18 @@ public class SessionState extends HierarchicalStateSupport
       return new ArrayList(callbackHandlers.values());
    }
    
+   public int getSessionId()
+   {
+      return sessionId;
+   }
+   
    // When failing over a session, we keep the old session's state but there are certain fields
    // we need to update
    public void copyState(SessionState newState)
    {      
-      //Actually only one field
       this.delegate = newState.delegate;
+      
+      this.sessionId = newState.sessionId;
    }
 }
 

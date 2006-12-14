@@ -65,11 +65,6 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
       endpoint.closing();
    }
 
-   public boolean isClosed()
-   {
-      return endpoint.isClosed();
-   }
-
    public boolean hasNextMessage() throws JMSException
    {
       return endpoint.hasNextMessage();
@@ -83,6 +78,11 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
    public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
       return endpoint.nextMessageBlock(maxMessages);
+   }
+   
+   public boolean isClosed() throws JMSException
+   {
+      return endpoint.isClosed();
    }
 
    // AdvisedSupport overrides --------------------------------------

@@ -39,9 +39,14 @@ public class MapMessageProxy extends MessageProxy implements MapMessage
 {
    private static final long serialVersionUID = 6953530870351885569L;
 
-   public MapMessageProxy(JBossMapMessage message, int deliveryCount)
+   public MapMessageProxy(long deliveryId, JBossMapMessage message, int deliveryCount)
    {
-      super(message, deliveryCount);
+      super(deliveryId, message, deliveryCount);
+   }
+   
+   public MapMessageProxy(JBossMapMessage message)
+   {
+      super(message);
    }
    
    public boolean getBoolean(String name) throws JMSException

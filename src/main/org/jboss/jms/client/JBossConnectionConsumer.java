@@ -72,37 +72,37 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    // Attributes ----------------------------------------------------
    
-   protected ConsumerDelegate cons;
+   private ConsumerDelegate cons;
    
-   protected SessionDelegate sess;
+   private SessionDelegate sess;
    
-   protected int consumerID;
+   private int consumerID;
    
    /** The destination this consumer will receive messages from */
-   protected Destination destination;
+   private Destination destination;
    
    /** The ServerSessionPool that is implemented by the AS */
-   protected ServerSessionPool serverSessionPool;
+   private ServerSessionPool serverSessionPool;
    
    /** The maximum number of messages that a single session will be loaded with. */
-   protected int maxMessages;
+   private int maxMessages;
    
    /** Is the ConnectionConsumer closed? */
-   protected volatile boolean closed;
+   private volatile boolean closed;
      
    /** The "listening" thread that gets messages from destination and queues
    them for delivery to sessions */
-   protected Thread internalThread;
+   private Thread internalThread;
    
    /** The thread id */
-   protected int id;
+   private int id;
    
    /** The thread id generator */
-   protected static SynchronizedInt threadId = new SynchronizedInt(0);
+   private static SynchronizedInt threadId = new SynchronizedInt(0);
    
-   protected Object closeLock = new Object();      
+   private int maxDeliveries;
    
-   protected int maxDeliveries;
+   private long channelID;
    
    // Static --------------------------------------------------------
    
@@ -153,6 +153,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
 
       this.consumerID = state.getConsumerID();      
+      
+      this.channelID = state.getChannelId();
       
       this.maxDeliveries = state.getMaxDeliveries();
 
@@ -302,7 +304,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                for (int i = 0; i < mesList.size(); i++)
                {
                   MessageProxy m = (MessageProxy)mesList.get(i);
-                  session.addAsfMessage(m, consumerID, cons, maxDeliveries);
+                  session.addAsfMessage(m, consumerID, channelID, maxDeliveries);
                   if (trace) { log.trace("added " + m + " to session"); }
                }
 

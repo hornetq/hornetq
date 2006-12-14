@@ -38,9 +38,14 @@ public class StreamMessageProxy extends MessageProxy implements StreamMessage
 {
    private static final long serialVersionUID = 856367553964704474L;
 
-   public StreamMessageProxy(JBossStreamMessage message, int deliveryCount)
+   public StreamMessageProxy(long deliveryId, JBossStreamMessage message, int deliveryCount)
    {
-      super(message, deliveryCount);
+      super(deliveryId, message, deliveryCount);
+   }
+   
+   public StreamMessageProxy(JBossStreamMessage message)
+   {
+      super(message);
    }
 
    public boolean readBoolean() throws JMSException

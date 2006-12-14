@@ -53,10 +53,4 @@ public interface ConnectionDelegate extends ConnectionEndpoint
                                                     String messageSelector,
                                                     ServerSessionPool sessionPool,
                                                     int maxMessages) throws JMSException;
-
-   /**
-    * Reconnects the current connection hierarchy using newConnection's properties.
-    */
-    //void failOver(ConnectionDelegate newConnection);
-
 }

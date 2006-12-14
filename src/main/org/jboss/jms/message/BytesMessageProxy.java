@@ -38,9 +38,14 @@ public class BytesMessageProxy extends MessageProxy implements BytesMessage
 {
    private static final long serialVersionUID = -9121097962625801946L;
 
-   public BytesMessageProxy(JBossBytesMessage message, int deliveryCount)
+   public BytesMessageProxy(long deliveryId, JBossBytesMessage message, int deliveryCount)
    {
-      super(message, deliveryCount);
+      super(deliveryId, message, deliveryCount);
+   }
+   
+   public BytesMessageProxy(JBossBytesMessage message)
+   {
+      super(message);
    }
 
    public long getBodyLength() throws JMSException

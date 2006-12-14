@@ -113,15 +113,15 @@ public class HATest extends ClusteringTestBase
       
       try
       {         
-         conn1 = factory.createConnection();
+         conn1 = factory.createConnection();  //server 0
          
-         conn2 = factory.createConnection();
+         conn2 = factory.createConnection();  //server 1
          
-         conn3 = factory.createConnection();
+         conn3 = factory.createConnection();  //server 2
          
-         conn4 = factory.createConnection();
+         conn4 = factory.createConnection();  //server 0
          
-         conn5 = factory.createConnection();
+         conn5 = factory.createConnection();  //server 1
          
          ConnectionState state1 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn1).getDelegate()).getState());
          
@@ -441,6 +441,8 @@ public class HATest extends ClusteringTestBase
       int server1Id = cf2.getServerID();
       
       int server2Id = cf3.getServerID();
+
+      //Server order should be 2, 0, 1
       
       log.info("server 0 id: " + server0Id);
       
@@ -462,15 +464,19 @@ public class HATest extends ClusteringTestBase
       
       Connection conn = null;
       
+      boolean killed =  false;
+            
       try
-      {
-      
-         //Get a connection on server 1
+      {      
+         conn = factory.createConnection(); //connection on server 2
+         
+         conn.close();
+         
          conn = factory.createConnection(); //connection on server 0
          
          conn.close();
          
-         conn = factory.createConnection(); //connection on server 1
+         conn = factory.createConnection(); // connection on server 1
          
          JBossConnection jbc = (JBossConnection)conn;
          
@@ -504,6 +510,8 @@ public class HATest extends ClusteringTestBase
          log.info("************ KILLING (CRASHING) SERVER 1");
          
          ServerManagement.kill(1);
+         
+         killed = true;
          
          log.info("killed server, now waiting");
          
@@ -546,7 +554,13 @@ public class HATest extends ClusteringTestBase
             catch (Exception e)
             {
                e.printStackTrace();
-            }
+            }         
+         }
+         
+         //Resurrect dead server
+         if (killed)
+         {
+            ServerManagement.spawn(1);
          }
       }
       
@@ -597,14 +611,15 @@ public class HATest extends ClusteringTestBase
       
       Connection conn = null;
       
+      boolean killed = false;
+      
       try
       {      
-         //Get a connection on server 1
-         conn = factory.createConnection(); //connection on server 0
+         conn = factory.createConnection(); //connection on server 1
          
          conn.close();
          
-         conn = factory.createConnection(); //connection on server 1
+         conn = factory.createConnection(); //connection on server 2
          
          JBossConnection jbc = (JBossConnection)conn;
          
@@ -614,7 +629,7 @@ public class HATest extends ClusteringTestBase
          
          int initialServerID = state.getServerID();
          
-         assertEquals(1, initialServerID);
+         assertEquals(2, initialServerID);
                            
          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          
@@ -653,9 +668,11 @@ public class HATest extends ClusteringTestBase
          
          ServerManagement.kill(1);
          
+         killed = true;
+         
          log.info("killed server, now waiting");
          
-         Thread.sleep(5000);
+         Thread.sleep(10000);
          
          log.info("done wait");
          
@@ -720,6 +737,12 @@ public class HATest extends ClusteringTestBase
                e.printStackTrace();
             }
          }
+         
+         // Resurrect dead server
+         if (killed)
+         {
+            ServerManagement.spawn(1);
+         }
       }
       
    }
@@ -767,6 +790,8 @@ public class HATest extends ClusteringTestBase
       assertEquals(server2Id, server1FailoverId);
       
       Connection conn = null;
+      
+      boolean killed = false;
       
       try
       {      
@@ -825,6 +850,8 @@ public class HATest extends ClusteringTestBase
          log.info("************ KILLING (CRASHING) SERVER 1");
          
          ServerManagement.kill(1);
+         
+         killed = true;
 
          log.info("killed server, now waiting");
          
@@ -893,49 +920,14 @@ public class HATest extends ClusteringTestBase
                e.printStackTrace();
             }
          }
+         
+         if (killed)
+         {
+            ServerManagement.spawn(1);
+         }
       }
       
    }
-   
-   
-   
-   
-//   public void testEvenSimplerFailover() throws Exception
-//   {
-//      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
-//                  
-//      Connection conn = null;
-//      
-//      try
-//      {
-//         conn = factory.createConnection();
-//                           
-//         log.info("************ KILLING (CRASHING) SERVER 0");
-//         
-//         ServerManagement.getServer(0).destroy();
-//         
-//         log.info("killed server, now waiting");
-//         
-//         Thread.sleep(25000);
-//         
-//         log.info("done wait");                
-//      }
-//      finally
-//      {         
-//         if (conn != null)
-//         {
-//            try
-//            {
-//               conn.close();
-//            }
-//            catch (Exception e)
-//            {
-//               e.printStackTrace();
-//            }
-//         }
-//      }
-//      
-//   }
    
    
 // public void testConnectionFactoryConnect() throws Exception

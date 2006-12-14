@@ -30,6 +30,7 @@ import javax.jms.Message;
 
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.remoting.JMSDispatcher;
+import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Filter;
@@ -65,8 +66,8 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    // Constructors --------------------------------------------------
 
-   protected ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
-                                   Channel destination, String messageSelector)
+   ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
+                         Channel destination, String messageSelector)
       throws JMSException
    {     
       this.session = session;
@@ -87,24 +88,38 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    public boolean hasNextMessage() throws JMSException
    {
-      if (closed)
+      try
       {
-         throw new IllegalStateException("Browser is closed");
+         if (closed)
+         {
+            throw new IllegalStateException("Browser is closed");
+         }
+         return iterator.hasNext();
+      }   
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " hasNextMessage");
       }
-      return iterator.hasNext();
    }
    
    public Message nextMessage() throws JMSException
    {
-      if (closed)
+      try
       {
-         throw new IllegalStateException("Browser is closed");
+         if (closed)
+         {
+            throw new IllegalStateException("Browser is closed");
+         }
+         Routable r = (Routable)iterator.next();
+   
+         if (trace) { log.trace("returning the message corresponding to " + r); }
+         
+         return (Message)r.getMessage();
+      }   
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " nextMessage");
       }
-      Routable r = (Routable)iterator.next();
-
-      if (trace) { log.trace("returning the message corresponding to " + r); }
-      
-      return (Message)r.getMessage();
    }
    
    
@@ -112,52 +127,60 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 	//why not just pass back the arraylist??
    public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
-      if (closed)
+      try
       {
-         throw new IllegalStateException("Browser is closed");
-      }
-      
-      if (maxMessages < 2)
-      {
-         throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
-      }
-      
-      ArrayList messages = new ArrayList(maxMessages);
-      int i = 0;
-      while (i < maxMessages)
-      {
-         if (iterator.hasNext())
+         if (closed)
          {
-            Message m = (Message)((Routable)iterator.next()).getMessage();
-            messages.add(m);
-            i++;
+            throw new IllegalStateException("Browser is closed");
          }
-         else break;
-      }		
-		return (Message[])messages.toArray(new Message[messages.size()]);		        
+         
+         if (maxMessages < 2)
+         {
+            throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
+         }
+         
+         ArrayList messages = new ArrayList(maxMessages);
+         int i = 0;
+         while (i < maxMessages)
+         {
+            if (iterator.hasNext())
+            {
+               Message m = (Message)((Routable)iterator.next()).getMessage();
+               messages.add(m);
+               i++;
+            }
+            else break;
+         }		
+   		return (Message[])messages.toArray(new Message[messages.size()]);	
+      }   
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " nextMessageBlock");
+      }
    }
-   
    
    public void close() throws JMSException
    {
-      if (closed)
+      try
       {
-         throw new IllegalStateException("Browser is already closed");
+         localClose();
+         
+         session.removeBrowser(id);
+      }   
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " close");
       }
-      iterator = null;
-      session.removeBrowserDelegate(id);
-      JMSDispatcher.instance.unregisterTarget(new Integer(id));
-      closed = true;
    }
-   
+         
    public void closing() throws JMSException
    {
       // Do nothing
    }
-
-   public boolean isClosed()
+   
+   public boolean isClosed() throws JMSException
    {
-      return closed;
+      throw new IllegalStateException("isClosed should never be handled on the server side");
    }
 
    // Public --------------------------------------------------------
@@ -168,8 +191,22 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    }
 
    // Package protected ---------------------------------------------
+   
+   void localClose() throws JMSException
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Browser is already closed");
+      }
+      
+      iterator = null;
+      
+      JMSDispatcher.instance.unregisterTarget(new Integer(id));
+      
+      closed = true;
+   }
 
-   // Protected -----------------------------------------------------
+   // Protected -----------------------------------------------------      
 
    // Private -------------------------------------------------------
 

@@ -40,6 +40,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * The CallbackManager is an InvocationHandler used for handling callbacks to message consumers.
  * The callback is received and dispatched off to the relevant consumer.
  * 
+ * There is one instance of this class per remoting connection - which is to a unique server - therefore
+ * there is no need to add the server id to the key when doing look ups
+ * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
@@ -76,15 +79,13 @@ public class CallbackManager implements InvokerCallbackHandler
    {
       MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
       ClientDelivery dr = (ClientDelivery)mm.getLoad();
-      Long lookup = computeLookup(dr.getServerId(), dr.getConsumerId());
       List msgs = dr.getMessages();
 
-      MessageCallbackHandler handler = (MessageCallbackHandler)callbackHandlers.get(lookup);
+      MessageCallbackHandler handler = (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
 
       if (handler == null)
       {
-         throw new IllegalStateException("Cannot find handler for consumer: " + dr.getConsumerId() +
-                                         " and server " + dr.getServerId());
+         throw new IllegalStateException("Cannot find handler for consumer: " + dr.getConsumerId());
       }
 
       handler.handleMessage(msgs);
@@ -92,18 +93,14 @@ public class CallbackManager implements InvokerCallbackHandler
 
    // Public --------------------------------------------------------
 
-   public void registerHandler(int serverID, int consumerID, MessageCallbackHandler handler)
+   public void registerHandler(int consumerID, MessageCallbackHandler handler)
    {
-      Long lookup = computeLookup(serverID, consumerID);
-
-      callbackHandlers.put(lookup, handler);
+      callbackHandlers.put(new Integer(consumerID), handler);
    }
 
-   public MessageCallbackHandler unregisterHandler(int serverID, int consumerID)
+   public MessageCallbackHandler unregisterHandler(int consumerID)
    { 
-      Long lookup = computeLookup(serverID, consumerID);
-
-      return (MessageCallbackHandler)callbackHandlers.remove(lookup);
+      return (MessageCallbackHandler)callbackHandlers.remove(new Integer(consumerID));
    }
 
    // Package protected ---------------------------------------------
@@ -111,17 +108,6 @@ public class CallbackManager implements InvokerCallbackHandler
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private Long computeLookup(int serverID, int consumerID)
-   {
-      long id1 = serverID;
-
-      id1 <<= 32;
-
-      long lookup = id1 | consumerID;
-
-      return new Long(lookup);
-   }
 
    // Inner classes -------------------------------------------------
 

@@ -11,6 +11,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.jboss.jms.util.XMLUtil;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 
 import javax.management.ObjectName;
 import java.util.Map;
@@ -30,6 +32,9 @@ import java.util.ArrayList;
 public class MBeanConfigurationElement
  {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(MBeanConfigurationElement.class);
+
 
    // Static --------------------------------------------------------
 
@@ -82,6 +87,8 @@ public class MBeanConfigurationElement
 
       Node mbeanNameAttr = attrs.getNamedItem("name");
       on = new ObjectName(mbeanNameAttr.getNodeValue());
+      
+      log.trace("ObjectName is: " + on);
 
       Node mbeanCodeAttr = attrs.getNamedItem("code");
       className = mbeanCodeAttr.getNodeValue();

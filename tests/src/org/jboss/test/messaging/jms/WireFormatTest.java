@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +44,16 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.server.endpoint.Ack;
+import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.ClientDelivery;
+import org.jboss.jms.server.endpoint.DefaultAck;
+import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
-import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.jms.tx.TxState;
+import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IdBlock;
 import org.jboss.remoting.InvocationRequest;
@@ -130,11 +135,13 @@ public class WireFormatTest extends MessagingTestCase
       
       sendMethod = sessionDelegate.getMethod("send", new Class[] { JBossMessage.class });
        
-      acknowledgeMethod = sessionDelegate.getMethod("acknowledge", new Class[] { AckInfo.class });
+      acknowledgeMethod = sessionDelegate.getMethod("acknowledge", new Class[] { Ack.class });
       
       acknowledgeBatchMethod = sessionDelegate.getMethod("acknowledgeBatch", new Class[] { java.util.List.class });
       
       cancelDeliveriesMethod = sessionDelegate.getMethod("cancelDeliveries", new Class[] { java.util.List.class });
+      
+      //TODO - this isn't complete - there are other methods to test
             
       //Consumer
             
@@ -263,10 +270,8 @@ public class WireFormatTest extends MessagingTestCase
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         long messageID = 123456;
-         int consumerID = 65432;
-         int deliveryCount = 765;
-         AckInfo ack = new AckInfo(messageID, consumerID, deliveryCount);
+         int deliveryID = 765;
+         Ack ack = new DefaultAck(deliveryID);
          
          Object[] args = new Object[] { ack };
          
@@ -304,15 +309,11 @@ public class WireFormatTest extends MessagingTestCase
          //Next long should be methodHash
          assertEquals(methodHash, dis.readLong());
          
-         //Next should be the externalized AckInfo
-         AckInfo ack2 = new AckInfo();
-                  
-         ack2.read(dis);
+         //Next should be the deliveryid
+         long l = dis.readLong();
          
-         assertEquals(ack.getMessageID(), ack2.getMessageID());
-         assertEquals(ack.getConsumerID(), ack2.getConsumerID());
-         assertEquals(ack.getDeliveryCount(), ack2.getDeliveryCount());
-         
+         assertEquals(deliveryID, l);
+
          //Now eos
          try
          {
@@ -340,10 +341,9 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());
          
-         AckInfo ack3 = (AckInfo)mi2.getArguments()[0];
+         Ack l2 = (Ack)mi2.getArguments()[0];
          
-         assertEquals(ack3.getMessageID(), ack3.getMessageID());
-         assertEquals(ack3.getConsumerID(), ack3.getConsumerID());
+         assertEquals(deliveryID, l2.getDeliveryId());
          
       }
       
@@ -357,14 +357,16 @@ public class WireFormatTest extends MessagingTestCase
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         AckInfo ackA = new AckInfo(1524, 71627, 32);
-         AckInfo ackB = new AckInfo(987987, 45354, 21);
-         AckInfo ackC = new AckInfo(32423, 4533, 6);
+         long ackA = 1343;
          
+         long ackB = 176276;
+         
+         long ackC = 17261726;
+                  
          List acks = new ArrayList();
-         acks.add(ackA);
-         acks.add(ackB);
-         acks.add(ackC);
+         acks.add(new DefaultAck(ackA));
+         acks.add(new DefaultAck(ackB));
+         acks.add(new DefaultAck(ackC));
          
          Object[] args = new Object[] { acks };
          
@@ -406,29 +408,15 @@ public class WireFormatTest extends MessagingTestCase
          assertEquals(3, dis.readInt());
          
          //Now the acks
-         AckInfo ack = new AckInfo();
-            
-         ack.read(dis);
+         long l1 = dis.readLong();
          
-         assertEquals(ackA.getMessageID(), ack.getMessageID());
-         assertEquals(ackA.getConsumerID(), ack.getConsumerID());
-         assertEquals(ackA.getDeliveryCount(), ack.getDeliveryCount());
+         long l2 = dis.readLong();
          
-         ack = new AckInfo();
+         long l3 = dis.readLong();
          
-         ack.read(dis);
-         
-         assertEquals(ackB.getMessageID(), ack.getMessageID());
-         assertEquals(ackB.getConsumerID(), ack.getConsumerID());
-         assertEquals(ackB.getDeliveryCount(), ack.getDeliveryCount());
-         
-         ack = new AckInfo();
-         
-         ack.read(dis);
-         
-         assertEquals(ackC.getMessageID(), ack.getMessageID());
-         assertEquals(ackC.getConsumerID(), ack.getConsumerID());
-         assertEquals(ackC.getDeliveryCount(), ack.getDeliveryCount());
+         assertEquals(ackA, l1);
+         assertEquals(ackB, l2);
+         assertEquals(ackC, l3);
          
          
          //Now eos
@@ -462,14 +450,10 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(3, acks.size());
          
-         assertEquals(ackA.getMessageID(), ((AckInfo)(acks2.get(0))).getMessageID());
-         assertEquals(ackA.getConsumerID(), ((AckInfo)(acks2.get(0))).getConsumerID());
+         assertEquals(ackA, ((DefaultAck)acks2.get(0)).getDeliveryId());
+         assertEquals(ackB, ((DefaultAck)acks2.get(1)).getDeliveryId());
+         assertEquals(ackC, ((DefaultAck)acks2.get(2)).getDeliveryId());
          
-         assertEquals(ackB.getMessageID(), ((AckInfo)(acks2.get(1))).getMessageID());
-         assertEquals(ackB.getConsumerID(), ((AckInfo)(acks2.get(1))).getConsumerID());
-         
-         assertEquals(ackC.getMessageID(), ((AckInfo)(acks2.get(2))).getMessageID());
-         assertEquals(ackC.getConsumerID(), ((AckInfo)(acks2.get(2))).getConsumerID());
       }
       
       
@@ -739,11 +723,19 @@ public class WireFormatTest extends MessagingTestCase
          JBossMessage m = new JBossMessage(123);
          MessageTest.configureMessage(m);
          
-         AckInfo info = new AckInfo(123, 456, 66);
+         long deliveryId = 89281389;
          
-         TxState state = new TxState();
-         state.getMessages().add(m);
-         state.getAcks().add(info);
+         int deliveryCount = 12;
+         
+         MessageProxy proxy = JBossMessage.createThinDelegate(deliveryId, m, deliveryCount);
+                     
+         DeliveryInfo info = new DeliveryInfo(proxy, 76762, 98982);
+         
+         int sessionId = 8787;
+         
+         ClientTransaction state = new ClientTransaction();
+         state.addMessage(sessionId, m);
+         state.addAck(sessionId, info);
           
          TransactionRequest request = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, state);
                            
@@ -806,18 +798,24 @@ public class WireFormatTest extends MessagingTestCase
          {
             //Ok
          }
+         
+         ClientTransaction state2 = req.getState();
+         
+         Collection sessionStates = state2.getSessionStates();
+         
+         assertEquals(1, sessionStates.size());
+         
+         SessionTxState sess = (SessionTxState)sessionStates.iterator().next();
 
-         JBossMessage m2 = (JBossMessage)req.getState().getMessages().get(0);
+         JBossMessage m2 = (JBossMessage)sess.getMsgs().get(0);
          
          MessageTest.ensureEquivalent(m, m2);
          
          assertEquals(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, req.getRequestType());
          
-         AckInfo info2 = (AckInfo)req.getState().getAcks().get(0);
+         Ack ack = (Ack)sess.getAcks().get(0);
          
-         assertEquals(info.getConsumerID(), info2.getConsumerID());
-         assertEquals(info.getMessageID(), info2.getMessageID());
-         assertEquals(info.getDeliveryCount(), info2.getDeliveryCount());
+         assertEquals(deliveryId, ack.getDeliveryId());
          
          bis.reset();
          
@@ -837,17 +835,22 @@ public class WireFormatTest extends MessagingTestCase
          
          TransactionRequest req2 = (TransactionRequest)mi2.getArguments()[0];
          
-         JBossMessage m3 = (JBossMessage)req2.getState().getMessages().get(0);
+         ClientTransaction state3 = req2.getState();
+         
+         Collection sessionStates2 = state3.getSessionStates();
+         
+         SessionTxState sess2 = (SessionTxState)sessionStates2.iterator().next();
+         
+         JBossMessage m3 = (JBossMessage)sess2.getMsgs().get(0);
          
          MessageTest.ensureEquivalent(m, m3);
          
          assertEquals(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, req2.getRequestType());
          
-         AckInfo info3 = (AckInfo)req2.getState().getAcks().get(0);
+         Ack ack2 = (Ack)sess2.getAcks().get(0);
          
-         assertEquals(info.getConsumerID(), info3.getConsumerID());
-         assertEquals(info.getMessageID(), info3.getMessageID());
-                  
+         assertEquals(deliveryId, ack2.getDeliveryId());
+         
       }  
             
       
@@ -857,18 +860,18 @@ public class WireFormatTest extends MessagingTestCase
          
          int objectId = 54321;
          
-         List ids = new ArrayList();
+         List cancels = new ArrayList();
          
-         AckInfo ack1 = new AckInfo(1254, 78123, 22);
-         AckInfo ack2 = new AckInfo(786, 8979, 461);
-         ids.add(ack1);
-         ids.add(ack2);
+         Cancel cancel1 = new Cancel(65654, 43);
+         Cancel cancel2 = new Cancel(65765, 2);
+         cancels.add(cancel1);
+         cancels.add(cancel2);
          
          MethodInvocation mi = new MethodInvocation(null, methodHash, cancelDeliveriesMethod, cancelDeliveriesMethod, null);
          
          mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
          
-         mi.setArguments(new Object[] {ids});
+         mi.setArguments(new Object[] {cancels});
          
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
          
@@ -909,27 +912,22 @@ public class WireFormatTest extends MessagingTestCase
          assertEquals(2, size);
          
          //then the AckInfos
-         AckInfo rack1 = new AckInfo();
+         Cancel rcancel1 = new Cancel();
          
-         AckInfo rack2 = new AckInfo();
+         Cancel rcancel2 = new Cancel();
          
-         rack1.read(dis);
+         rcancel1.read(dis);
          
-         rack2.read(dis);
+         rcancel2.read(dis);
          
-         assertEquals(ack1.getConsumerID(), rack1.getConsumerID());
+         assertEquals(cancel1.getDeliveryCount(), rcancel1.getDeliveryCount());
          
-         assertEquals(ack1.getMessageID(), rack1.getMessageID());
+         assertEquals(cancel1.getDeliveryId(), cancel1.getDeliveryId());
          
-         assertEquals(ack1.getDeliveryCount(), rack1.getDeliveryCount());
+         assertEquals(cancel2.getDeliveryCount(), rcancel2.getDeliveryCount());
          
-         assertEquals(ack2.getConsumerID(), rack2.getConsumerID());
-         
-         assertEquals(ack2.getMessageID(), rack2.getMessageID());
-         
-         assertEquals(ack2.getDeliveryCount(), rack2.getDeliveryCount());
-         
-          
+         assertEquals(cancel2.getDeliveryId(), cancel2.getDeliveryId());
+                   
          //should be eos
                 
          try
@@ -963,16 +961,17 @@ public class WireFormatTest extends MessagingTestCase
         
          assertEquals(2, list.size());
          
-         AckInfo xack1 = (AckInfo)list.get(0);
-         AckInfo xack2 = (AckInfo)list.get(1);
+         Cancel xack1 = (Cancel)list.get(0);
+         Cancel xack2 = (Cancel)list.get(1);
          
-         assertEquals(ack1.getConsumerID(), xack1.getConsumerID());
+         assertEquals(cancel1.getDeliveryId(), xack1.getDeliveryId());
          
-         assertEquals(ack1.getMessageID(), xack1.getMessageID());
+         assertEquals(cancel1.getDeliveryCount(), xack1.getDeliveryCount());
          
-         assertEquals(ack2.getConsumerID(), xack2.getConsumerID());
+         assertEquals(cancel2.getDeliveryId(), xack2.getDeliveryId());
          
-         assertEquals(ack2.getMessageID(), xack2.getMessageID());
+         assertEquals(cancel2.getDeliveryCount(), xack2.getDeliveryCount());
+         
       }  
       
       public void testNullResponse() throws Exception
@@ -1100,17 +1099,15 @@ public class WireFormatTest extends MessagingTestCase
       {
          int consumerID = 12345678;
          
-         int serverId = 76543;
-         
          JBossMessage m1 = new JBossMessage(123);
          JBossMessage m2 = new JBossMessage(456);
          JBossMessage m3 = new JBossMessage(789);
          
          List msgs = new ArrayList();
          
-         MessageProxy del1 = JBossMessage.createThinDelegate(m1, 7);
-         MessageProxy del2 = JBossMessage.createThinDelegate(m2, 8);
-         MessageProxy del3 = JBossMessage.createThinDelegate(m3, 9);
+         MessageProxy del1 = JBossMessage.createThinDelegate(1, m1, 7);
+         MessageProxy del2 = JBossMessage.createThinDelegate(2, m2, 8);
+         MessageProxy del3 = JBossMessage.createThinDelegate(3, m3, 9);
          
          MessageTest.configureMessage(m1);
          MessageTest.configureMessage(m2);
@@ -1120,7 +1117,7 @@ public class WireFormatTest extends MessagingTestCase
          msgs.add(del2);
          msgs.add(del3);         
          
-         ClientDelivery dr = new ClientDelivery(msgs, serverId, consumerID);
+         ClientDelivery dr = new ClientDelivery(msgs, consumerID);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -1149,22 +1146,20 @@ public class WireFormatTest extends MessagingTestCase
          //Next should be sessionID
          assertEquals("dummySessionId", dis.readUTF());
          
-         //Next int should be server id
-         assertEquals(76543, dis.readInt());
-         
          //Next int should be consumer id
          assertEquals(12345678, dis.readInt());
          
          //Next int should be number of messages
          assertEquals(3, dis.readInt());
-         
-         
-         
+                           
          //Next byte should be type
          assertEquals(JBossMessage.TYPE, dis.readByte());
          
          //Next int should be delivery count
          assertEquals(7, dis.readInt());
+         
+         //Delivery id
+         assertEquals(1, dis.readLong());
          
          //And now the message itself
          JBossMessage r1 = new JBossMessage();
@@ -1178,6 +1173,9 @@ public class WireFormatTest extends MessagingTestCase
          //Next int should be delivery count
          assertEquals(8, dis.readInt());
          
+         // Delivery id
+         assertEquals(2, dis.readLong());
+         
          //And now the message itself
          JBossMessage r2 = new JBossMessage();
          
@@ -1189,6 +1187,9 @@ public class WireFormatTest extends MessagingTestCase
          
          //Next int should be delivery count
          assertEquals(9, dis.readInt());
+         
+         // Delivery id
+         assertEquals(3, dis.readLong());
          
          //And now the message itself
          JBossMessage r3 = new JBossMessage();
@@ -1232,7 +1233,6 @@ public class WireFormatTest extends MessagingTestCase
          
          List msgs2 = dr2.getMessages();
          
-         assertEquals(serverId, dr2.getServerId());
          assertEquals(consumerID, dr2.getConsumerId());
          
          MessageProxy p1 = (MessageProxy)msgs2.get(0);

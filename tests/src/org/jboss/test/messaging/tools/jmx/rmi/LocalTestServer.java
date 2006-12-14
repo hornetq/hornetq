@@ -728,6 +728,8 @@ public class LocalTestServer implements Server
                                        int defaultTempQueuePageSize,
                                        int defaultTempQueueDownCacheSize) throws Exception
    {
+      log.trace("deploying connection factory with name: " + objectName);
+      
       String config =
          "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
                 "name=\"" + objectName + "\"\n" +
@@ -766,6 +768,9 @@ public class LocalTestServer implements Server
 
       MBeanConfigurationElement mc = new MBeanConfigurationElement(XMLUtil.stringToElement(config));
       ObjectName on = sc.registerAndConfigureService(mc);
+      
+      log.trace("Object name is now: " + on);
+      
       sc.invoke(on, "create", new Object[0], new String[0]);
       sc.invoke(on, "start", new Object[0], new String[0]);
    }

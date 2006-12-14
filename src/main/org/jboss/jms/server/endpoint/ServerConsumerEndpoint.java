@@ -23,10 +23,7 @@ package org.jboss.jms.server.endpoint;
 
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
@@ -46,15 +43,12 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.tx.TransactionException;
-import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.util.Future;
 import org.jboss.remoting.callback.Callback;
 
@@ -113,28 +107,22 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    // No need to be volatile - is protected by lock
    private boolean closed;
 
-   // No need to be volatile
-   private boolean disconnected;
-
    private Executor executor;
 
    private int prefetchSize;
 
    private Object lock;
 
-   private Map deliveries;
-   
-   private Queue dlq;
-   
    private Object messagesInTransitLock;
+   
    private int messagesInTransitCount; // access only from a region guarded by messagesInTransitLock
    
    // Constructors --------------------------------------------------
 
-   protected ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
-                                    ServerSessionEndpoint sessionEndpoint,
-                                    String selector, boolean noLocal, JBossDestination dest,
-                                    int prefetchSize, Queue dlq)
+   ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
+                         ServerSessionEndpoint sessionEndpoint,
+                         String selector, boolean noLocal, JBossDestination dest,
+                         int prefetchSize)
       throws InvalidSelectorException
    {
       if (trace) { log.trace("constructing consumer endpoint " + id); }
@@ -144,8 +132,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.queueName = queueName;
       this.sessionEndpoint = sessionEndpoint;
       this.prefetchSize = prefetchSize;
-      this.dlq = dlq;
-
+      
       // We always created with clientConsumerFull = true. This prevents the SCD sending messages to
       // the client before the client has fully finished creating the MessageCallbackHandler.
       this.clientConsumerFull = true;
@@ -170,6 +157,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       // using the same queuedexecutor concurrently if there are a lot of active consumers.
 
       this.noLocal = noLocal;
+      
       this.destination = dest;
       
       this.toDeliver = new ArrayList();
@@ -182,24 +170,14 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          this.messageSelector = new Selector(selector);
          if (trace) log.trace("created selector");
       }
-
-      //TODO - 
-      //We really need to get rid of this delivery list - it's only purpose in life is to solve
-      //the race condition where acks or cancels can come in before handle has returned - and
-      //that can be solved in a simpler way anyway.
-      //It adds extra complexity both in all the extra code necessary to maintain it, the extra memory
-      //needed to maintain it, the extra complexity in synchronization on this class to protect access to it
-      //and when we do clustering we will have to replicate it too!!
-      //Let's GET RID OF IT!!!!!!!!!!!
-      this.deliveries = new LinkedHashMap();
-            
+       
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
 
       // adding the consumer to the queue
       this.messageQueue.add(this);
       
       // prompt delivery
-      messageQueue.deliver(false);
+      promptDelivery();
 
       messagesInTransitLock = new Object();
       messagesInTransitCount = 0;
@@ -234,12 +212,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // queue for delivery later.
          if (!started)
          {
-            // this is a common programming error, make this visible in the debug logs. However,
-            // make also possible to cut out the performance overhead for systems that raise the
-            // threshold to INFO or higher.
-
-            //TODO - Why was this debug
-            //log.isDebugEnabled is too slow!! especially on the primary execution path
             if (trace) { log.trace(this + " NOT started yet!"); }
 
             return null;
@@ -262,15 +234,15 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {
             return delivery;
          }
+         
+         long deliveryId = sessionEndpoint.addDelivery(delivery);
 
-         deliveries.put(new Long(ref.getMessageID()), delivery);
-   
          // We don't send the message as-is, instead we create a MessageProxy instance. This allows
          // local fields such as deliveryCount to be handled by the proxy but global data to be
          // fielded by the same underlying Message instance. This allows us to avoid expensive
          // copying of messages
    
-         MessageProxy mp = JBossMessage.createThinDelegate(message, ref.getDeliveryCount());
+         MessageProxy mp = JBossMessage.createThinDelegate(deliveryId, message, ref.getDeliveryCount());
     
          // Add the proxy to the list to deliver
                            
@@ -319,9 +291,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {
             int conId = ((JBossMessage)r).getConnectionID();
             
-            if (trace) { log.trace("message connection id: " + conId); }
-
-            if (trace) { log.trace("current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }   
+            if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }   
                  
             accept = conId != sessionEndpoint.getConnectionEndpoint().getConnectionID();
                 
@@ -352,56 +322,16 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {      
       try
       {
-         synchronized (lock)
-         { 
-            // On close we only disconnect the consumer from the queue we don't actually remove
-            // it. This is because it may still contain deliveries that may well be acknowledged
-            // after the consumer has closed. This is perfectly valid.
-
-            // TODO - The deliveries should really be stored in the session endpoint, not here
-            // that is their natural place, that would mean we wouldn't have to mess around with
-            // keeping deliveries after this is closed.
-
-            if (trace) { log.trace(this + " grabbed the main lock in close()"); }
-
-            disconnect(); 
-            
-            JMSDispatcher.instance.unregisterTarget(new Integer(id));
-            
-            // If this is a consumer of a non durable subscription then we want to unbind the
-            // subscription and delete all its data.
-
-            if (destination.isTopic())
-            {
-               PostOffice postOffice = 
-                  sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOfficeInstance();
-               
-               Binding binding = postOffice.getBindingForQueueName(queueName);
-
-               //Note binding can be null since there can many competing subscribers for the subscription  - 
-               //in which case the first will have removed the subscription and subsequently
-               //ones won't find it
-               
-               if (binding != null && !binding.getQueue().isRecoverable())
-               {
-                  postOffice.unbindQueue(queueName);
-               }
-            }
-                        
-            closed = true;
-         }
-      }
+         localClose();
+         
+         sessionEndpoint.removeConsumer(id);
+      }   
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " close");
       }
    }
-
-   public boolean isClosed()
-   {
-      return closed;
-   }
-               
+           
    // ConsumerEndpoint implementation -------------------------------
    
    /*
@@ -475,6 +405,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          messagesInTransitLock.notifyAll();
       }
    }
+   
+   public boolean isClosed() throws JMSException
+   {
+      throw new IllegalStateException("isClosed should never be handled on the server side");
+   }
 
    // Public --------------------------------------------------------
    
@@ -493,188 +428,43 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       return sessionEndpoint;
    }
    
-   public int getId()
-   {
-      return id;
-   }
-    
    // Package protected ---------------------------------------------
    
-   // Protected -----------------------------------------------------   
-   
-   protected void acknowledgeTransactionally(long messageID, Transaction tx) throws Throwable
-   {
-      if (trace) { log.trace("acknowledging transactionally " + messageID); }
-      
-      Delivery d = null;
-                 
-      // The actual removal of the deliveries from the delivery list is deferred until tx commit
+   void localClose() throws Throwable
+   {      
       synchronized (lock)
-      {
-         d = (Delivery)deliveries.get(new Long(messageID));
-      }
-      
-      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getCallback(this);
-            
-      if (deliveryCallback == null)
-      {
-         deliveryCallback = new DeliveryCallback();
-         tx.addCallback(deliveryCallback, this);
-      }
-      deliveryCallback.addMessageID(messageID);
-         
-      if (d != null)
-      {
-         d.acknowledge(tx);
-      }
-      else
-      {
-         //throw new IllegalStateException("Could not find delivery to acknowledge");
-         //TODO - Reenable this exception
-         log.warn("Coud not find acknowledge... Exception disabled for tests.. please re-enable before merging into trunk");
-      }             
-   }      
-   
-   protected void acknowledge(long messageID) throws Throwable
-   {  
-      // acknowledge a delivery   
-      Delivery d;
-      
-      synchronized (lock)
-      {
-         d = (Delivery)deliveries.remove(new Long(messageID));
-      }
-      
-      if (d != null)
-      {
-         d.acknowledge(null);
-      }
-      else
-      {     
-         throw new IllegalStateException("Cannot find delivery to acknowledge:" + messageID);
-      }      
-   }
-   
-   /**
-    * Actually remove the consumer and clear up any deliveries it may have
-    * This is called by the session on session.close()
-    * We can get rid of this when we store the deliveries on the session
-    *
-    **/
-   protected void remove() throws Throwable
-   {         
-      if (trace) log.trace("attempting to remove receiver " + this + " from destination " + messageQueue);
-      
-      boolean wereDeliveries = false;
-      for(Iterator i = deliveries.values().iterator(); i.hasNext(); )
-      {
-
-         Delivery d = (Delivery)i.next();
-
-         d.cancel();
-         wereDeliveries = true;
-      }
-      deliveries.clear();           
-      
-      if (!disconnected)
-      {
-         if (!closed)
-         {
-            close();
-         }
-      }
-      
-      sessionEndpoint.getConnectionEndpoint().
-         getServerPeer().removeConsumerEndpoint(new Integer(id));                  
-            
-      sessionEndpoint.removeConsumerEndpoint(id);
-      
-      if (wereDeliveries)
-      {
-         //If we cancelled any deliveries we need to force a deliver on the queue
-         //This is because there may be other waiting competing consumers who need a chance to get
-         //any of the cancelled messages
-         messageQueue.deliver(false);
-      }
-   }  
-   
-   protected void promptDelivery()
-   {
-      messageQueue.deliver(false);
-   }
-   
-   protected void sendToDLQ(Long messageID, Transaction tx) throws Throwable
-   {
-      Delivery del = (Delivery)deliveries.remove(messageID);
-      
-      if (del != null)
       { 
-         log.warn(del.getReference() + " has exceed maximum delivery attempts and will be sent to the DLQ");
-         
-         if (dlq != null)
-         {         
-            //reset delivery count to zero
-            del.getReference().setDeliveryCount(0);
-            
-            dlq.handle(null, del.getReference(), tx);
-            
-            del.acknowledge(tx);           
-         }
-         else
-         {
-            log.warn("Cannot send to DLQ since DLQ has not been deployed! The message will be removed");
-            
-            del.acknowledge(tx);
-         }
-      }
-      else
-      {
-         throw new IllegalStateException("Cannot find delivery to send to DLQ:" + id);
-      }
-      
-   }
+         if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
 
-   protected void createDeliveries(List messageIds) throws Throwable
-   {
-      List dels = messageQueue.createDeliveries(messageIds);
-            
-      synchronized (lock)
-      {      
-         Iterator iter = dels.iterator();
+         messageQueue.remove(this); 
          
-         while (iter.hasNext())
-         {
-            Delivery del = (Delivery)iter.next();
-            
-            deliveries.put(new Long(del.getReference().getMessageID()), del);
-         }
-      }
-      
-      //Prompt delivery
-      messageQueue.deliver(false);
-   }
+         JMSDispatcher.instance.unregisterTarget(new Integer(id));
+         
+         // If this is a consumer of a non durable subscription then we want to unbind the
+         // subscription and delete all its data.
 
-   protected void cancelDelivery(Long messageID, int deliveryCount) throws Throwable
-   {
-      Delivery del = (Delivery)deliveries.remove(messageID);
-      
-      if (del != null)
-      {                               
-         //Cancel back to the queue
-         
-         //Update the delivery count
-           
-         del.getReference().setDeliveryCount(deliveryCount);
-              
-         del.cancel();         
+         if (destination.isTopic())
+         {
+            PostOffice postOffice = 
+               sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOfficeInstance();
+            
+            Binding binding = postOffice.getBindingForQueueName(queueName);
+
+            //Note binding can be null since there can many competing subscribers for the subscription  - 
+            //in which case the first will have removed the subscription and subsequently
+            //ones won't find it
+            
+            if (binding != null && !binding.getQueue().isRecoverable())
+            {
+               postOffice.unbindQueue(queueName);
+            }
+         }
+                     
+         closed = true;
       }
-      else
-      {
-         throw new IllegalStateException("Cannot find delivery to cancel:" + id);
-      }
-   }
+   }        
            
-   protected void start()
+   void start()
    {             
       synchronized (lock)
       {
@@ -693,10 +483,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       }
       
       // Prompt delivery
-      messageQueue.deliver(false);
+      promptDelivery();
    }
    
-   protected void stop() throws Throwable
+   void stop() throws Throwable
    {     
       // We need to:
       // - Stop accepting any new messages in the SCE.
@@ -707,8 +497,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       // already executing and messages might get deposited after.
       synchronized (lock)
       {
-         // can't start or stop it if it is closed
-         if (closed)
+         if (!started)
          {
             return;
          }
@@ -762,36 +551,35 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       { 
          synchronized (lock)
          {
+            //Cancel in reverse order
             for (int i = toDeliver.size() - 1; i >= 0; i--)
             {
                MessageProxy proxy = (MessageProxy)toDeliver.get(i);
-               long id = proxy.getMessage().getMessageID();
-               cancelDelivery(new Long(id), proxy.getMessage().getDeliveryCount());
+
+               sessionEndpoint.cancelDelivery(proxy.getDeliveryId());
             }
          }
                  
          toDeliver.clear();
+         
          bufferFull = false;
       }      
+      
+      //Need to prompt delivery
+      promptDelivery();
    }
+   
+   
+   
+   // Protected -----------------------------------------------------         
       
    // Private -------------------------------------------------------
    
-   /**
-    * Disconnect this consumer from the queue that feeds it. This method does not clear up
-    * deliveries
-    */
-   private void disconnect()
+   private void promptDelivery()
    {
-      boolean removed = messageQueue.remove(this);
-      
-      if (removed)
-      {
-         disconnected = true;
-         if (trace) { log.trace(this + " removed from the queue"); }
-      }
+      messageQueue.deliver(false);
    }
-
+   
    // Inner classes -------------------------------------------------   
    
    /*
@@ -835,12 +623,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          ServerConnectionEndpoint connection =
             ServerConsumerEndpoint.this.sessionEndpoint.getConnectionEndpoint();
          
-         int serverId = connection.getServerPeer().getServerPeerID();
-
-         // TODO How can we ensure that messages for the same consumer aren't delivered
-         // concurrently to the same consumer on different threads?
-
-         ClientDelivery del = new ClientDelivery(list, serverId, id);
+         ClientDelivery del = new ClientDelivery(list, id);
          MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), del);
          Callback callback = new Callback(mm);
 
@@ -902,63 +685,5 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       {
          result.setResult(null);
       }
-   }
-   
-   /**
-    * 
-    * The purpose of this class is to remove deliveries from the delivery list on commit
-    * Each transaction has once instance of this per SCE
-    *
-    */
-   private class DeliveryCallback implements TxCallback
-   {
-      List delList = new ArrayList();
-         
-      public void beforePrepare()
-      {         
-         //NOOP
-      }
-      
-      public void beforeCommit(boolean onePhase)
-      {         
-         //NOOP
-      }
-      
-      public void beforeRollback(boolean onePhase)
-      {         
-         //NOOP
-      }
-      
-      public void afterPrepare()
-      {         
-         //NOOP
-      }
-      
-      public synchronized void afterCommit(boolean onePhase) throws TransactionException
-      {
-         // Remove the deliveries from the delivery map.
-         Iterator iter = delList.iterator();
-         while (iter.hasNext())
-         {
-            Long messageID = (Long)iter.next();
-            
-            if (deliveries.remove(messageID) == null)
-            {
-               //throw new TransactionException("Failed to remove delivery " + messageID);
-               log.warn("Couldn't remove delivery " + messageID + "- reenable exception before merging into trunk");
-               //TODO reenable exception
-            }
-         }
-      }
-      
-      public void afterRollback(boolean onePhase) throws TransactionException
-      {                            
-         //NOOP
-      }
-      
-      synchronized void addMessageID(long messageID)
-      {
-         delList.add(new Long(messageID));
-      }
-   }
+   }   
 }

@@ -31,8 +31,8 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
-import org.jboss.jms.tx.AckInfo;
 
 /**
  * The server-side advised instance corresponding to a Session. It is bound to the AOP
@@ -74,11 +74,6 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       endpoint.closing();
    }
 
-   public boolean isClosed()
-   {
-      return endpoint.isClosed();
-   }
-
    public void send(JBossMessage msg) throws JMSException
    {
       endpoint.send(msg);
@@ -107,12 +102,12 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       return endpoint.createTopic(topicName);
    }
 
-   public void acknowledgeBatch(List ackInfos) throws JMSException
+   public void acknowledgeBatch(List acks) throws JMSException
    {
-      endpoint.acknowledgeBatch(ackInfos);
+      endpoint.acknowledgeBatch(acks);
    }
    
-   public void acknowledge(AckInfo ack) throws JMSException
+   public void acknowledge(Ack ack) throws JMSException
    {
       endpoint.acknowledge(ack);
    }
@@ -137,11 +132,16 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       endpoint.cancelDeliveries(ackInfos);
    }
    
-   public void sendUnackedAckInfos(List ackInfos) throws JMSException
+   public void recoverDeliveries(List ackInfos) throws JMSException
    {
-      endpoint.sendUnackedAckInfos(ackInfos);
+      endpoint.recoverDeliveries(ackInfos);
    }
 
+   public boolean isClosed() throws JMSException
+   {
+      return endpoint.isClosed();
+   }
+   
 
    // AdvisedSupport overrides --------------------------------------
 

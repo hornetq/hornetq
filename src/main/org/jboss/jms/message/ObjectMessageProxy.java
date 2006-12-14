@@ -39,9 +39,14 @@ public class ObjectMessageProxy extends MessageProxy implements ObjectMessage
 {
    private static final long serialVersionUID = 8797295997477962825L;
 
-   public ObjectMessageProxy(JBossObjectMessage message, int deliveryCount)
+   public ObjectMessageProxy(long deliveryId, JBossObjectMessage message, int deliveryCount)
    {
-      super(message, deliveryCount);
+      super(deliveryId, message, deliveryCount);
+   }
+   
+   public ObjectMessageProxy(JBossObjectMessage message)
+   {
+      super(message);
    }
 
    public void setObject(Serializable object) throws JMSException

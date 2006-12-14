@@ -34,9 +34,9 @@ import javax.jms.Session;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.server.endpoint.Cancel;
+import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Future;
 import org.jboss.remoting.callback.HandleCallbackException;
 
@@ -68,13 +68,14 @@ public class MessageCallbackHandler
    public static void callOnMessage(SessionDelegate sess,
                                     MessageListener listener,
                                     int consumerID,
+                                    long channelID,
                                     boolean isConnectionConsumer,
                                     MessageProxy m,
                                     int ackMode,
                                     int maxDeliveries)
       throws JMSException
    {
-      preDeliver(sess, consumerID, m, isConnectionConsumer);
+      preDeliver(sess, consumerID, channelID, m, isConnectionConsumer);
                   
       int tries = 0;
       
@@ -141,6 +142,7 @@ public class MessageCallbackHandler
    
    protected static void preDeliver(SessionDelegate sess,
                                     int consumerID,
+                                    long channelID,
                                     MessageProxy m,
                                     boolean isConnectionConsumer)
       throws JMSException
@@ -149,7 +151,7 @@ public class MessageCallbackHandler
       // add anything to the tx for this session.
       if (!isConnectionConsumer)
       {
-         sess.preDeliver(m, consumerID);
+         sess.preDeliver(new DeliveryInfo(m, consumerID, channelID));
       }         
    }
    
@@ -181,11 +183,13 @@ public class MessageCallbackHandler
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
    private int maxDeliveries;
+   private long channelID;
         
    // Constructors --------------------------------------------------
 
    public MessageCallbackHandler(boolean isCC, int ackMode,                                
                                  SessionDelegate sess, ConsumerDelegate cons, int consumerID,
+                                 long channelID,
                                  int bufferSize, QueuedExecutor sessionExecutor,
                                  int maxDeliveries)
    {
@@ -201,6 +205,7 @@ public class MessageCallbackHandler
       this.sessionDelegate = sess;
       this.consumerDelegate = cons;
       this.consumerID = consumerID;
+      this.channelID = channelID;
       this.serverSending = true;
       mainLock = new Object();
       this.sessionExecutor = sessionExecutor;
@@ -281,7 +286,7 @@ public class MessageCallbackHandler
          }        
       }   
    }
-      
+   
    public void close() throws JMSException
    {   
       synchronized (mainLock)
@@ -321,16 +326,16 @@ public class MessageCallbackHandler
          // have actually been delivered (unlike these) and we may want to acknowledge them
          // later, after this consumer has been closed
 
-         List ackInfos = new ArrayList();
+         List cancels = new ArrayList();
 
          for(Iterator i = buffer.iterator(); i.hasNext();)
          {
             MessageProxy mp = (MessageProxy)i.next();
-            AckInfo ack = new AckInfo(mp, consumerID);
-            ackInfos.add(ack);
+            Cancel ack = new Cancel(mp.getDeliveryId(), mp.getDeliveryCount());
+            cancels.add(ack);
          }
                
-         sessionDelegate.cancelDeliveries(ackInfos);
+         sessionDelegate.cancelDeliveries(cancels);
          
          buffer.clear();
       }                
@@ -445,7 +450,7 @@ public class MessageCallbackHandler
                        
                // If message is expired we still call pre and post deliver. This makes sure the
                // message is acknowledged so it gets removed from the queue/subscription.
-               preDeliver(sessionDelegate, consumerID, m, isConnectionConsumer);
+               preDeliver(sessionDelegate, consumerID, channelID, m, isConnectionConsumer);
                
                postDeliver(sessionDelegate, isConnectionConsumer, false);
                
@@ -726,7 +731,7 @@ public class MessageCallbackHandler
          {
             try
             {
-               callOnMessage(sessionDelegate, listener, consumerID, false, mp, ackMode, maxDeliveries);
+               callOnMessage(sessionDelegate, listener, consumerID, channelID, false, mp, ackMode, maxDeliveries);
             }
             catch (JMSException e)
             {

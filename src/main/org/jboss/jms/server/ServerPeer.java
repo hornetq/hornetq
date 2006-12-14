@@ -37,10 +37,9 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
-import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
+import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
@@ -54,19 +53,17 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.contract.ReplicationListener;
 import org.jboss.messaging.core.plugin.contract.Replicator;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FailoverStatus;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
-import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * A JMS server peer.
@@ -146,14 +143,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private JMSServerInvocationHandler handler;
 
-   // We keep a map of consumers to prevent us to recurse through the attached session in order to
-   // find the ServerConsumerDelegate so we can acknowledge the message. Originally, this map was
-   // maintained per-connection, but with the http://jira.jboss.org/jira/browse/JBMESSAGING-211 bug
-   // we shared it among connections, so a transaction submitted on the "wrong" connection can
-   // still succeed. For more details, see the JIRA issue.
-
-   private Map consumers;
-
    // Constructors --------------------------------------------------
 
    public ServerPeer(int serverPeerID,
@@ -166,8 +155,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
       // Some wired components need to be started here
       securityStore = new SecurityMetadataStore();
-
-      consumers = new ConcurrentReaderHashMap();
 
       version = Version.instance();
       
@@ -707,23 +694,6 @@ public class ServerPeer extends ServiceMBeanSupport
    public synchronized int getNextObjectID()
    {
       return objectIDSequence++;
-   }
-
-   public ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint c)
-   {
-      log.debug(this + " caching consumer " + consumerID);
-      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), c);
-   }
-
-   public ServerConsumerEndpoint getConsumerEndpoint(int consumerID)
-   {
-      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
-   }
-
-   public ServerConsumerEndpoint removeConsumerEndpoint(Integer consumerID)
-   {
-      log.debug(this + " removing consumer " + consumerID + " from the cache");
-      return (ServerConsumerEndpoint)consumers.remove(consumerID);
    }
 
    public QueuedExecutorPool getQueuedExecutorPool()

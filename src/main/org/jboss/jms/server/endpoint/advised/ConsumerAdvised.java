@@ -64,11 +64,6 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.closing();
    }
 
-   public boolean isClosed()
-   {
-      return endpoint.isClosed();
-   }
-
    public void more() throws JMSException
    {
       endpoint.more();
@@ -77,6 +72,11 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
    public void confirmDelivery(int count)
    {
       endpoint.confirmDelivery(count);
+   }
+   
+   public boolean isClosed() throws JMSException
+   {
+      return endpoint.isClosed();
    }
 
   

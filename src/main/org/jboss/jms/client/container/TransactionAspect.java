@@ -32,8 +32,8 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
@@ -164,7 +164,7 @@ public class TransactionAspect
 
          if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager"); }
 
-         connState.getResourceManager().addMessage(txID, m);
+         connState.getResourceManager().addMessage(txID, state.getSessionId(), (JBossMessage)m);
 
          // ... and we don't invoke any further interceptors in the stack
          return null;
@@ -185,16 +185,16 @@ public class TransactionAspect
          // the session is non-XA and transacted, or XA and enrolled in a global transaction. An
          // XA session that has not been enrolled in a global transaction behaves as a
          // non-transacted session.
-
+         
          MethodInvocation mi = (MethodInvocation)invocation;
-         MessageProxy proxy = (MessageProxy)mi.getArguments()[0];
-         int consumerID = ((Integer)mi.getArguments()[1]).intValue();
-         AckInfo info = new AckInfo(proxy, consumerID);
+         
+         DeliveryInfo info = (DeliveryInfo)mi.getArguments()[0];
+
          ConnectionState connState = (ConnectionState)state.getParent();
 
          if (trace) { log.trace("sending acknowlegment transactionally, queueing on resource manager"); }
 
-         connState.getResourceManager().addAck(txID, info);
+         connState.getResourceManager().addAck(txID, state.getSessionId(), info);
       }
 
       return null;

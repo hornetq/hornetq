@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,9 +45,9 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.JMSWireFormat;
-import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.jms.tx.TxState;
+import org.jboss.jms.tx.ClientTransaction;
+import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
@@ -55,12 +56,8 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.util.ConcurrentReaderHashSet;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-import org.jboss.util.id.GUID;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -83,11 +80,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    private boolean trace = log.isTraceEnabled();
    
-   private boolean closed;
+   private volatile boolean closed;
    
    private volatile boolean started;
 
-   private int connectionID;
+   private int id;
    
    private String remotingClientSessionId;
    
@@ -124,11 +121,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    private int prefetchSize;
    
-   protected int defaultTempQueueFullSize;
+   private int defaultTempQueueFullSize;
    
-   protected int defaultTempQueuePageSize;
+   private int defaultTempQueuePageSize;
    
-   protected int defaultTempQueueDownCacheSize;
+   private int defaultTempQueueDownCacheSize;
 
    // Constructors --------------------------------------------------
    
@@ -148,7 +145,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
  
       started = false;
 
-      this.connectionID = serverPeer.getNextObjectID();
+      this.id = serverPeer.getNextObjectID();
       this.clientID = clientID;
       this.prefetchSize = prefetchSize;
       
@@ -156,8 +153,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.defaultTempQueuePageSize = defaultTempQueuePageSize;
       this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
 
-      sessions = new ConcurrentReaderHashMap();
-      temporaryDestinations = new ConcurrentReaderHashSet();
+      sessions = new HashMap();
+      temporaryDestinations = new HashSet();
       
       this.username = username;
       this.password = password;
@@ -184,8 +181,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          // create the corresponding server-side session endpoint and register it with this
          // connection endpoint instance
          ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this);
-         putSessionDelegate(sessionID, ep);
+         
+         synchronized (sessions)
+         {
+            sessions.put(new Integer(sessionID), ep);
+         }
+         
          SessionAdvised sessionAdvised = new SessionAdvised(ep);
+         
          JMSDispatcher.instance.registerTarget(new Integer(sessionID), sessionAdvised);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
@@ -263,8 +266,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          {
             throw new IllegalStateException("Connection is closed");
          }
+         
          setStarted(false);
-         log.debug("Connection " + connectionID + " stopped");
+         
+         log.debug("Connection " + id + " stopped");
       }
       catch (Throwable t)
       {
@@ -284,43 +289,43 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             return;
          }
    
-         // We clone to avoid concurrent modification exceptions
-         for(Iterator i = new HashSet(sessions.values()).iterator(); i.hasNext(); )
+         synchronized (sessions)
          {
-            ServerSessionEndpoint sess = (ServerSessionEndpoint)i.next();
-   
-            // clear all consumers associated with this session from the serverPeer's cache
-            for(Iterator j = sess.getConsumerEndpointIDs().iterator(); j.hasNext(); )
+            for(Iterator i = sessions.values().iterator(); i.hasNext(); )
             {
-               Integer consumerID = (Integer)j.next();
-               serverPeer.removeConsumerEndpoint(consumerID);
+               ServerSessionEndpoint sess = (ServerSessionEndpoint)i.next();
+      
+               sess.localClose();
             }
-   
-            // ... and also close the session
-            sess.close();
+            
+            sessions.clear();
          }
          
-         for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
+         synchronized (temporaryDestinations)
          {
-            JBossDestination dest = (JBossDestination)i.next();
-
-            if (dest.isQueue())
-            {     
-               postOffice.unbindQueue(dest.getName());               
-            }
-            else
+            for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
             {
-               //No need to unbind - this will already have happened, and all removeAllReferences
-               //will have already been called when the subscriptions were closed
-               //which always happens before the connection closed (depth first close)              
+               JBossDestination dest = (JBossDestination)i.next();
+   
+               if (dest.isQueue())
+               {     
+                  postOffice.unbindQueue(dest.getName());               
+               }
+               else
+               {
+                  //No need to unbind - this will already have happened, and all removeAllReferences
+                  //will have already been called when the subscriptions were closed
+                  //which always happens before the connection closed (depth first close)              
+               }
             }
+            
+            temporaryDestinations.clear();
          }
-         
-         temporaryDestinations.clear();
    
          cm.unregisterConnection(jmsClientVMId, remotingClientSessionId);
    
-         JMSDispatcher.instance.unregisterTarget(new Integer(connectionID));
+         JMSDispatcher.instance.unregisterTarget(new Integer(id));
+         
          closed = true;
       }
       catch (Throwable t)
@@ -332,11 +337,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    public void closing() throws JMSException
    {
       log.trace(this + " closing (noop)");    
-   }
-
-   public boolean isClosed()
-   {
-      return closed;
    }
 
    public void sendTransaction(TransactionRequest request) throws JMSException
@@ -407,6 +407,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " getPreparedTransactions");
       }
    }
+   
+   public boolean isClosed() throws JMSException
+   {
+      throw new IllegalStateException("isClosed should never be handled on the server side");
+   }
   
    // Public --------------------------------------------------------
    
@@ -468,132 +473,108 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.usingVersion = version;
    }
    
-   public byte getUsingVersion()
-   {
-      return usingVersion;
-   }
    
-   public int getPrefetchSize()
-   {
-      return prefetchSize;
-   }
-   
-   public int getDefaultTempQueueFullSize()
-   {
-      return defaultTempQueueFullSize;
-   }
-   
-   public int getDefaultTempQueuePageSize()
-   {
-      return defaultTempQueuePageSize;
-   }
-     
-   public int getDefaultTempQueueDownCacheSize()
-   {
-      return defaultTempQueueDownCacheSize;
-   }
            
    public String toString()
    {
-      return "ConnectionEndpoint[" + connectionID + "]";
+      return "ConnectionEndpoint[" + id + "]";
    }
 
    // Package protected ---------------------------------------------
 
+   byte getUsingVersion()
+   {
+      return usingVersion;
+   }
    
-   // Protected -----------------------------------------------------
+   int getPrefetchSize()
+   {
+      return prefetchSize;
+   }
    
-   protected ServerInvokerCallbackHandler getCallbackHandler()
+   int getDefaultTempQueueFullSize()
+   {
+      return defaultTempQueueFullSize;
+   }
+   
+   int getDefaultTempQueuePageSize()
+   {
+      return defaultTempQueuePageSize;
+   }
+     
+   int getDefaultTempQueueDownCacheSize()
+   {
+      return defaultTempQueueDownCacheSize;
+   }
+   
+   ServerInvokerCallbackHandler getCallbackHandler()
    {
       return callbackHandler;
    }   
    
-   protected int getConnectionID()
+   int getConnectionID()
    {
-      return connectionID;
+      return id;
    }
    
-   protected boolean isStarted()
+   boolean isStarted()
    {
       return started;    
    }
    
-   /**
-    * Generates a sessionID that is unique per this ConnectionDelegate instance
-    */
-   protected String generateSessionID()
+   void removeSession(int sessionId) throws Exception
    {
-      return new GUID().toString();
-   }
-      
-   protected ServerSessionEndpoint putSessionDelegate(int sessionID, ServerSessionEndpoint d)
-   {
-      return (ServerSessionEndpoint)sessions.put(new Integer(sessionID), d);
+      synchronized (sessions)
+      {
+         if (sessions.remove(new Integer(sessionId)) == null)
+         {
+            throw new IllegalStateException("Cannot find session with id " + sessionId + " to remove");
+         }
+      }
    }
    
-   protected ServerSessionEndpoint getSessionDelegate(int sessionID)
+   void addTemporaryDestination(Destination dest)
    {
-      return (ServerSessionEndpoint)sessions.get(new Integer(sessionID));
+      synchronized (temporaryDestinations)
+      {
+         temporaryDestinations.add(dest);
+      }
    }
    
-   protected ServerSessionEndpoint removeSessionDelegate(int sessionID)
+   void removeTemporaryDestination(Destination dest)
    {
-      return (ServerSessionEndpoint)sessions.remove(new Integer(sessionID));
+      synchronized (temporaryDestinations)
+      {
+         temporaryDestinations.remove(dest);
+      }
    }
    
-   protected ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint c)
+   boolean hasTemporaryDestination(Destination dest)
    {
-      return serverPeer.putConsumerEndpoint(consumerID, c);
+      synchronized (temporaryDestinations)
+      {
+         return temporaryDestinations.contains(dest);
+      }
    }
    
-   protected ServerConsumerEndpoint getConsumerEndpoint(int consumerID)
-   {
-      return serverPeer.getConsumerEndpoint(consumerID);
-   }
-   
-   protected ServerConsumerEndpoint removeConsumerEndpoint(Integer consumerID)
-   {
-      return serverPeer.removeConsumerEndpoint(consumerID);
-   }
-   
-   protected void addTemporaryDestination(Destination dest)
-   {
-      temporaryDestinations.add(dest);
-   }
-   
-   protected void removeTemporaryDestination(Destination dest)
-   {
-      temporaryDestinations.remove(dest);
-   }
-   
-   protected boolean hasTemporaryDestination(Destination dest)
-   {
-      return temporaryDestinations.contains(dest);
-   }
-   
-   protected ServerPeer getServerPeer()
+   ServerPeer getServerPeer()
    {
       return serverPeer;
    }
    
-   protected String getRemotingClientSessionId()
+   String getRemotingClientSessionId()
    {
       return remotingClientSessionId;
    }
    
-   protected String getJmsClientVMId()
-   {
-      return jmsClientVMId;
-   }
-
-   protected void sendMessage(JBossMessage msg, Transaction tx) throws Exception
+   void sendMessage(JBossMessage msg, Transaction tx) throws Exception
    {
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
       // This allows the no-local consumers to filter out the messages that come from the same
       // connection
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
-      msg.setConnectionID(connectionID);
+      msg.setConnectionID(id);
       
       // We must reference the message *before* we send it the destination to be handled. This is
       // so we can guarantee that the message doesn't disappear from the store before the
@@ -628,7 +609,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
       if (trace) { log.trace("sent " + msg); }
    }
-
+   
+   // Protected -----------------------------------------------------
+     
    // Private -------------------------------------------------------
    
    private void setStarted(boolean s) throws Throwable
@@ -638,46 +621,41 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          for (Iterator i = sessions.values().iterator(); i.hasNext(); )
          {
             ServerSessionEndpoint sd = (ServerSessionEndpoint)i.next();
+            
             sd.setStarted(s);
          }
          started = s;
       }
    }   
     
-   private void processTransaction(TxState txState, Transaction tx) throws Throwable
+   private void processTransaction(ClientTransaction txState, Transaction tx) throws Throwable
    {
-      if (trace) { log.trace("processing transaction, there are " + txState.getMessages().size() + " messages and " + txState.getAcks().size() + " acks "); }
+      if (trace) { log.trace("processing transaction"); }
       
-      for(Iterator i = txState.getMessages().iterator(); i.hasNext(); )
-      {
-         JBossMessage m = (JBossMessage)i.next();
-         
-         sendMessage(m, tx);
-      }
-      
-      if (trace) { log.trace("done the sends"); }
-      
-      // Then ack the acks
-      
-      List acks = txState.getAcks();
-      
-      // We create the transactional callbacks in reverse order so if the transaction is
-      // subsequently cancelled the refs are put back in the correct order on the queue/subscription
-      for (int i = acks.size() - 1; i >= 0; i--)
-      {      
-         AckInfo ack = (AckInfo)acks.get(i);
-         
-         ServerConsumerEndpoint consumer = getConsumerEndpoint(ack.getConsumerID());
-         if (consumer == null)
+      synchronized (sessions)
+      {         
+         for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
          {
-            throw new IllegalStateException("Cannot find consumer " + ack.getConsumerID());
+            SessionTxState sessionState = (SessionTxState)i.next();
+            
+            List msgs = sessionState.getMsgs();
+            
+            for (Iterator i2 = msgs.iterator(); i2.hasNext(); )
+            {
+               JBossMessage msg = (JBossMessage)i2.next();
+                     
+               sendMessage(msg, tx);
+            }
+                     
+            List acks = sessionState.getAcks();
+            
+            ServerSessionEndpoint session = (ServerSessionEndpoint)sessions.get(new Integer(sessionState.getSessionId()));
+            
+            session.acknowledgeTransactionally(acks, tx);      
          }
-         consumer.acknowledgeTransactionally(ack.getMessageID(), tx);
-         
-         if (trace) { log.trace("acked " + ack.getMessageID()); }
       }
       
-      if (trace) { log.trace("done the acks"); }
+      if (trace) { log.trace("Processed transaction"); }
    }   
 
    // Inner classes -------------------------------------------------

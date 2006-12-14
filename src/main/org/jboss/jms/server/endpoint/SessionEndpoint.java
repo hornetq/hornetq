@@ -33,7 +33,6 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.tx.AckInfo;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -73,14 +72,14 @@ public interface SessionEndpoint extends Closeable
     * @param ackInfos
     * @throws JMSException
     */
-   void acknowledgeBatch(List ackInfos) throws JMSException;
+   void acknowledgeBatch(List deliveryIds) throws JMSException;
    
    /**
     * Acknowledge a message - used for auto acknowledge
-    * @param ackInfo
+    * @param deliveryId
     * @throws JMSException
     */
-   void acknowledge(AckInfo ackInfo) throws JMSException;
+   void acknowledge(Ack ack) throws JMSException;
    
    /**
     * Add a temporary destination.
@@ -114,15 +113,14 @@ public interface SessionEndpoint extends Closeable
     * or at session recovery to cancel any messages that couldn't be redelivered locally
     * @param ackInfos
     */
-   void cancelDeliveries(List ackInfos) throws JMSException;
-   
-   
+   void cancelDeliveries(List cancelInfos) throws JMSException;
+      
    /**
-    * Send a list of unacked ackInfos to the server so the delivery lists can be repopulated
+    * Send delivery info to the server so the delivery lists can be repopulated
     * used at failover
     * @param ackInfos
     * @throws JMSException
     */
-   void sendUnackedAckInfos(List ackInfos) throws JMSException;
+   void recoverDeliveries(List createInfos) throws JMSException;
 }
 

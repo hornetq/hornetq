@@ -37,6 +37,9 @@ import org.jboss.messaging.util.Streamable;
  * A ClientDelivery
  * Encapsulates a delivery of some messages to a client consumer
  * 
+ * There is no need to specify the server id since the client side CallbackManager is
+ * unique to the remoting connection
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -53,10 +56,6 @@ public class ClientDelivery implements Streamable
    
    private List msgs;
          
-   //We need to specify the server id too since different servers might have the
-   //same consumer id
-   private int serverId;
-   
    private int consumerId;
     
    // Constructors --------------------------------------------------
@@ -65,11 +64,9 @@ public class ClientDelivery implements Streamable
    {      
    }
 
-   public ClientDelivery(List msgs, int serverId, int consumerId)
+   public ClientDelivery(List msgs, int consumerId)
    {
       this.msgs = msgs;
-      
-      this.serverId = serverId;
       
       this.consumerId = consumerId;
    }
@@ -79,8 +76,6 @@ public class ClientDelivery implements Streamable
    
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeInt(serverId);
-      
       out.writeInt(consumerId);
       
       out.writeInt(msgs.size());
@@ -94,6 +89,8 @@ public class ClientDelivery implements Streamable
          out.writeByte(mp.getMessage().getType());
 
          out.writeInt(mp.getDeliveryCount());
+         
+         out.writeLong(mp.getDeliveryId());
 
          mp.getMessage().write(out);
       }      
@@ -101,8 +98,6 @@ public class ClientDelivery implements Streamable
 
    public void read(DataInputStream in) throws Exception
    {
-      serverId = in.readInt();
-      
       consumerId = in.readInt();
       
       int numMessages = in.readInt();
@@ -115,11 +110,13 @@ public class ClientDelivery implements Streamable
          
          int deliveryCount = in.readInt();
          
+         long deliveryId = in.readLong();
+         
          JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
 
          m.read(in);
 
-         MessageProxy md = JBossMessage.createThinDelegate(m, deliveryCount);
+         MessageProxy md = JBossMessage.createThinDelegate(deliveryId, m, deliveryCount);
          
          msgs.add(md);
       }      
@@ -130,11 +127,6 @@ public class ClientDelivery implements Streamable
    public List getMessages()
    {
       return msgs;
-   }
-   
-   public int getServerId()
-   {
-      return serverId;
    }
    
    public int getConsumerId()

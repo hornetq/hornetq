@@ -42,8 +42,11 @@ import org.jboss.jms.client.remoting.HandleMessageResponse;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.server.endpoint.Ack;
+import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.ClientDelivery;
-import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.server.endpoint.DefaultAck;
+import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
@@ -95,7 +98,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte MORE = 5;
    protected static final byte SEND_TRANSACTION = 6;
    protected static final byte GET_ID_BLOCK = 7;
-   protected static final byte UNACKED_ACKINFOS = 8;
+   protected static final byte RECOVER_DELIVERIES = 8;
+   protected static final byte CONFIRM_DELIVERY = 9;
  
 
    // The response codes - start from 100
@@ -233,9 +237,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   writeHeader(mi, dos);
                   
-                  AckInfo ack = (AckInfo)mi.getArguments()[0];
+                  Ack ack = (Ack)mi.getArguments()[0];
                   
-                  ack.write(dos);
+                  dos.writeLong(ack.getDeliveryId());
    
                   dos.flush();
    
@@ -255,8 +259,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   while (iter.hasNext())
                   {
-                     AckInfo ack = (AckInfo)iter.next();
-                     ack.write(dos);
+                     Ack ack = (Ack)iter.next();
+                     dos.writeLong(ack.getDeliveryId());
                   }
    
                   dos.flush();
@@ -305,17 +309,17 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   while (iter.hasNext())
                   {
-                     AckInfo ack = (AckInfo)iter.next();
-                     ack.write(dos);
+                     Cancel cancel = (Cancel)iter.next();
+                     cancel.write(dos);
                   }
    
                   dos.flush();
    
                   if (trace) { log.trace("wrote cancelDeliveries()"); }
                }
-               else if ("sendUnackedAckInfos".equals(methodName) && mi.getArguments() != null)
+               else if ("recoverDeliveries".equals(methodName) && mi.getArguments() != null)
                {
-                  dos.writeByte(UNACKED_ACKINFOS);
+                  dos.writeByte(RECOVER_DELIVERIES);
    
                   writeHeader(mi, dos);
    
@@ -327,13 +331,27 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   while (iter.hasNext())
                   {
-                     AckInfo ack = (AckInfo)iter.next();
-                     ack.write(dos);
+                     DeliveryRecovery d = (DeliveryRecovery)iter.next();
+                     d.write(dos);
                   }
    
                   dos.flush();
    
                   if (trace) { log.trace("wrote sendUnackedAckInfos()"); }
+               }
+               else if ("confirmDelivery".equals(methodName))
+               {
+                  dos.writeByte(CONFIRM_DELIVERY);
+   
+                  writeHeader(mi, dos);
+   
+                  Integer count = (Integer)mi.getArguments()[0];
+   
+                  dos.writeInt(count.intValue());
+                     
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote confirmDelivery()"); }
                }
                else
                {
@@ -483,14 +501,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
                   // We don't use acknowledgeable push callbacks
 
-//                  Map payload = callback.getReturnPayload();
-//                  String guid = (String)payload.get(ServerInvokerCallbackHandler.CALLBACK_ID);
-//                  dos.writeUTF(guid);
-//                  String listenerId = (String)payload.get(Client.LISTENER_ID_KEY);
-//                  dos.writeUTF(listenerId);
-//                  String acks = (String)payload.get(ServerInvokerCallbackHandler.REMOTING_ACKNOWLEDGES_PUSH_CALLBACKS);
-//                  dos.writeUTF(acks);
-                  
                   MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
                   ClientDelivery delivery = (ClientDelivery)mm.getLoad();
                   delivery.write(dos);
@@ -649,11 +659,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             {
                MethodInvocation mi = readHeader(dis);
                
-               AckInfo info = new AckInfo();
+               long l = dis.readLong();
                
-               info.read(dis);
-               
-               Object[] args = new Object[] {info};
+               Object[] args = new Object[] {new DefaultAck(l)};
    
                mi.setArguments(args);
    
@@ -675,11 +683,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                for (int i = 0; i < num; i++)
                {
-                  AckInfo ack = new AckInfo();
+                  long l = dis.readLong();                  
                   
-                  ack.read(dis);
-                  
-                  acks.add(ack);
+                  acks.add(new DefaultAck(l));
                }
                            
                Object[] args = new Object[] {acks};
@@ -704,11 +710,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                for (int i = 0; i < size; i++)
                {
-                  AckInfo ack = new AckInfo();
+                  Cancel cancel = new Cancel();
                   
-                  ack.read(dis);
+                  cancel.read(dis);
                   
-                  acks.add(ack);
+                  acks.add(cancel);
                }
    
                Object[] args = new Object[] {acks};
@@ -723,24 +729,24 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                return request;
             }
-            case UNACKED_ACKINFOS:
+            case RECOVER_DELIVERIES:
             {
                MethodInvocation mi = readHeader(dis);
    
                int size = dis.readInt();
    
-               List acks = new ArrayList(size);
+               List dels = new ArrayList(size);
    
                for (int i = 0; i < size; i++)
                {
-                  AckInfo ack = new AckInfo();
+                  DeliveryRecovery d = new DeliveryRecovery();
                   
-                  ack.read(dis);
+                  d.read(dis);
                   
-                  acks.add(ack);
+                  dels.add(d);
                }
    
-               Object[] args = new Object[] {acks};
+               Object[] args = new Object[] {dels};
    
                mi.setArguments(args);
    
@@ -749,6 +755,24 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                                         new MessagingMarshallable(version, mi), null, null, null);
    
                if (trace) { log.trace("read unackedAckInfos()"); }
+   
+               return request;
+            }
+            case CONFIRM_DELIVERY:
+            {
+               MethodInvocation mi = readHeader(dis);
+   
+               int count = dis.readInt();                  
+   
+               Object[] args = new Object[] {new Integer(count)};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read confirmDelivery()"); }
    
                return request;
             }
@@ -852,18 +876,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                {
                   // We don't use acknowledgeable push callbacks
 
-//                  String guid = dis.readUTF();
-//                  String listenerId = dis.readUTF();
-//                  String acks = dis.readUTF();
                   ClientDelivery delivery = new ClientDelivery();
                   delivery.read(dis);
                   MessagingMarshallable mm = new MessagingMarshallable(version, delivery);
                   Callback callback = new Callback(mm);
-//                  HashMap payload = new HashMap();
-//                  payload.put(ServerInvokerCallbackHandler.CALLBACK_ID, guid);
-//                  payload.put(Client.LISTENER_ID_KEY, listenerId);
-//                  payload.put(ServerInvokerCallbackHandler.REMOTING_ACKNOWLEDGES_PUSH_CALLBACKS, acks);
-//                  callback.setReturnPayload(payload);
+
                   callbackList.add(callback);
                }
 

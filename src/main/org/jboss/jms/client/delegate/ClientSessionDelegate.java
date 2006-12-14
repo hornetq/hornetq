@@ -43,7 +43,8 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
-import org.jboss.jms.tx.AckInfo;
+import org.jboss.jms.server.endpoint.Ack;
+import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.remoting.Client;
 
 /**
@@ -111,7 +112,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void acknowledge(AckInfo ackInfo) throws JMSException
+   public void acknowledge(Ack ack) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -120,7 +121,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void acknowledgeBatch(List ackInfos) throws JMSException
+   public void acknowledgeBatch(List acks) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -313,7 +314,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void preDeliver(MessageProxy proxy, int consumerID) throws JMSException
+   public void preDeliver(DeliveryInfo deliveryInfo) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -404,8 +405,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(MessageProxy m, int consumerID,
-                             ConsumerDelegate cons, int maxDeliveries)
+   public void addAsfMessage(MessageProxy m, int consumerID, long channelId, int maxDeliveries)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -432,7 +432,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void sendUnackedAckInfos(List ackInfos) throws JMSException
+   public void recoverDeliveries(List ackInfos) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

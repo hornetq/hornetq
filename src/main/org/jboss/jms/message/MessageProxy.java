@@ -65,30 +65,46 @@ public class MessageProxy implements Message, Serializable
 
    // Attributes ----------------------------------------------------
 
+   private transient SessionDelegate delegate;
+   
+   private transient boolean cc;
+   
+   private transient boolean messageCopied;
+   
+   private transient boolean propertiesCopied;
+   
+   private transient boolean bodyCopied;
+
+   private transient int state;
+
+   private transient boolean propertiesReadOnly;   
+
+   private int deliveryCount;
+   
+   private long deliveryId;
+   
+   protected transient boolean bodyReadOnly;
+   
    protected JBossMessage message;
 
-   protected transient SessionDelegate delegate;
-   
-   protected transient boolean cc;
-   protected transient boolean messageCopied;
-   protected transient boolean propertiesCopied;
-   protected transient boolean bodyCopied;
-
-   protected transient int state;
-
-   protected transient boolean propertiesReadOnly;
-   protected transient boolean bodyReadOnly;
-
-   protected int deliveryCount;
 
    // Constructors --------------------------------------------------
 
    public MessageProxy()
    {
    }
-
-   public MessageProxy(JBossMessage message, int deliveryCount)
+   
+   public MessageProxy(JBossMessage message)
    {
+      this.deliveryId = -1;
+      this.message = message;
+      this.state = STATE_NEW;
+      this.deliveryCount = 0;
+   }
+
+   public MessageProxy(long deliveryId, JBossMessage message, int deliveryCount)
+   {
+      this.deliveryId = deliveryId;
       this.message = message;
       this.state = STATE_NEW;
       this.deliveryCount = deliveryCount;
@@ -432,6 +448,11 @@ public class MessageProxy implements Message, Serializable
    public void incDeliveryCount()
    {
       this.deliveryCount++;            
+   }
+   
+   public long getDeliveryId()
+   {
+      return deliveryId;
    }
 
    public String toString()

@@ -110,11 +110,6 @@ public class ClosedInterceptor implements Interceptor
       return sb.toString();
    }
 
-   public boolean isClosed()
-   {
-      return state == IN_CLOSE || state == CLOSED;
-   }
-
    // Interceptor implementation -----------------------------------
 
    public String getName()
@@ -135,6 +130,7 @@ public class ClosedInterceptor implements Interceptor
 
       if ("isClosed".equals(methodName))
       {
+         //Actually this is badly named, it returns true if it's closing as well as closed
          return new Boolean(isClosed());
       }
 
@@ -317,6 +313,11 @@ public class ClosedInterceptor implements Interceptor
    // Package Private ------------------------------------------------
 
    // Private --------------------------------------------------------
+   
+   private boolean isClosed()
+   {
+      return state == IN_CLOSE || state == CLOSED;
+   }
 
    // Inner Classes --------------------------------------------------
 

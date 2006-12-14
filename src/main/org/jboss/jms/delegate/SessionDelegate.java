@@ -35,6 +35,7 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
+import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
@@ -65,7 +66,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    TextMessageProxy createTextMessage(String text) throws JMSException;
    
-   void preDeliver(MessageProxy proxy, int consumerID) throws JMSException;
+   void preDeliver(DeliveryInfo deliveryInfo) throws JMSException;
    
    void postDeliver(boolean cancel) throws JMSException;
    
@@ -77,7 +78,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    XAResource getXAResource();
    
-   void addAsfMessage(MessageProxy m, int consumerID, ConsumerDelegate cons, int maxDeliveries);
+   void addAsfMessage(MessageProxy m, int consumerID, long channelID, int maxDeliveries);
    
    boolean getTransacted();
    
@@ -89,7 +90,7 @@ public interface SessionDelegate extends SessionEndpoint
    
    void recover() throws JMSException;
    
-   void redeliver(List ackInfos) throws JMSException;
+   void redeliver(List deliveryInfos) throws JMSException;
    
    ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
    

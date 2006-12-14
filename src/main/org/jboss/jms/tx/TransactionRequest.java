@@ -66,7 +66,7 @@ public class TransactionRequest implements Streamable
    /** For 2 phase commit, this identifies the transaction. */
    protected Xid xid;
 
-   protected TxState state;
+   protected ClientTransaction state;
    
    // Static --------------------------------------------------------
    
@@ -76,7 +76,7 @@ public class TransactionRequest implements Streamable
    {      
    }
    
-   public TransactionRequest(int requestType, Xid xid, TxState state)
+   public TransactionRequest(int requestType, Xid xid, ClientTransaction state)
    {      
       this.requestType = requestType;
       this.xid = xid;
@@ -153,7 +153,7 @@ public class TransactionRequest implements Streamable
      }
      else
      {
-        state = new TxState();
+        state = new ClientTransaction();
      
         state.read(in);
      }
@@ -161,7 +161,7 @@ public class TransactionRequest implements Streamable
 
    // Public --------------------------------------------------------
 
-   public TxState getState()
+   public ClientTransaction getState()
    {
       return state;
    }

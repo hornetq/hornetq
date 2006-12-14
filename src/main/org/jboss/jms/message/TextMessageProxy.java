@@ -34,12 +34,16 @@ import javax.jms.TextMessage;
  */
 public class TextMessageProxy extends MessageProxy implements TextMessage
 {
-
    private static final long serialVersionUID = -3530143417050205123L;
 
-   public TextMessageProxy(JBossTextMessage message, int deliveryCount)
+   public TextMessageProxy(long deliveryId, JBossTextMessage message, int deliveryCount)
    {
-      super(message, deliveryCount);
+      super(deliveryId, message, deliveryCount);
+   }
+   
+   public TextMessageProxy(JBossTextMessage message)
+   {
+      super(message);
    }
    
    public void setText(String string) throws JMSException

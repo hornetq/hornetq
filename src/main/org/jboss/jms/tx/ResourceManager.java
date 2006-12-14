@@ -22,16 +22,13 @@
 package org.jboss.jms.tx;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.TransactionRolledBackException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -39,6 +36,10 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.server.endpoint.DeliveryInfo;
+import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.MessagingXAException;
 import org.jboss.logging.Logger;
@@ -66,7 +67,7 @@ public class ResourceManager
    
    private boolean trace = log.isTraceEnabled();
    
-   protected ConcurrentHashMap transactions = new ConcurrentHashMap();
+   private ConcurrentHashMap transactions = new ConcurrentHashMap();
    
    // Static --------------------------------------------------------
    
@@ -76,24 +77,20 @@ public class ResourceManager
     
    // Public --------------------------------------------------------
    
-   public TxState getTx(Object xid)
+   /**
+    * Remove a tx
+    */
+   public ClientTransaction removeTx(Object xid)
    {
-      if (trace) { log.trace("getting transaction for " + xid); }
-      
-      return (TxState)transactions.get(xid);
+      return removeTxInternal(xid);
    }
-   
-   public TxState removeTx(Object xid)
-   {
-      return (TxState)transactions.remove(xid);
-   }
-   
+            
    /**
     * Create a local tx.
     */
    public LocalTx createLocalTx()
    {
-      TxState tx = new TxState();
+      ClientTransaction tx = new ClientTransaction();
       
       LocalTx xid = getNextTxId();
       
@@ -108,69 +105,57 @@ public class ResourceManager
     * @param xid - The id of the transaction to add the message to
     * @param m The message
     */
-   public void addMessage(Object xid, Message m)
+   public void addMessage(Object xid, int sessionId, JBossMessage msg)
    {
       if (trace) { log.trace("addding message for xid " + xid); }
       
-      TxState tx = getTx(xid);
+      ClientTransaction tx = getTxInternal(xid);
       
-      tx.getMessages().add(m);
+      tx.addMessage(sessionId, msg);
    }
-
-    /**
-     * Navigate on ACK and change consumer ids on every ACK not sent yet.
-     */
-    public void handleFailover(int oldConsumerID, int newConsumerID)
-    {
-        if (trace) { log.trace("handleFailover:: Transfering consumer id on ACKs from  " + oldConsumerID + " to " + newConsumerID); }
-
-        //TODO need to lock the rm while this is happening
-        
-        //Note we need to replace ids for *all* transactions - this is because, for XA
-        //the session might have done work in many transactions
-        Iterator iter = this.transactions.values().iterator();
-        
-        while (iter.hasNext())
-        {
-           TxState tx = (TxState)iter.next();
-           
-           tx.handleFailover(oldConsumerID, newConsumerID);
-        }                
-    }
-    
-    /*
-     * Get all the ackinfos with a consumer id in the specified set
-     */
-    public List getAckInfosForConsumerIds(Set consumerIds)
-    {
-       Iterator iter = this.transactions.values().iterator();
-       
-       List ackInfos = new ArrayList();
-       
-       while (iter.hasNext())
-       {
-          TxState tx = (TxState)iter.next();
-          
-          tx.getAckInfosForConsumerIds(ackInfos, consumerIds);
-       }
-       
-       return ackInfos;
-    }
-    
-    public void removeNonPersistentAcks(Set consumerIds)
-    {
-       Iterator iter = this.transactions.values().iterator();
-       
-       List ackInfos = new ArrayList();
-       
-       while (iter.hasNext())
-       {
-          TxState tx = (TxState)iter.next();
-          
-          tx.removeNonPersistentAcks(consumerIds);
-       }
-    }
-
+   
+   /*
+    * Failover session from old session -> new session
+    * This basically involves updating the session id
+    */
+   public void handleFailover(Map oldNewSessionMap)
+   {
+      //Note we need to replace ids for *all* transactions - this is because, for XA
+      //the session might have done work in many transactions
+      Iterator iter = this.transactions.values().iterator();
+      
+      while (iter.hasNext())
+      {
+         ClientTransaction tx = (ClientTransaction)iter.next();
+         
+         tx.handleFailover(oldNewSessionMap);
+      }                
+   }   
+   
+   /*
+    * Get all the deliveries corresponding to the session id
+    */
+   public List getDeliveriesForSession(int sessionId)
+   {
+      Iterator iter = this.transactions.values().iterator();
+      
+      List ackInfos = new ArrayList();
+      
+      while (iter.hasNext())
+      {
+         ClientTransaction tx = (ClientTransaction)iter.next();
+         
+         List acks = tx.getDeliveriesForSession(sessionId);
+         
+         if (acks != null)
+         {
+            ackInfos.addAll(acks);
+         }
+      }
+      
+      return ackInfos;
+   }
+   
    
    /**
     * Add an acknowledgement to the transaction
@@ -180,25 +165,25 @@ public class ResourceManager
     * @param sessionState - the session the ack is in - we need this so on rollback we can tell each session
     * to redeliver it's messages
     */
-   public void addAck(Object xid, AckInfo ackInfo) throws JMSException
+   public void addAck(Object xid, int sessionId, DeliveryInfo ackInfo) throws JMSException
    {
       if (trace) { log.trace("adding " + ackInfo + " to transaction " + xid); }
       
-      TxState tx = getTx(xid);
+      ClientTransaction tx = getTxInternal(xid);
       
       if (tx == null)
       {
          throw new JMSException("There is no transaction with id " + xid);
       }
       
-      tx.getAcks().add(ackInfo);
+      tx.addAck(sessionId, ackInfo);
    }
          
    public void commitLocal(LocalTx xid, ConnectionDelegate connection) throws JMSException
    {
       if (trace) { log.trace("commiting local xid " + xid); }
       
-      TxState tx = this.getTx(xid);
+      ClientTransaction tx = this.getTxInternal(xid);
       
       //Invalid xid
       if (tx == null)
@@ -215,7 +200,7 @@ public class ResourceManager
          
          //If we get this far we can remove the transaction
          
-         this.removeTx(xid);
+         this.removeTxInternal(xid);
       }
       catch (Throwable t)
       {
@@ -233,7 +218,7 @@ public class ResourceManager
    {
       if (trace) { log.trace("rolling back local xid " + xid); }
       
-      TxState ts = removeTx(xid);
+      ClientTransaction ts = removeTxInternal(xid);
       
       if (ts == null)
       {      
@@ -241,6 +226,7 @@ public class ResourceManager
       }
       
       // don't need messages for rollback
+      // We don't clear the acks since we need to redeliver locally
       ts.clearMessages();
       
       // for one phase rollback there is nothing to do on the server
@@ -248,11 +234,27 @@ public class ResourceManager
       redeliverMessages(ts);
    }
    
-   public void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
+   //Only used for testing
+   public ClientTransaction getTx(Object xid)
+   {
+      return getTxInternal(xid);
+   }
+   
+   //Only used for testing
+   public int size()
+   {
+      return transactions.size();
+   }
+    
+   // Protected ------------------------------------------------------      
+   
+   // Package Private ------------------------------------------------
+   
+   void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("commiting xid " + xid + ", onePhase=" + onePhase); }
       
-      TxState tx = removeTx(xid);
+      ClientTransaction tx = removeTxInternal(xid);
           
       if (onePhase)
       {
@@ -273,7 +275,7 @@ public class ResourceManager
       {
          if (tx != null)
          {
-            if (tx.getState() != TxState.TX_PREPARED)
+            if (tx.getState() != ClientTransaction.TX_PREPARED)
             {    
                throw new MessagingXAException(XAException.XAER_PROTO, "commit called for transaction, but it is not prepared");
             }
@@ -295,25 +297,26 @@ public class ResourceManager
       
       if (tx != null)
       {
-         tx.setState(TxState.TX_COMMITED);
+         tx.setState(ClientTransaction.TX_COMMITED);
       }
    }
       
-   public void rollback(Xid xid, ConnectionDelegate connection) throws XAException
+   void rollback(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("rolling back xid " + xid); }
       
-      TxState tx = removeTx(xid);
+      ClientTransaction tx = removeTxInternal(xid);
           
       TransactionRequest request = null;
       
       // we don't need to send the messages to the server on a rollback
       if (tx != null)
       {
+         //We don't clear the acks since we need to redeliver locally
          tx.clearMessages();
       }
       
-      if ((tx == null) || tx.getState() == TxState.TX_PREPARED)
+      if ((tx == null) || tx.getState() == ClientTransaction.TX_PREPARED)
       {
          request = new TransactionRequest(TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST, xid, tx);
          
@@ -339,78 +342,25 @@ public class ResourceManager
       }
    }
    
-   
-   /*
-    * Rollback has occurred so we need to redeliver any unacked messages corresponding to the acks
-    * is in the transaction.
-    */
-   private void redeliverMessages(TxState ts) throws JMSException
-   {
-      // Sort messages into lists, one for each session. We use a LinkedHashMap since we need to
-      // preserve the order of the sessions.
-
-      Map toAck = new LinkedHashMap();
-
-      for(Iterator i = ts.getAcks().iterator(); i.hasNext(); )
-      {
-         AckInfo ack = (AckInfo)i.next();
-         SessionDelegate del = ack.msg.getSessionDelegate();
-         
-         List acks = (List)toAck.get(del);
-         if (acks == null)
-         {
-            acks = new ArrayList();
-            toAck.put(del, acks);
-         }
-         acks.add(ack);
-      }
-      
-      // Now tell each session to redeliver.
-      
-      LinkedList l = new LinkedList();
-      
-      for(Iterator i = toAck.entrySet().iterator(); i.hasNext();)
-      {
-         // need to reverse the order
-         Object entry = i.next();
-         l.addFirst(entry);
-      }
-      
-      for(Iterator i = l.iterator(); i.hasNext();)
-      {
-         Map.Entry entry = (Map.Entry)i.next();
-         SessionDelegate sess = (SessionDelegate)entry.getKey();
-         List acks = (List)entry.getValue();
-         sess.redeliver(acks);
-      }  
-   }
-   
-   public int size()
-   {
-      return transactions.size();
-   }
-
-   // Protected ------------------------------------------------------
-   
-   protected void endTx(Xid xid, boolean success) throws XAException
+   void endTx(Xid xid, boolean success) throws XAException
    {
       if (trace) { log.trace("ending " + xid + ", success=" + success); }
       
-      TxState state = getTx(xid);
+      ClientTransaction state = getTxInternal(xid);
       
       if (state == null)
       {  
          throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
       }        
       
-      state.setState(TxState.TX_ENDED);
+      state.setState(ClientTransaction.TX_ENDED);
    }
    
-   protected Xid joinTx(Xid xid) throws XAException
+   Xid joinTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("joining  " + xid); }
       
-      TxState state = getTx(xid);
+      ClientTransaction state = getTxInternal(xid);
       
       if (state == null)
       {         
@@ -420,11 +370,11 @@ public class ResourceManager
       return xid;
    }
    
-   protected int prepare(Xid xid, ConnectionDelegate connection) throws XAException
+   int prepare(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("preparing " + xid); }
       
-      TxState state = getTx(xid);
+      ClientTransaction state = getTxInternal(xid);
       
       if (state == null)
       { 
@@ -436,16 +386,16 @@ public class ResourceManager
       
       sendTransactionXA(request, connection);      
       
-      state.setState(TxState.TX_PREPARED);
+      state.setState(ClientTransaction.TX_PREPARED);
       
       return XAResource.XA_OK;
    }
    
-   protected Xid resumeTx(Xid xid) throws XAException
+   Xid resumeTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("resuming " + xid); }
       
-      TxState state = getTx(xid);
+      ClientTransaction state = getTxInternal(xid);
       
       if (state == null)
       {       
@@ -455,11 +405,11 @@ public class ResourceManager
       return xid;
    }
    
-   protected Xid suspendTx(Xid xid) throws XAException
+   Xid suspendTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("suspending " + xid); }
 
-      TxState state = getTx(xid);
+      ClientTransaction state = getTxInternal(xid);
       
       if (state == null)
       {       
@@ -469,48 +419,48 @@ public class ResourceManager
       return xid;
    }
 
-   protected Xid convertTx(LocalTx anonXid, Xid xid) throws XAException
+   Xid convertTx(LocalTx anonXid, Xid xid) throws XAException
    {
       if (trace) { log.trace("converting " + anonXid + " to " + xid); }
 
-      TxState state = getTx(anonXid);
+      ClientTransaction state = getTxInternal(anonXid);
 
       if (state == null)
       {        
          throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + anonXid);
       }
 
-      state = getTx(xid);
+      state = getTxInternal(xid);
 
       if (state != null)
       {        
          throw new MessagingXAException(XAException.XAER_DUPID, "Transaction already exists:" + xid);
       }
 
-      TxState s = removeTx(anonXid);
+      ClientTransaction s = removeTxInternal(anonXid);
       
       transactions.put(xid, s);
       
       return xid;
    }
    
-   protected Xid startTx(Xid xid) throws XAException
+   Xid startTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("starting " + xid); }
 
-      TxState state = getTx(xid);
+      ClientTransaction state = getTxInternal(xid);
       
       if (state != null)
       {
          throw new MessagingXAException(XAException.XAER_DUPID, "Transaction already exists with xid " + xid);
       }
             
-      transactions.put(xid, new TxState());
+      transactions.put(xid, new ClientTransaction());
       
       return xid;
    }
    
-   protected Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
+   Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
    {
       if (trace) { log.trace("calling recover with flags: " + flags); }
       
@@ -532,9 +482,46 @@ public class ResourceManager
       }
    }
    
-   // Package Private ------------------------------------------------
-   
    // Private --------------------------------------------------------
+   
+   private ClientTransaction getTxInternal(Object xid)
+   {
+      if (trace) { log.trace("getting transaction for " + xid); }
+      
+      return (ClientTransaction)transactions.get(xid);
+   }
+   
+   private ClientTransaction removeTxInternal(Object xid)
+   {
+      return (ClientTransaction)transactions.remove(xid);
+   }
+   
+   /*
+    * Rollback has occurred so we need to redeliver any unacked messages corresponding to the acks
+    * is in the transaction.
+    */
+   private void redeliverMessages(ClientTransaction ts) throws JMSException
+   {
+      Collection sessionStates = ts.getSessionStates();
+      
+      for (Iterator i = sessionStates.iterator(); i.hasNext();)
+      {
+         SessionTxState state = (SessionTxState)i.next();
+         
+         List acks = state.getAcks();
+         
+         if (!acks.isEmpty())
+         {
+            DeliveryInfo info = (DeliveryInfo)acks.get(0);
+            
+            MessageProxy mp = info.getMessageProxy();
+            
+            SessionDelegate del = mp.getSessionDelegate();
+            
+            del.redeliver(acks);
+         }
+      }
+   }
    
    private synchronized LocalTx getNextTxId()
    {

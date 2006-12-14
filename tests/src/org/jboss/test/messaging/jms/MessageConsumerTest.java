@@ -207,52 +207,63 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testRedeliveryToCompetingConsumerOnQueue() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+      
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         MessageProducer prod = sessSend.createProducer(queue);
+   
+         conn.start();
+   
+         Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+   
+         MessageConsumer cons1 = sessConsume1.createConsumer(queue);
+   
+         TextMessage tm = sessSend.createTextMessage();
+   
+         tm.setText("Your mum");
+   
+         prod.send(tm);
+   
+         TextMessage tm2 = (TextMessage)cons1.receive();
+   
+         assertNotNull(tm2);
+   
+         assertEquals("Your mum", tm2.getText());
+   
+         // Don't ack
+   
+         // Create another consumer
+   
+         Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+   
+         MessageConsumer cons2 = sessConsume2.createConsumer(queue);
+   
+         // this should cancel message and cause delivery to other consumer
+   
+         log.trace("Closed session 1");
+         sessConsume1.close();
+   
+         TextMessage tm3 = (TextMessage)cons2.receive(1000);
+   
+         assertNotNull(tm3);
+   
+         assertEquals("Your mum", tm3.getText());
+   
+         tm3.acknowledge();
+      }
+      finally
+      {
 
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      MessageProducer prod = sessSend.createProducer(queue);
-
-      conn.start();
-
-      Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-      MessageConsumer cons1 = sessConsume1.createConsumer(queue);
-
-      TextMessage tm = sessSend.createTextMessage();
-
-      tm.setText("Your mum");
-
-      prod.send(tm);
-
-      TextMessage tm2 = (TextMessage)cons1.receive();
-
-      assertNotNull(tm2);
-
-      assertEquals("Your mum", tm2.getText());
-
-      // Don't ack
-
-      // Create another consumer
-
-      Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-      MessageConsumer cons2 = sessConsume2.createConsumer(queue);
-
-      // this should cancel message and cause delivery to other consumer
-
-      sessConsume1.close();
-
-      TextMessage tm3 = (TextMessage)cons2.receive(1000);
-
-      assertNotNull(tm3);
-
-      assertEquals("Your mum", tm3.getText());
-
-      tm3.acknowledge();
-
-      conn.close();
-
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
 
    }
 

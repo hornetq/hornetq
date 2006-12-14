@@ -28,6 +28,7 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
@@ -40,7 +41,6 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
@@ -132,7 +132,7 @@ public class StateCreationAspect
 
    public Object handleCreateSessionDelegate(Invocation invocation) throws Throwable
    {
-      SessionDelegate sessionDelegate = (SessionDelegate)invocation.invokeNext();
+      ClientSessionDelegate sessionDelegate = (ClientSessionDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)sessionDelegate;
 
       delegate.init();

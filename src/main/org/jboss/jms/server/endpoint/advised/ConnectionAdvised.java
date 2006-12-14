@@ -67,11 +67,6 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
       endpoint.closing();
    }
 
-   public boolean isClosed()
-   {
-      return endpoint.isClosed();
-   }
-
    public SessionDelegate createSessionDelegate(boolean transacted,
                                                 int acknowledgmentMode,
                                                 boolean isXA) throws JMSException
@@ -107,6 +102,11 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
    public Xid[] getPreparedTransactions() throws JMSException
    {
       return endpoint.getPreparedTransactions();
+   }
+   
+   public boolean isClosed() throws JMSException
+   {
+      return endpoint.isClosed();
    }
 
    // Public --------------------------------------------------------

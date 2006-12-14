@@ -129,7 +129,7 @@ public class AsfAspect
 
       MessageProxy m = (MessageProxy)mi.getArguments()[0];
       int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
-      ConsumerDelegate cons = (ConsumerDelegate)mi.getArguments()[2];
+      long channelID = ((Long)mi.getArguments()[2]).longValue();
       int maxDeliveries = ((Integer)mi.getArguments()[3]).intValue();
       
       if (m == null)
@@ -140,7 +140,7 @@ public class AsfAspect
       AsfMessageHolder holder = new AsfMessageHolder();
       holder.msg = m;
       holder.consumerID = theConsumerID;
-      holder.consumerDelegate = cons;
+      holder.channelID = channelID;
       holder.maxDeliveries = maxDeliveries;
       
       msgs.add(holder);
@@ -164,7 +164,8 @@ public class AsfAspect
 
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
          
-         MessageCallbackHandler.callOnMessage(del, sessionListener, holder.consumerID, false,
+         MessageCallbackHandler.callOnMessage(del, sessionListener, holder.consumerID,
+                                              holder.channelID, false,
                                               holder.msg, ackMode, holder.maxDeliveries);                          
       }
       
@@ -184,11 +185,11 @@ public class AsfAspect
 
    // Inner Classes --------------------------------------------------
    
-   protected static class AsfMessageHolder
+   private static class AsfMessageHolder
    {
-      MessageProxy msg;
-      int consumerID;
-      ConsumerDelegate consumerDelegate;
-      int maxDeliveries;
+      private MessageProxy msg;
+      private int consumerID;
+      private long channelID;
+      private int maxDeliveries;
    }
 }

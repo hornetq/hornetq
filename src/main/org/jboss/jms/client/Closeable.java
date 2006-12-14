@@ -47,7 +47,6 @@ public interface Closeable
     * @throws JMSException
     */
    void closing() throws JMSException;
-
-   boolean isClosed();
-  
+   
+   boolean isClosed() throws JMSException;
 }

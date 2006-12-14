@@ -74,6 +74,7 @@ public class ConsumerAspect
       ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
       int serverId = connectionState.getServerID();
       int consumerID = consumerState.getConsumerID();
+      long channelID = consumerState.getChannelId();
       int prefetchSize = consumerState.getPrefetchSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
       int maxDeliveries = consumerState.getMaxDeliveries();
@@ -81,12 +82,13 @@ public class ConsumerAspect
       MessageCallbackHandler messageHandler =
          new MessageCallbackHandler(isCC, sessionState.getAcknowledgeMode(),
                                     sessionDelegate, consumerDelegate, consumerID,
+                                    channelID,
                                     prefetchSize, sessionExecutor, maxDeliveries);
       
       sessionState.addCallbackHandler(messageHandler);
       
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-      cm.registerHandler(serverId, consumerID, messageHandler);
+      cm.registerHandler(consumerID, messageHandler);
          
       consumerState.setMessageCallbackHandler(messageHandler);
       
@@ -115,7 +117,7 @@ public class ConsumerAspect
       sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());
 
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-      cm.unregisterHandler(connectionState.getServerID(), consumerState.getConsumerID());
+      cm.unregisterHandler(consumerState.getConsumerID());
             
       return res;
    }      

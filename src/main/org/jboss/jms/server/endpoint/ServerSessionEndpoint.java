@@ -24,11 +24,11 @@ package org.jboss.jms.server.endpoint;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,11 +56,12 @@ import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
-import org.jboss.jms.tx.AckInfo;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.IdManager;
@@ -72,10 +73,14 @@ import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.RemoteQueueStub;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.util.id.GUID;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
  * Concrete implementation of SessionEndpoint.
@@ -99,9 +104,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    private boolean trace = log.isTraceEnabled();
 
-   private int sessionID;
+   private int id;
 
-   private boolean closed;
+   private volatile boolean closed;
 
    private ServerConnectionEndpoint connectionEndpoint;
 
@@ -120,12 +125,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private int maxDeliveryAttempts;
    private Queue dlq;
    
+   // Map < deliveryId, Delivery>
+   private Map deliveries;
+   
+   private SynchronizedLong deliveryIdSequence;
+   
+   
    // Constructors --------------------------------------------------
 
-   protected ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
+   ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
       throws Exception
    {
-      this.sessionID = sessionID;
+      this.id = sessionID;
 
       this.connectionEndpoint = connectionEndpoint;
 
@@ -146,7 +157,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       dlq = sp.getDLQ();
       tr = sp.getTxRepository();
       maxDeliveryAttempts = sp.getMaxDeliveryAttempts();
-
+      
+      deliveries = new ConcurrentHashMap();
+      
+      deliveryIdSequence = new SynchronizedLong(0);
    }
    
    // SessionDelegate implementation --------------------------------
@@ -213,7 +227,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	   ServerBrowserEndpoint ep =
    	      new ServerBrowserEndpoint(this, browserID, (PagingFilteredQueue)binding.getQueue(), messageSelector);
    	   
-   	   putBrowserDelegate(browserID, ep);
+         //Still need to synchronized since close() can come in on a different thread
+         synchronized (browsers)
+         {
+            browsers.put(new Integer(browserID), ep);
+         }
    	   
          JMSDispatcher.instance.registerTarget(new Integer(browserID), new BrowserAdvised(ep));
    	   
@@ -276,49 +294,27 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " createTopic");
       }
    }
-
+   
    public void close() throws JMSException
    {
       try
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Session is already closed");
-         }
+         localClose();
          
-         if (trace) log.trace(this + " close()");
-               
-         // clone to avoid ConcurrentModificationException
-         HashSet consumerSet = new HashSet(consumers.values());
-         
-         for(Iterator i = consumerSet.iterator(); i.hasNext(); )
-         {
-            ((ServerConsumerEndpoint)i.next()).remove();
-         }           
-         
-         connectionEndpoint.removeSessionDelegate(sessionID);
-         
-         JMSDispatcher.instance.unregisterTarget(new Integer(sessionID));
-         
-         closed = true;
+         connectionEndpoint.removeSession(id);
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " close");
       }
    }
-   
+      
    public void closing() throws JMSException
    {
       // currently does nothing
       if (trace) log.trace(this + " closing (noop)");
    }
-
-   public boolean isClosed()
-   {
-      return closed;
-   }
-   
+ 
    public void send(JBossMessage message) throws JMSException
    {
       try
@@ -331,17 +327,24 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   public void acknowledgeBatch(List ackInfos) throws JMSException
+   public void acknowledgeBatch(List acks) throws JMSException
    {      
       try
       {
-         Iterator iter = ackInfos.iterator();
+         Iterator iter = acks.iterator();
          
          while (iter.hasNext())
          {
-            AckInfo ackInfo = (AckInfo)iter.next();
+            Ack ack = (Ack)iter.next();
             
-            acknowledgeInternal(ackInfo);
+            Delivery del = (Delivery)deliveries.remove(new Long(ack.getDeliveryId()));
+            
+            if (del == null)
+            {
+               throw new IllegalStateException("Cannot find delivery to acknowledge: " + ack.getDeliveryId());
+            }
+            
+            del.acknowledge(null);
          }
       }
       catch (Throwable t)
@@ -350,56 +353,63 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   public void acknowledge(AckInfo ackInfo) throws JMSException
+   public void acknowledge(Ack ack) throws JMSException
    {
       try
       {
-         acknowledgeInternal(ackInfo);      
+         Delivery del = (Delivery)deliveries.remove(new Long(ack.getDeliveryId()));
+         
+         if (del == null)
+         {
+            throw new IllegalStateException("Cannot find delivery to acknowledge: " + ack.getDeliveryId());
+         }
+         
+         del.acknowledge(null);    
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
       }
-   }
+   }     
 
-   public void cancelDeliveries(List ackInfos) throws JMSException
+   public void cancelDeliveries(List cancels) throws JMSException
    {
       try
       {
          // deliveries must be cancelled in reverse order
-          
-         Set consumers = new HashSet();
-         
+           
          List forDLQ = null;
          
-         for (int i = ackInfos.size() - 1; i >= 0; i--)
+         Set channels = new HashSet();
+                           
+         for (int i = cancels.size() - 1; i >= 0; i--)
          {
-            AckInfo ack = (AckInfo)ackInfos.get(i);
+            Cancel cancel = (Cancel)cancels.get(i);
             
-            // We look in the global map since the message might have come from connection consumer
-            ServerConsumerEndpoint consumer =
-               this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
-   
-            if (consumer == null)
+            Delivery del = (Delivery)deliveries.remove(new Long(cancel.getDeliveryId()));
+            
+            if (del == null)
             {
-               throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
+               throw new IllegalStateException("Cannot find delivery to cancel " + cancel.getDeliveryId());
             }
-            
-            if (ack.getDeliveryCount() >= maxDeliveryAttempts)
+                                    
+            if (cancel.getDeliveryCount() >= maxDeliveryAttempts)
             {
                if (forDLQ == null)
                {
                   forDLQ = new ArrayList();
                }
                
-               forDLQ.add(ack);
+               forDLQ.add(del);
             }
             else
-            {            
-               consumer.cancelDelivery(new Long(ack.getMessageID()), ack.getDeliveryCount());
+            {                                                   
+               del.getReference().setDeliveryCount(cancel.getDeliveryCount());
+               
+               del.cancel();
+               
+               channels.add(del.getObserver());
             }
-            
-            consumers.add(consumer);
          }
          
          //Send stuff to DLQ
@@ -414,17 +424,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
             {               
                for (int i = forDLQ.size() - 1; i >= 0; i--)
                {
-                  AckInfo ack = (AckInfo)forDLQ.get(i);
+                  Delivery del = (Delivery)forDLQ.get(i);
                   
-                  ServerConsumerEndpoint consumer =
-                     this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
-         
-                  if (consumer == null)
-                  {
-                     throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
+                  if (dlq != null)
+                  {         
+                     //reset delivery count to zero
+                     del.getReference().setDeliveryCount(0);
+                     
+                     dlq.handle(null, del.getReference(), tx);
+                     
+                     del.acknowledge(tx);           
                   }
-                  
-                  consumer.sendToDLQ(new Long(ack.getMessageID()), tx);                              
+                  else
+                  {
+                     log.warn("Cannot send to DLQ since DLQ has not been deployed! The message will be removed");
+                     
+                     del.acknowledge(tx);
+                  }                              
                }
                
                tx.commit();
@@ -437,49 +453,49 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
          }
          
-         // need to prompt delivery for all consumers
+         // need to prompt delivery for all affected channels
          
-         for(Iterator i = consumers.iterator(); i.hasNext(); )
-         {
-            ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)i.next();
-            consumer.promptDelivery();
-         }
+         promptDelivery(channels);
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " cancelDeliveries");
       }
-   }
+   }         
    
-   public void sendUnackedAckInfos(List ackInfos) throws JMSException
+   public void recoverDeliveries(List deliveryRecoveryInfos) throws JMSException
    {
+      if (trace) { log.trace(this + "recoverDeliveries(): " + deliveryRecoveryInfos); }
       try
       {
-         //Sort into different list for each consumer
+         if (postOffice.isLocal())
+         {
+            throw new IllegalStateException("Recovering deliveries but post office is not clustered!");
+         }
+         
+         ClusteredPostOffice po = (ClusteredPostOffice)postOffice;
+         
+         long maxDeliveryId = 0;
+                  
+         //Sort into different list for each channel
          Map ackMap = new HashMap();
                   
-         for (int i = ackInfos.size() - 1; i >= 0; i--)
+         for (Iterator iter = deliveryRecoveryInfos.iterator(); iter.hasNext(); )
          {
-            AckInfo ack = (AckInfo)ackInfos.get(i);
+            DeliveryRecovery deliveryInfo = (DeliveryRecovery)iter.next();
+                
+            Long channelId = new Long(deliveryInfo.getChannelId());
             
-            ServerConsumerEndpoint consumer =
-               this.connectionEndpoint.getConsumerEndpoint(ack.getConsumerID());
-   
-            if (consumer == null)
-            {
-               throw new IllegalArgumentException("Cannot find consumer id: " + ack.getConsumerID());
-            }
-            
-            LinkedList acks = (LinkedList)ackMap.get(consumer);
+            List acks = (List)ackMap.get(channelId);
             
             if (acks == null)
             {
-               acks = new LinkedList();
+               acks = new ArrayList();
                
-               ackMap.put(consumer, acks);
+               ackMap.put(channelId, acks);
             }
             
-            acks.addFirst(new Long(ack.getMessageID()));
+            acks.add(deliveryInfo);
          }  
          
          Iterator iter = ackMap.entrySet().iterator();
@@ -488,19 +504,59 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             Map.Entry entry = (Map.Entry)iter.next();
             
-            ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)entry.getKey();
+            Long channelId = (Long)entry.getKey();
+            
+            //Look up channel
+            Binding binding = po.getBindingforChannelId(channelId.longValue());
+            
+            if (binding == null)
+            {
+               throw new IllegalStateException("Cannot find channel with id: " + channelId);
+            }
             
             List acks = (List)entry.getValue();
             
-            consumer.createDeliveries(acks);
+            List ids = new ArrayList(acks.size());
+            
+            for (Iterator iter2 = acks.iterator(); iter2.hasNext(); )
+            {
+               DeliveryRecovery info = (DeliveryRecovery)iter2.next();
+               
+               ids.add(new Long(info.getMessageId()));
+            }
+            
+            Queue queue = binding.getQueue();
+            
+            List dels = queue.createDeliveries(ids);
+            
+            Iterator iter2 = dels.iterator();
+            
+            Iterator iter3 = acks.iterator();
+            
+            while (iter2.hasNext())
+            {
+               Delivery del = (Delivery)iter2.next();
+               
+               DeliveryRecovery info = (DeliveryRecovery)iter3.next();
+               
+               long deliveryId = info.getDeliveryId();
+               
+               maxDeliveryId = Math.max(maxDeliveryId, deliveryId);
+               
+               if (trace) { log.trace(this + " Recovered delivery " + deliveryId + ", " + del); }
+               
+               deliveries.put(new Long(deliveryId), del);
+            }
          }
+         
+         this.deliveryIdSequence = new SynchronizedLong(maxDeliveryId + 1);
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " sendUnackedAckInfos");
+         throw ExceptionUtil.handleJMSInvocation(t, this + " recoverDeliveries");
       }
    }
-
+   
    public void addTemporaryDestination(JBossDestination dest) throws JMSException
    {
       try
@@ -670,6 +726,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " unsubscribe");
       }
    }
+   
+   public boolean isClosed() throws JMSException
+   {
+      throw new IllegalStateException("isClosed should never be handled on the server side");
+   }
     
    // Public --------------------------------------------------------
    
@@ -680,57 +741,184 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    public String toString()
    {
-      return "SessionEndpoint[" + sessionID + "]";
+      return "SessionEndpoint[" + id + "]";
    }
 
    // Package protected ---------------------------------------------
-
-   /**
-    * @return a Set<Integer>
-    */
-   Set getConsumerEndpointIDs()
+   
+   void removeBrowser(int browserId) throws Exception
    {
-      return consumers.keySet();
+      synchronized (browsers)
+      {
+         if (browsers.remove(new Integer(browserId)) == null)
+         {
+            throw new IllegalStateException("Cannot find browser with id " + browserId + " to remove");
+         }
+      }
    }
    
-   // Protected -----------------------------------------------------
+   void removeConsumer(int consumerId) throws Exception
+   {
+      synchronized (consumers)
+      {
+         if (consumers.remove(new Integer(consumerId)) == null)
+         {
+            throw new IllegalStateException("Cannot find consumer with id " + consumerId + " to remove");
+         }
+      }
+   }
+   
+//   void promptDeliveryOnConsumers()
+//   {
+//      if (trace) { log.trace(this + " promptDeliveryOnConsumers(), there are " + consumers.size() + " consumers"); }
+//      synchronized (consumers)
+//      {         
+//         for (Iterator i = consumers.values().iterator(); i.hasNext(); )
+//         {
+//            ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)i.next();
+//            
+//            consumer.promptDelivery();
+//         }
+//      }
+//   }
+   
+   void localClose() throws Throwable
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is already closed");
+      }
       
-   protected ServerConsumerEndpoint putConsumerEndpoint(int consumerID, ServerConsumerEndpoint d)
-   {
-      if (trace) { log.trace(this + " caching consumer " + consumerID); }
-      return (ServerConsumerEndpoint)consumers.put(new Integer(consumerID), d);
-   }
+      if (trace) log.trace(this + " close()");
+            
+      synchronized (consumers)
+      {            
+         for( Iterator i = consumers.values().iterator(); i.hasNext(); )
+         {
+            ((ServerConsumerEndpoint)i.next()).localClose();
+         }  
+         
+         consumers.clear();
+      }
+      
+      synchronized (browsers)
+      {            
+         for( Iterator i = browsers.values().iterator(); i.hasNext(); )
+         {
+            ((ServerBrowserEndpoint)i.next()).localClose();
+         }  
+         
+         browsers.clear();
+      }
+      
+      //Now cancel any remaining deliveries in reverse delivery order
+      //Note we don't maintain order using a LinkedHashMap since then we lose
+      //concurrency since we would have to lock it exclusively
+      
+      List entries = new ArrayList(deliveries.entrySet());
+      
+      //Sort them in reverse delivery id order
+      Collections.sort(entries,
+                       new Comparator()
+                       {
+                           public int compare(Object obj1, Object obj2)
+                           {
+                              Map.Entry entry1 = (Map.Entry)obj1;
+                              Map.Entry entry2 = (Map.Entry)obj2;
+                              Long id1 = (Long)entry1.getKey();
+                              Long id2 = (Long)entry2.getKey();
+                              return id2.compareTo(id1);
+                           } 
+                       });
 
-   protected ServerConsumerEndpoint getConsumerEndpoint(int consumerID)
+      Iterator iter = entries.iterator();
+            
+      Set channels = new HashSet();
+      
+      if (trace) { log.trace("Cancelling " + entries.size() + " deliveries"); }
+      
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+         
+         if (trace) { log.trace("Cancelling delivery with delivery id: " + entry.getKey()); }
+         
+         Delivery del = (Delivery)entry.getValue();
+         
+         del.cancel();
+         
+         channels.add(del.getObserver());
+      }
+      
+      promptDelivery(channels);
+      
+      deliveries.clear();
+            
+      JMSDispatcher.instance.unregisterTarget(new Integer(id));
+      
+      closed = true;
+   }            
+   
+   void cancelDelivery(long deliveryId) throws Throwable
    {
-      return (ServerConsumerEndpoint)consumers.get(new Integer(consumerID));
+      Delivery del = (Delivery)deliveries.remove(new Long(deliveryId));
+      
+      if (del == null)
+      {
+         throw new IllegalStateException("Cannot find delivery to cancel " + deliveryId);
+      }
+      
+      del.cancel();
    }
    
-   protected ServerConsumerEndpoint removeConsumerEndpoint(int consumerID)
+   long addDelivery(Delivery del)
    {
-      if (trace) { log.trace(this + " removing consumer " + consumerID + " from cache"); }
-      return (ServerConsumerEndpoint)consumers.remove(new Integer(consumerID));
+      long deliveryId = deliveryIdSequence.increment();
+      
+      deliveries.put(new Long(deliveryId), del);
+      
+      if (trace) { log.trace(this + " Added delivery: " + deliveryId + ", " + del); }
+      
+      return deliveryId;      
    }
    
-   protected ServerBrowserEndpoint putBrowserDelegate(int browserID, ServerBrowserEndpoint sbd)
+   void acknowledgeTransactionally(List acks, Transaction tx) throws Throwable
    {
-      return (ServerBrowserEndpoint)browsers.put(new Integer(browserID), sbd);
+      if (trace) { log.trace("Acknowledging transactionally " + acks.size() + " for tx: " + tx); }
+      
+      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getCallback(this);
+      
+      if (deliveryCallback == null)
+      {
+         deliveryCallback = new DeliveryCallback();
+         tx.addCallback(deliveryCallback, this);
+      }
+            
+      Iterator iter = acks.iterator();
+      
+      while (iter.hasNext())
+      {
+         Ack ack = (Ack)iter.next();
+         
+         Long id = new Long(ack.getDeliveryId());
+           
+         Delivery del = (Delivery)deliveries.get(id);
+         
+         if (del == null)
+         {
+            throw new IllegalStateException("Cannot find delivery to acknowledge " + ack);
+         }
+                           
+         deliveryCallback.addDeliveryId(id);
+         
+         del.acknowledge(tx);
+      }      
    }
    
-   protected ServerBrowserEndpoint getBrowserDelegate(int browserID)
-   {
-      return (ServerBrowserEndpoint)browsers.get(new Integer(browserID));
-   }
-   
-   protected ServerBrowserEndpoint removeBrowserDelegate(int browserID)
-   {
-      return (ServerBrowserEndpoint)browsers.remove(new Integer(browserID));
-   }
-
    /**
     * Starts this session's Consumers
     */
-   protected void setStarted(boolean s) throws Throwable
+   void setStarted(boolean s) throws Throwable
    {
       synchronized(consumers)
       {
@@ -747,26 +935,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
          }
       }
-   }   
+   } 
+
+   // Protected -----------------------------------------------------        
 
    // Private -------------------------------------------------------
-   
-   private void acknowledgeInternal(AckInfo ackInfo) throws Throwable
-   {
-      //If the message was delivered via a connection consumer then the message needs to be acked
-      //via the original consumer that was used to feed the connection consumer - which
-      //won't be one of the consumers of this session
-      //Therefore we always look in the global map of consumers held in the server peer
-      ServerConsumerEndpoint consumer = this.connectionEndpoint.getConsumerEndpoint(ackInfo.getConsumerID());
-
-      if (consumer == null)
-      {
-         throw new IllegalArgumentException("Cannot find consumer id: " + ackInfo.getConsumerID());
-      }
       
-      consumer.acknowledge(ackInfo.getMessageID());
-   }
-   
    private ConsumerDelegate failoverConsumer(JBossDestination jmsDestination,
             String selectorString,
             boolean noLocal,  String subscriptionName,
@@ -804,27 +978,27 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          new ServerConsumerEndpoint(consumerID, binding.getQueue(),
                   binding.getQueue().getName(), this, selectorString, noLocal,
-                  jmsDestination, prefetchSize, dlq);
+                  jmsDestination, prefetchSize);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
       
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
                   prefetchSize, maxDeliveryAttempts);
-      
-      
-      putConsumerEndpoint(consumerID, ep); // caching consumer locally
-      
-      connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
+            
+      synchronized (consumers)
+      {      
+         consumers.put(new Integer(consumerID), ep);
+      }
       
       return stub;
    }
    
    private ConsumerDelegate createConsumerDelegateInternal(JBossDestination jmsDestination,
-            String selectorString,
-            boolean noLocal,
-            String subscriptionName,
-            boolean isCC) throws Throwable
+                                                           String selectorString,
+                                                           boolean noLocal,
+                                                           String subscriptionName,
+                                                           boolean isCC) throws Throwable
    {
       if (closed)
       {
@@ -993,7 +1167,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
                
-               boolean topicChanged = !binding.getCondition().equals(jmsDestination.getName());
+               JMSCondition cond = (JMSCondition)binding.getCondition();
+               
+               boolean topicChanged = !cond.getName().equals(jmsDestination.getName());
                
                if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
                
@@ -1069,7 +1245,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
                   binding.getQueue().getName(), this, selectorString, noLocal,
-                  jmsDestination, prefetchSize, dlq);
+                  jmsDestination, prefetchSize);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
       
@@ -1077,14 +1253,82 @@ public class ServerSessionEndpoint implements SessionEndpoint
          new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
                   prefetchSize, maxDeliveryAttempts);
       
-      putConsumerEndpoint(consumerID, ep); // caching consumer locally
-      
-      connectionEndpoint.getServerPeer().putConsumerEndpoint(consumerID, ep); // cachin consumer in server peer
-      
+      synchronized (consumers)
+      {
+         consumers.put(new Integer(consumerID), ep);
+      }
+         
       log.debug("created and registered " + ep);
       
       return stub;
    }
-
+   
+   private void promptDelivery(Set channels)
+   {
+      //Now prompt delivery on the channels
+      Iterator iter = channels.iterator();
+      
+      while (iter.hasNext())
+      {
+         DeliveryObserver observer = (DeliveryObserver)iter.next();
+         
+         ((Channel)observer).deliver(false);
+      }
+   }
+   
+   
    // Inner classes -------------------------------------------------
+   
+   /**
+    * 
+    * The purpose of this class is to remove deliveries from the delivery list on commit
+    * Each transaction has once instance of this per SCE
+    *
+    */
+   private class DeliveryCallback implements TxCallback
+   {
+      List delList = new ArrayList();
+         
+      public void beforePrepare()
+      {         
+         //NOOP
+      }
+      
+      public void beforeCommit(boolean onePhase)
+      {         
+         //NOOP
+      }
+      
+      public void beforeRollback(boolean onePhase)
+      {         
+         //NOOP
+      }
+      
+      public void afterPrepare()
+      {         
+         //NOOP
+      }
+      
+      public synchronized void afterCommit(boolean onePhase) throws TransactionException
+      {
+         // Remove the deliveries from the delivery map.
+         Iterator iter = delList.iterator();
+         while (iter.hasNext())
+         {
+            Long deliveryId = (Long)iter.next();
+            
+            deliveries.remove(deliveryId);
+         }
+      }
+      
+      public void afterRollback(boolean onePhase) throws TransactionException
+      {                            
+         //NOOP
+      }
+      
+      synchronized void addDeliveryId(Long deliveryId)
+      {
+         delList.add(deliveryId);
+      }
+   }
 }

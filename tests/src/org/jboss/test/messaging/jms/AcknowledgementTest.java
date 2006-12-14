@@ -157,19 +157,13 @@ public class AcknowledgementTest extends MessagingTestCase
          pub.publish(m);
          sess.commit();
          
-         log.info("sent messages");
-         
          //receive but rollback
          TextMessage m2 = (TextMessage)sub.receive(3000);
-         
-         log.info("received");
-            
+                
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
          
          sess.rollback();
-         
-         log.info("rolled back");
          
          conn.close();
          conn = cf.createTopicConnection();
@@ -262,7 +256,7 @@ public class AcknowledgementTest extends MessagingTestCase
       }
    }
    
-   public void testTransactionalAcknowlegment() throws Exception
+   public void testTransactionalAcknowledgement() throws Exception
    {
 
       Connection conn = cf.createConnection();
@@ -328,7 +322,7 @@ public class AcknowledgementTest extends MessagingTestCase
       {
          m = consumer.receive();
          log.trace("Received message " + i);
-
+  
       }
       
       assertRemainingMessages(NUM_MESSAGES);
@@ -353,9 +347,8 @@ public class AcknowledgementTest extends MessagingTestCase
 	/**
 	 * Send some messages, don't acknowledge them and verify that they are re-sent on recovery.
 	 */
-	public void testClientAcknowledgeNoAcknowlegment() throws Exception
+	public void testClientAcknowledgeNoAcknowledgement() throws Exception
    {
-
 		Connection conn = cf.createConnection();
 
 		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -1203,7 +1196,10 @@ public class AcknowledgementTest extends MessagingTestCase
       Thread.sleep(500);
       ObjectName destObjectName = 
          new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
-      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");      
+      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount"); 
+      
+      log.trace("There are " + messageCount + " messages");
+      
       assertEquals(expected, messageCount.intValue());      
       return expected == messageCount.intValue();
    }
