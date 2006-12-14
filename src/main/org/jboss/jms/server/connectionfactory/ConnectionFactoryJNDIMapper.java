@@ -22,6 +22,10 @@
 package org.jboss.jms.server.connectionfactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -329,9 +333,11 @@ public class ConnectionFactoryJNDIMapper
                throw new IllegalStateException("Cannot find cf with name " + uniqueName);
             }
             
+            List newDels = sortCFS(updatedReplicantMap.values());
+            
             ClientConnectionFactoryDelegate[] delArr = 
-               (ClientConnectionFactoryDelegate[])updatedReplicantMap.values().
-                  toArray(new ClientConnectionFactoryDelegate[updatedReplicantMap.size()]);
+               (ClientConnectionFactoryDelegate[])newDels.
+                  toArray(new ClientConnectionFactoryDelegate[newDels.size()]);
 
             del.setDelegates(delArr);
             
@@ -381,7 +387,7 @@ public class ConnectionFactoryJNDIMapper
    {     
       FailoverMapper mapper = replicator.getFailoverMapper();
       failoverMap = mapper.generateMapping(nodeAddressMap.keySet());
-   }
+   }      
    
    /**
     * @param localDelegates - Map<Integer(nodeId) - ClientConnectionFactoryDelegate>
@@ -390,9 +396,23 @@ public class ConnectionFactoryJNDIMapper
       throws Exception
    {
       if (trace) { log.trace(this + " updating failover delegates, map size " + localDelegates.size()); }
+      
+      //First sort the local delegates in order of server id
+      List localDels = sortCFS(localDelegates.values());
+      
+      Collections.sort(localDels,
+                       new Comparator()
+                       {
+                           public int compare(Object obj1, Object obj2)
+                           {
+                              ClientConnectionFactoryDelegate del1 = (ClientConnectionFactoryDelegate)obj1;
+                              ClientConnectionFactoryDelegate del2 = (ClientConnectionFactoryDelegate)obj2;
+                              return del1.getServerID() - del2.getServerID();
+                           } 
+                       });
 
       ClientConnectionFactoryDelegate[] delArr = 
-         (ClientConnectionFactoryDelegate[])localDelegates.values().
+         (ClientConnectionFactoryDelegate[])localDels.
             toArray(new ClientConnectionFactoryDelegate[localDelegates.size()]);
 
       // If the map is not cached - generate it now
@@ -418,20 +438,20 @@ public class ConnectionFactoryJNDIMapper
 
       ClientConnectionFactoryDelegate mainDelegate = null;
       
-      for(Iterator i = localDelegates.values().iterator(); i.hasNext();)
+      for(Iterator i = localDels.iterator(); i.hasNext();)
       {
          ClientConnectionFactoryDelegate del = (ClientConnectionFactoryDelegate)i.next();
-            
-          if (del.getServerID() == this.serverPeer.getServerPeerID())
-          {
-             // sanity check
-             if (mainDelegate != null)
-             {
-                throw new IllegalStateException("There are two servers with serverID=" +
-                   this.serverPeer.getServerPeerID() + ", verify your clustering configuration");
-             }
-             mainDelegate = del;
-          }
+         
+         if (del.getServerID() == this.serverPeer.getServerPeerID())
+         {
+            // sanity check
+            if (mainDelegate != null)
+            {
+               throw new IllegalStateException("There are two servers with serverID=" +
+                        this.serverPeer.getServerPeerID() + ", verify your clustering configuration");
+            }
+            mainDelegate = del;
+         }
       }
             
       return new ClusteredClientConnectionFactoryDelegate(mainDelegate, delArr, failoverMap);
@@ -454,6 +474,27 @@ public class ConnectionFactoryJNDIMapper
             JNDIUtil.rebind(ic, jndiName, cf);
          }
       }
+   }
+   
+   /*
+    * Sort the collection of delegates in order of server id
+    */
+   private List sortCFS(Collection delegates)
+   {
+      List localDels = new ArrayList(delegates);
+      
+      Collections.sort(localDels,
+                       new Comparator()
+                       {
+                           public int compare(Object obj1, Object obj2)
+                           {
+                              ClientConnectionFactoryDelegate del1 = (ClientConnectionFactoryDelegate)obj1;
+                              ClientConnectionFactoryDelegate del2 = (ClientConnectionFactoryDelegate)obj2;
+                              return del1.getServerID() - del2.getServerID();
+                           } 
+                       });
+      
+      return localDels;
    }
 
    // Inner classes -------------------------------------------------
