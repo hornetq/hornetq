@@ -497,7 +497,7 @@ public abstract class ChannelSupport implements Channel
       //debug
       Iterator iter = messageIds.iterator();
       
-      log.info("***** createdeliveries");
+      log.info("***** createdeliveries:" + messageIds.size());
       while (iter.hasNext())
       {
          Long l = (Long)iter.next();
@@ -527,7 +527,7 @@ public abstract class ChannelSupport implements Channel
                   {
                      // TODO we need to look in paging state too - currently not supported
                      
-                     throw new IllegalStateException("Cannot find ref in queue! (Might be paged!)");
+                     throw new IllegalStateException("Cannot find ref in queue! (Might be paged!) " + id);
                   }
                   
                   MessageReference ref = (MessageReference)liter.next();

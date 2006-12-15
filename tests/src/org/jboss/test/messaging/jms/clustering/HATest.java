@@ -26,11 +26,11 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jms.Connection;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Message;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -583,6 +583,12 @@ public class HATest extends ClusteringTestBase
       log.info("server 1 id: " + server1Id);
 
       log.info("server 2 id: " + server2Id);
+      
+      assertEquals(0, server0Id);
+      
+      assertEquals(1, server1Id);
+      
+      assertEquals(2, server2Id);
 
       Map failoverMap = delegate.getFailoverMap();
 
@@ -651,6 +657,7 @@ public class HATest extends ClusteringTestBase
          //So we now kill server 1
          //Which should cause transparent failover of connection conn onto server 1
 
+         log.info("here we go");
          log.info("######");
          log.info("###### KILLING (CRASHING) SERVER 1");
          log.info("######");
@@ -661,7 +668,7 @@ public class HATest extends ClusteringTestBase
 
          log.info("killed server, now waiting");
 
-         Thread.sleep(10000);
+         Thread.sleep(5000);
 
          log.info("done wait");
 
@@ -685,11 +692,11 @@ public class HATest extends ClusteringTestBase
 
          for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
          {
-            tm = (TextMessage)cons.receive(500);
-
-            log.info("message is " + tm.getText());
+            tm = (TextMessage)cons.receive(1000);
 
             assertNotNull(tm);
+            
+            log.info("message is " + tm.getText());
 
             assertEquals("message:" + i, tm.getText());
          }
@@ -737,189 +744,189 @@ public class HATest extends ClusteringTestBase
    }
 
    
-//   public void testFailoverWithUnackedMessagesTransactional() throws Exception
-//   {
-//      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
-//
-//      ClusteredClientConnectionFactoryDelegate delegate =
-//         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
-//
-//      Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
-//      assertEquals(3, nodeIDView.size());
-//
-//      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-//
-//      ClientConnectionFactoryDelegate cf1 = delegates[0];
-//
-//      ClientConnectionFactoryDelegate cf2 = delegates[1];
-//
-//      ClientConnectionFactoryDelegate cf3 = delegates[2];
-//
-//      int server0Id = cf1.getServerID();
-//
-//      int server1Id = cf2.getServerID();
-//
-//      int server2Id = cf3.getServerID();
-//
-//      log.info("server 0 id: " + server0Id);
-//
-//      log.info("server 1 id: " + server1Id);
-//
-//      log.info("server 2 id: " + server2Id);
-//
-//      Map failoverMap = delegate.getFailoverMap();
-//
-//      log.info(failoverMap.get(new Integer(server0Id)));
-//      log.info(failoverMap.get(new Integer(server1Id)));
-//      log.info(failoverMap.get(new Integer(server2Id)));
-//
-//      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
-//
-//      // server 1 should failover onto server 2
-//
-//      assertEquals(server2Id, server1FailoverId);
-//
-//      Connection conn = null;
-//
-//      boolean killed = false;
-//
-//      try
-//      {
-//         //Get a connection on server 1
-//         conn = factory.createConnection(); //connection on server 0
-//
-//         conn.close();
-//
-//         conn = factory.createConnection(); //connection on server 1
-//
-//         JBossConnection jbc = (JBossConnection)conn;
-//
-//         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
-//
-//         ConnectionState state = (ConnectionState)del.getState();
-//
-//         int initialServerID = state.getServerID();
-//
-//         assertEquals(1, initialServerID);
-//
-//         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-//
-//         MessageProducer prod = sess.createProducer(queue[1]);
-//
-//         MessageConsumer cons = sess.createConsumer(queue[1]);
-//
-//         final int NUM_MESSAGES = 100;
-//
-//         for (int i = 0; i < NUM_MESSAGES; i++)
-//         {
-//            TextMessage tm = sess.createTextMessage("message:" + i);
-//
-//            prod.send(tm);
-//         }
-//
-//         sess.commit();
-//
-//         conn.start();
-//
-//         //Now consume half of the messages but don't commit them these will end up in
-//         //client side resource manager
-//
-//         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-//         {
-//            TextMessage tm = (TextMessage)cons.receive(500);
-//
-//            assertNotNull(tm);
-//
-//            assertEquals("message:" + i, tm.getText());
-//         }
-//
-//         //So now, messages should be in queue[1] on server 1
-//         //So we now kill server 1
-//         //Which should cause transparent failover of connection conn onto server 1
-//
-//         log.info("######");
-//         log.info("###### KILLING (CRASHING) SERVER 1");
-//         log.info("######");
-//
-//         ServerManagement.kill(1);
-//
-//         killed = true;
-//
-//         log.info("killed server, now waiting");
-//
-//         Thread.sleep(5000);
-//
-//         log.info("done wait");
-//
-//         state = (ConnectionState)del.getState();
-//
-//         int finalServerID = state.getServerID();
-//
-//         log.info("final server id= " + finalServerID);
-//
-//         //server id should now be 2
-//
-//         assertEquals(2, finalServerID);
-//
-//         conn.start();
-//
-//         //Now should be able to consume the rest of the messages
-//
-//         log.info("here1");
-//
-//         TextMessage tm = null;
-//
-//         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
-//         {
-//            tm = (TextMessage)cons.receive(500);
-//
-//            log.info("message is " + tm.getText());
-//
-//            assertNotNull(tm);
-//
-//            assertEquals("message:" + i, tm.getText());
-//         }
-//
-//         log.info("here2");
-//
-//         //Now should be able to commit them
-//
-//         sess.commit();
-//
-//         //Now check there are no more messages there
-//         sess.close();
-//
-//         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//         cons = sess.createConsumer(queue[1]);
-//
-//         Message m = cons.receive(500);
-//
-//         assertNull(m);
-//
-//         log.info("got to end of test");
-//      }
-//      finally
-//      {
-//         if (conn != null)
-//         {
-//            try
-//            {
-//               conn.close();
-//            }
-//            catch (Exception e)
-//            {
-//               e.printStackTrace();
-//            }
-//         }
-//
-//         if (killed)
-//         {
-//            ServerManagement.spawn(1);
-//         }
-//      }
-//
-//   }
+   public void testFailoverWithUnackedMessagesTransactional() throws Exception
+   {
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
+
+      ClusteredClientConnectionFactoryDelegate delegate =
+         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+
+      Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
+      assertEquals(3, nodeIDView.size());
+
+      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+
+      ClientConnectionFactoryDelegate cf1 = delegates[0];
+
+      ClientConnectionFactoryDelegate cf2 = delegates[1];
+
+      ClientConnectionFactoryDelegate cf3 = delegates[2];
+
+      int server0Id = cf1.getServerID();
+
+      int server1Id = cf2.getServerID();
+
+      int server2Id = cf3.getServerID();
+
+      log.info("server 0 id: " + server0Id);
+
+      log.info("server 1 id: " + server1Id);
+
+      log.info("server 2 id: " + server2Id);
+
+      Map failoverMap = delegate.getFailoverMap();
+
+      log.info(failoverMap.get(new Integer(server0Id)));
+      log.info(failoverMap.get(new Integer(server1Id)));
+      log.info(failoverMap.get(new Integer(server2Id)));
+
+      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
+
+      // server 1 should failover onto server 2
+
+      assertEquals(server2Id, server1FailoverId);
+
+      Connection conn = null;
+
+      boolean killed = false;
+
+      try
+      {
+         //Get a connection on server 1
+         conn = factory.createConnection(); //connection on server 0
+
+         conn.close();
+
+         conn = factory.createConnection(); //connection on server 1
+
+         JBossConnection jbc = (JBossConnection)conn;
+
+         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
+
+         ConnectionState state = (ConnectionState)del.getState();
+
+         int initialServerID = state.getServerID();
+
+         assertEquals(1, initialServerID);
+
+         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         MessageProducer prod = sess.createProducer(queue[1]);
+
+         MessageConsumer cons = sess.createConsumer(queue[1]);
+
+         final int NUM_MESSAGES = 100;
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess.createTextMessage("message:" + i);
+
+            prod.send(tm);
+         }
+
+         sess.commit();
+
+         conn.start();
+
+         //Now consume half of the messages but don't commit them these will end up in
+         //client side resource manager
+
+         for (int i = 0; i < NUM_MESSAGES / 2; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(500);
+
+            assertNotNull(tm);
+
+            assertEquals("message:" + i, tm.getText());
+         }
+
+         //So now, messages should be in queue[1] on server 1
+         //So we now kill server 1
+         //Which should cause transparent failover of connection conn onto server 1
+
+         log.info("######");
+         log.info("###### KILLING (CRASHING) SERVER 1");
+         log.info("######");
+
+         ServerManagement.kill(1);
+
+         killed = true;
+
+         log.info("killed server, now waiting");
+
+         Thread.sleep(5000);
+
+         log.info("done wait");
+
+         state = (ConnectionState)del.getState();
+
+         int finalServerID = state.getServerID();
+
+         log.info("final server id= " + finalServerID);
+
+         //server id should now be 2
+
+         assertEquals(2, finalServerID);
+
+         conn.start();
+
+         //Now should be able to consume the rest of the messages
+
+         log.info("here1");
+
+         TextMessage tm = null;
+
+         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
+         {
+            tm = (TextMessage)cons.receive(500);
+
+            log.info("message is " + tm.getText());
+
+            assertNotNull(tm);
+
+            assertEquals("message:" + i, tm.getText());
+         }
+
+         log.info("here2");
+
+         //Now should be able to commit them
+
+         sess.commit();
+
+         //Now check there are no more messages there
+         sess.close();
+
+         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         cons = sess.createConsumer(queue[1]);
+
+         Message m = cons.receive(500);
+
+         assertNull(m);
+
+         log.info("got to end of test");
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+
+         if (killed)
+         {
+            ServerManagement.start(1, "all");
+         }
+      }
+
+   }
    
    
 // public void testConnectionFactoryConnect() throws Exception

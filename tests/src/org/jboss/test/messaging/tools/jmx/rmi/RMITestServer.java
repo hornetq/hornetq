@@ -458,7 +458,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       {
          log.info("shutting down the VM");
 
-
          try
          {
             // unregister myself from the RMI registry
@@ -467,11 +466,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
             String name = RMI_SERVER_PREFIX + server.getServerID();
             registry.unbind(name);
-            log.info("unregistred " + name + " from registry");
+            log.info("unregistered " + name + " from registry");
 
             name = NAMING_SERVER_PREFIX + server.getServerID();
             registry.unbind(name);
-            log.info("unregistred " + name + " from registry");
+            log.info("unregistered " + name + " from registry");
          }
          catch(Exception e)
          {
