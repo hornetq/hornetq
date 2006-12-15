@@ -34,7 +34,6 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageProxy;
@@ -131,6 +130,7 @@ public class AsfAspect
       int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
       long channelID = ((Long)mi.getArguments()[2]).longValue();
       int maxDeliveries = ((Integer)mi.getArguments()[3]).intValue();
+      SessionDelegate connectionConsumerDelegate = ((SessionDelegate)mi.getArguments()[4]);
       
       if (m == null)
       {
@@ -142,6 +142,7 @@ public class AsfAspect
       holder.consumerID = theConsumerID;
       holder.channelID = channelID;
       holder.maxDeliveries = maxDeliveries;
+      holder.connectionConsumerDelegate = connectionConsumerDelegate;
       
       msgs.add(holder);
 
@@ -154,6 +155,7 @@ public class AsfAspect
       
       MethodInvocation mi = (MethodInvocation)invocation;
             
+      //This is the delegate for the session from the pool
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
       int ackMode = getSessionState(invocation).getAcknowledgeMode();
@@ -166,7 +168,8 @@ public class AsfAspect
          
          MessageCallbackHandler.callOnMessage(del, sessionListener, holder.consumerID,
                                               holder.channelID, false,
-                                              holder.msg, ackMode, holder.maxDeliveries);                          
+                                              holder.msg, ackMode, holder.maxDeliveries,
+                                              holder.connectionConsumerDelegate);                          
       }
       
       return null;
@@ -191,5 +194,6 @@ public class AsfAspect
       private int consumerID;
       private long channelID;
       private int maxDeliveries;
+      private SessionDelegate connectionConsumerDelegate;
    }
 }

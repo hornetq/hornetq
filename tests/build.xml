@@ -759,7 +759,7 @@
                <include name="**/jms/clustering/*Test.class"/>
                 <include name="org/jboss/test/messaging/util/ServerManagementTest.class"/>
                -->
-               <include name="**/jms/clustering/HATest.class"/>
+               <include name="**/jms/clustering/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

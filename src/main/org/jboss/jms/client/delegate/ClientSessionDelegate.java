@@ -44,6 +44,7 @@ import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.server.endpoint.Ack;
+import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.remoting.Client;
 
@@ -112,7 +113,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void acknowledge(Ack ack) throws JMSException
+   public void acknowledgeDelivery(Ack ack) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -121,7 +122,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void acknowledgeBatch(List acks) throws JMSException
+   public void acknowledgeDeliveries(List acks) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -405,7 +406,8 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(MessageProxy m, int consumerID, long channelId, int maxDeliveries)
+   public void addAsfMessage(MessageProxy m, int consumerID, long channelId, int maxDeliveries,
+                             SessionDelegate connectionConsumerSession)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -423,7 +425,16 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void cancelDeliveries(List ackInfos)
+   public void cancelDeliveries(List cancels)
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void cancelDelivery(Cancel cancel)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

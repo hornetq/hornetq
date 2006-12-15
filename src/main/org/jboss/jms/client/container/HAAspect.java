@@ -23,12 +23,14 @@
 package org.jboss.jms.client.container;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
+import javax.jms.Session;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -352,9 +354,7 @@ public class HAAspect
       for(Iterator i = failedState.getChildren().iterator(); i.hasNext(); )
       {
          SessionState failedSessionState = (SessionState)i.next();
-         
-         if (trace) { log.trace("Failed session state has " + failedSessionState.getToAck().size() + " deliveries"); }
-         
+          
          int oldSessionId = failedSessionState.getSessionId();
 
          ClientSessionDelegate failedSessionDelegate =
@@ -367,7 +367,7 @@ public class HAAspect
 
          SessionState newSessionState = (SessionState)newSessionDelegate.getState();
          
-         if (trace) { log.trace("New session state has " + newSessionState.getToAck().size() + " deliveries"); }
+         if (trace) { log.trace("New session state has " + newSessionState.getClientAckList().size() + " deliveries"); }
          
          oldNewSessionStateMap.put(new Integer(oldSessionId), failedSessionState);
 
@@ -418,32 +418,57 @@ public class HAAspect
          SessionState state = (SessionState)iter.next();
          
          List ackInfos = null;
-         
-         if (!state.isTransacted() && !state.isXA())
+           
+         if (!state.isTransacted() ||
+             (state.isXA() && state.getCurrentTxId() == null))     
          {
-            //Now we remove any unacked np messages - this is because we don't want to ack them
+            //Non transacted session or an XA session with no transaction set (it falls back to auto_ack)
+            
+            if (trace) { log.trace("Session is not transacted (or XA with no tx set), retrieving deliveries from session state"); }
+
+                        
+            //we remove any unacked np messages - this is because we don't want to ack them
             //since the server won't know about them and will barf
                         
-            Iterator iter2 = state.getToAck().iterator();
-            
-            if (trace) { log.trace("Removing any np deliveries"); }
-
-            while (iter2.hasNext())
+            if (state.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
             {
-               DeliveryInfo info = (DeliveryInfo)iter2.next();
-
-               if (!info.getMessageProxy().getMessage().isReliable())
+               Iterator iter2 = state.getClientAckList().iterator();
+               
+               if (trace) { log.trace("Removing any np deliveries"); }
+   
+               while (iter2.hasNext())
                {
-                  iter2.remove();
-                  
-                  if (trace) { log.trace("Removed np delivery: " + info.getDeliveryId()); }
+                  DeliveryInfo info = (DeliveryInfo)iter2.next();
+   
+                  if (!info.getMessageProxy().getMessage().isReliable())
+                  {
+                     iter2.remove();
+                     
+                     if (trace) { log.trace("Removed np delivery: " + info.getDeliveryId()); }
+                  }
                }
+               
+               ackInfos = state.getClientAckList();
             }
-            
-            if (trace) { log.trace("Session is not transacted, retrieving deliveries from session state"); }
-
-            //Get the ack infos from the list in the session state
-            ackInfos = state.getToAck();
+            else
+            {
+               DeliveryInfo autoAck = state.getAutoAckInfo();
+               if (autoAck != null)                 
+               {
+                  if (!autoAck.getMessageProxy().getMessage().isReliable())
+                  {
+                     //unreliable
+                     state.setAutoAckInfo(null);
+                     ackInfos = Collections.EMPTY_LIST;
+                  }
+                  else
+                  {
+                     //reliable
+                     ackInfos = new ArrayList();
+                     ackInfos.add(autoAck);
+                  }
+               }               
+            }
             
             if (trace) { log.trace("Retrieved " + ackInfos.size() + " deliveries"); }
          }

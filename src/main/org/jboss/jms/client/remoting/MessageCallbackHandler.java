@@ -34,7 +34,7 @@ import javax.jms.Session;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.server.endpoint.Cancel;
+import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Future;
@@ -65,6 +65,7 @@ public class MessageCallbackHandler
       trace = log.isTraceEnabled();
    }
      
+   //This is static so it can be called by the asf layer too
    public static void callOnMessage(SessionDelegate sess,
                                     MessageListener listener,
                                     int consumerID,
@@ -72,10 +73,16 @@ public class MessageCallbackHandler
                                     boolean isConnectionConsumer,
                                     MessageProxy m,
                                     int ackMode,
-                                    int maxDeliveries)
+                                    int maxDeliveries,
+                                    SessionDelegate connectionConsumerSession)
       throws JMSException
    {
-      preDeliver(sess, consumerID, channelID, m, isConnectionConsumer);
+      // If this is the callback-handler for a connection consumer we don't want to acknowledge or
+      // add anything to the tx for this session.
+      if (!isConnectionConsumer)
+      {
+         sess.preDeliver(new DeliveryInfo(m, consumerID, channelID, connectionConsumerSession));
+      }  
                   
       int tries = 0;
       
@@ -136,34 +143,14 @@ public class MessageCallbackHandler
       if (!sess.isClosed())
       {
          // postDeliver only if the session is not closed
-         postDeliver(sess, isConnectionConsumer, cancel);
+
+         // If this is the callback-handler for a connection consumer we don't want to acknowledge or
+         // add anything to the tx for this session
+         if (!isConnectionConsumer)
+         {
+            sess.postDeliver(cancel);
+         }   
       }
-   }
-   
-   protected static void preDeliver(SessionDelegate sess,
-                                    int consumerID,
-                                    long channelID,
-                                    MessageProxy m,
-                                    boolean isConnectionConsumer)
-      throws JMSException
-   {
-      // If this is the callback-handler for a connection consumer we don't want to acknowledge or
-      // add anything to the tx for this session.
-      if (!isConnectionConsumer)
-      {
-         sess.preDeliver(new DeliveryInfo(m, consumerID, channelID));
-      }         
-   }
-   
-   protected static void postDeliver(SessionDelegate sess, boolean isConnectionConsumer,
-                                     boolean cancel) throws JMSException
-   {
-      // If this is the callback-handler for a connection consumer we don't want to acknowledge or
-      // add anything to the tx for this session
-      if (!isConnectionConsumer)
-      {
-         sess.postDeliver(cancel);
-      }         
    }
    
    // Attributes ----------------------------------------------------
@@ -331,7 +318,7 @@ public class MessageCallbackHandler
          for(Iterator i = buffer.iterator(); i.hasNext();)
          {
             MessageProxy mp = (MessageProxy)i.next();
-            Cancel ack = new Cancel(mp.getDeliveryId(), mp.getDeliveryCount());
+            DefaultCancel ack = new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount());
             cancels.add(ack);
          }
                
@@ -450,9 +437,15 @@ public class MessageCallbackHandler
                        
                // If message is expired we still call pre and post deliver. This makes sure the
                // message is acknowledged so it gets removed from the queue/subscription.
-               preDeliver(sessionDelegate, consumerID, channelID, m, isConnectionConsumer);
+
+               if (!isConnectionConsumer)
+               {
+                  sessionDelegate.preDeliver(new DeliveryInfo(m, consumerID, channelID, null));
+                  
+                  sessionDelegate.postDeliver(false);
+               }
                
-               postDeliver(sessionDelegate, isConnectionConsumer, false);
+               //postDeliver(sessionDelegate, isConnectionConsumer, false);
                
                if (!m.getMessage().isExpired())
                {
@@ -731,7 +724,7 @@ public class MessageCallbackHandler
          {
             try
             {
-               callOnMessage(sessionDelegate, listener, consumerID, channelID, false, mp, ackMode, maxDeliveries);
+               callOnMessage(sessionDelegate, listener, consumerID, channelID, false, mp, ackMode, maxDeliveries, null);
             }
             catch (JMSException e)
             {

@@ -239,6 +239,84 @@ public class ConnectionConsumerTest extends MessagingTestCase
          if (connConsumer != null) connProducer.close();
       }
    }
+   
+   
+   
+   public void testRedeliveryTransactedDifferentConnection() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      Connection connConnectionConsumer = null;
+      
+      Connection connConsumer = null;
+      
+      Connection connProducer = null;
+      
+      try
+      {
+         connConsumer = cf.createConnection();        
+         
+         connConsumer.start();
+                  
+         Session sessCons = connConsumer.createSession(true, Session.SESSION_TRANSACTED);
+         
+         RedelMessageListener listener = new RedelMessageListener(sessCons);
+         
+         sessCons.setMessageListener(listener);
+         
+         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+         
+         connConnectionConsumer = cf.createConnection();
+         
+         connConnectionConsumer.start();
+         
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConnectionConsumer.createConnectionConsumer(queue, null, pool, 1);         
+         
+         log.trace("Started connection consumer");
+         
+         connProducer = cf.createConnection();
+            
+         Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sessProd.createProducer(queue);
+            
+         TextMessage m1 = sessProd.createTextMessage("a");
+         TextMessage m2 = sessProd.createTextMessage("b");
+         TextMessage m3 = sessProd.createTextMessage("c");
+         prod.send(m1);
+         prod.send(m2);
+         prod.send(m3);
+         
+         
+         log.trace("Sent messages");
+         
+         //Wait for messages
+         
+         listener.waitForLatch(10000);                  
+         
+         if (listener.failed)
+         {
+            fail ("Didn't receive correct messages");
+         }
+         
+         cc.close();
+         
+         log.trace("Closed connection consumer");
+         
+         connProducer.close();
+         connProducer = null;
+         connConsumer.close();
+         connConsumer = null;
+         connConnectionConsumer.close();
+         connConnectionConsumer = null;
+    
+      }
+      finally 
+      {
+         if (connConsumer != null) connConsumer.close();
+         if (connConsumer != null) connProducer.close();
+         if (connConnectionConsumer != null) connConnectionConsumer.close();
+      }
+   }
 
    public void testCloseWhileProcessing() throws Exception
    {

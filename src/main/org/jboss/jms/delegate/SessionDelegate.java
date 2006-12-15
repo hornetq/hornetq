@@ -78,7 +78,8 @@ public interface SessionDelegate extends SessionEndpoint
    
    XAResource getXAResource();
    
-   void addAsfMessage(MessageProxy m, int consumerID, long channelID, int maxDeliveries);
+   void addAsfMessage(MessageProxy m, int consumerID, long channelID,
+                      int maxDeliveries, SessionDelegate connectionConsumerDelegate);
    
    boolean getTransacted();
    

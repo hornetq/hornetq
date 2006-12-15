@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
 
 /**
@@ -48,18 +49,29 @@ public class DeliveryInfo implements Ack
 
    private MessageProxy msg;
    
+   //When using the evil abomination known as a ConnectionConsumer, the connection consumer
+   //will get from a session that it created, then pass them onto sessions got from the pool
+   //this means when the messages are acked/cancelled then this needs to be done against
+   //the connection consumer's session not the session from the pool, since that session won't know
+   //about the deliveries on the server side
+   //Therefore if this delivery was done using a connection consumer then this attribute is set
+   //to the connection consumer's session, otherwise it will be null
+   private SessionDelegate connectionConsumerSession;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-
-   public DeliveryInfo(MessageProxy msg, int consumerId, long channelID)
+   public DeliveryInfo(MessageProxy msg, int consumerId, long channelID,
+                       SessionDelegate connectionConsumerSession)
    {      
       this.msg = msg;
       
       this.consumerId = consumerId;
       
       this.channelID = channelID;
+      
+      this.connectionConsumerSession = connectionConsumerSession;
    }
 
    // Public --------------------------------------------------------
@@ -77,6 +89,11 @@ public class DeliveryInfo implements Ack
    public MessageProxy getMessageProxy()
    {
       return msg;
+   }
+   
+   public SessionDelegate getConnectionConsumerSession()
+   {
+      return connectionConsumerSession;
    }
    
 

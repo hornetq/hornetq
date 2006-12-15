@@ -304,7 +304,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                for (int i = 0; i < mesList.size(); i++)
                {
                   MessageProxy m = (MessageProxy)mesList.get(i);
-                  session.addAsfMessage(m, consumerID, channelID, maxDeliveries);
+                  session.addAsfMessage(m, consumerID, channelID, maxDeliveries, sess);
                   if (trace) { log.trace("added " + m + " to session"); }
                }
 

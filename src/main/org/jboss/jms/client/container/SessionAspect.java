@@ -36,7 +36,7 @@ import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.server.endpoint.Cancel;
+import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DefaultAck;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
@@ -68,6 +68,30 @@ public class SessionAspect
    
    // Public --------------------------------------------------------
 
+   private void ackDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
+   {
+      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+      
+      //If the delivery was obtained via a connection consumer we need to ack via that
+      //otherwise we just use this session
+      
+      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
+      
+      sessionToUse.acknowledgeDelivery(delivery);      
+   }
+   
+   private void cancelDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
+   {
+      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+      
+      //If the delivery was obtained via a connection consumer we need to cancel via that
+      //otherwise we just use this session
+      
+      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
+      
+      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryId(), delivery.getMessageProxy().getDeliveryCount()));      
+   }
+   
    public Object handleClosing(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation)invocation;
@@ -75,42 +99,51 @@ public class SessionAspect
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
       int ackMode = state.getAcknowledgeMode();
-
-      // select eligible acknowledgments
-      List acks = new ArrayList();
-      List cancels = new ArrayList();
-      for(Iterator i = state.getToAck().iterator(); i.hasNext(); )
+  
+      //We need to either ack (for auto_ack) or cancel (for client_ack)
+      //any deliveries - this is because the message listener might have closed
+      //before on message had finished executing
+      
+      if (ackMode == Session.AUTO_ACKNOWLEDGE ||
+          ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
+          (state.isXA() && state.getCurrentTxId() == null))
       {
-         DeliveryInfo ack = (DeliveryInfo)i.next();
-         if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-             ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+         //Acknowledge any outstanding auto ack
+         
+         DeliveryInfo remainingAutoAck = state.getAutoAckInfo();
+         
+         if (remainingAutoAck != null)
          {
-            acks.add(new DefaultAck(ack.getMessageProxy().getDeliveryId()));            
+            if (trace) { log.trace(this + " handleClosing(). Found remaining auto ack. Will ack it " + remainingAutoAck.getDeliveryId()); }
+            
+            ackDelivery(del, remainingAutoAck);
+            
+            if (trace) { log.trace(this + " acked it"); }
+            
+            state.setAutoAckInfo(null);
          }
-         else
+      }
+      else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
+      {
+         // Cancel any oustanding deliveries
+         // We cancel any client ack or transactional, we do this explicitly so we can pass the updated
+         // delivery count information from client to server. We could just do this on the server but
+         // we would lose delivery count info.
+         
+         //CLIENT_ACKNOWLEDGE cannot be used with MDBs so is always safe to cancel on this session
+         
+         List cancels = new ArrayList();
+         
+         for(Iterator i = state.getClientAckList().iterator(); i.hasNext(); )
          {
-            Cancel cancel = new Cancel(ack.getMessageProxy().getDeliveryId(), ack.getMessageProxy().getDeliveryCount());
+            DeliveryInfo ack = (DeliveryInfo)i.next();            
+            DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(), ack.getMessageProxy().getDeliveryCount());
             cancels.add(cancel);
          }
-         i.remove();
+         
+         state.getClientAckList().clear();
       }
       
-      // On closing we acknowlege any AUTO_ACKNOWLEDGE or DUPS_OK_ACKNOWLEDGE, since the session
-      // might have closed before the onMessage had finished executing.
-      // We cancel any client ack or transactional, we do this explicitly so we can pass the updated
-      // delivery count information from client to server. We could just do this on the server but
-      // we would lose delivery count info.
-
-      if (!acks.isEmpty())
-      {
-         del.acknowledgeBatch(acks);
-      }
-      if (!cancels.isEmpty())
-      {
-         log.info("Calling canceldeliveries: " + cancels.size());
-         del.cancelDeliveries(cancels);
-      }
-
       return invocation.invokeNext();
    }
 
@@ -134,28 +167,37 @@ public class SessionAspect
       
       int ackMode = state.getAcknowledgeMode();
       
-      if (ackMode == Session.CLIENT_ACKNOWLEDGE ||
-          ackMode == Session.AUTO_ACKNOWLEDGE ||
-          ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
-          state.getCurrentTxId() == null)
+      Object[] args = mi.getArguments();
+      DeliveryInfo info = (DeliveryInfo)args[0];
+      
+      if (ackMode == Session.CLIENT_ACKNOWLEDGE)
       {
-         // We collect acknowledgments (and not transact them) for CLIENT, AUTO and DUPS_OK, and
-         // also for XA sessions not enlisted in a global transaction.
- 
-         // We store the ack in a list for later acknowledgement or recovery
-    
-         Object[] args = mi.getArguments();
-         DeliveryInfo info = (DeliveryInfo)args[0];
-
-         state.getToAck().add(info);
+         // We collect acknowledgments in the list
          
-         if (trace)
-         { 
-            SessionDelegate del = (SessionDelegate)mi.getTargetObject();            
-            log.trace("ack mode is " + Util.acknowledgmentModeToString(ackMode)+ ", acknowledged on " + del);
-         }
+         if (trace) { log.trace(this + " delivery id: " + info.getDeliveryId() + " added to client ack list"); }
+         
+         state.getClientAckList().add(info);
+         
+         //We can return immediately
+         return null;
       }
-
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE ||
+               ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
+               (state.isXA() && state.getCurrentTxId() == null))
+      {
+         //We collect the single acknowledgement in the state.
+         //Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE
+         //Also XA sessions not enlisted in a global tx are treated as AUTO_ACKNOWLEDGE
+         
+         if (trace) { log.trace(this + " delivery id: " + info.getDeliveryId() + " added to client ack member"); }
+         
+         state.setAutoAckInfo(info);         
+         
+         //We can return immediately         
+         return null;
+      }
+              
+      //Transactional - need to carry on down the stack
       return invocation.invokeNext();
    }
    
@@ -166,11 +208,13 @@ public class SessionAspect
       SessionState state = getState(invocation);
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
     
-      if (!state.getToAck().isEmpty())
-      {                  
-         del.acknowledgeBatch(state.getToAck());
+      if (!state.getClientAckList().isEmpty())
+      {                 
+         //CLIENT_ACKNOWLEDGE can't be used with a MDB so it is safe to always acknowledge all
+         //on this session (rather than the connection consumer session)
+         del.acknowledgeDeliveries(state.getClientAckList());
       
-         state.getToAck().clear();
+         state.getClientAckList().clear();
       }
         
       return null;
@@ -192,42 +236,35 @@ public class SessionAspect
       
       if (ackMode == Session.AUTO_ACKNOWLEDGE ||
           ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
-          (ackMode != Session.CLIENT_ACKNOWLEDGE && state.getCurrentTxId() == null))
+          (state.isXA() && state.getCurrentTxId() == null))
       {
-         // We acknowledge immediately on a non-transacted session that does not want to
-         // CLIENT_ACKNOWLEDGE, or an XA session not enrolled in a global transaction.
-
+         //We auto acknowledge
+         //Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE
+         //Also XA sessions not enlisted in a global tx are treated as AUTO_ACKNOWLEDGE
+         
          SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
 
          if (!state.isRecoverCalled())
          {
-            if (trace) { log.trace("acknowledging NON-transactionally"); }
-                        
-            List acks = state.getToAck();
+            DeliveryInfo deliveryInfo = state.getAutoAckInfo();
             
-            // Sanity check
-            if (acks.size() != 1)
+            if (deliveryInfo == null)
             {
-               throw new IllegalStateException("Should only be one entry in list. " +
-                                               "There are " + acks.size());
+               throw new IllegalStateException("Cannot find delivery to auto ack");
             }
-            
-            DeliveryInfo ack = (DeliveryInfo)acks.get(0);
-            
+                                 
+            if (trace) { log.trace(this + " auto acking delivery " + deliveryInfo.getDeliveryId()); }
+                        
             if (cancel)
             {
-               List cancels = new ArrayList();
-               Cancel c = new Cancel(ack.getMessageProxy().getDeliveryId(), ack.getMessageProxy().getDeliveryCount());
-               cancels.add(c);
-               sd.cancelDeliveries(cancels);
+               cancelDelivery(sd, deliveryInfo);
             }
             else
             {
-               sd.acknowledge(ack);
+               ackDelivery(sd, deliveryInfo);
             }
             
-            //TODO we can optimise this for the auto_ack case (i.e. not store in list and have to clear each time)
-            state.getToAck().clear();
+            state.setAutoAckInfo(null);
          }
          else
          {
@@ -251,9 +288,7 @@ public class SessionAspect
             
       SessionState state = getState(invocation);
       
-      int ackMode = state.getAcknowledgeMode();
-         
-      if (ackMode == Session.SESSION_TRANSACTED)
+      if (state.isTransacted())
       {
          throw new IllegalStateException("Cannot recover a transacted session");
       }
@@ -263,9 +298,27 @@ public class SessionAspect
       //Call redeliver
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
-      del.redeliver(state.getToAck());
+      if (state.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
+      {
+         del.redeliver(state.getClientAckList());
+         
+         state.getClientAckList().clear();
+      }
+      else
+      {
+         DeliveryInfo info = state.getAutoAckInfo();
+         
+         if (info != null)
+         {
+            List redels = new ArrayList();
             
-      state.getToAck().clear();
+            redels.add(info);
+            
+            del.redeliver(redels);
+            
+            state.setAutoAckInfo(null);            
+         }
+      }            
 
       state.setRecoverCalled(true);
       
@@ -297,9 +350,7 @@ public class SessionAspect
     * was called.
     */
    public Object handleRedeliver(Invocation invocation) throws Throwable
-   {
-      if (trace) { log.trace("redeliver called"); }
-      
+   {            
       MethodInvocation mi = (MethodInvocation)invocation;
       SessionState state = getState(invocation);
             
@@ -307,7 +358,10 @@ public class SessionAspect
       // JMSRedelivered to true.
       
       List toRedeliver = (List)mi.getArguments()[0];
-      LinkedList toCancel = new LinkedList();
+      
+      if (trace) { log.trace(this + " handleRedeliver() called: " + toRedeliver); }
+      
+      SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
       // Need to be recovered in reverse order.
       for (int i = toRedeliver.size() - 1; i >= 0; i--)
@@ -319,25 +373,17 @@ public class SessionAspect
               
          if (handler == null)
          {
-            // This is ok. The original consumer has closed, this message wil get cancelled back
-            // to the channel.
-            Cancel cancel = new Cancel(info.getMessageProxy().getDeliveryId(), info.getMessageProxy().getDeliveryCount());
-            toCancel.addFirst(cancel);
+            // This is ok. The original consumer has closed, so we cancel the message
+            
+            cancelDelivery(del, info);
          }
          else
          {
+            if (trace) { log.trace("Adding proxy back to front of buffer"); }
             handler.addToFrontOfBuffer(proxy);
          }                                    
       }
-      
-      if (!toCancel.isEmpty())
-      {
-         // Cancel the messages that can't be redelivered locally
-         
-         SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-         del.cancelDeliveries(toCancel);
-      }
-            
+              
       return null;  
    }
    

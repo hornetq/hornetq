@@ -37,6 +37,7 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
@@ -64,6 +65,8 @@ import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * A JMS server peer.
@@ -112,6 +115,8 @@ public class ServerPeer extends ServiceMBeanSupport
    private long failoverStartTimeout = 3000;
    
    private long failoverCompleteTimeout = 12000;
+   
+   private Map sessions;
       
    // wired components
 
@@ -159,9 +164,11 @@ public class ServerPeer extends ServiceMBeanSupport
       version = Version.instance();
       
       failoverStatusLock = new Object();
+      
+      sessions = new ConcurrentReaderHashMap();
 
       started = false;
-   }
+   }      
 
    // ServiceMBeanSupport overrides ---------------------------------
 
@@ -566,6 +573,24 @@ public class ServerPeer extends ServiceMBeanSupport
    }
 
    // Public --------------------------------------------------------
+   
+   public ServerSessionEndpoint getSession(Integer sessionID)
+   {
+      return (ServerSessionEndpoint)sessions.get(sessionID);
+   }
+   
+   public void addSession(Integer id, ServerSessionEndpoint session)
+   {
+      sessions.put(id, session);      
+   }
+   
+   public void removeSession(Integer id)
+   {
+      if (sessions.remove(id) == null)
+      {
+         throw new IllegalStateException("Cannot find session with id " + id + " to remove");
+      }
+   }
 
    public Queue getDLQ() throws Exception
    {

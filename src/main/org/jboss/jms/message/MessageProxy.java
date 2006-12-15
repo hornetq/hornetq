@@ -65,6 +65,8 @@ public class MessageProxy implements Message, Serializable
 
    // Attributes ----------------------------------------------------
 
+   //The actual session delegate for the message - needed for doing recovery
+   //so we can recover locally
    private transient SessionDelegate delegate;
    
    private transient boolean cc;

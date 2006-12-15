@@ -83,7 +83,16 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
- * Concrete implementation of SessionEndpoint.
+ * The server side representation of a JMS session.
+ * 
+ * A user must not invoke methods of a session concurrently on different threads, however
+ * there are situations where multiple threads may access this object concurrently, for instance:
+ * 
+ * A session can be closed when it's connection is closed by the user which might be called on a different thread
+ * A session can be closed when the server determines the connection is dead.
+ * If the session represents a connection consumer's session then the connection consumer will farm off
+ * messages to different sessions obtained from a pool, these may then cancel/ack etc on different threads, but
+ * the acks/cancels/etc will end up back here on the connection consumer session instance.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -109,6 +118,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private volatile boolean closed;
 
    private ServerConnectionEndpoint connectionEndpoint;
+   
+   private ServerPeer sp;
 
    private Map consumers;
    private Map browsers;
@@ -140,7 +151,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       this.connectionEndpoint = connectionEndpoint;
 
-      ServerPeer sp = connectionEndpoint.getServerPeer();
+      sp = connectionEndpoint.getServerPeer();
 
       pm = sp.getPersistenceManagerInstance();
       ms = sp.getMessageStore();
@@ -327,8 +338,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   public void acknowledgeBatch(List acks) throws JMSException
-   {      
+   public void acknowledgeDelivery(Ack ack) throws JMSException
+   {
+      try
+      {
+         acknowledgeDeliveryInternal(ack);   
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
+      }
+   }     
+         
+   public void acknowledgeDeliveries(List acks) throws JMSException
+   {    
+      if (trace) {log.trace(this + " acknowledgeDeliveries " + acks); }
+      
       try
       {
          Iterator iter = acks.iterator();
@@ -337,14 +362,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             Ack ack = (Ack)iter.next();
             
-            Delivery del = (Delivery)deliveries.remove(new Long(ack.getDeliveryId()));
-            
-            if (del == null)
-            {
-               throw new IllegalStateException("Cannot find delivery to acknowledge: " + ack.getDeliveryId());
-            }
-            
-            del.acknowledge(null);
+            acknowledgeDeliveryInternal(ack);
          }
       }
       catch (Throwable t)
@@ -352,107 +370,46 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeBatch");
       }
    }
-   
-   public void acknowledge(Ack ack) throws JMSException
+       
+   public void cancelDelivery(Cancel cancel) throws JMSException
    {
+      if (trace) {log.trace(this + " cancelDelivery " + cancel); }
+      
       try
       {
-         Delivery del = (Delivery)deliveries.remove(new Long(ack.getDeliveryId()));
+         Delivery del = cancelDeliveryInternal(cancel);
          
-         if (del == null)
-         {
-            throw new IllegalStateException("Cannot find delivery to acknowledge: " + ack.getDeliveryId());
-         }
-         
-         del.acknowledge(null);    
+         //Prompt delivery
+         ((Channel)del.getObserver()).deliver(false);
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
+         throw ExceptionUtil.handleJMSInvocation(t, this + " cancelDelivery");
       }
-   }     
+     
+   }      
 
    public void cancelDeliveries(List cancels) throws JMSException
    {
+      if (trace) {log.trace(this + " cancelDeliveries " + cancels); }
+      
       try
       {
          // deliveries must be cancelled in reverse order
-           
-         List forDLQ = null;
-         
+
          Set channels = new HashSet();
                            
          for (int i = cancels.size() - 1; i >= 0; i--)
          {
-            Cancel cancel = (Cancel)cancels.get(i);
+            Cancel cancel = (Cancel)cancels.get(i);       
             
-            Delivery del = (Delivery)deliveries.remove(new Long(cancel.getDeliveryId()));
+            if (trace) { log.trace("Cancelling delivery " + cancel.getDeliveryId()); }
             
-            if (del == null)
-            {
-               throw new IllegalStateException("Cannot find delivery to cancel " + cancel.getDeliveryId());
-            }
-                                    
-            if (cancel.getDeliveryCount() >= maxDeliveryAttempts)
-            {
-               if (forDLQ == null)
-               {
-                  forDLQ = new ArrayList();
-               }
-               
-               forDLQ.add(del);
-            }
-            else
-            {                                                   
-               del.getReference().setDeliveryCount(cancel.getDeliveryCount());
-               
-               del.cancel();
-               
-               channels.add(del.getObserver());
-            }
+            Delivery del = cancelDeliveryInternal(cancel);
+            
+            channels.add(del.getObserver());
          }
-         
-         //Send stuff to DLQ
-         
-         if (forDLQ != null)
-         {
-            //We do this in a tx so we don't end up with the message in both the original queue
-            //and the dlq if it fails half way through
-            Transaction tx = tr.createTransaction();
-            
-            try
-            {               
-               for (int i = forDLQ.size() - 1; i >= 0; i--)
-               {
-                  Delivery del = (Delivery)forDLQ.get(i);
                   
-                  if (dlq != null)
-                  {         
-                     //reset delivery count to zero
-                     del.getReference().setDeliveryCount(0);
-                     
-                     dlq.handle(null, del.getReference(), tx);
-                     
-                     del.acknowledge(tx);           
-                  }
-                  else
-                  {
-                     log.warn("Cannot send to DLQ since DLQ has not been deployed! The message will be removed");
-                     
-                     del.acknowledge(tx);
-                  }                              
-               }
-               
-               tx.commit();
-            }
-            catch (Throwable t)
-            {
-               tx.rollback();
-               
-               throw t;
-            }
-         }
-         
          // need to prompt delivery for all affected channels
          
          promptDelivery(channels);
@@ -767,21 +724,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
    }
-   
-//   void promptDeliveryOnConsumers()
-//   {
-//      if (trace) { log.trace(this + " promptDeliveryOnConsumers(), there are " + consumers.size() + " consumers"); }
-//      synchronized (consumers)
-//      {         
-//         for (Iterator i = consumers.values().iterator(); i.hasNext(); )
-//         {
-//            ServerConsumerEndpoint consumer = (ServerConsumerEndpoint)i.next();
-//            
-//            consumer.promptDelivery();
-//         }
-//      }
-//   }
-   
+    
    void localClose() throws Throwable
    {
       if (closed)
@@ -853,6 +796,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       promptDelivery(channels);
       
       deliveries.clear();
+      
+      sp.removeSession(new Integer(id));
             
       JMSDispatcher.instance.unregisterTarget(new Integer(id));
       
@@ -940,6 +885,74 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // Protected -----------------------------------------------------        
 
    // Private -------------------------------------------------------
+   
+   private void acknowledgeDeliveryInternal(Ack ack) throws Throwable
+   {
+      if (trace) { log.trace("Acknowledging delivery " + ack.getDeliveryId()); }
+      
+      Delivery del = (Delivery)deliveries.remove(new Long(ack.getDeliveryId()));
+      
+      if (del == null)
+      {
+         throw new IllegalStateException("Cannot find delivery to acknowledge: " + ack.getDeliveryId());
+      }
+      
+      del.acknowledge(null);    
+   } 
+   
+   private Delivery cancelDeliveryInternal(Cancel cancel) throws Throwable
+   {
+      Delivery del = (Delivery)deliveries.remove(new Long(cancel.getDeliveryId()));
+      
+      if (del == null)
+      {
+         throw new IllegalStateException("Cannot find delivery to cancel " + cancel.getDeliveryId());
+      }
+                              
+      if (cancel.getDeliveryCount() >= maxDeliveryAttempts)
+      {
+         //Send to DLQ
+         
+         //We do this in a tx so we don't end up with the message in both the original queue
+         //and the dlq if it fails half way through
+         Transaction tx = tr.createTransaction();
+         
+         try
+         {               
+            if (dlq != null)
+            {         
+               //reset delivery count to zero
+               del.getReference().setDeliveryCount(0);
+               
+               dlq.handle(null, del.getReference(), tx);
+               
+               del.acknowledge(tx);           
+            }
+            else
+            {
+               log.warn("Cannot send to DLQ since DLQ has not been deployed! The message will be removed");
+               
+               del.acknowledge(tx);
+            }                              
+                        
+            tx.commit();
+         }
+         catch (Throwable t)
+         {
+            tx.rollback();
+            
+            throw t;
+         }         
+      }
+      else
+      {                                                   
+         del.getReference().setDeliveryCount(cancel.getDeliveryCount());
+         
+         del.cancel();
+      }
+      
+      return del;
+   }
       
    private ConsumerDelegate failoverConsumer(JBossDestination jmsDestination,
             String selectorString,
@@ -1275,6 +1288,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          ((Channel)observer).deliver(false);
       }
    }
+   
+   
    
    
    // Inner classes -------------------------------------------------

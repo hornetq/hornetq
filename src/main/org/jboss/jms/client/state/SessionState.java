@@ -32,6 +32,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.logging.Logger;
 
@@ -68,14 +69,16 @@ public class SessionState extends HierarchicalStateSupport
    
    private boolean recoverCalled;
 
-   // List<AckInfo>
-   private List toAck;
+   // List<DeliveryInfo>
+   private List ClientAckList;
+   
+   private DeliveryInfo autoAckInfo;
 
    private ConnectionState parent;
    
    private SessionDelegate delegate;
    
-   private Map callbackHandlers;
+   private Map callbackHandlers;     
    
    public SessionState(ConnectionState parent, ClientSessionDelegate delegate,
                        boolean transacted, int ackMode, boolean xa)
@@ -106,7 +109,7 @@ public class SessionState extends HierarchicalStateSupport
       
       executor = new QueuedExecutor(new LinkedQueue());
       
-      toAck = new ArrayList();
+      ClientAckList = new ArrayList();
       
       // TODO could optimise this to use the same map of callbackmanagers (which holds refs
       // to callbackhandlers) in the connection, instead of maintaining another map
@@ -137,9 +140,23 @@ public class SessionState extends HierarchicalStateSupport
    /**
     * @return List<AckInfo>
     */
-   public List getToAck()
+   public List getClientAckList()
    {
-      return toAck;
+      return ClientAckList;
+   }
+   
+   public DeliveryInfo getAutoAckInfo()
+   {
+      return autoAckInfo;
+   }
+   
+   public void setAutoAckInfo(DeliveryInfo info)
+   {
+      if (info != null && autoAckInfo != null)
+      {
+         throw new IllegalStateException("There is already a delivery set for auto ack");
+      }
+      autoAckInfo = info;
    }
    
    public int getAcknowledgeMode()

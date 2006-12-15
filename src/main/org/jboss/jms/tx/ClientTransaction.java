@@ -25,6 +25,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -139,7 +140,7 @@ public class ClientTransaction
       }
       else
       {
-         return sessionStatesMap.values();
+         return sessionStatesMap == null ? Collections.emptySet() : sessionStatesMap.values();
       }
    }   
    

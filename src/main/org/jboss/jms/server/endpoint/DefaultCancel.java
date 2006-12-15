@@ -21,10 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
-import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -38,7 +34,7 @@ import org.jboss.messaging.util.Streamable;
  * $Id$
  *
  */
-public class Cancel implements Streamable
+public class DefaultCancel implements Cancel
 {
    // Constants -----------------------------------------------------
    
@@ -52,11 +48,11 @@ public class Cancel implements Streamable
    
    // Constructors --------------------------------------------------
    
-   public Cancel()
+   public DefaultCancel()
    {      
    }
    
-   public Cancel(long deliveryId, int deliveryCount)
+   public DefaultCancel(long deliveryId, int deliveryCount)
    {      
       this.deliveryId = deliveryId;
       
@@ -73,22 +69,6 @@ public class Cancel implements Streamable
    public int getDeliveryCount()
    {
       return deliveryCount;
-   }
-
-   // Streamable implementation -------------------------------------
-   
-   public void read(DataInputStream in) throws Exception
-   {
-      deliveryId = in.readLong();
-      
-      deliveryCount = in.readInt();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      out.writeLong(deliveryId);
-      
-      out.writeInt(deliveryCount);
    }
 
    // Class YYY overrides -------------------------------------------

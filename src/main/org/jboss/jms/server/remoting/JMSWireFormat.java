@@ -46,6 +46,7 @@ import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.endpoint.DefaultAck;
+import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
@@ -92,14 +93,15 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
    protected static final byte SERIALIZED = 0;   
    protected static final byte ACKNOWLEDGE = 1;
-   protected static final byte ACKNOWLEDGE_BATCH = 2;
-   protected static final byte SEND = 3;   
-   protected static final byte CANCEL_DELIVERIES = 4;
-   protected static final byte MORE = 5;
-   protected static final byte SEND_TRANSACTION = 6;
-   protected static final byte GET_ID_BLOCK = 7;
-   protected static final byte RECOVER_DELIVERIES = 8;
-   protected static final byte CONFIRM_DELIVERY = 9;
+   protected static final byte ACKNOWLEDGE_LIST = 2;
+   protected static final byte CANCEL = 3;
+   protected static final byte CANCEL_LIST = 4;
+   protected static final byte SEND = 5;   
+   protected static final byte MORE = 6;
+   protected static final byte SEND_TRANSACTION = 7;
+   protected static final byte GET_ID_BLOCK = 8;
+   protected static final byte RECOVER_DELIVERIES = 9;
+   protected static final byte CONFIRM_DELIVERY = 10;
  
 
    // The response codes - start from 100
@@ -231,7 +233,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   if (trace) { log.trace("wrote activate()"); }
                }           
-               else if ("acknowledge".equals(methodName))
+               else if ("acknowledgeDelivery".equals(methodName))
                {
                   dos.writeByte(ACKNOWLEDGE);
    
@@ -243,11 +245,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   dos.flush();
    
-                  if (trace) { log.trace("wrote acknowledge()"); }
+                  if (trace) { log.trace("wrote acknowledgeDelivery()"); }
                }
-               else if ("acknowledgeBatch".equals(methodName))
+               else if ("acknowledgeDeliveries".equals(methodName))
                {
-                  dos.writeByte(ACKNOWLEDGE_BATCH);
+                  dos.writeByte(ACKNOWLEDGE_LIST);
    
                   writeHeader(mi, dos);
                   
@@ -265,39 +267,27 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   dos.flush();
    
-                  if (trace) { log.trace("wrote acknowledge()"); }
+                  if (trace) { log.trace("wrote acknowledgeDeliveries()"); }
                }
-               else if ("sendTransaction".equals(methodName))
+               else if ("cancelDelivery".equals(methodName))
                {
-                  dos.writeByte(SEND_TRANSACTION);
+                  dos.writeByte(CANCEL);
    
                   writeHeader(mi, dos);
-   
-                  TransactionRequest request = (TransactionRequest)mi.getArguments()[0];
-   
-                  request.write(dos);
-   
+                  
+                  Cancel cancel = (Cancel)mi.getArguments()[0];
+                  
+                  dos.writeLong(cancel.getDeliveryId());
+                  
+                  dos.writeInt(cancel.getDeliveryCount());
+                  
                   dos.flush();
    
-                  if (trace) { log.trace("wrote getMessageNow()"); }
+                  if (trace) { log.trace("wrote cancelDelivery()"); }
                }
-               else if ("getIdBlock".equals(methodName))
-               {
-                  dos.writeByte(GET_ID_BLOCK);
-   
-                  writeHeader(mi, dos);
-   
-                  int size = ((Integer)mi.getArguments()[0]).intValue();
-   
-                  dos.writeInt(size);
-   
-                  dos.flush();
-   
-                  if (trace) { log.trace("wrote getIdBlock()"); }
-               }           
                else if ("cancelDeliveries".equals(methodName) && mi.getArguments() != null)
                {
-                  dos.writeByte(CANCEL_DELIVERIES);
+                  dos.writeByte(CANCEL_LIST);
    
                   writeHeader(mi, dos);
    
@@ -310,7 +300,10 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   while (iter.hasNext())
                   {
                      Cancel cancel = (Cancel)iter.next();
-                     cancel.write(dos);
+                     
+                     dos.writeLong(cancel.getDeliveryId());
+                     
+                     dos.writeInt(cancel.getDeliveryCount());
                   }
    
                   dos.flush();
@@ -353,6 +346,35 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   if (trace) { log.trace("wrote confirmDelivery()"); }
                }
+               else if ("sendTransaction".equals(methodName))
+               {
+                  dos.writeByte(SEND_TRANSACTION);
+   
+                  writeHeader(mi, dos);
+   
+                  TransactionRequest request = (TransactionRequest)mi.getArguments()[0];
+   
+                  request.write(dos);
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote getMessageNow()"); }
+               }
+               else if ("getIdBlock".equals(methodName))
+               {
+                  dos.writeByte(GET_ID_BLOCK);
+   
+                  writeHeader(mi, dos);
+   
+                  int size = ((Integer)mi.getArguments()[0]).intValue();
+   
+                  dos.writeInt(size);
+   
+                  dos.flush();
+   
+                  if (trace) { log.trace("wrote getIdBlock()"); }
+               }           
+               
                else
                {
                   dos.write(SERIALIZED);
@@ -669,11 +691,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
                                         new MessagingMarshallable(version, mi), null, null, null);
    
-               if (trace) { log.trace("read acknowledge()"); }
+               if (trace) { log.trace("read acknowledgeDelivery()"); }
    
                return request;
             }
-            case ACKNOWLEDGE_BATCH:
+            case ACKNOWLEDGE_LIST:
             {
                MethodInvocation mi = readHeader(dis);
                            
@@ -696,11 +718,31 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
                                         new MessagingMarshallable(version, mi), null, null, null);
    
-               if (trace) { log.trace("read acknowledge()"); }
+               if (trace) { log.trace("read acknowledgeDeliveries()"); }
    
                return request;
             }
-            case CANCEL_DELIVERIES:
+            case CANCEL:
+            {
+               MethodInvocation mi = readHeader(dis);
+               
+               long deliveryId = dis.readLong();
+               
+               int deliveryCount = dis.readInt();
+               
+               Object[] args = new Object[] {new DefaultCancel(deliveryId, deliveryCount)};
+   
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read cancelDelivery()"); }
+   
+               return request;
+            }
+            case CANCEL_LIST:
             {
                MethodInvocation mi = readHeader(dis);
    
@@ -709,11 +751,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                List acks = new ArrayList(size);
    
                for (int i = 0; i < size; i++)
-               {
-                  Cancel cancel = new Cancel();
+               {                  
+                  long deliveryId = dis.readLong();
                   
-                  cancel.read(dis);
+                  int deliveryCount = dis.readInt();
                   
+                  DefaultCancel cancel = new DefaultCancel(deliveryId, deliveryCount);
+                                    
                   acks.add(cancel);
                }
    

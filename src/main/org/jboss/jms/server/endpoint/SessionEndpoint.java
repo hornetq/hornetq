@@ -68,18 +68,31 @@ public interface SessionEndpoint extends Closeable
    JBossTopic createTopic(String topicName) throws JMSException;
  
    /**
-    * Acknowledge a batch of messages - used with client acknowledge or dups_ok acknowledge
+    * Acknowledge a list of deliveries
     * @param ackInfos
     * @throws JMSException
     */
-   void acknowledgeBatch(List deliveryIds) throws JMSException;
+   void acknowledgeDeliveries(List deliveryIds) throws JMSException;
    
    /**
-    * Acknowledge a message - used for auto acknowledge
+    * Acknowledge a delivery
     * @param deliveryId
     * @throws JMSException
     */
-   void acknowledge(Ack ack) throws JMSException;
+   void acknowledgeDelivery(Ack ack) throws JMSException;
+   
+   /**
+    * Cancel a list of deliveries.
+    * @param ackInfos
+    */
+   void cancelDeliveries(List cancelInfos) throws JMSException;
+         
+   /**
+    * Cancel a delivery
+    * @param cancel
+    * @throws JMSException
+    */
+   void cancelDelivery(Cancel cancel) throws JMSException;
    
    /**
     * Add a temporary destination.
@@ -107,14 +120,6 @@ public interface SessionEndpoint extends Closeable
     */
    void send(JBossMessage message) throws JMSException;
    
-   /**
-    * Cancel some deliveries.
-    * This used at consumer close to cancel any undelivered messages left in the client buffer
-    * or at session recovery to cancel any messages that couldn't be redelivered locally
-    * @param ackInfos
-    */
-   void cancelDeliveries(List cancelInfos) throws JMSException;
-      
    /**
     * Send delivery info to the server so the delivery lists can be repopulated
     * used at failover

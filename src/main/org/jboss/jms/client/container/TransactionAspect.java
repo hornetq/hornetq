@@ -27,6 +27,7 @@ import javax.jms.TransactionInProgressException;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
@@ -194,7 +195,16 @@ public class TransactionAspect
 
          if (trace) { log.trace("sending acknowlegment transactionally, queueing on resource manager"); }
 
-         connState.getResourceManager().addAck(txID, state.getSessionId(), info);
+         //If the ack is for a delivery that came through via a connection consumer then we
+         //use the connectionConsumer session as the session id, otherwise we use this sessions'
+         //session id
+         
+         ClientSessionDelegate connectionConsumerDelegate =
+            (ClientSessionDelegate)info.getConnectionConsumerSession();
+         
+         int sessionId = connectionConsumerDelegate != null ? connectionConsumerDelegate.getID() : state.getSessionId();
+         
+         connState.getResourceManager().addAck(txID, sessionId, info);
       }
 
       return null;

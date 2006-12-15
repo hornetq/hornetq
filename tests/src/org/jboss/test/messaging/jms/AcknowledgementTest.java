@@ -894,6 +894,8 @@ public class AcknowledgementTest extends MessagingTestCase
             count++;
                   
             TextMessage tm = (TextMessage)m;
+            
+            log.trace("Got message: " + tm.getText());            
                       
             // Receive first three messages then recover() session
             // Only last message should be redelivered

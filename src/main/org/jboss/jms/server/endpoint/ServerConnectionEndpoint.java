@@ -189,7 +189,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          SessionAdvised sessionAdvised = new SessionAdvised(ep);
          
-         JMSDispatcher.instance.registerTarget(new Integer(sessionID), sessionAdvised);
+         Integer iSessionID = new Integer(sessionID);
+         
+         serverPeer.addSession(iSessionID, ep);
+         
+         JMSDispatcher.instance.registerTarget(iSessionID, sessionAdvised);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
                  
@@ -649,7 +653,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                      
             List acks = sessionState.getAcks();
             
-            ServerSessionEndpoint session = (ServerSessionEndpoint)sessions.get(new Integer(sessionState.getSessionId()));
+            //We need to lookup the session in a global map maintained on the server peer.
+            //We can't just assume it's one of the sessions in the connection.
+            //This is because in the case of a connection consumer, the message might be delivered through one
+            //connection and the transaction committed/rolledback through another.
+            //ConnectionConsumers suck.
+            
+            ServerSessionEndpoint session = serverPeer.getSession(new Integer(sessionState.getSessionId()));
             
             session.acknowledgeTransactionally(acks, tx);      
          }

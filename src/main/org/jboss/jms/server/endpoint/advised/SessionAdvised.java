@@ -32,6 +32,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.Ack;
+import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
@@ -102,14 +103,14 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       return endpoint.createTopic(topicName);
    }
 
-   public void acknowledgeBatch(List acks) throws JMSException
+   public void acknowledgeDeliveries(List acks) throws JMSException
    {
-      endpoint.acknowledgeBatch(acks);
+      endpoint.acknowledgeDeliveries(acks);
    }
    
-   public void acknowledge(Ack ack) throws JMSException
+   public void acknowledgeDelivery(Ack ack) throws JMSException
    {
-      endpoint.acknowledge(ack);
+      endpoint.acknowledgeDelivery(ack);
    }
 
    public void addTemporaryDestination(JBossDestination destination) throws JMSException
@@ -130,6 +131,11 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    public void cancelDeliveries(List ackInfos) throws JMSException
    {
       endpoint.cancelDeliveries(ackInfos);
+   }
+   
+   public void cancelDelivery(Cancel cancel) throws JMSException
+   {
+      endpoint.cancelDelivery(cancel);
    }
    
    public void recoverDeliveries(List ackInfos) throws JMSException
