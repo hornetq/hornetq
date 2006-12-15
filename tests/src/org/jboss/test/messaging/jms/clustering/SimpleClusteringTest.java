@@ -52,7 +52,7 @@ public class SimpleClusteringTest extends ClusteringTestBase
 
       // We start programatically the fourth node.
 
-      ServerManagement.start("all", 3);
+      ServerManagement.start(4, "all");
 
       // TODO - verify that the cluster formed correctly assertion
 
@@ -97,7 +97,7 @@ public class SimpleClusteringTest extends ClusteringTestBase
 
       // We get the first node to re-join
 
-      ServerManagement.start("all", 0);
+      ServerManagement.start(0, "all");
 
    }
    

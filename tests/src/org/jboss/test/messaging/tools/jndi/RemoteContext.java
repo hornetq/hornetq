@@ -56,9 +56,9 @@ public class RemoteContext implements Context
          "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
           RMITestServer.NAMING_SERVER_PREFIX + remoteServerIndex;
       
-      log.info("Using this url for rmi server lookup " + n);
-      
       namingDelegate = (NamingDelegate)Naming.lookup(n);
+
+      log.info("remote context for server " + remoteServerIndex + " acquired from rmi:" + n);
    }
 
    // Context implementation ----------------------------------------

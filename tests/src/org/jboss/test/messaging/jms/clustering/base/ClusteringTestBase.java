@@ -91,7 +91,9 @@ public class ClusteringTestBase extends MessagingTestCase
 
       for(int i = 0; i < nodeCount; i++)
       {
-         ServerManagement.start("all", i);
+         // make sure all servers are created and started
+         ServerManagement.start(i, "all");
+
          ServerManagement.deployClusteredQueue("testDistributedQueue", i);
          ServerManagement.deployClusteredTopic("testDistributedTopic", i);
 
@@ -121,6 +123,8 @@ public class ClusteringTestBase extends MessagingTestCase
 
          ic[i].close();
       }
+
+      //ServerManagement.destroySpawnedServers();
 
       super.tearDown();
    }

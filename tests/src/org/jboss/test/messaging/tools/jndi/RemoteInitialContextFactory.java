@@ -47,8 +47,6 @@ public class RemoteInitialContextFactory implements InitialContextFactory
     */
    public static Hashtable getJNDIEnvironment(int serverIndex)
    {
-      log.info("Returning remote context... server index:" + serverIndex);
-      
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
               "org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory");
@@ -73,8 +71,6 @@ public class RemoteInitialContextFactory implements InitialContextFactory
          throw new IllegalArgumentException("Initial context environment must contain " +
                                             "entry for " + Constants.SERVER_INDEX_PROPERTY_NAME);
       }
-
-      log.info("Created initial context for " + s);
 
       int remoteServerIndex = Integer.parseInt(s);
 

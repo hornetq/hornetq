@@ -35,56 +35,34 @@ public class ServerManagementTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   public void testFailureToSpawnStartedServer() throws Exception
+   public void testSpawnServer() throws Exception
    {
       try
       {
-         ServerManagement.start("all", 0);
+         ServerManagement.start(0, "all");
 
-         try
-         {
-            ServerManagement.spawn(0);
-            fail("It should have failed!");
-         }
-         catch(Exception e)
-         {
-            // OK
-         }
+         ServerManagement.start(0, "all");
       }
       finally
       {
-         ServerManagement.stop(0);
-      }
-   }
-
-   public void testFailureToSpawnExistingRemoteServer() throws Exception
-   {
-      if (ServerManagement.isLocal())
-      {
-         // irrelevant for a colocated configuration
-         return;
-      }
-
-      // this assumes that the remote server 0 has been started externally by and or by a script
-
-      try
-      {
-         ServerManagement.spawn(0);
-         fail("This should have failed!");
-      }
-      catch(Exception e)
-      {
-         // OK
+         ServerManagement.kill(0);
       }
    }
 
    public void testSimpleSpawn() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         fail("This test must be run in remote mode!");
+      }
+
       try
       {
-         ServerManagement.spawn(7);
+         log.info("Waiting for server 7 to start ...");
 
-         ServerManagement.start("all", 7);
+         ServerManagement.start(7, "all");
+
+         log.info("Server 7 started");
 
          Integer index = (Integer)ServerManagement.
             getAttribute(7, new ObjectName("jboss.messaging:service=ServerPeer"), "serverPeerID");
@@ -99,40 +77,59 @@ public class ServerManagementTest extends MessagingTestCase
       }
       finally
       {
+         log.info("Killing server 7");
          ServerManagement.kill(7);
       }
    }
 
-   /**
-    * Needs to be run in clustered mode.
-    */
    public void testRessurect() throws Exception
    {
-
-      if (!ServerManagement.isClustered())
+      if (!ServerManagement.isRemote())
       {
-         fail("This test must be run in clustered mode!");
+         fail("This test must be run in remote mode!");
       }
 
-      ServerManagement.start("all", 1);
+      try
+      {
+         ServerManagement.start(1, "all");
 
-      ServerManagement.kill(1);
+         ServerManagement.kill(1);
 
-      // wait a bit for the server to die
-      
-      log.info("Sleeping for 10 seconds ...");
+         // wait a bit for the server to die
 
-      Thread.sleep(10000);
+         log.info("Sleeping for 10 seconds ...");
 
-      // resurrect the server
+         Thread.sleep(10000);
 
-      ServerManagement.spawn(1);
-      ServerManagement.start("all", 1);
+         // resurrect the server
 
-      Integer index = (Integer)ServerManagement.
-         getAttribute(1, new ObjectName("jboss.messaging:service=ServerPeer"), "serverPeerID");
+         ServerManagement.start(1, "all");
 
-      assertEquals(1, index.intValue());
+         Integer index = (Integer)ServerManagement.
+            getAttribute(1, new ObjectName("jboss.messaging:service=ServerPeer"), "serverPeerID");
+
+         assertEquals(1, index.intValue());
+
+         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(1));
+
+         ic.bind("/xxx", "yyy");
+
+         assertEquals("yyy", ic.lookup("/xxx"));
+      }
+      finally
+      {
+         ServerManagement.kill(1);
+      }
+   }
+
+   public void testA()
+   {
+      System.out.println("A");
+   }
+
+   public void testB()
+   {
+      System.out.println("B");
    }
 
 
@@ -150,6 +147,9 @@ public class ServerManagementTest extends MessagingTestCase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+
+      // TODO: clean up spawned servers
+
    }
 
    // Private -------------------------------------------------------

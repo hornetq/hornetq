@@ -715,6 +715,9 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
          <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=antjunit"/>
+          -->
 
          <classpath>
             <path refid="test.execution.classpath"/>
@@ -744,11 +747,19 @@
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <!--
+                 I needed a way to intercept the end of a forked ant JUnit test run, in order to
+                 perform clean-up, and this is it: register a JUnitTestSuiteListener as a JUnit
+                 batchtest formatter, and it will get notified on a endTestSuite() event.
+            -->
+            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
+
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/clustering/HATest.class"/>
                <!--
-               <include name="**/jms/clustering/SimpleClusteringTest.class"/>
+               <include name="**/jms/clustering/*Test.class"/>
+                <include name="org/jboss/test/messaging/util/ServerManagementTest.class"/>
                -->
+               <include name="**/jms/clustering/HATest.class"/>
             </fileset>
          </batchtest>
       </junit>

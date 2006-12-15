@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Iterator;
+import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import javax.management.ObjectName;
 import javax.management.NotificationListener;
 import javax.management.Notification;
@@ -76,12 +79,8 @@ public class ServerManagement
 
    private static Logger log = Logger.getLogger(ServerManagement.class);
 
-   private static final int RMI_SERVER_LOOKUP_RETRIES = 10;
+   private static ServerHolder[] servers = new ServerHolder[MAX_SERVER_COUNT];
 
-   private static Server[] servers = new Server[MAX_SERVER_COUNT];
-   
-   private static boolean[] killed = new boolean[MAX_SERVER_COUNT];
-   
    // Map<NotificationListener - NotificationListenerPoller>
    private static Map notificationListenerPollers = new HashMap();
 
@@ -100,23 +99,99 @@ public class ServerManagement
       return "true".equals(System.getProperty("test.clustered"));
    }
 
-   public static synchronized boolean isKilled(int index)
+   /**
+    * May return null if the server is not initialized.
+    */
+   public synchronized static Server getServer()
    {
-      return killed[index];
+      return getServer(0);
    }
 
-   public static synchronized boolean isStarted(int index)
+   /**
+    * May return null if the corresponding server is not initialized.
+    */
+   public synchronized static Server getServer(int i)
    {
-      Server s = servers[index];
+      if (servers[i] == null)
+      {
+         return null;
+      }
+      else
+      {
+         return ((ServerHolder)servers[i]).getServer();
+      }
+   }
 
-      if (s == null)
+   public static synchronized Server create() throws Exception
+   {
+      return create(0);
+   }
+
+   /**
+    * Makes sure that a "hollow" TestServer (either local or remote, depending on the nature of the
+    * test), exists and it's ready to be started.
+    */
+   public static synchronized Server create(int i) throws Exception
+   {
+      if (servers[i] == null)
+      {
+         if (isLocal())
+         {
+            servers[i] = new ServerHolder(new LocalTestServer(i), false);
+         }
+         else
+         {
+            Server s = acquireRemote(1, i, true);
+
+            if (s != null)
+            {
+               servers[i] = new ServerHolder(s, false);
+            }
+            else
+            {
+               // most likely the remote server is not started, so spawn it
+               servers[i] = new ServerHolder(ServerManagement.spawn(i), true);
+               log.info("server " + i + " online");
+            }
+         }
+      }
+
+      return servers[i].getServer();
+   }
+
+
+   public static synchronized void start(String config) throws Exception
+   {
+      start(0, config);
+   }
+
+   /**
+    * When this method correctly completes, the server (local or remote) is started and fully
+    * operational (the service container and the server peer are created and started)
+    */
+   public static synchronized void start(int i, String config) throws Exception
+   {
+      Server s = create(i);
+
+      MessageIdGeneratorFactory.instance.clear();
+
+      log.info("starting server " + i);
+
+      s.start(config);
+
+      log.info("server " + i + " started");
+   }
+
+   public static synchronized boolean isStarted(int i)
+   {
+      if (servers[i] == null)
       {
          return false;
       }
 
       try
       {
-         return s.isStarted();
+         return servers[i].getServer().isStarted();
       }
       catch(Exception e)
       {
@@ -124,164 +199,90 @@ public class ServerManagement
       }
    }
 
-   public static Server getServer()
-   {
-      return getServer(0);
-   }
-   
-   public static Server getServer(int i)
-   {
-      if (killed[i])
-      {
-         log.warn("Server " + i + " cannot be got since it has been killed");
-      }
-      
-      Server s = servers[i];
-      
-      if (s == null)
-      {
-         throw new IllegalStateException("Server " + i + " is not started!");
-      }
-      
-      return s;
-   }
-   
-   public static synchronized void create() throws Exception
-   {
-      create(0);
-   }
-
-   public static synchronized void create(int index) throws Exception
-   {
-      if (killed[index])
-      {
-         log.warn("Server " + index + " cannot created since it has been killed");
-         
-         return;
-      }
-      
-      if (servers[index] != null)
-      {
-         return;
-      }
-
-      if (isLocal())
-      {
-         servers[index] = new LocalTestServer(index);
-         return;
-      }
-
-      servers[index] = acquireRemote(RMI_SERVER_LOOKUP_RETRIES, index);
-
-      if (servers[index] != null)
-      {
-         // RMI server started
-         return;
-
-      }
-
-      // the remote RMI server is not started
-
-      // I could attempt to start the remote server VM from the test itself (see commented out code)
-      // but when running such a test from a forking ant, ant blocks forever waiting for *this* VM
-      // to exit. That's why I require the remote server to be started in advance.
-
-      throw new IllegalStateException("The RMI server " + index + " doesn't seem to be started. " +
-                                      "Start it and re-run the test.");
-
-   }
-   
-   public static synchronized void start(String config) throws Exception
-   {
-      start(config, 0);
-   }
-
-   public static synchronized void start(String config, int index) throws Exception
-   {
-      if (killed[index])
-      {
-         log.warn("Server " + index + " cannot been started since it has been killed");
-         
-         return;
-      }
-      
-      create(index);
-
-      if (isLocal())
-      {
-         log.info("IN-VM TEST");
-      }
-      else
-      {
-         log.info("REMOTE TEST");
-      }
-      
-      MessageIdGeneratorFactory.instance.clear();      
-
-      // Now start the server
-      servers[index].start(config);
-
-      log.debug("server started");
-   }
-
    public static synchronized void stop() throws Exception
    {
       stop(0);
    }
 
-   public static synchronized void stop(int index) throws Exception
-   {
-      if (killed[index])
-      {
-         log.warn("Server " + index + " cannot been stopped since it has been killed");
-         
-         return;
-      }
-      
-      if (servers[index] == null)
-      {
-         log.warn("Server " + index + " has not been created, so it cannot be stopped");
-         return;
-      }
-
-      if (!servers[index].isStarted())
-      {
-         log.warn("Server " + index + " either has not been started, or it is stopped already");
-         return;
-      }
-
-      servers[index].stop();
-   }
-
    /**
-    * TODO - this methods should be removed, to not be confused with kill(index)
-    * @deprecated
+    * The method stops the local or remote server, bringing it to a "hollow" state. A stopped
+    * server is identical with a server that has just been created, but not started.
     */
-   public static synchronized void destroy() throws Exception
+   public static synchronized void stop(int i) throws Exception
    {
-      stop();
-      servers[0].kill();
-      servers[0] = null;
+      if (servers[i] == null)
+      {
+         log.warn("Server " + i + " has not been created, so it cannot be stopped");
+      }
+      else
+      {
+         servers[i].getServer().stop();
+      }
    }
 
    /**
-    * For a local test, is a noop, but for a remote test, the method call spawns a new VM.
+    * Abruptly kills the VM running the specified server, simulating a crash. A local server
+    * cannot be killed, the method is a noop if this is the case.
+    */
+   public static synchronized void kill(int i) throws Exception
+   {
+      if (servers[i] == null)
+      {
+         log.warn("Server " + i + " has not been created, so it cannot be killed");
+      }
+      else
+      {
+         servers[i].getServer().kill();
+         log.info("Server " + i + " killed");
+         servers[i] = null;
+      }
+   }
+
+   /**
+    * This method make sure that all servers that have been implicitely spawned when as a side
+    * effect of create() and/or start() are killed. The method is important because a forked
+    * ant junit task won't exit if processes created by it are still active. If you run tests
+    * from ant, always call killSpawnedServers() in tearDown().
+    *
+    * The servers created directed invoking spawn() are not subject to destroySpawnedServers(); they
+    * need to be explicitely killed.
+    *
+    * @return a List<Integer> containing the indexes of the destroyed servers.
+    *
+    */
+   public static synchronized List destroySpawnedServers() throws Exception
+   {
+      List destroyed = new ArrayList();
+
+      for(int i = 0; i < servers.length; i++)
+      {
+         if (servers[i] != null && servers[i].isSpawned())
+         {
+            Server s = servers[i].getServer();
+            destroyed.add(new Integer(s.getServerID()));
+            s.stop();
+            s.kill();
+            servers[i] = null;
+         }
+      }
+
+      return destroyed;
+   }
+
+   /**
+    * For a local test, is a noop, but for a remote test, the method call spawns a new VM,
+    * irrespective of the fact that a server with same index may already exist (if you want to
+    * avoid conflicts, you need to check this externally).
+    *
     * The remote server so created is no different from a server started using start-rmi-server
     * script.
     */
-   public static synchronized void spawn(int index) throws Exception
+   private static synchronized Server spawn(final int i) throws Exception
    {
-      if (servers[index] != null)
+      if(isLocal())
       {
-         throw new Exception("The server " + index + " has been created already!");
+         return null;
       }
-
-      // in the remote case, make sure the VM with the given index isn't already up
-      if (isRemote() && acquireRemote(3, index) != null)
-      {
-         throw new Exception("The remote server " + index + " seems to be already up!");
-      }
-
 
       StringBuffer sb = new StringBuffer();
 
@@ -289,64 +290,154 @@ public class ServerManagement
 
       sb.append("-Xmx512M").append(' ');
 
-      sb.append("-Dmodule.output=./../output").append(' ');
+      String moduleOutput = System.getProperty("module.output");
+      if (moduleOutput == null)
+      {
+         moduleOutput = "./output";
+      }
+      
+      sb.append("-Dmodule.output=").append(moduleOutput).append(' ');
 
-      sb.append("-Dremote.test.suffix=-remote-").append(index).append(' ');
+      sb.append("-Dremote.test.suffix=-remote-").append(i).append(' ');
 
-      sb.append("-Dtest.server.index=").append(index).append(' ');
+      sb.append("-Dtest.server.index=").append(i).append(' ');
 
       sb.append("-Dtest.bind.address=localhost").append(' ');
 
-      sb.append("-cp").append(' ').append(System.getProperty("java.class.path")).append(' ');
+      String database = System.getProperty("test.database");
+      if (database != null)
+      {
+         sb.append("-Dtest.database=").append(database).append(' ');
+      }
+
+      String serialization = System.getProperty("test.serialization");
+      if (serialization != null)
+      {
+         sb.append("-Dtest.serialization=").append(serialization).append(' ');
+      }
+
+      String clustered = System.getProperty("test.clustered");
+      if (clustered != null)
+      {
+         sb.append("-Dtest.clustered=").append(clustered).append(' ');
+      }
+
+      String remoting = System.getProperty("test.remoting");
+      if (remoting != null)
+      {
+         sb.append("-Dtest.remoting=").append(remoting).append(' ');
+      }
+
+      String classPath = System.getProperty("java.class.path");
+
+      //System.out.println("CLASSPATH: " + classPath);
+
+      sb.append("-cp").append(" \"").append(classPath).append("\" ");
 
       sb.append("org.jboss.test.messaging.tools.jmx.rmi.RMITestServer");
 
-      //System.out.println(sb.toString());
+      String commandLine = sb.toString();
 
-      Runtime.getRuntime().exec(sb.toString());
+      //System.out.println(commandLine);
 
-      killed[index] = false;
+      Process process = Runtime.getRuntime().exec(commandLine);
 
-      log.info("VM for Server " + index + " spawned");
-   }
+      log.trace("process: " + process);
 
-   /**
-    * Abruptly kills the VM running the specified server, simulating a crash.
-    */
-   public static synchronized void kill(int index) throws Exception
-   {
-      if (servers[index] == null)
+      // if you ever need to debug the spawing process, turn this flag to true:
+
+      final boolean verbose = false;
+
+      final BufferedReader rs = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      final BufferedReader re = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+      new Thread(new Runnable()
       {
-         log.warn("Server " + index + " has not been created, so it cannot be killed");
-         return;
+         public void run()
+         {
+            try
+            {
+               String line;
+
+               while((line = rs.readLine()) != null)
+               {
+                  if (verbose)
+                  {
+                     System.out.println("SERVER " + i + " STDOUT: " + line);
+                  }
+               }
+            }
+            catch(Exception e)
+            {
+               log.error("exception", e);
+            }
+         }
+
+      }, "Server " + i + " STDOUT reader thread").start();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               String line;
+
+               while((line = re.readLine()) != null)
+               {
+                  if (verbose)
+                  {
+                     System.out.println("SERVER " + i + " STDERR: " + line);
+                  }
+               }
+            }
+            catch(Exception e)
+            {
+               log.error("exception", e);
+            }
+         }
+
+      }, "Server " + i + " STDERR reader thread").start();
+
+
+      // put the invoking thread on wait until the server is actually up and running and bound
+      // in the RMI registry
+
+      long maxWaitTime = 30; // seconds
+      long startTime = System.currentTimeMillis();
+      Server s = null;
+
+      log.info("spawned server " + i + ", waiting for it to come online");
+
+      while(System.currentTimeMillis() - startTime < maxWaitTime * 1000)
+      {
+         s = acquireRemote(1, i, true);
+         if (s != null)
+         {
+            break;
+         }
       }
 
-      servers[index].kill();
-
-      log.info("Server " + index + " killed");
-
-      servers[index] = null;
-      killed[index] = true;
-   }
-   
-   public static void disconnect() throws Exception
-   {
-      if (isRemote())
+      if (s == null)
       {
-         servers[0] = null;
+         log.error("Cannot contact newly spawned server " + i + ", most likely the attempt failed, timing out ...");
+         throw new Exception("Cannot contact newly spawned server " + i + ", most likely the attempt failed, timing out ...");
       }
+
+      return s;
    }
+
 
    public static ObjectName deploy(String mbeanConfiguration) throws Exception
    {
       insureStarted();
-      return servers[0].deploy(mbeanConfiguration);
+      return servers[0].getServer().deploy(mbeanConfiguration);
    }
 
    public static void undeploy(ObjectName on) throws Exception
    {
       insureStarted();
-      servers[0].undeploy(on);
+      servers[0].getServer().undeploy(on);
    }
 
    public static Object getAttribute(ObjectName on, String attribute) throws Exception
@@ -358,7 +449,7 @@ public class ServerManagement
       throws Exception
    {
       insureStarted(serverIndex);
-      return servers[serverIndex].getAttribute(on, attribute);
+      return servers[serverIndex].getServer().getAttribute(on, attribute);
    }
 
 
@@ -366,32 +457,25 @@ public class ServerManagement
       throws Exception
    {
       insureStarted();
-      servers[0].setAttribute(on, name, valueAsString);
+      servers[0].getServer().setAttribute(on, name, valueAsString);
    }
 
    public static Object invoke(ObjectName on, String operationName,
                                Object[] params, String[] signature) throws Exception
    {
       insureStarted();
-      return servers[0].invoke(on, operationName, params, signature);
+      return servers[0].getServer().invoke(on, operationName, params, signature);
    }
 
    public static void addNotificationListener(int serverIndex, ObjectName on,
                                               NotificationListener listener) throws Exception
    {
-      if (killed[serverIndex])
-      {
-         log.warn("Server " + serverIndex + " cannot addNotificationListener it has been killed");
-         
-         return;
-      }
-      
       insureStarted(serverIndex);
 
       if (isLocal())
       {
          // add the listener directly to the server
-         servers[serverIndex].addNotificationListener(on, listener);
+         servers[serverIndex].getServer().addNotificationListener(on, listener);
       }
       else
       {
@@ -411,19 +495,12 @@ public class ServerManagement
    public static void removeNotificationListener(int serverIndex, ObjectName on,
                                                  NotificationListener listener) throws Exception
    {
-      if (killed[serverIndex])
-      {
-         log.warn("Server " + serverIndex + " cannot removeNotificationListener it has been killed");
-         
-         return;
-      }
-      
       insureStarted(serverIndex);
 
       if (isLocal())
       {
          // remove the listener directly
-         servers[serverIndex].removeNotificationListener(on, listener);
+         servers[serverIndex].getServer().removeNotificationListener(on, listener);
       }
       else
       {
@@ -446,13 +523,13 @@ public class ServerManagement
    public static Set query(ObjectName pattern) throws Exception
    {
       insureStarted();
-      return servers[0].query(pattern);
+      return servers[0].getServer().query(pattern);
    }
 
    public static UserTransaction getUserTransaction() throws Exception
    {
       insureStarted();
-      return servers[0].getUserTransaction();
+      return servers[0].getServer().getUserTransaction();
    }
    
    public static void log(int level, String text)
@@ -462,13 +539,6 @@ public class ServerManagement
 
    public static void log(int level, String text, int index)
    {
-      if (killed[index])
-      {
-         log.warn("Server " + index + " cannot log it has been killed");
-         
-         return;
-      }
-      
       if (isRemote())
       {
          if (servers[index] == null)
@@ -480,7 +550,7 @@ public class ServerManagement
 
          try
          {
-            servers[index].log(level, text);
+            servers[index].getServer().log(level, text);
          }
          catch(Exception e)
          {
@@ -504,25 +574,26 @@ public class ServerManagement
                                       String defaultTopicJNDIContext) throws Exception
    {
       insureStarted();
-      servers[0].startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, false);
+      servers[0].getServer().
+         startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, false);
    }
 
    public static void stopServerPeer() throws Exception
    {
       insureStarted();
-      servers[0].stopServerPeer();
+      servers[0].getServer().stopServerPeer();
    }
 
    public static boolean isServerPeerStarted() throws Exception
    {
       insureStarted();
-      return servers[0].isServerPeerStarted();
+      return servers[0].getServer().isServerPeerStarted();
    }
 
    public static ObjectName getServerPeerObjectName() throws Exception
    {
       insureStarted();
-      return servers[0].getServerPeerObjectName();
+      return servers[0].getServer().getServerPeerObjectName();
    }
 
    /**
@@ -532,7 +603,7 @@ public class ServerManagement
    public static Set getConnectorSubsystems() throws Exception
    {
       insureStarted();
-      return servers[0].getConnectorSubsystems();
+      return servers[0].getServer().getConnectorSubsystems();
    }
 
    /**
@@ -543,7 +614,7 @@ public class ServerManagement
                                                  ServerInvocationHandler handler) throws Exception
    {
       insureStarted();
-      servers[0].addServerInvocationHandler(subsystem, handler);
+      servers[0].getServer().addServerInvocationHandler(subsystem, handler);
    }
 
    /**
@@ -554,46 +625,46 @@ public class ServerManagement
       throws Exception
    {
       insureStarted();
-      servers[0].removeServerInvocationHandler(subsystem);
+      servers[0].getServer().removeServerInvocationHandler(subsystem);
    }
 
    public static MessageStore getMessageStore() throws Exception
    {
       insureStarted();
-      return servers[0].getMessageStore();
+      return servers[0].getServer().getMessageStore();
    }
 
    public static DestinationManager getDestinationManager()
       throws Exception
    {
       insureStarted();
-      return servers[0].getDestinationManager();
+      return servers[0].getServer().getDestinationManager();
    }
 
    public static PersistenceManager getPersistenceManager()
       throws Exception
    {
       insureStarted();
-      return servers[0].getPersistenceManager();
+      return servers[0].getServer().getPersistenceManager();
    }
 
    public static void configureSecurityForDestination(String destName, String config)
       throws Exception
    {
       insureStarted();
-      servers[0].configureSecurityForDestination(destName, config);
+      servers[0].getServer().configureSecurityForDestination(destName, config);
    }
 
    public static void setDefaultSecurityConfig(String config) throws Exception
    {
       insureStarted();
-      servers[0].setDefaultSecurityConfig(config);
+      servers[0].getServer().setDefaultSecurityConfig(config);
    }
 
    public static String getDefaultSecurityConfig() throws Exception
    {
       insureStarted();
-      return servers[0].getDefaultSecurityConfig();
+      return servers[0].getServer().getDefaultSecurityConfig();
    }
    
    /**
@@ -601,13 +672,8 @@ public class ServerManagement
     */
    public static void deployClusteredTopic(String name, int serverIndex) throws Exception
    {
-      if (killed[serverIndex])
-      {
-         log.warn("Server " + serverIndex + " cannot deployClusteredTopic it has been killed");
-      }
-      
       insureStarted(serverIndex);
-      servers[serverIndex].deployTopic(name, null, true);
+      servers[serverIndex].getServer().deployTopic(name, null, true);
    }
 
    /**
@@ -624,7 +690,7 @@ public class ServerManagement
    public static void deployTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
-      servers[0].deployTopic(name, jndiName, false);
+      servers[0].getServer().deployTopic(name, jndiName, false);
    }
 
    /**
@@ -643,7 +709,7 @@ public class ServerManagement
                                   int downCacheSize) throws Exception
    {
       insureStarted();
-      servers[0].deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, false);
+      servers[0].getServer().deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, false);
    }
 
    /**
@@ -659,11 +725,6 @@ public class ServerManagement
     */
    public static void undeployTopic(String name, int serverIndex) throws Exception
    {
-      if (killed[serverIndex])
-      {
-         log.warn("Server " + serverIndex + " cannot undeployTopic it has been killed");
-      }
-      
       undeployDestination(false, name, serverIndex);
    }
 
@@ -673,7 +734,7 @@ public class ServerManagement
    public static void createTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
-      servers[0].createTopic(name, jndiName);
+      servers[0].getServer().createTopic(name, jndiName);
    }
 
    /**
@@ -681,7 +742,7 @@ public class ServerManagement
     */
    public static boolean destroyTopic(String name) throws Exception
    {
-      return servers[0].destroyDestination(false, name);
+      return servers[0].getServer().destroyDestination(false, name);
    }
    
    /**
@@ -689,13 +750,8 @@ public class ServerManagement
     */
    public static void deployClusteredQueue(String name, int serverIndex) throws Exception
    {
-      if (killed[serverIndex])
-      {
-         log.warn("Server " + serverIndex + " cannot deployClusteredQueue it has been killed");
-      }
-      
       insureStarted(serverIndex);
-      servers[serverIndex].deployQueue(name, null, true);
+      servers[serverIndex].getServer().deployQueue(name, null, true);
    }
 
    /**
@@ -712,7 +768,7 @@ public class ServerManagement
    public static void deployQueue(String name, String jndiName) throws Exception
    {
       insureStarted();
-      servers[0].deployQueue(name, jndiName, false);
+      servers[0].getServer().deployQueue(name, jndiName, false);
    }
 
    /**
@@ -731,7 +787,7 @@ public class ServerManagement
                                   int downCacheSize) throws Exception
    {
       insureStarted();
-      servers[0].deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, false);
+      servers[0].getServer().deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, false);
    }
 
    /**
@@ -747,11 +803,6 @@ public class ServerManagement
     */
    public static void undeployQueue(String name, int serverIndex) throws Exception
    {
-      if (killed[serverIndex])
-      {
-         log.warn("Server " + serverIndex + " cannot undeplyQueue it has been killed");
-      }
-      
       undeployDestination(true, name, serverIndex);
    }
 
@@ -761,7 +812,7 @@ public class ServerManagement
    public static void createQueue(String name, String jndiName) throws Exception
    {
       insureStarted();
-      servers[0].createQueue(name, jndiName);
+      servers[0].getServer().createQueue(name, jndiName);
    }
 
    /**
@@ -769,7 +820,7 @@ public class ServerManagement
     */
    public static boolean destroyQueue(String name) throws Exception
    {
-      return servers[0].destroyDestination(true, name);
+      return servers[0].getServer().destroyDestination(true, name);
    }
 
    /**
@@ -779,7 +830,7 @@ public class ServerManagement
    private static void undeployDestination(boolean isQueue, String name) throws Exception
    {
       insureStarted();
-      servers[0].undeployDestination(isQueue, name);
+      servers[0].getServer().undeployDestination(isQueue, name);
    }
    
    /**
@@ -790,7 +841,7 @@ public class ServerManagement
       throws Exception
    {
       insureStarted(serverIndex);
-      servers[serverIndex].undeployDestination(isQueue, name);
+      servers[serverIndex].getServer().undeployDestination(isQueue, name);
    }
                                                                                                                 
    public static void deployConnectionFactory(String objectName,
@@ -801,12 +852,12 @@ public class ServerManagement
                                               int defaultTempQueueDownCacheSize)
       throws Exception
    {
-      servers[0].deployConnectionFactory(objectName,
-                                     jndiBindings,
-                                     prefetchSize,
-                                     defaultTempQueueFullSize,
-                                     defaultTempQueuePageSize,
-                                     defaultTempQueueDownCacheSize);
+      servers[0].getServer().deployConnectionFactory(objectName,
+                                                     jndiBindings,
+                                                     prefetchSize,
+                                                     defaultTempQueueFullSize,
+                                                     defaultTempQueuePageSize,
+                                                     defaultTempQueueDownCacheSize);
    }
 
    public static void deployConnectionFactory(String objectName,
@@ -814,19 +865,19 @@ public class ServerManagement
                                               int prefetchSize)
       throws Exception
    {
-      servers[0].deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+      servers[0].getServer().deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
    
    public static void deployConnectionFactory(String objectName,
                                               String[] jndiBindings)
       throws Exception
    {
-      servers[0].deployConnectionFactory(objectName, jndiBindings);
+      servers[0].getServer().deployConnectionFactory(objectName, jndiBindings);
    }
 
    public static void undeployConnectionFactory(ObjectName objectName) throws Exception
    {
-      servers[0].undeployConnectionFactory(objectName);
+      servers[0].getServer().undeployConnectionFactory(objectName);
    }
 
    public static Hashtable getJNDIEnvironment()
@@ -846,6 +897,57 @@ public class ServerManagement
       }
    }
 
+   public static Server acquireRemote(int initialRetries, int index, boolean quiet)
+   {
+      String name =
+         "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
+         RMITestServer.RMI_SERVER_PREFIX + index;
+
+      Server s = null;
+      int retries = initialRetries;
+
+      while(s == null && retries > 0)
+      {
+         int attempt = initialRetries - retries + 1;
+         try
+         {
+            String msg = "trying to connect to the remote RMI server " + index +
+               (attempt == 1 ? "" : ", attempt " + attempt);
+
+            if(quiet)
+            {
+               log.debug(msg);
+            }
+            else
+            {
+               log.info(msg);
+            }
+
+            s = (Server)Naming.lookup(name);
+
+            log.debug("connected to remote server " + index);
+         }
+         catch(Exception e)
+         {
+            log.debug("failed to get the RMI server stub, attempt " +
+               (initialRetries - retries + 1), e);
+
+            try
+            {
+               Thread.sleep(500);
+            }
+            catch(InterruptedException e2)
+            {
+               // OK
+            }
+
+            retries--;
+         }
+      }
+
+      return s;
+   }
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -863,196 +965,19 @@ public class ServerManagement
       insureStarted(0);
    }
    
-   private static void insureStarted(int index) throws Exception
+   private static void insureStarted(int i) throws Exception
    {
-      if (servers[index] == null)
+      if (servers[i] == null)
       {
-         throw new Exception("The server " + index + " has not been created!");
+         throw new Exception("The server " + i + " has not been created!");
       }
-      if (!servers[index].isStarted())
+      if (!servers[i].getServer().isStarted())
       {
-         throw new Exception("The server " + index + " has not been started!");
+         throw new Exception("The server " + i + " has not been started!");
       }
    }
-
-   private static Server acquireRemote(int initialRetries, int index)
-   {
-      String name =
-         "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
-         RMITestServer.RMI_SERVER_PREFIX + index;
-
-      Server s = null;
-      int retries = initialRetries;
-
-      while(s == null && retries > 0)
-      {
-         int attempt = initialRetries - retries + 1;
-         try
-         {
-            log.info("trying to connect to the remote RMI server " + index + 
-                     (attempt == 1 ? "" : ", attempt " + attempt));
-
-            s = (Server)Naming.lookup(name);
-
-            log.info("connected to the remote server");
-         }
-         catch(Exception e)
-         {
-            log.debug("failed to get the RMI server stub, attempt " +
-                      (initialRetries - retries + 1), e);
-
-            try
-            {
-               Thread.sleep(1500);
-            }
-            catch(InterruptedException e2)
-            {
-               // OK
-            }
-
-            retries--;
-         }
-      }
-      return s;
-   }
-
 
    // Inner classes -------------------------------------------------
-
-//   static class VMStarter implements Runnable
-//   {
-//      public void run()
-//      {
-//         // start a remote java process that runs a TestServer
-//
-//         String userDir = System.getProperty("user.dir");
-//         String javaClassPath = System.getProperty("java.class.path");
-//         String fileSeparator = System.getProperty("file.separator");
-//         String javaHome = System.getProperty("java.home");
-//         String moduleOutput = System.getProperty("module.output");
-//
-//         String osName = System.getProperty("os.name").toLowerCase();
-//         boolean isWindows = osName.indexOf("windows") != -1;
-//
-//         String javaExecutable =
-//            javaHome + fileSeparator + "bin" + fileSeparator + "java" + (isWindows ? ".exe" : "");
-//
-//         String[] cmdarray = new String[]
-//         {
-//            javaExecutable,
-//            "-cp",
-//            javaClassPath,
-//            "-Dmodule.output=" + moduleOutput,
-//            "-Dremote.test.suffix=-remote",
-//            "org.jboss.test.messaging.tools.jmx.rmi.TestServer",
-//         };
-//
-//         String[] environment;
-//         if (isWindows)
-//         {
-//            environment = new String[]
-//            {
-//               "SYSTEMROOT=C:\\WINDOWS" // TODO get this from environment, as it may be diffrent on different machines
-//            };
-//         }
-//         else
-//         {
-//            environment = new String[0];
-//         }
-//
-//         Runtime runtime = Runtime.getRuntime();
-//
-//         try
-//         {
-//            log.debug("creating external process");
-//
-//            Thread stdoutLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDOUT),
-//                                             "Remote VM STDOUT Logging Thread");
-//            Thread stderrLogger = new Thread(new RemoteProcessLogger(RemoteProcessLogger.STDERR),
-//                                             "Remote VM STDERR Logging Thread");
-//
-//            stdoutLogger.setDaemon(true);
-//            stdoutLogger.setDaemon(true);
-//            stdoutLogger.start();
-//            stderrLogger.start();
-//
-//            process = runtime.exec(cmdarray, environment, new File(userDir));
-//         }
-//         catch(Exception e)
-//         {
-//            log.error("Error spawning remote server", e);
-//         }
-//      }
-//   }
-//
-//   /**
-//    * This logger is used to get and display the output generated at stdout or stderr by the
-//    * RMI server VM.
-//    */
-//   static class RemoteProcessLogger implements Runnable
-//   {
-//      public static final int STDOUT = 0;
-//      public static final int STDERR = 1;
-//
-//      private int type;
-//      private BufferedReader br;
-//      private PrintStream out;
-//
-//      public RemoteProcessLogger(int type)
-//      {
-//         this.type = type;
-//
-//         if (type == STDOUT)
-//         {
-//            out = System.out;
-//         }
-//         else if (type == STDERR)
-//         {
-//            out = System.err;
-//         }
-//         else
-//         {
-//            throw new IllegalArgumentException("Unknown type " + type);
-//         }
-//      }
-//
-//      public void run()
-//      {
-//         while(process == null)
-//         {
-//            try
-//            {
-//               Thread.sleep(50);
-//            }
-//            catch(InterruptedException e)
-//            {
-//               // OK
-//            }
-//         }
-//
-//         if (type == STDOUT)
-//         {
-//            br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-//         }
-//         else if (type == STDERR)
-//         {
-//            br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-//         }
-//
-//         String line;
-//         try
-//         {
-//            while((line = br.readLine()) != null)
-//            {
-//               out.println(line);
-//            }
-//         }
-//         catch(Exception e)
-//         {
-//            log.error("failed to read from process " + process, e);
-//         }
-//      }
-//   }
 
    private static long listenerIDCounter = 0;
 
@@ -1109,6 +1034,28 @@ public class ServerManagement
       public void stop()
       {
          running = false;
+      }
+   }
+
+   private static class ServerHolder
+   {
+      private Server server;
+      private boolean spawned;
+
+      ServerHolder(Server server, boolean spawned)
+      {
+         this.server = server;
+         this.spawned = spawned;
+      }
+
+      public Server getServer()
+      {
+         return server;
+      }
+
+      public boolean isSpawned()
+      {
+         return spawned;
       }
    }
 

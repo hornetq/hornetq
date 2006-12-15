@@ -44,7 +44,7 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         ServerManagement.start("all", 0);
+         ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -64,7 +64,7 @@ public class GroupManagementTest extends MessagingTestCase
 
       try
       {
-         ServerManagement.start("all", 0);
+         ServerManagement.start(0, "all");
 
          log.info("Server 0 started");
 
@@ -72,7 +72,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          log.info("NotificationListener added to server 0");
 
-         ServerManagement.start("all", 1);
+         ServerManagement.start(1, "all");
 
          log.info("Blocking to receive notification ...");
 
@@ -99,14 +99,14 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         ServerManagement.start("all", 0);
+         ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
 
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
 
-         ServerManagement.start("all", 1);
+         ServerManagement.start(1, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -133,14 +133,14 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         ServerManagement.start("all", 0);
+         ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
 
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
 
-         ServerManagement.start("all", 1);
+         ServerManagement.start(1, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -154,7 +154,7 @@ public class GroupManagementTest extends MessagingTestCase
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
 
-         ServerManagement.start("all", 3);
+         ServerManagement.start(3, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -194,9 +194,9 @@ public class GroupManagementTest extends MessagingTestCase
       {
          // Start with a 3 node cluster
 
-         ServerManagement.start("all", 0);
-         ServerManagement.start("all", 1);
-         ServerManagement.start("all", 2);
+         ServerManagement.start(0, "all");
+         ServerManagement.start(1, "all");
+         ServerManagement.start(2, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -226,7 +226,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Reuse the "hollow" RMI server 0 to start another cluster node
 
-         ServerManagement.start("all", 0);
+         ServerManagement.start(0, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -237,7 +237,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Reuse the "hollow" RMI server 2 to start another cluster node
 
-         ServerManagement.start("all", 2);
+         ServerManagement.start(1, "all");
 
          view = ServerManagement.getServer(2).getNodeIDView();
 
@@ -264,8 +264,8 @@ public class GroupManagementTest extends MessagingTestCase
       {
          // Start with a 2 node cluster
 
-         ServerManagement.start("all", 0);
-         ServerManagement.start("all", 1);
+         ServerManagement.start(0, "all");
+         ServerManagement.start(1, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -313,9 +313,9 @@ public class GroupManagementTest extends MessagingTestCase
       {
          // Start with a 3 node cluster
 
-         ServerManagement.start("all", 0);
-         ServerManagement.start("all", 1);
-         ServerManagement.start("all", 2);
+         ServerManagement.start(0, "all");
+         ServerManagement.start(1, "all");
+         ServerManagement.start(2, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -392,7 +392,7 @@ public class GroupManagementTest extends MessagingTestCase
       {
          // Start with a 1 node cluster
 
-         ServerManagement.start("all", 0);
+         ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -401,8 +401,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          ServerManagement.addNotificationListener(0, postOfficeObjectName, clusterEvent);
 
-         ServerManagement.spawn(10);
-         ServerManagement.start("all", 10);
+         ServerManagement.start(10, "all");
 
          if (!clusterEvent.viewChanged(120000))
          {

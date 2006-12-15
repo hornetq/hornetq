@@ -135,6 +135,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    // Server implementation -----------------------------------------
 
+   public int getServerID()
+   {
+      return server.getServerID();
+   }
+
    public void start(String containerConfig) throws Exception
    {
       server.start(containerConfig);
@@ -459,11 +464,14 @@ public class RMITestServer extends UnicastRemoteObject implements Server
             // unregister myself from the RMI registry
 
             Registry registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
-            registry.unbind(RMI_SERVER_PREFIX + server.getServerIndex());
 
-            log.info("unregistred from " + registry);
+            String name = RMI_SERVER_PREFIX + server.getServerID();
+            registry.unbind(name);
+            log.info("unregistred " + name + " from registry");
 
-
+            name = NAMING_SERVER_PREFIX + server.getServerID();
+            registry.unbind(name);
+            log.info("unregistred " + name + " from registry");
          }
          catch(Exception e)
          {

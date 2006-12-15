@@ -23,6 +23,8 @@ package org.jboss.test.messaging.tools.jmx.rmi;
 
 import java.rmi.ConnectException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -76,6 +78,11 @@ public class StopRMIServer
       catch(ConnectException e)
       {
          log.info("Cannot contact the registry, the server is probably shut down already");
+         return;
+      }
+      catch(NotBoundException e)
+      {
+         log.info("Cannot lookup " + name + ", the server is probably shut down already");
          return;
       }
 

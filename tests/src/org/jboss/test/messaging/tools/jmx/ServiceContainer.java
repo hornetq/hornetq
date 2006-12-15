@@ -398,6 +398,8 @@ public class ServiceContainer
 
          loadJNDIContexts();
 
+         log.debug("loaded JNDI context");
+
          String transport = config.getRemotingTransport();
 
          log.info("Remoting type: ........... " + (remoting ? transport : "DISABLED"));
@@ -1251,6 +1253,8 @@ public class ServiceContainer
 
          int rows = ps.executeUpdate();
 
+         log.debug("JMS_POSTOFFICE: deleted " + rows);
+
          ps.close();
 
          sql = "DELETE FROM JMS_MESSAGE_REFERENCE";
@@ -1258,7 +1262,7 @@ public class ServiceContainer
 
          rows = ps.executeUpdate();
 
-         log.debug("deleted " + rows);
+         log.debug("JMS_MESSAGE_REFERENCE: deleted " + rows);
 
          ps.close();
 
@@ -1267,7 +1271,7 @@ public class ServiceContainer
 
          rows = ps.executeUpdate();
 
-         log.debug("deleted " + rows);
+         log.debug("JMS_MESSAGE: deleted " + rows);
 
          ps.close();
 
@@ -1276,7 +1280,7 @@ public class ServiceContainer
 
          rows = ps.executeUpdate();
 
-         log.debug("deleted " + rows);
+         log.debug("JMS_TRANSACTION: deleted " + rows);
 
          ps.close();
 
@@ -1285,7 +1289,7 @@ public class ServiceContainer
 
          rows = ps.executeUpdate();
 
-         log.debug("deleted " + rows);
+         log.debug("JMS_COUNTER: deleted " + rows);
 
          ps.close();
 
@@ -1294,17 +1298,21 @@ public class ServiceContainer
 
          rows = ps.executeUpdate();
 
-         log.debug("deleted " + rows);
+         log.debug("JMS_USER: deleted " + rows);
 
          ps.close();
          conn.close();
 
          mgr.commit();
 
+         log.debug("committed");
+
          if (txOld != null)
          {
             mgr.resume(txOld);
          }
+
+         log.debug("done with the database");
       }
       catch (SQLException e)
       {

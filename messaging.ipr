@@ -264,7 +264,9 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/junit/lib/junit.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="jar://C:/work/src/junit3.8.1/src.jar!/" />
+      </SOURCES>
     </library>
     <library name="hsqldb">
       <CLASSES>
@@ -335,6 +337,25 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+    </library>
+    <library name="ant-junit">
+      <CLASSES>
+        <root url="jar://C:/apache-ant-1.6.5/lib/ant-junit.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="file://C:/work/src/apache-ant-1.6.5/src/main" />
+      </SOURCES>
+    </library>
+    <library name="ant">
+      <CLASSES>
+        <root url="jar://C:/apache-ant-1.6.5/lib/ant.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="file://C:/apache-ant-1.6.5/lib" />
+        <root url="file://C:/work/src/apache-ant-1.6.5/src/main" />
+      </SOURCES>
     </library>
   </component>
   <component name="uidesigner-configuration">

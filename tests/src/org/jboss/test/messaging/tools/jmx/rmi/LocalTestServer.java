@@ -108,6 +108,11 @@ public class LocalTestServer implements Server
 
    // Server implementation -----------------------------------------
 
+   public int getServerID()
+   {
+      return serverIndex;
+   }
+
    public synchronized void start(String containerConfig) throws Exception
    {
       if (isStarted())
@@ -832,11 +837,6 @@ public class LocalTestServer implements Server
    }
 
    // Public --------------------------------------------------------
-
-   public int getServerIndex()
-   {
-      return serverIndex;
-   }
 
    // Package protected ---------------------------------------------
 

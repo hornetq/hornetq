@@ -45,6 +45,8 @@
     <orderEntry type="library" name="jboss-jca" level="project" />
     <orderEntry type="library" name="jboss-local-jdbc" level="project" />
     <orderEntry type="library" name="jms-ra" level="project" />
+    <orderEntry type="library" name="ant" level="project" />
+    <orderEntry type="library" name="ant-junit" level="project" />
     <orderEntryProperties />
   </component>
   <component name="VcsManagerConfiguration">
