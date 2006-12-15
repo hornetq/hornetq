@@ -171,7 +171,6 @@
       <path refid="jboss.server.classpath"/> <!-- for org.jboss.jms.jndi.JNDIProviderAdapter -->
       <path refid="jboss.jca.classpath"/>  <!-- for org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory, etc -->
       <path refid="jboss.profiler.jvmti.classpath"/>
-      <path location="${tests.root}/lib/ant-junit.jar"/>
    </path>
 
    <!--
