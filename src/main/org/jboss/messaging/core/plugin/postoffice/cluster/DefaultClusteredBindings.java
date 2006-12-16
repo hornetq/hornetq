@@ -61,7 +61,7 @@ class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindi
    {
       super.addBinding(binding);
   
-      if (binding.getNodeId() == thisNode && binding.getQueue().isRecoverable())
+      if (binding.getNodeID() == thisNode && binding.getQueue().isRecoverable())
       {
          localDurableCount++;
       }      
@@ -76,7 +76,7 @@ class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindi
          return false;
       }
            
-      if (binding.getNodeId() == thisNode && binding.getQueue().isRecoverable())
+      if (binding.getNodeID() == thisNode && binding.getQueue().isRecoverable())
       {
          localDurableCount--;
       }      

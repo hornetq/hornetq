@@ -91,10 +91,10 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    protected int currentNodeId;
    
-   //Map <node id, Map < queue name, binding > >
+   // Map <NodeID, Map<queueName, Binding>>
    protected Map nameMaps;
    
-   //Map <condition, List <binding> >
+   // Map <condition, List<Binding>>
    protected Map conditionMap;
    
    protected FilterFactory filterFactory;
@@ -352,7 +352,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                Binding binding = (Binding)iter.next();
                
                //Sanity check
-               if (binding.getNodeId() != this.currentNodeId)
+               if (binding.getNodeID() != this.currentNodeId)
                {
                   throw new IllegalStateException("Local post office has foreign bindings!");
                }
@@ -420,7 +420,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             {
                Binding binding = (Binding)iter.next();
                
-               if (!localOnly || (binding.getNodeId() == this.currentNodeId))
+               if (!localOnly || (binding.getNodeID() == this.currentNodeId))
                {
                   list.add(binding);
                }
@@ -696,7 +696,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    protected void addBinding(Binding binding)
    {
       addToNameMap(binding);
-      
       addToConditionMap(binding);
    }   
    
@@ -711,16 +710,18 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    
    protected void addToNameMap(Binding binding)
    {
-      Map nameMap = (Map)nameMaps.get(new Integer(binding.getNodeId()));
+      Integer nodeID = new Integer(binding.getNodeID());
+      Map nameMap = (Map)nameMaps.get(nodeID);
 
       if (nameMap == null)
       {
          nameMap = new LinkedHashMap();
-
-         nameMaps.put(new Integer(binding.getNodeId()), nameMap);
+         nameMaps.put(nodeID, nameMap);
       }
 
       nameMap.put(binding.getQueue().getName(), binding);
+
+      if (trace) { log.trace(this + " added " + binding + " to name map"); }
    }
    
    protected void addToConditionMap(Binding binding)
@@ -737,6 +738,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
       
       bindings.addBinding(binding);
+
+      if (trace) { log.trace(this + " added " + binding + " to condition map"); }
    }
    
    protected Binding removeFromNameMap(int nodeId, String queueName)

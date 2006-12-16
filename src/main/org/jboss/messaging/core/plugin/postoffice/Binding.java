@@ -35,7 +35,7 @@ import org.jboss.messaging.core.plugin.contract.Condition;
  */
 public interface Binding
 {
-   public int getNodeId();
+   public int getNodeID();
    
    public Condition getCondition();
    

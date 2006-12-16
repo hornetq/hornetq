@@ -140,7 +140,7 @@ public class ClientTransaction
       }
       else
       {
-         return sessionStatesMap == null ? Collections.emptySet() : sessionStatesMap.values();
+         return sessionStatesMap == null ? Collections.EMPTY_SET : sessionStatesMap.values();
       }
    }   
    

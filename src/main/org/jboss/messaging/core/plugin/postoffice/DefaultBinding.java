@@ -36,32 +36,42 @@ import org.jboss.messaging.core.plugin.contract.Condition;
  */
 public class DefaultBinding implements Binding
 {
-   private int nodeId;
-   
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   private int nodeID;
+
    private Condition condition;
-   
+
    private Queue queue;
 
    private boolean failed;
+
+   // this only works if we keep DefautlBinding immutable
+   private String toString;
+
+   // Constructors --------------------------------------------------
 
    public DefaultBinding()
    {
    }
 
-   public DefaultBinding(int nodeId, Condition condition, Queue queue, boolean failed)
+   public DefaultBinding(int nodeID, Condition condition, Queue queue, boolean failed)
    {
-      this.nodeId = nodeId;
-
+      this.nodeID = nodeID;
       this.condition = condition;
-
       this.queue = queue;
-
       this.failed = failed;
    }
 
-   public int getNodeId()
+   // Binding implementation ----------------------------------------
+
+   public int getNodeID()
    {
-      return nodeId;
+      return nodeID;
    }
 
    public Condition getCondition()
@@ -84,9 +94,36 @@ public class DefaultBinding implements Binding
       this.failed = failed;
    }
 
+   // Public --------------------------------------------------------
+
    public String toString()
    {
-       return "Node" + nodeId + " condition=" + condition + " queue=" + queue + " queueClass=" + queue.getClass().getName();
+      if (toString == null)
+      {
+         StringBuffer sb = new StringBuffer("Binding[");
+
+         sb.append(nodeID).append(',');
+         sb.append(queue).append('(');
+         sb.append(queue.getClass().getName()).append(')');
+
+         if (condition != null)
+         {
+            sb.append(", condition: ").append(condition);
+         }
+         sb.append("]");
+         toString = sb.toString();
+      }
+
+      return toString;
    }
-   
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+
 }

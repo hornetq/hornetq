@@ -145,10 +145,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.start(containerConfig);
    }
 
-   public void stop() throws Exception
+   public boolean stop() throws Exception
    {
-      server.stop();
+      boolean result = server.stop();
       namingDelegate.reset();
+      return result;
    }
 
    public synchronized void kill() throws Exception

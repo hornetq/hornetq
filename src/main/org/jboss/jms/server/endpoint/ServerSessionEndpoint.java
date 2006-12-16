@@ -822,7 +822,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       deliveries.put(new Long(deliveryId), del);
       
-      if (trace) { log.trace(this + " Added delivery: " + deliveryId + ", " + del); }
+      if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + del); }
       
       return deliveryId;      
    }

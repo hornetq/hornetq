@@ -207,16 +207,24 @@ public class ServerManagement
    /**
     * The method stops the local or remote server, bringing it to a "hollow" state. A stopped
     * server is identical with a server that has just been created, but not started.
+    * @return true if the server was effectively stopped, or false if the server was alreayd stopped
+    *         when the method was invoked.
     */
-   public static synchronized void stop(int i) throws Exception
+   public static synchronized boolean stop(int i) throws Exception
    {
       if (servers[i] == null)
       {
-         log.warn("Server " + i + " has not been created, so it cannot be stopped");
+         log.warn("server " + i + " has not been created, so it cannot be stopped");
+         return false;
       }
       else
       {
-         servers[i].getServer().stop();
+         boolean stopped = servers[i].getServer().stop();
+         if (stopped)
+         {
+            log.info("server " + i + " stopped");
+         }
+         return stopped;
       }
    }
 
@@ -228,12 +236,13 @@ public class ServerManagement
    {
       if (servers[i] == null)
       {
-         log.warn("Server " + i + " has not been created, so it cannot be killed");
+         log.warn("server " + i + " has not been created, so it cannot be killed");
       }
       else
       {
+         log.trace("invoking kill() on server " + i);
          servers[i].getServer().kill();
-         log.info("Server " + i + " killed");
+         log.info("server " + i + " killed");
          servers[i] = null;
       }
    }
@@ -481,7 +490,8 @@ public class ServerManagement
       {
          // is remote, need to poll
          NotificationListenerPoller p =
-            new NotificationListenerPoller((Server)servers[serverIndex], on, listener);
+            new NotificationListenerPoller(((ServerHolder)servers[serverIndex]).getServer(),
+                                           on, listener);
 
          synchronized(notificationListenerPollers)
          {

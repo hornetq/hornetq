@@ -549,11 +549,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       lock.writeLock().acquire();
 
-      if (trace)
-      {
-         log.info(this.currentNodeId + " adding binding from node: " + nodeId +
-                  " queue: " + queueName + " with condition: " + conditionText);
-      }
+      log.debug(this + " adding binding from node " + nodeId + ", queue " + queueName +
+         " with condition " + conditionText);
 
       Condition condition = conditionFactory.createCondition(conditionText);
 
@@ -578,12 +575,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          if (binding != null && failed)
          {
-            throw new IllegalArgumentException(this.currentNodeId +
-                     " Binding already exists for node Id " + nodeId + " queue name " + queueName);
+            throw new IllegalArgumentException(this + " has already this binding for node " +
+               nodeId + ", queue " + queueName);
          }
 
-         binding = this.createBinding(nodeId, condition, queueName, channelID, filterString,
-                                      durable, failed);
+         binding =
+            createBinding(nodeId, condition, queueName, channelID, filterString, durable, failed);
 
          addBinding(binding);
       }
@@ -591,8 +588,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       {
          lock.writeLock().release();
       }
-
-      log.info("****** binding added");
    }
 
    /*
@@ -723,7 +718,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             {
                Binding binding = (Binding)iter.next();
 
-               if (binding.getNodeId() == this.currentNodeId)
+               if (binding.getNodeID() == this.currentNodeId)
                {
                   boolean handle = true;
 
@@ -1847,7 +1842,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
             Queue queue = binding.getQueue();
 
-            BindingInfo info = new BindingInfo(binding.getNodeId(), queue.getName(),
+            BindingInfo info = new BindingInfo(binding.getNodeID(), queue.getName(),
                                                binding.getCondition().toText(),
                                                queue.getFilter() == null ? null : queue.getFilter().getFilterString(),
                                                queue.getChannelID(),
@@ -1898,7 +1893,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          Binding binding = this.createBinding(info.getNodeId(), condition, info.getQueueName(), info.getChannelId(),
                                               info.getFilterString(), info.isDurable(),info.isFailed());
 
-         if (binding.getNodeId() == this.currentNodeId)
+         if (binding.getNodeID() == this.currentNodeId)
          {
             //We deactivate if this is one of our own bindings - it can only
             //be one of our own durable bindings - and since state is retrieved before we are fully started
@@ -2112,10 +2107,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          }
          else
          {
-            // Compile a list of the queue names to remove.
-            // Note that any non durable bindings will already have been removed (in
-            // removeDataForNode()) when the node leave was detected, so if there are any non durable
-            // bindings left here then this is an error.
+            // Compile a list of the queue names to remove. Note that any non durable bindings will
+            // already have been removed (in removeDataForNode()) when the node leave was detected,
+            // so if there are any non durable bindings left here then this is an error.
 
             // We iterate through twice to avoid ConcurrentModificationException
 
@@ -2129,8 +2123,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                // Sanity check
                if (!binding.getQueue().isRecoverable())
                {
-                  throw new IllegalStateException("Found non recoverable queue in map, " +
-                     "these should have been removed!");
+                  throw new IllegalStateException("Found non recoverable queue " +
+                     binding.getQueue().getName() + "in map, these should have been removed!");
                }
 
                // Sanity check
@@ -2247,13 +2241,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    private void addIntoFailedMaps(Binding binding)
    {
-      Map channelMap = (Map)failedBindings.get(new Integer(binding.getNodeId()));
+      Map channelMap = (Map)failedBindings.get(new Integer(binding.getNodeID()));
 
       if (channelMap == null)
       {
          channelMap = new LinkedHashMap();
 
-         failedBindings.put(new Integer(binding.getNodeId()), channelMap);
+         failedBindings.put(new Integer(binding.getNodeID()), channelMap);
       }
 
       channelMap.put(new Long(binding.getQueue().getChannelID()), binding);

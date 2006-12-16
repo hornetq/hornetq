@@ -70,7 +70,7 @@ public class SessionState extends HierarchicalStateSupport
    private boolean recoverCalled;
 
    // List<DeliveryInfo>
-   private List ClientAckList;
+   private List clientAckList;
    
    private DeliveryInfo autoAckInfo;
 
@@ -109,7 +109,7 @@ public class SessionState extends HierarchicalStateSupport
       
       executor = new QueuedExecutor(new LinkedQueue());
       
-      ClientAckList = new ArrayList();
+      clientAckList = new ArrayList();
       
       // TODO could optimise this to use the same map of callbackmanagers (which holds refs
       // to callbackhandlers) in the connection, instead of maintaining another map
@@ -142,7 +142,7 @@ public class SessionState extends HierarchicalStateSupport
     */
    public List getClientAckList()
    {
-      return ClientAckList;
+      return clientAckList;
    }
    
    public DeliveryInfo getAutoAckInfo()

@@ -328,7 +328,8 @@ public class HAAspect
    }
 
    private void performClientSideFailover(ClientConnectionDelegate failedConnDelegate,
-                                          ClientConnectionDelegate newConnDelegate) throws Exception
+                                          ClientConnectionDelegate newConnDelegate)
+      throws Exception
    {
       log.debug(this + " performing client side failover");
 
@@ -345,17 +346,17 @@ public class HAAspect
 
       CallbackManager oldCallbackManager = failedState.getRemotingConnection().getCallbackManager();
 
-      //We need to update some of the attributes on the state
+      // We need to update some of the attributes on the state
       failedState.copyState(newState);
       
-      //Map of old session id to new session state
+      // Map of old session ID to new session state
       Map oldNewSessionStateMap = new HashMap();
 
       for(Iterator i = failedState.getChildren().iterator(); i.hasNext(); )
       {
          SessionState failedSessionState = (SessionState)i.next();
           
-         int oldSessionId = failedSessionState.getSessionId();
+         int oldSessionID = failedSessionState.getSessionId();
 
          ClientSessionDelegate failedSessionDelegate =
             (ClientSessionDelegate)failedSessionState.getDelegate();
@@ -367,16 +368,14 @@ public class HAAspect
 
          SessionState newSessionState = (SessionState)newSessionDelegate.getState();
          
-         if (trace) { log.trace("New session state has " + newSessionState.getClientAckList().size() + " deliveries"); }
+         if (trace) { log.trace("new session state has " + newSessionState.getClientAckList().size() + " deliveries"); }
          
-         oldNewSessionStateMap.put(new Integer(oldSessionId), failedSessionState);
+         oldNewSessionStateMap.put(new Integer(oldSessionID), failedSessionState);
 
          failedSessionDelegate.copyAttributes(newSessionDelegate);
 
-         //We need to update some of the attributes on the state
+         // We need to update some of the attributes on the state
          failedSessionState.copyState(newSessionState);
-
-         if (trace) { log.trace("replacing session (" + failedSessionDelegate + ") with a new failover session " + newSessionDelegate); }
 
          List children = new ArrayList();
 
@@ -393,10 +392,8 @@ public class HAAspect
             }
             else if (sessionChild instanceof ConsumerState)
             {
-               handleFailoverOnConsumer(failedConnDelegate,
-                                        (ConsumerState)sessionChild,
-                                        failedSessionDelegate,
-                                        oldCallbackManager);
+               handleFailoverOnConsumer(failedConnDelegate, (ConsumerState)sessionChild,
+                                        failedSessionDelegate, oldCallbackManager);
             }
             else if (sessionChild instanceof BrowserState)
             {
@@ -405,46 +402,38 @@ public class HAAspect
          }
       }
       
-      //First we must tell the resource manager to substitute old session id for new session id
-      //Note we MUST submit the entire mapping in one operation since there may be overlap between
-      //old and new session id, and we don't want to overwrite keys in the map
+      // First we must tell the resource manager to substitute old session ID for new session ID.
+      // Note we MUST submit the entire mapping in one operation since there may be overlap between
+      // old and new session ID, and we don't want to overwrite keys in the map.
       
       failedState.getResourceManager().handleFailover(oldNewSessionStateMap);
       
-      Iterator iter = oldNewSessionStateMap.values().iterator();
-            
-      while (iter.hasNext())
+      for(Iterator i = oldNewSessionStateMap.values().iterator(); i.hasNext(); )
       {
-         SessionState state = (SessionState)iter.next();
-         
-         List ackInfos = null;
-           
+         List ackInfos = Collections.EMPTY_LIST;
+
+         SessionState state = (SessionState)i.next();
+
          if (!state.isTransacted() ||
              (state.isXA() && state.getCurrentTxId() == null))     
          {
-            //Non transacted session or an XA session with no transaction set (it falls back to auto_ack)
+            // Non transacted session or an XA session with no transaction set (it falls back
+            // to auto_ack)
             
-            if (trace) { log.trace("Session is not transacted (or XA with no tx set), retrieving deliveries from session state"); }
+            if (trace) { log.trace(state + " is not transacted (or XA with no tx set), retrieving deliveries from session state"); }
 
-                        
-            //we remove any unacked np messages - this is because we don't want to ack them
-            //since the server won't know about them and will barf
+            // We remove any unacked non-persistent messages - this is because we don't want to ack
+            // them since the server won't know about them and will get confused
                         
             if (state.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
             {
-               Iterator iter2 = state.getClientAckList().iterator();
-               
-               if (trace) { log.trace("Removing any np deliveries"); }
-   
-               while (iter2.hasNext())
+               for(Iterator j = state.getClientAckList().iterator(); j.hasNext(); )
                {
-                  DeliveryInfo info = (DeliveryInfo)iter2.next();
-   
+                  DeliveryInfo info = (DeliveryInfo)j.next();
                   if (!info.getMessageProxy().getMessage().isReliable())
                   {
-                     iter2.remove();
-                     
-                     if (trace) { log.trace("Removed np delivery: " + info.getDeliveryId()); }
+                     j.remove();
+                     if (trace) { log.trace("removed non persistent delivery " + info); }
                   }
                }
                
@@ -457,27 +446,26 @@ public class HAAspect
                {
                   if (!autoAck.getMessageProxy().getMessage().isReliable())
                   {
-                     //unreliable
+                     // unreliable, discard
                      state.setAutoAckInfo(null);
-                     ackInfos = Collections.EMPTY_LIST;
                   }
                   else
                   {
-                     //reliable
+                     // reliable
                      ackInfos = new ArrayList();
                      ackInfos.add(autoAck);
                   }
                }               
             }
             
-            if (trace) { log.trace("Retrieved " + ackInfos.size() + " deliveries"); }
+            if (trace) { log.trace(this + " retrieved " + ackInfos.size() + " deliveries"); }
          }
          else
          {
-            //Transacted session - we need to get the acks from the resource manager
-            //btw we have kept the old resource manager
-            ResourceManager rm = failedState.getResourceManager();
+            // Transacted session - we need to get the acks from the resource manager. BTW we have
+            // kept the old resource manager
 
+            ResourceManager rm = failedState.getResourceManager();
             ackInfos = rm.getDeliveriesForSession(state.getSessionId());
          }
 

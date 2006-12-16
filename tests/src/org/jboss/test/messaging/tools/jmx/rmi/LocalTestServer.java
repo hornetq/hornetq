@@ -149,11 +149,11 @@ public class LocalTestServer implements Server
       }
    }
 
-   public synchronized void stop() throws Exception
+   public synchronized boolean stop() throws Exception
    {
       if (!isStarted())
       {
-         return;
+         return false;
       }
 
       try
@@ -173,6 +173,8 @@ public class LocalTestServer implements Server
       {
          clearEnvironmentServerIndex();
       }
+
+      return true;
    }
 
    public synchronized void kill() throws Exception

@@ -756,8 +756,7 @@
 
             <fileset dir="${build.tests.classes}">
                <!--
-               <include name="**/jms/clustering/*Test.class"/>
-                <include name="org/jboss/test/messaging/util/ServerManagementTest.class"/>
+                   <include name="**/jms/clustering/FailoverTest.class"/>
                -->
                <include name="**/jms/clustering/*Test.class"/>
             </fileset>

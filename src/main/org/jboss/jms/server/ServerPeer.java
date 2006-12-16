@@ -727,84 +727,79 @@ public class ServerPeer extends ServiceMBeanSupport
    }
    
    /*
-    * Wait for failover from the specified node to complete
+    * Wait for failover from the specified node to complete.
     */
-   public int waitForFailover(int failedNodeId) throws Exception
+   public int waitForFailover(int failedNodeID) throws Exception
    {
-      //This node may be failing over for another node - in which case we must wait for that to be complete
+      // This node may be failing over for another node - in which case we must wait for that to be
+      // complete.
       
-      log.info(this + " waiting for server-side failover from failed node " + failedNodeId);
+      log.info(this + " waiting for server-side failover for failed node " + failedNodeID + " to complete");
       
       Replicator replicator = getReplicator();
-      
-      // Failover
 
       long startToWait = failoverStartTimeout;
-      
       long completeToWait = failoverCompleteTimeout;
                      
-      //Must lock here
+      // Must lock here
       synchronized (failoverStatusLock)
       {         
          while (true)
          {         
             //TODO we shouldn't have a dependency on DefaultClusteredPostOffice - where should we put the constants?
+
             Map replicants = replicator.get(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY);
             
             boolean foundEntry = false;
                         
             if (replicants != null)
             {
-               Iterator iter = replicants.entrySet().iterator();
-               
-               while (iter.hasNext())
+               for(Iterator i = replicants.entrySet().iterator(); i.hasNext(); )
                {
-                  Map.Entry entry = (Map.Entry)iter.next();
-                  
+                  Map.Entry entry = (Map.Entry)i.next();
                   Integer nid = (Integer)entry.getKey();
-                  
                   FailoverStatus status = (FailoverStatus)entry.getValue();
                   
-                  if (status.isFailedOverForNode(failedNodeId))
+                  if (status.isFailedOverForNode(failedNodeID))
                   {
-                     log.info("Fail over is complete on node " + nid);
-                     //Got the node - failover has completed
-                     return nid.intValue();  
+                     log.info(this + ": failover is complete on node " + nid);
+                     return nid.intValue();
                   }
-                  else if (status.isFailingOverForNode(failedNodeId))
+                  else if (status.isFailingOverForNode(failedNodeID))
                   {
-                     log.info("Fail over is in progress on node " + nid);
+                     log.info(this + ": fail over is in progress on node " + nid);
                      
-                     //A server has started failing over for the failed node, but not completed
-                     //if it's not this node then we immediately return so the connection can be redirected to
-                     //another node
+                     // A server has started failing over for the failed node, but not completed.
+                     // If it's not this node then we immediately return so the connection can be
+                     // redirected to another node.
                      if (nid.intValue() != this.getServerPeerID())
                      {
                         return nid.intValue();
                      }
                      
-                     //Otherwise we wait for failover to complete
+                     // Otherwise we wait for failover to complete
                      
                      if (completeToWait <= 0)
                      {
-                        //Give up now
-                        log.info("Already waited long enough for failover to complete, giving up");
+                        // Give up now
+                        log.info(this + " already waited long enough for failover to complete, giving up");
                         return -1;
                      }
                      
-                     //Note - we have to count the time since other unrelated nodes may fail and wake
-                     //up the lock - in this case we don't want to give up too early
-                     long start = System.currentTimeMillis();       
+                     // Note - we have to count the time since other unrelated nodes may fail and
+                     // wake up the lock - in this case we don't want to give up too early.
+                     long start = System.currentTimeMillis();
+
                      try
                      {
-                        log.info("Waiting for failover to complete");
+                        log.debug(this + " blocking on the failover lock, waiting for failover to complete");
                         failoverStatusLock.wait(completeToWait);
+                        log.debug(this + " releasing the failover lock, checking again whether failover completed ...");
                      }
                      catch (InterruptedException ignore)
                      {                  
                      }
                      completeToWait -= System.currentTimeMillis() - start;
-                    
                      foundEntry = true;
                   }
                }        
@@ -812,29 +807,29 @@ public class ServerPeer extends ServiceMBeanSupport
             
             if (!foundEntry)
             {              
-               //No trace of failover happening
-               //so we wait a maximum of FAILOVER_START_TIMEOUT for some replicated data to arrive
-               //This should arrive fairly quickly since this is added at the beginning of the failover process
-               //If it doesn't arrive it would imply that no failover has actually happened on the server
-               //or the timeout is too short.
-               //It is possible that no failover has actually happened on the server, if for example there
-               //is a problem with the client side network but the server side network is ok.
+               // No trace of failover happening so we wait a maximum of FAILOVER_START_TIMEOUT for
+               // some replicated data to arrive. This should arrive fairly quickly since this is
+               // added at the beginning of the failover process. If it doesn't arrive it would
+               // imply that no failover has actually happened on the server or the timeout is too
+               // short. It is possible that no failover has actually happened on the server, if for
+               // example there is a problem with the client side network but the server side
+               // network is ok.
    
                if (startToWait <= 0)
                {
-                  //Don't want to wait again
-                  log.info("Already waited long enough for failover to start, giving up");
+                  // Don't want to wait again
+                  log.info(this + " already waited long enough for failover to start, giving up");
                   return -1;
                }
                
-               //Note - we have to count the time since other unrelated nodes may fail and wake
-               //up the lock - in this case we don't want to give up too early
+               // Note - we have to count the time since other unrelated nodes may fail and wake
+               // up the lock - in this case we don't want to give up too early.
                long start = System.currentTimeMillis(); 
                try
                {
-                  log.info("Waiting for failover to start");
+                  log.debug(this + " blocking on the failover lock, waiting for failover to start");
                   failoverStatusLock.wait(startToWait);
-                  log.info("Finished waiting for failover to start");
+                  log.debug(this + " releasing the failover lock, checking again whether failover started ...");
                }
                catch (InterruptedException ignore)
                {                  
@@ -847,7 +842,7 @@ public class ServerPeer extends ServiceMBeanSupport
    
    public String toString()
    {
-      return "ServerPeer [" + getServerPeerID() + "]";
+      return "ServerPeer[" + getServerPeerID() + "]";
    }
 
    // Package protected ---------------------------------------------

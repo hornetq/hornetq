@@ -58,7 +58,7 @@ public class RemoteContext implements Context
       
       namingDelegate = (NamingDelegate)Naming.lookup(n);
 
-      log.info("remote context for server " + remoteServerIndex + " acquired from rmi:" + n);
+      log.debug("remote context for server " + remoteServerIndex + " acquired from rmi:" + n);
    }
 
    // Context implementation ----------------------------------------

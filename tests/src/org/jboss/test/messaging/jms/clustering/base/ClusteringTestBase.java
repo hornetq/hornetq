@@ -119,12 +119,11 @@ public class ClusteringTestBase extends MessagingTestCase
             ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
             ServerManagement.undeployQueue("testDistributedQueue", i);
             ServerManagement.undeployTopic("testDistributedTopic", i);
+            ServerManagement.stop(i);
          }
 
          ic[i].close();
       }
-
-      //ServerManagement.destroySpawnedServers();
 
       super.tearDown();
    }

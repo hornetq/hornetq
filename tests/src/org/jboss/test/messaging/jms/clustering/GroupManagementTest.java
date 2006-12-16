@@ -8,14 +8,8 @@ package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-
-import javax.management.NotificationListener;
-import javax.management.Notification;
 import javax.management.ObjectName;
 import java.util.Set;
-
-import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -47,7 +41,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
       }
@@ -66,11 +59,7 @@ public class GroupManagementTest extends MessagingTestCase
       {
          ServerManagement.start(0, "all");
 
-         log.info("Server 0 started");
-
          ServerManagement.addNotificationListener(0, postOfficeObjectName, listener);
-
-         log.info("NotificationListener added to server 0");
 
          ServerManagement.start(1, "all");
 
@@ -82,7 +71,6 @@ public class GroupManagementTest extends MessagingTestCase
          }
 
          Set view = ServerManagement.getServer(1).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -102,14 +90,12 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
 
          ServerManagement.start(1, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -119,8 +105,6 @@ public class GroupManagementTest extends MessagingTestCase
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
-
-         log.info("testTwoNodesCluster sucessful");
       }
       finally
       {
@@ -136,20 +120,17 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
 
          ServerManagement.start(1, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
 
          view = ServerManagement.getServer(1).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -157,27 +138,22 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(3, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(3, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
          assertTrue(view.contains(new Integer(3)));
 
          view = ServerManagement.getServer(1).getNodeIDView();
-
          assertEquals(3, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
          assertTrue(view.contains(new Integer(3)));
 
          view = ServerManagement.getServer(3).getNodeIDView();
-
          assertEquals(3, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
          assertTrue(view.contains(new Integer(3)));
-
-         log.info("testThreeNodesCluster sucessful");
       }
       finally
       {
@@ -192,14 +168,11 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         // Start with a 3 node cluster
-
          ServerManagement.start(0, "all");
          ServerManagement.start(1, "all");
          ServerManagement.start(2, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(3, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -210,7 +183,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.stop(0);
 
          view = ServerManagement.getServer(1).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(1)));
          assertTrue(view.contains(new Integer(2)));
@@ -220,7 +192,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.stop(2);
 
          view = ServerManagement.getServer(1).getNodeIDView();
-
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(1)));
 
@@ -229,7 +200,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(0, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -237,10 +207,9 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Reuse the "hollow" RMI server 2 to start another cluster node
 
-         ServerManagement.start(1, "all");
+         ServerManagement.start(2, "all");
 
          view = ServerManagement.getServer(2).getNodeIDView();
-
          assertEquals(3, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -268,7 +237,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(1, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -291,14 +259,12 @@ public class GroupManagementTest extends MessagingTestCase
          }
 
          view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
       }
       finally
       {
          ServerManagement.removeNotificationListener(0, postOfficeObjectName, clusterEvent);
-
          ServerManagement.stop(1);
          ServerManagement.stop(0);
       }
@@ -318,7 +284,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(2, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(3, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -344,7 +309,6 @@ public class GroupManagementTest extends MessagingTestCase
          log.info("received FAILOVER_COMPLETED");
 
          view = ServerManagement.getServer(1).getNodeIDView();
-
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
@@ -367,10 +331,8 @@ public class GroupManagementTest extends MessagingTestCase
          log.info("received FAILOVER_COMPLETED");
 
          view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
-
       }
       finally
       {
@@ -395,36 +357,34 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
-
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
 
          ServerManagement.addNotificationListener(0, postOfficeObjectName, clusterEvent);
 
-         ServerManagement.start(10, "all");
+         // start the ninth node, as there is no chance to be started by scripts
+         ServerManagement.start(9, "all");
 
          if (!clusterEvent.viewChanged(120000))
          {
             fail("Did not receive a VIEW_CHANGED event after spawning new server!");
          }
 
-         view = ServerManagement.getServer(1).getNodeIDView();
+         view = ServerManagement.getServer(9).getNodeIDView();
 
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
-         assertTrue(view.contains(new Integer(10)));
+         assertTrue(view.contains(new Integer(9)));
 
-         //ServerManagement.kill(10);
 
       }
       finally
       {
          ServerManagement.removeNotificationListener(0, postOfficeObjectName, clusterEvent);
          ServerManagement.stop(0);
+         ServerManagement.kill(9);
       }
    }
-
-
 
 
    // Package protected ---------------------------------------------
@@ -444,72 +404,5 @@ public class GroupManagementTest extends MessagingTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-   private class ClusterEventNotificationListener implements NotificationListener
-   {
-      private Slot viewChange;
-      private Slot failoverCompleted;
-
-      ClusterEventNotificationListener()
-      {
-         viewChange = new Slot();
-         failoverCompleted = new Slot();
-      }
-
-      public void handleNotification(Notification notification, Object object)
-      {
-         String type = notification.getType();
-
-         log.info("received " + type + " notification");
-
-         if (ClusteredPostOffice.VIEW_CHANGED_NOTIFICATION.equals(type))
-         {
-            try
-            {
-               viewChange.put(Boolean.TRUE);
-            }
-            catch(InterruptedException e)
-            {
-               log.error(e);
-            }
-         }
-         else if (ClusteredPostOffice.FAILOVER_COMPLETED_NOTIFICATION.equals(type))
-         {
-            try
-            {
-               failoverCompleted.put(Boolean.TRUE);
-            }
-            catch(InterruptedException e)
-            {
-               log.error(e);
-            }
-         }
-         else
-         {
-            log.info("Ignoring notification " + type);
-         }
-      }
-
-      public boolean viewChanged(long timeout) throws InterruptedException
-      {
-         Boolean result = (Boolean)viewChange.poll(timeout);
-         if (result == null)
-         {
-            return false;
-         }
-         return result.booleanValue();
-      }
-
-      public boolean failoverCompleted(long timeout) throws InterruptedException
-      {
-         Boolean result = (Boolean)failoverCompleted.poll(timeout);
-         if (result == null)
-         {
-            return false;
-         }
-         return result.booleanValue();
-      }
-
-   }
 
 }

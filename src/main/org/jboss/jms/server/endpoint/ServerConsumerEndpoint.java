@@ -254,8 +254,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {            
             try
             {
-               if (trace) { log.trace(this + " scheduling a new Deliverer"); }
-               this.executor.execute(new Deliverer());
+               Deliverer deliverer = new Deliverer();
+               if (trace) { log.trace(this + " scheduling a new " + deliverer); }
+               this.executor.execute(deliverer);
             }
             catch (InterruptedException e)
             {

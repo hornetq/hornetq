@@ -95,7 +95,11 @@ public class DeliveryInfo implements Ack
    {
       return connectionConsumerSession;
    }
-   
+
+   public String toString()
+   {
+      return "Delivery[" + msg + "]";
+   }
 
    // Ack Implementation  -------------------------------------------
    

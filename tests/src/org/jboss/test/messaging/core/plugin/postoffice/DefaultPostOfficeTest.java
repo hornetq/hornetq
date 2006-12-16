@@ -1084,7 +1084,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
    
    protected void assertEquivalent(Binding binding1, Binding binding2)
    {
-      assertEquals(binding1.getNodeId(), binding2.getNodeId());
+      assertEquals(binding1.getNodeID(), binding2.getNodeID());
       assertEquals(binding1.getQueue().getName(), binding2.getQueue().getName()); 
       String selector1 = binding1.getQueue().getFilter() != null ? binding1.getQueue().getFilter().getFilterString() : null;
       String selector2 = binding2.getQueue().getFilter() != null ? binding2.getQueue().getFilter().getFilterString() : null;

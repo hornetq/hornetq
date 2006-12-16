@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.util;
+package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -13,6 +13,11 @@ import javax.naming.InitialContext;
 import javax.management.ObjectName;
 
 /**
+ * Test spawning functionality of the ServerManagment. Used mostly in a clustered testing
+ * environment.
+ *
+ * DO NOT extend ClusteringTestBase, I need direct control over start()/stop()!
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
@@ -35,18 +40,10 @@ public class ServerManagementTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   public void testSpawnServer() throws Exception
+   public void testStartServer() throws Exception
    {
-      try
-      {
-         ServerManagement.start(0, "all");
-
-         ServerManagement.start(0, "all");
-      }
-      finally
-      {
-         ServerManagement.kill(0);
-      }
+      ServerManagement.start(0, "all");
+      ServerManagement.start(0, "all");
    }
 
    public void testSimpleSpawn() throws Exception
@@ -58,11 +55,9 @@ public class ServerManagementTest extends MessagingTestCase
 
       try
       {
-         log.info("Waiting for server 7 to start ...");
+         log.info("Starting server 7");
 
          ServerManagement.start(7, "all");
-
-         log.info("Server 7 started");
 
          Integer index = (Integer)ServerManagement.
             getAttribute(7, new ObjectName("jboss.messaging:service=ServerPeer"), "serverPeerID");
@@ -121,17 +116,6 @@ public class ServerManagementTest extends MessagingTestCase
          ServerManagement.kill(1);
       }
    }
-
-   public void testA()
-   {
-      System.out.println("A");
-   }
-
-   public void testB()
-   {
-      System.out.println("B");
-   }
-
 
    // Package protected ---------------------------------------------
 

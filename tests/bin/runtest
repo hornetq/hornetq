@@ -48,8 +48,6 @@ if [ "$ENV_TEST_REMOTING" != "" ]; then
    TEST_REMOTING=$ENV_TEST_REMOTING
 fi
 
-TEST_DATABASE=mysql
-
 #
 # We should use the same test execution classpath as the ant <junit> task, so we run ant to get
 # it from there.
@@ -95,21 +93,33 @@ while [ "$1" != "" ]; do
             fi
             JAVA_OPTS="$DEBUG_OPTS"
         fi
+        shift
+        continue;
     fi
     if [ "$1" = "-remote" ]; then
         isRemote=true;
         REMOTE_TEST="-Dremote=true"
+        shift
+        continue;
     fi
     if [ "$1" = "-remotedebug" ]; then
         remote_debug=true
+        shift
+        continue;
     fi
     if [ "$1" = "0" -o "$1" = "1" -o "$1" = "2" ]; then
         remote_debug_index=$1
+        shift
+        continue;
     fi
     if [ "$1" = "-clustered" ]; then
         TEST_CLUSTERED=true
+        shift
+        continue;
+    else
+        echo "Error, unknown switch: $1"
+        exit 1
     fi
-    shift
 done
 
 JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE -Dtest.serialization=$TEST_SERIALIZATION -Dtest.clustered=$TEST_CLUSTERED -Dtest.remoting=$TEST_REMOTING -Dbuild.lib=../../output/lib"

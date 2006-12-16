@@ -49,7 +49,11 @@ public interface Server extends Remote
 
    void start(String containerConfig) throws Exception;
 
-   void stop() throws Exception;
+   /**
+    * @return true if the server was stopped indeed, or false if the server was stopped already
+    *         when the method was invoked.
+    */
+   boolean stop() throws Exception;
 
    /**
     * For a remote server, it "abruptly" kills the VM running the server. For a local server

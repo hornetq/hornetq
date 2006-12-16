@@ -69,21 +69,18 @@ public interface SessionEndpoint extends Closeable
  
    /**
     * Acknowledge a list of deliveries
-    * @param ackInfos
     * @throws JMSException
     */
    void acknowledgeDeliveries(List deliveryIds) throws JMSException;
    
    /**
     * Acknowledge a delivery
-    * @param deliveryId
     * @throws JMSException
     */
    void acknowledgeDelivery(Ack ack) throws JMSException;
    
    /**
     * Cancel a list of deliveries.
-    * @param ackInfos
     */
    void cancelDeliveries(List cancelInfos) throws JMSException;
          

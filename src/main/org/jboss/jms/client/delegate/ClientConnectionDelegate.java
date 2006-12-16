@@ -217,7 +217,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public String toString()
    {
-      return "ConnectionDelegate[id:" + id + ", serverid:" + serverID + "]";
+      return "ConnectionDelegate[" + id + ", SID=" + serverID + "]";
    }
 
    public void init()

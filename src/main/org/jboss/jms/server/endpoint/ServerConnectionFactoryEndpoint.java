@@ -108,8 +108,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          }
          else
          {
-            log.debug(this + " creating a failover connection " +
-                      "to replace connection to failed node " + failedNodeID);
+            log.debug(this + " received client-side failover request. Creating failover "+
+               "connection to replace connection to failed node " + failedNodeID);
 
             // Wait for server side failover to complete
             int failoverNodeID = serverPeer.waitForFailover(failedNodeID);

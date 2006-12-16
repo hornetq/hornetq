@@ -506,9 +506,12 @@ public class HATest extends ClusteringTestBase
 
          ServerManagement.kill(1);
 
-         log.info("killed server, now waiting");
+         long sleepTime = 60;
 
-         Thread.sleep(5000);
+         log.info("killed server, now waiting for " + sleepTime + " seconds");
+
+         // NOTE: the sleep time needs to be longer than the Remoting connector's lease period
+         Thread.sleep(sleepTime * 1000);
 
          log.info("done wait");
 
@@ -666,9 +669,12 @@ public class HATest extends ClusteringTestBase
 
          killed = true;
 
-         log.info("killed server, now waiting");
+         long sleepTime = 60;
 
-         Thread.sleep(5000);
+         log.info("killed server, now waiting for " + sleepTime + " seconds");
+
+         // NOTE: the sleep time needs to be longer than the Remoting connector's lease period
+         Thread.sleep(sleepTime * 1000);
 
          log.info("done wait");
 
@@ -696,7 +702,7 @@ public class HATest extends ClusteringTestBase
 
             assertNotNull(tm);
             
-            log.info("message is " + tm.getText());
+            log.debug("message is " + tm.getText());
 
             assertEquals("message:" + i, tm.getText());
          }
@@ -854,7 +860,12 @@ public class HATest extends ClusteringTestBase
 
          log.info("killed server, now waiting");
 
-         Thread.sleep(5000);
+         long sleepTime = 60;
+
+         log.info("killed server, now waiting for " + sleepTime + " seconds");
+
+         // NOTE: the sleep time needs to be longer than the Remoting connector's lease period
+         Thread.sleep(sleepTime * 1000);
 
          log.info("done wait");
 
@@ -880,7 +891,7 @@ public class HATest extends ClusteringTestBase
          {
             tm = (TextMessage)cons.receive(500);
 
-            log.info("message is " + tm.getText());
+            log.debug("message is " + tm.getText());
 
             assertNotNull(tm);
 
