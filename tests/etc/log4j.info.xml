@@ -8,7 +8,13 @@
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
 
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-      <param name="File" value="${module.output}/logs/messaging-tests${remote.test.suffix}.trace.log"/>
+      <!--
+          Normally "test.logfile.suffix" takes on of the values: "invm", "remote-client",
+          "remote-server", "clustering-client", "clustering-server<index>", "crash-client",
+          "crash-server", etc.
+      -->
+      <param name="File" value="${module.output}/logs/messaging-${test.logfile.suffix}.log"/>
+
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
       <param name="Threshold" value="INFO"/>
 

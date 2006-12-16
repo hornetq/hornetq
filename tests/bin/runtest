@@ -78,6 +78,8 @@ else
     SEP=":"
 fi
 
+TEST_LOGFILE_SUFFIX=invm
+
 while [ "$1" != "" ]; do
     if [ "$1" = "-debug" ]; then
         if [ $cygwin = false ]; then
@@ -99,6 +101,7 @@ while [ "$1" != "" ]; do
     if [ "$1" = "-remote" ]; then
         isRemote=true;
         REMOTE_TEST="-Dremote=true"
+        TEST_LOGFILE_SUFFIX=remote-client
         shift
         continue;
     fi
@@ -114,6 +117,7 @@ while [ "$1" != "" ]; do
     fi
     if [ "$1" = "-clustered" ]; then
         TEST_CLUSTERED=true
+        TEST_LOGFILE_SUFFIX=clustering-client
         shift
         continue;
     else
@@ -122,7 +126,15 @@ while [ "$1" != "" ]; do
     fi
 done
 
-JAVA_OPTS="-Xmx1024M $JAVA_OPTS -Dmodule.output=$reldir/../output $REMOTE_TEST -Dtest.database=$TEST_DATABASE -Dtest.serialization=$TEST_SERIALIZATION -Dtest.clustered=$TEST_CLUSTERED -Dtest.remoting=$TEST_REMOTING -Dbuild.lib=../../output/lib"
+JAVA_OPTS="-Xmx1024M $JAVA_OPTS \
+-Dmodule.output=$reldir/../output \
+$REMOTE_TEST \
+-Dtest.database=$TEST_DATABASE \
+-Dtest.serialization=$TEST_SERIALIZATION \
+-Dtest.clustered=$TEST_CLUSTERED \
+-Dtest.remoting=$TEST_REMOTING \
+-Dtest.logfile.suffix=$TEST_LOGFILE_SUFFIX \
+-Dbuild.lib=../../output/lib"
 
 if [ "$TARGET_TEST" != "" ]; then
    TARGET_TEST="-t $TARGET_TEST"

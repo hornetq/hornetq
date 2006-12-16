@@ -75,6 +75,13 @@
    -->
    <property name="test.remoting" value="socket"/>
 
+
+   <!--
+       By default, remote servers log file names should end in remote-server
+   -->
+   <property name="remote.server.test.logfile.suffix" value="remote-server"/>
+
+
    <!--
         Project paths.
    -->
@@ -273,7 +280,7 @@
 
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.logfile.suffix" value="${remote.server.test.logfile.suffix}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
@@ -291,7 +298,7 @@
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <sysproperty key="test.server.index" value="${test.server.index}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="remote.test.suffix" value="-remote-${test.server.index}"/>
+         <sysproperty key="test.logfile.suffix" value="clustering-server${test.server.index}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
@@ -309,7 +316,7 @@
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <jvmarg value="-Xmx768M"/>
          <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.logfile.suffix" value="remote-server-stress"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
@@ -344,6 +351,7 @@
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
+      <antcall target="clustering-tests"/>
    </target>
 
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
@@ -374,6 +382,7 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.logfile.suffix" value="invm"/>
          <sysproperty key="build.lib" value="${build.lib}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
@@ -493,6 +502,7 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
+         <sysproperty key="test.logfile.suffix" value="invm"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -539,6 +549,7 @@
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="test.logfile.suffix" value="remote-client"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -610,6 +621,7 @@
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="test.logfile.suffix" value="remote-client"/>
          <jvmarg value="-Xmx512M"/>
          <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"/> -->
          <classpath>
@@ -714,6 +726,7 @@
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
+         <sysproperty key="test.logfile.suffix" value="clustering-client"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=antjunit"/>
@@ -795,7 +808,9 @@
           ClientCrashTest over "socket"
       -->
 
-      <antcall target="start-rmi-server"/>
+      <antcall target="start-rmi-server">
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
+      </antcall>
 
       <antcall target="crash-test">
          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTest"/>
@@ -807,6 +822,7 @@
 
       <antcall target="start-rmi-server">
          <param name="test.remoting" value="http"/>
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
       </antcall>
 
       <antcall target="crash-test">
@@ -818,7 +834,10 @@
           ClientCrashTwoConnectionsTest over "socket"
       -->
 
-      <antcall target="start-rmi-server"/>
+      <antcall target="start-rmi-server">
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
+      </antcall>
+
 
       <antcall target="crash-test">
          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTwoConnectionsTest"/>
@@ -830,6 +849,7 @@
 
       <antcall target="start-rmi-server">
          <param name="test.remoting" value="http"/>
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
       </antcall>
 
       <antcall target="crash-test">
@@ -841,7 +861,10 @@
           ClientCrashNegativeLeaseTest over "socket"
       -->
 
-      <antcall target="start-rmi-server"/>
+      <antcall target="start-rmi-server">
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
+      </antcall>
+
 
       <antcall target="crash-test">
          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashNegativeLeaseTest"/>
@@ -853,6 +876,7 @@
 
       <antcall target="start-rmi-server">
          <param name="test.remoting" value="http"/>
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
       </antcall>
 
       <antcall target="crash-test">
@@ -864,7 +888,10 @@
           ClientCrashZeroLeaseTest over "socket"
       -->
 
-      <antcall target="start-rmi-server"/>
+      <antcall target="start-rmi-server">
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
+      </antcall>
+
 
       <antcall target="crash-test">
           <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashZeroLeaseTest"/>
@@ -876,6 +903,7 @@
 
       <antcall target="start-rmi-server">
          <param name="test.remoting" value="http"/>
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
       </antcall>
 
       <antcall target="crash-test">
@@ -887,7 +915,10 @@
           ClientCrashLargeLeaseTest over "socket"
       -->
 
-      <antcall target="start-rmi-server"/>
+      <antcall target="start-rmi-server">
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
+      </antcall>
+
 
       <antcall target="crash-test">
           <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashLargeLeaseTest"/>
@@ -899,6 +930,7 @@
 
       <antcall target="start-rmi-server">
          <param name="test.remoting" value="http"/>
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
       </antcall>
 
       <antcall target="crash-test">
@@ -910,7 +942,10 @@
           CallbackFailureTest over "socket"
       -->
 
-      <antcall target="start-rmi-server"/>
+      <antcall target="start-rmi-server">
+         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
+      </antcall>
+
 
       <antcall target="crash-test">
           <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.CallbackFailureTest"/>
@@ -939,6 +974,7 @@
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="test.logfile.suffix" value="crash"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>

@@ -48,7 +48,7 @@ fi
 
 mkdir -p $reldir/../output/logs
 
-JAVA_OPTS="$JAVA_OPTS -Xmx768M -Dmodule.output=$reldir/../output -Dremote.test.suffix=-remote-$index"
+JAVA_OPTS="$JAVA_OPTS -Xmx768M -Dmodule.output=$reldir/../output"
 
 if [ "$TEST_DATABASE" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.database=$TEST_DATABASE"
@@ -58,16 +58,17 @@ if [ "$TEST_SERIALIZATION" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.serialization=$TEST_SERIALIZATION"
 fi
 
+if [ "$TEST_REMOTING" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dtest.remoting=$TEST_REMOTING -Dtest.logfile.suffix=remote-server"
+fi
+
 if [ "$TEST_CLUSTERED" != "" ]; then
-   JAVA_OPTS="$JAVA_OPTS -Dtest.clustered=$TEST_CLUSTERED"
+   # last defined system property on command line take precedence
+   JAVA_OPTS="$JAVA_OPTS -Dtest.clustered=$TEST_CLUSTERED -Dtest.logfile.suffix=clustering-server$index"
 fi
 
 if [ "$index" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.server.index=$index"
-fi
-
-if [ "$TEST_REMOTING" != "" ]; then
-   JAVA_OPTS="$JAVA_OPTS -Dtest.remoting=$TEST_REMOTING"
 fi
 
 if [ "$USE_EXISTENT_TEST_CLASSPATH_FILE" = "true" ]; then

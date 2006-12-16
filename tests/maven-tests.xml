@@ -213,7 +213,7 @@
 
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <sysproperty key="module.output" value="${basedir}/target"/>
-         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.logfile.suffix" value="-remote-maven"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
@@ -238,7 +238,7 @@
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
          <jvmarg value="-Xmx768M"/>
          <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="remote.test.suffix" value="-remote"/>
+         <sysproperty key="test.logfile.suffix" value="-remote-maven"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>

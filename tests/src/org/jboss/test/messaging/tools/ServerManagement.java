@@ -141,7 +141,7 @@ public class ServerManagement
          }
          else
          {
-            Server s = acquireRemote(1, i, true);
+            Server s = acquireRemote(2, i, true);
 
             if (s != null)
             {
@@ -307,10 +307,6 @@ public class ServerManagement
       
       sb.append("-Dmodule.output=").append(moduleOutput).append(' ');
 
-      sb.append("-Dremote.test.suffix=-remote-").append(i).append(' ');
-
-      sb.append("-Dtest.server.index=").append(i).append(' ');
-
       sb.append("-Dtest.bind.address=localhost").append(' ');
 
       String database = System.getProperty("test.database");
@@ -325,7 +321,13 @@ public class ServerManagement
          sb.append("-Dtest.serialization=").append(serialization).append(' ');
       }
 
+      sb.append("-Dtest.server.index=").append(i).append(' ');
+
       String clustered = System.getProperty("test.clustered");
+      if (clustered != null && clustered.trim().length() == 0)
+      {
+         clustered = null;
+      }
       if (clustered != null)
       {
          sb.append("-Dtest.clustered=").append(clustered).append(' ');
@@ -336,6 +338,28 @@ public class ServerManagement
       {
          sb.append("-Dtest.remoting=").append(remoting).append(' ');
       }
+
+      String testLogfileSuffix = System.getProperty("test.logfile.suffix");
+
+      if (testLogfileSuffix == null)
+      {
+         testLogfileSuffix = "undefined-test-type";
+      }
+      else
+      {
+         int pos;
+         if ((pos = testLogfileSuffix.lastIndexOf("client")) != -1)
+         {
+            testLogfileSuffix = testLogfileSuffix.substring(0, pos) + "server";
+         }
+
+         if (clustered != null)
+         {
+            testLogfileSuffix += i;
+         }
+      }
+
+      sb.append("-Dtest.logfile.suffix=").append(testLogfileSuffix).append(' ');
 
       String classPath = System.getProperty("java.class.path");
 
