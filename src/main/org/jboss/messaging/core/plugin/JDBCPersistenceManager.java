@@ -180,11 +180,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
          
-         ps = conn.prepareStatement(getSQLStatement("SELECT_COUNTER"));
+         String selectCounterSQL = getSQLStatement("SELECT_COUNTER");
+         
+         ps = conn.prepareStatement(selectCounterSQL);
          
          ps.setString(1, counterName);
          
+         if (trace) { log.trace("selecting counter: " + selectCounterSQL); }
          rs = ps.executeQuery();
+         if (trace) { log.trace(JDBCUtil.statementToString(selectCounterSQL, counterName)); }         
          
          if (!rs.next())
          {
@@ -193,15 +197,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             ps.close();
             
-            ps = conn.prepareStatement(getSQLStatement("INSERT_COUNTER"));
+            String insertCounterSQL = getSQLStatement("INSERT_COUNTER");
+            
+            ps = conn.prepareStatement(insertCounterSQL);
             
             ps.setString(1, counterName);
             
             ps.setLong(2, size);
             
-            int rows = ps.executeUpdate();
-            
-            if (trace) {  log.trace(JDBCUtil.statementToString(getSQLStatement("INSERT_COUNTER"), counterName)
+            if (trace) { log.trace("inserting counter: " + insertCounterSQL); }
+            int rows = ps.executeUpdate();            
+            if (trace) {  log.trace(JDBCUtil.statementToString(insertCounterSQL, counterName)
                            + " inserted " + rows + " rows"); }  
             
             ps.close();            
@@ -210,24 +216,24 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             return 0;
          }
          
-         if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("SELECT_COUNTER"), counterName)); }
-         
          long nextId = rs.getLong(1);
          
          rs.close();
          rs = null;
          
          ps.close();
-         
-         ps = conn.prepareStatement(getSQLStatement("UPDATE_COUNTER"));
+
+         String updateCounterSQL = getSQLStatement("UPDATE_COUNTER");
+
+         ps = conn.prepareStatement(updateCounterSQL);
          
          ps.setLong(1, nextId + size);
          
          ps.setString(2, counterName);
          
-         int rows = ps.executeUpdate();
-         
-         if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_COUNTER"), new Long(nextId + size),
+         if (trace) { log.trace("updating counter: " + updateCounterSQL); }
+         int rows = ps.executeUpdate();         
+         if (trace) { log.trace(JDBCUtil.statementToString(updateCounterSQL, new Long(nextId + size),
                                counterName) + " updated " + rows + " rows"); }        
          
          return nextId;

@@ -13,7 +13,7 @@
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
 
       <attribute name="JNDIBindings">
          <bindings>

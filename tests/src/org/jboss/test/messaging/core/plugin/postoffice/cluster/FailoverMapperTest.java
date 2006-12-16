@@ -50,9 +50,10 @@ public class FailoverMapperTest extends TestCase
       DefaultFailoverMapper mapper = new DefaultFailoverMapper();
       Map map = mapper.generateMapping(set);
 
-      assertEquals(new Integer(15),map.get(new Integer(25)));
-      assertEquals(new Integer(50),map.get(new Integer(15)));
-      assertEquals(new Integer(25),map.get(new Integer(50)));
+      assertEquals(new Integer(25), map.get(new Integer(15)));
+      assertEquals(new Integer(50), map.get(new Integer(25)));
+      assertEquals(new Integer(15), map.get(new Integer(50)));
+      
       
    }
 

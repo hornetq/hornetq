@@ -558,7 +558,7 @@ public class ServiceContainer
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
 
       MBeanConfigurationElement postOfficeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
+         (MBeanConfigurationElement)pdd.query("service", "PostOffice").iterator().next();
 
       String props = postOfficeConfig.getAttributeValue("SqlProperties");
 
@@ -605,7 +605,7 @@ public class ServiceContainer
       ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
 
       MBeanConfigurationElement postOfficeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "QueuePostOffice").iterator().next();
+         (MBeanConfigurationElement)pdd.query("service", "PostOffice").iterator().next();
 
       String props = postOfficeConfig.getAttributeValue("SqlProperties");
 

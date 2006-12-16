@@ -94,7 +94,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
       
       ClusteredPostOffice office2 = null;
       
-      //ClusteredPostOffice office3 = null;
+      ClusteredPostOffice office3 = null;
       
       try
       {         
@@ -104,7 +104,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          log.info("starting office 2");
          office2 = createClusteredPostOffice(2, "testgroup");
                   
-         //office3 = createClusteredPostOffice(3, "testgroup");
+         office3 = createClusteredPostOffice(3, "testgroup");
          
          Thread.sleep(2000);
          
@@ -114,8 +114,8 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          office2.stop();
          office2 = null;
          
-//         office3.stop();
-//         office3 = null;
+         office3.stop();
+         office3 = null;
       }
       finally
       {
@@ -129,15 +129,15 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office2.stop();
          }
          
-//         if (office3 != null)
-//         {
-//            office3.stop();
-//         }
-         
-         if (checkNoBindingData())
+         if (office3 != null)
          {
-            fail("data still in database");
+            office3.stop();
          }
+         
+//         if (checkNoBindingData())
+//         {
+//            fail("data still in database");
+//         }
       }
          
    }

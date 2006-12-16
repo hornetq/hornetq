@@ -16,7 +16,7 @@
       name="jboss.messaging.destination:service=Queue,name=DLQ"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
 
    <!--
@@ -27,7 +27,7 @@
       name="jboss.messaging.destination:service=Topic,name=testTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=TopicPostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
       <attribute name="SecurityConfig">
          <security>
             <role name="guest" read="true" write="true"/>
@@ -41,7 +41,7 @@
       name="jboss.messaging.destination:service=Topic,name=securedTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=TopicPostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
       <attribute name="SecurityConfig">
          <security>
             <role name="publisher" read="true" write="true" create="false"/>
@@ -53,7 +53,7 @@
       name="jboss.messaging.destination:service=Topic,name=testDurableTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=TopicPostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
       <attribute name="SecurityConfig">
          <security>
             <role name="guest" read="true" write="true"/>
@@ -67,7 +67,7 @@
       name="jboss.messaging.destination:service=Queue,name=testQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
       <attribute name="SecurityConfig">
          <security>
             <role name="guest" read="true" write="true"/>
@@ -81,35 +81,35 @@
       name="jboss.messaging.destination:service=Queue,name=A"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
 
    <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=B"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
 
    <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=C"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
 
    <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=D"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
 
    <mbean code="org.jboss.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=ex"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
    
    <!--
@@ -120,7 +120,7 @@
       name="jboss.messaging.destination:service=Queue,name=testDistributedQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=QueuePostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
       <attribute name="Clustered">true</attribute>
    </mbean>   
    
@@ -128,7 +128,7 @@
       name="jboss.messaging.destination:service=Topic,name=testDistributedTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=TopicPostOffice</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
       <attribute name="Clustered">true</attribute>
    </mbean>   
 

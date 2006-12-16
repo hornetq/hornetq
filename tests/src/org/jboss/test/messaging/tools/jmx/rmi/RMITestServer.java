@@ -298,16 +298,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getPersistenceManager();
    }
 
-   public PostOffice getQueuePostOffice() throws Exception
-   {
-      return server.getQueuePostOffice();
-   }
-
-   public PostOffice getTopicPostOffice() throws Exception
-   {
-      return server.getTopicPostOffice();
-   }
-
    public ServerPeer getServerPeer() throws Exception
    {
       return server.getServerPeer();
