@@ -34,6 +34,8 @@ import javax.jms.Session;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.aop.Advised;
+import org.jboss.aop.advice.Interceptor;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -61,15 +63,15 @@ import org.jboss.remoting.Client;
 import org.jboss.remoting.ConnectionListener;
 
 /**
- * 
+ *
  * A HAAspect
- * 
+ *
  * There is one of these PER_INSTANCE of connection factory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * 
+ *
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
@@ -81,6 +83,8 @@ public class HAAspect
    private static final Logger log = Logger.getLogger(HAAspect.class);
 
    public static final int MAX_RECONNECT_HOP_COUNT = 10;
+
+   public static final int MAX_IO_RETRY_COUNT = 10;
 
    // Static --------------------------------------------------------
 
@@ -104,6 +108,14 @@ public class HAAspect
       id = null;
    }
 
+   /** A Copy Constructor Used on creationg of ValveAspect */
+   protected HAAspect(HAAspect copyFrom)
+   {
+      this.delegates = copyFrom.delegates;
+      this.failoverMap = copyFrom.failoverMap;
+      this.id = copyFrom.id;
+   }
+
    // Public --------------------------------------------------------
 
    public Object handleCreateConnectionDelegate(Invocation invocation) throws Throwable
@@ -117,6 +129,10 @@ public class HAAspect
 
       cacheLocalDelegates(invocation);
 
+      // TODO: I wanted to change aop-messaging-client.xml to only execute handleCreateConnectionDelegate
+      //       on instances of ClusteredClientConnectionFactoryDelegate, but I couldn't find the right
+      //       pointcut expression. So, this is a to do.
+      //      However the following test is enough for now.
       if (delegates == null)
       {
          // not clustered, pass the invocation through
@@ -148,15 +164,13 @@ public class HAAspect
 
       ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
 
+      // ValveAspect is supposed to be created per ClientConnectionDelegate
+      installValveAspect(cd, new ValveAspect(cd, this));
+
       if(trace) { log.trace(this + " got local connection delegate " + cd); }
 
       // Add a connection listener to detect failure; the consolidated remoting connection listener
       // must be already in place and configured
-
-      ConnectionListener listener = new ConnectionFailureListener(cd);
-
-      ((ConnectionState)((DelegateSupport)cd).getState()).
-         getRemotingConnectionListener().addDelegateListener(listener);
 
       return new CreateConnectionResult(cd);
    }
@@ -211,6 +225,62 @@ public class HAAspect
       }
    }
 
+   // Debug information about interceptors
+   protected void printInterceptors(Interceptor interceptors[])
+    {
+       if (interceptors==null || interceptors.length==0)
+       {
+          log.info("Interceptor chain is empty");
+       }
+       else
+       {
+          for (int i=0; i<interceptors.length; i++)
+          {
+             log.info("Interceptor[" + i + "] = " + interceptors[i].getName() + " className= " + interceptors[i].getClass().getName());
+          }
+       }
+    }
+   
+   /** The valve aspect needs to stay after ExceptionInterceptor, and before DelegateSupport.
+    *  This method will place the aspect on the proper place */
+   protected void installValveAspect(DelegateSupport delegate, Interceptor interceptor)
+   {
+      Advised advised = (Advised)delegate;
+      Interceptor interceptors[] = advised._getInstanceAdvisor().getInterceptors();
+
+      log.info("Installing interceptors");
+      printInterceptors(interceptors);
+
+
+      Interceptor delegateInterceptorFound = null;
+
+      for (int i=0;i<interceptors.length;i++)
+      {
+         if (interceptors[i] instanceof DelegateSupport)
+         {
+            delegateInterceptorFound = interceptors[i];
+         }
+      }
+
+
+      if (delegateInterceptorFound!=null)
+      {
+         advised._getInstanceAdvisor().removeInterceptor(delegateInterceptorFound.getName());
+      }
+
+      advised._getInstanceAdvisor().appendInterceptor(interceptor);
+
+      if (delegateInterceptorFound!=null)
+      {
+         advised._getInstanceAdvisor().appendInterceptor(delegateInterceptorFound);
+      }
+
+      log.info("Interceptors after installation:");
+      printInterceptors(advised._getInstanceAdvisor().getInterceptors());
+
+   }
+   
+
    //TODO this is currently hardcoded as round-robin, this should be made pluggable
    private synchronized ClientConnectionFactoryDelegate getDelegateRoundRobin()
    {
@@ -245,7 +315,7 @@ public class HAAspect
       return null;
    }
 
-   private void handleConnectionFailure(ClientConnectionDelegate failedConnDelegate)
+   protected void handleConnectionFailure(ClientConnectionDelegate failedConnDelegate)
       throws Exception
    {
       log.debug(this + " handling failed connection " + failedConnDelegate);
@@ -327,7 +397,7 @@ public class HAAspect
                              "Cannot find a server to failover onto.");
    }
 
-   private void performClientSideFailover(ClientConnectionDelegate failedConnDelegate,
+   protected void performClientSideFailover(ClientConnectionDelegate failedConnDelegate,
                                           ClientConnectionDelegate newConnDelegate)
       throws Exception
    {
@@ -348,14 +418,14 @@ public class HAAspect
 
       // We need to update some of the attributes on the state
       failedState.copyState(newState);
-      
+
       // Map of old session ID to new session state
       Map oldNewSessionStateMap = new HashMap();
 
       for(Iterator i = failedState.getChildren().iterator(); i.hasNext(); )
       {
          SessionState failedSessionState = (SessionState)i.next();
-          
+
          int oldSessionID = failedSessionState.getSessionId();
 
          ClientSessionDelegate failedSessionDelegate =
@@ -367,9 +437,9 @@ public class HAAspect
                                   failedSessionState.isXA());
 
          SessionState newSessionState = (SessionState)newSessionDelegate.getState();
-         
+
          if (trace) { log.trace("new session state has " + newSessionState.getClientAckList().size() + " deliveries"); }
-         
+
          oldNewSessionStateMap.put(new Integer(oldSessionID), failedSessionState);
 
          failedSessionDelegate.copyAttributes(newSessionDelegate);
@@ -401,13 +471,13 @@ public class HAAspect
             }
          }
       }
-      
+
       // First we must tell the resource manager to substitute old session ID for new session ID.
       // Note we MUST submit the entire mapping in one operation since there may be overlap between
       // old and new session ID, and we don't want to overwrite keys in the map.
-      
+
       failedState.getResourceManager().handleFailover(oldNewSessionStateMap);
-      
+
       for(Iterator i = oldNewSessionStateMap.values().iterator(); i.hasNext(); )
       {
          List ackInfos = Collections.EMPTY_LIST;
@@ -415,16 +485,16 @@ public class HAAspect
          SessionState state = (SessionState)i.next();
 
          if (!state.isTransacted() ||
-             (state.isXA() && state.getCurrentTxId() == null))     
+             (state.isXA() && state.getCurrentTxId() == null))
          {
             // Non transacted session or an XA session with no transaction set (it falls back
             // to auto_ack)
-            
+
             if (trace) { log.trace(state + " is not transacted (or XA with no tx set), retrieving deliveries from session state"); }
 
             // We remove any unacked non-persistent messages - this is because we don't want to ack
             // them since the server won't know about them and will get confused
-                        
+
             if (state.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
             {
                for(Iterator j = state.getClientAckList().iterator(); j.hasNext(); )
@@ -436,13 +506,13 @@ public class HAAspect
                      if (trace) { log.trace("removed non persistent delivery " + info); }
                   }
                }
-               
+
                ackInfos = state.getClientAckList();
             }
             else
             {
                DeliveryInfo autoAck = state.getAutoAckInfo();
-               if (autoAck != null)                 
+               if (autoAck != null)
                {
                   if (!autoAck.getMessageProxy().getMessage().isReliable())
                   {
@@ -455,9 +525,9 @@ public class HAAspect
                      ackInfos = new ArrayList();
                      ackInfos.add(autoAck);
                   }
-               }               
+               }
             }
-            
+
             if (trace) { log.trace(this + " retrieved " + ackInfos.size() + " deliveries"); }
          }
          else
@@ -470,23 +540,23 @@ public class HAAspect
          }
 
          if (!ackInfos.isEmpty())
-         {                        
+         {
             SessionDelegate newDelegate = (SessionDelegate)state.getDelegate();
-            
+
             List recoveryInfos = new ArrayList();
-            
+
             for (Iterator iter2 = ackInfos.iterator(); iter2.hasNext(); )
             {
                DeliveryInfo info = (DeliveryInfo)iter2.next();
-               
+
                DeliveryRecovery recInfo =
-                  new DeliveryRecovery(info.getMessageProxy().getDeliveryId(),                                       
+                  new DeliveryRecovery(info.getMessageProxy().getDeliveryId(),
                                        info.getMessageProxy().getMessage().getMessageID(),
                                        info.getChannelId());
-               
+
                recoveryInfos.add(recInfo);
             }
-            
+
             if (trace) { log.trace(this + " sending delivery recovery info: " + recoveryInfos); }
             newDelegate.recoverDeliveries(recoveryInfos);
          }
@@ -545,7 +615,7 @@ public class HAAspect
 //         ResourceManager rm = failedConnectionState.getResourceManager();
 //
 //         todo - we need to replace the sesion id
-//         
+//
 //         rm.handleFailover(oldConsumerID, failedConsumerState.getConsumerID());
 //      }
 
@@ -614,37 +684,6 @@ public class HAAspect
 
    }
 
-   // Inner classes -------------------------------------------------
-
-   private class ConnectionFailureListener implements ConnectionListener
-   {
-      private ClientConnectionDelegate cd;
-
-      ConnectionFailureListener(ClientConnectionDelegate cd)
-      {
-         this.cd = cd;
-      }
-
-      // ConnectionListener implementation ---------------------------
-
-      public void handleConnectionException(Throwable throwable, Client client)
-      {
-         try
-         {
-            log.debug(this + " is being notified of connection failure: " + throwable);
-            handleConnectionFailure(cd);
-         }
-         catch (Throwable e)
-         {
-            log.error("Caught exception in handling failure", e);
-         }
-      }
-
-      public String toString()
-      {
-         return "ConnectionFailureListener[" + cd + "]";
-      }
-   }
 }
 
 

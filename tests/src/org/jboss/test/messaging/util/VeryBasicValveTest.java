@@ -81,10 +81,17 @@ public class VeryBasicValveTest extends TestCase
 
                //Thread.sleep(1000);
 
+               valve.open(); // stack vavles
+               if (!valve.isOpened(true))
+               {
+                  fail("Valve should be opened");
+               }
+
                synchronized (VeryBasicValveTest.class)
                {
                   counter ++;
                }
+               valve.close();
                valve.close();
             }
 

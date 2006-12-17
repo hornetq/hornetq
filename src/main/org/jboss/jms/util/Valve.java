@@ -22,6 +22,8 @@
 
 package org.jboss.jms.util;
 
+import org.jboss.logging.Logger;
+
 
 /**
  * This class is used to guarantee only one thread will be performing a given function, and if any other
@@ -54,9 +56,46 @@ package org.jboss.jms.util;
  *  */
 public class Valve
 {
+   private static final Logger log = Logger.getLogger(Valve.class);
+   private boolean trace = log.isTraceEnabled();
+
    boolean opened;
    boolean closed;
 
+   Thread threadOwner;
+
+   int refereceCountOpen=0;
+
+
+   public synchronized boolean isOpened()
+   {
+      return opened;
+   }
+
+   /** If the Valve is opened, will wait until the valve is closed */
+   public synchronized boolean isOpened(boolean wait) throws Exception
+   {
+      if (wait && opened)
+      {
+         if (!closed && threadOwner != Thread.currentThread())
+         {
+            if (trace) log.trace("threadOwner= " + threadOwner + " and currentThread=" + Thread.currentThread());
+            if (trace) log.trace("Waiting valve to be closed");
+            this.wait();
+            if (trace) log.trace("Valve was closed");
+         }
+         else
+         {
+            if (trace) log.trace("This is ThreadOwner, so Valve won't wait");
+         }
+         return opened;
+      }
+      else
+      {
+         return false;
+      }
+
+   }
 
    public boolean open() throws Exception
    {
@@ -65,9 +104,16 @@ public class Valve
 
    public synchronized boolean open(boolean wait) throws Exception
    {
+      if (threadOwner==Thread.currentThread())
+      {
+         if (trace) log.trace("Valve was opened again by thread owner");
+         refereceCountOpen++;
+         return true;
+      }
       // already opened? then needs to wait to be closed
       if (opened)
       {
+         if (trace) log.trace("Valve being opened and time.wait");
          // if not closed yet, will wait to be closed
          if (!closed)
          {
@@ -79,7 +125,10 @@ public class Valve
          return false;
       } else
       {
+         if (trace) log.trace("Valve being opened and this thread is the owner for this lock");
+         refereceCountOpen++;
          opened = true;
+         threadOwner = Thread.currentThread();
          return true;
       }
    }
@@ -92,9 +141,18 @@ public class Valve
       }
       if (closed)
       {
-         throw new IllegalStateException("Valve is already closed");
+         log.warn("Valve was already closed", new Exception());
       }
-      closed = true;
-      notifyAll();
+      refereceCountOpen--;
+      if (refereceCountOpen==0)
+      {
+         if (trace) log.trace("Closing Valve");
+         closed = true;
+         notifyAll();
+      }
+      else
+      {
+         if (trace) log.trace("Valve.close called but there referenceCountOpen=" + refereceCountOpen);
+      }
    }
 }

@@ -94,7 +94,8 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    public String getName()
    {
-      return "Invoker";
+      // it's needed a meaninful name to change the aop stack programatically (HA uses that)
+      return this.getClass().getName();
    }
 
    /**
