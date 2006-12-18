@@ -155,4 +155,16 @@ public class Valve
          if (trace) log.trace("Valve.close called but there referenceCountOpen=" + refereceCountOpen);
       }
    }
+
+   public synchronized void reset()
+   {
+      if (opened && !closed)
+      {
+         close();
+      }
+      opened = false;
+      closed = false;
+      threadOwner = null;
+      refereceCountOpen = 0;
+   }
 }
