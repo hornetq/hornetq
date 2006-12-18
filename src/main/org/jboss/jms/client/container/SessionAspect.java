@@ -130,19 +130,20 @@ public class SessionAspect
          // delivery count information from client to server. We could just do this on the server but
          // we would lose delivery count info.
                   
+         // CLIENT_ACKNOWLEDGE cannot be used with MDBs so is always safe to cancel on this session                  
+         
          List cancels = new ArrayList();
          
          for(Iterator i = state.getClientAckList().iterator(); i.hasNext(); )
          {
             DeliveryInfo ack = (DeliveryInfo)i.next();            
+            
             DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(), ack.getMessageProxy().getDeliveryCount());
             cancels.add(cancel);
          }
          
          if (!cancels.isEmpty())
-         {
-            //CLIENT_ACKNOWLEDGE cannot be used with MDBs so is always safe to cancel on this session
-            
+         {            
             del.cancelDeliveries(cancels);            
          }
          
@@ -181,6 +182,12 @@ public class SessionAspect
          
          if (trace) { log.trace(this + " delivery id: " + info.getDeliveryId() + " added to client ack list"); }
          
+         //Sanity check
+         if (info.getConnectionConsumerSession() != null)
+         {
+            throw new IllegalStateException("CLIENT_ACKNOWLEDGE cannot be used with a connection consumer");
+         }
+                  
          state.getClientAckList().add(info);
          
          //We can return immediately
@@ -193,6 +200,7 @@ public class SessionAspect
          //We collect the single acknowledgement in the state.
          //Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE
          //Also XA sessions not enlisted in a global tx are treated as AUTO_ACKNOWLEDGE
+                  
          
          if (trace) { log.trace(this + " delivery id: " + info.getDeliveryId() + " added to client ack member"); }
          

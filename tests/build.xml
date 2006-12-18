@@ -799,7 +799,6 @@
 
    </target>
 
-
    <target name="crash-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
       description="Runs crash tests">
 
@@ -847,7 +846,6 @@
       <!--
           ClientCrashTwoConnectionsTest over "http"
       -->
-
       <antcall target="start-rmi-server">
          <param name="test.remoting" value="http"/>
          <param name="remote.server.test.logfile.suffix" value="remote-crash"/>

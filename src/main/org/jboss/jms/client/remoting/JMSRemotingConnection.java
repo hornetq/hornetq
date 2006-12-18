@@ -169,7 +169,7 @@ public class JMSRemotingConnection
       client.removeListener(callbackManager);
       client.disconnect();
 
-      client=null;
+      client = null;
       log.debug(this + " closed");
    }
 

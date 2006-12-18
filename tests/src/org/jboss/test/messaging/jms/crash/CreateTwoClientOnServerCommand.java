@@ -29,6 +29,8 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Topic;
 
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.container.SessionAspect;
+import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.Command;
 
 /**
@@ -45,6 +47,8 @@ public class CreateTwoClientOnServerCommand implements Command
 {
    private static final long serialVersionUID = -997724797145152821L;
    
+   private static final Logger log = Logger.getLogger(CreateTwoClientOnServerCommand.class);
+      
    private ConnectionFactory cf;
    
    private boolean retainReference;
@@ -81,11 +85,12 @@ public class CreateTwoClientOnServerCommand implements Command
       conn2.setClientID("test2");
       conn2.start();
 
-      conn1.close();
-      
       String arrays[] = new String[2];
       arrays[0] = ((JBossConnection)conn1).getRemotingClientSessionId();
       arrays[1] = ((JBossConnection)conn2).getRemotingClientSessionId();
+      
+      conn1.close();
+      
 
       // Return the remoting client session id for the connection
       return arrays;      

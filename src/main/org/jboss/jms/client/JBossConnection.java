@@ -45,10 +45,12 @@ import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -64,6 +66,9 @@ public class JBossConnection implements
 
    // Constants -----------------------------------------------------
    private static final long serialVersionUID = -3715868654823177898L;
+   
+   private static final Logger log = Logger.getLogger(JBossConnection.class);
+   
 
    static final int TYPE_GENERIC_CONNECTION = 0;
    static final int TYPE_QUEUE_CONNECTION = 1;
@@ -225,7 +230,7 @@ public class JBossConnection implements
    public String getRemotingClientSessionId()
    {
       ConnectionState state = (ConnectionState)((ClientConnectionDelegate)delegate).getState();
-
+      
       return state.getRemotingConnection().getInvokingClient().getSessionId();
    }
 
