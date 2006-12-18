@@ -129,9 +129,7 @@ public class SessionAspect
          // We cancel any client ack or transactional, we do this explicitly so we can pass the updated
          // delivery count information from client to server. We could just do this on the server but
          // we would lose delivery count info.
-         
-         //CLIENT_ACKNOWLEDGE cannot be used with MDBs so is always safe to cancel on this session
-         
+                  
          List cancels = new ArrayList();
          
          for(Iterator i = state.getClientAckList().iterator(); i.hasNext(); )
@@ -139,6 +137,13 @@ public class SessionAspect
             DeliveryInfo ack = (DeliveryInfo)i.next();            
             DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(), ack.getMessageProxy().getDeliveryCount());
             cancels.add(cancel);
+         }
+         
+         if (!cancels.isEmpty())
+         {
+            //CLIENT_ACKNOWLEDGE cannot be used with MDBs so is always safe to cancel on this session
+            
+            del.cancelDeliveries(cancels);            
          }
          
          state.getClientAckList().clear();
