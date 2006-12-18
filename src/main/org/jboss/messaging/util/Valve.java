@@ -64,7 +64,7 @@ public class Valve
 
    Thread threadOwner;
 
-   int refereceCountOpen=0;
+   int refereceCountOpen = 0;
 
 
    public synchronized boolean isOpened()
@@ -72,7 +72,9 @@ public class Valve
       return opened;
    }
 
-   /** If the Valve is opened, will wait until the valve is closed */
+   /**
+    * If the Valve is opened, will wait until the valve is closed
+    */
    public synchronized boolean isOpened(boolean wait) throws Exception
    {
       if (wait && opened)
@@ -83,14 +85,12 @@ public class Valve
             if (trace) log.trace("Waiting valve to be closed");
             this.wait();
             if (trace) log.trace("Valve was closed");
-         }
-         else
+         } else
          {
             if (trace) log.trace("This is ThreadOwner, so Valve won't wait");
          }
          return opened;
-      }
-      else
+      } else
       {
          return false;
       }
@@ -104,7 +104,7 @@ public class Valve
 
    public synchronized boolean open(boolean wait) throws Exception
    {
-      if (threadOwner==Thread.currentThread())
+      if (threadOwner == Thread.currentThread())
       {
          if (trace) log.trace("Valve was opened again by thread owner");
          refereceCountOpen++;
@@ -144,13 +144,12 @@ public class Valve
          log.warn("Valve was already closed", new Exception());
       }
       refereceCountOpen--;
-      if (refereceCountOpen==0)
+      if (refereceCountOpen == 0)
       {
          if (trace) log.trace("Closing Valve");
          closed = true;
          notifyAll();
-      }
-      else
+      } else
       {
          if (trace) log.trace("Valve.close called but there referenceCountOpen=" + refereceCountOpen);
       }
