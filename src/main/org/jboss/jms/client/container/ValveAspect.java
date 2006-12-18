@@ -27,13 +27,12 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.util.Valve;
+import org.jboss.messaging.util.Valve;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.CannotConnectException;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.Client;
 import java.io.IOException;
-import javax.jms.JMSException;
 
 /**
  * This aspect will intercept failures from any HA object.

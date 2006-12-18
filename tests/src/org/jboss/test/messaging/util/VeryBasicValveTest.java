@@ -24,7 +24,7 @@ package org.jboss.test.messaging.util;
 
 import junit.framework.TestCase;
 import org.jboss.logging.Logger;
-import org.jboss.jms.util.Valve;
+import org.jboss.messaging.util.Valve;
 
 /**
  * This verifies the very basic functionality of ConnectionState.Valve.

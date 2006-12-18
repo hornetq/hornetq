@@ -20,7 +20,7 @@
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
 
-package org.jboss.jms.util;
+package org.jboss.messaging.util;
 
 import org.jboss.logging.Logger;
 
