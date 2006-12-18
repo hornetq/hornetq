@@ -37,7 +37,6 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.remoting.ServerInvocationHandler;
 
 /**

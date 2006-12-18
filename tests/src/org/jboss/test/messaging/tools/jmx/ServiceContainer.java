@@ -64,7 +64,6 @@ import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.transport.PortUtil;
-import org.jboss.remoting.serialization.SerializationStreamFactory;
 import org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.resource.adapter.jdbc.remote.WrapperDataSourceService;
 import org.jboss.resource.adapter.jms.JmsManagedConnectionFactory;

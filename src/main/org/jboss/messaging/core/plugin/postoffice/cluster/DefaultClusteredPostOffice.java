@@ -106,12 +106,46 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    private static final Logger log = Logger.getLogger(DefaultClusteredPostOffice.class);
 
    // Key for looking up node id -> address info mapping from replicated data
-   public static final String ADDRESS_INFO_KEY = "address_info";
+   public static final String ADDRESS_INFO_KEY = "ADDRESS_INFO";
 
    // Key for looking up node id -> failed over for node id mapping from replicated data
-   public static final String FAILED_OVER_FOR_KEY = "failed_over_for";
+   public static final String FAILED_OVER_FOR_KEY = "FAILED_OVER_FOR";
 
    // Static --------------------------------------------------------
+
+   /**
+    * @param map - Map<Integer(nodeID)-Integer(failoverNodeID)>
+    */
+   public static String dumpFailoverMap(Map map)
+   {
+      StringBuffer sb = new StringBuffer("\n");
+
+      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         Integer primary = (Integer)entry.getKey();
+         Integer secondary = (Integer)entry.getValue();
+         sb.append("             ").append(primary).append("->").append(secondary).append("\n");
+      }
+      return sb.toString();
+   }
+
+   /**
+    * @param map - Map<Integer(nodeID)-PostOfficeAddressInfo>
+    */
+   public static String dumpClusterMap(Map map)
+   {
+      StringBuffer sb = new StringBuffer("\n");
+
+      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         Integer nodeID = (Integer)entry.getKey();
+         PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
+         sb.append("             ").append(nodeID).append("->").append(info).append("\n");
+      }
+      return sb.toString();
+   }
 
    // Attributes ----------------------------------------------------
 
@@ -151,7 +185,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    private Map holdingArea;
 
-   //Map < node id , failover node id>
+   // Map <Integer(nodeID)->Integer(failoverNodeID)>
    private Map failoverMap;
 
    private Set leftSet;
@@ -2260,35 +2294,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       log.debug(this + " sent " + notificationType + " JMX notification");
    }
 
-   private String dumpClusterMap(Map map)
-   {
-      StringBuffer sb = new StringBuffer("\n");
-
-      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
-      {
-         Map.Entry entry = (Map.Entry)i.next();
-         Integer nodeID = (Integer)entry.getKey();
-         PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
-         sb.append("             ").append("nodeID ").append(nodeID).append(" - ").append(info).append("\n");
-      }
-      return sb.toString();
-   }
-
-   private String dumpFailoverMap(Map map)
-   {
-      StringBuffer sb = new StringBuffer("\n");
-
-      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
-      {
-         Map.Entry entry = (Map.Entry)i.next();
-         Integer primary = (Integer)entry.getKey();
-         Integer secondary = (Integer)entry.getValue();
-         sb.append("             ").append(primary).append("->").append(secondary).append("\n");
-      }
-      return sb.toString();
-   }
-
-
    // Inner classes -------------------------------------------------------------------
 
    /*
@@ -2308,7 +2313,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          }
          try
          {
-            if (trace) { log.trace(this + " got state"); }
+            if (trace) { log.trace(DefaultClusteredPostOffice.this + ".ControlMessageListener got state"); }
             return getStateAsBytes();
          }
          catch (Exception e)
@@ -2343,7 +2348,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             try
             {
                processStateBytes(bytes);
-               if (trace) { log.trace(this + " has set state"); }
+               if (trace) { log.trace(DefaultClusteredPostOffice.this + ".ControlMessageListener has set state"); }
             }
             catch (Exception e)
             {
@@ -2549,18 +2554,20 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    private class NodeAddressMapListener implements ReplicationListener
    {
       public void onReplicationChange(Serializable key, Map updatedReplicantMap,
-                                      boolean added, int originatorNodeId)
+                                      boolean added, int originatorNodeID)
       {
+         log.debug(DefaultClusteredPostOffice.this + " received " + key +
+            " replication change from node " + originatorNodeID + ": " + updatedReplicantMap);
+
          if (key instanceof String && ((String)key).equals(ADDRESS_INFO_KEY))
          {
             log.debug("Cluster map:\n" + dumpClusterMap(updatedReplicantMap));
 
-            // A node-address mapping has been added/removed from global state, we need to update
-            // the failover map.
-            failoverMap = failoverMapper.generateMapping(updatedReplicantMap.keySet());
-
-            log.debug("Failover map:\n" + dumpFailoverMap(failoverMap));
+               // A node-address mapping has been added/removed from global state, we need to update
+               // the failover map.
+               failoverMap = failoverMapper.generateMapping(updatedReplicantMap.keySet());
+               log.debug("Failover map:\n" + dumpFailoverMap(failoverMap));
+            }
          }
       }
-   }
 }
