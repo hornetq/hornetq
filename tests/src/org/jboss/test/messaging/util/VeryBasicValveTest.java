@@ -40,6 +40,7 @@ public class VeryBasicValveTest extends TestCase
 
    static int counter = 0;
    static int counterWait = 0;
+   static int countIsOpen = 0;
 
    static boolean started=false;
    static Object startSemaphore = new Object();
@@ -66,6 +67,12 @@ public class VeryBasicValveTest extends TestCase
                   startSemaphore.wait();
                }
             }
+
+            if (valve.isOpened(true))
+            {
+               countIsOpen++;
+            }
+
             //log.info("Thread " + threadId + "Opening valve");
             if (!valve.open())
             {
@@ -132,6 +139,10 @@ public class VeryBasicValveTest extends TestCase
       {
          thread[i].join();
       }
+
+      log.info("CountIsOpened=" + countIsOpen);
+      log.info("CounterWait=" + counterWait);
+      log.info("counter=" + counter);
 
       assertEquals(1, counter);
       assertEquals(thread.length-1, counterWait);
