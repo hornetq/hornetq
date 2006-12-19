@@ -73,7 +73,7 @@ public class ClientCrashNegativeLeaseTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all");
+      localServer.start("all", true);
 
       //Set lease period to -1 --> this should disable leasing so the state won't be cleared up
       

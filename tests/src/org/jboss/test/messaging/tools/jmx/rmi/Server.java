@@ -47,7 +47,7 @@ public interface Server extends Remote
 {
    int getServerID() throws Exception;
 
-   void start(String containerConfig) throws Exception;
+   void start(String containerConfig, boolean clearDatabase) throws Exception;
 
    /**
     * @return true if the server was stopped indeed, or false if the server was stopped already

@@ -288,7 +288,17 @@ public class ServiceContainer
 
    // Public --------------------------------------------------------
 
+
+   /**
+    * By default, starting the container DELETES ALL DATA previously existing in the database.
+    */
    public void start() throws Exception
+   {
+      start(true);
+   }
+
+
+   public void start(boolean cleanDatabase) throws Exception
    {
       try
       {
@@ -380,19 +390,11 @@ public class ServiceContainer
             startSecurityManager();
          }
 
-         if (database && transaction && jca)
+         if (database && transaction && jca && cleanDatabase)
          {
             // We make sure the database is clean (only if we have all dependencies the database,
             // othewise we'll get an access error)
             deleteAllData();
-         }
-         else
-         {
-            if (database)
-            {
-               log.warn("Previous data has not been cleared, there may be " + "" +
-                        "garbage lying around in the database!");
-            }
          }
 
          loadJNDIContexts();

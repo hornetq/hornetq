@@ -73,7 +73,7 @@ public class CallbackFailureTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       //Start all the services locally
-      localServer.start("all");
+      localServer.start("all", true);
             
       localServer.deployQueue("Queue", null, false);
            

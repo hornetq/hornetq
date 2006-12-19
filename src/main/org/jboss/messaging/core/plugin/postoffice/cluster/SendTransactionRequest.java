@@ -169,12 +169,19 @@ class SendTransactionRequest extends TransactionRequest
    public String toString()
    {
       StringBuffer sb = new StringBuffer("SendTransactionRequest[");
-      for(Iterator i = messageHolders.iterator(); i.hasNext(); )
+      if (messageHolders == null)
       {
-         sb.append(((MessageHolder)i.next()).getMessage());
-         if (i.hasNext())
+         sb.append("EMPTY");
+      }
+      else
+      {
+         for(Iterator i = messageHolders.iterator(); i.hasNext(); )
          {
-            sb.append(',');
+            sb.append(((MessageHolder)i.next()).getMessage());
+            if (i.hasNext())
+            {
+               sb.append(',');
+            }
          }
       }
       sb.append("]");

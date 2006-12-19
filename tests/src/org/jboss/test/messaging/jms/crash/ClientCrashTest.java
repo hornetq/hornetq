@@ -73,7 +73,7 @@ public class ClientCrashTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all");
+      localServer.start("all", true);
 
       // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
       // the default, whatever that is ...

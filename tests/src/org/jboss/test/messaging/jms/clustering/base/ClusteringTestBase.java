@@ -91,8 +91,10 @@ public class ClusteringTestBase extends MessagingTestCase
 
       for(int i = 0; i < nodeCount; i++)
       {
-         // make sure all servers are created and started
-         ServerManagement.start(i, "all");
+         // make sure all servers are created and started; make sure that database is zapped
+         // ONLY for the first server, the others rely on values they expect to find in shared
+         // tables; don't clear the database for those.
+         ServerManagement.start(i, "all", i == 0);
 
          ServerManagement.deployClusteredQueue("testDistributedQueue", i);
          ServerManagement.deployClusteredTopic("testDistributedTopic", i);

@@ -139,9 +139,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getServerID();
    }
 
-   public void start(String containerConfig) throws Exception
+   public void start(String containerConfig, boolean clearDatabase) throws Exception
    {
-      server.start(containerConfig);
+      server.start(containerConfig, clearDatabase);
    }
 
    public boolean stop() throws Exception

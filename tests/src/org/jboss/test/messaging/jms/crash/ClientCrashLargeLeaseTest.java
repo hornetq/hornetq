@@ -73,7 +73,7 @@ public class ClientCrashLargeLeaseTest extends MessagingTestCase
       localServer = new LocalTestServer();
       
       // Start all the services locally
-      localServer.start("all");
+      localServer.start("all", true);
 
       localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "30000");
        

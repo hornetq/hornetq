@@ -160,16 +160,29 @@ public class ServerManagement
    }
 
 
+   /**
+    * Will clear the database at startup.
+    */
    public static synchronized void start(String config) throws Exception
    {
-      start(0, config);
+      start(0, config, true);
    }
+
+   /**
+    * Will clear the database at startup.
+    */
+   public static synchronized void start(int i, String config) throws Exception
+   {
+      start(i, config, true);
+   }
+
 
    /**
     * When this method correctly completes, the server (local or remote) is started and fully
     * operational (the service container and the server peer are created and started)
     */
-   public static synchronized void start(int i, String config) throws Exception
+   public static synchronized void start(int i, String config, boolean clearDatabase)
+      throws Exception
    {
       Server s = create(i);
 
@@ -177,7 +190,7 @@ public class ServerManagement
 
       log.info("starting server " + i);
 
-      s.start(config);
+      s.start(config, clearDatabase);
 
       log.info("server " + i + " started");
    }

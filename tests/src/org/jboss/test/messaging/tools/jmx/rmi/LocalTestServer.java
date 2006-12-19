@@ -61,7 +61,7 @@ public class LocalTestServer implements Server
 
    private static final Logger log = Logger.getLogger(LocalTestServer.class);
 
-   // Static --------------------------------------------------------
+   // Static --------------------------------------------------------    4
 
    public static void setEnvironmentServerIndex(int serverIndex)
    {
@@ -113,7 +113,7 @@ public class LocalTestServer implements Server
       return serverIndex;
    }
 
-   public synchronized void start(String containerConfig) throws Exception
+   public synchronized void start(String containerConfig, boolean clearDatabase) throws Exception
    {
       if (isStarted())
       {
@@ -127,7 +127,7 @@ public class LocalTestServer implements Server
          setEnvironmentServerIndex(serverIndex);
 
          sc = new ServiceContainer(containerConfig, null, serverIndex);
-         sc.start();
+         sc.start(clearDatabase);
 
          if (this.getDatabaseType().equals("hsqldb") && sc.isClustered())
          {
