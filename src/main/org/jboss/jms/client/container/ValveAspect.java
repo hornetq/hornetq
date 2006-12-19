@@ -58,8 +58,6 @@ public class ValveAspect extends HAAspect implements Interceptor
 
    private ClientConnectionDelegate delegate;
 
-   // alternative implementation
-   //private Valve valve = new Valve();
    private ReadWriteLock lockValve;
 
    ValveAspect(ClientConnectionDelegate delegate, HAAspect copy)
@@ -102,18 +100,6 @@ public class ValveAspect extends HAAspect implements Interceptor
             log.info("Retrying a call " + i);
          }
 
-
-         // An alternate way of playing with Valves is to set an attribute to true
-         // and wait for notifications until it's being set. Valve encpasulates this logic
-         //  if (i > 0)
-         //  {
-         //     valve.open(true);
-         //  }
-         //  else
-         //  {
-         //     valve.isOpened(true);
-         //  }
-
          // We shouldn't have any calls being made while the failover is being executed
          if (i > 0)
          {
@@ -148,12 +134,6 @@ public class ValveAspect extends HAAspect implements Interceptor
          }
          finally
          {
-            // An alternate way of playing with Valves is to set an attribute to true
-            // and wait for notifications until it's being set. Valve encpasulates this logic
-            //if (i>0)
-            //{
-            //   valve.reset();
-            //}
             if (i > 0)
             {
                lockValve.writeLock().release();
@@ -204,13 +184,6 @@ public class ValveAspect extends HAAspect implements Interceptor
       // only one execution should be performed if multiple exceptions happened at the same time
       lockValve.writeLock().acquire();
 
-      // An alternate way of playing with Valves is to set an attribute to true
-      // and wait for notifications until it's being set. Valve encpasulates this logic
-//      if (!valve.open())
-//      {
-//         return;
-//      }
-
       try
       {
          if (jmsConnection.isFailed())
@@ -231,10 +204,6 @@ public class ValveAspect extends HAAspect implements Interceptor
       }
       finally
       {
-         // An alternate way of playing with Valves is to set an attribute to true
-         // and wait for notifications until it's being set. Valve encpasulates this logic
-//         valve.close();
-//         valve = new Valve();
          lockValve.writeLock().release();
       }
 
