@@ -27,12 +27,14 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.messaging.util.Valve;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.CannotConnectException;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.Client;
 import java.io.IOException;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
 
 /**
  * This aspect will intercept failures from any HA object.
@@ -56,12 +58,15 @@ public class ValveAspect extends HAAspect implements Interceptor
 
    private ClientConnectionDelegate delegate;
 
-   private Valve valve = new Valve();
+   // alternative implementation
+   //private Valve valve = new Valve();
+   private ReadWriteLock lockValve;
 
    ValveAspect(ClientConnectionDelegate delegate, HAAspect copy)
    {
       super(copy);
       this.delegate = delegate;
+      lockValve = new ReentrantWriterPreferenceReadWriteLock();
 
       ConnectionListener listener = new ConnectionFailureListener(delegate);
 
@@ -91,14 +96,37 @@ public class ValveAspect extends HAAspect implements Interceptor
       // Eventually retries in case of listed exceptions
       for (int i = 0; i < MAX_IO_RETRY_COUNT; i++)
       {
-         // We shouldn't have any calls being made while the failover is being executed
-         valve.isOpened(true);
 
          if (i > 0)
          {
             log.info("Retrying a call " + i);
          }
+
+
+         // An alternate way of playing with Valves is to set an attribute to true
+         // and wait for notifications until it's being set. Valve encpasulates this logic
+         //  if (i > 0)
+         //  {
+         //     valve.open(true);
+         //  }
+         //  else
+         //  {
+         //     valve.isOpened(true);
+         //  }
+
+         // We shouldn't have any calls being made while the failover is being executed
+         if (i > 0)
+         {
+            // On retries we will use writeLocks, as the failover was already being processed
+            lockValve.writeLock().acquire();
+         }
+         else
+         {
+            lockValve.readLock().acquire();
+         }
+
          failure = false;
+
          try
          {
             returnObject = invocation.invokeNext();
@@ -118,6 +146,23 @@ public class ValveAspect extends HAAspect implements Interceptor
             log.error("ValveAspect didn't catch the exception " + e + ", and it will be forwarded", e);
             throw e;
          }
+         finally
+         {
+            // An alternate way of playing with Valves is to set an attribute to true
+            // and wait for notifications until it's being set. Valve encpasulates this logic
+            //if (i>0)
+            //{
+            //   valve.reset();
+            //}
+            if (i > 0)
+            {
+               lockValve.writeLock().release();
+            }
+            else
+            {
+               lockValve.readLock().release();
+            }
+         }
 
          if (!failure)
          {
@@ -128,7 +173,7 @@ public class ValveAspect extends HAAspect implements Interceptor
 
       if (failure)
       {
-         handleConnectionFailure(delegate);
+         handleConnectionFailure(delegate, delegate.getRemotingConnection());
          // if on the end we still have an exception there is nothing we can do besides throw an exception
          // so, no retires on the failedOver Invocation
          returnObject = invocation.invokeNext();
@@ -151,37 +196,48 @@ public class ValveAspect extends HAAspect implements Interceptor
     * it will just return all the others as soon as the valve is closed. This way all the simultaneous failures will
     * act as they were processed while we called failover only once.
     */
-   protected void handleConnectionFailure(ClientConnectionDelegate failedConnDelegate) throws Exception
+   protected void handleConnectionFailure(ClientConnectionDelegate failedConnDelegate,
+                                          JMSRemotingConnection jmsConnection) throws Exception
    {
-      Valve localValve = null;
-
-      // The idea is to reset the Valve synchronized with a reset valve
-      synchronized (this) // I'm not sure if this synchronized is necessary. I will keep it here just to be safe
-      {
-         localValve = valve;
-      }
+      log.info("Processing handleConnectionFailure ");
 
       // only one execution should be performed if multiple exceptions happened at the same time
-      if (localValve.open())
+      lockValve.writeLock().acquire();
+
+      // An alternate way of playing with Valves is to set an attribute to true
+      // and wait for notifications until it's being set. Valve encpasulates this logic
+//      if (!valve.open())
+//      {
+//         return;
+//      }
+
+      try
       {
-         try
+         if (jmsConnection.isFailed())
          {
-            log.info("Processing valve on exception failure");
-            super.handleConnectionFailure(failedConnDelegate);
+            log.info("Failover on " + failedConnDelegate + " was already performed, so just ignoring call to handleConnectionFailure");
+            return;
          }
-         finally
-         {
-            localValve.close();
-            synchronized (this)
-            {
-               // reset the valve, so future exceptions will also get processed
-               valve = new Valve();
-            }
-         }
-      } else
-      {
-         log.info("The valve was closed, so this invocation waited another invocation to finish on handleFailure");
+
+         log.info("Processing valve on exception failure");
+         jmsConnection.setFailed(true);
+         super.handleConnectionFailure(failedConnDelegate);
+         log.info("Failover on client finished");
       }
+      catch (Exception e)
+      {
+         log.error("An exception happened during client failover processing!", e);
+         throw e;
+      }
+      finally
+      {
+         // An alternate way of playing with Valves is to set an attribute to true
+         // and wait for notifications until it's being set. Valve encpasulates this logic
+//         valve.close();
+//         valve = new Valve();
+         lockValve.writeLock().release();
+      }
+
    }
 
    // Inner classes -------------------------------------------------
@@ -208,7 +264,7 @@ public class ValveAspect extends HAAspect implements Interceptor
          try
          {
             log.debug(this + " is being notified of connection failure: " + throwable);
-            handleConnectionFailure(cd);
+            handleConnectionFailure(cd, cd.getRemotingConnection());
          }
          catch (Throwable e)
          {

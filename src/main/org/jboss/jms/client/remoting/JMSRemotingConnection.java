@@ -61,6 +61,9 @@ public class JMSRemotingConnection
    protected InvokerLocator serverLocator;
    protected CallbackManager callbackManager;
 
+   /** When a failover is performed, this flag is set to true */
+   protected boolean failed=false;
+
    // Constructors --------------------------------------------------
 
    public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Throwable
@@ -181,6 +184,17 @@ public class JMSRemotingConnection
    public CallbackManager getCallbackManager()
    {
       return callbackManager;
+   }
+
+
+   public boolean isFailed()
+   {
+      return failed;
+   }
+
+   public void setFailed(boolean failed)
+   {
+      this.failed = failed;
    }
 
    public String toString()

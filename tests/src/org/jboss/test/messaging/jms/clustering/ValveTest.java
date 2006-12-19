@@ -25,6 +25,8 @@ package org.jboss.test.messaging.jms.clustering;
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.logging.Logger;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
@@ -49,8 +51,8 @@ public class ValveTest extends ClusteringTestBase
       super(name);
    }
 
-   int messageCounterConsumer =0;
-   int messageCounterProducer=0;
+   int messageCounterConsumer = 0;
+   int messageCounterProducer = 0;
 
 
    Object lockReader = new Object();
@@ -88,12 +90,12 @@ public class ValveTest extends ClusteringTestBase
             int counter = 0;
             while (true)
             {
-               Message message = consumer.receive(50);
-               if (message==null && shouldStop)
+               Message message = consumer.receive(5000);
+               if (message == null && shouldStop)
                {
                   break;
                }
-               if (message!=null)
+               if (message != null)
                {
                   synchronized (lockReader)
                   {
@@ -103,11 +105,11 @@ public class ValveTest extends ClusteringTestBase
                   if (counter++ % 10 == 0)
                   {
                      //log.info("Commit on id=" + id);
-                     session.commit();
+                     //session.commit();
                   }
                }
             }
-            session.commit();
+            //session.commit();
          }
          catch (Exception e)
          {
@@ -154,7 +156,7 @@ public class ValveTest extends ClusteringTestBase
                if (counter++ % 5 == 0)
                {
                   //log.info("Committing message");
-                  session.commit();
+                  //session.commit();
                }
             }
 
@@ -173,15 +175,36 @@ public class ValveTest extends ClusteringTestBase
    public void testMultiThreadFailover() throws Exception
    {
       JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
-      Connection conn = factory.createConnection();
+
+      Connection conn1 = cf.createConnection();
+      Connection conn2 = cf.createConnection();
+      Connection conn3 = cf.createConnection();
+
+      log.info("Created connections");
+
+      checkConnectionsDifferentServers(new Connection[]{conn1, conn2, conn3});
+
+      Connection conn = getConnection(new Connection[]{conn1, conn2, conn3}, 1);
       conn.start();
+
+      for (int i = 0; i < 3; i++)
+      {
+         JBossConnection connTest = (JBossConnection)getConnection(new Connection[]{conn1, conn2, conn3}, i);
+
+         String locator = ((ClientConnectionDelegate) connTest.getDelegate()).getRemotingConnection().
+            getInvokingClient().getInvoker().getLocator().getLocatorURI();
+
+         log.info("Server " + i + " has locator=" + locator);
+
+      }
+
 
       ArrayList list = new ArrayList();
 
       for (int i = 0; i < 5; i++)
       {
-         list.add(new LocalThreadProducer(i, conn.createSession(true, Session.AUTO_ACKNOWLEDGE), queue[1]));
-         list.add(new LocalThreadConsumer(i, conn.createSession(true, Session.AUTO_ACKNOWLEDGE), queue[1]));
+         list.add(new LocalThreadProducer(i, conn.createSession(false, Session.AUTO_ACKNOWLEDGE), queue[1]));
+         list.add(new LocalThreadConsumer(i, conn.createSession(false, Session.AUTO_ACKNOWLEDGE), queue[1]));
       }
 
       for (Iterator iter = list.iterator(); iter.hasNext();)
@@ -199,11 +222,15 @@ public class ValveTest extends ClusteringTestBase
       Thread.sleep(30000);
 
       log.info("Killing server 1");
+      ServerManagement.log(ServerManagement.INFO, "Server 1 will be killed");
+      ServerManagement.log(ServerManagement.INFO, "Server 1 will be killed", 2);
+      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
 
       ServerManagement.kill(1);
 
       Thread.sleep(50000);
-      shouldStop=true;
+      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
+      shouldStop = true;
 
       for (Iterator iter = list.iterator(); iter.hasNext();)
       {
@@ -211,7 +238,7 @@ public class ValveTest extends ClusteringTestBase
          t.join();
       }
 
-      log.info("produced " + messageCounterProducer + " and read " + messageCounterConsumer);
+      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
 
       assertEquals(messageCounterProducer, messageCounterConsumer);
 
