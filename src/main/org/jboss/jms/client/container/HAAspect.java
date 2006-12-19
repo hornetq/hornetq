@@ -59,8 +59,6 @@ import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ConnectionListener;
 
 /**
  *
@@ -225,22 +223,6 @@ public class HAAspect
       }
    }
 
-   // Debug information about interceptors
-   protected void printInterceptors(Interceptor interceptors[])
-    {
-       if (interceptors==null || interceptors.length==0)
-       {
-          log.info("Interceptor chain is empty");
-       }
-       else
-       {
-          for (int i=0; i<interceptors.length; i++)
-          {
-             log.info("Interceptor[" + i + "] = " + interceptors[i].getName() + " className= " + interceptors[i].getClass().getName());
-          }
-       }
-    }
-   
    /** The valve aspect needs to stay after ExceptionInterceptor, and before DelegateSupport.
     *  This method will place the aspect on the proper place */
    protected void installValveAspect(DelegateSupport delegate, Interceptor interceptor)
@@ -248,9 +230,7 @@ public class HAAspect
       Advised advised = (Advised)delegate;
       Interceptor interceptors[] = advised._getInstanceAdvisor().getInterceptors();
 
-      log.info("Installing interceptors");
-      printInterceptors(interceptors);
-
+      //printInterceptors(interceptors);
 
       Interceptor delegateInterceptorFound = null;
 
@@ -275,8 +255,7 @@ public class HAAspect
          advised._getInstanceAdvisor().appendInterceptor(delegateInterceptorFound);
       }
 
-      log.info("Interceptors after installation:");
-      printInterceptors(advised._getInstanceAdvisor().getInterceptors());
+      //printInterceptors(advised._getInstanceAdvisor().getInterceptors());
 
    }
    
@@ -683,6 +662,22 @@ public class HAAspect
       if (trace) { log.trace("handling fail over on browserDelegate " + failedBrowserDelegate + " destination=" + failedBrowserState.getJmsDestination() + " selector=" + failedBrowserState.getMessageSelector()); }
 
    }
+
+   // Debug information about interceptors
+   private void printInterceptors(Interceptor interceptors[])
+    {
+       if (interceptors==null || interceptors.length==0)
+       {
+          log.info("Interceptor chain is empty");
+       }
+       else
+       {
+          for (int i=0; i<interceptors.length; i++)
+          {
+             log.info("Interceptor[" + i + "] = " + interceptors[i].getName() + " className= " + interceptors[i].getClass().getName());
+          }
+       }
+    }
 
 }
 
