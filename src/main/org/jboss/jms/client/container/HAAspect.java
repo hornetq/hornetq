@@ -163,7 +163,7 @@ public class HAAspect
       ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
 
       // ValveAspect is supposed to be created per ClientConnectionDelegate
-      installValveAspect(cd, new ValveAspect(cd, this));
+      //installValveAspect(cd, new ValveAspect(cd, this));
 
       if(trace) { log.trace(this + " got local connection delegate " + cd); }
 
