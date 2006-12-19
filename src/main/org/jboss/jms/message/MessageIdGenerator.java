@@ -25,7 +25,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.messaging.core.plugin.IDBlock;
 
 /**
  * 
@@ -74,7 +74,7 @@ public class MessageIdGenerator
 
    protected void getNextBlock() throws JMSException
    {
-      IdBlock block = cfd.getIdBlock(blockSize);
+      IDBlock block = cfd.getIdBlock(blockSize);
 
       nextID = block.getLow();
       high = block.getHigh();

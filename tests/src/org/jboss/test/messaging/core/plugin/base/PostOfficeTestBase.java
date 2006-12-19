@@ -36,7 +36,7 @@ import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.Condition;
@@ -76,9 +76,9 @@ public class PostOfficeTestBase extends MessagingTestCase
 
    protected ServiceContainer sc;
 
-   protected IdManager channelIdManager;   
+   protected IDManager channelIDManager;
    
-   protected IdManager transactionIdManager;   
+   protected IDManager transactionIDManager;
    
    protected PersistenceManager pm;
       
@@ -113,10 +113,10 @@ public class PostOfficeTestBase extends MessagingTestCase
                   true, true, true, 100);     
       pm.start();
       
-      transactionIdManager = new IdManager("TRANSACTION_ID", 10, pm);
-      transactionIdManager.start();
+      transactionIDManager = new IDManager("TRANSACTION_ID", 10, pm);
+      transactionIDManager.start();
       
-      tr = new TransactionRepository(pm, transactionIdManager);
+      tr = new TransactionRepository(pm, transactionIDManager);
       tr.start();
       
       ms = new SimpleMessageStore();
@@ -124,8 +124,8 @@ public class PostOfficeTestBase extends MessagingTestCase
       
       pool = new QueuedExecutorPool(10);
       
-      channelIdManager = new IdManager("CHANNEL_ID", 10, pm);
-      channelIdManager.start();
+      channelIDManager = new IDManager("CHANNEL_ID", 10, pm);
+      channelIDManager.start();
       
       conditionFactory = new SimpleConditionFactory();
             
@@ -142,8 +142,8 @@ public class PostOfficeTestBase extends MessagingTestCase
       pm.stop();
       tr.stop();
       ms.stop();
-      transactionIdManager.stop();
-      channelIdManager.stop();
+      transactionIDManager.stop();
+      channelIDManager.stop();
       
       super.tearDown();
    }

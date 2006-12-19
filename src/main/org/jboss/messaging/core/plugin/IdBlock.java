@@ -28,27 +28,25 @@ import org.jboss.messaging.util.Streamable;
 
 /**
  * 
- * A IdBlock.
+ * A IDBlock.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1
  *
- * IdBlock.java,v 1.1 2006/03/07 17:11:15 timfox Exp
+ * IDBlock.java,v 1.1 2006/03/07 17:11:15 timfox Exp
  */
-public class IdBlock implements Streamable
+public class IDBlock implements Streamable
 {
-   protected long low;
+   private long low;
+   private long high;
    
-   protected long high;
-   
-   public IdBlock()
+   public IDBlock()
    {      
    }
    
-   public IdBlock(long low, long high)
+   public IDBlock(long low, long high)
    {
       this.low = low;
-      
       this.high = high;
    }
    
@@ -65,20 +63,18 @@ public class IdBlock implements Streamable
    public void read(DataInputStream in) throws Exception
    {
       low = in.readLong();
-      
       high = in.readLong();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       out.writeLong(low);
-      
       out.writeLong(high);
    }
 
    public String toString()
    {
-      return "IdBlock[" + low + "-" + high + "]";
+      return "IDBlock[" + low + "-" + high + "]";
    }
 
 }

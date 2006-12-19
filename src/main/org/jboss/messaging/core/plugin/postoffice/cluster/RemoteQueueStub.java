@@ -49,78 +49,57 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public class RemoteQueueStub implements ClusteredQueue
 {
+   // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(RemoteQueueStub.class);
-      
-   private int nodeId;
-   
+
+   // Static --------------------------------------------------------
+
+   private static boolean trace = log.isTraceEnabled();
+
+   // Attributes ----------------------------------------------------
+
+   private int nodeID;
    private String name;
-   
-   private long id;
-   
+   private long channelID;
    private Filter filter;
-   
    private boolean recoverable;
-   
    private PersistenceManager pm;
-   
    private QueueStats stats;
-   
+
+   // Constructors --------------------------------------------------
+
    public RemoteQueueStub(int nodeId, String name, long id, boolean recoverable,
                           PersistenceManager pm, Filter filter)
    {
-      this.nodeId = nodeId;
-      
+      this.nodeID = nodeId;
       this.name = name;
-      
-      this.id = id;
-      
+      this.channelID = id;
       this.recoverable = recoverable;
-      
       this.pm = pm;
-      
       this.filter = filter;
    }
-   
-   public int getNodeId()
-   {
-      return nodeId;
-   }
-   
-   public boolean isLocal()
-   {
-      return false;
-   }
-   
-   public void setStats(QueueStats stats)
-   {
-      this.stats = stats;
-   }
-   
-   public QueueStats getStats()
-   {
-      return stats;
-   }
-   
+
+   // Receiver implementation ---------------------------------------
+
    public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
    {
+      if (trace) { log.trace(this + " handling " + reference); }
+
       if (filter != null && !filter.accept(reference))
       {
-         Delivery del = new SimpleDelivery(this, reference, false, false);
-         
-         log.info("********** doesn't match filter");
-         
-         return del;
+         if (trace) { log.trace(this + " rejecting " + reference + " because it doesn't match filter"); }
+         return new SimpleDelivery(this, reference, false, false);
       }
-      
+
       if (recoverable && reference.isReliable())
       {
          try
          {
-            //If the message is persistent and we are recoverable then we persist here, *before*
-            //the message is sent across the network
-
-            //This will increment any channelcount on the message in storage
-            pm.addReference(id, reference, tx);
+            // If the message is persistent and we are recoverable then we persist here, *before*
+            // the message is sent across the network. This will increment any channelcount on the
+            // message in storage.
+            pm.addReference(channelID, reference, tx);
          }
          catch (Exception e)
          {
@@ -128,20 +107,64 @@ public class RemoteQueueStub implements ClusteredQueue
             return null;
          }
       }
-      
-      log.info("*********** accepting message:" + reference);
-  
-      return new SimpleDelivery(this, reference, false);      
+
+      if (trace) { log.trace(this + " accepting " + reference + " for delivery"); }
+      return new SimpleDelivery(this, reference, false);
    }
 
-   public Filter getFilter()
+   // Distributor implementation ------------------------------------
+
+   public boolean contains(Receiver receiver)
    {
-      return filter;
+      throw new UnsupportedOperationException();
    }
 
-   public String getName()
+   public Iterator iterator()
    {
-      return name;
+      throw new UnsupportedOperationException();
+   }
+
+   public boolean add(Receiver receiver)
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   public boolean remove(Receiver receiver)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public int numberOfReceivers()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   // DeliveryObserver implementation -------------------------------
+
+   public void acknowledge(Delivery d, Transaction tx) throws Throwable
+   {
+      if (recoverable && d.getReference().isReliable())
+      {
+         pm.removeReference(this.channelID, d.getReference(), tx);
+      }
+   }
+
+   public void cancel(Delivery d) throws Throwable
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   // Channel implemenation -----------------------------------------
+
+   public long getChannelID()
+   {
+      return channelID;
+   }
+
+   public boolean isRecoverable()
+   {
+      return recoverable;
    }
 
    public boolean acceptReliableMessages()
@@ -159,7 +182,7 @@ public class RemoteQueueStub implements ClusteredQueue
       throw new UnsupportedOperationException();
    }
 
-   public void clear()
+   public void deliver(boolean synchronous)
    {
       throw new UnsupportedOperationException();
    }
@@ -168,24 +191,19 @@ public class RemoteQueueStub implements ClusteredQueue
    {
    }
 
-   public void deliver(boolean synchronous)
-   {
-      throw new UnsupportedOperationException();
-   }
-
    public List delivering(Filter filter)
    {
       throw new UnsupportedOperationException();
    }
 
-   public long getChannelID()
+   public List undelivered(Filter filter)
    {
-      return id;
+      throw new UnsupportedOperationException();
    }
 
-   public boolean isRecoverable()
+   public void clear()
    {
-      return recoverable;
+      throw new UnsupportedOperationException();
    }
 
    public int messageCount()
@@ -198,83 +216,83 @@ public class RemoteQueueStub implements ClusteredQueue
       throw new UnsupportedOperationException();
    }
 
-   public List undelivered(Filter filter)
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   public void acknowledge(Delivery d, Transaction tx) throws Throwable
-   {
-      if (recoverable && d.getReference().isReliable())
-      {
-         pm.removeReference(this.id, d.getReference(), tx);
-      }
-   }
-
-   public void cancel(Delivery d) throws Throwable
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   public boolean add(Receiver receiver)
-   {
-      // TODO Auto-generated method stub
-      return false;
-   }
-
-   public boolean contains(Receiver receiver)
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   public Iterator iterator()
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   public boolean remove(Receiver receiver)
-   {
-      throw new UnsupportedOperationException();
-   }
-   
-   public int numberOfReceivers()
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   public void activate()
-   {      
-   }
-
-   public void deactivate()
-   {      
-   }
-
    public void load() throws Exception
-   {      
+   {
    }
 
    public void unload() throws Exception
-   {      
+   {
    }
-   
+
+   public void activate()
+   {
+   }
+
+   public void deactivate()
+   {
+   }
+
    public boolean isActive()
    {
       throw new UnsupportedOperationException();
-   }
-   
-   public boolean isClustered()
-   {
-      return true;
-   }
-
-   public String toString()
-   {
-      return "RemoteQueueStub(node=" + this.nodeId + " name=" + this.name + " channelId=" + this.id + ")";
    }
 
    public List createDeliveries(List messageIds)
    {
       throw new UnsupportedOperationException();
    }
+
+   // Queue implementation ------------------------------------------
+
+   public String getName()
+   {
+      return name;
+   }
+
+   public Filter getFilter()
+   {
+      return filter;
+   }
+
+   public boolean isClustered()
+   {
+      return true;
+   }
+
+   // ClusteredQueue implementation ---------------------------------
+
+   public QueueStats getStats()
+   {
+      return stats;
+   }
+
+   public int getNodeId()
+   {
+      return nodeID;
+   }
+
+   public boolean isLocal()
+   {
+      return false;
+   }
+
+   // Public --------------------------------------------------------
+
+   public void setStats(QueueStats stats)
+   {
+      this.stats = stats;
+   }
+
+   public String toString()
+   {
+      return "RemoteQueueStub[" + channelID + "/" + name + " -> " + nodeID + "]";
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 }

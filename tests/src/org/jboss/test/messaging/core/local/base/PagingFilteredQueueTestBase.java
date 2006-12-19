@@ -33,7 +33,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.message.CoreMessage;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -96,7 +96,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
    protected PagingFilteredQueue queue;
    
-   protected IdManager idm;
+   protected IDManager idm;
    
    // Constructors --------------------------------------------------
 
@@ -119,7 +119,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
                                       true, true, true, 100);
       pm.start();
       
-      idm = new IdManager("TRANSACTION_ID", 10, pm);
+      idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
       tr = new TransactionRepository(pm, idm);

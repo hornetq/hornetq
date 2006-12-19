@@ -41,7 +41,7 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.server.remoting.MetaDataConstants;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 
@@ -144,7 +144,7 @@ public class ClientConnectionFactoryDelegate
     * server-side endpoint.
     * @see org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint#getIdBlock(int)  
     */
-   public IdBlock getIdBlock(int size)
+   public IDBlock getIdBlock(int size)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

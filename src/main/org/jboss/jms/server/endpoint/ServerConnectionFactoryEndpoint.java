@@ -30,7 +30,7 @@ import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.messaging.core.plugin.IDBlock;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -184,11 +184,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       }
    }
 
-   public IdBlock getIdBlock(int size) throws JMSException
+   public IDBlock getIdBlock(int size) throws JMSException
    {
       try
       {
-         return serverPeer.getMessageIdManager().getIdBlock(size);
+         return serverPeer.getMessageIDManager().getIDBlock(size);
       }
       catch (Throwable t)
       {

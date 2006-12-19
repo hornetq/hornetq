@@ -37,14 +37,23 @@ import java.util.List;
  */
 public class DefaultBindings implements Bindings
 {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private List bindings;
-   
    private int durableCount;
-   
+
+   // Constructors --------------------------------------------------
+
    public DefaultBindings()
    {
       bindings = new ArrayList();
    }
+
+   // Bindings implementation ---------------------------------------
 
    public void addBinding(Binding binding)
    {
@@ -53,11 +62,23 @@ public class DefaultBindings implements Bindings
          throw new IllegalArgumentException("Bindings already contains binding: " + binding);
       }
       bindings.add(binding);
-      
+
       if (binding.getQueue().isRecoverable())
       {
          durableCount++;
       }
+   }
+
+   public boolean removeBinding(Binding binding)
+   {
+      boolean removed = bindings.remove(binding);
+
+      if (removed && binding.getQueue().isRecoverable())
+      {
+         durableCount--;
+      }
+
+      return removed;
    }
 
    public Collection getAllBindings()
@@ -65,26 +86,31 @@ public class DefaultBindings implements Bindings
       return bindings;
    }
 
-   public boolean removeBinding(Binding binding)
-   {
-      boolean removed = bindings.remove(binding);
-      
-      if (removed && binding.getQueue().isRecoverable())
-      {
-         durableCount--;
-      }
-      
-      return removed;
-   }
-   
    public int getDurableCount()
    {
       return durableCount;
    }
-   
+
    public boolean isEmpty()
    {
       return bindings.isEmpty();
    }
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "Bindings[" + Integer.toHexString(hashCode()) + ", count=" + bindings.size() + "]";
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+
 
 }

@@ -64,7 +64,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -128,7 +128,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private MessageStore ms;
 
    private DestinationManager dm;
-   private IdManager idm;
+   private IDManager idm;
    private QueuedExecutorPool pool;
    private TransactionRepository tr;
    private PostOffice postOffice;
@@ -157,7 +157,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ms = sp.getMessageStore();
       dm = sp.getDestinationManager();
       postOffice = sp.getPostOfficeInstance();     
-      idm = sp.getChannelIdManager();
+      idm = sp.getChannelIDManager();
       pool = sp.getQueuedExecutorPool();
       nodeId = sp.getServerPeerID();
       tr = sp.getTxRepository();
@@ -248,7 +248,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	   
    	   ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
    	   
-         log.debug("created and registered " + ep);
+         log.debug(this + " created and registered " + ep);
    
    	   return stub;
       }
@@ -403,7 +403,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             Cancel cancel = (Cancel)cancels.get(i);       
             
-            if (trace) { log.trace("Cancelling delivery " + cancel.getDeliveryId()); }
+            if (trace) { log.trace(this + " cancelling delivery " + cancel.getDeliveryId()); }
             
             Delivery del = cancelDeliveryInternal(cancel);
             
@@ -422,7 +422,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void recoverDeliveries(List deliveryRecoveryInfos) throws JMSException
    {
-      if (trace) { log.trace(this + "recoverDeliveries(): " + deliveryRecoveryInfos); }
+      if (trace) { log.trace(this + "recovering deliveries " + deliveryRecoveryInfos); }
       try
       {
          if (postOffice.isLocal())
@@ -552,7 +552,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             QueuedExecutor executor = (QueuedExecutor)pool.get();
             
             PagingFilteredQueue q = 
-               new PagingFilteredQueue(dest.getName(), idm.getId(), ms, pm, true, false,
+               new PagingFilteredQueue(dest.getName(), idm.getID(), ms, pm, true, false,
                                        executor, null, fullSize, pageSize, downCacheSize);                        
             
             //Make a binding for this queue
@@ -778,13 +778,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
       Set channels = new HashSet();
       
-      if (trace) { log.trace("Cancelling " + entries.size() + " deliveries"); }
+      if (trace) { log.trace(this + " cancelling " + entries.size() + " deliveries"); }
       
       while (iter.hasNext())
       {
          Map.Entry entry = (Map.Entry)iter.next();
          
-         if (trace) { log.trace("Cancelling delivery with delivery id: " + entry.getKey()); }
+         if (trace) { log.trace(this + " cancelling delivery with delivery id: " + entry.getKey()); }
          
          Delivery del = (Delivery)entry.getValue();
          
@@ -829,7 +829,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    void acknowledgeTransactionally(List acks, Transaction tx) throws Throwable
    {
-      if (trace) { log.trace("Acknowledging transactionally " + acks.size() + " for tx: " + tx); }
+      if (trace) { log.trace(this + " acknowledging transactionally " + acks.size() + " for tx: " + tx); }
       
       DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getCallback(this);
       
@@ -888,7 +888,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private void acknowledgeDeliveryInternal(Ack ack) throws Throwable
    {
-      if (trace) { log.trace("Acknowledging delivery " + ack.getDeliveryId()); }
+      if (trace) { log.trace(this + " acknowledging delivery " + ack.getDeliveryId()); }
       
       Delivery del = (Delivery)deliveries.remove(new Long(ack.getDeliveryId()));
       
@@ -953,51 +953,51 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       return del;
    }
-      
+
    private ConsumerDelegate failoverConsumer(JBossDestination jmsDestination,
-            String selectorString,
-            boolean noLocal,  String subscriptionName,
-            boolean connectionConsumer,
-            long oldChannelID) throws Exception
+                                             String selectorString,
+                                             boolean noLocal,  String subscriptionName,
+                                             boolean connectionConsumer,
+                                             long oldChannelID) throws Exception
    {
-      //fail over channel
+      // fail over channel
       if (postOffice.isLocal())
       {
          throw new IllegalStateException("Cannot failover on a non clustered post office!");
       }
+
+      log.debug(this + " failing over consumer");
       
-      //this is a Clustered operation... so postOffice here must be Clustered
+      // this is a Clustered operation... so postOffice here must be Clustered
       Binding binding = ((ClusteredPostOffice)postOffice).getBindingforChannelId(oldChannelID);
       if (binding == null)
       {
          throw new IllegalStateException("Can't find failed over channel " + oldChannelID);
       }
-      
-      // TODO - Remove this log.info before merging into trunk
-      if (binding.getQueue() instanceof RemoteQueueStub)
+
+      if (trace)
       {
-         log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((RemoteQueueStub)binding.getQueue()).getChannelID());
+         long newChannelID =
+            binding.getQueue() instanceof RemoteQueueStub ?
+               ((RemoteQueueStub)binding.getQueue()).getChannelID() :
+               ((PagingFilteredQueue)binding.getQueue()).getChannelID();
+
+         log.trace(this + "failing over from channel " + oldChannelID + " to channel " + newChannelID);
       }
-      else
-      {
-         log.info("OldChannelId=" + oldChannelID + " while currentChannelId=" + ((PagingFilteredQueue)binding.getQueue()).getChannelID());
-      }
-      
+
       int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
-      
       int prefetchSize = connectionEndpoint.getPrefetchSize();
       
       ServerConsumerEndpoint ep =
-         
          new ServerConsumerEndpoint(consumerID, binding.getQueue(),
-                  binding.getQueue().getName(), this, selectorString, noLocal,
-                  jmsDestination, prefetchSize);
+                                    binding.getQueue().getName(), this, selectorString, noLocal,
+                                    jmsDestination, prefetchSize);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
-      
+
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
-                  prefetchSize, maxDeliveryAttempts);
+                                    prefetchSize, maxDeliveryAttempts);
             
       synchronized (consumers)
       {      
@@ -1023,9 +1023,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
          selectorString = null;
       }
       
-      log.debug("creating consumer for " + jmsDestination + ", selector " + selectorString + ", " + (noLocal ? "noLocal, " : "") + "subscription " + subscriptionName);
-      
-      ManagedDestination mDest = dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue());
+      log.debug(this + " creating consumer for " + jmsDestination +
+         (selectorString == null ? "" : ", selector '" + selectorString + "'") +
+         (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
+         (noLocal ? ", noLocal" : ""));
+
+      ManagedDestination mDest = dm.
+         getDestination(jmsDestination.getName(), jmsDestination.isQueue());
       
       if (mDest == null)
       {
@@ -1048,7 +1052,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       Binding binding = null;
       
-      //Always validate the selector first
+      // Always validate the selector first
       Selector selector = null;
       if (selectorString != null)
       {
@@ -1062,7 +1066,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          if (subscriptionName == null)
          {
             // non-durable subscription
-            if (log.isTraceEnabled()) { log.trace("creating new non-durable subscription on " + jmsDestination); }
+            if (log.isTraceEnabled()) { log.trace(this + " creating new non-durable subscription on " + jmsDestination); }
             
             // Create the non durable sub
             QueuedExecutor executor = (QueuedExecutor)pool.get();
@@ -1071,7 +1075,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             if (postOffice.isLocal())
             {
-               q = new PagingFilteredQueue(new GUID().toString(), idm.getId(), ms, pm, true, false,
+               q = new PagingFilteredQueue(new GUID().toString(), idm.getID(), ms, pm, true, false,
                         executor, selector,
                         mDest.getFullSize(),
                         mDest.getPageSize(),
@@ -1081,7 +1085,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
             else
             {
-               q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(), idm.getId(), ms, pm, true, false,
+               q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(), idm.getID(), ms, pm, true, false,
                         executor, selector, tr,
                         mDest.getFullSize(),
                         mDest.getPageSize(),
@@ -1106,7 +1110,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
             }
             
-            // we have a durable subscription, look it up
+            // We have a durable subscription, look it up
             String clientID = connectionEndpoint.getClientID();
             if (clientID == null)
             {
@@ -1123,28 +1127,29 @@ public class ServerSessionEndpoint implements SessionEndpoint
             {
                // Does not already exist
                
-               if (trace) { log.trace("creating new durable subscription on " + jmsDestination); }
+               if (trace) { log.trace(this + " creating new durable subscription on " + jmsDestination); }
                
                QueuedExecutor executor = (QueuedExecutor)pool.get();
                PagingFilteredQueue q;
-               
+
                if (postOffice.isLocal())
                {
-                  q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
-                           executor, selector,
-                           mDest.getFullSize(),
-                           mDest.getPageSize(),
-                           mDest.getDownCacheSize());
-                  
+                  q = new PagingFilteredQueue(name, idm.getID(), ms, pm, true, true,
+                                              executor, selector,
+                                              mDest.getFullSize(),
+                                              mDest.getPageSize(),
+                                              mDest.getDownCacheSize());
+
                   binding = postOffice.bindQueue(topicCond, q);
                }
                else
                {
-                  q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
-                           executor, selector, tr,
-                           mDest.getFullSize(),
-                           mDest.getPageSize(),
-                           mDest.getDownCacheSize());
+                  q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getID(),
+                                              ms, pm, true, true,
+                                              executor, selector, tr,
+                                              mDest.getFullSize(),
+                                              mDest.getPageSize(),
+                                              mDest.getDownCacheSize());
                   
                   ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
                   
@@ -1162,7 +1167,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             {
                //Durable sub already exists
                
-               if (trace) { log.trace("subscription " + subscriptionName + " already exists"); }
+               if (trace) { log.trace(this + " subscription " + subscriptionName + " already exists"); }
                
                // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                // A client can change an existing durable subscription by creating a durable
@@ -1210,7 +1215,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   if (postOffice.isLocal())
                   {
-                     q = new PagingFilteredQueue(name, idm.getId(), ms, pm, true, true,
+                     q = new PagingFilteredQueue(name, idm.getID(), ms, pm, true, true,
                               executor, selector,
                               mDest.getFullSize(),
                               mDest.getPageSize(),
@@ -1219,7 +1224,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   }
                   else
                   {
-                     q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getId(), ms, pm, true, true,
+                     q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getID(), ms, pm, true, true,
                               executor, selector, tr,
                               mDest.getFullSize(),
                               mDest.getPageSize(),
@@ -1271,7 +1276,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          consumers.put(new Integer(consumerID), ep);
       }
          
-      log.debug("created and registered " + ep);
+      log.debug(this + " created and registered " + ep);
       
       return stub;
    }

@@ -101,15 +101,15 @@ public class RecoveryTest extends PostOfficeTestBase
          
          office3 = (DefaultClusteredPostOffice)createClusteredPostOffice(3, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
          
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding3 =
             office3.bindClusteredQueue(new SimpleCondition("topic1"), queue3);
          
@@ -236,15 +236,15 @@ public class RecoveryTest extends PostOfficeTestBase
          
          office3 = (DefaultClusteredPostOffice)createClusteredPostOffice(3, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
          
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding3 =
             office3.bindClusteredQueue(new SimpleCondition("topic1"), queue3);
          

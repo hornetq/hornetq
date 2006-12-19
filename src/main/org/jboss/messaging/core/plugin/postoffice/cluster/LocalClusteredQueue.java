@@ -59,33 +59,30 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    private TransactionRepository tr;
    
    //TODO - we shouldn't have to specify office AND nodeId
-   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
-                              boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
-                              Filter filter, TransactionRepository tr,
+   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id,
+                              MessageStore ms, PersistenceManager pm,
+                              boolean acceptReliableMessages, boolean recoverable,
+                              QueuedExecutor executor, Filter filter, TransactionRepository tr,
                               int fullSize, int pageSize, int downCacheSize)
    {
-      super(name, id, ms, pm, acceptReliableMessages, recoverable, executor, filter, fullSize, pageSize, downCacheSize);
+      super(name, id, ms, pm, acceptReliableMessages, recoverable, 
+            executor, filter, fullSize, pageSize, downCacheSize);
      
       this.nodeId = nodeId;
-      
       this.tr = tr;
-      
-      //TODO - This cast is potentially unsafe - handle better
-      this.office = (PostOfficeInternal)office;
+      this.office = (PostOfficeInternal)office; //TODO - This cast is potentially unsafe - handle better
    }
    
-   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id, MessageStore ms, PersistenceManager pm,             
-                              boolean acceptReliableMessages, boolean recoverable, QueuedExecutor executor,
-                              Filter filter, TransactionRepository tr)
+   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id,
+                              MessageStore ms, PersistenceManager pm,
+                              boolean acceptReliableMessages, boolean recoverable,
+                              QueuedExecutor executor, Filter filter, TransactionRepository tr)
    {
       super(name, id, ms, pm, acceptReliableMessages, recoverable, executor, filter);
       
       this.nodeId = nodeId;
-      
       this.tr = tr;
-      
-      //TODO - This cast is potentially unsafe - handle better
-      this.office = (PostOfficeInternal)office;
+      this.office = (PostOfficeInternal)office; //TODO - This cast is potentially unsafe - handle better
    }
    
    public void setPullQueue(RemoteQueueStub queue)
@@ -135,7 +132,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
 
    public String toString()
    {
-      return "LocalClusteredQueue[" + this.getChannelID() + "/" + this.getName() +"]"; 
+      return "LocalClusteredQueue[" + getChannelID() + "/" + getName() +"]"; 
    }
    
    /*

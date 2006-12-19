@@ -269,7 +269,7 @@ public class DefaultRouter implements ClusterRouter
 
    public String toString()
    {
-      return "DefaultRouter[" + Integer.toHexString(hashCode()) + "]";
+      return "Router[" + Integer.toHexString(hashCode()) + "]";
    }
 
    // Package protected ---------------------------------------------

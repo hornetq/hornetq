@@ -21,8 +21,8 @@
   */
 package org.jboss.test.messaging.core.plugin;
 
-import org.jboss.messaging.core.plugin.IdBlock;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -90,7 +90,7 @@ public class IdManagerTest extends MessagingTestCase
    
    public void test1() throws Exception
    {
-      IdManager idm = new IdManager("test_counter", 1000, pm);
+      IDManager idm = new IDManager("test_counter", 1000, pm);
       idm.start();
       
       int blockSize = 37;
@@ -99,7 +99,7 @@ public class IdManagerTest extends MessagingTestCase
       
       for (int i = 0; i < 1000; i++)
       {
-         IdBlock block = idm.getIdBlock(blockSize);
+         IDBlock block = idm.getIDBlock(blockSize);
                    
          assertTrue(block.getLow() >= nextLow);
          
@@ -113,12 +113,12 @@ public class IdManagerTest extends MessagingTestCase
    
    public void test2() throws Exception
    {
-      IdManager idm = new IdManager("test_counter2", 100, pm);
+      IDManager idm = new IDManager("test_counter2", 100, pm);
       idm.start();
          
       for (int i = 0; i < 1000; i++)
       {
-         long id = idm.getId();
+         long id = idm.getID();
          
          assertEquals(i, id);
       }

@@ -47,7 +47,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.SimpleMemoryManager;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
@@ -126,9 +126,9 @@ public class ServerPeer extends ServiceMBeanSupport
    private TransactionRepository txRepository;
    private ConnectionManager connectionManager;
    private ConnectorManager connectorManager;
-   private IdManager messageIdManager;
-   private IdManager channelIdManager;
-   private IdManager transactionIdManager;
+   private IDManager messageIDManager;
+   private IDManager channelIDManager;
+   private IDManager transactionIDManager;
    private MemoryManager memoryManager;
    private QueuedExecutorPool queuedExecutorPool;
    private MessageStore messageStore;
@@ -211,22 +211,22 @@ public class ServerPeer extends ServiceMBeanSupport
          //MBean dependencies
 
          // Create the wired components
-         messageIdManager = new IdManager("MESSAGE_ID", 4096, persistenceManager);
-         channelIdManager = new IdManager("CHANNEL_ID", 10, persistenceManager);
-         transactionIdManager = new IdManager("TRANSACTION_ID", 1024, persistenceManager);
+         messageIDManager = new IDManager("MESSAGE_ID", 4096, persistenceManager);
+         channelIDManager = new IDManager("CHANNEL_ID", 10, persistenceManager);
+         transactionIDManager = new IDManager("TRANSACTION_ID", 1024, persistenceManager);
          destinationJNDIMapper = new DestinationJNDIMapper(this);
          connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
          connectionManager = new SimpleConnectionManager();
          connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
          messageStore = new SimpleMessageStore();
-         txRepository = new TransactionRepository(persistenceManager, transactionIdManager);
+         txRepository = new TransactionRepository(persistenceManager, transactionIDManager);
 
          // Start the wired components
 
-         messageIdManager.start();
-         channelIdManager.start();
-         transactionIdManager.start();
+         messageIDManager.start();
+         channelIDManager.start();
+         transactionIDManager.start();
          destinationJNDIMapper.start();
          connFactoryJNDIMapper.start();
          connectionManager.start();
@@ -268,12 +268,12 @@ public class ServerPeer extends ServiceMBeanSupport
 
          // Stop the wired components
 
-         messageIdManager.stop();
-         messageIdManager = null;
-         channelIdManager.stop();
-         channelIdManager = null;
-         transactionIdManager.stop();
-         transactionIdManager = null;
+         messageIDManager.stop();
+         messageIDManager = null;
+         channelIDManager.stop();
+         channelIDManager = null;
+         transactionIDManager.stop();
+         transactionIDManager = null;
          destinationJNDIMapper.stop();
          destinationJNDIMapper = null;
          connFactoryJNDIMapper.stop();
@@ -439,14 +439,14 @@ public class ServerPeer extends ServiceMBeanSupport
       return securityStore.getDefaultSecurityConfig();
    }
 
-   public IdManager getMessageIdManager()
+   public IDManager getMessageIDManager()
    {
-      return messageIdManager;
+      return messageIDManager;
    }
 
-   public IdManager getChannelIdManager()
+   public IDManager getChannelIDManager()
    {
-      return channelIdManager;
+      return channelIDManager;
    }
 
    public ServerInvocationHandler getInvocationHandler()

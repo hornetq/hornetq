@@ -546,150 +546,141 @@ public class DistributedDestinationsTest extends ClusteringTestBase
       }
    }
 
-
-
-   /*
-    * Create durable subscriptions on all nodes of the cluster.
-    * Include a couple with selectors
-    * Ensure all messages are receive as appropriate
-    * None of the durable subs are shared
+   /**
+    * Create durable subscriptions on all nodes of the cluster. Include a couple with selectors.
+    * Ensure all messages are receive as appropriate. None of the durable subs are shared.
     */
    private void clusteredTopicDurable(boolean persistent) throws Exception
    {
+      Connection conn0 = null;
       Connection conn1 = null;
       Connection conn2 = null;
-      Connection conn3 = null;
+
       try
       {
-         //This will create 3 different connection on 3 different nodes, since
-         //the cf is clustered
+         // This will create 3 different connection on 3 different nodes, since the cf is clustered
+         conn0 = cf.createConnection();
          conn1 = cf.createConnection();
          conn2 = cf.createConnection();
-         conn3 = cf.createConnection();
          
          log.info("Created connections");
          
-         checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
+         checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
+         conn0.setClientID("wib1");
          conn1.setClientID("wib1");
          conn2.setClientID("wib1");
-         conn3.setClientID("wib1");
 
+         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          try
          {
-            sess1.unsubscribe("sub");
+            sess0.unsubscribe("alpha");
          }
          catch (Exception ignore) {}
          try
          {
-            sess2.unsubscribe("sub1");
+            sess1.unsubscribe("beta");
          }
          catch (Exception ignore) {}
          try
          {
-            sess3.unsubscribe("sub2");
+            sess2.unsubscribe("gamma");
          }
          catch (Exception ignore) {}
          try
          {
-            sess1.unsubscribe("sub3");
+            sess0.unsubscribe("delta");
          }
          catch (Exception ignore) {}
          try
          {
-            sess2.unsubscribe("sub4");
+            sess1.unsubscribe("epsilon");
          }
          catch (Exception ignore) {}
 
-         MessageConsumer cons1 = sess1.createDurableSubscriber(topic[0], "sub");
-         MessageConsumer cons2 = sess2.createDurableSubscriber(topic[1], "sub1");
-         MessageConsumer cons3 = sess3.createDurableSubscriber(topic[2], "sub2");
-         MessageConsumer cons4 = sess1.createDurableSubscriber(topic[0], "sub3");
-         MessageConsumer cons5 = sess2.createDurableSubscriber(topic[1], "sub4");
+         MessageConsumer alpha = sess0.createDurableSubscriber(topic[0], "alpha");
+         MessageConsumer beta = sess1.createDurableSubscriber(topic[1], "beta");
+         MessageConsumer gamma = sess2.createDurableSubscriber(topic[2], "gamma");
+         MessageConsumer delta = sess0.createDurableSubscriber(topic[0], "delta");
+         MessageConsumer epsilon = sess1.createDurableSubscriber(topic[1], "epsilon");
 
+         conn0.start();
          conn1.start();
          conn2.start();
-         conn3.start();
 
          // Send at node 0
 
-         MessageProducer prod = sess1.createProducer(topic[0]);
+         MessageProducer prod = sess0.createProducer(topic[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
-         final int NUM_MESSAGES = 100;
+         final int NUM_MESSAGES = 1;
+
+         log.info("sending messages");
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess2.createTextMessage("message" + i);
-
-            prod.send(tm);
+            prod.send(sess0.createTextMessage("message" + i));
          }
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
-
+            TextMessage tm = (TextMessage)alpha.receive(1000);
             assertNotNull(tm);
-
             assertEquals("message" + i, tm.getText());
          }
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
-
+            TextMessage tm = (TextMessage)beta.receive(1000);
             assertNotNull(tm);
-
             assertEquals("message" + i, tm.getText());
          }
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
-
+            TextMessage tm = (TextMessage)gamma.receive(1000);
             assertNotNull(tm);
-
             assertEquals("message" + i, tm.getText());
          }
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons4.receive(1000);
-
+            TextMessage tm = (TextMessage)delta.receive(1000);
             assertNotNull(tm);
-
             assertEquals("message" + i, tm.getText());
          }
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons5.receive(1000);
-
+            TextMessage tm = (TextMessage)epsilon.receive(1000);
             assertNotNull(tm);
-
             assertEquals("message" + i, tm.getText());
          }
 
-         cons1.close();
-         cons2.close();
-         cons3.close();
-         cons4.close();
-         cons5.close();
+         alpha.close();
+         beta.close();
+         gamma.close();
+         delta.close();
+         epsilon.close();
 
-         sess1.unsubscribe("sub");
-         sess2.unsubscribe("sub1");
-         sess3.unsubscribe("sub2");
-         sess1.unsubscribe("sub3");
-         sess2.unsubscribe("sub4");
+         sess0.unsubscribe("alpha");
+         sess1.unsubscribe("beta");
+         sess2.unsubscribe("gamma");
+         sess0.unsubscribe("delta");
+         sess1.unsubscribe("epsilon");
 
       }
       finally
       {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+
          if (conn1 != null)
          {
             conn1.close();
@@ -698,11 +689,6 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          if (conn2 != null)
          {
             conn2.close();
-         }
-
-         if (conn3 != null)
-         {
-            conn3.close();
          }
       }
    }

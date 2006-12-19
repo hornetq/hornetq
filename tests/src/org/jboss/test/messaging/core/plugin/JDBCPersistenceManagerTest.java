@@ -39,7 +39,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -805,7 +805,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 //      
 //      Channel channel = new SimpleChannel(0, ms);
 //      
-//      TransactionRepository txRep = new TransactionRepository(pm, new IdManager("TRANSACTION_ID", 10, pm));
+//      TransactionRepository txRep = new TransactionRepository(pm, new IDManager("TRANSACTION_ID", 10, pm));
 //      txRep.start();
 //
 //      Message[] messages = createMessages(10);
@@ -1160,7 +1160,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
       Channel channel = new SimpleChannel(0, ms);
       
-      IdManager idm = new IdManager("TRANSACTION_ID", 10, pm);
+      IDManager idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
       TransactionRepository txRep = new TransactionRepository(pm, idm);
@@ -1271,7 +1271,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
       Channel channel = new SimpleChannel(0, ms);
       
-      IdManager idm = new IdManager("TRANSACTION_ID", 10, pm);
+      IDManager idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
       TransactionRepository txRep = new TransactionRepository(pm, idm);

@@ -29,7 +29,7 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
@@ -58,13 +58,13 @@ public class TransactionRepository implements MessagingComponent
    
    private PersistenceManager persistenceManager;
    
-   private IdManager idManager;
+   private IDManager idManager;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public TransactionRepository(PersistenceManager persistenceManager, IdManager idManager)
+   public TransactionRepository(PersistenceManager persistenceManager, IDManager idManager)
    {
       this.persistenceManager = persistenceManager;
       
@@ -169,7 +169,7 @@ public class TransactionRepository implements MessagingComponent
       {
          throw new TransactionException("There is already a local tx for global tx " + xid);
       }
-      Transaction tx = new Transaction(idManager.getId(), xid, this);
+      Transaction tx = new Transaction(idManager.getID(), xid, this);
       
       if (trace) { log.trace("created transaction " + tx); }
       
@@ -180,7 +180,7 @@ public class TransactionRepository implements MessagingComponent
    
    public Transaction createTransaction() throws Exception
    {
-      Transaction tx = new Transaction(idManager.getId());
+      Transaction tx = new Transaction(idManager.getID());
       
       if (trace) { log.trace("created transaction " + tx); }
 

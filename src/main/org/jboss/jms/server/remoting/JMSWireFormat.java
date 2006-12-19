@@ -51,7 +51,7 @@ import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.callback.Callback;
@@ -442,12 +442,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                if (trace) { log.trace("wrote null response"); }
             }         
-            else if (res instanceof IdBlock)
+            else if (res instanceof IDBlock)
             {
                //Return value from getMessageNow
                dos.write(ID_BLOCK_RESPONSE);
    
-               IdBlock block = (IdBlock)res;
+               IDBlock block = (IDBlock)res;
    
                block.write(dos);
    
@@ -822,7 +822,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }
             case ID_BLOCK_RESPONSE:
             {
-               IdBlock block = new IdBlock();
+               IDBlock block = new IDBlock();
    
                block.read(dis);
    

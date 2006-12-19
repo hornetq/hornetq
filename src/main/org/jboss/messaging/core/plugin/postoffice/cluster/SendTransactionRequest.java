@@ -41,79 +41,41 @@ import org.jboss.messaging.util.StreamUtils;
  *
  */
 class SendTransactionRequest extends TransactionRequest
-{ 
+{
+   // Constants -----------------------------------------------------
+
    static final int TYPE = 8;
-   
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private List messageHolders;
-      
+
+   // Constructors --------------------------------------------------
+
    SendTransactionRequest()
-   {      
+   {
    }
-        
+
    SendTransactionRequest(int nodeId, long txId, List messageHolders, long channelID)
    {
       super(nodeId, txId, true, channelID);
-      
-      this.messageHolders = messageHolders;  
+
+      this.messageHolders = messageHolders;
    }
-   
+
    SendTransactionRequest(int nodeId, long txId)
    {
       super(nodeId, txId, false);
    }
-   
-   public void commit(PostOfficeInternal office) throws Exception
-   {
-      Iterator iter = messageHolders.iterator();
-      
-      while (iter.hasNext())
-      {
-         MessageHolder holder = (MessageHolder)iter.next();
-         
-         office.routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
-      }
-   }
-   
-   public boolean check(PostOfficeInternal office) throws Exception
-   {
-      //If the messages exist in the database then we should commit the transaction
-      //otherwise we should roll it back
-      
-      Iterator iter = messageHolders.iterator();
-      
-      //We only need to check that one of the refs made it to the database - the refs would have
-      //been inserted into the db transactionally, so either they're all there or none are
-      MessageHolder holder = (MessageHolder)iter.next();
-      
-      //We store the channelID of one of the channels that the message was persisted in
-      //it doesn't matter which one since they were all inserted in the same tx
-      
-      if (office.referenceExistsInStorage(checkChannelID, holder.getMessage().getMessageID()))
-      {
-         //We can commit
-         return true;
-      }
-      else
-      {
-         //We should rollback
-         return false;
-      }
-   }
 
-   public void rollback(PostOfficeInternal office) throws Exception
-   {
-      //NOOP
-   }  
-   
-   public byte getType()
-   {
-      return TYPE;
-   }
-   
+   // TransactionRequest overrides -----------------------------------
+
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-      
+
       int b = in.readByte();
       if (b == StreamUtils.NULL)
       {
@@ -149,7 +111,82 @@ class SendTransactionRequest extends TransactionRequest
       else
       {
          out.writeByte(StreamUtils.NULL);
-      }      
-   } 
+      }
+   }
+
+   // ClusterTransaction implementation -----------------------------
+
+   public void commit(PostOfficeInternal office) throws Exception
+   {
+      Iterator iter = messageHolders.iterator();
+
+      while (iter.hasNext())
+      {
+         MessageHolder holder = (MessageHolder)iter.next();
+
+         office.routeFromCluster(holder.getMessage(), holder.getRoutingKey(), holder.getQueueNameToNodeIdMap());
+      }
+   }
+
+   public void rollback(PostOfficeInternal office) throws Exception
+   {
+      //NOOP
+   }
+
+   public boolean check(PostOfficeInternal office) throws Exception
+   {
+      //If the messages exist in the database then we should commit the transaction
+      //otherwise we should roll it back
+
+      Iterator iter = messageHolders.iterator();
+
+      //We only need to check that one of the refs made it to the database - the refs would have
+      //been inserted into the db transactionally, so either they're all there or none are
+      MessageHolder holder = (MessageHolder)iter.next();
+
+      //We store the channelID of one of the channels that the message was persisted in
+      //it doesn't matter which one since they were all inserted in the same tx
+
+      if (office.referenceExistsInStorage(checkChannelID, holder.getMessage().getMessageID()))
+      {
+         //We can commit
+         return true;
+      }
+      else
+      {
+         //We should rollback
+         return false;
+      }
+   }
+
+   // Public --------------------------------------------------------
+
+   public byte getType()
+   {
+      return TYPE;
+   }
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("SendTransactionRequest[");
+      for(Iterator i = messageHolders.iterator(); i.hasNext(); )
+      {
+         sb.append(((MessageHolder)i.next()).getMessage());
+         if (i.hasNext())
+         {
+            sb.append(',');
+         }
+      }
+      sb.append("]");
+      return sb.toString();
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 }
 

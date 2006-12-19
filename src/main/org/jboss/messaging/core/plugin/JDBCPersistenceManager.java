@@ -162,9 +162,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public long reserveIDBlock(String counterName, int size) throws Exception
    {
-      //TODO This will need locking (e.g. SELECT ... FOR UPDATE...) in the clustered case
+      // TODO This will need locking (e.g. SELECT ... FOR UPDATE...) in the clustered case
        
-      if (trace) { log.trace("Getting id block for counter: " + counterName + " ,size: " + size); }
+      if (trace) { log.trace("Getting ID block for counter " + counterName + ", size " + size); }
       
       if (size <= 0)
       {
@@ -179,14 +179,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       try
       {
          conn = ds.getConnection();
-         
+
          String selectCounterSQL = getSQLStatement("SELECT_COUNTER");
          
          ps = conn.prepareStatement(selectCounterSQL);
          
          ps.setString(1, counterName);
          
-         if (trace) { log.trace("selecting counter: " + selectCounterSQL); }
          rs = ps.executeQuery();
          if (trace) { log.trace(JDBCUtil.statementToString(selectCounterSQL, counterName)); }         
          
@@ -202,17 +201,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             ps = conn.prepareStatement(insertCounterSQL);
             
             ps.setString(1, counterName);
-            
             ps.setLong(2, size);
             
-            if (trace) { log.trace("inserting counter: " + insertCounterSQL); }
-            int rows = ps.executeUpdate();            
-            if (trace) {  log.trace(JDBCUtil.statementToString(insertCounterSQL, counterName)
-                           + " inserted " + rows + " rows"); }  
+            int rows = ps.executeUpdate();
+            if (trace) { log.trace(JDBCUtil.statementToString(insertCounterSQL, counterName, new Integer(size)) + " inserted " + rows + " rows"); }
             
             ps.close();            
             ps = null;
-            
             return 0;
          }
          
@@ -228,13 +223,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps = conn.prepareStatement(updateCounterSQL);
          
          ps.setLong(1, nextId + size);
-         
          ps.setString(2, counterName);
          
-         if (trace) { log.trace("updating counter: " + updateCounterSQL); }
-         int rows = ps.executeUpdate();         
-         if (trace) { log.trace(JDBCUtil.statementToString(updateCounterSQL, new Long(nextId + size),
-                               counterName) + " updated " + rows + " rows"); }        
+         int rows = ps.executeUpdate();
+         if (trace) { log.trace(JDBCUtil.statementToString(updateCounterSQL, new Long(nextId + size), counterName) + " updated " + rows + " rows"); }
          
          return nextId;
       }
@@ -357,9 +349,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   HashMap coreHeaders = bytesToMap(bytes);
                   byte[] payload = getBytes(rs, 7);
                   
-                  //TODO we don't need this
-                  int persistentChannelCount = rs.getInt(8);
-                  
+
                   //TODO - We are mixing concerns here
                   //The basic JDBCPersistencManager should *only* know about core messages - not 
                   //JBossMessages - we should subclass JBDCPersistenceManager and the JBossMessage
@@ -1426,7 +1416,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          psReference.setLong(3, ref.getMessageID());
          
-         int rows = psReference.executeUpdate();                         
+         int rows = psReference.executeUpdate();
+
+         if (trace) { log.trace("Updated " + rows + " rows"); }
       }
       catch (Exception e)
       {
@@ -1745,9 +1737,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       return callback;
    }
    
-   /*
-    * We order the list of references in ascending message order    
-    * thus preventing deadlock when 2 or more channels are updating the same messages in different transactions.   
+   /**
+    * We order the list of references in ascending message order thus preventing deadlock when 2 or
+    * more channels are updating the same messages in different transactions.
     */
    protected void orderReferences(List references)
    {      
@@ -1758,29 +1750,28 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       throws Exception
    {
       //TODO - A slight optimisation - it's possible we have refs referring to the same message
-      //so we will end up acquiring the lock more than once which is unnecessary
-      //If find unique set of messages can avoid this
+      //       so we will end up acquiring the lock more than once which is unnecessary. If find
+      //       unique set of messages can avoid this.
+
       List allRefs = new ArrayList(refsToAdd.size() + refsToRemove.size());
-      Iterator iter = refsToAdd.iterator();
-      while (iter.hasNext())
+
+      for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
       {
-         ChannelRefPair pair = (ChannelRefPair)iter.next();
+         ChannelRefPair pair = (ChannelRefPair)i.next();
          allRefs.add(pair.ref);
       }
-      iter = refsToRemove.iterator();
-      while (iter.hasNext())
+
+      for(Iterator i = refsToRemove.iterator(); i.hasNext(); )
       {
-         ChannelRefPair pair = (ChannelRefPair)iter.next();
+         ChannelRefPair pair = (ChannelRefPair)i.next();
          allRefs.add(pair.ref);
       }
             
       orderReferences(allRefs);
       
-      //For one phase we simply add rows corresponding to the refs
-      //and remove rows corresponding to the deliveries in one jdbc tx
-      //We also need to store or remove messages as necessary, depending
-      //on whether they've already been stored or still referenced by other
-      //channels
+      // For one phase we simply add rows corresponding to the refs and remove rows corresponding to
+      // the deliveries in one jdbc tx. We also need to store or remove messages as necessary,
+      // depending on whether they've already been stored or still referenced by other channels.
          
       Connection conn = null;
       PreparedStatement psReference = null;
@@ -1794,29 +1785,25 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
          
-         //obtain locks on all messages
+         // Obtain locks on all messages
          getLocks(allRefs);
          
-         //First the adds
-         
-         iter = refsToAdd.iterator();
-         
-         boolean batch = usingBatchUpdates && refsToAdd.size() > 0;
-         
+         // First the adds
+
          boolean messageInsertsInBatch = false;
          boolean messageUpdatesInBatch = false;
-         
+         boolean batch = usingBatchUpdates && refsToAdd.size() > 0;
+
          if (batch)
          {
             psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
             psIncMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
          }
-         
-         while (iter.hasNext())
+
+         for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
          {
-            ChannelRefPair pair = (ChannelRefPair) iter.next();
-            
+            ChannelRefPair pair = (ChannelRefPair)i.next();
             MessageReference ref = pair.ref;
                                                 
             if (!batch)
@@ -1824,8 +1811,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             }
             
-            //Now store the reference
-            addReference(pair.channelId, ref, psReference, false);
+            // Now store the reference
+            addReference(pair.channelID, ref, psReference, false);
               
             if (batch)
             {
@@ -1852,18 +1839,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             boolean added;
             if (!m.isPersisted())
             {               
-               //First time so add message
+               // First time so add message
                storeMessage(m, psInsertMessage);
-               
                added = true;
-               
                m.setPersisted(true);
             }
             else
             {               
-               //Update message channel count
+               // Update message channel count
                incrementChannelCount(m, psIncMessage);
-               
                added = false;
             }
             
@@ -1872,13 +1856,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                if (added)
                {
                   psInsertMessage.addBatch();
-                  
                   messageInsertsInBatch = true;
                }
                else
                { 
                   psIncMessage.addBatch();
-                  
                   messageUpdatesInBatch = true;
                }
             }
@@ -1887,13 +1869,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                if (added)
                {
                   int rows = psInsertMessage.executeUpdate();
-                  
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
                }
                else
                {
                   int rows = psIncMessage.executeUpdate();
-                  
                   if (trace) { log.trace("Updated " + rows + " rows"); }
                }
                psInsertMessage.close();
@@ -1905,6 +1885,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (batch)
          {
+            // Process the add batch
+
+
+
             int[] rowsReference = psReference.executeBatch();
             
             if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
@@ -1912,13 +1896,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (messageInsertsInBatch)
             {
                int[] rowsMessage = psInsertMessage.executeBatch();
-               
                if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE"), rowsMessage, "inserted"); }
             }
+
             if (messageUpdatesInBatch)
             {
                int[] rowsMessage = psIncMessage.executeBatch();
-               
                if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNELCOUNT"), rowsMessage, "updated"); }
             }
             
@@ -1930,32 +1913,30 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             psIncMessage = null;
          }
          
-         //Now the removes
-         
-         iter = refsToRemove.iterator();
-         
-         batch = usingBatchUpdates && refsToRemove.size() > 0;
+         // Now the removes
 
          psReference = null;
          psDeleteMessage = null;
-         
+         batch = usingBatchUpdates && refsToRemove.size() > 0;
+
          if (batch)
          {
             psReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
             psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
             psDecMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
          }
+
          
-         while (iter.hasNext())
+         for(Iterator i = refsToRemove.iterator(); i.hasNext(); )
          {
-            ChannelRefPair pair = (ChannelRefPair) iter.next();
+            ChannelRefPair pair = (ChannelRefPair)i.next();
             
             if (!batch)
             {
                psReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
             }
             
-            removeReference(pair.channelId, pair.ref, psReference);
+            removeReference(pair.channelID, pair.ref, psReference);
             
             if (batch)
             {
@@ -1964,9 +1945,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             else
             {
                int rows = psReference.executeUpdate();
-               
                if (trace) { log.trace("Deleted " + rows + " rows"); }
-               
                psReference.close();
                psReference = null;
             }
@@ -1979,28 +1958,25 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             Message m = pair.ref.getMessage();
                                 
-            //Update the channel count
+            // Update the channel count
             
             decrementChannelCount(m, psDecMessage);
             
-            //Delete the message (if necessary)
+            // Delete the message (if necessary)
             
             removeMessage(m, psDeleteMessage);
                        
             if (batch)
             {
                psDecMessage.addBatch();
-               
-               psDeleteMessage.addBatch();                              
+               psDeleteMessage.addBatch();
             }
             else
             {
                int rows = psDecMessage.executeUpdate();
-               
                if (trace) { log.trace("Updated " + rows + " rows"); }
                
                rows = psDeleteMessage.executeUpdate();
-               
                if (trace) { log.trace("Deleted " + rows + " rows"); }
 
                psDeleteMessage.close();
@@ -2012,6 +1988,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (batch)
          {
+            // Process the remove batch
+
             int[] rows = psReference.executeBatch();
             
             if (trace) { logBatchUpdate(getSQLStatement("DELETE_MESSAGE_REF"), rows, "deleted"); }
@@ -2035,7 +2013,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       catch (Exception e)
       {
          wrap.exceptionOccurred();                  
-         
          throw e;
       }
       finally
@@ -2327,7 +2304,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             }
             
-            prepareToAddReference(pair.channelId, pair.ref, tx, psReference);
+            prepareToAddReference(pair.channelID, pair.ref, tx, psReference);
             
             if (batch)
             {
@@ -2450,7 +2427,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                psReference = conn.prepareStatement(getSQLStatement("UPDATE_MESSAGE_REF"));
             }
             
-            prepareToRemoveReference(pair.channelId, pair.ref, tx, psReference);
+            prepareToRemoveReference(pair.channelID, pair.ref, tx, psReference);
             
             if (batch)
             {
@@ -2771,14 +2748,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }  
    
-   
-   
-   protected void addReference(long channelID, MessageReference ref, PreparedStatement ps, boolean paged) throws Exception
+   protected void addReference(long channelID, MessageReference ref,
+                               PreparedStatement ps, boolean paged) throws Exception
    {
-      if (trace)
-      {
-         log.trace("adding " + ref + " to channel " + channelID);
-      }
+      if (trace) { log.trace("adding " + ref + " to channel " + channelID); }
       
       ps.setLong(1, channelID);
       ps.setLong(2, ref.getMessageID());
@@ -2797,12 +2770,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setString(8, ref.isReliable() ? "Y" : "N");
    }
    
-   protected void removeReference(long channelID, MessageReference ref, PreparedStatement ps) throws Exception
+   protected void removeReference(long channelID, MessageReference ref, PreparedStatement ps)
+      throws Exception
    {
-      if (trace)
-      {
-         log.trace("removing " + ref + " from channel " + channelID);
-      }
+      if (trace) { log.trace("removing " + ref + " from channel " + channelID); }
       
       ps.setLong(1, ref.getMessageID());
       ps.setLong(2, channelID);      
@@ -2811,11 +2782,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected void prepareToAddReference(long channelID, MessageReference ref, Transaction tx, PreparedStatement ps)
      throws Exception
    {
-      if (trace)
-      {
-         log.trace("adding " + ref + " to channel " + channelID
-               + (tx == null ? " non-transactionally" : " on transaction: " + tx));
-      }
+      if (trace) { log.trace("adding " + ref + " to channel " + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx)); }
       
       ps.setLong(1, channelID);
       ps.setLong(2, ref.getMessageID());
@@ -3356,14 +3323,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
         
    private static class ChannelRefPair
    {
-      private long channelId;
-      
+      private long channelID;
       private MessageReference ref;
       
-      private ChannelRefPair(long channelId, MessageReference ref)
+      private ChannelRefPair(long channelID, MessageReference ref)
       {
-         this.channelId = channelId;
-         
+         this.channelID = channelID;
          this.ref = ref;
       }
    }

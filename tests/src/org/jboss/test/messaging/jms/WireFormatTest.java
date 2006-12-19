@@ -56,7 +56,7 @@ import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.InvokerLocator;
@@ -1363,7 +1363,7 @@ public class WireFormatTest extends MessagingTestCase
                   
       public void testGetIdBlockResponse() throws Exception
       {
-         IdBlock block = new IdBlock(132, 465);
+         IDBlock block = new IDBlock(132, 465);
          
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, block);
                   
@@ -1388,7 +1388,7 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(JMSWireFormat.ID_BLOCK_RESPONSE, b);
          
-         IdBlock block2 = new IdBlock();
+         IDBlock block2 = new IDBlock();
          
          block2.read(dis);
          
@@ -1416,7 +1416,7 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(77, mm.getVersion());
          
-         IdBlock block3 = (IdBlock)mm.getLoad();
+         IDBlock block3 = (IDBlock)mm.getLoad();
          
          assertEquals(block.getLow(), block3.getLow());
          assertEquals(block.getHigh(), block3.getHigh());                  

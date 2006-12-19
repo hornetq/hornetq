@@ -117,7 +117,6 @@ while [ "$1" != "" ]; do
     fi
     if [ "$1" = "-clustered" ]; then
         TEST_CLUSTERED=true
-        TEST_LOGFILE_SUFFIX=clustering-client
         shift
         continue;
     else
@@ -125,6 +124,10 @@ while [ "$1" != "" ]; do
         exit 1
     fi
 done
+
+if [ "$TEST_CLUSTERED" = "true" ]; then
+   TEST_LOGFILE_SUFFIX=clustering-client
+fi
 
 JAVA_OPTS="-Xmx1024M $JAVA_OPTS \
 -Dmodule.output=$reldir/../output \

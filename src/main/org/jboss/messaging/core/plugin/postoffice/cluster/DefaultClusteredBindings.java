@@ -41,67 +41,93 @@ import org.jboss.messaging.core.plugin.postoffice.DefaultBindings;
  */
 class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindings
 {
+
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    // Map <name, router>
    private Map nameMap;
-   
    private int thisNode;
-   
    private int localDurableCount;
-   
+
+   // Constructors --------------------------------------------------
+
    DefaultClusteredBindings(int thisNode)
    {
       super();
-      
+
       nameMap = new HashMap();
-      
+
       this.thisNode = thisNode;
    }
-   
+
+   // DefaultBindings overrides -------------------------------------
+
    public void addBinding(Binding binding)
    {
       super.addBinding(binding);
-  
+
       if (binding.getNodeID() == thisNode && binding.getQueue().isRecoverable())
       {
          localDurableCount++;
-      }      
+      }
    }
-   
+
    public boolean removeBinding(Binding binding)
    {
       boolean removed = super.removeBinding(binding);
-      
+
       if (!removed)
       {
          return false;
       }
-           
+
       if (binding.getNodeID() == thisNode && binding.getQueue().isRecoverable())
       {
          localDurableCount--;
-      }      
+      }
 
       return true;
    }
-   
-   public int getLocalDurableCount()
-   {
-      return localDurableCount;
-   }
-   
+
+   // ClusteredBindings implementation ------------------------------
+
    public Collection getRouters()
    {
       return nameMap.values();
    }
-   
+
+   public int getLocalDurableCount()
+   {
+      return localDurableCount;
+   }
+
    public void addRouter(String queueName, ClusterRouter router)
    {
       nameMap.put(queueName, router);
    }
-   
+
    public void removeRouter(String queueName)
    {
       nameMap.remove(queueName);
    }
+
+   // Public --------------------------------------------------------
+
+   public String toString()
+   {
+      return "CusteredBindings[" + super.toString() + " count=" + nameMap.size() + "]";
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 
 }

@@ -181,7 +181,7 @@ public class Transaction
          throw new TransactionException("Transaction already rolled back, cannot commit");
       }
 
-      if (trace) { log.trace("executing before commit hooks " + this); }
+      if (trace) { log.trace(this + " executing before commit hooks"); }
        
       boolean onePhase = state != STATE_PREPARED;
       
@@ -201,11 +201,11 @@ public class Transaction
       
       state = STATE_COMMITTED;
       
-      if (trace) { log.trace("committed " + this); }
+      if (trace) { log.trace(this + " committed"); }
       
       iter = callbacks.iterator();
       
-      if (trace) { log.trace("executing after commit hooks " + this); }
+      if (trace) { log.trace(this + " executing after commit hooks"); }
       
       if (firstCallback != null)
       {         
@@ -230,7 +230,7 @@ public class Transaction
          repository.deleteTransaction(this);
       }
             
-      if (trace) { log.trace("commit process complete " + this); }            
+      if (trace) { log.trace(this + " commit process complete"); }
    }
    
    public synchronized void prepare() throws Exception
@@ -240,7 +240,7 @@ public class Transaction
          throw new TransactionException("Transaction not active, cannot prepare");
       }
       
-      if (trace) { log.trace("executing before prepare hooks " + this); }
+      if (trace) { log.trace(this + " executing before prepare hooks"); }
       
       if (firstCallback != null)
       {
@@ -258,7 +258,7 @@ public class Transaction
       
       state = STATE_PREPARED;
       
-      if (trace) { log.trace("prepared " + this); }
+      if (trace) { log.trace(this + " prepared"); }
       
       if (firstCallback != null)
       {
@@ -267,7 +267,7 @@ public class Transaction
       
       iter = callbacks.iterator();
       
-      if (trace) { log.trace("executing after prepare hooks " + this); }
+      if (trace) { log.trace(this + " executing after prepare hooks"); }
       
       while (iter.hasNext())
       {
@@ -276,7 +276,7 @@ public class Transaction
          callback.afterPrepare();
       }            
       
-      if (trace) { log.trace("prepare process complete " + this); }
+      if (trace) { log.trace(this + " prepare process complete"); }
    }
    
    public synchronized void rollback() throws Exception
@@ -290,7 +290,7 @@ public class Transaction
          throw new TransactionException("Transaction already rolled back, cannot rollback");
       }
       
-      if (trace) { log.trace("executing before rollback hooks " + this); }
+      if (trace) { log.trace(this + " executing before rollback hooks"); }
       
       boolean onePhase = state != STATE_PREPARED;
       
@@ -307,9 +307,9 @@ public class Transaction
       
       state = STATE_ROLLEDBACK;
       
-      if (trace) { log.trace("rolled back " + this); }
+      if (trace) { log.trace(this + " rolled back"); }
 
-      if (trace) { log.trace("executing after prepare hooks " + this); }
+      if (trace) { log.trace(this + " executing after rollback hooks"); }
 
       if (firstCallback != null)
       {
@@ -330,12 +330,12 @@ public class Transaction
          repository.deleteTransaction(this);
       }
       
-      if (trace) { log.trace("rollback process complete " + this); }
+      if (trace) { log.trace(this + " rollback process complete"); }
    }
 
    public synchronized void setRollbackOnly() throws Exception
    {
-      if (trace) { log.trace("setting rollback_only on " + this); }
+      if (trace) { log.trace("setting ROLLBACK_ONLY on " + this); }
 
       state = STATE_ROLLBACK_ONLY;
    }

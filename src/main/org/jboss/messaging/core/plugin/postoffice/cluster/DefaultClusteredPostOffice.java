@@ -801,10 +801,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    public void asyncSendRequest(ClusterRequest request) throws Exception
    {
-      if (trace) { log.trace(this.currentNodeId + " sending asynch request to group, request: " + request); }
+      if (trace) { log.trace(this + " sending asynchronously " + request + " to group"); }
 
       byte[] bytes = writeRequest(request);
-
       asyncChannel.send(new Message(null, null, bytes));
    }
 
@@ -813,22 +812,17 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    public void asyncSendRequest(ClusterRequest request, int nodeId) throws Exception
    {
-      if (trace) { log.trace(this.currentNodeId + " sending asynch request to single node, request: " + request + " node " + nodeId); }
-
       Address address = this.getAddressForNodeId(nodeId, false);
-
-      if (trace) { log.trace(this.currentNodeId + " sending to address " + address); }
 
       if (address == null)
       {
          throw new IllegalArgumentException("Cannot find address for node " + nodeId);
       }
 
+      if (trace) { log.trace(this + " sending asynchronously " + request + " to node  " + nodeId + "/" + address); }
+
       byte[] bytes = writeRequest(request);
-
-      Message m = new Message(address, null, bytes);
-
-      asyncChannel.send(m);
+      asyncChannel.send(new Message(address, null, bytes));
    }
 
    /*
@@ -840,13 +834,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       {
          holdingArea.put(id, tx);
 
-         if (trace) { log.trace(this.currentNodeId + " added transaction " + tx + " to holding area with id " + id); }
+         if (trace) { log.trace(this + " added transaction " + tx + " to holding area as " + id); }
       }
    }
 
    public void commitTransaction(TransactionId id) throws Throwable
    {
-      if (trace) { log.trace(this.currentNodeId + " committing transaction " + id ); }
+      if (trace) { log.trace(currentNodeId + " committing transaction " + id ); }
 
       ClusterTransaction tx = null;
 
@@ -862,12 +856,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       tx.commit(this);
 
-      if (trace) { log.trace(this.currentNodeId + " committed transaction " + id ); }
+      if (trace) { log.trace(this + " committed transaction " + id ); }
    }
 
    public void rollbackTransaction(TransactionId id) throws Throwable
    {
-      if (trace) { log.trace(this.currentNodeId + " rolling back transaction " + id ); }
+      if (trace) { log.trace(this + " rolling back transaction " + id ); }
 
       ClusterTransaction tx = null;
 
@@ -883,14 +877,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       tx.rollback(this);
 
-      if (trace) { log.trace(this.currentNodeId + " committed transaction " + id ); }
+      if (trace) { log.trace(this + " committed transaction " + id ); }
    }
 
    public void updateQueueStats(int nodeId, List statsList) throws Exception
    {
       lock.readLock().acquire();
 
-      if (trace) { log.trace(this.currentNodeId + " updating queue stats from node " + nodeId + " stats size: " + statsList.size()); }
+      if (trace) { log.trace(this + " updating queue stats from node " + nodeId + " stats size: " + statsList.size()); }
 
       try
       {
@@ -905,7 +899,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          if (nameMap == null)
          {
             //This is ok, the node might have left
-            if (trace) { log.trace(this.currentNodeId + " cannot find node in name map, i guess the node might have left?"); }
+            if (trace) { log.trace(this + " cannot find node in name map, i guess the node might have left?"); }
          }
          else
          {
@@ -920,7 +914,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                if (bb == null)
                {
                   //I guess this is possible if the queue was unbound
-                  if (trace) { log.trace(this.currentNodeId + " cannot find binding for queue " + st.getQueueName() + " it could have been unbound"); }
+                  if (trace) { log.trace(this + " cannot find binding for queue " + st.getQueueName() + " it could have been unbound"); }
                }
                else
                {
@@ -952,7 +946,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                         localQueue.deliver(false);
 
-                        if (trace) { log.trace(this.currentNodeId + " triggered delivery for " + localQueue.getName()); }
+                        if (trace) { log.trace(this + " triggered delivery for " + localQueue.getName()); }
                      }
                   }
                }
@@ -1177,9 +1171,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       {
          ClusteredBindings cb = (ClusteredBindings)conditionMap.get(condition);
 
-         boolean startInternalTx = false;
-
          int lastNodeId = -1;
+         boolean startInternalTx = false;
 
          if (cb != null)
          {
@@ -1208,18 +1201,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             }
 
             int numberRemote = 0;
-
+            long lastChannelId = -1;
             Map queueNameNodeIdMap = null;
 
-            long lastChannelId = -1;
-
-            Collection routers = cb.getRouters();
-
-            Iterator iter = routers.iterator();
-
-            while (iter.hasNext())
+            for(Iterator i = cb.getRouters().iterator(); i.hasNext(); )
             {
-               ClusterRouter router = (ClusterRouter)iter.next();
+               ClusterRouter router = (ClusterRouter)i.next();
 
                Delivery del = router.handle(null, ref, tx);
 
@@ -1229,7 +1216,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   ClusteredQueue queue = (ClusteredQueue)del.getObserver();
 
-                  if (trace) { log.trace(this + " successfully routed message to " + (queue.isLocal() ? "local"  : "remote")+ " destination '" + queue.getName() + "' on node " + queue.getNodeId()); }
+                  if (trace) { log.trace(this + " successfully routed message to " + (queue.isLocal() ? "LOCAL"  : "REMOTE") + " destination '" + queue.getName() + "' on node " + queue.getNodeId()); }
 
                   if (router.numberOfReceivers() > 1)
                   {
@@ -1247,9 +1234,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   if (!queue.isLocal())
                   {
-                     // We need to send the message remotely
+                     // We need to send the message remotely, count recipients so we know whether
+                     // to unicast or multicast
                      numberRemote++;
-
                      lastNodeId = queue.getNodeId();
                      lastChannelId = queue.getChannelID();
                   }
@@ -1318,8 +1305,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
             if (startInternalTx)
             {
+               if (trace) { log.trace(this + " committing " + tx); }
                tx.commit();
-               if (trace) { log.trace(this + " committed internal transaction"); }
+               if (trace) { log.trace(this + " committed " + tx); }
             }
          }
       }

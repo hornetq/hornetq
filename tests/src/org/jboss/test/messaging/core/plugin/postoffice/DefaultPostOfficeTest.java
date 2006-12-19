@@ -99,7 +99,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          Filter filter1 = new Selector("x = 'cheese'");
          Filter filter2 = new Selector("y = 'bread'");
          
-         PagingFilteredQueue queue1 = new PagingFilteredQueue("durableQueue", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         PagingFilteredQueue queue1 = new PagingFilteredQueue("durableQueue", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
          
          
          Binding binding1 =
@@ -117,7 +117,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          }
                
          //Bind one non durable
-         PagingFilteredQueue queue2 = new PagingFilteredQueue("nonDurableQueue", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         PagingFilteredQueue queue2 = new PagingFilteredQueue("nonDurableQueue", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
             office1.bindQueue(new SimpleCondition("condition2"), queue2);
@@ -207,42 +207,42 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
       {      
          office = createPostOffice();
          
-         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 =
             office.bindQueue(new SimpleCondition("condition1"), queue1);
          
-         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
             office.bindQueue(new SimpleCondition("condition1"), queue2);
          
-         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding3 =
             office.bindQueue(new SimpleCondition("condition1"), queue3);
          
-         PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding4 =
             office.bindQueue(new SimpleCondition("condition1"), queue4);
          
-         PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding5 =
             office.bindQueue(new SimpleCondition("condition2"), queue5);
          
-         PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding6 =
             office.bindQueue(new SimpleCondition("condition2"), queue6);
          
-         PagingFilteredQueue queue7 = new PagingFilteredQueue("queue7", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue7 = new PagingFilteredQueue("queue7", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding7 =
             office.bindQueue(new SimpleCondition("condition2"), queue7);
          
-         PagingFilteredQueue queue8 = new PagingFilteredQueue("queue8", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue8 = new PagingFilteredQueue("queue8", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding8 =
             office.bindQueue(new SimpleCondition("condition2"), queue8);
@@ -333,32 +333,32 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
       
          postOffice = createPostOffice();
          
-         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
-         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue2);
          
-         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding3 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue3);
          
-         PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding4 =
             postOffice.bindQueue(new SimpleCondition("topic2"), queue4);
          
-         PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding5 =
             postOffice.bindQueue(new SimpleCondition("topic2"), queue5);
          
-         PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding6 =
             postOffice.bindQueue(new SimpleCondition("topic2"), queue6);
@@ -485,7 +485,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
       {      
          postOffice = createPostOffice();
          
-         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 =
             postOffice.bindQueue(new SimpleCondition("condition1"), queue1);
@@ -537,17 +537,17 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          
          SimpleFilter filter = new SimpleFilter(2);
       
-         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), filter);         
+         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), filter);
          
          Binding binding1 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
-         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue2);
          
-         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding3 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue3);   
@@ -639,32 +639,32 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
       {      
          postOffice = createPostOffice();
       
-         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
-         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue2);
          
-         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue3 = new PagingFilteredQueue("queue3", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding3 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue3);
          
-         PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue4 = new PagingFilteredQueue("queue4", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
          
          Binding binding4 =
             postOffice.bindQueue(new SimpleCondition("topic2"), queue4);
          
-         PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue5 = new PagingFilteredQueue("queue5", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
          
          Binding binding5 =
             postOffice.bindQueue(new SimpleCondition("topic2"), queue5);
          
-         PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);         
+         PagingFilteredQueue queue6 = new PagingFilteredQueue("queue6", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
          
          Binding binding6 =
             postOffice.bindQueue(new SimpleCondition("topic2"), queue6);
@@ -813,12 +813,12 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
       {      
          postOffice = createPostOffice();
       
-         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIdManager.getId(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
+         PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), null);
          
          Binding binding1 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue1);
          
-         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
+         PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null);
          
          Binding binding2 =
             postOffice.bindQueue(new SimpleCondition("topic1"), queue2);

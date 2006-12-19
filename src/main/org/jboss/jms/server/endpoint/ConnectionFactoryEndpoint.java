@@ -23,7 +23,7 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.messaging.core.plugin.IdBlock;
+import org.jboss.messaging.core.plugin.IDBlock;
 
 /**
  * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
@@ -44,6 +44,6 @@ public interface ConnectionFactoryEndpoint
    
    byte[] getClientAOPConfig() throws JMSException;
 
-   IdBlock getIdBlock(int size) throws JMSException;
+   IDBlock getIdBlock(int size) throws JMSException;
 }
 

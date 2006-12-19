@@ -111,7 +111,7 @@ public class QueueService extends DestinationServiceSupport
             
             if (postOffice.isLocal())
             {
-               queue = new PagingFilteredQueue(destination.getName(), idm.getId(), ms, pm, true, true,                        
+               queue = new PagingFilteredQueue(destination.getName(), idm.getID(), ms, pm, true, true,
                                                executor, null,
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
                
@@ -121,7 +121,7 @@ public class QueueService extends DestinationServiceSupport
             }
             else
             {               
-               queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(), idm.getId(), ms, pm, true, true,                        
+               queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(), idm.getID(), ms, pm, true, true,
                                                executor, null, tr, 
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
                

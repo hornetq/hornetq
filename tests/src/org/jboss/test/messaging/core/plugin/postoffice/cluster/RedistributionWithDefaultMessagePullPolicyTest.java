@@ -144,11 +144,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
                           
@@ -238,11 +238,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
                           
@@ -338,11 +338,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
                           
@@ -434,11 +434,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
                           
@@ -533,19 +533,19 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          office5 = (DefaultClusteredPostOffice)createClusteredPostOffice(5, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 = office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
                   
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 = office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
                   
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding3 = office3.bindClusteredQueue(new SimpleCondition("queue1"), queue3);         
          
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding4 = office4.bindClusteredQueue(new SimpleCondition("queue1"), queue4);
                   
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding5 = office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
                    
          final int NUM_MESSAGES = 100;
@@ -693,19 +693,19 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          office5 = (DefaultClusteredPostOffice)createClusteredPostOffice(5, "testgroup");
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding1 = office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
                   
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding2 = office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
                   
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding3 = office3.bindClusteredQueue(new SimpleCondition("queue1"), queue3);         
          
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding4 = office4.bindClusteredQueue(new SimpleCondition("queue1"), queue4);
                   
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIdManager.getId(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);         
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor)pool.get(), null, tr);
          Binding binding5 = office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
                   
          final int NUM_MESSAGES = 100;

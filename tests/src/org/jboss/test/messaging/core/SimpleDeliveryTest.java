@@ -24,7 +24,7 @@ package org.jboss.test.messaging.core;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -117,7 +117,7 @@ public class SimpleDeliveryTest extends MessagingTestCase
                   true, true, true, 100);
       pm.start();
       
-      IdManager idm = new IdManager("TRANSACTION_ID", 10, pm);
+      IDManager idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
       TransactionRepository tr = new TransactionRepository(pm, idm);

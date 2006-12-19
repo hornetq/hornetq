@@ -94,17 +94,17 @@ public class MessageQueueNameHelper
       return new MessageQueueNameHelper(messageQueueName);
    }
    
-   public static String createSubscriptionName(String clientId, String subName)
+   public static String createSubscriptionName(String clientID, String subName)
    {
-      if (clientId == null)
+      if (clientID == null)
       {
-         throw new IllegalArgumentException("clientId name is null");
+         throw new IllegalArgumentException("clientID name is null");
       }
       if (subName == null)
       {
          throw new IllegalArgumentException("Subscription name is null");
       }
       
-      return clientId + SEPARATOR + subName;
+      return clientID + SEPARATOR + subName;
    }      
 }

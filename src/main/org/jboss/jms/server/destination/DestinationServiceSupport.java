@@ -13,7 +13,7 @@ import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.messaging.core.plugin.IdManager;
+import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
@@ -63,7 +63,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    protected TransactionRepository tr;
    
-   protected IdManager idm;
+   protected IDManager idm;
    
    protected int nodeId;
    
@@ -102,7 +102,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          
          tr = serverPeer.getTxRepository();
          
-         idm = serverPeer.getChannelIdManager();
+         idm = serverPeer.getChannelIDManager();
          
          nodeId = serverPeer.getServerPeerID();
          

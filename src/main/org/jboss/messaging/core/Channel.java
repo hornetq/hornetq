@@ -71,8 +71,6 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
     * A recoverable channel must always accept reliable messages, so this method must always return
     * true for a recoverable channel.
     *
-    * @see State#acceptReliableMessages()
-    *
     * @return false if the channel doesn't accept reliable messages.
     */
    public boolean acceptReliableMessages();

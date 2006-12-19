@@ -27,92 +27,112 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
  * 
- * A IdManager.
+ * A IDManager.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
  *
- * IdManager.java,v 1.1 2006/03/07 17:11:15 timfox Exp
+ * IDManager.java,v 1.1 2006/03/07 17:11:15 timfox Exp
  */
-public class IdManager implements MessagingComponent
+public class IDManager implements MessagingComponent
 {
-   private static final Logger log = Logger.getLogger(IdManager.class);   
-   
+   // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(IDManager.class);
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
    private boolean trace = log.isTraceEnabled();
-   
-   protected int bigBlockSize;
-   
-   protected long high;
-   
-   protected long nextBlock;
-         
-   protected PersistenceManager pm;
-   
-   protected String counterName;
-   
+
    private boolean started;
-   
-   public IdManager(String counterName, int bigBlockSize, PersistenceManager pm) throws Exception
+
+   private String counterName;
+
+   private int bigBlockSize;
+   private long high;
+   private long low;
+
+   private PersistenceManager pm;
+
+   // Constructors --------------------------------------------------
+
+   public IDManager(String counterName, int bigBlockSize, PersistenceManager pm) throws Exception
    {
+      this.counterName = counterName;
       this.bigBlockSize = bigBlockSize;
-      
       this.pm = pm;
-      
-      this.counterName = counterName;           
    }
-   
+
+   // MessagingComponent implementation -----------------------------
+
    public synchronized void start() throws Exception
    {
       getNextBigBlock();
-      
       started = true;
    }
-   
+
    public synchronized void stop() throws Exception
    {
       started = false;
    }
-   
-   public synchronized IdBlock getIdBlock(int size) throws Exception
+
+   // Public --------------------------------------------------------
+
+   protected void getNextBigBlock() throws Exception
+   {
+      low = pm.reserveIDBlock(counterName, bigBlockSize);
+      high = low + bigBlockSize - 1;
+      if (trace) { log.trace(this + " retrieved next block of size " + bigBlockSize + " from PersistenceManager, starting at " + low); }
+   }
+
+   public synchronized IDBlock getIDBlock(int size) throws Exception
    {
       if (!started)
       {
          throw new IllegalStateException(this + " is not started");
       }
-      
+
       if (size <= 0)
       {
          throw new IllegalArgumentException("block size must be > 0");
       }
-      
+
       if (size > bigBlockSize)
       {
          throw new IllegalArgumentException("block size must be <= bigBlockSize");
       }
-      
-      if (size > high - nextBlock + 1)
+
+      if (size > high - low + 1)
       {
          getNextBigBlock();
       }
-      
-      long low = nextBlock;
-      
-      nextBlock += size;
-      
-      return new IdBlock(low, nextBlock - 1);
+
+      long low = this.low;
+
+      this.low += size;
+
+      return new IDBlock(low, this.low - 1);
    }
-   
-   public synchronized long getId() throws Exception
+
+   public synchronized long getID() throws Exception
    {
-      return getIdBlock(1).low;
+      return getIDBlock(1).getLow();
    }
-   
-   protected void getNextBigBlock() throws Exception
+
+   public String toString()
    {
-      nextBlock = pm.reserveIDBlock(counterName, bigBlockSize);
-      
-      if (trace) { log.trace("Retrieved next block of size " + bigBlockSize + " from pm starting at " + nextBlock); }
-      
-      high = nextBlock + bigBlockSize - 1;
+      return "IDManager[" + counterName + ", " + low + "-" + high + "]";
    }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
 }
