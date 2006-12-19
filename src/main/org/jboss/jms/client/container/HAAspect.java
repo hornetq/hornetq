@@ -59,6 +59,8 @@ import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
+import org.jboss.remoting.ConnectionListener;
+import org.jboss.remoting.Client;
 
 /**
  *
@@ -162,8 +164,8 @@ public class HAAspect
 
       ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
 
-      // ValveAspect is supposed to be created per ClientConnectionDelegate
-      //installValveAspect(cd, new ValveAspect(cd, this));
+      ((ConnectionState) ((DelegateSupport) cd).getState()).
+         getRemotingConnectionListener().addDelegateListener(new ConnectionFailureListener(cd));
 
       if(trace) { log.trace(this + " got local connection delegate " + cd); }
 
@@ -679,6 +681,45 @@ public class HAAspect
        }
     }
 
+
+
+
+   /** I have moved this ConnectionListener to ValveAspect (from HAAspect) because
+    *  it needs to use the same valve as exception listeners.
+    *  While we are processing failover, we should block any calls on the client side.
+    *  (No call should be made while the client failover is being executed). It doesn't matter if
+    *  the failover was captured by Lease (ConnectionFactory) or Exception handling on invoke at this class */
+   private class ConnectionFailureListener implements ConnectionListener
+   {
+      private ClientConnectionDelegate cd;
+
+      ConnectionFailureListener(ClientConnectionDelegate cd)
+      {
+         this.cd = cd;
+      }
+
+      // ConnectionListener implementation ---------------------------
+
+      public void handleConnectionException(Throwable throwable, Client client)
+      {
+         try
+         {
+            log.debug(this + " is being notified of connection failure: " + throwable);
+            handleConnectionFailure(cd);
+         }
+         catch (Throwable e)
+         {
+            log.error("Caught exception in handling failure", e);
+         }
+      }
+
+      public String toString()
+      {
+         return "ConnectionFailureListener[" + cd + "]";
+      }
+   }
+
+   
 }
 
 
