@@ -260,6 +260,7 @@ public class HATest extends ClusteringTestBase
       ServerManagement.kill(1);
 
       Thread.sleep(30000);
+      // if failover happened, this object was replaced
       assertNotSame(originalRemoting, delegate.getRemotingConnection());
 
       //System.out.println("Kill server1"); Thread.sleep(10000);
@@ -272,16 +273,7 @@ public class HATest extends ClusteringTestBase
       System.out.println("TransactionID on client = " + txID);
       log.info(">>Final commit");
 
-      /* JBossConnection connSecondServer = (JBossConnection)this.factoryServer2.createConnection();
-       connSecondServer.start();
-       JBossSession sessionSecondServer = (JBossSession)connSecondServer.createSession(false,Session.AUTO_ACKNOWLEDGE);
-       MessageConsumer consumerSecondServer = sessionSecondServer.createConsumer(destination); */
-
       session.commit();
-
-      /* receiveMessage("consumerSecondServer",consumerSecondServer,true,false);
-     receiveMessage("consumerSecondServer",consumerSecondServer,true,false);
-     receiveMessage("consumerSecondServer",consumerSecondServer,true,true); */
 
       log.info("Calling alternate receiver");
       receiveMessage("consumerHA", consumerHA, true, false);
@@ -296,6 +288,95 @@ public class HATest extends ClusteringTestBase
 
    }
 
+
+//   public void testQueueHA() throws Exception
+//   {
+//       log.info("++testTopicSubscriber");
+//
+//       log.info(">>Lookup Queue");
+//       Destination destination = (Destination)getCtx1().lookup("queue/testDistributedQueue");
+//
+//       log.info("Creating connection server1");
+//       JBossConnection  conn = (JBossConnection)this.factoryServer1.createConnection();
+//       conn.setClientID("testClient");
+//       conn.start();
+//
+//       JBossSession session = (JBossSession)conn.createSession(true,Session.AUTO_ACKNOWLEDGE);
+//       ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate)session.getDelegate();
+//       SessionState sessionState = (SessionState)clientSessionDelegate.getState();
+//
+//       MessageConsumer consumerHA = session.createConsumer(destination);
+//       JBossMessageConsumer jbossConsumerHA =(JBossMessageConsumer)consumerHA;
+//
+//       org.jboss.jms.client.delegate.ClientConsumerDelegate clientDelegate = (org.jboss.jms.client.delegate.ClientConsumerDelegate)jbossConsumerHA.getDelegate();
+//       ConsumerState consumerState = (ConsumerState)clientDelegate.getState();
+//
+//       log.info("subscriptionName=" + consumerState.getSubscriptionName());
+//
+//
+//       log.info(">>Creating Producer");
+//       MessageProducer producer = session.createProducer(destination);
+//       log.info(">>creating Message");
+//       Message message = session.createTextMessage("Hello Before");
+//       log.info(">>sending Message");
+//       producer.send(message);
+//       session.commit();
+//
+//       session.commit();
+//       //if (true) return;
+//
+//       Object txID = sessionState.getCurrentTxId();
+//
+//       ClientConnectionDelegate delegate = (ClientConnectionDelegate)conn.getDelegate();
+//
+//       JMSRemotingConnection originalRemoting = delegate.getRemotingConnection();
+//
+//       log.info(">>Creating alternate connection");
+//       JBossConnection conn2 = (JBossConnection)this.factoryServer2.createConnection();
+//       log.info("NewConnectionCreated=" + conn2);
+//
+//       log.info(">>Failling over");
+//       assertSame(originalRemoting,delegate.getRemotingConnection());
+//       conn.getDelegate().failOver(conn2.getDelegate());
+//
+//       try {
+//           originalRemoting.stop();
+//       } catch (Throwable throwable) {
+//           throwable.printStackTrace();
+//       }
+//
+//
+//       assertNotSame(originalRemoting,delegate.getRemotingConnection());
+//
+//       //System.out.println("Kill server1"); Thread.sleep(10000);
+//       assertEquals(txID,sessionState.getCurrentTxId());
+//       System.out.println("TransactionID on client = " + txID);
+//       log.info(">>Final commit");
+//
+//       session.commit();
+//
+//       log.info("Calling alternate receiver");
+//       receiveMessage("consumerHA",consumerHA,true,false);
+//       receiveMessage("consumerHA",consumerHA,true,true);
+//
+//       session.commit();
+//
+//       for (int i=0;i<30;i++)
+//       {
+//          log.info("Message Sent " + i);
+//          producer.send(session.createTextMessage("Message " + i));
+//       }
+//      session.commit();
+//
+//      Thread.sleep(5000);
+//
+//       TextMessage messageLoop = null;
+//       while (!((messageLoop = (TextMessage) consumerHA.receive(5000)) == null))
+//       {
+//          log.info("Message received = " + messageLoop.getText());
+//       }
+//
+//   }
 
    /*
     * Test that the failover mapping is created correctly and updated properly when nodes leave
