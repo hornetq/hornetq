@@ -54,9 +54,7 @@ public class QueueFailoverExample extends ExampleSupport
 
       String destinationName = getDestinationJNDIName();
 
-
       InitialContext ic = null;
-
 
       Connection connection = null;
 
@@ -64,9 +62,11 @@ public class QueueFailoverExample extends ExampleSupport
       {
          // Create a connection to the clustered messaging instance
 
+
          ic = new InitialContext();
 
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
          Queue distributedQueue = (Queue)ic.lookup(destinationName);
          log("Distributed queue " + destinationName + " exists");
 
@@ -87,6 +87,8 @@ public class QueueFailoverExample extends ExampleSupport
 
          producer.send(message);
 
+         MessageConsumer consumer = session.createConsumer(distributedQueue);
+
 
          log("The message was successfully sent to the distributed queue");
 
@@ -99,9 +101,7 @@ public class QueueFailoverExample extends ExampleSupport
          Thread.sleep(30000); // TODO not necesare after we install the client valve
 
 
-         // Transparenty create a consumer and receive the message
-
-         MessageConsumer consumer = session.createConsumer(distributedQueue);
+         // receive the message
 
          message = (TextMessage)consumer.receive(2000);
          log("Received message: " + message.getText());
