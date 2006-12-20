@@ -174,8 +174,9 @@ public class ConsumerState extends HierarchicalStateSupport
    public void copyState(ConsumerState newState)
    {      
       this.consumerID = newState.consumerID;
-      
-      this.delegate = newState.delegate;
+
+      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
+      //this.delegate = newState.delegate;
       
       this.channelId = newState.channelId;
    }

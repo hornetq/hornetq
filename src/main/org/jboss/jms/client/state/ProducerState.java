@@ -154,7 +154,7 @@ public class ProducerState extends HierarchicalStateSupport
    public void copyState(ProducerState newState)
    {      
       //Actually only one field
-      this.delegate = newState.delegate;
+      //this.delegate = newState.delegate;
    }
    
 }

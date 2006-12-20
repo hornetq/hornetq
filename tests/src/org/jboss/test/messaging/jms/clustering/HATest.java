@@ -81,6 +81,17 @@ public class HATest extends ClusteringTestBase
    
    // Public --------------------------------------------------------
    
+   // this test was created per JBMESSAGING-685
+   // as this required a ClusteredConnectionFactory I kept it into HATest but we can move it if we want
+   public void testEmptyCommit() throws Exception
+   {
+      JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
+      Connection conn = cf.createConnection();
+      JBossSession session = (JBossSession) conn.createSession(true, Session.SESSION_TRANSACTED);
+      session.commit();
+      conn.close();
+   }
+
    /*
     * Test that connections created using a clustered connection factory are created round robin on
     * different servers

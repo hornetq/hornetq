@@ -219,7 +219,9 @@ public class ConnectionState extends HierarchicalStateSupport
       this.idGenerator = newState.idGenerator;
       this.serverID = newState.serverID;
       this.versionToUse = newState.versionToUse;
-      this.delegate = newState.delegate;
+
+      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
+      //this.delegate = newState.delegate;
    }
 
    public String toString()

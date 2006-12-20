@@ -167,6 +167,8 @@ public class HAAspect
       ((ConnectionState) ((DelegateSupport) cd).getState()).
          getRemotingConnectionListener().addDelegateListener(new ConnectionFailureListener(cd));
 
+      //installValveAspect(cd, new ValveAspect(cd, this));
+
       if(trace) { log.trace(this + " got local connection delegate " + cd); }
 
       // Add a connection listener to detect failure; the consolidated remoting connection listener
@@ -428,12 +430,7 @@ public class HAAspect
          // We need to update some of the attributes on the state
          failedSessionState.copyState(newSessionState);
 
-         List children = new ArrayList();
-
-         // TODO Why is this clone necessary?
-         children.addAll(failedSessionState.getChildren());
-
-         for (Iterator j = children.iterator(); j.hasNext(); )
+         for (Iterator j = failedSessionState.getChildren().iterator(); j.hasNext(); )
          {
             HierarchicalStateSupport sessionChild = (HierarchicalStateSupport)j.next();
 
@@ -444,7 +441,7 @@ public class HAAspect
             else if (sessionChild instanceof ConsumerState)
             {
                handleFailoverOnConsumer(failedConnDelegate, (ConsumerState)sessionChild,
-                                        failedSessionDelegate, oldCallbackManager);
+                                         newSessionDelegate, oldCallbackManager);
             }
             else if (sessionChild instanceof BrowserState)
             {
@@ -558,7 +555,7 @@ public class HAAspect
 
    private void handleFailoverOnConsumer(ClientConnectionDelegate failedConnectionDelegate,
                                          ConsumerState failedConsumerState,
-                                         ClientSessionDelegate failedSessionDelegate,
+                                         ClientSessionDelegate newSessionDelegate,
                                          CallbackManager oldCallbackManager)
       throws JMSException
    {
@@ -569,7 +566,7 @@ public class HAAspect
 
       if (trace) { log.trace(this + " creating alternate consumer"); }
 
-      ClientConsumerDelegate newConsumerDelegate = (ClientConsumerDelegate)failedSessionDelegate.
+      ClientConsumerDelegate newConsumerDelegate = (ClientConsumerDelegate)newSessionDelegate.
          createConsumerDelegate((JBossDestination)failedConsumerState.getDestination(),
                                  failedConsumerState.getSelector(),
                                  failedConsumerState.isNoLocal(),

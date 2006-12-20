@@ -238,7 +238,7 @@ public class SessionState extends HierarchicalStateSupport
    // we need to update
    public void copyState(SessionState newState)
    {      
-      this.delegate = newState.delegate;
+      //this.delegate = newState.delegate;
       
       this.sessionId = newState.sessionId;
    }

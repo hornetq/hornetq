@@ -163,7 +163,7 @@ public class TransactionAspect
          MethodInvocation mi = (MethodInvocation)invocation;
          Message m = (Message)mi.getArguments()[0];
 
-         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager"); }
+         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager txID=" + txID + " sessionID= " + state.getSessionId()); }
 
          connState.getResourceManager().addMessage(txID, state.getSessionId(), (JBossMessage)m);
 

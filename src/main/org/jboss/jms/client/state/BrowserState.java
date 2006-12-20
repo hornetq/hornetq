@@ -92,7 +92,8 @@ public class BrowserState extends HierarchicalStateSupport
    public void copyState(BrowserState newState)
    {      
       //Actually only one field
-      this.delegate = newState.delegate;
+      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
+      //this.delegate = newState.delegate;
    }
 }
 

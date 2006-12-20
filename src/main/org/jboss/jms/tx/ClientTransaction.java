@@ -210,47 +210,54 @@ public class ClientTransaction
    public void write(DataOutputStream out) throws Exception
    {
       out.writeInt(state);
-      
-      out.writeInt(sessionStatesMap.size());
-      
-      Iterator iter = sessionStatesMap.values().iterator();
-      
-      while (iter.hasNext())
+
+      if (sessionStatesMap == null)
       {
-         SessionTxState state = (SessionTxState)iter.next();
-         
-         out.writeInt(state.getSessionId());
-         
-         List msgs = state.getMsgs();
-         
-         out.writeInt(msgs.size());
-         
-         Iterator iter2 = msgs.iterator();
-         
-         while (iter2.hasNext())
-         {
-            JBossMessage m = (JBossMessage)iter2.next();
+         out.writeInt(0);
+      }
+      else
+      {
+         out.writeInt(sessionStatesMap.size());
 
-            out.writeByte(m.getType());
-            
-            m.write(out);
-         }
-         
-         List acks = state.getAcks();
-         
-         out.writeInt(acks.size());
-         
-         iter2 = acks.iterator();
-         
-         while (iter2.hasNext())
-         {
-            DeliveryInfo ack = (DeliveryInfo)iter2.next();
+         Iterator iter = sessionStatesMap.values().iterator();
 
-            //We only need the delivery id written
-            out.writeLong(ack.getMessageProxy().getDeliveryId());
+         while (iter.hasNext())
+         {
+            SessionTxState state = (SessionTxState)iter.next();
+
+            out.writeInt(state.getSessionId());
+
+            List msgs = state.getMsgs();
+
+            out.writeInt(msgs.size());
+
+            Iterator iter2 = msgs.iterator();
+
+            while (iter2.hasNext())
+            {
+               JBossMessage m = (JBossMessage)iter2.next();
+
+               out.writeByte(m.getType());
+
+               m.write(out);
+            }
+
+            List acks = state.getAcks();
+
+            out.writeInt(acks.size());
+
+            iter2 = acks.iterator();
+
+            while (iter2.hasNext())
+            {
+               DeliveryInfo ack = (DeliveryInfo)iter2.next();
+
+               //We only need the delivery id written
+               out.writeLong(ack.getMessageProxy().getDeliveryId());
+            }
          }
       }
-   }  
+   }
     
    
    public void read(DataInputStream in) throws Exception
