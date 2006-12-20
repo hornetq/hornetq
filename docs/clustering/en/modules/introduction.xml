@@ -112,15 +112,6 @@
          </para>
          </listitem>
 
-         <listitem>
-         <para>
-         Intelligent message distribution is available but disabled in the default configuration
-         because it is currently unstable. Stability should increase in the next Beta release (Beta2).
-         (For intrepid explorers - it is very straightforward to enable this if you wish -
-            see the configuration section - but watch out for unpredictable results.)
-         </para>
-         </listitem>
-
       </itemizedlist>
 
       <para>

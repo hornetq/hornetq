@@ -101,8 +101,7 @@
       <para>
       JBoss Messaging deals with this problem by intelligently pulling messages from other less
        busy nodes, if it detects idle consumers on the fast node and slow consumers
-      on another node. (Please note that this functionality is currently unstable in the Beta1
-       release).
+      on another node.
       </para>
 
       <para>
