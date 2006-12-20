@@ -28,6 +28,7 @@
    <path id="common.compilation.classpath">
       <fileset file="${jboss.home}/client/jboss-j2ee.jar"/>
       <fileset file="${jboss.home}/client/jboss-j2se.jar"/>
+      <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </path>
 
    <path id="example.compilation.classpath">
