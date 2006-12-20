@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>JBoss Messaging Example - JMS Topic</title>
+</head>
+<body>
+<br>
+<h1>JBoss Messaging Distributed Topic Example</h1>
+$Revision: 1017 $
+<h2>Overview</h2>
+<br>
+This example demonstrates how to write JMS code that connects to a
+JBoss Messaging cluster and sends messages to a distributed topic. The
+client code creates two distinct JMS connections to two different
+cluster nodes. Each connection is then used to create a subscriber for
+the distributed topic. The example is considered
+successful
+if both subscribers receive a message sent to the topic.<br>
+<br>
+<span style="font-weight: bold;">Note<br>
+</span>
+<div style="margin-left: 40px;">In order to create connections to
+different cluster nodes, the example looks up and downloads
+ConnectionFactories bound in the local JNDI space of each cluster node.
+This is done by explicitely configuring the JNDI client environment to
+point to different physical cluster nodes. This is just a temporary
+solution, used only by the current Alpha release. Subsequent releases
+will use HA-JNDI.<br>
+<span style="font-weight: bold;"></span></div>
+<br>
+<br>
+This example relies on having access to a running JBoss Messaging
+cluster with at least two nodes. The JBoss Messaging cluster must be
+installed and started according to
+the
+"Installation" paragraph from the clustering documentation, bundled
+with the release (<a href="../../docs/clustering/html/index.html">HTML</a>,
+<a href="../../docs/clustering/html_single/index.html">HTML-single</a>
+and <a href="../../docs/clustering/pdf/ClusteringGuide.pdf">PDF</a>).
+The
+clustering documentation is also available on-line at <a
+ href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a>.
+<br>
+<br>
+This example also relies on having access to the <span
+ style="font-family: monospace;">jboss-messaging-client.jar</span>
+archive included with the release bundle. If you run this example
+from
+an unzipped installation bundle, the example run script is correctly
+configured to find the client jar. Otherwise, you must modify example's
+<span style="font-family: monospace;">build.xml</span> accordingly.<br>
+<span style="font-style: italic;"></span><br>
+<h2>Running the example</h2>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><br>
+1. Make sure that a JBoss Messaging cluster with at least two nodes is
+up and running.<br>
+<br>
+2. Go to the example's home directory<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">cd
+...\examples\distributed-topic</span><br>
+</div>
+<br>
+3. Run the example:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">ant</span>
+<br>
+<br>
+<br>
+</div>
+The output of a successful run should be similar to:<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <div style="margin-left: 40px;"><br>
+      </div>
+$ ant<br>
+Buildfile: build.xml<br>
+      <br>
+identify:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+###########################################################################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Running the DISTRIBUTED TOPIC
+example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+###########################################################################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] The
+topic:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; testDistributedTopic<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] The client jar:
+../../../output/lib/jboss-messaging-client.jar<br>
+      <br>
+sanity-check:<br>
+      <br>
+init:<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\svn\messaging\docs\examples\distributed-topic\output<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\svn\messaging\docs\examples\common\output<br>
+      <br>
+compile:<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\svn\messaging\docs\examples\common\output<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\svn\messaging\docs\examples\distributed-topic\output<br>
+      <br>
+run:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Distributed topic
+/topic/testDistributedTopic exists<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully published
+on the distributed topic<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener 1 received message:
+Hello!<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener 2 received message:
+Hello!<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
+Messaging version 1.2.0.Alpha1 (1.2)<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
+SUCCESS!&nbsp;&nbsp; ###<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+      <br>
+BUILD SUCCESSFUL<br>
+Total time: 4 seconds<br>
+      <br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>

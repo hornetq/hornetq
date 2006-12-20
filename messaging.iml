@@ -9,6 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/distributed-topic/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/http/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/mdb/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/docs/examples/queue-failover/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/queue/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/secure-socket/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/stateless/src" isTestSource="false" />

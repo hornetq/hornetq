@@ -1,0 +1,73 @@
+/**
+ * JBoss, Home of Professional Open Source
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+package org.jboss.example.jms.common.bean;
+
+import javax.ejb.SessionBean;
+import javax.ejb.SessionContext;
+import javax.ejb.EJBException;
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.Connection;
+import javax.jms.MessageConsumer;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.TextMessage;
+import javax.jms.QueueBrowser;
+import javax.jms.JMSException;
+import javax.naming.InitialContext;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.rmi.RemoteException;
+
+/**
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision: 1766 $</tt>
+
+ * $Id: StatelessSessionExampleBean.java 1766 2006-12-11 22:29:27Z ovidiu.feodorov@jboss.com $
+ */
+public class ManagementBean implements SessionBean
+{
+   private SessionContext ctx;
+
+   public void killAS() throws Exception
+   {
+      System.out.println("######");
+      System.out.println("######");
+      System.out.println("######");
+      System.out.println("######");
+      System.out.println("###### SIMULATING A FAILURE, KILLING THE VM!");
+      System.out.println("######");
+      System.out.println("######");
+      System.out.println("######");
+      System.out.println("######");
+
+      Runtime.getRuntime().halt(1);
+   }
+
+   public void setSessionContext(SessionContext ctx) throws EJBException, RemoteException
+   {
+      this.ctx = ctx;
+   }
+
+   public void ejbCreate()
+   {
+   }
+
+   public void ejbRemove() throws EJBException
+   {
+   }
+
+   public void ejbActivate() throws EJBException, RemoteException
+   {
+   }
+
+   public void ejbPassivate() throws EJBException, RemoteException
+   {
+   }
+
+}

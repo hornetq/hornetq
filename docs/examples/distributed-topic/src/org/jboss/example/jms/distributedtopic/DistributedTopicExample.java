@@ -51,13 +51,15 @@ public class DistributedTopicExample extends ExampleSupport
 {
    public void example() throws Exception
    {
+
       String destinationName = getDestinationJNDIName();
 
-      InitialContext ic = null;
-      InitialContext ic2 = null;
 
-      Connection connection = null;
-      Connection connection2 = null;
+      InitialContext ic = null;
+
+
+      Connection connection0 = null;
+      Connection connection1 = null;
 
       try
       {
@@ -69,58 +71,68 @@ public class DistributedTopicExample extends ExampleSupport
          Topic distributedTopic = (Topic)ic.lookup(destinationName);
          log("Distributed topic " + destinationName + " exists");
 
-         connection = cf.createConnection();
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer publisher = session.createProducer(distributedTopic);
 
-         MessageConsumer subscriber = session.createConsumer(distributedTopic);
+         // When connecting to a messaging cluster, the ConnectionFactory has the capability of
+         // transparently creating physical connections to different cluster nodes, in a round
+         // robin fashion ...
 
-         ExampleListener messageListener = new ExampleListener("MessageListener 1");
-         subscriber.setMessageListener(messageListener);
 
-         // connecting to the second node
+         // ... so this is a connection to a cluster node
+         connection0 = cf.createConnection();
 
-         Hashtable environment = new Hashtable();
-         environment.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-         environment.put("java.naming.provider.url", "jnp://localhost:1199");
-         environment.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+         // ... and this is a connection to a different cluster node
+         connection1 = cf.createConnection();
 
-         ic2 = new InitialContext(environment);
+         // Let's make sure that (this example is also a smoke test)
+         assertNotEquals(getServerID(connection0), getServerID(connection1));
 
-         ConnectionFactory cf2 = (ConnectionFactory)ic2.lookup("/ConnectionFactory");
 
-         connection2 = cf2.createConnection();
-         Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         // Create a session, a producer and consumer for the distributed topic, using connection0
 
-         MessageConsumer subscriber2 = session2.createConsumer(distributedTopic);
+         Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         ExampleListener messageListener2 = new ExampleListener("MessageListener 2");
-         subscriber2.setMessageListener(messageListener2);
+         MessageConsumer subscriber0 = session0.createConsumer(distributedTopic);
+         ExampleListener messageListener0 = new ExampleListener("MessageListener 0");
+         subscriber0.setMessageListener(messageListener0);
 
-         // starting the connections
 
-         connection.start();
-         connection2.start();
+         MessageProducer publisher = session0.createProducer(distributedTopic);
 
-         // sending the message
 
-         TextMessage message = session.createTextMessage("Hello!");
+
+         // Create a session and a consumer for the distributed topic, using connection1
+
+         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer subscriber1 = session1.createConsumer(distributedTopic);
+
+         ExampleListener messageListener1 = new ExampleListener("MessageListener 1");
+         subscriber1.setMessageListener(messageListener1);
+
+         // Starting the connections
+
+         connection0.start();
+         connection1.start();
+
+         // Sending the message
+
+         TextMessage message = session0.createTextMessage("Hello!");
          publisher.send(message);
 
          log("The message was successfully published on the distributed topic");
 
-         messageListener.waitForMessage();
-         messageListener2.waitForMessage();
+         messageListener0.waitForMessage();
+         messageListener1.waitForMessage();
 
-         message = (TextMessage)messageListener.getMessage();
-         log(messageListener.getName() + " received message: " + message.getText());
+         message = (TextMessage)messageListener0.getMessage();
+         log(messageListener0.getName() + " received message: " + message.getText());
          assertEquals("Hello!", message.getText());
 
-         message = (TextMessage)messageListener2.getMessage();
-         log(messageListener2.getName() + " received message: " + message.getText());
+         message = (TextMessage)messageListener1.getMessage();
+         log(messageListener1.getName() + " received message: " + message.getText());
          assertEquals("Hello!", message.getText());
 
-         displayProviderInfo(connection.getMetaData());
+         displayProviderInfo(connection0.getMetaData());
 
       }
       finally
@@ -137,41 +149,29 @@ public class DistributedTopicExample extends ExampleSupport
             }
          }
 
-         if(ic2 != null)
-         {
-            try
-            {
-               ic2.close();
-            }
-            catch(Exception e)
-            {
-               throw e;
-            }
-         }
-
          try
          {
-            if (connection != null)
+            if (connection0 != null)
             {
-               connection.close();
+               connection0.close();
             }
          }
          catch(JMSException e)
          {
-            log("Could not close connection " + connection + ", exception was " + e);
+            log("Could not close connection " + connection0 + ", exception was " + e);
             throw e;
          }
 
          try
          {
-            if (connection2 != null)
+            if (connection1 != null)
             {
-               connection2.close();
+               connection1.close();
             }
          }
          catch(JMSException e)
          {
-            log("Could not close connection " + connection2 + ", exception was " + e);
+            log("Could not close connection " + connection1 + ", exception was " + e);
             throw e;
          }
       }

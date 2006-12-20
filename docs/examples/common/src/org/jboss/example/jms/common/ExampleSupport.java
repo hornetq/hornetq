@@ -6,7 +6,14 @@
  */
 package org.jboss.example.jms.common;
 
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.example.jms.common.bean.ManagementHome;
+import org.jboss.example.jms.common.bean.Management;
+
 import javax.jms.ConnectionMetaData;
+import javax.jms.Connection;
 import javax.naming.InitialContext;
 
 /**
@@ -23,6 +30,79 @@ public abstract class ExampleSupport
    public static final String DEFAULT_TOPIC_NAME = "testTopic";
 
    // Static --------------------------------------------------------
+
+   public static int getServerID(Connection conn) throws Exception
+   {
+      if (!(conn instanceof JBossConnection))
+      {
+         throw new Exception("Connection not an instance of JBossConnection");
+      }
+
+      JBossConnection jbconn = (JBossConnection)conn;
+
+      DelegateSupport del = (DelegateSupport)jbconn.getDelegate();
+
+      ConnectionState state = (ConnectionState)del.getState();
+
+      return state.getServerID();
+   }
+
+   public static void assertEquals(Object o, Object o2)
+   {
+       if (o == null && o2 == null)
+       {
+          return;
+       }
+
+       if (o.equals(o2))
+       {
+          return;
+       }
+
+       throw new RuntimeException("Assertion failed, " + o + " != " + o2);
+   }
+
+   public static void assertEquals(int i, int i2)
+   {
+       if (i == i2)
+       {
+          return;
+       }
+
+       throw new RuntimeException("Assertion failed, " + i + " != " + i2);
+   }
+
+   public static void assertNotEquals(int i, int i2)
+   {
+        if (i != i2)
+        {
+           return;
+        }
+
+        throw new RuntimeException("Assertion failed, " + i + " == " + i2);
+   }
+
+
+   public static void killActiveNode() throws Exception
+   {
+      // Currently it will always kill the primary node, ignoring nodeID
+
+      try
+      {
+         InitialContext ic = new InitialContext();
+
+         ManagementHome home = (ManagementHome)ic.lookup("ejb/Management");
+         Management bean = home.create();
+         bean.killAS();
+      }
+      catch(Exception e)
+      {
+         // OK, I expect exceptions following a VM kill
+
+         //e.printStackTrace();
+      }
+   }
+
 
    // Attributes ----------------------------------------------------
 
@@ -98,32 +178,6 @@ public abstract class ExampleSupport
 
      System.out.println(info);
    }
-
-   protected void assertEquals(Object o, Object o2)
-   {
-      if (o == null && o2 == null)
-      {
-         return;
-      }
-
-      if (o.equals(o2))
-      {
-         return;
-      }
-
-      throw new RuntimeException("Assertion failed, " + o + " != " + o2);
-   }
-
-   protected void assertEquals(int i, int i2)
-   {
-      if (i == i2)
-      {
-         return;
-      }
-
-      throw new RuntimeException("Assertion failed, " + i + " != " + i2);
-   }
-
 
    // Private -------------------------------------------------------
 
