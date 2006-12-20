@@ -7,15 +7,16 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.2.0.Alpha2 Release Notes</h1>
+JBoss Messaging 1.2.0.Beta1 Release Notes</h1>
 <br>
-1st November 2006<br>
+December 20 2006<br>
 <br>
 <br>
 JBoss
 Messaging is a new JBoss JMS 1.1-compliant JMS provider, aimed to
-replace JBossMQ.&nbsp; The curent release is the first public release
-that includes clustering features. An brief overview of the clustering
+replace JBossMQ.&nbsp; The curent release is the first Beta release. It
+includes the majority of the clustering features to be available in
+1.2.0.GA. An brief overview of the clustering
 features and installation instructions are available in the "Clustering
 Guide". The guide is bundled with this release and is
 provided in <a href="./docs/clustering/html/index.html">HTML</a>, <a
@@ -27,55 +28,44 @@ formats.&nbsp; The guide is also available on-line at&nbsp; <a
 <span style="font-weight: bold;">Warning<br>
 </span>
 <div style="margin-left: 40px;">The current JBoss Messaging
-distribution is a <span style="font-style: italic;">preview </span><span
- style="font-style: italic;">alpha </span><span
- style="font-style: italic;">release. </span>We strongly advise
+distribution is a <span style="font-style: italic;">preview beta</span><span
+ style="font-style: italic;"> </span><span style="font-style: italic;">release.
+</span>We strongly advise
 against using it in a production environment.<br>
 </div>
 <h2>Release Notes<br>
 </h2>
-
-<h2>Bug</h2>
-<ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-552'>JBMESSAGING-552</a>] - MessageConsumerTest.testRedeliveryToCompetingConsumerOnSubscription() fails on race condition</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-587'>JBMESSAGING-587</a>] - Fix perf/build.xml</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-589'>JBMESSAGING-589</a>] - DefaultClusteredPostOfficeTest::testClusteredNameUniqueness is failing</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-595'>JBMESSAGING-595</a>] - Rebind of clustered durable subscription fails</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-596'>JBMESSAGING-596</a>] - BrowserTest should close its Connection in tearDown()</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-606'>JBMESSAGING-606</a>] - Issue with cancel when paging</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-617'>JBMESSAGING-617</a>] - Stress tests do not run</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-618'>JBMESSAGING-618</a>] - Failure in stress tests</li>
+<h2 style="margin-left: 40px;">Bug</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-613">JBMESSAGING-613</a>]
+- DelegateSupport::trace shouldn't be serialized</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-667">JBMESSAGING-667</a>]
+- Clustered ConnectionFactory binding mechanism broken for a
+single-node cluster (and possibly for multi-node cluster)</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-685">JBMESSAGING-685</a>]
+- session.commit on an empty transaction causes NPE</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-686">JBMESSAGING-686</a>]
+- Inconsistence between DelegateSupport and States</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-687">JBMESSAGING-687</a>]
+- Fix clone on HAAspect::performClientSideFailover</li>
 </ul>
-
-<h2>Feature Request</h2>
-<ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-583'>JBMESSAGING-583</a>] - Add an integer check for release-admin.xml's -Did=...</li>
+<h2 style="margin-left: 40px;">Task</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-207">JBMESSAGING-207</a>]
+- HTTP invoker configuration and testing</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-516">JBMESSAGING-516</a>]
+- Clustering</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-615">JBMESSAGING-615</a>]
+- Add sufficient tracing for a customer environment</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-631">JBMESSAGING-631</a>]
+- Update the build script to produce an unscoped SAR</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-632">JBMESSAGING-632</a>]
+- Migreate the deployment descriptors and the AS-related artifacts to
+the AS repository</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-673">JBMESSAGING-673</a>]
+- Extend test suite framework to restart remote servers</li>
 </ul>
-
-<h2>Patch</h2>
-<ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-625'>JBMESSAGING-625</a>] - ClassCastException String to ManagedDestination</li>
-</ul>
-
-<h2>Task</h2>
-<ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-289'>JBMESSAGING-289</a>] - Make service container configurable wrt datasource and persistence manager config</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-568'>JBMESSAGING-568</a>] - Complete the configuration section in the Alpha clustering guide</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-571'>JBMESSAGING-571</a>] - Get unicast to work with clustering</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-573'>JBMESSAGING-573</a>] - Add clustering crash and recovery tests to suite</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-575'>JBMESSAGING-575</a>] - Stabilise the default message pull policy</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-577'>JBMESSAGING-577</a>] - Handle sequence numbers properly for state transfer...</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-579'>JBMESSAGING-579</a>] - Improve shared durable subscription tests</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-581'>JBMESSAGING-581</a>] - ServerManagement needs to be extended to start cluster node instances</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-591'>JBMESSAGING-591</a>] - MessageConsumerTest::testTimeoutReceiveOnClose can randomly fail</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-597'>JBMESSAGING-597</a>] - Tracker task for JBSHOTOKU-101 (blogs dont show up in our Labs project blog area)</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-601'>JBMESSAGING-601</a>] - Place Messaging artifacts in the repository</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-610'>JBMESSAGING-610</a>] - Merge 1.0.1.GA changes (Branch_1_0) into the trunk</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-614'>JBMESSAGING-614</a>] - Remove shutdown logger</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-621'>JBMESSAGING-621</a>] - Modify the smoke test suite to run tests in top of JBoss 4.0.5.GA instead of 4.0.5.CR1</li>
-</ul>
-
-
-
+<br>
+<hr style="width: 100%; height: 2px;">
 </body>
 </html>
