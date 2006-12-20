@@ -79,19 +79,31 @@ public class QueueFailoverExample extends ExampleSupport
 
          connection.start();
 
-         // Send a message to the queue
+         // Send 2 messagea to the queue
 
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = session.createProducer(distributedQueue);
-         TextMessage message = session.createTextMessage("Hello!");
 
-         producer.send(message);
+         MessageProducer producer = session.createProducer(distributedQueue);
+
+         TextMessage message1 = session.createTextMessage("Hello1!");
+
+         producer.send(message1);
+
+         TextMessage message2 = session.createTextMessage("Hello2!");
+
+         producer.send(message2);
+
+         log("The messages were successfully sent to the distributed queue");
+
+         // Now receive one of the messages
 
          MessageConsumer consumer = session.createConsumer(distributedQueue);
 
+         TextMessage rm1 = (TextMessage)consumer.receive(2000);
 
-         log("The message was successfully sent to the distributed queue");
+         log("Received message: " + rm1.getText());
 
+         assertEquals("Hello1!", rm1.getText());
 
 
          // Kill the active node
@@ -101,11 +113,13 @@ public class QueueFailoverExample extends ExampleSupport
          Thread.sleep(30000); // TODO not necesare after we install the client valve
 
 
-         // receive the message
+         // receive the second message on the failed over node
 
-         message = (TextMessage)consumer.receive(2000);
-         log("Received message: " + message.getText());
-         assertEquals("Hello!", message.getText());
+         TextMessage rm2 = (TextMessage)consumer.receive(2000);
+         log("Received message: " + rm2.getText());
+
+
+         assertEquals("Hello2!", rm2.getText());
 
          displayProviderInfo(connection.getMetaData());
 
