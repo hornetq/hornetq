@@ -1061,12 +1061,9 @@ public class HATest extends ClusteringTestBase
       JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
       Connection conn1 = cf.createConnection();
       Connection conn2 = cf.createConnection();
-      Connection conn3 = cf.createConnection();
 
-
-      this.checkConnectionsDifferentServers(new Connection[]{conn1, conn2, conn3});
       JBossConnection conn =
-         (JBossConnection) getConnection(new Connection[]{conn1, conn2, conn3}, 1);
+         (JBossConnection) getConnection(new Connection[]{conn1, conn2}, 1);
 
       conn.setClientID("testClient");
       conn.start();
@@ -1133,8 +1130,6 @@ public class HATest extends ClusteringTestBase
       session.commit();
       conn1.close();
       conn2.close();
-      conn3.close();
-
    }
 
    
