@@ -1058,7 +1058,6 @@ public class HATest extends ClusteringTestBase
       Destination destination = (Destination) topic[1];
 
 
-      JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
       Connection conn1 = cf.createConnection();
       Connection conn2 = cf.createConnection();
 
