@@ -14,42 +14,48 @@
       </para>
 
       <para>
-      Clustered destinations (queues and topics) can be deployed at all or none of the nodes of the cluster.
+      Clustered destinations (queues and topics) can be deployed at all or none of the nodes of
+      the cluster.
       </para>
 
       <para>
-      A JMS client uses HA JNDI to lookup the connection factory. A client side load balancing policy will automatically chose a node to connect to (This is similar to
+      A JMS client uses HA JNDI to lookup the connection factory. A client side load balancing
+      policy will automatically chose a node to connect to (This is similar to
       how EJB clustering chooses a node).
       </para>
 
       <para>
-      The JMS client has now made a connection to a node where it can create sessions, message producers and message consumers and browsers and send or consume messages,
+      The JMS client has now made a connection to a node where it can create sessions, message
+      producers and message consumers and browsers and send or consume messages,
       using the standard JMS api.
       </para>
 
       <para>
-      When a distributed queue is deployed across the cluster, individual partial queues are deployed on each node.
+      When a distributed queue is deployed across the cluster, individual partial queues are
+      deployed on each node.
       </para>
 
       <para>
-      When a message is sent from a message producer attached to a particular node to a distributed quueue, a routing policy determines which partial queue will receive
+      When a message is sent from a message producer attached to a particular node to a
+      distributed quueue, a routing policy determines which partial queue will receive
       the message.
       </para>
 
       <para>
-      By default the router will always pass the message to a local queue, if there is one, this is so we avoid unnecessary network traffic.
+      By default the router will always pass the message to a local queue, if there is one,
+      this is so we avoid unnecessary network traffic.
       </para>
 
       <para>
-      If there is no local queue
-      then a partial queue on a different node will be chosen by the router, by default this will be round robin between remote partial queues.
+      If there is no local queue then a partial queue on a different node will be chosen by the
+      router, by default this will be round robin between remote partial queues.
       </para>
 
       <para>
-      When a message is sent to a distributed topic while attached to a node, there may be multiple subscriptions on different nodes that need to receive the
-      message.
-
-      Depending on the number and location of subscriptions, the message may be multicast or unicast across the cluster so the other nodes can pick it up.
+      When a message is sent to a distributed topic while attached to a node, there may be
+      multiple subscriptions on different nodes that need to receive the
+      message. Depending on the number and location of subscriptions, the message may be multicast
+      or unicast across the cluster so the other nodes can pick it up.
       </para>
 
       <para>
@@ -57,8 +63,8 @@
       </para>
 
       <para>
-      In the case of shared durable subscriptions, if a durable subscription with the same name exists on more than node, then only one of the instances needs to
-      receive the message.
+      In the case of shared durable subscriptions, if a durable subscription with the same name
+      exists on more than node, then only one of the instances needs to receive the message.
       </para>
 
       <para>Which one is determined by the same routing policy used to route messages to partial queues.</para>
@@ -93,17 +99,20 @@
       </para>
 
       <para>
-      JBoss Messaging deals with this problem by intelligently pulling messages from other less busy nodes, if it detects idle consumers on the fast node and slow consumers
-      on another node. (Please note that this functionality is currently unstable in the Alpha1 release).
+      JBoss Messaging deals with this problem by intelligently pulling messages from other less
+       busy nodes, if it detects idle consumers on the fast node and slow consumers
+      on another node. (Please note that this functionality is currently unstable in the Beta1
+       release).
       </para>
 
       <para>
-      Another feature (not available in alpha 1) that will enable very fast, very scalable reliable messaging without using databases is in memory replication
-      of reliable messages.
+      Another feature (not available in Beta 1) that will enable very fast, very scalable reliable
+      messaging without using databases is in memory replication of reliable messages.
       </para>
 
       <para>
-      Normally, persistent messages are persisted in a shared database which is shared by all nodes in the cluster.
+      Normally, persistent messages are persisted in a shared database which is shared by all nodes
+      in the cluster.
 
       JBoss Messaging 1.2.GA will contain
       an option where you can choose to not persist persistent messages in a database, but instead to replicate them between nodes of the cluster.

@@ -3,39 +3,34 @@
    <title>JBoss Messaging Clustering Configuration</title>
 
    <para>
-   This section describes how to configure JBoss Messaging 1.2 Alpha clustering.
+   This section describes how to configure JBoss Messaging 1.2 Beta clustering.
    </para>
 
    <para>
    Please note that the clustering configuration is likely to change before the 1.2 final release.
 
-   In particular we will be adding the ability for JBoss Messaging to use a pre-configured JGroups multiplex channel
-   when used inside JBoss Application Server.
+   In particular we will be adding the ability for JBoss Messaging to use a pre-configured JGroups
+   multiplex channel when used inside JBoss Application Server.
 
    </para>
 
    <section id="config">
 
    <para>
-   JBoss Messaging includes the concept of a "Post Office". Messages are posted at a Post Office and the Post Office routes the message
-   to it's destination queues.
+   JBoss Messaging includes the concept of a "Post Office". Messages are posted at a Post Office and
+   the Post Office routes the message to it's destination queues.
    </para>
 
    <para>
-   In the case of JMS we always have two Post Office
-   instances running.
-
-   The first, the Queue Post Office, routes messages to JMS Queues, and the Topic Post Office routes messages to JMS Topics.
-   </para>
-
-   <para>
-   Internally JBoss Messaging only deals with the concepts of queues, and considers a topic to just be a set of queues (one for
+   Both queues and topics use the same Post Office instance. Internally JBoss Messaging only deals
+   with the concepts of queues, and considers a topic to just be a set of queues (one for
    each subscription).
    </para>
 
    <para>
-   Therefore the Queue Post Office routes a message to one and only one queue, depending on the queue name, whereas a Topic Post Office routes a message
-   to a set of queues (one for each subscription) depending on the topic name.
+   Therefore, for a JMS queue, the Post Office routes messages to one and only one core queue,
+   depending on the queue name, whereas for a JMS topic, the Post Office routes a message
+   to a set of core queues (one for each subscription) depending on the topic name.
    </para>
 
    <para>
@@ -43,25 +38,29 @@
    </para>
 
    <para>
-   Clustered Post Office instances in a cluster connect to each other via JGroups, and when routing messages instead of just routing to local
-   queues as is the case with a non-clustered Post Office, they can also route messages to queues on other Clustered Post Office instances.
+   Clustered Post Office instances in a cluster connect to each other via JGroups, and when
+   routing messages instead of just routing to local queues as is the case with a non-clustered
+   Post Office, they can also route messages to queues on other Clustered Post Office instances.
 
    This allows us to create distributed queues and distributed topics.
    </para>
 
    <para>
-   In the current release of JBoss Messaging 1.2, the JGroups configuration for each Clustered Post Office is specified in the Post Office configuration.
+   In the current release of JBoss Messaging 1.2, the JGroups configuration for each Clustered
+   Post Office is specified in the Post Office configuration.
 
-   The details of the JGroups configuration won't be discussed here since it is standard JGroups configuration.
+   The details of the JGroups configuration won't be discussed here since it is standard
+   JGroups configuration.
 
-   For more information on JGroups configuration please consult http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups
+   For more information on JGroups configuration please consult
+   http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups
    </para>
 
    <para>An example of a Clustered Post Office configuration is shown below</para>
 
    <programlisting>
    &lt;mbean code="org.jboss.messaging.core.plugin.ClusteredPostOfficeService"
-         name="jboss.messaging:service=QueuePostOffice"
+         name="jboss.messaging:service=PostOffice"
          xmbean-dd="xmdesc/ClusteredPostOffice-xmbean.xml"&gt;
          &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
          &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
