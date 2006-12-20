@@ -7,31 +7,16 @@
 </head>
 <body>
 <br>
-<h1>JBoss Messaging Queue Consumer Failover Example</h1>
+<h1>JBoss Messaging Queue Failover Example</h1>
 $Revision: 1017 $
 <h2>Overview</h2>
 <br>
-
-This example
-
-This example demonstrates how to write JMS code that connects to a
-JBoss Messaging cluster and sends messages to a distributed topic. The
-client code creates two distinct JMS connections to two different
-cluster nodes. Each connection is then used to create a subscriber for
-the distributed topic. The example is considered
-successful
-if both subscribers receive a message sent to the topic.<br>
-<br>
-<span style="font-weight: bold;">Note<br>
-</span>
-<div style="margin-left: 40px;">In order to create connections to
-different cluster nodes, the example looks up and downloads
-ConnectionFactories bound in the local JNDI space of each cluster node.
-This is done by explicitely configuring the JNDI client environment to
-point to different physical cluster nodes. This is just a temporary
-solution, used only by the current Alpha release. Subsequent releases
-will use HA-JNDI.<br>
-<span style="font-weight: bold;"></span></div>
+This example demonstrates the transparent failover of a JMS consumer. A
+connection is made on one node of the cluster and two messages are
+sent. A consumer is created and one of the messages is consumed. The
+node the connection is connected to then fails and the connection fails
+over onto the second node. The second message is then consumed using
+the same consumer.<span style="font-weight: bold;"></span>
 <br>
 <br>
 This example relies on having access to a running JBoss Messaging
@@ -64,7 +49,7 @@ up and running.<br>
 2. Go to the example's home directory<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cd
-...\examples\distributed-topic</span><br>
+...\examples\queue-failover</span><br>
 </div>
 <br>
 3. Run the example:<br>
@@ -88,54 +73,140 @@ The output of a successful run should be similar to:<br>
 $ ant<br>
 Buildfile: build.xml<br>
       <br>
-identify:<br>
+identify:
+      <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo]
-###########################################################################<br>
+###########################################################################
+      <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo]
 #&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Running the DISTRIBUTED TOPIC
-example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-#<br>
+Running the QUEUE FAILOVER example
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; #
+      <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo]
-###########################################################################<br>
+###########################################################################
+      <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo] The
-topic:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; testDistributedTopic<br>
+queue:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; testDistributedQueue
+      <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo] The client jar:
-../../../output/lib/jboss-messaging-client.jar<br>
+../../../output/lib/jboss-messaging-client.jar
       <br>
-sanity-check:<br>
       <br>
-init:<br>
-&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
-C:\work\src\svn\messaging\docs\examples\distributed-topic\output<br>
-&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
-C:\work\src\svn\messaging\docs\examples\common\output<br>
+sanity-check:
       <br>
-compile:<br>
-&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
-C:\work\src\svn\messaging\docs\examples\common\output<br>
-&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
-C:\work\src\svn\messaging\docs\examples\distributed-topic\output<br>
       <br>
-run:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] Distributed topic
-/topic/testDistributedTopic exists<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully published
-on the distributed topic<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener 1 received message:
-Hello!<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener 2 received message:
-Hello!<br>
+init:
+      <br>
+      <br>
+compile:
+      <br>
+      <br>
+jar:
+      <br>
+      <br>
+deploy:
+      <br>
+      <br>
+sleep:
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] Sleeping for 5 seconds ...
+      <br>
+      <br>
+run:
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Distributed queue
+/queue/testDistributedQueue exists
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The messages were successfully sent to
+the distributed queue
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello1!
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] 11:12:22,359 ERROR @Timer-0
+[SocketClientInvoker] Got marshalling exception, exiting
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] java.io.IOException: Connection reset
+by peer: socket write error
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.net.SocketOutputStream.socketWrite0(Native Method)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:92)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.net.SocketOutputStream.write(SocketOutputStream.java:136)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:65)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.io.BufferedOutputStream.flush(BufferedOutputStream.java:123)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.io.DataOutputStream.flush(DataOutputStream.java:106)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.serial.io.JBossObjectOutputStream.flush(JBossObjectOutputStream.java:248)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.jms.server.remoting.JMSWireFormat.serialize(JMSWireFormat.java:1035)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.jms.server.remoting.JMSWireFormat.write(JMSWireFormat.java:413)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.remoting.transport.socket.MicroSocketClientInvoker.versionedWrite(MicroSocketClientInvoker.java:518)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.remoting.transport.socket.MicroSocketClientInvoker.transport(MicroSocketClientInvoker.java:340)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.remoting.MicroRemoteClientInvoker.invoke(MicroRemoteClientInvoker.java:125)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.remoting.ConnectionValidator.checkConnection(ConnectionValidator.java:184)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+org.jboss.remoting.ConnectionValidator.run(ConnectionValidator.java:114)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.util.TimerThread.mainLoop(Timer.java:512)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java]&nbsp;&nbsp;&nbsp;&nbsp; at
+java.util.TimerThread.run(Timer.java:462)
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] 11:12:24,406 INFO&nbsp; @Thread-3
+[HAAspect] HAAspect.ClusteredClientConnectionFactoryDelegate[1]
+completed client-side failover
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello2!
+      <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.2.0.Alpha1 (1.2)<br>
+Messaging version 1.2.0.Beta1 (1.2)
       <br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################
+      <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
-SUCCESS!&nbsp;&nbsp; ###<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+SUCCESS!&nbsp;&nbsp; ###
       <br>
-BUILD SUCCESSFUL<br>
-Total time: 4 seconds<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################
+      <br>
+      <br>
+undeploy:
+      <br>
+&nbsp;&nbsp; [delete] Deleting:
+C:\dev\jboss-4.0.5.GA\server\messaging-node0\deploy\application-server-killer.jar
+      <br>
+      <br>
+BUILD SUCCESSFUL
+      <br>
+Total time: 41 seconds
+      <br>
+      <br>
       <br>
       <br>
       </td>

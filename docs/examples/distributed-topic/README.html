@@ -19,18 +19,6 @@ the distributed topic. The example is considered
 successful
 if both subscribers receive a message sent to the topic.<br>
 <br>
-<span style="font-weight: bold;">Note<br>
-</span>
-<div style="margin-left: 40px;">In order to create connections to
-different cluster nodes, the example looks up and downloads
-ConnectionFactories bound in the local JNDI space of each cluster node.
-This is done by explicitely configuring the JNDI client environment to
-point to different physical cluster nodes. This is just a temporary
-solution, used only by the current Alpha release. Subsequent releases
-will use HA-JNDI.<br>
-<span style="font-weight: bold;"></span></div>
-<br>
-<br>
 This example relies on having access to a running JBoss Messaging
 cluster with at least two nodes. The JBoss Messaging cluster must be
 installed and started according to
@@ -124,7 +112,7 @@ Hello!<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener 2 received message:
 Hello!<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.2.0.Alpha1 (1.2)<br>
+Messaging version 1.2.0.Beta1 (1.2)<br>
       <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
