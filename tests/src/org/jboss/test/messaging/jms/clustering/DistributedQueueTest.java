@@ -45,6 +45,10 @@ public class DistributedQueueTest extends ClusteringTestBase
    {
    }
 
+
+   // If you're wondering why this test is commented out,
+   // see http://jira.jboss.com/jira/browse/JBMESSAGING-688
+
 //   public void testForwardingMessageAmongNodes() throws Exception
 //   {
 //      Connection conn = null;

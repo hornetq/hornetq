@@ -49,32 +49,28 @@ public class FailoverTest extends ClusteringTestBase
       try
       {
          conn = cf.createConnection();
-
-         // send a message
-
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue[0]);
-         p.setDeliveryMode(DeliveryMode.PERSISTENT);
-         p.send(s.createTextMessage("blip"));
-
          conn.close();
 
-         // create a connection to a node we'll kill soon (node 1)
-
          conn = cf.createConnection();
-         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer c = s.createConsumer(queue[2]); // TODO What happens if I use queue[1]?
          conn.start();
+
+         // create a producer/consumer on node 1
 
          // make sure we're connecting to node 1
 
-         int nodeID =
-            ((ConnectionState)((DelegateSupport)((JBossConnection)conn).getDelegate()).getState()).
-               getServerID();
+         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
+            getDelegate()).getState()).getServerID();
 
          assertEquals(1, nodeID);
 
-         log.info("consumer created");
+         Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer c1 = s1.createConsumer(queue[1]);
+         MessageProducer p1 = s1.createProducer(queue[1]);
+         p1.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         // send a message
+
+         p1.send(s1.createTextMessage("blip"));
 
          // kill node 1
 
@@ -90,7 +86,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // we must receive the message
 
-         TextMessage tm = (TextMessage)c.receive(1000);
+         TextMessage tm = (TextMessage)c1.receive(1000);
          assertEquals("blip", tm.getText());
 
       }
@@ -109,7 +105,7 @@ public class FailoverTest extends ClusteringTestBase
 
    protected void setUp() throws Exception
    {
-      nodeCount = 3;
+      nodeCount = 2;
 
       super.setUp();
 

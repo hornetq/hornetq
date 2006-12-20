@@ -202,7 +202,8 @@ public class TransactionAspect
          ClientSessionDelegate connectionConsumerDelegate =
             (ClientSessionDelegate)info.getConnectionConsumerSession();
          
-         int sessionId = connectionConsumerDelegate != null ? connectionConsumerDelegate.getID() : state.getSessionId();
+         int sessionId = connectionConsumerDelegate != null ?
+            connectionConsumerDelegate.getID() : state.getSessionId();
          
          connState.getResourceManager().addAck(txID, sessionId, info);
       }

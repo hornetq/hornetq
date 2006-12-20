@@ -243,7 +243,6 @@ public class ValveTest extends ClusteringTestBase
 //
 //      assertEquals(messageCounterProducer, messageCounterConsumer);
 //
-
    }
 
    // Protected -----------------------------------------------------

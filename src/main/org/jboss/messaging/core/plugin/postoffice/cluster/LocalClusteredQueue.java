@@ -140,18 +140,15 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
     * persist the message even if it is persistent - this is because persistent messages
     * are always persisted on the sending node before sending.
     */
-   public Delivery handleFromCluster(MessageReference ref)
-      throws Exception
+   public Delivery handleFromCluster(MessageReference ref) throws Exception
    {
-      if (trace) { log.trace("Handling ref from cluster: " + ref); }
-      
-      log.info("********** Handling ref from cluster: " + ref);
-      
+      if (trace) { log.trace(this + " handling " + ref + " from cluster"); }
+
       if (filter != null && !filter.accept(ref))
       {
          Delivery del = new SimpleDelivery(this, ref, true, false);
          
-         if (trace) { log.trace("Reference " + ref + " rejected by filter"); }
+         if (trace) { log.trace(this + " " + ref + " rejected by filter"); }
          
          return del;
       }

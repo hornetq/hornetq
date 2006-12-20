@@ -662,25 +662,6 @@ public class HAAspect
 
    }
 
-   // Debug information about interceptors
-   private void printInterceptors(Interceptor interceptors[])
-    {
-       if (interceptors==null || interceptors.length==0)
-       {
-          log.info("Interceptor chain is empty");
-       }
-       else
-       {
-          for (int i=0; i<interceptors.length; i++)
-          {
-             log.info("Interceptor[" + i + "] = " + interceptors[i].getName() + " className= " + interceptors[i].getClass().getName());
-          }
-       }
-    }
-
-
-
-
    /** I have moved this ConnectionListener to ValveAspect (from HAAspect) because
     *  it needs to use the same valve as exception listeners.
     *  While we are processing failover, we should block any calls on the client side.

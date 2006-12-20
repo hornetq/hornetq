@@ -81,13 +81,15 @@ public class HATest extends ClusteringTestBase
    
    // Public --------------------------------------------------------
    
-   // this test was created per JBMESSAGING-685
-   // as this required a ClusteredConnectionFactory I kept it into HATest but we can move it if we want
+   //
+
+   /**
+    * This test was created as per http://jira.jboss.org/jira/browse/JBMESSAGING-685.
+    */
    public void testEmptyCommit() throws Exception
    {
-      JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
       Connection conn = cf.createConnection();
-      JBossSession session = (JBossSession) conn.createSession(true, Session.SESSION_TRANSACTED);
+      JBossSession session = (JBossSession)conn.createSession(true, Session.SESSION_TRANSACTED);
       session.commit();
       conn.close();
    }
@@ -213,92 +215,6 @@ public class HATest extends ClusteringTestBase
       }
 
    }
-
-   public void testTopicSubscriber() throws Exception
-   {
-      log.info("++testTopicSubscriber");
-
-      log.info(">>Lookup Queue");
-      Destination destination = (Destination) topic[1];
-
-
-      JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      Connection conn3 = cf.createConnection();
-
-
-      this.checkConnectionsDifferentServers(new Connection[]{conn1, conn2, conn3});
-      JBossConnection conn = (JBossConnection) getConnection(new Connection[]{conn1, conn2, conn3}, 1);
-
-      conn.setClientID("testClient");
-      conn.start();
-
-      JBossSession session = (JBossSession) conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
-      ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate) session.getDelegate();
-      SessionState sessionState = (SessionState) clientSessionDelegate.getState();
-
-      MessageConsumer consumerHA = session.createDurableSubscriber((Topic) destination, "T1");
-      JBossMessageConsumer jbossConsumerHA = (JBossMessageConsumer) consumerHA;
-
-      org.jboss.jms.client.delegate.ClientConsumerDelegate clientDelegate = (org.jboss.jms.client.delegate.ClientConsumerDelegate) jbossConsumerHA.getDelegate();
-      ConsumerState consumerState = (ConsumerState) clientDelegate.getState();
-
-      log.info("subscriptionName=" + consumerState.getSubscriptionName());
-
-
-      log.info(">>Creating Producer");
-      MessageProducer producer = session.createProducer(destination);
-      log.info(">>creating Message");
-      Message message = session.createTextMessage("Hello Before");
-      log.info(">>sending Message");
-      producer.send(message);
-      session.commit();
-
-      receiveMessage("consumerHA", consumerHA, true, false);
-
-      session.commit();
-      //if (true) return;
-
-      Object txID = sessionState.getCurrentTxId();
-
-      producer.send(session.createTextMessage("Hello again before failover"));
-
-      ClientConnectionDelegate delegate = (ClientConnectionDelegate) conn.getDelegate();
-
-      JMSRemotingConnection originalRemoting = delegate.getRemotingConnection();
-
-      ServerManagement.kill(1);
-
-      Thread.sleep(30000);
-      // if failover happened, this object was replaced
-      assertNotSame(originalRemoting, delegate.getRemotingConnection());
-
-      //System.out.println("Kill server1"); Thread.sleep(10000);
-
-      message = session.createTextMessage("Hello After");
-      log.info(">>Sending new message");
-      producer.send(message);
-
-      assertEquals(txID, sessionState.getCurrentTxId());
-      System.out.println("TransactionID on client = " + txID);
-      log.info(">>Final commit");
-
-      session.commit();
-
-      log.info("Calling alternate receiver");
-      receiveMessage("consumerHA", consumerHA, true, false);
-      receiveMessage("consumerHA", consumerHA, true, false);
-      receiveMessage("consumerHA", consumerHA, true, true);
-
-
-      session.commit();
-      conn1.close();
-      conn2.close();
-      conn3.close();
-
-   }
-
 
 //   public void testQueueHA() throws Exception
 //   {
@@ -1133,7 +1049,94 @@ public class HATest extends ClusteringTestBase
       }
 
    }
-   
+
+   public void testTopicSubscriber() throws Exception
+   {
+      log.info("++testTopicSubscriber");
+
+      log.info(">>Lookup Queue");
+      Destination destination = (Destination) topic[1];
+
+
+      JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
+      Connection conn1 = cf.createConnection();
+      Connection conn2 = cf.createConnection();
+      Connection conn3 = cf.createConnection();
+
+
+      this.checkConnectionsDifferentServers(new Connection[]{conn1, conn2, conn3});
+      JBossConnection conn =
+         (JBossConnection) getConnection(new Connection[]{conn1, conn2, conn3}, 1);
+
+      conn.setClientID("testClient");
+      conn.start();
+
+      JBossSession session = (JBossSession) conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+      ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate) session.getDelegate();
+      SessionState sessionState = (SessionState) clientSessionDelegate.getState();
+
+      MessageConsumer consumerHA = session.createDurableSubscriber((Topic) destination, "T1");
+      JBossMessageConsumer jbossConsumerHA = (JBossMessageConsumer) consumerHA;
+
+      org.jboss.jms.client.delegate.ClientConsumerDelegate clientDelegate =
+         (org.jboss.jms.client.delegate.ClientConsumerDelegate) jbossConsumerHA.getDelegate();
+      ConsumerState consumerState = (ConsumerState) clientDelegate.getState();
+
+      log.info("subscriptionName=" + consumerState.getSubscriptionName());
+
+
+      log.info(">>Creating Producer");
+      MessageProducer producer = session.createProducer(destination);
+      log.info(">>creating Message");
+      Message message = session.createTextMessage("Hello Before");
+      log.info(">>sending Message");
+      producer.send(message);
+      session.commit();
+
+      receiveMessage("consumerHA", consumerHA, true, false);
+
+      session.commit();
+      //if (true) return;
+
+      Object txID = sessionState.getCurrentTxId();
+
+      producer.send(session.createTextMessage("Hello again before failover"));
+
+      ClientConnectionDelegate delegate = (ClientConnectionDelegate) conn.getDelegate();
+
+      JMSRemotingConnection originalRemoting = delegate.getRemotingConnection();
+
+      ServerManagement.kill(1);
+
+      Thread.sleep(30000);
+      // if failover happened, this object was replaced
+      assertNotSame(originalRemoting, delegate.getRemotingConnection());
+
+      //System.out.println("Kill server1"); Thread.sleep(10000);
+
+      message = session.createTextMessage("Hello After");
+      log.info(">>Sending new message");
+      producer.send(message);
+
+      assertEquals(txID, sessionState.getCurrentTxId());
+      System.out.println("TransactionID on client = " + txID);
+      log.info(">>Final commit");
+
+      session.commit();
+
+      log.info("Calling alternate receiver");
+      receiveMessage("consumerHA", consumerHA, true, false);
+      receiveMessage("consumerHA", consumerHA, true, false);
+      receiveMessage("consumerHA", consumerHA, true, true);
+
+
+      session.commit();
+      conn1.close();
+      conn2.close();
+      conn3.close();
+
+   }
+
    
 // public void testConnectionFactoryConnect() throws Exception
 // {
