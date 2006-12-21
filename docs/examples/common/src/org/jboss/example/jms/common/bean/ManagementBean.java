@@ -6,23 +6,11 @@
  */
 package org.jboss.example.jms.common.bean;
 
+import java.rmi.RemoteException;
+
+import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
-import javax.ejb.EJBException;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.TextMessage;
-import javax.jms.QueueBrowser;
-import javax.jms.JMSException;
-import javax.naming.InitialContext;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.rmi.RemoteException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -32,8 +20,6 @@ import java.rmi.RemoteException;
  */
 public class ManagementBean implements SessionBean
 {
-   private SessionContext ctx;
-
    public void killAS() throws Exception
    {
       System.out.println("######");
@@ -51,7 +37,6 @@ public class ManagementBean implements SessionBean
 
    public void setSessionContext(SessionContext ctx) throws EJBException, RemoteException
    {
-      this.ctx = ctx;
    }
 
    public void ejbCreate()

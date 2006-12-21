@@ -6,15 +6,15 @@
  */
 package org.jboss.example.jms.common;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionMetaData;
+import javax.naming.InitialContext;
+
+import org.jboss.example.jms.common.bean.Management;
+import org.jboss.example.jms.common.bean.ManagementHome;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.example.jms.common.bean.ManagementHome;
-import org.jboss.example.jms.common.bean.Management;
-
-import javax.jms.ConnectionMetaData;
-import javax.jms.Connection;
-import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -23,74 +23,74 @@ import javax.naming.InitialContext;
  * $Id$
  */
 public abstract class ExampleSupport
- {
+{
    // Constants -----------------------------------------------------
-
+   
    public static final String DEFAULT_QUEUE_NAME = "testQueue";
    public static final String DEFAULT_TOPIC_NAME = "testTopic";
-
+   
    // Static --------------------------------------------------------
-
+   
    public static int getServerID(Connection conn) throws Exception
    {
       if (!(conn instanceof JBossConnection))
       {
          throw new Exception("Connection not an instance of JBossConnection");
       }
-
+      
       JBossConnection jbconn = (JBossConnection)conn;
-
+      
       DelegateSupport del = (DelegateSupport)jbconn.getDelegate();
-
+      
       ConnectionState state = (ConnectionState)del.getState();
-
+      
       return state.getServerID();
    }
-
+   
    public static void assertEquals(Object o, Object o2)
    {
-       if (o == null && o2 == null)
-       {
-          return;
-       }
-
-       if (o.equals(o2))
-       {
-          return;
-       }
-
-       throw new RuntimeException("Assertion failed, " + o + " != " + o2);
+      if (o == null && o2 == null)
+      {
+         return;
+      }
+      
+      if (o.equals(o2))
+      {
+         return;
+      }
+      
+      throw new RuntimeException("Assertion failed, " + o + " != " + o2);
    }
-
+   
    public static void assertEquals(int i, int i2)
    {
-       if (i == i2)
-       {
-          return;
-       }
-
-       throw new RuntimeException("Assertion failed, " + i + " != " + i2);
+      if (i == i2)
+      {
+         return;
+      }
+      
+      throw new RuntimeException("Assertion failed, " + i + " != " + i2);
    }
-
+   
    public static void assertNotEquals(int i, int i2)
    {
-        if (i != i2)
-        {
-           return;
-        }
-
-        throw new RuntimeException("Assertion failed, " + i + " == " + i2);
+      if (i != i2)
+      {
+         return;
+      }
+      
+      throw new RuntimeException("Assertion failed, " + i + " == " + i2);
    }
-
-
+   
+   
    public static void killActiveNode() throws Exception
    {
       // Currently it will always kill the primary node, ignoring nodeID
-
+      
       try
       {
          InitialContext ic = new InitialContext();
-
+         
          ManagementHome home = (ManagementHome)ic.lookup("ejb/Management");
          Management bean = home.create();
          bean.killAS();
@@ -98,39 +98,37 @@ public abstract class ExampleSupport
       catch(Exception e)
       {
          // OK, I expect exceptions following a VM kill
-
-         //e.printStackTrace();
       }
    }
-
-
+   
+   
    // Attributes ----------------------------------------------------
-
+   
    private boolean failure;
    private boolean deployed;
    private String jndiDestinationName;
-
+   
    // Constructors --------------------------------------------------
-
+   
    protected ExampleSupport()
    {
       failure = false;
    }
-
+   
    // Public --------------------------------------------------------
-
+   
    // Package protected ---------------------------------------------
-
+   
    // Protected -----------------------------------------------------
-
+   
    protected abstract void example() throws Exception;
    protected abstract boolean isQueueExample();
-
+   
    protected final boolean isTopicExample()
    {
       return !isQueueExample();
    }
-
+   
    protected void run()
    {
       try
@@ -144,52 +142,52 @@ public abstract class ExampleSupport
          t.printStackTrace();
          setFailure(true);
       }
-
+      
       reportResultAndExit();
    }
-
+   
    protected void setFailure(boolean b)
    {
       failure = b;
    }
-
+   
    protected boolean isFailure()
    {
       return failure;
    }
-
+   
    protected String getDestinationJNDIName()
    {
       return jndiDestinationName;
    }
-
+   
    protected void log(String s)
    {
       System.out.println(s);
    }
-
+   
    protected void displayProviderInfo(ConnectionMetaData metaData) throws Exception
    {
       String info =
-            "The example connected to " + metaData.getJMSProviderName() +
-            " version " + metaData.getProviderVersion() + " (" +
-            metaData.getProviderMajorVersion() + "." + metaData.getProviderMinorVersion() +
-            ")";
-
-     System.out.println(info);
+         "The example connected to " + metaData.getJMSProviderName() +
+         " version " + metaData.getProviderVersion() + " (" +
+         metaData.getProviderMajorVersion() + "." + metaData.getProviderMinorVersion() +
+         ")";
+      
+      System.out.println(info);
    }
-
+   
    // Private -------------------------------------------------------
-
+   
    protected void setup() throws Exception
    {
-       setup(null);
+      setup(null);
    }
-
+   
    protected void setup(InitialContext ic) throws Exception
    {
       String destinationName;
-
+      
       if (isQueueExample())
       {
          destinationName = System.getProperty("example.queue.name");
@@ -202,7 +200,7 @@ public abstract class ExampleSupport
          jndiDestinationName =
             "/topic/"  + (destinationName == null ? DEFAULT_TOPIC_NAME : destinationName);
       }
-
+      
       if (!Util.doesDestinationExist(jndiDestinationName,ic))
       {
          System.out.println("Destination " + jndiDestinationName + " does not exist, deploying it");
@@ -210,12 +208,12 @@ public abstract class ExampleSupport
          deployed = true;
       }
    }
-
+   
    protected void tearDown() throws Exception
    {
-       tearDown(null);
+      tearDown(null);
    }
-
+   
    protected void tearDown(InitialContext ic) throws Exception
    {
       if (deployed)
@@ -223,7 +221,7 @@ public abstract class ExampleSupport
          Util.undeployQueue(jndiDestinationName,ic);
       }
    }
-
+   
    protected void reportResultAndExit()
    {
       if (isFailure())
@@ -234,14 +232,14 @@ public abstract class ExampleSupport
          System.err.println("#####################");
          System.exit(1);
       }
-
+      
       System.out.println();
       System.out.println("#####################");
       System.out.println("###    SUCCESS!   ###");
       System.out.println("#####################");
       System.exit(0);
    }
-
+   
    // Inner classes -------------------------------------------------
-
+   
 }

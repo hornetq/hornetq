@@ -6,8 +6,9 @@
  */
 package org.jboss.example.jms.common.bean;
 
-import javax.ejb.EJBObject;
 import java.rmi.RemoteException;
+
+import javax.ejb.EJBObject;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

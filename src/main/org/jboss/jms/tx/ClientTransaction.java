@@ -24,18 +24,17 @@ package org.jboss.jms.tx;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.DefaultAck;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
 
 /**
@@ -46,6 +45,9 @@ import org.jboss.messaging.core.message.MessageFactory;
 public class ClientTransaction
 {  
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ClientTransaction.class);
+   
 
    public final static byte TX_OPEN = 0;
    
@@ -59,7 +61,7 @@ public class ClientTransaction
    
    // Attributes ----------------------------------------------------
    
-   private int state = TX_OPEN;
+   private byte state = TX_OPEN;
    
    //Maintained on the client side
    private Map sessionStatesMap;
@@ -80,7 +82,7 @@ public class ClientTransaction
    
    // Public --------------------------------------------------------
    
-   public int getState()
+   public byte getState()
    {
       return state;
    }
@@ -113,17 +115,23 @@ public class ClientTransaction
       {
          throw new IllegalStateException("Cannot call this method on the server side");
       }
-      Iterator iter = sessionStatesMap.values().iterator();
       
-      while (iter.hasNext())
+      if (sessionStatesMap != null)
       {
-         SessionTxState sessionTxState = (SessionTxState)iter.next();
+         //This can be null if the tx was recreated on the client side due to recovery
          
-         sessionTxState.clearMessages();
+         Iterator iter = sessionStatesMap.values().iterator();
+         
+         while (iter.hasNext())
+         {
+            SessionTxState sessionTxState = (SessionTxState)iter.next();
+            
+            sessionTxState.clearMessages();
+         }
       }
    }
    
-   public void setState(int state)
+   public void setState(byte state)
    {
       if (!clientSide)
       {
@@ -132,7 +140,7 @@ public class ClientTransaction
       this.state = state;
    }
    
-   public Collection getSessionStates()
+   public List getSessionStates()
    {
       if (sessionStatesList != null)
       {
@@ -140,14 +148,14 @@ public class ClientTransaction
       }
       else
       {
-         return sessionStatesMap == null ? Collections.EMPTY_SET : sessionStatesMap.values();
+         return sessionStatesMap == null ? Collections.EMPTY_LIST : new ArrayList(sessionStatesMap.values());
       }
    }   
    
    /*
     * Substitute newSessionId for oldSessionId
     */
-   public void handleFailover(Map oldNewSessionMap)
+   public void handleFailover(int newServerId, int oldSessionId, int newSessionId)
    {    
       if (!clientSide)
       {
@@ -157,33 +165,15 @@ public class ClientTransaction
       //and we don't want to overwrite keys in the map
       
       if (sessionStatesMap != null)
-      {         
-         Map newMap = new HashMap();
-         
-         Iterator iter = oldNewSessionMap.entrySet().iterator();
+      {                          
+         Iterator iter = sessionStatesMap.values().iterator();
          
          while (iter.hasNext())
          {
-            Map.Entry entry = (Map.Entry)iter.next();
+            SessionTxState state = (SessionTxState)iter.next();
             
-            Integer oldSessionId = (Integer)entry.getKey();
-            
-            SessionState newSessionState = (SessionState)entry.getValue();
-            
-            int newSessionId = newSessionState.getSessionId();
-            
-            SessionTxState state = (SessionTxState)sessionStatesMap.get(oldSessionId);
-            
-            if (state != null)
-            {
-               state.handleFailover(newSessionId);
-            }
-            
-            newMap.put(new Integer(newSessionId), state);
-            
+            state.handleFailover(newServerId, oldSessionId, newSessionId);            
          }
-       
-         sessionStatesMap = newMap;
       }
    }
    
@@ -209,7 +199,7 @@ public class ClientTransaction
    
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeInt(state);
+      out.writeByte(state);
 
       if (sessionStatesMap == null)
       {
@@ -264,7 +254,7 @@ public class ClientTransaction
    {
       clientSide = false;
       
-      state = in.readInt();
+      state = in.readByte();
       
       int numSessions = in.readInt();
       
@@ -314,7 +304,7 @@ public class ClientTransaction
    {                  
       if (sessionStatesMap == null)
       {
-         sessionStatesMap = new HashMap();
+         sessionStatesMap = new LinkedHashMap();
       }
       
       SessionTxState sessionTxState = (SessionTxState)sessionStatesMap.get(new Integer(sessionId));
@@ -328,8 +318,7 @@ public class ClientTransaction
       
       return sessionTxState;
    }
-   
-   
+         
       
    // Inner Classes -------------------------------------------------
    
@@ -365,23 +354,29 @@ public class ClientTransaction
          return sessionId;
       }
       
-      void handleFailover(int newSessionId)
+      void handleFailover(int newServerId, int oldSessionId, int newSessionId)
       {
-         this.sessionId = newSessionId;
-         
-         //Remove any non persistent acks
-         
-         Iterator iter = acks.iterator();
-         
-         while (iter.hasNext())
-         {
-            DeliveryInfo info = (DeliveryInfo)iter.next();
+         if (this.sessionId == oldSessionId && this.serverId != newServerId)
+         {            
+            this.sessionId = newSessionId;
             
-            if (!info.getMessageProxy().getMessage().isReliable())
+            this.serverId = newServerId;
+            
+            //Remove any non persistent acks
+            
+            Iterator iter = acks.iterator();
+            
+            while (iter.hasNext())
             {
-               iter.remove();
+               DeliveryInfo info = (DeliveryInfo)iter.next();
+               
+               if (!info.getMessageProxy().getMessage().isReliable())
+               {
+                  iter.remove();
+               }
             }
          }
+
       }
       
       void clearMessages()
@@ -390,6 +385,11 @@ public class ClientTransaction
       }
       
       private int sessionId;
+      
+      //we record the server id when doing failover to avoid overwriting the sesion id again
+      //if multiple connections fail on the same resource mamanger but fail onto old values of the session id
+      //this prevents the id being failed over more than once for the same server
+      private int serverId = -1;
       
       private List msgs = new ArrayList();
       

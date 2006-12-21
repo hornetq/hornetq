@@ -630,8 +630,21 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          try
          {
-            if (trace) { log.trace(ServerConsumerEndpoint.this + " handing " + list.size() + " message(s) over to the remoting layer"); }
-
+            if (trace)
+            {
+               StringBuffer sb = new StringBuffer(ServerConsumerEndpoint.this + " handing [");
+               for(int i = 0; i < list.size(); i++)
+               {
+                  sb.append(((MessageProxy)list.get(i)).getMessage().getMessageID());
+                  if (i < list.size() - 1)
+                  {
+                     sb.append(",");
+                  }
+               }
+               sb.append("] over to the remoting layer");
+               log.trace(sb.toString());
+            }
+            
             synchronized(messagesInTransitLock)
             {
                connection.getCallbackHandler().handleCallback(callback);

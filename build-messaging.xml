@@ -139,6 +139,7 @@
       <path refid="javassist.classpath"/>
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="trove.trove.classpath"/>
+      <path refid="apache.logging.classpath"/>
    </path>
 
    <!--
@@ -155,6 +156,7 @@
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.serialization.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
    </path>
 
    <!--
@@ -193,6 +195,13 @@
       <pathelement location="${project.root}/lib/jboss-jmx.jar"/>
    </path>
 
+   <!--
+       This is for compiling the JBossAS JBossTS driven JMS recovery code which uses XAResourceWrapper implementation
+   -->
+   <path id="jboss.classpath">
+      <pathelement location="${project.root}/lib/jboss.jar"/>
+   </path>
+
    <property name="jboss.server.lib" value="${project.root}/lib/"/>
 
    <property name="jboss.naming.lib" value="${project.root}/lib/"/>
@@ -206,6 +215,7 @@
       <path refid="jboss.jmx.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.serialization.classpath"/>
+      <path refid="jboss.classpath"/>
    </path>
 
    <!--
@@ -400,13 +410,20 @@
 
       <mkdir dir="${build.lib}"/>
       <jar jarfile="${build.lib}/jboss-${module.name}.jar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.classes}" includes="**" excludes="org/jboss/jms/recovery/*.class"/>
          <fileset dir="${build.jar}">
             <exclude name="*-service.xml"/>
             <exclude name="*-ds.xml"/>
             <exclude name="messaging-*.properties"/>
          </fileset>
       </jar>
+
+      <!-- JBossTS integration layer for XA recovery -->
+
+      <jar jarfile="${build.lib}/jboss-${module.name}-integration.jar" manifest="${build.etc}/default.mf">
+         <fileset dir="${build.classes}" includes="org/jboss/jms/recovery/*.class"/>
+      </jar>
+
    </target>
 
    <target name="scoped-sar" depends="compile, jar, scoped-sar-structure, extract-server-dependencies">
@@ -491,6 +508,7 @@
            I also need org.jboss.util.stream.*
       -->
       <unjar dest="${build.scoped-sar}/tmp" src="${jboss.common.core.lib}/jboss-common-core.jar">
+
          <patternset>
             <include name="org/jboss/util/stream/**"/>
          </patternset>

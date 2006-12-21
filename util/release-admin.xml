@@ -19,10 +19,20 @@
    <property name="messaging.config.name" value="messaging"/>
    <property name="id" value="0"/>
    <property name="database" value="mysql"/>
+   <property name="thirdparty.home" value="../thirdparty"/>
+   <property name="thirdparty.jbossts.home" value="${thirdparty.home}/jboss/jbossts"/>
+   <property name="lib.home" value="../lib"/>
+   <property name="lib.jbossts.home" value="${lib.home}/jbossts"/>
+   <property name="output.lib.home" value="../output/lib"/>
 
+<<<<<<< .working
    <!--
         DO NOT change these values here, otherwise the installation script won't work. If you need
         to change them, to it in do-not-distribute.properties.
+=======
+   <!-- DO NOT change this value here, otherwise the installation script won't work. Change it in
+        do-not-distribute.properties.
+>>>>>>> .merge-right.r1823
    -->
    <property name="main.artifact.location" value=".."/>
    <property name="auxiliary.artifacts.location" value="../examples/config"/>
@@ -116,6 +126,22 @@
          <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
       </replaceregexp>
 
+      <!-- Replace local TM with JBossTS -->
+      
+      <copy file="${thirdparty.jbossts.home}/lib/jbossjta.jar"
+            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+      <copy file="${thirdparty.jbossts.home}/lib/jbossjta-integration.jar"
+            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+      <copy file="${thirdparty.jbossts.home}/lib/jbossts-common.jar"
+            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+      <copy file="${lib.jbossts.home}/jbossjta-properties.xml"
+            todir="${jboss.home}/server/${messaging.config.name}/conf"/>
+      <copy overwrite="true" 
+            file="${lib.jbossts.home}/jboss-service.xml"
+            todir="${jboss.home}/server/${messaging.config.name}/conf"/>
+      <copy file="${output.lib.home}/jboss-messaging-integration.jar"
+            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+            
       <!-- copy the scoped sar
       <copy todir="${jboss.home}/server/${config.name}/deploy"
             file="${relative.sar.location}/${messaging.sar.name}"/>

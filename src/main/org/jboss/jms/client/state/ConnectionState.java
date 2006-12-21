@@ -31,6 +31,7 @@ import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SyncSet;
@@ -100,7 +101,7 @@ public class ConnectionState extends HierarchicalStateSupport
       // Each connection has its own resource manager. If we can failover all connections with the
       // same server id at the same time then we can maintain one rm per unique server as opposed to
       // per connection.
-      this.resourceManager = new ResourceManager();
+      this.resourceManager = ResourceManagerFactory.instance.checkOutResourceManager(serverID);
 
       this.idGenerator = gen;
       this.serverID = serverID;

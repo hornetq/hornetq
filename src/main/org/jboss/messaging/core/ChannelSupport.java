@@ -184,14 +184,8 @@ public abstract class ChannelSupport implements Channel
 
    public void cancel(Delivery d) throws Throwable
    {
-      // TODO We should also consider executing cancels on the event queue
-      synchronized (deliveryLock)
-      {
-         synchronized (refLock)
-         {
-            cancelInternal(d);
-         }
-      }      
+      // We put the cancellation on the event queue
+      this.executor.execute(new CancelRunnable(d));      
    }
 
    // Distributor implementation ------------------------------------
@@ -492,22 +486,20 @@ public abstract class ChannelSupport implements Channel
       }
    }
    
-   public List createDeliveries(List messageIds)
+   //This method will be defunct very soon when we remove the delivery list from inside the channel
+   public void addDelivery(Delivery del)
+   {
+      synchronized (deliveryLock)
+      {
+         deliveries.add(del);
+      }
+   }
+   
+   public List recoverDeliveries(List messageIds)
    {
       //debug
       Iterator iter = messageIds.iterator();
-      
-      log.info("***** createdeliveries:" + messageIds.size());
-      while (iter.hasNext())
-      {
-         Long l = (Long)iter.next();
-         
-         log.info("Creating delivery for " + l);
-      }
-      log.info("**** end dump");
-      
-      iter = messageIds.iterator();
-      
+                  
       List dels = new ArrayList();
       
       synchronized (refLock)
@@ -616,6 +608,8 @@ public abstract class ChannelSupport implements Channel
                   // Reference is not expired
 
                   // Attempt to push the ref to a receiver
+                  
+                  if (trace) { log.trace(this + " pushing " + ref); }                                  
 
                   Delivery del = router.handle(this, ref, null);
 
@@ -668,6 +662,8 @@ public abstract class ChannelSupport implements Channel
                               synchronized (deliveryLock)
                               {
                                  deliveries.add(del);
+                                 
+                                 if (trace) { log.trace(this + " starting to track  " + del); }
                               }
                            }
                         }
@@ -865,13 +861,17 @@ public abstract class ChannelSupport implements Channel
       return callback;
    }
 
-   
-   
+      
    protected boolean cancelInternal(Delivery del) throws Exception
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
 
-      boolean removed = deliveries.remove(del);      
+      boolean removed;
+      
+      synchronized (deliveryLock)
+      {
+         removed = deliveries.remove(del);      
+      }
 
       if (!removed)
       {         
@@ -886,7 +886,10 @@ public abstract class ChannelSupport implements Channel
       {
          MessageReference ref = del.getReference();
          
-         messageRefs.addFirst(ref, ref.getPriority());
+         synchronized (refLock)
+         {
+            messageRefs.addFirst(ref, ref.getPriority());
+         }
          
          //We may need to update the delivery count in the database
          if (ref.isReliable())
@@ -950,10 +953,14 @@ public abstract class ChannelSupport implements Channel
       {
          if (iter == null)
          {
+            if (trace) { log.trace(this + " removing first ref in memory"); } 
+            
             removeFirstInMemory();
          }
          else
          {
+            if (trace) { log.trace(this + " removed current message from iterator"); }                           
+                        
             iter.remove();                                
          }
       }
@@ -1275,7 +1282,29 @@ public abstract class ChannelSupport implements Channel
             }
          }
       }
-   }   
+   } 
+   
+   private class CancelRunnable implements Runnable
+   {
+      Delivery del;
+      
+      CancelRunnable(Delivery del)
+      {
+         this.del = del;
+      }
+      
+      public void run()
+      {
+         try
+         {
+            cancelInternal(del);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to cancel delivery", e);
+         }
+      }
+   }
 
    protected class HandleRunnable implements Runnable
    {

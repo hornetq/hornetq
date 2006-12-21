@@ -210,8 +210,21 @@ public class MessageCallbackHandler
     */
    public HandleMessageResponse handleMessage(List msgs) throws HandleCallbackException
    {                      
-      if (trace) { log.trace(this + " receiving " + msgs.size() + " message(s) from the remoting layer"); }
-            
+      if (trace)
+      {
+         StringBuffer sb = new StringBuffer(this + " receiving [");
+         for(int i = 0; i < msgs.size(); i++)
+         {
+            sb.append(((MessageProxy)msgs.get(i)).getMessage().getMessageID());
+            if (i < msgs.size() - 1)
+            {
+               sb.append(",");
+            }
+         }
+         sb.append("] from the remoting layer");
+         log.trace(sb.toString());
+      }
+
       synchronized (mainLock)
       {
          if (closed)
@@ -237,7 +250,7 @@ public class MessageCallbackHandler
                    
          buffer.addAll(msgs);                  
          
-         if (trace) { log.trace(this + " added messages to the buffer"); }            
+         if (trace) { log.trace(this + " added message(s) to the buffer"); }
          
          boolean full = buffer.size() >= bufferSize;         
          
@@ -348,9 +361,9 @@ public class MessageCallbackHandler
       {
          sessionExecutor.execute(new Closer(result));
 
-         if (trace) { log.trace("blocking wait for Closer execution"); }
+         if (trace) { log.trace(this + " blocking wait for Closer execution"); }
          result.getResult();
-         if (trace) { log.trace("got Closer result"); }
+         if (trace) { log.trace(this + " got Closer result"); }
       }
       catch (InterruptedException e)
       {
@@ -433,7 +446,7 @@ public class MessageCallbackHandler
                   }
                }
                               
-               if (trace) { log.trace("received " + m + " after being blocked on buffer"); }
+               if (trace) { log.trace(this + " received " + m + " after being blocked on buffer"); }
                        
                // If message is expired we still call pre and post deliver. This makes sure the
                // message is acknowledged so it gets removed from the queue/subscription.
@@ -449,14 +462,14 @@ public class MessageCallbackHandler
                
                if (!m.getMessage().isExpired())
                {
-                  if (trace) { log.trace("message " + m + " is not expired, pushing it to the caller"); }
+                  if (trace) { log.trace(this + ": message " + m + " is not expired, pushing it to the caller"); }
                   
                   break;
                }
                
                if (trace)
                {
-                  log.trace("message expired, discarding");
+                  log.trace(this + ": message expired, discarding");
                }
                
                // the message expired, so discard the message, adjust timeout and reenter the buffer

@@ -22,7 +22,9 @@
 package org.jboss.messaging.core.plugin.contract;
 
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -31,6 +33,9 @@ import org.jboss.messaging.core.tx.Transaction;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:Konda.Madhu@uk.mizuho-sc.com">Madhu Konda</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ *
  * @version <tt>1.1</tt>
  *
  * PersistenceManager.java,v 1.1 2006/02/22 17:33:42 timfox Exp
@@ -43,10 +48,14 @@ public interface PersistenceManager extends MessagingComponent
    
    void updateDeliveryCount(long channelID, MessageReference ref) throws Exception;
    
-
    // XA Recovery functionality
    
    List retrievePreparedTransactions() throws Exception;
+   
+   List getMessageChannelPairRefsForTx(long transactionId) throws Exception;
+
+   List getMessageChannelPairAcksForTx(long transactionId) throws Exception;
+
       
    // Paging functionality - TODO we should split this out into its own interface
 
@@ -74,6 +83,30 @@ public interface PersistenceManager extends MessagingComponent
      
    // Interface value classes
    //---------------------------------------------------------------
+   
+   class MessageChannelPair
+   {
+      private Message message;
+      
+      private long channelId;
+      
+      public MessageChannelPair(Message message, long channelId)
+      {
+         this.message = message;
+         
+         this.channelId = channelId;
+      }
+      
+      public Message getMessage()
+      {
+         return message;
+      }
+      
+      public long getChannelId()
+      {
+         return channelId;
+      }
+   }
    
    class ReferenceInfo
    {
@@ -107,7 +140,6 @@ public interface PersistenceManager extends MessagingComponent
          return reliable;
       }
    }
-   
    class InitialLoadInfo
    {
       private Long minPageOrdering;

@@ -21,19 +21,17 @@
 */
 package org.jboss.example.jms.distributedtopic;
 
-import javax.naming.InitialContext;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.Topic;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
 
 import org.jboss.example.jms.common.ExampleSupport;
-
-import java.util.Hashtable;
 
 /**
  * The example sends a message to a distributed topic depolyed on the JMS cluster. The message is
@@ -51,12 +49,9 @@ public class DistributedTopicExample extends ExampleSupport
 {
    public void example() throws Exception
    {
-
       String destinationName = getDestinationJNDIName();
 
-
       InitialContext ic = null;
-
 
       Connection connection0 = null;
       Connection connection1 = null;
@@ -76,7 +71,6 @@ public class DistributedTopicExample extends ExampleSupport
          // transparently creating physical connections to different cluster nodes, in a round
          // robin fashion ...
 
-
          // ... so this is a connection to a cluster node
          connection0 = cf.createConnection();
 
@@ -86,7 +80,6 @@ public class DistributedTopicExample extends ExampleSupport
          // Let's make sure that (this example is also a smoke test)
          assertNotEquals(getServerID(connection0), getServerID(connection1));
 
-
          // Create a session, a producer and consumer for the distributed topic, using connection0
 
          Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -95,9 +88,7 @@ public class DistributedTopicExample extends ExampleSupport
          ExampleListener messageListener0 = new ExampleListener("MessageListener 0");
          subscriber0.setMessageListener(messageListener0);
 
-
          MessageProducer publisher = session0.createProducer(distributedTopic);
-
 
 
          // Create a session and a consumer for the distributed topic, using connection1
@@ -137,7 +128,7 @@ public class DistributedTopicExample extends ExampleSupport
       }
       finally
       {
-         if(ic != null)
+         if (ic != null)
          {
             try
             {

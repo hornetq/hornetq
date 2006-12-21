@@ -21,6 +21,9 @@
 */
 package org.jboss.test.messaging;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -28,11 +31,15 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
 
 import junit.framework.TestCase;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.tm.TransactionManagerService;
 
 /**
  * The base case for messaging tests.
@@ -40,12 +47,19 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ *
  * @version <tt>$Revision$</tt>
  * $Id$
  */
 public class MessagingTestCase extends TestCase
 {
    // Constants -----------------------------------------------------
+
+   public final static int MAX_TIMEOUT = 1000 * 10 /* seconds */;
+
+   public final static int MIN_TIMEOUT = 1000 * 1 /* seconds */;
+   
 
    // Static --------------------------------------------------------
    
@@ -143,6 +157,116 @@ public class MessagingTestCase extends TestCase
       {
          if (conn!= null) conn.close();
       }
+   }
+   
+   protected boolean checkNoBindingData() throws Exception
+   {
+      InitialContext ctx = new InitialContext();
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+      
+      javax.transaction.Transaction txOld = mgr.suspend();
+      mgr.begin();
+      
+      java.sql.Connection conn = null;
+      
+      PreparedStatement ps = null;
+      
+      ResultSet rs = null;
+
+      try
+      {
+         conn = ds.getConnection();
+         String sql = "SELECT * FROM JMS_POSTOFFICE";
+         ps = conn.prepareStatement(sql);
+         
+         rs = ps.executeQuery();
+         
+         return rs.next();
+      }
+      finally
+      {
+         if (rs != null) rs.close();
+         
+         if (ps != null) ps.close();
+         
+         if (conn != null) conn.close();
+         
+         mgr.commit();
+
+         if (txOld != null)
+         {
+            mgr.resume(txOld);
+         }
+                  
+      } 
+   }
+   
+   protected boolean checkNoMessageData() throws Exception
+   {
+      //Can't do this remotely
+      
+      if (ServerManagement.isRemote())
+      {
+         return false;
+      }
+      
+      InitialContext ctx = new InitialContext();
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+      
+      javax.transaction.Transaction txOld = mgr.suspend();
+      mgr.begin();
+      
+      java.sql.Connection conn = null;
+      
+      PreparedStatement ps = null;
+      
+      ResultSet rs = null;
+
+      try
+      {
+         conn = ds.getConnection();
+         String sql = "SELECT * FROM JMS_MESSAGE_REFERENCE";
+         ps = conn.prepareStatement(sql);
+         
+         rs = ps.executeQuery();
+         
+         boolean exists = rs.next();
+         
+         if (!exists)
+         {
+            rs.close();
+            
+            ps.close();
+            
+            ps = conn.prepareStatement("SELECT * FROM JMS_MESSAGE");
+            
+            rs = ps.executeQuery();
+           
+            exists = rs.next();
+         }
+         
+         return exists;
+      }
+      finally
+      {
+         if (rs != null) rs.close();
+         
+         if (ps != null) ps.close();
+         
+         if (conn != null) conn.close();
+         
+         mgr.commit();
+
+         if (txOld != null)
+         {
+            mgr.resume(txOld);
+         }
+                  
+      } 
    }
 
 

@@ -7,6 +7,7 @@
 package org.jboss.example.jms.stateless.bean;
 
 import java.rmi.RemoteException;
+
 import javax.ejb.EJBObject;
 
 /**
@@ -19,7 +20,10 @@ import javax.ejb.EJBObject;
 public interface StatelessSessionExample extends EJBObject
 {
    public void drain(String queueName) throws RemoteException, Exception;
+   
    public void send(String txt, String queueName) throws RemoteException, Exception;
+   
    public int browse(String queueName) throws RemoteException, Exception;
+   
    public String receive(String queueName) throws RemoteException, Exception;
 }

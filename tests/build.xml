@@ -191,6 +191,7 @@
       <path refid="test.compilation.classpath"/>
       <path refid="dom4j.dom4j.classpath"/>
       <path refid="apache.log4j.classpath"/>
+      <path refid="apache.logging.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="jboss.mbeans.classpath"/>
       <path refid="jboss.naming.classpath"/>
@@ -399,6 +400,52 @@
                <include name="**/messaging/core/**/*Test.class"/>
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/messaging/core/ha/**/*Test.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/crash/*Test.class"/>
+               <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/jms/manual/**/*Test.class"/>
+               <exclude name="**/jms/clustering/*Test.class"/>
+               <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="local-jms-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs all available tests an in-VM configuration">
+
+      <echo message=""/>
+      <echo message="Running invm tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.logfile.suffix" value="invm"/>
+         <sysproperty key="build.lib" value="${build.lib}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
@@ -772,7 +819,7 @@
                <!--
                    <include name="**/jms/clustering/FailoverTest.class"/>
                -->
-               <include name="**/jms/clustering/*Test.class"/>
+               <include name="**/jms/clustering/HATest.class"/>
             </fileset>
          </batchtest>
       </junit>

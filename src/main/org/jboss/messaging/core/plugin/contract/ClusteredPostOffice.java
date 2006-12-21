@@ -61,7 +61,5 @@ public interface ClusteredPostOffice extends PostOffice, Peer
     */
    Binding unbindClusteredQueue(String queueName) throws Throwable;
 
-   Collection listAllBindingsForCondition(Condition condition) throws Exception;
-
-   Binding getBindingforChannelId(long channelId) throws Exception;
+   Collection listAllBindingsForCondition(Condition condition) throws Exception;   
 }

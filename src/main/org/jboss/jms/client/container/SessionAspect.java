@@ -23,7 +23,6 @@ package org.jboss.jms.client.container;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.jms.IllegalStateException;
@@ -33,14 +32,15 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DefaultCancel;
-import org.jboss.jms.server.endpoint.DefaultAck;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
+import org.jboss.jms.tx.ClientTransaction;
+import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.util.Util;
 
 /**
  * This aspect handles JMS session related logic
@@ -97,7 +97,33 @@ public class SessionAspect
       MethodInvocation mi = (MethodInvocation)invocation;
       SessionState state = getState(invocation);
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-      
+            
+      if (trace) { log.trace("In handleClosing"); }
+      //Sanity check
+      if (state.isXA())
+      {
+         if (trace) { log.trace("Session is XA"); }
+         
+         ConnectionState connState = (ConnectionState)state.getParent();
+         
+         ResourceManager rm = connState.getResourceManager();
+         
+         //An XASession should never be closed if there is prepared ack work that has not yet
+         //been committed or rolled back.
+         //Imagine if messages had been consumed in the session, and prepared but not committed.
+         //Then the connection was explicitly closed causing the session to close.
+         //Closing the session causes any outstanding delivered but unacked messages to be cancelled to
+         //the server which means they would be available for other consumers to consume.
+         //If another consumer then consumes them, then recover() is called and the original
+         //transaction is committed, then this means the same message has been delivered twice
+         //which breaks the once and only once delivery guarantee
+         
+         if (rm.checkForAcksInSession(state.getSessionId()))
+         {
+            throw new java.lang.IllegalStateException("Attempt to close an XASession when there are still uncommitted acknowledgements!");
+         }        
+      }
+            
       int ackMode = state.getAcknowledgeMode();
   
       //We need to either ack (for auto_ack) or cancel (for client_ack)
@@ -361,6 +387,12 @@ public class SessionAspect
     *
     * So on rollback we do session recovery (local redelivery) in the same as if session.recover()
     * was called.
+    * 
+    * All cancellation at rollback is driven from the client side - we always attempt to redeliver
+    * messages to their original consumers if they are still open, or then cancel them to the server
+    * if they are not. Cancelling them to the server explicitly allows the delivery count to be updated.
+    * 
+    * 
     */
    public Object handleRedeliver(Invocation invocation) throws Throwable
    {            

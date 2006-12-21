@@ -199,6 +199,45 @@ public class JMSTest extends MessagingTestCase
       conn.close();
    }
 
+   public void test_Persistent_Transactional_Send() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
+
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+      TextMessage m = session.createTextMessage("message one");
+      prod.send(m);
+      m = session.createTextMessage("message two");
+      prod.send(m);
+
+      session.commit();
+
+      conn.close();
+
+      conn = cf.createConnection();
+
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createConsumer(queue);
+
+      conn.start();
+
+      TextMessage rm = (TextMessage)cons.receive();
+      assertEquals("message one", rm.getText());
+      rm = (TextMessage)cons.receive();
+      assertEquals("message two", rm.getText());
+
+      conn.close();
+   }
+
+
    public void test_NonPersistent_Transactional_Acknowledgment() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -231,7 +270,6 @@ public class JMSTest extends MessagingTestCase
 
       conn.close();
    }
-
 
    public void test_Asynchronous_to_Client() throws Exception
    {

@@ -52,15 +52,17 @@ public class Transaction
    
    private boolean trace = log.isTraceEnabled();
      
-   protected long id;
+   private long id;
    
-   protected int state;
+   private int state;
    
-   protected Xid xid;
+   private Xid xid;
    
-   protected List callbacks;
+   private List callbacks;
    
-   protected Map callbackMap;
+   private Map callbackMap;
+   
+   private boolean loadedAtStartup;
       
    
    /**
@@ -225,7 +227,7 @@ public class Transaction
       
       firstCallback = null;
       
-      if (repository !=null)
+      if (repository != null)
       {
          repository.deleteTransaction(this);
       }
@@ -343,6 +345,21 @@ public class Transaction
    public long getId()
    {
       return id;
+   }
+   
+   public boolean isLoadedAtStartup()
+   {
+      return this.loadedAtStartup;
+   }
+   
+   public void setLoadedAtStartup(boolean loadedAtStartup)
+   {
+      this.loadedAtStartup = loadedAtStartup;
+   }
+   
+   public void setState(int state)
+   {
+      this.state = state;
    }
       
    public String toString()

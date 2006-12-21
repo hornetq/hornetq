@@ -21,16 +21,37 @@
   */
 package org.jboss.test.messaging.jms;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.jms.*;
+
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.Session;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
+
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -886,6 +907,9 @@ public class MessageConsumerTest extends MessagingTestCase
 
           cons1.close();
 
+          //Cancelling is asynch so can take some time
+          Thread.sleep(500);
+          
           //rollback should cause redelivery of messages
 
           //in this case redelivery occurs to a different receiver
@@ -1000,6 +1024,9 @@ public class MessageConsumerTest extends MessagingTestCase
           assertEquals("hello1", rm1.getText());
 
           cons1.close();
+  
+          //Give time for asynch cancel to happen
+          Thread.sleep(500);
 
           log.debug("sess.recover()");
 

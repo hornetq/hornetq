@@ -216,7 +216,12 @@ public class SimpleChannel implements Channel
       throw new UnsupportedOperationException();
    }
 
-   public List createDeliveries(List messageIds)
+   public List recoverDeliveries(List messageIds)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public void addDelivery(Delivery del)
    {
       throw new UnsupportedOperationException();
    }

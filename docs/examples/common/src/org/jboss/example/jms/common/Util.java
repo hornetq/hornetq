@@ -21,10 +21,10 @@
 */
 package org.jboss.example.jms.common;
 
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

@@ -24,7 +24,6 @@ package org.jboss.jms.client.container;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +31,10 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.Advised;
 import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -58,9 +57,10 @@ import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionListener;
 
 /**
  *
@@ -381,7 +381,7 @@ public class HAAspect
    }
 
    protected void performClientSideFailover(ClientConnectionDelegate failedConnDelegate,
-                                          ClientConnectionDelegate newConnDelegate)
+                                            ClientConnectionDelegate newConnDelegate)
       throws Exception
    {
       log.debug(this + " performing client side failover");
@@ -401,15 +401,23 @@ public class HAAspect
 
       // We need to update some of the attributes on the state
       failedState.copyState(newState);
-
-      // Map of old session ID to new session state
-      Map oldNewSessionStateMap = new HashMap();
+      
+      int failedServerId = failedConnDelegate.getServerID();
+      
+      int newServerId = newConnDelegate.getServerID();
+      
+      if (trace) { log.trace("Failing over from " + failedServerId + " to " + newServerId); }
+      
+      // There is one RM per server, so we need to merge the rms if necessary
+      ResourceManagerFactory.instance.handleFailover(failedServerId, newServerId);
+      
+      ResourceManager rm = failedState.getResourceManager();
 
       for(Iterator i = failedState.getChildren().iterator(); i.hasNext(); )
       {
          SessionState failedSessionState = (SessionState)i.next();
-
-         int oldSessionID = failedSessionState.getSessionId();
+         
+         int oldSessionId = failedSessionState.getSessionId();
 
          ClientSessionDelegate failedSessionDelegate =
             (ClientSessionDelegate)failedSessionState.getDelegate();
@@ -420,10 +428,10 @@ public class HAAspect
                                   failedSessionState.isXA());
 
          SessionState newSessionState = (SessionState)newSessionDelegate.getState();
+         
+         int newSessionId = newSessionState.getSessionId();
 
          if (trace) { log.trace("new session state has " + newSessionState.getClientAckList().size() + " deliveries"); }
-
-         oldNewSessionStateMap.put(new Integer(oldSessionID), failedSessionState);
 
          failedSessionDelegate.copyAttributes(newSessionDelegate);
 
@@ -448,34 +456,26 @@ public class HAAspect
                 handleFailoverOnBrowser((BrowserState)sessionChild, newSessionDelegate);
             }
          }
-      }
-
-      // First we must tell the resource manager to substitute old session ID for new session ID.
-      // Note we MUST submit the entire mapping in one operation since there may be overlap between
-      // old and new session ID, and we don't want to overwrite keys in the map.
-
-      failedState.getResourceManager().handleFailover(oldNewSessionStateMap);
-
-      for(Iterator i = oldNewSessionStateMap.values().iterator(); i.hasNext(); )
-      {
+         
+         // We need to failover from one session id to another in the resource manager
+         rm.handleFailover(newServerId, oldSessionId, newSessionId);
+               
          List ackInfos = Collections.EMPTY_LIST;
 
-         SessionState state = (SessionState)i.next();
-
-         if (!state.isTransacted() ||
-             (state.isXA() && state.getCurrentTxId() == null))
+         if (!failedSessionState.isTransacted() ||
+             (failedSessionState.isXA() && failedSessionState.getCurrentTxId() == null))
          {
             // Non transacted session or an XA session with no transaction set (it falls back
             // to auto_ack)
 
-            if (trace) { log.trace(state + " is not transacted (or XA with no tx set), retrieving deliveries from session state"); }
+            if (trace) { log.trace(failedSessionState + " is not transacted (or XA with no tx set), retrieving deliveries from session state"); }
 
             // We remove any unacked non-persistent messages - this is because we don't want to ack
             // them since the server won't know about them and will get confused
 
-            if (state.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
+            if (failedSessionState.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
             {
-               for(Iterator j = state.getClientAckList().iterator(); j.hasNext(); )
+               for(Iterator j = failedSessionState.getClientAckList().iterator(); j.hasNext(); )
                {
                   DeliveryInfo info = (DeliveryInfo)j.next();
                   if (!info.getMessageProxy().getMessage().isReliable())
@@ -485,17 +485,17 @@ public class HAAspect
                   }
                }
 
-               ackInfos = state.getClientAckList();
+               ackInfos = failedSessionState.getClientAckList();
             }
             else
             {
-               DeliveryInfo autoAck = state.getAutoAckInfo();
+               DeliveryInfo autoAck = failedSessionState.getAutoAckInfo();
                if (autoAck != null)
                {
                   if (!autoAck.getMessageProxy().getMessage().isReliable())
                   {
                      // unreliable, discard
-                     state.setAutoAckInfo(null);
+                     failedSessionState.setAutoAckInfo(null);
                   }
                   else
                   {
@@ -513,13 +513,12 @@ public class HAAspect
             // Transacted session - we need to get the acks from the resource manager. BTW we have
             // kept the old resource manager
 
-            ResourceManager rm = failedState.getResourceManager();
-            ackInfos = rm.getDeliveriesForSession(state.getSessionId());
+            ackInfos = rm.getDeliveriesForSession(failedSessionState.getSessionId());
          }
 
          if (!ackInfos.isEmpty())
          {
-            SessionDelegate newDelegate = (SessionDelegate)state.getDelegate();
+            SessionDelegate newDelegate = (SessionDelegate)failedSessionState.getDelegate();
 
             List recoveryInfos = new ArrayList();
 
@@ -585,17 +584,6 @@ public class HAAspect
 
       // Update attributes on the old state
       failedConsumerState.copyState(newState);
-
-//      if (failedSessionState.isTransacted() || failedSessionState.isXA())
-//      {
-//         // Replace the old consumer id with the new consumer id
-//
-//         ResourceManager rm = failedConnectionState.getResourceManager();
-//
-//         todo - we need to replace the sesion id
-//
-//         rm.handleFailover(oldConsumerID, failedConsumerState.getConsumerID());
-//      }
 
       // We need to re-use the existing message callback handler
 

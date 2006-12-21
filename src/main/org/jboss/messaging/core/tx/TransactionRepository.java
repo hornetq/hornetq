@@ -29,17 +29,27 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.IDManager;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
-
 
 /**
  * This class maintains JMS Server local transactions.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:Konda.Madhu@uk.mizuho-sc.com">Madhu Konda</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ *
  * @version $Revision 1.1 $
  *
  * $Id$
@@ -57,22 +67,38 @@ public class TransactionRepository implements MessagingComponent
    private Map globalToLocalMap;     
    
    private PersistenceManager persistenceManager;
-   
-   private IDManager idManager;
 
+   protected MessageStore messageStore;
+
+   private IDManager idManager;
+   
+   private PostOffice postOffice;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public TransactionRepository(PersistenceManager persistenceManager, IDManager idManager)
+   public TransactionRepository(PersistenceManager persistenceManager, MessageStore store, IDManager idManager)
    {
       this.persistenceManager = persistenceManager;
       
+      this.messageStore = store;
+      
       this.idManager = idManager;
-   
+      
       globalToLocalMap = new ConcurrentReaderHashMap();           
    }
    
+   // Injection ----------------------------------------
+   
+   //Unfortunately we have to do this for now, since PostOffice is not started until after this is constructed
+   //We will sort out dependencies properly when we go to the micro container
+   public void injectPostOffice(PostOffice po)
+   {
+      postOffice = po;
+   }
+   
+
    // MessagingComponent implementation --------------------------------
    
    public void start() throws Exception
@@ -80,6 +106,8 @@ public class TransactionRepository implements MessagingComponent
       //NOOP
    }
    
+   // Public --------------------------------------------------------
+      
    public void stop() throws Exception
    {
       //NOOP
@@ -87,53 +115,94 @@ public class TransactionRepository implements MessagingComponent
    
    // Public --------------------------------------------------------   
 
-   public List getPreparedTransactions()
+   /**
+    * Attempts to recover existing prepared transactions by redelivering unhandled messages and acknowledgements
+    * on the appropriate channels.
+    *
+    * @return  List of Xid instances
+    */
+   public synchronized List recoverPreparedTransactions()
    {
+      if (trace) { log.trace(this + " recoverPreparedTransactions()"); }
+      
       ArrayList prepared = new ArrayList();
-      
+
       Iterator iter = globalToLocalMap.values().iterator();
-      
+
       while (iter.hasNext())
       {
-         Transaction tx = (Transaction)iter.next();
-         
-         if (tx.xid != null && tx.getState() == Transaction.STATE_PREPARED)
+         Transaction tx = (Transaction) iter.next();
+
+         if (tx.getXid() != null && tx.getState() == Transaction.STATE_PREPARED)
          {
+            try
+            {
+               if (trace) log.trace("Loading and handling refs and acks to the Tx "+tx);
+
+               //The transaction might have been created, prepared, without the server crashing
+               //in which case the tx will already have the references and acks in them
+               //in this case we DO NOT want to replay them again, since they will end up in the transaction state
+               //twice
+               //In other words we only want to replay acks and sends if this tx was loaded at startup
+               if (tx.isLoadedAtStartup())
+               {
+                  handleReferences(tx);
+                  handleAcks(tx);
+                  
+                  tx.setLoadedAtStartup(false);
+               }
+            }
+            catch (Exception e)
+            {
+               log.warn("Failed to replay transaction (XID: " + tx.getXid() + ", LocalID: " + tx.getId() + ") during recovery.", e);
+            }
+
             prepared.add(tx.getXid());
          }
       }
+
       return prepared;
    }
-   
+
    /*
-    * Load any prepared transactions into the repository so they can be recovered
+    * Load any prepared transactions into the repository so they can be
+    * recovered
     */
    public void loadPreparedTransactions() throws Exception
    {
+      if (trace) log.trace("load prepared transactions...");
+
       List prepared = null;
-            
+
       prepared = persistenceManager.retrievePreparedTransactions();
-      
+
+      if (trace) log.trace ("Found " + prepared.size() + " transactions in prepared state:");
+
       if (prepared != null)
-      {         
+      {
          Iterator iter = prepared.iterator();
-         
+
          while (iter.hasNext())
          {
-            Xid xid = (Xid)iter.next();
+            PreparedTxInfo txInfo = (PreparedTxInfo) iter.next();
+
+            if (trace) log.trace("Reinstating TX(XID: " + txInfo.getXid() + ", LocalId " + txInfo.getTxId() +")");
             
-            Transaction tx = createTransaction(xid);   
+            Transaction tx = createTransaction(txInfo);
             
-            tx.state = Transaction.STATE_PREPARED;
+            tx.setState(Transaction.STATE_PREPARED);
             
-            //Load the references for this transaction
+            tx.setLoadedAtStartup(true);
+            
          }
       }
    }
-         
+
+
    public Transaction getPreparedTx(Xid xid) throws Exception
    {
       Transaction tx = (Transaction)globalToLocalMap.get(xid);
+
       if (tx == null)
       {
          throw new TransactionException("Cannot find local tx for xid:" + xid);
@@ -159,7 +228,7 @@ public class TransactionRepository implements MessagingComponent
 	   {
 		   throw new TransactionException("Transaction with xid " + id + " can't be removed as it's not yet commited or rolledback: (Current state is " + Transaction.stateToString(state));
 	   }
-	   
+      
 	   globalToLocalMap.remove(id);	   
    }
    
@@ -186,7 +255,7 @@ public class TransactionRepository implements MessagingComponent
 
       return tx;
    }
-   
+
    public boolean removeTransaction(Xid xid)
    {
       return globalToLocalMap.remove(xid) != null;
@@ -203,7 +272,220 @@ public class TransactionRepository implements MessagingComponent
    // Protected -----------------------------------------------------         
    
    // Private -------------------------------------------------------
+
+	/**
+	 * Load the references and invoke the channel to handle those refs
+	 */
+	private void handleReferences(Transaction tx) throws Exception
+   {
+      if (trace) log.trace("Handle references for TX(XID: " + tx.getXid() + ", LocalID: " + tx.getId()+ "):");
+
+      long txId = tx.getId();
+
+		List pairs = persistenceManager.getMessageChannelPairRefsForTx(txId);
+
+      if (trace) log.trace("Found " + pairs.size() + " unhandled references.");
+
+      for (Iterator iter = pairs.iterator(); iter.hasNext();)
+      {
+         PersistenceManager.MessageChannelPair pair = (PersistenceManager.MessageChannelPair)iter.next();
+         
+         Message msg = pair.getMessage();
+         
+         long channelID = pair.getChannelId();
+         
+         MessageReference ref = null;
+         
+         try
+         {
+            ref = messageStore.reference(msg);         
+
+            //Need to get the post office reference lazily, cannot pass into constructor
+            Binding binding = postOffice.getBindingforChannelId(channelID);
+            
+            if (binding == null)
+            {
+               throw new IllegalStateException("Cannot find binding for channel id " + channelID);
+            }
+            
+            Queue queue = binding.getQueue();
+                        
+            if (trace) log.trace("Destination for message[ID=" + ref.getMessageID() + "] is: " + queue);
    
+            queue.handle(null, ref, tx);
+         }
+         finally
+         {
+            if (ref != null)
+            {
+               //Need to release reference
+               ref.releaseMemoryReference();
+            }
+         }
+		}
+	}
+
+	/**
+	 * Load the acks and acknowledge them
+	 */
+	private void handleAcks(Transaction tx) throws Exception
+   {
+      long txId = tx.getId();
+      
+      List pairs = persistenceManager.getMessageChannelPairAcksForTx(txId);
+
+      if (trace) log.trace("Found " + pairs.size() + " unhandled acks.");
+      
+      List dels = new ArrayList();
+
+      for (Iterator iter = pairs.iterator(); iter.hasNext();)
+      {
+         PersistenceManager.MessageChannelPair pair = (PersistenceManager.MessageChannelPair)iter.next();
+         
+         Message msg = pair.getMessage();
+         
+         long channelID = pair.getChannelId();
+         
+         MessageReference ref = null;
+         
+         try
+         {
+            ref = messageStore.reference(msg);         
+
+            // Need to get the post office reference lazily, cannot pass into constructor
+            Binding binding = postOffice.getBindingforChannelId(channelID);
+            
+            if (binding == null)
+            {
+               throw new IllegalStateException("Cannot find binding for channel id " + channelID);
+            }
+            
+            Queue queue = binding.getQueue();
+   
+            if (trace) log.trace("Destination for message[ID=" + ref.getMessageID() + "] is: " + queue);
+   
+            //Create a new delivery - note that it must have a delivery observer otherwise acknowledge will fail
+            Delivery del = new SimpleDelivery(queue, ref);
+
+            if (trace) log.trace("Acknowledging..");
+
+            try
+            {
+               //At this point there won't be a delivery in the channel for this ref - since
+               //we won't have loaded it when the queue was loaded (since the stat column would have been '-')
+               //so we add it
+               
+               queue.addDelivery(del);
+               
+               del.acknowledge(tx);
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to acknowledge " + del + " during recovery", t);
+            }
+            
+            dels.add(del);            
+         }
+         finally
+         {
+            if (ref != null)
+            {
+               //Need to release reference
+               ref.releaseMemoryReference();
+            }
+         }
+      }
+      
+      if (!dels.isEmpty())
+      {
+         //Add a callback so these dels get cancelled on rollback
+         tx.addCallback(new CancelCallback(dels), this);
+      }
+      
+   }         
+      
+	/**
+	 * Creates a prepared transaction
+	 *
+	 * @param txInfo
+	 * @return
+	 * @throws Exception
+	 */
+	private Transaction createTransaction(PreparedTxInfo txInfo) throws Exception
+   {
+		if (globalToLocalMap.containsKey(txInfo.getXid()))
+      {
+			throw new TransactionException(
+					"There is already a local tx for global tx "	+ txInfo.getXid());
+		}
+
+		// Resurrected tx
+		Transaction tx = new Transaction(txInfo.getTxId(), txInfo.getXid(), this);
+
+		if (trace) {
+			log.trace("created transaction " + tx);
+		}
+
+		globalToLocalMap.put(txInfo.getXid(), tx);
+
+		return tx;
+	}
+
    // Inner classes -------------------------------------------------
+   
+   private class CancelCallback implements TxCallback
+   {
+      private List toCancel;
+      
+      private CancelCallback(List toCancel)
+      {
+         this.toCancel = toCancel;
+      }
+
+      public void afterCommit(boolean onePhase) throws Exception
+      {
+      }
+
+      public void afterPrepare() throws Exception
+      {
+      }
+
+      public void afterRollback(boolean onePhase) throws Exception
+      {
+         //On rollback we need to cancel the ref back into the channel
+         //We only need to do this if the tx was reloaded since otherwise the
+         //cancel will come from the SCE
+         
+         //Need to cancel in reverse
+         
+         for (int i = toCancel.size() - 1; i >= 0; i--)
+         {                     
+            Delivery del = (Delivery)toCancel.get(i);
+            
+            try
+            {
+               del.cancel();
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to cancel delivery", t);
+               throw new TransactionException(t.getMessage(), t);
+            }
+         }
+      }
+
+      public void beforeCommit(boolean onePhase) throws Exception
+      {
+      }
+
+      public void beforePrepare() throws Exception
+      {
+      }
+
+      public void beforeRollback(boolean onePhase) throws Exception
+      {
+      }
+      
+   }
    
 }

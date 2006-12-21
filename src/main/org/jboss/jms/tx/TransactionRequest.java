@@ -30,7 +30,7 @@ import org.jboss.messaging.core.tx.XidImpl;
 import org.jboss.messaging.util.Streamable;
 
 /**
- * This class contians all the data needed to perform a JMS transaction.
+ * This class contains all the data needed to perform a JMS transaction.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 

@@ -6,9 +6,10 @@
  */
 package org.jboss.example.jms.stateless.bean;
 
-import javax.ejb.EJBHome;
 import java.rmi.RemoteException;
+
 import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>

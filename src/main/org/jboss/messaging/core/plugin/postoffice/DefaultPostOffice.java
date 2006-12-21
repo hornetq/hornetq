@@ -58,7 +58,7 @@ import org.jboss.messaging.core.tx.TransactionRepository;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
 
 /**
  * 
@@ -117,7 +117,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    {            
       super (ds, tm, sqlProperties, createTablesOnStartup);
       
-      lock = new WriterPreferenceReadWriteLock();
+      lock = new ReentrantWriterPreferenceReadWriteLock();
       
       nameMaps = new LinkedHashMap();
        
@@ -385,6 +385,40 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    public boolean isLocal()
    {
       return true;
+   }
+   
+   public Binding getBindingforChannelId(long channelId) throws Exception
+   {
+      lock.readLock().acquire();
+      
+      try
+      {         
+         Map nameMap = (Map)nameMaps.get(new Integer(currentNodeId));
+   
+         if (nameMap == null)
+         {
+            throw new IllegalStateException("Cannot find name map for current node " + currentNodeId);
+         }
+         
+         Binding binding = null;
+         
+         for (Iterator iterbindings = nameMap.values().iterator(); iterbindings.hasNext();)
+         {
+            Binding itemBinding = (Binding)iterbindings.next();
+            
+            if (itemBinding.getQueue().getChannelID() == channelId)
+            {
+               binding = itemBinding;
+               break;
+            }
+         }
+         
+         return binding;
+      }
+      finally
+      {
+         lock.readLock().release();
+      }      
    }
      
    // Protected -----------------------------------------------------

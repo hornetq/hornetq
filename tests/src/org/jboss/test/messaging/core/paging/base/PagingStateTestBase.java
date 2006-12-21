@@ -103,11 +103,11 @@ public class PagingStateTestBase extends MessagingTestCase
       idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
-      tr = new TransactionRepository(pm, idm);
-      tr.start();
-      
       ms = new SimpleMessageStore();
       ms.start();
+      
+      tr = new TransactionRepository(pm, ms, idm);
+      tr.start();            
    }
    
    

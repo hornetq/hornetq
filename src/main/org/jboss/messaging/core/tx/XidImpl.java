@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core.tx;
 
+import java.io.Serializable;
+
 import javax.transaction.xa.Xid;
 
 /**
@@ -29,11 +31,14 @@ import javax.transaction.xa.Xid;
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * 
  * @version $Revision 1.1 $
  */
-public class XidImpl implements Xid
+public class XidImpl implements Xid, Serializable
 {
+   private static final long serialVersionUID = -1893120702576869245L;
+
    protected byte[] branchQualifier;
    
    protected int formatId;
@@ -55,6 +60,11 @@ public class XidImpl implements Xid
    public byte[] getGlobalTransactionId()
    {
       return globalTransactionId;
+   }
+   
+   //For serialization
+   public XidImpl()
+   {      
    }
    
    public XidImpl(byte[] branchQualifier, int formatId, byte[] globalTransactionId)
@@ -116,6 +126,13 @@ public class XidImpl implements Xid
          }
       }
       return true;
+   }
+
+   public String toString()
+   {
+      return getClass().getName() + "(GID: " + new String(getGlobalTransactionId()) +
+                                    ", Branch: " + new String(getBranchQualifier()) +
+                                    ", Format: " + getFormatId() + ")";
    }
 
 }

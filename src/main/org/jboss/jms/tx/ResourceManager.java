@@ -22,7 +22,7 @@
 package org.jboss.jms.tx;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +52,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  * This is one instance of ResourceManager per JMS server. The ResourceManager instances are managed
  * by ResourceManagerFactory.
  * 
- * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:Konda.Madhu@uk.mizuho-sc.com">Madhu Konda</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * @author <a href="mailto:Cojonudo14@hotmail.com">Hiram Chirino</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @version $Revision$
@@ -74,8 +76,20 @@ public class ResourceManager
    private static final Logger log = Logger.getLogger(ResourceManager.class);
    
    // Constructors --------------------------------------------------
+   
+   ResourceManager()
+   {      
+   }
     
    // Public --------------------------------------------------------
+   
+   /*
+    * Merge another resource manager into this one - used in failover
+    */
+   public void merge(ResourceManager other)
+   {
+      transactions.putAll(other.transactions);
+   }
    
    /**
     * Remove a tx
@@ -115,20 +129,17 @@ public class ResourceManager
    }
    
    /*
-    * Failover session from old session -> new session
-    * This basically involves updating the session id
+    * Failover session from old session id -> new session id
     */
-   public void handleFailover(Map oldNewSessionMap)
+   public void handleFailover(int newServerId, int oldSessionId, int newSessionId)
    {
-      //Note we need to replace ids for *all* transactions - this is because, for XA
-      //the session might have done work in many transactions
       Iterator iter = this.transactions.values().iterator();
       
       while (iter.hasNext())
       {
          ClientTransaction tx = (ClientTransaction)iter.next();
          
-         tx.handleFailover(oldNewSessionMap);
+         tx.handleFailover(newServerId, oldSessionId, newSessionId);
       }                
    }   
    
@@ -162,8 +173,6 @@ public class ResourceManager
     * 
     * @param xid - The id of the transaction to add the message to
     * @param ackInfo Information describing the acknowledgement
-    * @param sessionState - the session the ack is in - we need this so on rollback we can tell each session
-    * to redeliver it's messages
     */
    public void addAck(Object xid, int sessionId, DeliveryInfo ackInfo) throws JMSException
    {
@@ -245,6 +254,34 @@ public class ResourceManager
    {
       return transactions.size();
    }
+      
+   
+   public boolean checkForAcksInSession(int sessionId)
+   {         
+      Iterator iter = transactions.entrySet().iterator();
+      
+      while (iter.hasNext())
+      {         
+         Map.Entry entry = (Map.Entry)iter.next();
+      
+         Object xid = entry.getKey();
+         
+         ClientTransaction tx = (ClientTransaction)entry.getValue();
+                  
+         if (tx.getState() == ClientTransaction.TX_PREPARED)
+         {            
+            List dels = tx.getDeliveriesForSession(sessionId);
+            
+            if (dels != null && !dels.isEmpty())
+            {
+               //There are outstanding prepared acks in this session
+               
+               return true;
+            }
+         }
+      }
+      return false;
+   }
     
    // Protected ------------------------------------------------------      
    
@@ -255,6 +292,8 @@ public class ResourceManager
       if (trace) { log.trace("commiting xid " + xid + ", onePhase=" + onePhase); }
       
       ClientTransaction tx = removeTxInternal(xid);
+      
+      if (trace) { log.trace("Got tx: " + tx + " state " + tx.getState()); }
           
       if (onePhase)
       {
@@ -306,40 +345,59 @@ public class ResourceManager
       if (trace) { log.trace("rolling back xid " + xid); }
       
       ClientTransaction tx = removeTxInternal(xid);
-          
+      
+      //It's possible we don't actually have the prepared tx here locally - this
+      //may happen if we have recovered from failure and the transaction manager
+      //is calling rollback on the transaction as part of the recovery process.
+      
       TransactionRequest request = null;
       
-      // we don't need to send the messages to the server on a rollback
+      //don't need the messages
       if (tx != null)
       {
-         //We don't clear the acks since we need to redeliver locally
          tx.clearMessages();
       }
-      
+             
       if ((tx == null) || tx.getState() == ClientTransaction.TX_PREPARED)
       {
+         //2PC rollback
+         
          request = new TransactionRequest(TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST, xid, tx);
          
+         if (trace) { log.trace("Sending rollback to server, tx:" + tx); }
+                                  
          sendTransactionXA(request, connection);
       } 
       else
       {
+         //For one phase rollback there is nothing to do on the server 
+         
          if (tx == null)
          {     
             throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
          }
-         
-         //For one phase rollback there is nothing to do on the server
       }
+                  
+      //we redeliver the messages
+      //locally to their original consumers if they are still open or cancel them to the server
+      //if the original consumers have closed
+      
+      if (trace) { log.trace("Redelivering messages, tx:" + tx); }
       
       try
       {
-         redeliverMessages(tx);
+         if (tx != null)
+         {
+            redeliverMessages(tx);
+            
+            tx.setState(ClientTransaction.TX_ROLLEDBACK);  
+         }
+         
       }
       catch (JMSException e)
       {
          log.error("Failed to redeliver", e);
-      }
+      }                               
    }
    
    void endTx(Xid xid, boolean success) throws XAException
@@ -387,6 +445,8 @@ public class ResourceManager
       sendTransactionXA(request, connection);      
       
       state.setState(ClientTransaction.TX_PREPARED);
+      
+      if (trace) { log.trace("State is now: " + state.getState()); }
       
       return XAResource.XA_OK;
    }
@@ -469,6 +529,21 @@ public class ResourceManager
          try
          {
             Xid[] txs = conn.getPreparedTransactions();
+
+            //populate with TxState --MK
+            for (int i = 0; i < txs.length;i++)
+            {
+               //Don't overwrite if it is already there
+               if (!transactions.containsKey(txs[i]))
+               {
+                  ClientTransaction tx = new ClientTransaction();
+   
+                  tx.setState(ClientTransaction.TX_PREPARED);
+   
+                  transactions.put(txs[i], tx);
+               }
+            }
+
             return txs;
          }
          catch (JMSException e)
@@ -499,10 +574,18 @@ public class ResourceManager
    /*
     * Rollback has occurred so we need to redeliver any unacked messages corresponding to the acks
     * is in the transaction.
+    * NOTE! We only do this for 1PC rollback - for 2PC rollback we MUST rollback on the server
+    * but if we do this we cannot redeliver locally since then we might get the same message
+    * delievered twice. Therefore we must not redeliver locally.
+    * 
     */
    private void redeliverMessages(ClientTransaction ts) throws JMSException
    {
-      Collection sessionStates = ts.getSessionStates();
+      List sessionStates = ts.getSessionStates();
+      
+      //Need to do this in reverse order
+      
+      Collections.reverse(sessionStates);
       
       for (Iterator i = sessionStates.iterator(); i.hasNext();)
       {

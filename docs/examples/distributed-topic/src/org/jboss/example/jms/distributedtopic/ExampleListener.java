@@ -6,8 +6,8 @@
  */
 package org.jboss.example.jms.distributedtopic;
 
-import javax.jms.MessageListener;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

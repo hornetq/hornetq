@@ -89,4 +89,6 @@ public interface PostOffice extends MessagingComponent
     * @return true if it is a non clustered post office
     */
    boolean isLocal();
+   
+   Binding getBindingforChannelId(long channelId) throws Exception;
 }

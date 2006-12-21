@@ -638,7 +638,10 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertTrue(office4.getHoldingTransactions().isEmpty());
          assertTrue(office5.getHoldingTransactions().isEmpty());
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
       finally
       { 
@@ -982,7 +985,10 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertTrue(office4.getHoldingTransactions().isEmpty());
          assertTrue(office5.getHoldingTransactions().isEmpty());
          
-         checkNoMessageData();
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
       finally
       { 

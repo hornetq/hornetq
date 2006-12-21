@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 
 /**
@@ -70,40 +69,19 @@ public class ExceptionInterceptor implements Interceptor
       }       
       catch(JMSException e)
       {
-         if (trace)  { log.trace("Caught JMSException:" + e); }
-         Exception linked = e.getLinkedException();
-         if (linked != null)
-         {
-            log.error("Linked exception is: ", linked);
-         }
-         logCause(e);
+         // JMSException should not be logged unless trace is on
+         if (trace)  { log.trace("Caught JMSException:", e); }
+         
          throw e;
       }
-      catch (UnsupportedOperationException e)
+      catch (Throwable t)
       {
-         //These must be propagated to the client
-         throw e;         
-      }
-      catch (RuntimeException e)
-      {         
-         log.error("Caught RuntimeException", e);
-         logCause(e);
-         JMSException ex = new javax.jms.IllegalStateException(e.getMessage());
-         ex.setLinkedException(e);
-         throw ex; 
-      }
-      catch (Exception e)
-      {
-         log.error("Caught Exception: ", e);
-         logCause(e);         
-         throw new MessagingJMSException("Caught exception", e);
-      }
-      catch (Error e)
-      {
-         log.error("Caught Error: ", e);
-         logCause(e);
-         throw e;
-      }
+         //We log everything else
+         
+         log(t);
+         
+         throw t;         
+      }      
    }
 
    // Package protected ---------------------------------------------
@@ -112,13 +90,13 @@ public class ExceptionInterceptor implements Interceptor
 
    // Private -------------------------------------------------------
    
-   private void logCause(Throwable e)
+   private void log(Throwable e)
    {
+      log.error("Caught throwable", e);
       Throwable e2 = e.getCause();
       if (e2 != null)
       {
-         log.error("Cause of exception:", e2);
-         logCause(e2);
+         log(e2);
       }
    }
 

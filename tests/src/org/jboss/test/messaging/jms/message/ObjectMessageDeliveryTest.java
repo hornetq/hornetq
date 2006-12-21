@@ -37,11 +37,12 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
+
 /**
  * 
  * A ObjectMessageDeliveryTest
-
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -143,11 +144,11 @@ public class ObjectMessageDeliveryTest extends MessagingTestCase
          
          publisher.send(om3);
          
-         ObjectMessage rm1 = (ObjectMessage)sub.receive(1000);
+         ObjectMessage rm1 = (ObjectMessage)sub.receive(MAX_TIMEOUT);
          
-         ObjectMessage rm2 = (ObjectMessage)sub.receive(1000);
+         ObjectMessage rm2 = (ObjectMessage)sub.receive(MAX_TIMEOUT);
          
-         ObjectMessage rm3 = (ObjectMessage)sub.receive(1000);
+         ObjectMessage rm3 = (ObjectMessage)sub.receive(MAX_TIMEOUT);
          
          assertNotNull(rm1);
          

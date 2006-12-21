@@ -28,6 +28,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.tx.XidImpl;
 
 /**
  * An XAResource implementation.
@@ -38,6 +39,10 @@ import org.jboss.logging.Logger;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ * 
+ * Parts based on JBoss MQ XAResource implementation by:
+ * 
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
@@ -109,7 +114,12 @@ public class MessagingXAResource implements XAResource
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
       if (trace) { log.trace(this + " committing " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
-      
+
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof XidImpl))
+         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+
       rm.commit(xid, onePhase, connection);
 
       // leave the session in a 'clean' state, the currentTxId will be set when the XAResource will
@@ -121,6 +131,11 @@ public class MessagingXAResource implements XAResource
    public void end(Xid xid, int flags) throws XAException
    {
       if (trace) { log.trace(this + " ending " + xid + ", flags: " + flags); }
+
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof XidImpl))
+         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
 
       synchronized (this)
       {
@@ -145,11 +160,22 @@ public class MessagingXAResource implements XAResource
    public void forget(Xid xid) throws XAException
    {
       if (trace) { log.trace(this + " forgetting " + xid + " (currently an NOOP)"); }
+
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof XidImpl))
+         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
    }
 
    public int prepare(Xid xid) throws XAException
    {
       if (trace) { log.trace(this + " preparing " + xid); }
+
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof XidImpl))
+         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+
       return rm.prepare(xid, connection);
    }
 
@@ -164,8 +190,10 @@ public class MessagingXAResource implements XAResource
    {
       if (trace) { log.trace(this + " rolling back " + xid); }
 
-      // TODO on rollback should we also stop and start the consumers to remove any transient
-      // messages, like we do on local session rollback??
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof XidImpl))
+         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
 
       rm.rollback(xid, connection);
    }
@@ -174,6 +202,11 @@ public class MessagingXAResource implements XAResource
    {
       if (trace) { log.trace(this + " starting " + xid + ", flags: " + flags); }
       
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof XidImpl))
+         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+
       boolean convertTx = false;
       
       if (sessionState.getCurrentTxId() != null)

@@ -32,6 +32,7 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 
@@ -185,6 +186,9 @@ public class ConnectionAspect
        
       // Remove reference to message ID generator
       MessageIdGeneratorFactory.instance.checkInGenerator(state.getServerID());
+      
+      // And to resource manager
+      ResourceManagerFactory.instance.checkInResourceManager(state.getServerID());
 
       return ret;
    }

@@ -23,6 +23,7 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
+import org.jboss.messaging.core.ChannelSupport;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
@@ -40,6 +41,8 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * A PagingTest_Reload.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ * 
  * @version 1.1
  *
  * SingleChannel_Reload.java,v 1.1 2006/03/22 10:23:35 timfox Exp
@@ -120,14 +123,13 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
                   true, true, true, 100);      
       pm.start();
       
-      tr = new TransactionRepository(pm, idm);
-      tr.start();
-      
       ms = new SimpleMessageStore();
       ms.start();
       
-      queue = null;
-      
+      tr = new TransactionRepository(pm, ms, idm);
+
+      tr.start();
+         
       PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
       queue2.deactivate();
       queue2.load();
@@ -218,12 +220,12 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
                   true, true, true, 100);     
       pm.start();
       
-      tr = new TransactionRepository(pm, idm);
-      tr.start();
-      
       ms = new SimpleMessageStore();
       ms.start();
       
+      tr = new TransactionRepository(pm, ms, idm);
+      tr.start();
+
       PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
       queue2.deactivate();
       queue2.load();

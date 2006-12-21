@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -89,7 +90,7 @@ public class ManifestTest extends MessagingTestCase
       
       // Compare the value from ConnectionMetaData and MANIFEST.MF
       Attributes attrs = manifest.getMainAttributes();
-      /*
+      
       System.out.println("META--> " + meta.getJMSMajorVersion()); 
       System.out.println("META--> " + meta.getJMSMinorVersion()); 
       System.out.println("META--> " + meta.getJMSProviderName()); 
@@ -103,7 +104,7 @@ public class ManifestTest extends MessagingTestCase
          Object item = itr.next();
          System.out.println("MANIFEST--> " + item + " : " + attrs.get(item));
       }
-      */
+      
       assertEquals(attrs.getValue("Implementation-Title"), meta.getJMSProviderName());
       String ver = attrs.getValue("Implementation-Version");
       assertTrue(-1 != ver.indexOf(meta.getProviderVersion()));

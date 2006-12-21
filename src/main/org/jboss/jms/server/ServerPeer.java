@@ -73,6 +73,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ * 
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -82,8 +84,6 @@ public class ServerPeer extends ServiceMBeanSupport
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerPeer.class);
-
-   public static final String RECOVERABLE_CTX_NAME = "jms-recoverables";
 
    // The "subsystem" label this ServerPeer uses to register its ServerInvocationHandler with the
    // Remoting connector
@@ -220,7 +220,7 @@ public class ServerPeer extends ServiceMBeanSupport
          connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
          messageStore = new SimpleMessageStore();
-         txRepository = new TransactionRepository(persistenceManager, transactionIDManager);
+         txRepository = new TransactionRepository(persistenceManager, messageStore, transactionIDManager);
 
          // Start the wired components
 
@@ -235,10 +235,9 @@ public class ServerPeer extends ServiceMBeanSupport
          messageStore.start();
          securityStore.start();
          txRepository.start();
-
+         txRepository.loadPreparedTransactions();
+         
          initializeRemoting(mbeanServer);
-
-         //createRecoverable();
 
          started = true;
 
@@ -263,8 +262,6 @@ public class ServerPeer extends ServiceMBeanSupport
          log.debug(this + " stopping");
 
          started = false;
-
-         //removeRecoverable();
 
          // Stop the wired components
 
@@ -484,8 +481,6 @@ public class ServerPeer extends ServiceMBeanSupport
       this.failoverCompleteTimeout = timeout;
    }
    
-   
-
    // JMX Operations ------------------------------------------------
 
    public String createQueue(String name, String jndiName) throws Exception
@@ -698,10 +693,12 @@ public class ServerPeer extends ServiceMBeanSupport
          if (!postOffice.isLocal())
          {
             Replicator rep = (Replicator)postOffice;
-            connFactoryJNDIMapper.injectReplicator(rep);
+            connFactoryJNDIMapper.injectReplicator(rep);            
             rep.registerListener(new FailoverListener());
-
          }
+         
+         //Also need to inject into txRepository
+         this.txRepository.injectPostOffice(postOffice);
       }
       return postOffice;
    }
@@ -850,61 +847,7 @@ public class ServerPeer extends ServiceMBeanSupport
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   /**
-    * Place a Recoverable instance in the JNDI tree. This can be used by a transaction manager in
-    * order to obtain an XAResource so it can perform XA recovery.
-    */
-
-   //Commented out until XA Recovery is complete
-
-//   private void createRecoverable() throws Exception
-//   {
-//      //Disabled until XA Recovery is complete with Arjuna transaction integration
-//
-//      InitialContext ic = new InitialContext();
-//
-//      int connFactoryID = connFactoryJNDIMapper.registerConnectionFactory(null, null);
-//
-//      XAConnectionFactory xaConnFactory =
-//         (XAConnectionFactory)connFactoryJNDIMapper.getConnectionFactory(connFactoryID);
-//
-//      JMSRecoverable recoverable = new JMSRecoverable(serverPeerID, xaConnFactory);
-//
-//      Context recCtx = null;
-//      try
-//      {
-//         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
-//      }
-//      catch (NamingException e)
-//      {
-//         //Ignore
-//      }
-//
-//      if (recCtx == null)
-//      {
-//         recCtx = ic.createSubcontext(RECOVERABLE_CTX_NAME);
-//      }
-//
-//      recCtx.rebind(this.serverPeerID, recoverable);
-//   }
-//
-//   private void removeRecoverable() throws Exception
-//   {
-//      InitialContext ic = new InitialContext();
-//
-//      Context recCtx = null;
-//      try
-//      {
-//         recCtx = (Context)ic.lookup(RECOVERABLE_CTX_NAME);
-//         recCtx.unbind(serverPeerID);
-//      }
-//      catch (NamingException e)
-//      {
-//         //Ignore
-//      }
-//   }
-
+  
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
       JMSWireFormat wf = new JMSWireFormat();

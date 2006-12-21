@@ -21,15 +21,15 @@
 */
 package org.jboss.example.jms.failover;
 
-import javax.naming.InitialContext;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
 
 import org.jboss.example.jms.common.ExampleSupport;
 
@@ -51,7 +51,6 @@ public class QueueFailoverExample extends ExampleSupport
 {
    public void example() throws Exception
    {
-
       String destinationName = getDestinationJNDIName();
 
       InitialContext ic = null;
@@ -62,14 +61,12 @@ public class QueueFailoverExample extends ExampleSupport
       {
          // Create a connection to the clustered messaging instance
 
-
          ic = new InitialContext();
 
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
          Queue distributedQueue = (Queue)ic.lookup(destinationName);
          log("Distributed queue " + destinationName + " exists");
-
 
          // When connecting to a messaging cluster, the ConnectionFactory has the capability of
          // transparently creating physical connections to different cluster nodes, in a round
@@ -105,13 +102,10 @@ public class QueueFailoverExample extends ExampleSupport
 
          assertEquals("Hello1!", rm1.getText());
 
-
          // Kill the active node
          killActiveNode();
 
-
          Thread.sleep(30000); // TODO not necesare after we install the client valve
-
 
          // receive the second message on the failed over node
 
@@ -122,11 +116,10 @@ public class QueueFailoverExample extends ExampleSupport
          assertEquals("Hello2!", rm2.getText());
 
          displayProviderInfo(connection.getMetaData());
-
       }
       finally
       {
-         if(ic != null)
+         if (ic != null)
          {
             try
             {
@@ -162,5 +155,4 @@ public class QueueFailoverExample extends ExampleSupport
    {
       new QueueFailoverExample().run();
    }
-
 }

@@ -21,15 +21,8 @@
   */
 package org.jboss.test.messaging.core.plugin.base;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.messaging.core.FilterFactory;
@@ -54,7 +47,6 @@ import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
-import org.jboss.tm.TransactionManagerService;
 
 /**
  * 
@@ -116,12 +108,12 @@ public class PostOfficeTestBase extends MessagingTestCase
       transactionIDManager = new IDManager("TRANSACTION_ID", 10, pm);
       transactionIDManager.start();
       
-      tr = new TransactionRepository(pm, transactionIDManager);
-      tr.start();
-      
       ms = new SimpleMessageStore();
       ms.start();
       
+      tr = new TransactionRepository(pm, ms, transactionIDManager);
+      tr.start();
+            
       pool = new QueuedExecutorPool(10);
       
       channelIDManager = new IDManager("CHANNEL_ID", 10, pm);
@@ -165,108 +157,7 @@ public class PostOfficeTestBase extends MessagingTestCase
       return postOffice;
    }
    
-   protected boolean checkNoBindingData() throws Exception
-   {
-      InitialContext ctx = new InitialContext();
-
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
-      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-      
-      javax.transaction.Transaction txOld = mgr.suspend();
-      mgr.begin();
-      
-      Connection conn = null;
-      
-      PreparedStatement ps = null;
-      
-      ResultSet rs = null;
-
-      try
-      {
-         conn = ds.getConnection();
-         String sql = "SELECT * FROM JMS_POSTOFFICE";
-         ps = conn.prepareStatement(sql);
-         
-         rs = ps.executeQuery();
-         
-         return rs.next();
-      }
-      finally
-      {
-         if (rs != null) rs.close();
-         
-         if (ps != null) ps.close();
-         
-         if (conn != null) conn.close();
-         
-         mgr.commit();
-
-         if (txOld != null)
-         {
-            mgr.resume(txOld);
-         }
-                  
-      } 
-   }
    
-   protected boolean checkNoMessageData() throws Exception
-   {
-      InitialContext ctx = new InitialContext();
-
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
-      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-      
-      javax.transaction.Transaction txOld = mgr.suspend();
-      mgr.begin();
-      
-      Connection conn = null;
-      
-      PreparedStatement ps = null;
-      
-      ResultSet rs = null;
-
-      try
-      {
-         conn = ds.getConnection();
-         String sql = "SELECT * FROM JMS_MESSAGE_REFERENCE";
-         ps = conn.prepareStatement(sql);
-         
-         rs = ps.executeQuery();
-         
-         boolean exists = rs.next();
-         
-         if (!exists)
-         {
-            rs.close();
-            
-            ps.close();
-            
-            ps = conn.prepareStatement("SELECT * FROM JMS_MESSAGE");
-            
-            rs = ps.executeQuery();
-           
-            exists = rs.next();
-         }
-         
-         return exists;
-      }
-      finally
-      {
-         if (rs != null) rs.close();
-         
-         if (ps != null) ps.close();
-         
-         if (conn != null) conn.close();
-         
-         mgr.commit();
-
-         if (txOld != null)
-         {
-            mgr.resume(txOld);
-         }
-                  
-      } 
-   }
    
    private static long msgCount;
    

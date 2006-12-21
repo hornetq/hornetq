@@ -484,7 +484,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             Queue queue = binding.getQueue();
             
-            List dels = queue.createDeliveries(ids);
+            List dels = queue.recoverDeliveries(ids);
             
             Iterator iter2 = dels.iterator();
             
@@ -1343,7 +1343,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       public void afterRollback(boolean onePhase) throws TransactionException
       {                            
-         //NOOP
+         //One phase rollbacks never hit the server - they are dealt with locally only
+         //so this would only ever be executed for a two phase rollback.
+
+         //We don't do anything since cancellation is driven from the client.
       }
       
       synchronized void addDeliveryId(Long deliveryId)

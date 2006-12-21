@@ -37,11 +37,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
@@ -58,6 +60,7 @@ import org.jboss.messaging.core.message.CoreMessage;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.PreparedTxInfo;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.core.tx.XidImpl;
@@ -72,6 +75,7 @@ import org.jboss.messaging.util.Util;
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  *
  * @version <tt>1.1</tt>
  *
@@ -94,6 +98,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    private boolean usingBinaryStream = true;
    
    private int maxParams;
+   
+   private short orderCount;
+   
    
    // Constructors --------------------------------------------------
     
@@ -146,7 +153,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
         
       //We can't remnove unreliable data since it might introduce holes into the paging order
       //removeUnreliableMessageData();
-        
+         
       log.debug(this + " started");
    }
    
@@ -157,6 +164,107 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    // PersistenceManager implementation -------------------------
    
+   // Related to XA Recovery
+   // ======================
+   
+   public List getMessageChannelPairRefsForTx(long transactionId) throws Exception
+   {
+      String sql = this.getSQLStatement("SELECT_MESSAGEID_FOR_REF");
+      return getMessageChannelPair(sql, transactionId);
+   }
+   
+   public List getMessageChannelPairAcksForTx(long transactionId) throws Exception
+   {
+      String sql = this.getSQLStatement("SELECT_MESSAGEID_FOR_ACK");
+      return getMessageChannelPair(sql, transactionId);
+   }
+   
+   public List retrievePreparedTransactions() throws Exception
+   {
+      /* Note the API change for 1.0.2 XA Recovery -- List now contains instances of PreparedTxInfo<TxId, Xid>
+       * instead of direct Xids [JPL] */
+      
+      Connection conn = null;
+      Statement st = null;
+      ResultSet rs = null;
+      PreparedTxInfo txInfo = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      try
+      {
+         List transactions = new ArrayList();
+         
+         conn = ds.getConnection();
+         
+         st = conn.createStatement();
+         
+         String sql = this.getSQLStatement("SELECT_PREPARED_TRANSACTIONS");
+         
+         rs = st.executeQuery(sql);
+         
+         while (rs.next())
+         {
+            //get the existing tx id --MK START
+            long txId = rs.getLong(1);
+            
+            byte[] branchQual = rs.getBytes(2);
+            int formatId = rs.getInt(3);
+            byte[] globalTxId = rs.getBytes(4);
+            Xid xid = new XidImpl(branchQual, formatId, globalTxId);
+            
+            // create a tx info object with the result set detailsdetails
+            txInfo = new PreparedTxInfo(txId, xid);
+            transactions.add(txInfo);
+         }
+         
+         return transactions;
+         
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (rs != null)
+         {
+            try
+            {
+               rs.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         wrap.end();
+      }
+   }
+   
+   
+   
+   
+      
    // Related to counters
    // ===================
    
@@ -1181,7 +1289,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       PreparedStatement ps = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-      
+                                
       try
       {
          conn = ds.getConnection();         
@@ -1208,6 +1316,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             maxOrdering = null;
          }
+         
+         //For unpaged refs we must make sure we only load refs with state='C' - i.e.
+         //they're not part of an XA transactions.
+         //Otherwise we could end up loading message that hadn't be committed
+         //or end up loading refs which are due to be acked by a transaction that's yet
+         //to be recovered.
          
          ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
          
@@ -1574,77 +1688,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }
    
-     
-   public List retrievePreparedTransactions() throws Exception
-   {
-      Connection conn = null;
-      Statement st = null;
-      ResultSet rs = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-      
-      try
-      {
-         List transactions = new ArrayList();
-         
-         conn = ds.getConnection();
-         
-         st = conn.createStatement();
-         rs = st.executeQuery(getSQLStatement("SELECT_PREPARED_TRANSACTIONS"));
-         
-         while (rs.next())
-         {
-            byte[] branchQual = rs.getBytes(2);
-            int formatId = rs.getInt(3);
-            byte[] globalTxId = rs.getBytes(4);
-            Xid xid = new XidImpl(branchQual, formatId, globalTxId);
-            
-            transactions.add(xid);
-         }
-         
-         return transactions;
-         
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         wrap.end();
-      }
-   }
-   
+           
    public boolean referenceExists(long channelID, long messageID) throws Exception
    {
       Connection conn = null;
@@ -2811,6 +2855,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected void commitPreparedTransaction(Transaction tx, Connection conn) throws Exception
    {
       PreparedStatement ps = null;
+      
+      if (trace) { log.trace(this + " commitPreparedTransaction, tx= " + tx); }
         
       try
       {
@@ -2833,7 +2879,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (trace)
          {
-            log.trace(JDBCUtil.statementToString(getSQLStatement("COMMIT_MESSAGE_REF2"), null, new Long(tx.getId())) + " updated " + rows
+            log.trace(JDBCUtil.statementToString(getSQLStatement("COMMIT_MESSAGE_REF2"), new Long(tx.getId())) + " updated " + rows
                   + " row(s)");
          }
          
@@ -2880,7 +2926,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (trace)
          {
-            log.trace(JDBCUtil.statementToString(getSQLStatement("ROLLBACK_MESSAGE_REF2"), null, new Long(tx.getId())) + " updated " + rows
+            log.trace(JDBCUtil.statementToString(getSQLStatement("ROLLBACK_MESSAGE_REF2"), new Long(tx.getId())) + " updated " + rows
                   + " row(s)");
          }
          
@@ -3248,8 +3294,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "SELECT MESSAGEID, DELIVERYCOUNT, PAGE_ORD, RELIABLE FROM JMS_MESSAGE_REFERENCE " +
               "WHERE CHANNELID = ? AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD");
       map.put("LOAD_UNPAGED_REFS",
-              "SELECT MESSAGEID, DELIVERYCOUNT, RELIABLE FROM JMS_MESSAGE_REFERENCE " +
-              "WHERE PAGE_ORD IS NULL and CHANNELID = ? ORDER BY ORD");
+              "SELECT MESSAGEID, DELIVERYCOUNT, RELIABLE FROM JMS_MESSAGE_REFERENCE WHERE STATE = 'C' " +
+              "AND CHANNELID = ? AND PAGE_ORD IS NULL ORDER BY ORD");
       map.put("UPDATE_RELIABLE_REFS_NOT_PAGED", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNELID=?");       
       map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ?");
       map.put("SELECT_EXISTS_REF", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ? AND MESSAGEID = ?");
@@ -3276,6 +3322,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "VALUES(?, ?, ?, ?)");
       map.put("DELETE_TRANSACTION", "DELETE FROM JMS_TRANSACTION WHERE TRANSACTIONID = ?");
       map.put("SELECT_PREPARED_TRANSACTIONS", "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JMS_TRANSACTION");
+      map.put("SELECT_MESSAGEID_FOR_REF", "SELECT MESSAGEID, CHANNELID FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID = ? AND STATE = '+'");
+      map.put("SELECT_MESSAGEID_FOR_ACK", "SELECT MESSAGEID, CHANNELID FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID = ? AND STATE = '-'");
+      
       //Counter
       map.put("UPDATE_COUNTER", "UPDATE JMS_COUNTER SET NEXT_ID = ? WHERE NAME=?");
       map.put("SELECT_COUNTER", "SELECT NEXT_ID FROM JMS_COUNTER WHERE NAME=?");
@@ -3287,7 +3336,132 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    // Private -------------------------------------------------------
    
-   private short orderCount;
+   private List getMessageChannelPair(String sqlQuery, long transactionId) throws Exception
+   {
+      if (trace) log.trace("loading message and channel ids for tx [" + transactionId + "]");
+      
+      Connection conn = null;
+      PreparedStatement ps = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      
+      try
+      {
+         conn = ds.getConnection();
+         
+         ps = conn.prepareStatement(sqlQuery);
+         
+         ps.setLong(1, transactionId);
+         
+         rs = ps.executeQuery();
+         
+         //Don't use a Map. A message could be in multiple channels in a tx, so if you use a map
+         //when you put the same message again it's going to overwrite the previous put!!
+         
+         List holders = new ArrayList();
+         
+         //Unique set of messages
+         Set msgIds = new HashSet();
+         
+         //TODO it would probably have been simpler just to have done all this in a SQL JOIN rather
+         //than do the join in memory.....
+         
+         class Holder
+         {
+            long messageId;
+            long channelId;
+            Holder(long messageId, long channelId)
+            {
+               this.messageId = messageId;
+               this.channelId = channelId;
+            }
+         }
+                  
+         while(rs.next())
+         {            
+            long messageId = rs.getLong(1);
+            long channelId = rs.getLong(2);
+            
+            Holder holder = new Holder(messageId, channelId);
+            
+            holders.add(holder);
+                        
+            msgIds.add(new Long(messageId));
+            
+            if (trace) log.trace("Loaded MsgID: " + messageId + " and ChannelID: " + channelId);
+         }
+         
+         Map messageMap = new HashMap();
+         
+         List messages = getMessages(new ArrayList(msgIds));
+         
+         for (Iterator iter = messages.iterator(); iter.hasNext(); )
+         {
+            Message msg = (Message)iter.next();
+            
+            messageMap.put(new Long(msg.getMessageID()), msg);            
+         }
+         
+         List returnList = new ArrayList();
+         
+         for (Iterator iter = holders.iterator(); iter.hasNext(); )
+         {
+            Holder holder = (Holder)iter.next();
+            
+            Message msg = (Message)messageMap.get(new Long(holder.messageId));
+            
+            if (msg == null)
+            {
+               throw new IllegalStateException("Cannot find message " + holder.messageId);
+            }
+            
+            MessageChannelPair pair = new MessageChannelPair(msg, holder.channelId);
+            
+            returnList.add(pair);
+         }
+         
+         return returnList;
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (rs != null)
+         {
+            try
+            {
+               rs.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         wrap.end();
+      }
+   }
    
    private synchronized long getOrdering()
    {

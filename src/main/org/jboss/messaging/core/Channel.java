@@ -144,7 +144,10 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    
    boolean isActive();
    
-   List createDeliveries(List messageIds);
+   List recoverDeliveries(List messageIds);
+   
+   //This method will be defunct very soon when we remove the delivery list from inside the channel
+   void addDelivery(Delivery del);
 
 }
 

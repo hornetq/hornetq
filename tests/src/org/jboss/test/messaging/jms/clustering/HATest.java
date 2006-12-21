@@ -1055,8 +1055,8 @@ public class HATest extends ClusteringTestBase
       log.info("++testTopicSubscriber");
 
       log.info(">>Lookup Queue");
+      
       Destination destination = (Destination) topic[1];
-
 
       Connection conn1 = cf.createConnection();
       Connection conn2 = cf.createConnection();
@@ -1067,7 +1067,7 @@ public class HATest extends ClusteringTestBase
       conn.setClientID("testClient");
       conn.start();
 
-      JBossSession session = (JBossSession) conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+      JBossSession session = (JBossSession) conn.createSession(true, Session.SESSION_TRANSACTED);
       ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate) session.getDelegate();
       SessionState sessionState = (SessionState) clientSessionDelegate.getState();
 
@@ -1079,7 +1079,6 @@ public class HATest extends ClusteringTestBase
       ConsumerState consumerState = (ConsumerState) clientDelegate.getState();
 
       log.info("subscriptionName=" + consumerState.getSubscriptionName());
-
 
       log.info(">>Creating Producer");
       MessageProducer producer = session.createProducer(destination);
@@ -1104,7 +1103,7 @@ public class HATest extends ClusteringTestBase
 
       ServerManagement.kill(1);
 
-      Thread.sleep(30000);
+      Thread.sleep(60000);
       // if failover happened, this object was replaced
       assertNotSame(originalRemoting, delegate.getRemotingConnection());
 
@@ -1124,7 +1123,6 @@ public class HATest extends ClusteringTestBase
       receiveMessage("consumerHA", consumerHA, true, false);
       receiveMessage("consumerHA", consumerHA, true, false);
       receiveMessage("consumerHA", consumerHA, true, true);
-
 
       session.commit();
       conn1.close();
@@ -1390,7 +1388,8 @@ public class HATest extends ClusteringTestBase
       if (message != null)
       {
          log.info(text + ": messageID from messageReceived=" + message.getMessage().getMessageID() + " message = " + message + " content=" + txtMessage.getText());
-      } else
+      }
+      else
       {
          log.info(text + ": Message received was null");
       }
@@ -1399,7 +1398,8 @@ public class HATest extends ClusteringTestBase
          if (shouldBeNull)
          {
             assertNull(message);
-         } else
+         }
+         else
          {
             assertNotNull(message);
          }

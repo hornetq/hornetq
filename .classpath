@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="output/gen-parsers"/>
+	<classpathentry kind="src" path="docs/examples/queue-failover/src"/>
+	<classpathentry kind="src" path="docs/examples/common/src"/>
+	<classpathentry kind="src" path="docs/examples/distributed-topic/src"/>
+	<classpathentry kind="src" path="docs/examples/ejb3mdb/src"/>
+	<classpathentry kind="src" path="docs/examples/http/src"/>
+	<classpathentry kind="src" path="docs/examples/mdb/src"/>
+	<classpathentry kind="src" path="docs/examples/queue/src"/>
+	<classpathentry kind="src" path="docs/examples/secure-socket/src"/>
+	<classpathentry kind="src" path="docs/examples/stateless/src"/>
+	<classpathentry kind="src" path="docs/examples/topic/src"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
 	<classpathentry kind="lib" path="lib/jboss.jar"/>
@@ -50,5 +60,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/common-logging-log4j/lib/jboss-logging-log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common-logging-spi/lib/jboss-logging-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jbossts/lib/jbossjta.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

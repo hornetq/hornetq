@@ -36,7 +36,7 @@ public class SimpleMemoryManager implements MemoryManager
 {
    private static final Logger log = Logger.getLogger(SimpleMemoryManager.class);
    
-   private static final long DEFAULT_MEASURE_INTERVAL = 2000;
+   private static final long DEFAULT_MEASURE_INTERVAL = 3000;
    
    private static final int DEFAULT_FREE_MEMORY_PERCENT = 25;
        

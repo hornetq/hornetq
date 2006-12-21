@@ -913,6 +913,9 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
          dels[i].cancel();   
       }
       
+      // Cancel is asynch, so need to wait a bit
+      Thread.sleep(250); 
+      
       //This should cause the refs corresponding to the deliveries to go the front of the in memory quuee
       //and the oldest refs in memory evicted off the end into the down cache
       
@@ -952,6 +955,9 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
          dels[i].cancel();
       }
       
+      // Cancel is asynch, so need to wait a bit
+      Thread.sleep(250);       
+      
       //This should cause the down cache to be flushed
       
       //verify 10 ref in storage
@@ -990,6 +996,9 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       {
          dels[i].cancel();
       }
+      
+      // Cancel is asynch, so need to wait a bit
+      Thread.sleep(250);       
       
       //consumeCount += 20;
       

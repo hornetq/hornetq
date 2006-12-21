@@ -77,6 +77,7 @@
 
       <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
 
+<<<<<<< .working
       <!--
           Note on installer versions.
           When installing versions to test via the JBoss installer, make sure call by value is *not*
@@ -84,17 +85,51 @@
           the arrangement where JBoss is configured for all pass by reference
       -->
 
+=======
+      <!--
+           4.0.1sp1
+      -->
+
+>>>>>>> .merge-right.r1823
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
+      <!--
+           4.0.2
+      -->
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss402.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
+<<<<<<< .working
+=======
+<!--
+      <!--
+           4.0.3
+      -->
 
       <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss403.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall>
+>>>>>>> .merge-right.r1823
+
+      <antcall target="installation-test">
+<<<<<<< .working
+=======
+         <param name="jboss.home" value="${jboss403-installer.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall>
+-->
+      <!--
+           4.0.3SP1
+      -->
+
+      <antcall target="installation-test">
+>>>>>>> .merge-right.r1823
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
@@ -112,6 +147,10 @@
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
+      <!--
+           4.0.4.GA
+      -->
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA.home}"/>
       </antcall>
@@ -127,8 +166,40 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
+<<<<<<< .working
+=======
+<!--
+      <!--
+           4.0.5.GA
+      -->
 
       <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405GA.home}"/>
+      </antcall>
+>>>>>>> .merge-right.r1823
+                                                                                                <!--
+      <antcall target="installation-test">
+<<<<<<< .working
+=======
+         <param name="jboss.home" value="${jboss405GA-installer.home}"/>
+      </antcall>
+                                                                                                 -->
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405GA.home}"/>
+         <param name="release.admin.target" value="standalone"/>
+         <param name="run.mdb.example" value="false"/>
+         <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall>
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405GAejb3.home}"/>
+         <param name="no.java4" value="true"/>
+         <param name="run.ejb3mdb.example" value="true"/>
+      </antcall>
+-->
+      <antcall target="installation-test">
+>>>>>>> .merge-right.r1823
          <param name="jboss.home" value="${jboss405GA.home}"/>
       </antcall>
 

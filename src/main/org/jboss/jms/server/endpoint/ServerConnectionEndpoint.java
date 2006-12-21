@@ -380,6 +380,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          {
             if (trace) { log.trace("Two phase commit rollback request received"); }
              
+            //For 2pc rollback - we just don't cancel any messages back to the channel
+            //this is driven from the client side
+             
             Transaction tx =  tr.getPreparedTx(request.getXid());              
             if (trace) { log.trace("Rolling back " + tx); }
             tx.rollback();
@@ -402,7 +405,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       try
       {
-         List xids = tr.getPreparedTransactions();
+         List xids = tr.recoverPreparedTransactions();
          
          return (Xid[])xids.toArray(new Xid[xids.size()]);
       }
@@ -634,7 +637,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     
    private void processTransaction(ClientTransaction txState, Transaction tx) throws Throwable
    {
-      if (trace) { log.trace("processing transaction"); }
+      if (trace) { log.trace(tx + " :processing transaction"); }
       
       synchronized (sessions)
       {         
@@ -665,7 +668,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
       }
       
-      if (trace) { log.trace("Processed transaction"); }
+      if (trace) { log.trace(tx + " :Processed transaction"); }
    }   
 
    // Inner classes -------------------------------------------------

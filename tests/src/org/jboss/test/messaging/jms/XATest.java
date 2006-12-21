@@ -41,15 +41,17 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.util.TransactionManagerLocator;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TransactionManagerLocator;
+import org.jboss.tm.TxUtils;
 
 /**
  * 
  * A XATest
-
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
+ * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  *
  * $Id$
  *
@@ -88,13 +90,20 @@ public class XATest extends MessagingTestCase
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
             
-      if (!ServerManagement.isRemote()) tm = TransactionManagerLocator.getInstance().locate();
-      
+      if (!ServerManagement.isRemote())
+      {
+         tm = TransactionManagerLocator.getInstance().locate();
+      }
+
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Destination)initialContext.lookup("/queue/Queue");
-      
-      if (!ServerManagement.isRemote()) suspendedTx = tm.suspend();
+
+
+      if (!ServerManagement.isRemote())
+      {
+         suspendedTx = tm.suspend();
+      }
    }
 
    public void tearDown() throws Exception
@@ -103,10 +112,16 @@ public class XATest extends MessagingTestCase
       
       if (!ServerManagement.isRemote())
       {
-         if (tm.getTransaction() != null)
+         if (TxUtils.isUncommitted(tm))
          {
             //roll it back
             tm.rollback();
+         }
+         if (tm.getTransaction() != null)
+         {
+            Transaction tx = tm.suspend();
+            if (tx != null)
+               log.warn("Transaction still associated with thread " + tx + " at status " + TxUtils.getStatusAsString(tx.getStatus()));
          }
       }
       
@@ -122,7 +137,6 @@ public class XATest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
-
    
    public void test2PCSendCommit1PCOptimization() throws Exception
    {
@@ -134,8 +148,7 @@ public class XATest extends MessagingTestCase
       Connection conn2 = null;
       
       try
-      {
-      
+      {      
          conn = cf.createXAConnection();
          
          tm.begin();
@@ -156,7 +169,7 @@ public class XATest extends MessagingTestCase
          m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
          
-         tx.commit();
+         tm.commit();
          
          conn2 = cf.createConnection();
          conn2.start();
@@ -182,50 +195,52 @@ public class XATest extends MessagingTestCase
       }
 
    }
-   
+
+
+
    public void test2PCSendCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
-      
+
          conn = cf.createXAConnection();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
-         
-         MessagingXAResource res = (MessagingXAResource)sess.getXAResource();         
+
+         MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
          XAResource res2 = new DummyXAResource();
-         
+
          //To prevent 1PC optimization being used
          res.setPreventJoining(true);
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
+
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
          prod.send(queue, m);
          m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
-         
-         tx.commit();
-         
+
+         tm.commit();
+
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessReceiver.createConsumer(queue);
-         TextMessage m2 = (TextMessage)cons.receive(1000);
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         m2 = (TextMessage)cons.receive(1000);
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
       }
@@ -242,47 +257,47 @@ public class XATest extends MessagingTestCase
       }
 
    }
-   
-   
+
+
    public void test2PCSendRollback1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
       try
       {
          conn = cf.createXAConnection();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
-         
+
          XAResource res2 = new DummyXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
+
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);   
+         prod.send(queue, m);
          m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
-         
-         tx.rollback();
-         
+
+         tm.rollback();
+
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessReceiver.createConsumer(queue);
-         Message m2 = cons.receive(1000);
+         Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
-   
+
       }
       finally
       {
@@ -296,59 +311,61 @@ public class XATest extends MessagingTestCase
          }
       }
    }
-   
-   
+
+
    public void test2PCSendFailOnPrepare() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
       try
       {
          conn = cf.createXAConnection();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
-         
+
          //prevent 1Pc optimisation
          res.setPreventJoining(true);
-         
+
          XAResource res2 = new DummyXAResource(true);
          XAResource res3 = new DummyXAResource();
          XAResource res4 = new DummyXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
          tx.enlistResource(res3);
          tx.enlistResource(res4);
-         
+
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);   
+         prod.send(queue, m);
          m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
-         
+
          try
          {
-            tx.commit();         
+            tm.commit();
+
+            fail("should not get here");
          }
          catch (Exception e)
          {
             //We should expect this
          }
-         
+
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessReceiver.createConsumer(queue);
-         Message m2 = cons.receive(1000);
+         Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
-   
+
       }
       finally
       {
@@ -362,47 +379,47 @@ public class XATest extends MessagingTestCase
          }
       }
    }
-   
+
    public void test2PCSendRollback() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
       try
       {
          conn = cf.createXAConnection();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
-         
+
          //prevent 1Pc optimisation
          res.setPreventJoining(true);
-         
+
          XAResource res2 = new DummyXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
+
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);   
+         prod.send(queue, m);
          m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
-         
-         tx.rollback();
-         
+
+         tm.rollback();
+
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessReceiver.createConsumer(queue);
-         Message m2 = cons.receive(1000);
+         Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
-   
+
       }
       finally
       {
@@ -420,12 +437,12 @@ public class XATest extends MessagingTestCase
    public void test2PCReceiveCommit1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-            
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
          conn2 = cf.createConnection();
@@ -436,48 +453,48 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
-         
+
          conn = cf.createXAConnection();
          conn.start();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
-         
+
          XAResource res2 = new DummyXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         MessageConsumer cons = sess.createConsumer(queue);
-         
 
-         TextMessage m2 = (TextMessage)cons.receive(1000);
-         
+         MessageConsumer cons = sess.createConsumer(queue);
+
+
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         
-         m2 = (TextMessage)cons.receive(1000);
-         
+
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
-         
-         tx.commit();
-         
+
+         tm.commit();
+
          //New tx
          tm.begin();
          tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         Message m3 = cons.receive(1000);
-         
+
+         Message m3 = cons.receive(MIN_TIMEOUT);
+
          assertNull(m3);
-         
+
          tm.commit();
-         
+
 
       }
       finally
@@ -491,16 +508,16 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void test2PCReceiveCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-            
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
          conn2 = cf.createConnection();
@@ -511,49 +528,49 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
-         
+
          conn = cf.createXAConnection();
          conn.start();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
          res.setPreventJoining(true);
-         
+
          XAResource res2 = new DummyXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         MessageConsumer cons = sess.createConsumer(queue);
-         
 
-         TextMessage m2 = (TextMessage)cons.receive(1000);
-         
+         MessageConsumer cons = sess.createConsumer(queue);
+
+
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         
-         m2 = (TextMessage)cons.receive(1000);
-         
+
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
-         
-         tx.commit();
-         
+
+         tm.commit();
+
          //New tx
          tm.begin();
          tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         Message m3 = cons.receive(1000);
-         
+
+         Message m3 = cons.receive(MIN_TIMEOUT);
+
          assertNull(m3);
-         
+
          tm.commit();
-         
+
 
       }
       finally
@@ -567,18 +584,18 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void test2PCReceiveRollback1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
          conn2 = cf.createConnection();
@@ -586,54 +603,54 @@ public class XATest extends MessagingTestCase
          MessageProducer prod  = sessProducer.createProducer(queue);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
-         
+
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
-         
-         
+
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
-         
+
          XAResource res2 = new DummyXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         MessageConsumer cons = sess.createConsumer(queue);
-         
 
-         TextMessage m2 = (TextMessage)cons.receive(1000);         
+         MessageConsumer cons = sess.createConsumer(queue);
+
+
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         m2 = (TextMessage)cons.receive(1000);         
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
-         
-         tx.rollback();
-         
+
+         tm.rollback();
+
          //Message should be redelivered
-         
+
          //New tx
          tm.begin();
          tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         TextMessage m3 = (TextMessage)cons.receive(1000);         
+
+         TextMessage m3 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m3);
          assertEquals("XATest1", m3.getText());
-         m3 = (TextMessage)cons.receive(1000);         
+         m3 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m3);
          assertEquals("XATest2", m3.getText());
-         
+
          assertTrue(m3.getJMSRedelivered());
-         
+
          tm.commit();
 
       }
@@ -648,16 +665,16 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void test2PCReceiveRollback() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
          conn2 = cf.createConnection();
@@ -665,55 +682,55 @@ public class XATest extends MessagingTestCase
          MessageProducer prod  = sessProducer.createProducer(queue);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
-         
+
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
-         
-         
+
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          MessagingXAResource res = (MessagingXAResource)sess.getXAResource();
          res.setPreventJoining(true);
-         
+
          XAResource res2 = new DummyXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         MessageConsumer cons = sess.createConsumer(queue);
-         
 
-         TextMessage m2 = (TextMessage)cons.receive(1000);         
+         MessageConsumer cons = sess.createConsumer(queue);
+
+
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         m2 = (TextMessage)cons.receive(1000);         
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
-         
-         tx.rollback();
-         
+
+         tm.rollback();
+
          //Message should be redelivered
-         
+
          //New tx
          tm.begin();
          tx = tm.getTransaction();
          tx.enlistResource(res);
          tx.enlistResource(res2);
-         
-         TextMessage m3 = (TextMessage)cons.receive(1000);         
+
+         TextMessage m3 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m3);
          assertEquals("XATest1", m3.getText());
-         m3 = (TextMessage)cons.receive(1000);         
+         m3 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m3);
          assertEquals("XATest2", m3.getText());
-         
+
          assertTrue(m3.getJMSRedelivered());
-         
+
          tm.commit();
 
       }
@@ -728,49 +745,49 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
-   
+
+
    public void test1PCSendCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
-      
+
          conn = cf.createXAConnection();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
-         
-         
+
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         
+
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
          prod.send(queue, m);
          m = sess.createTextMessage("XATest2");
          prod.send(queue, m);
-         
-         tx.commit();
-         
+
+         tm.commit();
+
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessReceiver.createConsumer(queue);
-         TextMessage m2 = (TextMessage)cons.receive(1000);
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         m2 = (TextMessage)cons.receive(1000);
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
       }
@@ -787,20 +804,20 @@ public class XATest extends MessagingTestCase
       }
 
    }
-   
-   
+
+
    public void test1PCSendRollback() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
       try
       {
          conn = cf.createXAConnection();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
 
@@ -810,19 +827,19 @@ public class XATest extends MessagingTestCase
          MessageProducer prod = sess.createProducer(queue);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m); 
+         prod.send(queue, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m); 
-         
-         tx.rollback();
-         
+         prod.send(queue, m);
+
+         tm.rollback();
+
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessReceiver.createConsumer(queue);
-         Message m2 = cons.receive(1000);
+         Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
-   
+
       }
       finally
       {
@@ -840,10 +857,10 @@ public class XATest extends MessagingTestCase
    public void test1PCReceiveCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
          conn2 = cf.createConnection();
@@ -854,43 +871,43 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
-         
+
          conn = cf.createXAConnection();
          conn.start();
-         
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
-         
-         MessageConsumer cons = sess.createConsumer(queue);
-         
 
-         TextMessage m2 = (TextMessage)cons.receive(1000);
-         
+         MessageConsumer cons = sess.createConsumer(queue);
+
+
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         m2 = (TextMessage)cons.receive(1000);
-         
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
-         
-         tx.commit();
-         
+
+         tm.commit();
+
          //New tx
          tm.begin();
          tx = tm.getTransaction();
          tx.enlistResource(res);
-         
-         Message m3 = cons.receive(1000);
-         
+
+         Message m3 = cons.receive(MIN_TIMEOUT);
+
          assertNull(m3);
-         
+
          tm.commit();
-         
+
 
       }
       finally
@@ -904,16 +921,16 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void test1PCReceiveRollback() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
          conn2 = cf.createConnection();
@@ -923,53 +940,53 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
-         
-         
+
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          XASession sess = conn.createXASession();
          XAResource res = sess.getXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
          MessageConsumer cons = sess.createConsumer(queue);
-         
 
-         TextMessage m2 = (TextMessage)cons.receive(1000);
-         
+
+         TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
-         
-         m2 = (TextMessage)cons.receive(1000);
-         
+
+         m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m2);
          assertEquals("XATest2", m2.getText());
-         
-         tx.rollback();
-         
+
+         tm.rollback();
+
          //Message should be redelivered
-         
+
          //New tx
          tm.begin();
          tx = tm.getTransaction();
          tx.enlistResource(res);
-         
-         TextMessage m3 = (TextMessage)cons.receive(1000);
-         
+
+         TextMessage m3 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m3);
          assertEquals("XATest1", m3.getText());
-         
-         m3 = (TextMessage)cons.receive(1000);
-         
+
+         m3 = (TextMessage)cons.receive(MAX_TIMEOUT);
+
          assertNotNull(m3);
          assertEquals("XATest2", m3.getText());
-         
+
          assertTrue(m3.getJMSRedelivered());
-         
+
          tm.commit();
 
       }
@@ -984,18 +1001,18 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void testMultipleSessionsOneTxCommitAcknowledge1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       try
       {
          //First send 2 messages
@@ -1006,49 +1023,47 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
          prod.send(m);
-         
-         
+
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
          XASession sess2 = conn.createXASession();
          XAResource res2 = sess2.getXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          //Receive the messages, one on each consumer
          MessageConsumer cons1 = sess1.createConsumer(queue);
-         TextMessage r1 = (TextMessage)cons1.receive(1000);
-         
+         TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish1", r1.getText());
-                  
+
          cons1.close();
-         
+
          MessageConsumer cons2 = sess2.createConsumer(queue);
-         TextMessage r2 = (TextMessage)cons2.receive(1000);
-         
+         TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
+
          assertNotNull(r2);
          assertEquals("jellyfish2", r2.getText());
-         
-         //commit        
-         tx.commit();
-         
+
+         //commit
+         tm.commit();
+
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-         
-         TextMessage r3 = (TextMessage)cons.receive(1000);
+
+         TextMessage r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r3);
-       
-         
 
       }
       finally
@@ -1062,16 +1077,16 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void testMultipleSessionsOneTxCommitAcknowledge() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       try
       {
          //First send 2 messages
@@ -1082,13 +1097,13 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
          prod.send(m);
-         
-         
+
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
@@ -1096,36 +1111,36 @@ public class XATest extends MessagingTestCase
          MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          //Receive the messages, one on each consumer
          MessageConsumer cons1 = sess1.createConsumer(queue);
-         TextMessage r1 = (TextMessage)cons1.receive(1000);
-         
+         TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish1", r1.getText());
-                  
+
          cons1.close();
-         
+
          MessageConsumer cons2 = sess2.createConsumer(queue);
-         TextMessage r2 = (TextMessage)cons2.receive(1000);
-         
+         TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
+
          assertNotNull(r2);
          assertEquals("jellyfish2", r2.getText());
-         
-         //commit        
-         tx.commit();
-         
+
+         //commit
+         tm.commit();
+
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-         
-         TextMessage r3 = (TextMessage)cons.receive(1000);
+
+         TextMessage r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r3);
-       
+
       }
       finally
       {
@@ -1138,19 +1153,19 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
-   
+
+
    public void testMultipleSessionsOneTxRollbackAcknowledge1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
-      
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       try
       {
          //First send 2 messages
@@ -1165,74 +1180,128 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish4");
          prod.send(m);
-         
-         
+
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
          MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
- 
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          //Receive the messages, two on each consumer
          MessageConsumer cons1 = sess1.createConsumer(queue);
-         TextMessage r1 = (TextMessage)cons1.receive(1000);
-         
+         TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish1", r1.getText());
-         
-         r1 = (TextMessage)cons1.receive(1000);
-         
+
+         r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish2", r1.getText());
-                  
+
          cons1.close();
-      
+
          MessageConsumer cons2 = sess2.createConsumer(queue);
-         TextMessage r2 = (TextMessage)cons2.receive(1000);
-         
+         TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
+
          assertNotNull(r2);
          assertEquals("jellyfish3", r2.getText());
-         
-         r2 = (TextMessage)cons2.receive(1000);
-         
+
+         r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
+
          assertNotNull(r2);
          assertEquals("jellyfish4", r2.getText());
+
+         cons2.close();
+
+         //rollback
+
+         tm.rollback();
+           
+         //Rollback causes cancel which is asynch
+         Thread.sleep(1000);
          
-         cons2.close();            
-         
-         //rollback                          
-         
-         tx.rollback();
-         
+         //We cannot assume anything about the order in which the transaction manager rollsback
+         //the sessions - this is implementation dependent
+
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
-         conn2.start();
+         conn2.start();         
          
-         TextMessage r3 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r3);
-         assertEquals("jellyfish1", r3.getText());
+         TextMessage r = (TextMessage)cons.receive(MAX_TIMEOUT);
+         assertNotNull(r);
          
-         r3 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r3);
-         assertEquals("jellyfish2", r3.getText());
-
-         TextMessage r4 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r4);
-         assertEquals("jellyfish3", r4.getText());
-
-         r4 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r4);
-         assertEquals("jellyfish4", r4.getText());
+         boolean session1First = false;
          
+         if (r.getText().equals("jellyfish1"))
+         {
+            session1First = true;
+         }
+         else if (r.getText().equals("jellyfish3"))
+         {
+            session1First = false;
+         }
+         else
+         {
+            fail("Unexpected message");
+         }
+         
+         if (session1First)
+         {
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish2", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish3", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish4", r.getText());
+            
+            
+         }
+         else
+         {
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish4", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish1", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish2", r.getText());
+         }
+         
+         r = (TextMessage)cons.receive(MIN_TIMEOUT);
+         
+         assertNull(r);
 
       }
       finally
@@ -1246,13 +1315,13 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void testMultipleSessionsOneTxRollbackAcknowledge() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
 
@@ -1270,13 +1339,13 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish4");
          prod.send(m);
-         
-         
+
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
@@ -1284,68 +1353,118 @@ public class XATest extends MessagingTestCase
          MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          //Receive the messages, two on each consumer
          MessageConsumer cons1 = sess1.createConsumer(queue);
-         TextMessage r1 = (TextMessage)cons1.receive(1000);
-         
+         TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish1", r1.getText());
-         
-         r1 = (TextMessage)cons1.receive(1000);
-         
+
+         r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish2", r1.getText());
-                  
+
          cons1.close();
-         
+
          MessageConsumer cons2 = sess2.createConsumer(queue);
-         TextMessage r2 = (TextMessage)cons2.receive(1000);
-         
+         TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
+
          assertNotNull(r2);
          assertEquals("jellyfish3", r2.getText());
-         
-         r2 = (TextMessage)cons2.receive(1000);
-         
+
+         r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
+
          assertNotNull(r2);
          assertEquals("jellyfish4", r2.getText());
-         
-         //rollback                 
-         
+
+         //rollback
+
          cons2.close();
+
+         tm.rollback();
          
-         tx.rollback();
+         // Rollback causes cancel which is asynch
+         Thread.sleep(1000);
          
+         //We cannot assume anything about the order in which the transaction manager rollsback
+         //the sessions - this is implementation dependent
+
+
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-         
-         //NOTE
-         //The order here is actually probably dependent on the transaction manager implementation
-         //In this case, rollback will be called on each session, but whether it is called first on res1
-         //or res2 determines the order the messages are put back in the queue
-         //This test assumes it is called in order res1, res2
-         
-         TextMessage r3 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r3);
-         assertEquals("jellyfish3", r3.getText());
-         
-         r3 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r3);
-         assertEquals("jellyfish4", r3.getText());
 
-         TextMessage r4 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r4);
-         assertEquals("jellyfish1", r4.getText());
-  
-         r4 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r4);
-         assertEquals("jellyfish2", r4.getText());
+         TextMessage r = (TextMessage)cons.receive(MAX_TIMEOUT);
+         assertNotNull(r);
          
+         boolean session1First = false;
+         
+         if (r.getText().equals("jellyfish1"))
+         {
+            session1First = true;
+         }
+         else if (r.getText().equals("jellyfish3"))
+         {
+            session1First = false;
+         }
+         else
+         {
+            fail("Unexpected message");
+         }
+         
+         if (session1First)
+         {
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish2", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish3", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish4", r.getText());
+            
+            
+         }
+         else
+         {
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish4", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish1", r.getText());
+            
+            r = (TextMessage)cons.receive(MAX_TIMEOUT);
+            
+            assertNotNull(r);
+            
+            assertEquals("jellyfish2", r.getText());
+         }
+         
+         r = (TextMessage)cons.receive(MIN_TIMEOUT);
+         
+         assertNull(r);
+
 
       }
       finally
@@ -1359,13 +1478,13 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void testMultipleSessionsOneTxRollbackAcknowledgeForceFailureInCommit() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
       Connection conn2 = null;
 
@@ -1375,6 +1494,7 @@ public class XATest extends MessagingTestCase
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod  = sessProducer.createProducer(queue);
+         
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -1383,79 +1503,101 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish4");
          prod.send(m);
-         
-         
+
          conn = cf.createXAConnection();
-         conn.start();   
+         conn.start();
          
          tm.begin();
-         
+
          XASession sess1 = conn.createXASession();
          MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
          DummyXAResource res2 = new DummyXAResource(true);
          res1.setPreventJoining(true);
-                  
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          MessageConsumer cons1 = sess1.createConsumer(queue);
-         TextMessage r1 = (TextMessage)cons1.receive(1000);
-         
+         TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish1", r1.getText());
-         
-         r1 = (TextMessage)cons1.receive(1000);
-         
+
+         r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish2", r1.getText());
-         
-         r1 = (TextMessage)cons1.receive(1000);
-         
+
+         r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
          assertNotNull(r1);
          assertEquals("jellyfish3", r1.getText());
+
+         r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
+
+         assertNotNull(r1);
+         assertEquals("jellyfish4", r1.getText());
          
          r1 = (TextMessage)cons1.receive(1000);
          
-         assertNotNull(r1);
-         assertEquals("jellyfish4", r1.getText());
-                  
+         assertNull(r1);
+
          cons1.close();
-         
-         
-         
+
+
          //try and commit - and we're going to make the dummyxaresource throw an exception on commit,
          //which should cause rollback to be called on the other resource
+         
+         
+         //rollback will cause an attemp to deliver messages locally to the original consumers.
+         //the original consumer has closed, so it will cancelled to the server
+         //the server cancel is asynch, so we need to sleep for a bit to make sure it completes
+         log.trace("Forcing failure");
          try
          {
-            tx.commit();
+            tm.commit();
+            fail("should not get here");
          }
          catch (Exception e)
          {
             //We should expect this
          }
          
+         Thread.sleep(1000);
+         
+         
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-          
-         TextMessage r3 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r3);
-         assertEquals("jellyfish1", r3.getText());
-         
-         r3 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r3);
-         assertEquals("jellyfish2", r3.getText());
-  
-         TextMessage r4 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r4);
-         assertEquals("jellyfish3", r4.getText());
-      
-         r4 = (TextMessage)cons.receive(1000);         
-         assertNotNull(r4);
-         assertEquals("jellyfish4", r4.getText());
-         
 
+         TextMessage r = (TextMessage)cons.receive(MAX_TIMEOUT);
+         
+         assertNotNull(r);
+         
+         assertEquals("jellyfish1", r.getText());
+         
+         r = (TextMessage)cons.receive(MAX_TIMEOUT);
+         
+         assertNotNull(r);
+         
+         assertEquals("jellyfish2", r.getText());
+         
+         r = (TextMessage)cons.receive(MAX_TIMEOUT);
+         
+         assertNotNull(r);
+         
+         assertEquals("jellyfish3", r.getText());
+         
+         r = (TextMessage)cons.receive(MAX_TIMEOUT);
+         
+         assertNotNull(r);
+         
+         assertEquals("jellyfish4", r.getText());         
+         
+         r = (TextMessage)cons.receive(MIN_TIMEOUT);
+         
+         assertNull(r);
       }
       finally
       {
@@ -1468,60 +1610,59 @@ public class XATest extends MessagingTestCase
             conn2.close();
          }
       }
-      
+
    }
-   
+
    public void testMultipleSessionsOneTxCommitSend1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
       {
-         
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
          XASession sess2 = conn.createXASession();
          XAResource res2 = sess2.getXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          // Send 2 messages - one from each session
-         
+
          MessageProducer prod1 = sess1.createProducer(queue);
          MessageProducer prod2 = sess2.createProducer(queue);
-         
+
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
-         
+
          //commit
-         tx.commit();
-         
+         tm.commit();
+
          //Messages should be in queue
-         
+
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-         
-         TextMessage r1 = (TextMessage)cons.receive(1000);
+
+         TextMessage r1 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r1);
          assertEquals("echidna1", r1.getText());
-         
-         TextMessage r2 = (TextMessage)cons.receive(1000);
+
+         TextMessage r2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r2);
          assertEquals("echidna2", r2.getText());
 
@@ -1538,27 +1679,27 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
+
    public void testMultipleSessionsOneTxCommitSend() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
       {
-         
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
@@ -1566,34 +1707,34 @@ public class XATest extends MessagingTestCase
          MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          // Send 2 messages - one from each session
-         
+
          MessageProducer prod1 = sess1.createProducer(queue);
          MessageProducer prod2 = sess2.createProducer(queue);
-         
+
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
-         
+
          //commit
-         tx.commit();
-         
+         tm.commit();
+
          //Messages should be in queue
-         
+
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-         
-         TextMessage r1 = (TextMessage)cons.receive(1000);
+
+         TextMessage r1 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r1);
          assertEquals("echidna1", r1.getText());
-         
-         TextMessage r2 = (TextMessage)cons.receive(1000);
+
+         TextMessage r2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r2);
          assertEquals("echidna2", r2.getText());
 
@@ -1610,59 +1751,59 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
-   
+
+
    public void testMultipleSessionsOneTxRollbackSend1PCOptimization() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       //Since both resources have some RM, TM will probably use 1PC optimization
-      
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
       {
-         
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
          XASession sess2 = conn.createXASession();
          XAResource res2 = sess2.getXAResource();
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          // Send 2 messages - one from each session
-         
+
          MessageProducer prod1 = sess1.createProducer(queue);
          MessageProducer prod2 = sess2.createProducer(queue);
-         
+
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
-         
+
          //rollback
-         tx.rollback();
-         
+         tm.rollback();
+
          //Messages should not be in queue
-         
+
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-         
-         TextMessage r1 = (TextMessage)cons.receive(1000);
+
+         TextMessage r1 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r1);
-         
+
 
       }
       finally
@@ -1677,25 +1818,25 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
+
    public void testMultipleSessionsOneTxRollbackSend() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
       {
-         
+
          conn = cf.createXAConnection();
-         conn.start();   
-         
+         conn.start();
+
          tm.begin();
-         
+
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
          MessagingXAResource res1 = (MessagingXAResource)sess1.getXAResource();
@@ -1703,32 +1844,32 @@ public class XATest extends MessagingTestCase
          MessagingXAResource res2 = (MessagingXAResource)sess2.getXAResource();
          res1.setPreventJoining(true);
          res2.setPreventJoining(true);
-         
+
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
          tx.enlistResource(res2);
-         
+
          // Send 2 messages - one from each session
-         
+
          MessageProducer prod1 = sess1.createProducer(queue);
          MessageProducer prod2 = sess2.createProducer(queue);
-         
+
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
-         
+
          //rollback
-         tx.rollback();
-         
+         tm.rollback();
+
          //Messages should not be in queue
-         
+
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
          conn2.start();
-         
-         TextMessage r1 = (TextMessage)cons.receive(1000);
+
+         TextMessage r1 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r1);
-         
+
 
       }
       finally
@@ -1743,20 +1884,20 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
- 
+
+
    public void testOneSessionTwoTransactionsCommitAcknowledge() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
-      {         
+      {
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -1765,55 +1906,55 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
          prod.send(m);
-         
+
          conn = cf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
-                  
+
          conn.start();
          MessageConsumer cons1 = sess1.createConsumer(queue);
-                  
+
          tm.begin();
-         
+
          Transaction tx1 = tm.getTransaction();
          tx1.enlistResource(res1);
-         
+
          //Receive one message in one tx
-         
-         TextMessage r1 = (TextMessage)cons1.receive(1000);
+
+         TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
          assertNotNull(r1);
          assertEquals("jellyfish1", r1.getText());
-         
+
          //suspend the tx
          Transaction suspended = tm.suspend();
-         
+
          tm.begin();
-                  
+
          Transaction tx2 = tm.getTransaction();
          tx2.enlistResource(res1);
-         
+
          //Receive 2nd message in a different tx
-         TextMessage r2 = (TextMessage)cons1.receive(1000);
+         TextMessage r2 = (TextMessage)cons1.receive(MAX_TIMEOUT);
          assertNotNull(r2);
          assertEquals("jellyfish2", r2.getText());
-         
+
          //commit this transaction
-         tx2.commit();
-         
+         tm.commit();
+
          //verify that no messages are available
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
          MessageConsumer cons = sess.createConsumer(queue);
-         TextMessage r3 = (TextMessage)cons.receive(1000);
+         TextMessage r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r3);
-         
+
          //now resume the first tx and then commit it
          tm.resume(suspended);
-         suspended.commit();
-         
+         tm.commit();
+
 
       }
       finally
@@ -1828,20 +1969,20 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
-   
+
+
    public void testOneSessionTwoTransactionsRollbackAcknowledge() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-       
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
-      {         
+      {
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -1850,70 +1991,70 @@ public class XATest extends MessagingTestCase
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
          prod.send(m);
-         
+
          conn = cf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
-                  
+
          conn.start();
          MessageConsumer cons1 = sess1.createConsumer(queue);
-                  
+
          tm.begin();
-         
+
          Transaction tx1 = tm.getTransaction();
          tx1.enlistResource(res1);
-         
+
          //Receive one message in one tx
-         
-         TextMessage r1 = (TextMessage)cons1.receive(1000);
+
+         TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
          assertNotNull(r1);
          assertEquals("jellyfish1", r1.getText());
-         
+
          //suspend the tx
          Transaction suspended = tm.suspend();
-         
+
          tm.begin();
-                  
+
          Transaction tx2 = tm.getTransaction();
          tx2.enlistResource(res1);
-         
+
          //Receive 2nd message in a different tx
-         TextMessage r2 = (TextMessage)cons1.receive(1000);
+         TextMessage r2 = (TextMessage)cons1.receive(MAX_TIMEOUT);
          assertNotNull(r2);
          assertEquals("jellyfish2", r2.getText());
-         
+
          cons1.close();
-         
+
          //rollback this transaction
-         tx2.rollback();
-     
+         tm.rollback();
+
          //verify that second message is available
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
          MessageConsumer cons = sess.createConsumer(queue);
 
-         TextMessage r3 = (TextMessage)cons.receive(1000);
+         TextMessage r3 = (TextMessage)cons.receive(MAX_TIMEOUT);
 
          assertNotNull(r3);
          assertEquals("jellyfish2", r3.getText());
-         r3 = (TextMessage)cons.receive(1000);
+         r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r3);
-         
-         
+
+
          //rollback the other tx
          tm.resume(suspended);
-         suspended.rollback();
-       
+         tm.rollback();
+
          //Verify the first message is now available
-         r3 = (TextMessage)cons.receive(1000);
+         r3 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r3);
          assertEquals("jellyfish1", r3.getText());
-         r3 = (TextMessage)cons.receive(1000);
+         r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r3);
-         
+
       }
       finally
       {
@@ -1927,72 +2068,72 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
+
 
    public void testOneSessionTwoTransactionsCommitSend() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
       {
-         
+
          conn = cf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
-         
+
          MessageProducer prod1 = sess1.createProducer(queue);
-                  
+
          tm.begin();
-         
+
          Transaction tx1 = tm.getTransaction();
          tx1.enlistResource(res1);
-         
+
          //Send a message
          prod1.send(sess1.createTextMessage("kangaroo1"));
-         
+
          //suspend the tx
          Transaction suspended = tm.suspend();
-         
+
          tm.begin();
-         
+
          //Send another message in another tx using the same session
          Transaction tx2 = tm.getTransaction();
          tx2.enlistResource(res1);
-         
+
          //Send a message
          prod1.send(sess1.createTextMessage("kangaroo2"));
-         
+
          //commit this transaction
-         tx2.commit();
-         
+         tm.commit();
+
          //verify only kangaroo2 message is sent
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
          MessageConsumer cons = sess.createConsumer(queue);
-         TextMessage r1 = (TextMessage)cons.receive(1000);
+         TextMessage r1 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r1);
          assertEquals("kangaroo2", r1.getText());
-         TextMessage r2 = (TextMessage)cons.receive(1000);
+         TextMessage r2 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r2);
-         
+
          //now resume the first tx and then commit it
          tm.resume(suspended);
-         suspended.commit();
-         
+         tm.commit();
+
          //verify that the first text message is received
-         TextMessage r3 = (TextMessage)cons.receive(1000);
+         TextMessage r3 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r3);
          assertEquals("kangaroo1", r3.getText());
-         
+
       }
       finally
       {
@@ -2006,70 +2147,71 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
-   
+
+
    public void testOneSessionTwoTransactionsRollbackSend() throws Exception
    {
       if (ServerManagement.isRemote()) return;
-      
+
       XAConnection conn = null;
-      
+
       Connection conn2 = null;
-      
+
       try
       {
-         
+
          conn = cf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
-         
+
          MessageProducer prod1 = sess1.createProducer(queue);
-                  
+
          tm.begin();
-         
+
          Transaction tx1 = tm.getTransaction();
          tx1.enlistResource(res1);
-         
+
          //Send a message
          prod1.send(sess1.createTextMessage("kangaroo1"));
-         
+
          //suspend the tx
          Transaction suspended = tm.suspend();
-         
+
          tm.begin();
-         
+
          //Send another message in another tx using the same session
          Transaction tx2 = tm.getTransaction();
          tx2.enlistResource(res1);
-         
+
          //Send a message
          prod1.send(sess1.createTextMessage("kangaroo2"));
-         
+
          //rollback this transaction
-         tx2.rollback();
-         
+         tm.rollback();
+
          //verify no messages are sent
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
          MessageConsumer cons = sess.createConsumer(queue);
-         TextMessage r1 = (TextMessage)cons.receive(1000);
+         TextMessage r1 = (TextMessage)cons.receive(MIN_TIMEOUT);
+
          assertNull(r1);
-         
-         
+
+
          //now resume the first tx and then commit it
          tm.resume(suspended);
-         suspended.commit();
-         
+         tm.commit();
+
          //verify that the first text message is received
-         TextMessage r3 = (TextMessage)cons.receive(1000);
+         TextMessage r3 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r3);
          assertEquals("kangaroo1", r3.getText());
-         
+
       }
       finally
       {
@@ -2083,9 +2225,9 @@ public class XATest extends MessagingTestCase
          }
 
       }
-      
+
    }
-   
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

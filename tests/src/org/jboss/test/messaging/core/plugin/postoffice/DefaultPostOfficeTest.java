@@ -1078,7 +1078,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          if (checkNoMessageData())
          {
             fail("data still in database");
-         };
+         }
       }
    }
    

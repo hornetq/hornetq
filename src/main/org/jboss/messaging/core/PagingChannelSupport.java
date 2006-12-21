@@ -249,8 +249,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
             firstPagingOrder = nextPagingOrder = 0;
          }
          
-         log.info("Channel " + this.channelID + " loading " + ili.getRefInfos().size() + " references");
-         
          Map refMap = processReferences(ili.getRefInfos());
          
          Iterator iter = ili.getRefInfos().iterator();
@@ -373,23 +371,26 @@ public abstract class PagingChannelSupport extends ChannelSupport
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
 
-      boolean removed = super.cancelInternal(del);
-      
-      if (removed && paging)
-      {
-         // if paging and the in memory queue is exactly full we need to evict the end reference to storage to
-         // preserve the number of refs in the queue
-         if (messageRefs.size() == fullSize + 1)
-         {
-            MessageReference ref = (MessageReference)messageRefs.removeLast();
- 
-            addToDownCache(ref, true);
-         }
-      }
+      synchronized (refLock)
+      {         
+         boolean removed = super.cancelInternal(del);
          
-      if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }      
-      
-      return removed;
+         if (removed && paging)
+         {
+            // if paging and the in memory queue is exactly full we need to evict the end reference to storage to
+            // preserve the number of refs in the queue
+            if (messageRefs.size() == fullSize + 1)
+            {
+               MessageReference ref = (MessageReference)messageRefs.removeLast();
+    
+               addToDownCache(ref, true);
+            }
+         }
+               
+         if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }      
+         
+         return removed;
+      }
    }
       
    protected MessageReference removeFirstInMemory() throws Exception

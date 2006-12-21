@@ -1163,7 +1163,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       IDManager idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
-      TransactionRepository txRep = new TransactionRepository(pm, idm);
+      TransactionRepository txRep = new TransactionRepository(pm, ms, idm);
       txRep.start();
 
       log.debug("transaction log started");
@@ -1274,7 +1274,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       IDManager idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
-      TransactionRepository txRep = new TransactionRepository(pm, idm);
+      TransactionRepository txRep = new TransactionRepository(pm, ms, idm);
       txRep.start();
  
       Message[] messages = createMessages(10);     

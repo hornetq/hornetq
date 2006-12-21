@@ -542,25 +542,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          if (binding == null)
          {
-            //Not found in the failed map - look in the name map
-            Map nameMap = (Map)nameMaps.get(new Integer(currentNodeId));
-
-            if (nameMap != null)
-            {
-               for (Iterator iterbindings = nameMap.values().iterator(); iterbindings.hasNext();)
-               {
-                  Binding itemBinding = (Binding)iterbindings.next();
-                  if (itemBinding.getQueue().getChannelID() == channelId)
-                  {
-                     binding = itemBinding;
-                     break;
-                  }
-               }
-            }
-            else
-            {
-               log.info("nameMap is null");
-            }
+            binding = super.getBindingforChannelId(channelId);
          }
          log.info("Returned " + binding);
          return binding;

@@ -30,7 +30,8 @@ import javax.jms.MessageProducer;
 @MessageDriven(activationConfig =
 {
       @ActivationConfigProperty(propertyName="destinationType", propertyValue="javax.jms.Queue"),
-      @ActivationConfigProperty(propertyName="destination", propertyValue="queue/testQueue")
+      @ActivationConfigProperty(propertyName="destination", propertyValue="queue/testQueue"),
+      @ActivationConfigProperty(propertyName="DLQMaxResent", propertyValue="10")
 })
 public class EJB3MDBExample implements MessageListener
 {
@@ -38,7 +39,6 @@ public class EJB3MDBExample implements MessageListener
    {
       businessLogic(m);
    }
-
 
    private void businessLogic(Message m)
    {
