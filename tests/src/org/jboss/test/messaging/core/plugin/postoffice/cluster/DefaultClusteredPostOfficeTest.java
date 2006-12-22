@@ -735,7 +735,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          routed = office1.route(ref3, new SimpleCondition("topic1"), null);      
          assertTrue(routed);
          
-         Thread.sleep(1000);
+         Thread.sleep(2000);
          
          List msgs = receiver1.getMessages();
          assertNotNull(msgs);

@@ -420,6 +420,9 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
          cons.receive();
          conn.close();
+         
+         //Cancel is asynch
+         Thread.sleep(500);
 
          // Test MessageCount again, should be 0 msg
          list = (List)ServerManagement.invoke(

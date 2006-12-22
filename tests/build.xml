@@ -816,10 +816,7 @@
             <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
-               <!--
-                   <include name="**/jms/clustering/FailoverTest.class"/>
-               -->
-               <include name="**/jms/clustering/HATest.class"/>
+               <include name="**/jms/clustering/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
