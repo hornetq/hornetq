@@ -592,7 +592,7 @@ public abstract class ChannelSupport implements Channel
 
          while (true)
          {           
-            synchronized (deliveryLock)
+            synchronized (refLock)
             {
                ref = nextReference(iter);               
             }

@@ -27,6 +27,10 @@ package org.jboss.jms.server.endpoint;
  * A Cancel.
  * 
  * Used to send a cancel (NACK) to the server
+ * 
+ * When we cancel we send delivery count info, this means delivery count
+ * can be updated on the server, and into storage if persistent, and the
+ * message can be sent to DLQ if appropriate
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
