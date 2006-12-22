@@ -55,7 +55,7 @@ public class ConsumerState extends HierarchicalStateSupport
 
    private MessageCallbackHandler messageCallbackHandler;
 
-   private int prefetchSize;
+   private int bufferSize;
    
    private SessionState parent;
    
@@ -68,7 +68,7 @@ public class ConsumerState extends HierarchicalStateSupport
    
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
                         String selector, boolean noLocal, String subscriptionName, int consumerID,
-                        boolean isCC, int prefetchSize, int maxDeliveries, long channelId)
+                        boolean isCC, int bufferSize, int maxDeliveries, long channelId)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
@@ -77,7 +77,7 @@ public class ConsumerState extends HierarchicalStateSupport
       this.noLocal = noLocal;
       this.consumerID = consumerID;
       this.isConnectionConsumer = isCC;
-      this.prefetchSize = prefetchSize;
+      this.bufferSize = bufferSize;
       this.subscriptionName=subscriptionName;
       this.maxDeliveries = maxDeliveries;
       this.channelId = channelId;
@@ -134,9 +134,9 @@ public class ConsumerState extends HierarchicalStateSupport
       return parent.getVersionToUse();
    }
 
-   public int getPrefetchSize()
+   public int getBufferSize()
    {
-      return prefetchSize;
+      return bufferSize;
    }
 
    public HierarchicalState getParent()

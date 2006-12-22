@@ -38,7 +38,6 @@ import javax.jms.Message;
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.remoting.CallbackManager;
-import org.jboss.jms.client.remoting.HandleMessageResponse;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
@@ -97,19 +96,23 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte CANCEL = 3;
    protected static final byte CANCEL_LIST = 4;
    protected static final byte SEND = 5;   
-   protected static final byte MORE = 6;
+   //protected static final byte MORE = 6;
+   
+   protected static final byte CHANGE_RATE = 6;
+   
    protected static final byte SEND_TRANSACTION = 7;
    protected static final byte GET_ID_BLOCK = 8;
    protected static final byte RECOVER_DELIVERIES = 9;
-   protected static final byte CONFIRM_DELIVERY = 10;
+   //protected static final byte CONFIRM_DELIVERY = 10;
+   
+   
  
 
    // The response codes - start from 100
 
-   protected static final byte CALLBACK = 100;
+   protected static final byte MESSAGE_DELIVERY = 100;
    protected static final byte NULL_RESPONSE = 101;
    protected static final byte ID_BLOCK_RESPONSE = 102;
-   protected static final byte HANDLE_MESSAGE_RESPONSE = 103;
    protected static final byte BROWSE_MESSAGE_RESPONSE = 104;
    protected static final byte BROWSE_MESSAGES_RESPONSE = 105;
    protected static final byte CALLBACK_LIST = 106;
@@ -223,11 +226,15 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   if (trace) { log.trace("wrote send()"); }
                }
-               else if ("more".equals(methodName))
+               else if ("changeRate".equals(methodName))
                {
-                  dos.writeByte(MORE);
+                  dos.writeByte(CHANGE_RATE);
    
                   writeHeader(mi, dos);
+                  
+                  Float f = (Float)mi.getArguments()[0];
+                  
+                  dos.writeFloat(f.floatValue());
    
                   dos.flush();
    
@@ -332,20 +339,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   if (trace) { log.trace("wrote sendUnackedAckInfos()"); }
                }
-               else if ("confirmDelivery".equals(methodName))
-               {
-                  dos.writeByte(CONFIRM_DELIVERY);
-   
-                  writeHeader(mi, dos);
-   
-                  Integer count = (Integer)mi.getArguments()[0];
-   
-                  dos.writeInt(count.intValue());
-                     
-                  dos.flush();
-   
-                  if (trace) { log.trace("wrote confirmDelivery()"); }
-               }
                else if ("sendTransaction".equals(methodName))
                {
                   dos.writeByte(SEND_TRANSACTION);
@@ -393,7 +386,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                ClientDelivery dr = (ClientDelivery)param;
    
-               dos.writeByte(CALLBACK);
+               dos.writeByte(MESSAGE_DELIVERY);
                
                dos.writeUTF(req.getSessionId());
    
@@ -455,19 +448,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                if (trace) { log.trace("wrote id block response"); }
             }
-            else if (res instanceof HandleMessageResponse)
-            {         
-               //Return value from delivering messages to client
-               dos.write(HANDLE_MESSAGE_RESPONSE);
-   
-               HandleMessageResponse response = (HandleMessageResponse)res;
-   
-               response.write(dos);
-   
-               dos.flush();
-   
-               if (trace) { log.trace("wrote handle message response"); }
-            }
             else if (res instanceof JBossMessage)
             {
                //Return value from browsing message
@@ -482,8 +462,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                dos.flush();
                
                if (trace) { log.trace("wrote browse message response"); }
-            }
-            
+            }            
             else if (res instanceof Message[])
             {
                //Return value from browsing messages
@@ -510,7 +489,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                      ((ArrayList) res).size() > 0 &&
                      ((ArrayList) res).get(0) instanceof Callback)
             {
-               // Comes from polled Callbacks.
+               // Comes from polled Callbacks. (HTTP transport??)
                ArrayList callbackList = (ArrayList)res;
                dos.write(CALLBACK_LIST);
                dos.writeUTF(resp.getSessionId());
@@ -627,10 +606,16 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                return request;
             }
-            case MORE:
+            case CHANGE_RATE:
             {
                MethodInvocation mi = readHeader(dis);
-   
+               
+               float f = dis.readFloat();
+               
+               Object[] args = new Object[] {new Float(f)};
+               
+               mi.setArguments(args);
+                  
                InvocationRequest request =
                   new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
                                         new MessagingMarshallable(version, mi), null, null, null);
@@ -802,24 +787,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                return request;
             }
-            case CONFIRM_DELIVERY:
-            {
-               MethodInvocation mi = readHeader(dis);
-   
-               int count = dis.readInt();                  
-   
-               Object[] args = new Object[] {new Integer(count)};
-   
-               mi.setArguments(args);
-   
-               InvocationRequest request =
-                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                        new MessagingMarshallable(version, mi), null, null, null);
-   
-               if (trace) { log.trace("read confirmDelivery()"); }
-   
-               return request;
-            }
             case ID_BLOCK_RESPONSE:
             {
                IDBlock block = new IDBlock();
@@ -829,18 +796,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, block), false, null);
    
                if (trace) { log.trace("read id block response"); }
-   
-               return resp;
-            }
-            case HANDLE_MESSAGE_RESPONSE:
-            {
-               HandleMessageResponse res = new HandleMessageResponse();
-   
-               res.read(dis);
-   
-               InvocationResponse resp = new InvocationResponse(null, new MessagingMarshallable(version, res), false, null);
-   
-               if (trace) { log.trace("read handle message response"); }
    
                return resp;
             }
@@ -890,7 +845,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                return resp;
             }
-            case CALLBACK:
+            case MESSAGE_DELIVERY:
             {
                String sessionId = dis.readUTF();
                ClientDelivery dr = new ClientDelivery();

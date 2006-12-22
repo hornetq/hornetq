@@ -1157,6 +1157,8 @@ public class ServiceContainer
       //is always currently used - (we could make this configurable)
 
       String transport = config.getRemotingTransport();
+      
+      log.info("*** Using transport: " + transport);
 
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +

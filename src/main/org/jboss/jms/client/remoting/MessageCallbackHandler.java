@@ -165,12 +165,14 @@ public class MessageCallbackHandler
    private int ackMode;
    private boolean closed;
    private Object mainLock;
-   private boolean serverSending;
-   private int bufferSize;
+   private int maxBufferSize;
+   private int minBufferSize;
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
    private int maxDeliveries;
    private long channelID;
+   private boolean startSendingMessageSent;
+   private long lastDeliveryId = -1;
         
    // Constructors --------------------------------------------------
 
@@ -185,7 +187,8 @@ public class MessageCallbackHandler
          throw new IllegalArgumentException(this + " bufferSize must be > 0");
       }
               
-      this.bufferSize = bufferSize;
+      this.maxBufferSize = bufferSize;
+      this.minBufferSize = bufferSize / 2;
       buffer = new LinkedList();
       isConnectionConsumer = isCC;
       this.ackMode = ackMode;
@@ -193,77 +196,55 @@ public class MessageCallbackHandler
       this.consumerDelegate = cons;
       this.consumerID = consumerID;
       this.channelID = channelID;
-      this.serverSending = true;
       mainLock = new Object();
       this.sessionExecutor = sessionExecutor;
       this.maxDeliveries = maxDeliveries;
+      this.startSendingMessageSent = true;
    }
         
    // Public --------------------------------------------------------
       
 
    /**
-    * Handles a list of messages sent from the server
-    * @param msgs The list of messages
-    * @return The number of messages handled (placeholder for future - now we always accept all messages)
-    *         or -1 if closed
+    * Handles a message sent from the server
+    * @param msgs The message
     */
-   public HandleMessageResponse handleMessage(List msgs) throws HandleCallbackException
+   public void handleMessage(MessageProxy msg)
    {                      
-      if (trace)
-      {
-         StringBuffer sb = new StringBuffer(this + " receiving [");
-         for(int i = 0; i < msgs.size(); i++)
-         {
-            sb.append(((MessageProxy)msgs.get(i)).getMessage().getMessageID());
-            if (i < msgs.size() - 1)
-            {
-               sb.append(",");
-            }
-         }
-         sb.append("] from the remoting layer");
-         log.trace(sb.toString());
-      }
+      if (trace) { log.trace("Receiving message " + msg + " from the remoting layer"); }
 
       synchronized (mainLock)
       {
          if (closed)
          {             
             // Ignore
-            return new HandleMessageResponse(false, 0);
+            if (trace) { log.trace(this + " is closed, so ignore message"); }
+            return;
          }
 
-         // Asynchronously confirm delivery on client
-
-         try
-         {
-            sessionExecutor.execute(new ConfirmDelivery(msgs.size()));
-         }
-         catch (InterruptedException e)
-         {
-            log.warn("Thread interrupted", e);
-         }
-
-         // Put the messages in the buffer and notify any waiting receive()
-         
-         processMessages(msgs);
+         msg.setSessionDelegate(sessionDelegate, isConnectionConsumer);
+                  
+         msg.setReceived();                  
                    
-         buffer.addAll(msgs);                  
+         //Add it to the buffer
+         buffer.add(msg);         
+         
+         lastDeliveryId = msg.getDeliveryId();
          
          if (trace) { log.trace(this + " added message(s) to the buffer"); }
          
-         boolean full = buffer.size() >= bufferSize;         
+         messageAdded();
          
-         messagesAdded();
-         
-         if (full)
+         if (buffer.size() >= maxBufferSize)
          {
-            serverSending = false;
             if (trace) { log.trace(this + " is full"); }
+            
+            //We are full. Send message to server to tell it to stop sending
+            
+            startSendingMessageSent = false;
+            
+            sendChangeRateMessage(0);
          }
-                                          
-         // For now we always accept all messages - in the future this may change
-         return new HandleMessageResponse(full, msgs.size());
       }
    }
          
@@ -282,6 +263,7 @@ public class MessageCallbackHandler
          if (listener != null && !buffer.isEmpty())
          {  
             listenerRunning = true;
+            
             this.queueRunner(new ListenerRunner());
          }        
       }   
@@ -331,7 +313,9 @@ public class MessageCallbackHandler
          for(Iterator i = buffer.iterator(); i.hasNext();)
          {
             MessageProxy mp = (MessageProxy)i.next();
+            
             DefaultCancel ack = new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount());
+            
             cancels.add(ack);
          }
                
@@ -341,34 +325,6 @@ public class MessageCallbackHandler
       }                
       
       if (trace) { log.trace(this + " closed"); }
-   }
-   
-   private void waitForOnMessageToComplete()
-   {
-      // Wait for any onMessage() executions to complete
-
-      if (Thread.currentThread().equals(sessionExecutor.getThread()))
-      {
-         // the current thread already closing this MessageCallbackHandler (this happens when the
-         // session is closed from within the MessageListener.onMessage(), for example), so no need
-         // to register another Closer (see http://jira.jboss.org/jira/browse/JBMESSAGING-542)
-         return;
-      }
-
-      Future result = new Future();
-      
-      try
-      {
-         sessionExecutor.execute(new Closer(result));
-
-         if (trace) { log.trace(this + " blocking wait for Closer execution"); }
-         result.getResult();
-         if (trace) { log.trace(this + " got Closer result"); }
-      }
-      catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
-      }
    }
      
    /**
@@ -458,8 +414,6 @@ public class MessageCallbackHandler
                   sessionDelegate.postDeliver(false);
                }
                
-               //postDeliver(sessionDelegate, isConnectionConsumer, false);
-               
                if (!m.getMessage().isExpired())
                {
                   if (trace) { log.trace(this + ": message " + m + " is not expired, pushing it to the caller"); }
@@ -486,11 +440,13 @@ public class MessageCallbackHandler
       } 
       
       //This needs to be outside the lock
-      if (buffer.isEmpty() && !serverSending)
+      if (!startSendingMessageSent && buffer.size() <= minBufferSize)
       {
-         //The server has previously stopped sending because the buffer was full
-         //but now it is empty, so we tell the server to start sending again
-         consumerDelegate.more();
+         //Tell the server we need more messages - but we don't want to keep sending the message
+         //if we've already sent it - hence the check
+         startSendingMessageSent = true;
+            
+         sendChangeRateMessage(1);                    
       }
       
       m.incDeliveryCount();
@@ -498,7 +454,6 @@ public class MessageCallbackHandler
       return m;
    }    
    
-
    public MessageListener getMessageListener()
    {
       return listener;      
@@ -525,15 +480,120 @@ public class MessageCallbackHandler
       {
          buffer.addFirst(proxy);
          
-         messagesAdded();
+         messageAdded();
+      }
+   }
+   
+   public void copyState(MessageCallbackHandler newHandler)
+   {
+      synchronized (mainLock)
+      {
+         this.consumerID = newHandler.consumerID;
+         
+         this.consumerDelegate = newHandler.consumerDelegate;
+         
+         this.sessionDelegate = newHandler.sessionDelegate;
+         
+         this.buffer.clear();
+      }
+   }
+   
+   public long getLastDeliveryId()
+   {
+      synchronized (mainLock)
+      {
+         return lastDeliveryId;
       }
    }
      
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+            
+   // Private -------------------------------------------------------
    
-   protected long waitOnLock(Object lock, long waitTime) throws InterruptedException
+   private void waitForOnMessageToComplete()
+   {
+      // Wait for any onMessage() executions to complete
+
+      if (Thread.currentThread().equals(sessionExecutor.getThread()))
+      {
+         // the current thread already closing this MessageCallbackHandler (this happens when the
+         // session is closed from within the MessageListener.onMessage(), for example), so no need
+         // to register another Closer (see http://jira.jboss.org/jira/browse/JBMESSAGING-542)
+         return;
+      }
+
+      Future result = new Future();
+      
+      try
+      {
+         sessionExecutor.execute(new Closer(result));
+
+         if (trace) { log.trace(this + " blocking wait for Closer execution"); }
+         result.getResult();
+         if (trace) { log.trace(this + " got Closer result"); }
+      }
+      catch (InterruptedException e)
+      {
+         log.warn("Thread interrupted", e);
+      }
+   }
+   
+   private void sendChangeRateMessage(float newRate) 
+   {
+      //FIXME - We should be able to execute this invocation as a true
+      //remoting asynchronous invocation - i.e. it is written to the transport
+      //and no response is waited for
+      //Therefore there is no need to execute it here on a separate thread.
+      //Unfortunately remoting does not currently support this so this
+      //will be SLOW now.
+      try
+      {
+         consumerDelegate.changeRate(newRate);
+      }
+      catch (JMSException e)
+      {
+         log.error("Failed to send changeRate message", e);
+      }
+   }
+   
+   private void queueRunner(ListenerRunner runner)
+   {
+      try
+      {
+         this.sessionExecutor.execute(runner);
+      }
+      catch (InterruptedException e)
+      {
+         log.warn("Thread interrupted", e);
+      }
+   }
+   
+   private void messageAdded()
+   {
+      // If we have a thread waiting on receive() we notify it
+      if (receiverThread != null)
+      {
+         if (trace) { log.trace(this + " notifying receiver thread"); }            
+         mainLock.notify();
+      }     
+      else if (listener != null)
+      { 
+         // We have a message listener
+         if (!listenerRunning)
+         {
+            listenerRunning = true;
+
+            if (trace) { log.trace(this + " scheduled a new ListenerRunner"); }
+            this.queueRunner(new ListenerRunner());
+         }     
+         
+         //TODO - Execute onMessage on same thread for even better throughput 
+      }
+   }
+   
+   private long waitOnLock(Object lock, long waitTime) throws InterruptedException
    {
       long start = System.currentTimeMillis();
       
@@ -545,6 +605,7 @@ public class MessageCallbackHandler
       if (waited < waitTime)
       {
          waitTime = waitTime - waited;
+         
          return waitTime;
       }
       else
@@ -553,7 +614,7 @@ public class MessageCallbackHandler
       }     
    }
         
-   protected MessageProxy getMessage(long timeout) throws JMSException
+   private MessageProxy getMessage(long timeout) throws JMSException
    {
       if (timeout == -1)
       {
@@ -608,62 +669,8 @@ public class MessageCallbackHandler
       return m;
    }
    
-   protected void processMessages(List msgs)
-   {
-      Iterator iter = msgs.iterator();
-      
-      while (iter.hasNext())
-      {         
-         MessageProxy msg = (MessageProxy)iter.next();
-      
-         // If this is the handler for a connection consumer we don't want to set the session
-         // delegate since this is only used for client acknowledgement which is illegal for a
-         // session used for an MDB
-         msg.setSessionDelegate(sessionDelegate, isConnectionConsumer);
-                  
-         msg.setReceived();
-      }
-   }
-   
-   // Private -------------------------------------------------------
-   
-   private void queueRunner(ListenerRunner runner)
-   {
-      try
-      {
-         this.sessionExecutor.execute(runner);
-      }
-      catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
-      }
-   }
-   
-   private void messagesAdded()
-   {
-      // If we have a thread waiting on receive() we notify it
-      if (receiverThread != null)
-      {
-         if (trace) { log.trace(this + " notifying receiver thread"); }            
-         mainLock.notify();
-      }     
-      else if (listener != null)
-      { 
-         // We have a message listener
-         if (!listenerRunning)
-         {
-            listenerRunning = true;
-
-            if (trace) { log.trace(this + " scheduled a new ListenerRunner"); }
-            this.queueRunner(new ListenerRunner());
-         }     
-         
-         //TODO - Execute onMessage on same thread for even better throughput 
-      }
-   }
-   
    // Inner classes -------------------------------------------------   
-   
+         
    /*
     * This class is used to put on the listener executor to wait for onMessage
     * invocations to complete when closing
@@ -703,7 +710,9 @@ public class MessageCallbackHandler
             if (listener == null)
             {
                listenerRunning = false;
+               
                if (trace) { log.trace("no listener, returning"); }
+               
                return;
             }
             
@@ -712,6 +721,7 @@ public class MessageCallbackHandler
             if (buffer.isEmpty())
             {
                listenerRunning = false;
+               
                if (trace) { log.trace("no messages in buffer, marking listener as not running"); }
             }
             else
@@ -745,65 +755,23 @@ public class MessageCallbackHandler
             } 
          }
          
+         
+         //Tell the server we need more messages - but we don't want to keep sending the message
+         //if we've already sent it - hence the check
+         if (!startSendingMessageSent && buffer.size() <= minBufferSize)
+         {                    
+            startSendingMessageSent = true;
+            
+            sendChangeRateMessage(1);
+         } 
+         
          if (again)
          {
             // Queue it up again
             queueRunner(this);
-         }
-         else
-         {
-            if (!serverSending)
-            {
-               // Ask server for more messages
-               try
-               {
-                  consumerDelegate.more();
-               }
-               catch (JMSException e)
-               {
-                  log.error("Failed to execute more()", e);
-               }
-               return;
-            }
-         }
+         }                                               
       }
-   }
-
-   /*
-    * Used to asynchronously confirm to the server message arrival (delivery) on client.
-    */
-   private class ConfirmDelivery implements Runnable
-   {
-      int count;
-
-      ConfirmDelivery(int count)
-      {
-         this.count = count;
-      }
-
-      public void run()
-      {
-         if (trace) { log.trace("confirming delivery on client of " + count + " message(s)"); }
-         consumerDelegate.confirmDelivery(count);
-      }
-   }
-   
-   public void copyState(MessageCallbackHandler newHandler)
-   {
-      synchronized (mainLock)
-      {
-         this.consumerID = newHandler.consumerID;
-         
-         this.consumerDelegate = newHandler.consumerDelegate;
-         
-         this.sessionDelegate = newHandler.sessionDelegate;
-         
-         this.serverSending = false;
-         
-         this.buffer.clear();
-      }
-   }
-
+   }   
 }
 
 

@@ -39,23 +39,15 @@ import org.jboss.jms.client.Closeable;
 public interface ConsumerEndpoint extends Closeable
 {  
    /**
-    * If the client buffer has previously become full because the server was sending at a faster
-    * rate than the client could consume, then the server will stop sending messages. When the
-    * client has emptied the buffer it then needs to inform the server that it can receive more
-    * messages by calling this method.
-    *
-    * @throws JMSException
+    * Sent to the server to specify a new maximum rate at which to send messages at
     */
-   void more() throws JMSException;
-
+   void changeRate(float newRate) throws JMSException;
+   
+   
    /**
-    * The server consumer endpoint needs to know at any time how messages are in transit between
-    * server and client. That is why it needs to receive confirmations every time the client
-    * received one (or more) messages. The confirmation is sent asynchronously from client to server.
-    * This is NOT a consumption acknowledgment.
-    *
-    * @param count - the number of messages received by the client in one batch.
+    * Cancels any deliveries with a delivery id > lastDeliveryId - these are inflight
+    * @param lastDeliveryId
     */
-   void confirmDelivery(int count);
+   void cancelInflightMessages(long lastDeliveryId) throws JMSException;
 
 }

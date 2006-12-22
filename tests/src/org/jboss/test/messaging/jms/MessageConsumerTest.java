@@ -1081,13 +1081,25 @@ public class MessageConsumerTest extends MessagingTestCase
           Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
           MessageProducer prod = sess.createProducer(queue);
-          prod.send(sess.createTextMessage("1"));
-          prod.send(sess.createTextMessage("2"));
-          prod.send(sess.createTextMessage("3"));
+          
+          TextMessage tm1 = sess.createTextMessage("1");
+          
+          TextMessage tm2 = sess.createTextMessage("2");
+          
+          TextMessage tm3 = sess.createTextMessage("3");
+          
+          prod.send(tm1);
+          prod.send(tm2);
+          prod.send(tm3);
 
+          log.trace("Creating consumer");
           MessageConsumer cons1 = sess.createConsumer(queue);
 
-          Message r1 = cons1.receive();
+          log.trace("Waiting for message");
+          
+          TextMessage r1 = (TextMessage)cons1.receive();
+          
+          assertEquals(tm1.getText(), r1.getText());
 
           log.trace("Got first message");
 
@@ -1097,12 +1109,16 @@ public class MessageConsumerTest extends MessagingTestCase
 
           MessageConsumer cons2 = sess.createConsumer(queue);
 
-          log.trace("Wairting for second message");
-          Message r2 = cons2.receive();
+          log.trace("Waiting for second message");
+          TextMessage r2 = (TextMessage)cons2.receive();
+          
+          assertEquals(tm2.getText(), r2.getText());
 
           log.trace("got second message");
 
-          Message r3 = cons2.receive();
+          TextMessage r3 = (TextMessage)cons2.receive();
+          
+          assertEquals(tm3.getText(), r3.getText());
 
           r1.acknowledge();
           r2.acknowledge();
@@ -1137,6 +1153,8 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(sess.createTextMessage("1"));
           prod.send(sess.createTextMessage("2"));
           prod.send(sess.createTextMessage("3"));
+          
+          log.trace("Sent messages");
 
           conn.start();
 

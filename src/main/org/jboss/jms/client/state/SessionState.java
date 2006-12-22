@@ -223,12 +223,7 @@ public class SessionState extends HierarchicalStateSupport
    {
       callbackHandlers.remove(new Integer(handler.getConsumerId()));
    }
-   
-   public List getCallbackHandlers()
-   {
-      return new ArrayList(callbackHandlers.values());
-   }
-   
+      
    public int getSessionId()
    {
       return sessionId;

@@ -64,16 +64,16 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.closing();
    }
 
-   public void more() throws JMSException
+   public void changeRate(float newRate) throws JMSException
    {
-      endpoint.more();
-   }
-
-   public void confirmDelivery(int count)
-   {
-      endpoint.confirmDelivery(count);
+      endpoint.changeRate(newRate);
    }
    
+   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
+   {
+      endpoint.cancelInflightMessages(lastDeliveryId);
+   }
+
    public boolean isClosed() throws JMSException
    {
       return endpoint.isClosed();

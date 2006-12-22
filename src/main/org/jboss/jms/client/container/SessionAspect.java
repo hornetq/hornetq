@@ -38,7 +38,6 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 
@@ -67,30 +66,6 @@ public class SessionAspect
    // Constructors --------------------------------------------------
    
    // Public --------------------------------------------------------
-
-   private void ackDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
-   {
-      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
-      
-      //If the delivery was obtained via a connection consumer we need to ack via that
-      //otherwise we just use this session
-      
-      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
-      
-      sessionToUse.acknowledgeDelivery(delivery);      
-   }
-   
-   private void cancelDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
-   {
-      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
-      
-      //If the delivery was obtained via a connection consumer we need to cancel via that
-      //otherwise we just use this session
-      
-      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
-      
-      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryId(), delivery.getMessageProxy().getDeliveryCount()));      
-   }
    
    public Object handleClosing(Invocation invocation) throws Throwable
    {
@@ -175,6 +150,11 @@ public class SessionAspect
          
          state.getClientAckList().clear();
       }
+      
+      
+      //TODO - we should also cancel any deliveries remaining in any transaction for the session
+      //so the delivery count gets updated to the server, and not rely on the server side close
+      //cancelling them
       
       return invocation.invokeNext();
    }
@@ -459,6 +439,30 @@ public class SessionAspect
    private SessionState getState(Invocation inv)
    {
       return (SessionState)((DelegateSupport)inv.getTargetObject()).getState();
+   }
+   
+   private void ackDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
+   {
+      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+      
+      //If the delivery was obtained via a connection consumer we need to ack via that
+      //otherwise we just use this session
+      
+      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
+      
+      sessionToUse.acknowledgeDelivery(delivery);      
+   }
+   
+   private void cancelDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
+   {
+      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+      
+      //If the delivery was obtained via a connection consumer we need to cancel via that
+      //otherwise we just use this session
+      
+      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
+      
+      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryId(), delivery.getMessageProxy().getDeliveryCount()));      
    }
 
    // Inner Classes -------------------------------------------------

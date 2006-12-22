@@ -356,6 +356,12 @@
       <antcall target="clustering-tests"/>
    </target>
 
+   <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <antcall target="remote-tests">
+            <param name="test.remoting" value="http"/>
+      </antcall>
+   </target>
+
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="invm-stress-tests"/>
       <antcall target="remote-stress-tests"/>  <!-- default remoting configuration (socket) -->

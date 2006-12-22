@@ -767,12 +767,18 @@ public class AcknowledgementTest extends MessagingTestCase
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sessSend.createProducer(queue);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      log.trace("Sending messages");
+      
       TextMessage tm1 = sessSend.createTextMessage("a");
       TextMessage tm2 = sessSend.createTextMessage("b");
       TextMessage tm3 = sessSend.createTextMessage("c");
       prod.send(tm1);
       prod.send(tm2);
       prod.send(tm3);
+      
+      log.trace("Sent messages");
+      
       sessSend.close();
       
       assertRemainingMessages(3);
@@ -780,10 +786,20 @@ public class AcknowledgementTest extends MessagingTestCase
       conn.start();
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      log.trace("Creating consumer");
+      
       MessageConsumer cons = sessReceive.createConsumer(queue);
       
+      log.trace("Created consumer");
+      
       MessageListenerAutoAck listener = new MessageListenerAutoAck(sessReceive);
+      
+      log.trace("Setting message listener");
+      
       cons.setMessageListener(listener);
+      
+      log.trace("Set message listener");
 
       listener.waitForMessages();
       

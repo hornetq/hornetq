@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -502,7 +503,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (trace) { log.trace(this + " Recovered delivery " + deliveryId + ", " + del); }
                
-               deliveries.put(new Long(deliveryId), del);
+               deliveries.put(new Long(deliveryId), new DeliveryRecord(del, -1));
             }
          }
          
@@ -702,6 +703,40 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
 
    // Package protected ---------------------------------------------
+      
+   void cancelDeliveriesForConsumerAfterDeliveryId(int consumerId, long lastDeliveryId) throws Throwable
+   {
+      //Need to cancel in reverse
+      
+      LinkedList toCancel = new LinkedList();
+      
+      Iterator iter = deliveries.entrySet().iterator();
+            
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+         
+         Long deliveryId = (Long)entry.getKey();
+         
+         DeliveryRecord record = (DeliveryRecord)entry.getValue();
+         
+         if (record.consumerId == consumerId && deliveryId.longValue() > lastDeliveryId)
+         {
+            iter.remove();
+            
+            toCancel.addFirst(record);
+         }
+      }
+      
+      iter = toCancel.iterator();
+      
+      while (iter.hasNext())
+      {
+         DeliveryRecord record = (DeliveryRecord)iter.next();
+         
+         record.del.cancel();
+      }
+   }
    
    void removeBrowser(int browserId) throws Exception
    {
@@ -786,11 +821,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          if (trace) { log.trace(this + " cancelling delivery with delivery id: " + entry.getKey()); }
          
-         Delivery del = (Delivery)entry.getValue();
+         DeliveryRecord rec = (DeliveryRecord)entry.getValue();
          
-         del.cancel();
+         rec.del.cancel();
          
-         channels.add(del.getObserver());
+         channels.add(rec.del.getObserver());
       }
       
       promptDelivery(channels);
@@ -806,26 +841,26 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    void cancelDelivery(long deliveryId) throws Throwable
    {
-      Delivery del = (Delivery)deliveries.remove(new Long(deliveryId));
+      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(deliveryId));
       
-      if (del == null)
+      if (rec == null)
       {
          throw new IllegalStateException("Cannot find delivery to cancel " + deliveryId);
       }
       
-      del.cancel();
+      rec.del.cancel();
    }
    
-   long addDelivery(Delivery del)
+   long addDelivery(Delivery del, int consumerId)
    {
       long deliveryId = deliveryIdSequence.increment();
       
-      deliveries.put(new Long(deliveryId), del);
+      deliveries.put(new Long(deliveryId), new DeliveryRecord(del, consumerId));
       
       if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + del); }
       
       return deliveryId;      
-   }
+   }      
    
    void acknowledgeTransactionally(List acks, Transaction tx) throws Throwable
    {
@@ -847,16 +882,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          Long id = new Long(ack.getDeliveryId());
            
-         Delivery del = (Delivery)deliveries.get(id);
+         DeliveryRecord rec = (DeliveryRecord)deliveries.get(id);
          
-         if (del == null)
+         if (rec == null)
          {
             throw new IllegalStateException("Cannot find delivery to acknowledge " + ack);
          }
                            
          deliveryCallback.addDeliveryId(id);
          
-         del.acknowledge(tx);
+         rec.del.acknowledge(tx);
       }      
    }
    
@@ -890,21 +925,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       if (trace) { log.trace(this + " acknowledging delivery " + ack.getDeliveryId()); }
       
-      Delivery del = (Delivery)deliveries.remove(new Long(ack.getDeliveryId()));
+      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(ack.getDeliveryId()));
       
-      if (del == null)
+      if (rec == null)
       {
          throw new IllegalStateException("Cannot find delivery to acknowledge: " + ack.getDeliveryId());
       }
       
-      del.acknowledge(null);    
+      rec.del.acknowledge(null);    
    } 
    
    private Delivery cancelDeliveryInternal(Cancel cancel) throws Throwable
    {
-      Delivery del = (Delivery)deliveries.remove(new Long(cancel.getDeliveryId()));
+      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(cancel.getDeliveryId()));
       
-      if (del == null)
+      if (rec == null)
       {
          throw new IllegalStateException("Cannot find delivery to cancel " + cancel.getDeliveryId());
       }
@@ -922,17 +957,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
             if (dlq != null)
             {         
                //reset delivery count to zero
-               del.getReference().setDeliveryCount(0);
+               rec.del.getReference().setDeliveryCount(0);
                
-               dlq.handle(null, del.getReference(), tx);
+               dlq.handle(null, rec.del.getReference(), tx);
                
-               del.acknowledge(tx);           
+               rec.del.acknowledge(tx);           
             }
             else
             {
                log.warn("Cannot send to DLQ since DLQ has not been deployed! The message will be removed");
                
-               del.acknowledge(tx);
+               rec.del.acknowledge(tx);
             }                              
                         
             tx.commit();
@@ -946,12 +981,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       else
       {                                                   
-         del.getReference().setDeliveryCount(cancel.getDeliveryCount());
+         rec.del.getReference().setDeliveryCount(cancel.getDeliveryCount());
          
-         del.cancel();
+         rec.del.cancel();
       }
       
-      return del;
+      return rec.del;
    }
 
    private ConsumerDelegate failoverConsumer(JBossDestination jmsDestination,
@@ -991,7 +1026,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, binding.getQueue(),
                                     binding.getQueue().getName(), this, selectorString, noLocal,
-                                    jmsDestination, prefetchSize);
+                                    jmsDestination);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
 
@@ -1263,13 +1298,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
                   binding.getQueue().getName(), this, selectorString, noLocal,
-                  jmsDestination, prefetchSize);
+                  jmsDestination);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
       
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
-                  prefetchSize, maxDeliveryAttempts);
+                                    prefetchSize, maxDeliveryAttempts);
       
       synchronized (consumers)
       {
@@ -1294,10 +1329,32 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   
-   
-   
    // Inner classes -------------------------------------------------
+   
+   /*
+    * Holds a record of a delivery - we need to store the consumer id as well
+    * hence this class
+    * The only reason we need to store the consumer id is that on consumer close, we need to 
+    * cancel any deliveries corresponding to that consumer.
+    * We can't rely on the cancel being driven from the MessageCallbackHandler since
+    * the deliveries may have got lost in transit (ignored) since the consumer might have closed
+    * when they were in transit.
+    * In such a case we might otherwise end up with the consumer closing but not all it's deliveries being
+    * cancelled, which would mean they wouldn't be cancelled until the session is closed which is too late
+    */
+   private class DeliveryRecord
+   {
+      Delivery del;
+      
+      int consumerId;
+      
+      DeliveryRecord(Delivery del, int consumerId)
+      {
+         this.del = del;
+         
+         this.consumerId = consumerId;
+      }            
+   }
    
    /**
     * 

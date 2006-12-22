@@ -72,10 +72,9 @@ public class ConsumerAspect
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       SessionDelegate sessionDelegate = (SessionDelegate)invocation.getTargetObject();
       ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
-      int serverId = connectionState.getServerID();
       int consumerID = consumerState.getConsumerID();
       long channelID = consumerState.getChannelId();
-      int prefetchSize = consumerState.getPrefetchSize();
+      int prefetchSize = consumerState.getBufferSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
       int maxDeliveries = consumerState.getMaxDeliveries();
       
@@ -94,31 +93,43 @@ public class ConsumerAspect
       
       //Now we have finished creating the client consumer, we can tell the SCD
       //we are ready
-      consumerDelegate.more();
+      consumerDelegate.changeRate(1);
 
       return consumerDelegate;
    }
    
    public Object handleClosing(Invocation invocation) throws Throwable
    {      
-      // First we make sure closing is called on the ServerConsumerEndpoint. This ensures that any
-      // in-transit messages are flushed out to the client side.
-
-      Object res = invocation.invokeNext();
-      
       ConsumerState consumerState = getState(invocation);
-      SessionState sessionState = (SessionState)consumerState.getParent();
-      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
-            
-      // Then we call close on the messagecallbackhandler which waits for onMessage invocations
+      
+      // First we call close on the messagecallbackhandler which waits for onMessage invocations      
       // to complete and then cancels anything in the client buffer.
+      // any further messages received will be ignored
       consumerState.getMessageCallbackHandler().close();
       
+      long lastDeliveryId = consumerState.getMessageCallbackHandler().getLastDeliveryId();
+      
+      SessionState sessionState = (SessionState)consumerState.getParent();
+      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
+                 
       sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());
 
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
       cm.unregisterHandler(consumerState.getConsumerID());
             
+      // Then we make sure closing is called on the ServerConsumerEndpoint.
+
+      Object res = invocation.invokeNext();
+      
+      //Now we send a message to the server consumer with the last delivery id so
+      //it can cancel any inflight messages after that
+      //This needs to be done *after* the call to closing has been executed on the server
+      //maybe it can be combined with closing
+      
+      ConsumerDelegate del = (ConsumerDelegate)invocation.getTargetObject();
+         
+      del.cancelInflightMessages(lastDeliveryId);
+                                   
       return res;
    }      
    

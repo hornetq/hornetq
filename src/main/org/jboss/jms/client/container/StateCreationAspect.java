@@ -169,7 +169,7 @@ public class StateCreationAspect
 
       int consumerID = consumerDelegate.getID();
 
-      int prefetchSize = consumerDelegate.getPrefetchSize();
+      int bufferSize = consumerDelegate.getBufferSize();
 
       int maxDeliveries = consumerDelegate.getMaxDeliveries();
 
@@ -177,7 +177,7 @@ public class StateCreationAspect
 
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,
-                           subscriptionName, consumerID, connectionConsumer, prefetchSize,
+                           subscriptionName, consumerID, connectionConsumer, bufferSize,
                            maxDeliveries, channelId);
 
       delegate.setState(consumerState);

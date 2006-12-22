@@ -23,9 +23,6 @@ package org.jboss.jms.server.endpoint;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
@@ -35,7 +32,7 @@ import org.jboss.messaging.util.Streamable;
 /**
  * 
  * A ClientDelivery
- * Encapsulates a delivery of some messages to a client consumer
+ * Encapsulates a delivery of a messages to a client consumer
  * 
  * There is no need to specify the server id since the client side CallbackManager is
  * unique to the remoting connection
@@ -54,7 +51,7 @@ public class ClientDelivery implements Streamable
    
    // Attributes ----------------------------------------------------
    
-   private List msgs;
+   private MessageProxy msg;
          
    private int consumerId;
     
@@ -64,9 +61,9 @@ public class ClientDelivery implements Streamable
    {      
    }
 
-   public ClientDelivery(List msgs, int consumerId)
+   public ClientDelivery(MessageProxy msg, int consumerId)
    {
-      this.msgs = msgs;
+      this.msg = msg;
       
       this.consumerId = consumerId;
    }
@@ -78,55 +75,37 @@ public class ClientDelivery implements Streamable
    {
       out.writeInt(consumerId);
       
-      out.writeInt(msgs.size());
-      
-      Iterator iter = msgs.iterator();
-      
-      while (iter.hasNext())
-      {
-         MessageProxy mp = (MessageProxy)iter.next();
-         
-         out.writeByte(mp.getMessage().getType());
+      out.writeByte(msg.getMessage().getType());
 
-         out.writeInt(mp.getDeliveryCount());
-         
-         out.writeLong(mp.getDeliveryId());
+      out.writeInt(msg.getDeliveryCount());
+      
+      out.writeLong(msg.getDeliveryId());
 
-         mp.getMessage().write(out);
-      }      
+      msg.getMessage().write(out);          
    }
 
    public void read(DataInputStream in) throws Exception
    {
       consumerId = in.readInt();
       
-      int numMessages = in.readInt();
+      byte type = in.readByte();
       
-      msgs = new ArrayList(numMessages);
+      int deliveryCount = in.readInt();
       
-      for (int i = 0; i < numMessages; i++)
-      {
-         byte type = in.readByte();
-         
-         int deliveryCount = in.readInt();
-         
-         long deliveryId = in.readLong();
-         
-         JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
+      long deliveryId = in.readLong();
+      
+      JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
 
-         m.read(in);
+      m.read(in);
 
-         MessageProxy md = JBossMessage.createThinDelegate(deliveryId, m, deliveryCount);
-         
-         msgs.add(md);
-      }      
+      msg = JBossMessage.createThinDelegate(deliveryId, m, deliveryCount); 
    }
 
    // Public --------------------------------------------------------
    
-   public List getMessages()
+   public MessageProxy getMessage()
    {
-      return msgs;
+      return msg;
    }
    
    public int getConsumerId()

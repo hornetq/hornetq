@@ -21,10 +21,6 @@
  */
 package org.jboss.jms.server.endpoint;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
@@ -33,8 +29,6 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
-import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.util.ExceptionUtil;
@@ -49,15 +43,18 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.util.Future;
 import org.jboss.remoting.callback.Callback;
-
-import EDU.oswego.cs.dl.util.concurrent.Executor;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import org.jboss.remoting.callback.HandleCallbackException;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
- * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
+ * Concrete implementation of ConsumerEndpoint.
+ * 
+ * Lives on the boundary between Messaging Core and the
  * JMS Facade.
+ * 
+ * Handles delivery of messages from the server to the client side consumer.
+ * 
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -73,8 +70,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Static --------------------------------------------------------  
 
-   private static final int MESSAGES_IN_TRANSIT_WAIT_COUNT = 100;
-
    // Attributes ----------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
@@ -86,84 +81,55 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    private String queueName;
 
    private ServerSessionEndpoint sessionEndpoint;
+   
+   private ServerInvokerCallbackHandler callbackHandler;
+   
+   private byte versionToUse;
 
    private boolean noLocal;
 
    private Selector messageSelector;
 
    private JBossDestination destination;
-
-   private List toDeliver;
-
-   // Must be volatile
-   private volatile boolean clientConsumerFull;
-
-   // Must be volatile
-   private volatile boolean bufferFull;
-
-   // Must be volatile
-   private volatile boolean started;
-
-   // No need to be volatile - is protected by lock
-   private boolean closed;
-
-   private Executor executor;
-
-   private int prefetchSize;
-
-   private Object lock;
-
-   private Object messagesInTransitLock;
    
-   private int messagesInTransitCount; // access only from a region guarded by messagesInTransitLock
+   private boolean started;
+   
+   //This lock protects starting and stopping
+   private Object startStopLock;
+
+   // Must be volatile
+   private volatile boolean clientAccepting;
    
    // Constructors --------------------------------------------------
 
    ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
                          ServerSessionEndpoint sessionEndpoint,
-                         String selector, boolean noLocal, JBossDestination dest,
-                         int prefetchSize)
-      throws InvalidSelectorException
+                         String selector, boolean noLocal, JBossDestination dest)
+                         throws InvalidSelectorException
    {
       if (trace) { log.trace("constructing consumer endpoint " + id); }
 
       this.id = id;
-      this.messageQueue = messageQueue;
-      this.queueName = queueName;
-      this.sessionEndpoint = sessionEndpoint;
-      this.prefetchSize = prefetchSize;
       
-      // We always created with clientConsumerFull = true. This prevents the SCD sending messages to
-      // the client before the client has fully finished creating the MessageCallbackHandler.
-      this.clientConsumerFull = true;
-
-      // We allocate an executor from the rotating pool for each consumer based on it's id
-      // This gives better latency than each consumer for the destination using the same
-      // executor
-      QueuedExecutorPool pool =
-         sessionEndpoint.getConnectionEndpoint().getServerPeer().getQueuedExecutorPool();
-
-      this.executor = (QueuedExecutor)pool.get();
-             
-      // Note that using a PooledExecutor with a linked queue is not sufficient to ensure that
-      // deliveries for the same consumer happen serially, since even if they are queued serially
-      // the actual deliveries can happen in parallel, resulting in a later one "overtaking" an
-      // earlier non-deterministicly depending on thread scheduling.
-      // Consequently we use a QueuedExecutor to ensure the deliveries happen sequentially. We do
-      // not want each ServerConsumerEndpoint instance to have its own instance - since we would
-      // end up using too many threads, neither do we want to share the same instance amongst all
-      // consumers - we do not want to serialize delivery to all consumers. So we maintain a bag of
-      // QueuedExecutors and give them out to consumers as required. Different consumers can end up
-      // using the same queuedexecutor concurrently if there are a lot of active consumers.
-
+      this.messageQueue = messageQueue;
+      
+      this.queueName = queueName;
+      
+      this.sessionEndpoint = sessionEndpoint;
+      
+      this.callbackHandler = sessionEndpoint.getConnectionEndpoint().getCallbackHandler();
+      
+      this.versionToUse = sessionEndpoint.getConnectionEndpoint().getUsingVersion();
+            
       this.noLocal = noLocal;
       
       this.destination = dest;
       
-      this.toDeliver = new ArrayList();
+      //Always start as false - wait for consumer to initiate
+      this.clientAccepting = false;
       
-      this.lock = new Object();
-
+      this.startStopLock = new Object();
+      
       if (selector != null)
       {
          if (trace) log.trace("creating selector:" + selector);
@@ -179,9 +145,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       // prompt delivery
       promptDelivery();
 
-      messagesInTransitLock = new Object();
-      messagesInTransitCount = 0;
-      
       log.debug(this + " constructed");
    }
 
@@ -195,30 +158,26 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       if (trace) { log.trace(this + " receives " + ref + " for delivery"); }
       
       // This is ok to have outside lock - is volatile
-      if (bufferFull)
+      if (!clientAccepting)
       {
-         // We buffer a maximum of PREFETCH_LIMIT messages at once
-         
-         if (trace) { log.trace(this + " has reached prefetch size will not accept any more references"); }
+         if (trace) { log.trace(this + " the client is not currently accepting messages"); }
          
          return null;
       }
-       
-      // Need to synchronized around the whole block to prevent setting started = false
-      // but handle is already running and a message is deposited during the stop procedure.
-      synchronized (lock)
-      {  
+        
+      synchronized (startStopLock)
+      {         
          // If the consumer is stopped then we don't accept the message, it should go back into the
          // queue for delivery later.
          if (!started)
          {
             if (trace) { log.trace(this + " NOT started yet!"); }
-
+   
             return null;
          }
-
+   
          if (trace) { log.trace(this + " has the main lock, preparing the message for delivery"); }
-
+   
          JBossMessage message = (JBossMessage)ref.getMessage();
          
          boolean selectorRejected = !this.accept(message);
@@ -235,8 +194,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return delivery;
          }
          
-         long deliveryId = sessionEndpoint.addDelivery(delivery);
-
+         long deliveryId = sessionEndpoint.addDelivery(delivery, id);
+   
          // We don't send the message as-is, instead we create a MessageProxy instance. This allows
          // local fields such as deliveryCount to be handled by the proxy but global data to be
          // fielded by the same underlying Message instance. This allows us to avoid expensive
@@ -244,37 +203,42 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
          MessageProxy mp = JBossMessage.createThinDelegate(deliveryId, message, ref.getDeliveryCount());
     
-         // Add the proxy to the list to deliver
-                           
-         toDeliver.add(mp);     
-          
-         bufferFull = toDeliver.size() >= prefetchSize;
-             
-         if (!clientConsumerFull)
-         {            
-            try
-            {
-               Deliverer deliverer = new Deliverer();
-               if (trace) { log.trace(this + " scheduling a new " + deliverer); }
-               this.executor.execute(deliverer);
-            }
-            catch (InterruptedException e)
-            {
-               log.warn("Thread interrupted", e);
-            }
+         //We send the message to the client on the current thread.
+         //The message is written onto the transport and then the thread returns immediately
+         //without waiting for a response
+         
+         //FIXME - how can we ensure that a later send doesn't overtake an earlier send - this might
+         //happen if they are using different underlying TCP connections (e.g. from pool)
+         
+         ClientDelivery del = new ClientDelivery(mp, id);
+         
+         MessagingMarshallable mm = new MessagingMarshallable(versionToUse, del);
+         
+         Callback callback = new Callback(mm);
+   
+         try
+         {
+            //FIXME - we need to use the asynch callback API, this is the Sync one
+            callbackHandler.handleCallback(callback);
+         }
+         catch (HandleCallbackException e)
+         {
+            log.error("Failed to handle callback", e);
+            
+            return null;
          }
                              
-         return delivery;              
+         return delivery;      
       }
    }      
-   
 
    // Filter implementation -----------------------------------------
 
    public boolean accept(Routable r)
    {
       boolean accept = true;
-      if (this.destination.isQueue())
+      
+      if (destination.isQueue())
       {
          // For subscriptions message selection is handled in the Subscription itself
          // we do not want to do the check twice
@@ -323,9 +287,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {      
       try
       {
+         if (trace) { log.trace(this + " close"); }
+         
          localClose();
          
-         sessionEndpoint.removeConsumer(id);
+         sessionEndpoint.removeConsumer(id);         
       }   
       catch (Throwable t)
       {
@@ -335,77 +301,65 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
            
    // ConsumerEndpoint implementation -------------------------------
    
-   /*
-    * This is called by the client consumer to tell the server to wake up and start sending more
-    * messages if available
-    */
-   public void more() throws JMSException
-   {           
+   
+   public void changeRate(float newRate) throws JMSException
+   {
+      if (trace) { log.trace(this + " changeRate: " + newRate); }
+      
       try
-      {
-         // Set clientConsumerFull to false.
-         //
-         // NOTE! This must be done using a Runnable on the delivery executor - this is to prevent
-         // the following race condition:
-         //  1) Messages are delivered to the client, causing it to be full.
-         //  2) The messages are consumed very quickly on the client causing more() to be called.
-         //  3) more() hits the server BEFORE the deliverer thread has returned from delivering to
-         //     the client causing clientConsumerFull to be set to false and adding a deliverer to
-         //     the queue.
-         //  4) The deliverer thread returns and sets clientConsumerFull to true.
-         //  5) The next deliverer runs but doesn't do anything since clientConsumerFull = true even
-         //     though the client needs messages.
-
-         executor.execute(new Runnable()
+      {      
+         //For now we just support a binary on/off
+         //The client will send newRate = 0, to say it does not want any more messages when it's client side
+         //buffer gets full
+         //or it will send an arbitrary non zero number to say it does want more messages, when it's client side
+         //buffer empties to half it's full size.
+         //Note the client does not wait until the client side buffer is empty before sending a newRate(+ve)
+         //message since this would add extra latency.
+         
+         //In the future we can fine tune this by allowing the client to specify an actual rate in the newRate value
+         //so this is basically a placeholder for the future so we don't have to change the wire format when
+         //we support it
+         
+         //No need to synchronize - clientAccepting is volatile
+         
+         if (newRate == 0)
          {
-            public void run()
-            {
-               if (trace) { log.trace(ServerConsumerEndpoint.this + " is notified that client wants more() messages"); }
-               clientConsumerFull = false;
-            }
-         });
-                           
-         // Run a deliverer to deliver any existing ones
-         executor.execute(new Deliverer());
-         
-         // TODO Why do we need to wait for it to execute? Why not just return immediately?
-         
-         // Now wait for it to execute
-         Future result = new Future();
-         this.executor.execute(new Waiter(result));
-         result.getResult();
-                  
-         // Now we know the deliverer has delivered any outstanding messages to the client buffer
-         
-         messageQueue.deliver(false);
-      }
-      catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
-      }       
+            clientAccepting = false;
+         }
+         else
+         {
+            clientAccepting = true;
+            
+            promptDelivery();
+         }            
+      }   
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " more");
+         throw ExceptionUtil.handleJMSInvocation(t, this + " changeRate");
       }
    }
-
-   public void confirmDelivery(int count)
+   
+   /*
+    * This method is always called between closing() and close() being called
+    * Instead of having a new method we could perhaps somehow pass the last delivery id
+    * in with closing - then we don't need another message
+    */
+   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
    {
-      synchronized(messagesInTransitLock)
+      if (trace) { log.trace(this + " cancelInflightMessages: " + lastDeliveryId); }
+      
+      try
+      {      
+         //Cancel all deliveries made by this consumer with delivery id > lastDeliveryId
+         
+         sessionEndpoint.cancelDeliveriesForConsumerAfterDeliveryId(id, lastDeliveryId);      
+      }   
+      catch (Throwable t)
       {
-         messagesInTransitCount -= count;
-
-         if (trace) { log.trace("confirming delivery of " + count + " message(s), messages in transit " + messagesInTransitCount); }
-
-         if (messagesInTransitCount < 0)
-         {
-            log.error(this + " has an invalid messages in transit count (" +
-                      messagesInTransitCount + ")");
-         }
-
-         messagesInTransitLock.notifyAll();
-      }
+         throw ExceptionUtil.handleJMSInvocation(t, this + " cancelInflightMessages");
+      }            
    }
+   
    
    public boolean isClosed() throws JMSException
    {
@@ -433,48 +387,38 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    void localClose() throws Throwable
    {      
-      synchronized (lock)
-      { 
-         if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
+      if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
 
-         messageQueue.remove(this); 
-         
-         JMSDispatcher.instance.unregisterTarget(new Integer(id));
-         
-         // If this is a consumer of a non durable subscription then we want to unbind the
-         // subscription and delete all its data.
+      messageQueue.remove(this); 
+      
+      JMSDispatcher.instance.unregisterTarget(new Integer(id));
+      
+      // If this is a consumer of a non durable subscription then we want to unbind the
+      // subscription and delete all its data.
 
-         if (destination.isTopic())
+      if (destination.isTopic())
+      {
+         PostOffice postOffice = 
+            sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOfficeInstance();
+         
+         Binding binding = postOffice.getBindingForQueueName(queueName);
+
+         //Note binding can be null since there can many competing subscribers for the subscription  - 
+         //in which case the first will have removed the subscription and subsequently
+         //ones won't find it
+         
+         if (binding != null && !binding.getQueue().isRecoverable())
          {
-            PostOffice postOffice = 
-               sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOfficeInstance();
-            
-            Binding binding = postOffice.getBindingForQueueName(queueName);
-
-            //Note binding can be null since there can many competing subscribers for the subscription  - 
-            //in which case the first will have removed the subscription and subsequently
-            //ones won't find it
-            
-            if (binding != null && !binding.getQueue().isRecoverable())
-            {
-               postOffice.unbindQueue(queueName);
-            }
+            postOffice.unbindQueue(queueName);
          }
-                     
-         closed = true;
       }
+     
    }        
            
    void start()
    {             
-      synchronized (lock)
-      {
-         // Can't start or stop it if it is closed.
-         if (closed)
-         {
-            return;
-         }
-         
+      synchronized (startStopLock)
+      {      
          if (started)
          {
             return;
@@ -482,96 +426,53 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          started = true;
       }
-      
+            
       // Prompt delivery
       promptDelivery();
    }
    
    void stop() throws Throwable
-   {     
-      // We need to:
-      // - Stop accepting any new messages in the SCE.
-      // - Flush any messages from the SCE to the buffer.
-      // If the client consumer is now full, then we need to cancel the ones in the toDeliver list.
-
-      // We need to lock since otherwise we could set started to false but the handle method was
-      // already executing and messages might get deposited after.
-      synchronized (lock)
-      {
+   {           
+      synchronized (startStopLock)
+      {         
          if (!started)
          {
             return;
          }
          
-         started = false;
-      }
-      
-      // Now we know no more messages will be accepted in the SCE.
-            
-      try
-      {
-         // Flush any messages waiting to be sent to the client.
-         this.executor.execute(new Deliverer());
+         started = false;                  
          
-         if (trace) { log.trace(this + " flushed all remaining messages (if any) to the client"); }
-
-         // Now we know any deliverer has delivered any outstanding messages to the client buffer.
-      }
-      catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
-      }
-
-      // Make sure there are no messages in transit between server and client
-
-      synchronized(messagesInTransitLock)
-      {
-         int loopCount = 0;
-         while(messagesInTransitCount > 0 && loopCount < MESSAGES_IN_TRANSIT_WAIT_COUNT)
-         {
-            log.debug(this + " waiting for " + messagesInTransitCount + " message(s) in transit " +
-                      "to reach the client, " + (loopCount + 1) + " lock grab attempts.");
-            messagesInTransitLock.wait(500);
-            loopCount ++;
-         }
-
-         if (loopCount >= MESSAGES_IN_TRANSIT_WAIT_COUNT)
-         {
-            throw new IllegalStateException("Maximum number of lock grab attempts exceeded, " +
-                                            "giving up to wait for messages in transit");
-         }
-
-         if (trace) { log.trace(this + " has no messages in transit"); }
-      }
-
-      // Now we know that there are no in flight messages on the way to the client consumer, but
-      // there may be messages still in the toDeliver list since the client consumer might be full,
-      // so we need to cancel these.
-            
-      if (!toDeliver.isEmpty())
-      { 
-         synchronized (lock)
-         {
-            //Cancel in reverse order
-            for (int i = toDeliver.size() - 1; i >= 0; i--)
-            {
-               MessageProxy proxy = (MessageProxy)toDeliver.get(i);
-
-               sessionEndpoint.cancelDelivery(proxy.getDeliveryId());
-            }
-         }
-                 
-         toDeliver.clear();
+         /*
+          * 
+         Any message deliveries already transit to the consumer, will just
+         be ignored by the MessageCallbackHandler since it will be closed 
+   
+         To clarify, the close protocol (from connection) is as follows:
+                  
+         1) MessageCallbackHandler::close() - any messages in buffer are cancelled to the server session, and any
+            subsequent receive messages will be ignored         
          
-         bufferFull = false;
-      }      
-      
-      //Need to prompt delivery
-      promptDelivery();
+         2) ServerConsumerEndpoint::closing() causes stop() this flushes any deliveries yet to deliver to the client callback handler
+         
+         3) MessageCallbackHandler::cancelInflightMessages(long lastDeliveryId) - any deliveries after lastDeliveryId
+         for the consumer will be considered in flight and cancelled.
+         
+         4) ServerConsumerEndpoint:close() - endpoint is deregistered
+         
+         5) Session.close() - acks or cancels any remaining deliveries in the SessionState as appropriate
+         
+         6) ServerSessionEndpoint::close() - cancels any remaining deliveries and deregisters session
+         
+         7) Client side session executor is shutdown
+         
+         8) ServerConnectionEndpoint::close() - connection is deregistered.
+         
+         9) Remoting connection listener is removed and remoting connection stopped.
+         
+         */
+      }
    }
-   
-   
-   
+         
    // Protected -----------------------------------------------------         
       
    // Private -------------------------------------------------------
@@ -582,122 +483,5 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    }
    
    // Inner classes -------------------------------------------------   
-   
-   /*
-    * Delivers messages to the client 
-    * TODO - We can make this a bit more intelligent by letting it measure the rate
-    * the client is consuming messages and send messages at that rate.
-    * This would mean the client consumer wouldn't be full so often and more wouldn't have to be called
-    * This should give higher throughput.
-    */
-   private class Deliverer implements Runnable
-   {
-      public void run()
-      {
-         // Is there anything to deliver? This is ok outside lock - is volatile.
-         if (clientConsumerFull)
-         {
-            if (trace) { log.trace(this + " client consumer full, do nothing"); }
-            return;
-         }
-         
-         List list = null;
-             
-         synchronized (lock)
-         {
-            if (trace) { log.trace(this + " has the main lock, attempting delivery"); }
-
-            if (!toDeliver.isEmpty())
-            {
-               list = new ArrayList(toDeliver);
-               toDeliver.clear();
-               bufferFull = false;
-            }
-         }
-                                                           
-         if (list == null)
-         {
-            if (trace) { log.trace(this + " has a null list, returning"); }
-            return;
-         }
-
-         ServerConnectionEndpoint connection =
-            ServerConsumerEndpoint.this.sessionEndpoint.getConnectionEndpoint();
-         
-         ClientDelivery del = new ClientDelivery(list, id);
-         MessagingMarshallable mm = new MessagingMarshallable(connection.getUsingVersion(), del);
-         Callback callback = new Callback(mm);
-
-         try
-         {
-            if (trace)
-            {
-               StringBuffer sb = new StringBuffer(ServerConsumerEndpoint.this + " handing [");
-               for(int i = 0; i < list.size(); i++)
-               {
-                  sb.append(((MessageProxy)list.get(i)).getMessage().getMessageID());
-                  if (i < list.size() - 1)
-                  {
-                     sb.append(",");
-                  }
-               }
-               sb.append("] over to the remoting layer");
-               log.trace(sb.toString());
-            }
-            
-            synchronized(messagesInTransitLock)
-            {
-               connection.getCallbackHandler().handleCallback(callback);
-               messagesInTransitCount += list.size();
-            }
-
-            if (trace) { log.trace(ServerConsumerEndpoint.this + " handed messages over to the remoting layer"); }
-
-            // We are NOT using Remoting's facility of acknowledging callbacks. A callback is sent
-            // asynchronously, and there is no confirmation that the callback reached the client or
-            // not.
-
-            // TODO Previously, synchronous server-to-client invocations were used by the client
-            // to report back whether is full or not. This cannot be achieved with asynchronous
-            // callbacks, so the client must explicitely sent this information to the server,
-            // with an invocation on its own.
-         }
-         catch(Throwable t)
-         {
-            log.warn("Failed to deliver the message to the client. See the server log for more details.");
-            log.debug(ServerConsumerEndpoint.this + " failed to deliver the message to the client.", t);
-
-            ConnectionManager mgr = connection.getServerPeer().getConnectionManager();
-
-            mgr.handleClientFailure(connection.getRemotingClientSessionId());
-         }
-      }
-
-      public String toString()
-      {
-         return "Deliverer[" + Integer.toHexString(hashCode()) + "]";
-      }
-   }
-   
-   /*
-    * The purpose of this class is to put it on the QueuedExecutor and wait for it to run
-    * We can then ensure that all the Runnables in front of it on the queue have also executed
-    * We cannot just call shutdownAfterProcessingCurrentlyQueuedTasks() since the
-    * QueueExecutor might be share by other consumers and we don't want to wait for their
-    * tasks to complete
-    */
-   private static class Waiter implements Runnable
-   {
-      Future result;
-      
-      Waiter(Future result)
-      {
-         this.result = result;
-      }
-      
-      public void run()
-      {
-         result.setResult(null);
-      }
-   }   
+     
 }

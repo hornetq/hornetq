@@ -38,7 +38,6 @@ import java.util.Map;
 
 import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.remoting.HandleMessageResponse;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -104,7 +103,7 @@ public class WireFormatTest extends MessagingTestCase
    
    //Consumer
         
-   protected Method moreMethod;
+   protected Method changeRateMethod;
    
  
    //connection
@@ -150,7 +149,7 @@ public class WireFormatTest extends MessagingTestCase
             
       //Consumer
             
-      moreMethod = consumerDelegate.getMethod("more", null);
+      changeRateMethod = consumerDelegate.getMethod("changeRate", new Class[] { Float.TYPE });
 
       //Connection
       
@@ -193,9 +192,9 @@ public class WireFormatTest extends MessagingTestCase
    
    //Consumer
    
-   public void testMore() throws Exception
+   public void testChangeRate() throws Exception
    {
-      wf.testMore();
+      wf.testChangeRate();
    }
    
    
@@ -229,9 +228,9 @@ public class WireFormatTest extends MessagingTestCase
       wf.testSerializableResponse();
    }
    
-   public void testCallBack() throws Exception
+   public void testMessageDelivery() throws Exception
    {
-      wf.testCallback();
+      wf.testMessageDelivery();
    }
    
    public void testIDBlockResponse() throws Exception
@@ -239,11 +238,8 @@ public class WireFormatTest extends MessagingTestCase
       wf.testGetIdBlockResponse();
    }
    
-   public void testHandleMessageResponse() throws Exception
-   {
-      wf.testHandleMessageResponse();
-   }
-            
+   //TODO need a test for the polled callbacks
+          
    // Public --------------------------------------------------------
    
    public static class SerializableObject implements Serializable
@@ -269,7 +265,7 @@ public class WireFormatTest extends MessagingTestCase
    /**
     * We extend the class so we have access to protected fields
     */
-   class TestWireFormat extends JMSWireFormat
+   private class TestWireFormat extends JMSWireFormat
    {      
       public void testAcknowledgeDelivery() throws Exception
       {
@@ -563,6 +559,126 @@ public class WireFormatTest extends MessagingTestCase
          assertEquals(deliveryCount, l2.getDeliveryCount());
          
       }
+      
+      public void testCancelDeliveries() throws Exception
+      {                            
+         long methodHash = 62365354;
+         
+         int objectId = 54321;
+         
+         List cancels = new ArrayList();
+         
+         DefaultCancel cancel1 = new DefaultCancel(65654, 43);
+         DefaultCancel cancel2 = new DefaultCancel(65765, 2);
+         cancels.add(cancel1);
+         cancels.add(cancel2);
+         
+         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelDeliveriesMethod, cancelDeliveriesMethod, null);
+         
+         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
+         
+         mi.setArguments(new Object[] {cancels});
+         
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
+         
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         
+         OutputStream oos = new DataOutputStream(bos);
+                  
+         wf.write(ir, oos);
+        
+         oos.flush();
+               
+         byte[] bytes = bos.toByteArray();
+              
+         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                  
+         DataInputStream dis = new DataInputStream(bis); 
+               
+         //Check the bytes
+             
+         //First byte should be version
+         assertEquals(77, dis.readByte());
+         
+         //Next byte should be CANCEL_MESSAGES
+         assertEquals(JMSWireFormat.CANCEL_LIST, dis.readByte());
+         
+         //Next int should be objectId
+         assertEquals(objectId, dis.readInt());
+         
+         //Next long should be methodHash
+         assertEquals(methodHash, dis.readLong());
+                  
+         //Next should the size of the list
+         
+         int size = dis.readInt();
+         
+         assertEquals(2, size);
+         
+         //then the AckInfos
+         long deliveryId = dis.readLong();
+         int deliveryCount = dis.readInt();
+         DefaultCancel rcancel1 = new DefaultCancel(deliveryId, deliveryCount);
+         
+         deliveryId = dis.readLong();
+         deliveryCount = dis.readInt();
+         DefaultCancel rcancel2 = new DefaultCancel(deliveryId, deliveryCount);
+
+         assertEquals(cancel1.getDeliveryCount(), rcancel1.getDeliveryCount());
+         
+         assertEquals(cancel1.getDeliveryId(), cancel1.getDeliveryId());
+         
+         assertEquals(cancel2.getDeliveryCount(), rcancel2.getDeliveryCount());
+         
+         assertEquals(cancel2.getDeliveryId(), cancel2.getDeliveryId());
+                   
+         //should be eos
+                
+         try
+         {
+            dis.readByte();
+            fail("End of stream expected");
+         }
+         catch (EOFException e)
+         {
+            //Ok
+         }
+         
+         
+         bis.reset();
+         
+         InputStream ois = new DataInputStream(bis);
+         
+         InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
+         
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
+         
+         assertEquals(methodHash, mi2.getMethodHash());
+         
+         assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());
+         
+         List list = (List)mi2.getArguments()[0];
+        
+         assertEquals(2, list.size());
+         
+         DefaultCancel xack1 = (DefaultCancel)list.get(0);
+         DefaultCancel xack2 = (DefaultCancel)list.get(1);
+         
+         assertEquals(cancel1.getDeliveryId(), xack1.getDeliveryId());
+         
+         assertEquals(cancel1.getDeliveryCount(), xack1.getDeliveryCount());
+         
+         assertEquals(cancel2.getDeliveryId(), xack2.getDeliveryId());
+         
+         assertEquals(cancel2.getDeliveryCount(), xack2.getDeliveryCount());
+         
+      }  
       
       
       /*
@@ -961,127 +1077,7 @@ public class WireFormatTest extends MessagingTestCase
          
       }  
             
-      
-      public void testCancelDeliveries() throws Exception
-      {                            
-         long methodHash = 62365354;
-         
-         int objectId = 54321;
-         
-         List cancels = new ArrayList();
-         
-         DefaultCancel cancel1 = new DefaultCancel(65654, 43);
-         DefaultCancel cancel2 = new DefaultCancel(65765, 2);
-         cancels.add(cancel1);
-         cancels.add(cancel2);
-         
-         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelDeliveriesMethod, cancelDeliveriesMethod, null);
-         
-         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
-         
-         mi.setArguments(new Object[] {cancels});
-         
-         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
-         
-         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
-         
-         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         
-         OutputStream oos = new DataOutputStream(bos);
                   
-         wf.write(ir, oos);
-        
-         oos.flush();
-               
-         byte[] bytes = bos.toByteArray();
-              
-         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-                  
-         DataInputStream dis = new DataInputStream(bis); 
-               
-         //Check the bytes
-             
-         //First byte should be version
-         assertEquals(77, dis.readByte());
-         
-         //Next byte should be CANCEL_MESSAGES
-         assertEquals(JMSWireFormat.CANCEL_LIST, dis.readByte());
-         
-         //Next int should be objectId
-         assertEquals(objectId, dis.readInt());
-         
-         //Next long should be methodHash
-         assertEquals(methodHash, dis.readLong());
-                  
-         //Next should the size of the list
-         
-         int size = dis.readInt();
-         
-         assertEquals(2, size);
-         
-         //then the AckInfos
-         long deliveryId = dis.readLong();
-         int deliveryCount = dis.readInt();
-         DefaultCancel rcancel1 = new DefaultCancel(deliveryId, deliveryCount);
-         
-         deliveryId = dis.readLong();
-         deliveryCount = dis.readInt();
-         DefaultCancel rcancel2 = new DefaultCancel(deliveryId, deliveryCount);
-
-         assertEquals(cancel1.getDeliveryCount(), rcancel1.getDeliveryCount());
-         
-         assertEquals(cancel1.getDeliveryId(), cancel1.getDeliveryId());
-         
-         assertEquals(cancel2.getDeliveryCount(), rcancel2.getDeliveryCount());
-         
-         assertEquals(cancel2.getDeliveryId(), cancel2.getDeliveryId());
-                   
-         //should be eos
-                
-         try
-         {
-            dis.readByte();
-            fail("End of stream expected");
-         }
-         catch (EOFException e)
-         {
-            //Ok
-         }
-         
-         
-         bis.reset();
-         
-         InputStream ois = new DataInputStream(bis);
-         
-         InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
-         
-         mm = (MessagingMarshallable)ir2.getParameter();
-         
-         assertEquals(77, mm.getVersion());
-         
-         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
-         
-         assertEquals(methodHash, mi2.getMethodHash());
-         
-         assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());
-         
-         List list = (List)mi2.getArguments()[0];
-        
-         assertEquals(2, list.size());
-         
-         DefaultCancel xack1 = (DefaultCancel)list.get(0);
-         DefaultCancel xack2 = (DefaultCancel)list.get(1);
-         
-         assertEquals(cancel1.getDeliveryId(), xack1.getDeliveryId());
-         
-         assertEquals(cancel1.getDeliveryCount(), xack1.getDeliveryCount());
-         
-         assertEquals(cancel2.getDeliveryId(), xack2.getDeliveryId());
-         
-         assertEquals(cancel2.getDeliveryCount(), xack2.getDeliveryCount());
-         
-      }  
-      
       public void testNullResponse() throws Exception
       {
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, null);
@@ -1129,18 +1125,22 @@ public class WireFormatTest extends MessagingTestCase
          assertNull(mm.getLoad());
             
       }
-      
-      
-      
-      public void testMore() throws Exception
+                  
+      public void testChangeRate() throws Exception
       {
          long methodHash = 62365354;
          
          int objectId = 54321;
          
-         MethodInvocation mi = new MethodInvocation(null, methodHash, moreMethod, moreMethod, null);
+         float rate = 123.45f;
          
-         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
+         MethodInvocation mi = new MethodInvocation(null, methodHash, changeRateMethod, changeRateMethod, null);
+         
+         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId)); 
+         
+         Object[] args = new Object[] { new Float(rate) };
+         
+         mi.setArguments(args);
          
          MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
          
@@ -1165,14 +1165,19 @@ public class WireFormatTest extends MessagingTestCase
          //First byte should be version
          assertEquals(77, dis.readByte());         
          
-         //Second byte should be MORE
-         assertEquals(JMSWireFormat.MORE, dis.readByte());
+         //Second byte should be CHANGE_RATE
+         assertEquals(JMSWireFormat.CHANGE_RATE, dis.readByte());
          
          //Next int should be objectId
          assertEquals(objectId, dis.readInt());
          
          //Next long should be methodHash
          assertEquals(methodHash, dis.readLong());
+         
+         //Next should be the float
+         float f2 = dis.readFloat();
+         
+         assertTrue(rate == f2);
          
          //Now eos
          try
@@ -1196,36 +1201,27 @@ public class WireFormatTest extends MessagingTestCase
          
          MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
          
+         Float f3 = (Float)mi2.getArguments()[0];
+         
+         assertTrue(rate == f3.floatValue());
+         
          assertEquals(methodHash, mi2.getMethodHash());
          
          assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());         
       }
       
-      
-      
-      public void testCallback() throws Exception
+            
+      public void testMessageDelivery() throws Exception
       {
          int consumerID = 12345678;
          
          JBossMessage m1 = new JBossMessage(123);
-         JBossMessage m2 = new JBossMessage(456);
-         JBossMessage m3 = new JBossMessage(789);
-         
-         List msgs = new ArrayList();
-         
+
          MessageProxy del1 = JBossMessage.createThinDelegate(1, m1, 7);
-         MessageProxy del2 = JBossMessage.createThinDelegate(2, m2, 8);
-         MessageProxy del3 = JBossMessage.createThinDelegate(3, m3, 9);
          
          MessageTest.configureMessage(m1);
-         MessageTest.configureMessage(m2);
-         MessageTest.configureMessage(m3);
-         
-         msgs.add(del1);
-         msgs.add(del2);
-         msgs.add(del3);         
-         
-         ClientDelivery dr = new ClientDelivery(msgs, consumerID);
+
+         ClientDelivery dr = new ClientDelivery(del1, consumerID);
          
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          
@@ -1248,18 +1244,15 @@ public class WireFormatTest extends MessagingTestCase
          //First byte should be version
          assertEquals(77, dis.readByte());         
          
-         //Second byte should be CALLBACK
-         assertEquals(JMSWireFormat.CALLBACK, dis.readByte());
+         //Second byte should be MESSAGE_DELIVERY
+         assertEquals(JMSWireFormat.MESSAGE_DELIVERY, dis.readByte());
          
          //Next should be sessionID
          assertEquals("dummySessionId", dis.readUTF());
          
          //Next int should be consumer id
          assertEquals(12345678, dis.readInt());
-         
-         //Next int should be number of messages
-         assertEquals(3, dis.readInt());
-                           
+                     
          //Next byte should be type
          assertEquals(JBossMessage.TYPE, dis.readByte());
          
@@ -1272,41 +1265,9 @@ public class WireFormatTest extends MessagingTestCase
          //And now the message itself
          JBossMessage r1 = new JBossMessage();
          
-         r1.read(dis);
-         
-         
-         //Next byte should be type
-         assertEquals(JBossMessage.TYPE, dis.readByte());
-         
-         //Next int should be delivery count
-         assertEquals(8, dis.readInt());
-         
-         // Delivery id
-         assertEquals(2, dis.readLong());
-         
-         //And now the message itself
-         JBossMessage r2 = new JBossMessage();
-         
-         r2.read(dis);
-         
-         
-         //Next byte should be type
-         assertEquals(JBossMessage.TYPE, dis.readByte());
-         
-         //Next int should be delivery count
-         assertEquals(9, dis.readInt());
-         
-         // Delivery id
-         assertEquals(3, dis.readLong());
-         
-         //And now the message itself
-         JBossMessage r3 = new JBossMessage();
-         
-         r3.read(dis);
+         r1.read(dis);         
          
          MessageTest.ensureEquivalent(m1, r1);
-         MessageTest.ensureEquivalent(m2, r2);
-         MessageTest.ensureEquivalent(m3, r3);
          
          //eos
          try
@@ -1339,25 +1300,16 @@ public class WireFormatTest extends MessagingTestCase
                   
          ClientDelivery dr2 = (ClientDelivery)mm.getLoad();
          
-         List msgs2 = dr2.getMessages();
+         MessageProxy p1 = dr2.getMessage();
          
          assertEquals(consumerID, dr2.getConsumerId());
          
-         MessageProxy p1 = (MessageProxy)msgs2.get(0);
-         MessageProxy p2 = (MessageProxy)msgs2.get(1);
-         MessageProxy p3 = (MessageProxy)msgs2.get(2);
-         
+
          assertEquals(del1.getDeliveryCount(), p1.getDeliveryCount());
-         assertEquals(del2.getDeliveryCount(), p2.getDeliveryCount());
-         assertEquals(del3.getDeliveryCount(), p3.getDeliveryCount());
-         
+
          JBossMessage q1 = p1.getMessage();
-         JBossMessage q2 = p1.getMessage();
-         JBossMessage q3 = p1.getMessage();
-         
-         MessageTest.ensureEquivalent(m1, q1);
-         MessageTest.ensureEquivalent(m2, q2);
-         MessageTest.ensureEquivalent(m3, q3);         
+  
+         MessageTest.ensureEquivalent(m1, q1);      
       }
       
                   
@@ -1421,66 +1373,6 @@ public class WireFormatTest extends MessagingTestCase
          assertEquals(block.getLow(), block3.getLow());
          assertEquals(block.getHigh(), block3.getHigh());                  
       }    
-      
-      public void testHandleMessageResponse() throws Exception
-      {
-         HandleMessageResponse h = new HandleMessageResponse(true, 76876);
-         
-         MessagingMarshallable mm = new MessagingMarshallable((byte)77, h);
-                  
-         InvocationResponse ir = new InvocationResponse(null, mm, false, null);
-         
-         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         
-         OutputStream oos = new DataOutputStream(bos);
-         
-         wf.write(ir, oos);
-         
-         oos.flush();
-         
-         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-         
-         DataInputStream dis = new DataInputStream(bis);
-                   
-         // First byte should be version
-         assertEquals(77, dis.readByte());
-         
-         int b = dis.readByte();
-         
-         assertEquals(JMSWireFormat.HANDLE_MESSAGE_RESPONSE, b);
-         
-         HandleMessageResponse h2 = new HandleMessageResponse();
-         
-         h2.read(dis);
-         
-         assertEquals(h.clientIsFull(), h2.clientIsFull());
-         assertEquals(h.getNumberAccepted(), h2.getNumberAccepted());
-         
-         //eos
-         try
-         {
-            dis.readByte();
-            fail("End of stream expected");
-         }
-         catch (EOFException e)
-         {
-            //Ok
-         }
-         
-         bis.reset();
-         
-         InputStream ois = new DataInputStream(bis);
-         
-         InvocationResponse ir2 = (InvocationResponse)wf.read(ois, null);
-         
-         mm = (MessagingMarshallable)ir2.getResult();
-         
-         assertEquals(77, mm.getVersion());
-         
-         HandleMessageResponse h3 = (HandleMessageResponse)mm.getLoad();
-         
-         assertEquals(h.clientIsFull(), h3.clientIsFull());
-         assertEquals(h.getNumberAccepted(), h3.getNumberAccepted());                 
-      }    
+            
    }
 }

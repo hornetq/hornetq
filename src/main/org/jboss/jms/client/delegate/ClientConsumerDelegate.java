@@ -71,16 +71,25 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    }
 
    // ConsumerDelegate implementation -------------------------------
-
+   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void more()
+   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
    
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void changeRate(float newRate)
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -162,16 +171,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void confirmDelivery(int count)
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-
    // Public --------------------------------------------------------
 
    public String toString()
@@ -179,7 +178,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       return "ConsumerDelegate[" + id + "](ChannelId=" + this.channelId+")" ;
    }
    
-   public int getPrefetchSize()
+   public int getBufferSize()
    {
       return bufferSize;
    }
@@ -198,7 +197,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       super.copyAttributes(newDelegate);
       
-      this.bufferSize = ((ClientConsumerDelegate)newDelegate).getPrefetchSize();
+      this.bufferSize = ((ClientConsumerDelegate)newDelegate).getBufferSize();
       
       this.maxDeliveries = ((ClientConsumerDelegate)newDelegate).getMaxDeliveries();
       

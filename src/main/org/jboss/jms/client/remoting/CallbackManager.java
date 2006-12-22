@@ -21,9 +21,9 @@
   */
 package org.jboss.jms.client.remoting;
 
-import java.util.List;
 import java.util.Map;
 
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.logging.Logger;
@@ -53,13 +53,21 @@ public class CallbackManager implements InvokerCallbackHandler
 {
    // Constants -----------------------------------------------------
 
-   protected static final Logger log = Logger.getLogger(CallbackManager.class);
+   protected static final Logger log;
 
    public static final String JMS_CALLBACK_SUBSYSTEM = "CALLBACK";
 
    // Static --------------------------------------------------------
 
    protected static CallbackManager theManager;
+   
+   private static boolean trace;      
+   
+   static
+   {
+      log = Logger.getLogger(CallbackManager.class);
+      trace = log.isTraceEnabled();
+   }
 
    // Attributes ----------------------------------------------------
 
@@ -79,16 +87,20 @@ public class CallbackManager implements InvokerCallbackHandler
    {
       MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
       ClientDelivery dr = (ClientDelivery)mm.getLoad();
-      List msgs = dr.getMessages();
+      MessageProxy msg = dr.getMessage();
 
       MessageCallbackHandler handler = (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
 
       if (handler == null)
       {
-         throw new IllegalStateException("Cannot find handler for consumer: " + dr.getConsumerId());
+         //This is OK and can happen if the callback handler is deregistered on consumer close,
+         //but there are messages still in transit which arrive later.
+         //In this case it is just safe to ignore the message
+         if (trace) { log.trace(this + " callback handler not found, message arrived after consumer is closed"); }
+         return;
       }
 
-      handler.handleMessage(msgs);
+      handler.handleMessage(msg);
    }
 
    // Public --------------------------------------------------------
