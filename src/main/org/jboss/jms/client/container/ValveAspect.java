@@ -92,16 +92,16 @@ public class ValveAspect extends HAAspect implements Interceptor
       boolean failure = false;
 
       // Eventually retries in case of listed exceptions
-      for (int i = 0; i < MAX_IO_RETRY_COUNT; i++)
+      for (int invocationCount = 0; invocationCount < MAX_IO_RETRY_COUNT; invocationCount++)
       {
 
-         if (i > 0)
+         if (invocationCount > 0)
          {
-            log.info("Retrying a call " + i);
+            log.info("Retrying a call " + invocationCount);
          }
 
          // We shouldn't have any calls being made while the failover is being executed
-         if (i > 0)
+         if (invocationCount > 0)
          {
             // On retries we will use writeLocks, as the failover was already being processed
             lockValve.writeLock().acquire();
@@ -116,15 +116,20 @@ public class ValveAspect extends HAAspect implements Interceptor
          try
          {
             returnObject = invocation.invokeNext();
+
+            if (returnObject instanceof DelegateSupport)
+            {
+               installValveAspect((DelegateSupport) returnObject, this);
+            }
          }
          catch (CannotConnectException e)
          {
-            log.error("Got an exception on HAAspect, retryCount=" + i, e);
+            log.error("Got an exception on HAAspect, retryCount=" + invocationCount, e);
             failure = true;
          }
          catch (IOException e)
          {
-            log.error("Got an exception on HAAspect, retryCount=" + i, e);
+            log.error("Got an exception on HAAspect, retryCount=" + invocationCount, e);
             failure = true;
          }
          catch (Throwable e)
@@ -134,7 +139,7 @@ public class ValveAspect extends HAAspect implements Interceptor
          }
          finally
          {
-            if (i > 0)
+            if (invocationCount > 0)
             {
                lockValve.writeLock().release();
             }
