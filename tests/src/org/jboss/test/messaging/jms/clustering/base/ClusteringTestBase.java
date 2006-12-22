@@ -130,6 +130,50 @@ public class ClusteringTestBase extends MessagingTestCase
       super.tearDown();
    }
 
+   protected String getLocatorURL(Connection conn)
+   {
+      return getConnectionState(conn).getRemotingConnection().getInvokingClient().getInvoker().getLocator().getLocatorURI();
+   }
+
+   protected int getServerId(Connection conn)
+   {
+      return getConnectionState(conn).getServerID();
+   }
+
+   protected int getObjectId(Connection conn)
+   {
+      return ((DelegateSupport) ((JBossConnection) conn).
+         getDelegate()).getID();
+   }
+
+   protected ConnectionState getConnectionState(Connection conn)
+   {
+      return (ConnectionState) (((DelegateSupport) ((JBossConnection) conn).
+         getDelegate()).getState());
+   }
+
+   protected Connection createConnectionOnServer(ConnectionFactory factory, int serverId) throws Exception
+   {
+      int count=0;
+
+      while (true)
+      {
+         if (count++>10)
+            return null;
+
+         Connection connection = factory.createConnection();
+
+         if (getServerId(connection) == serverId)
+         {
+            return connection;
+         }
+         else
+         {
+            connection.close();
+         }
+      }
+   }
+
    // lookup for the connection with the right serverID
    // I'm using this method to find the proper serverId so I won't relay on loadBalancing policies on testcases
    protected Connection getConnection(Connection[] conn, int serverId) throws Exception

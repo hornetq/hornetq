@@ -69,6 +69,7 @@
 
    <!-- Clustering tests -->
    <property name="clustering.tests.database" value="mysql"/>
+   <property name ="test-mask" value="*Test"/>
 
    <!--
         Default remoting configuration (must be overrided by tasks that need it set otherwise).
@@ -816,7 +817,7 @@
             <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/clustering/*Test.class"/>
+               <include name="**/jms/clustering/${test-mask}.class"/>
             </fileset>
          </batchtest>
       </junit>

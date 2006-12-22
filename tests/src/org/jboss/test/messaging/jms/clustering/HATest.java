@@ -94,6 +94,60 @@ public class HATest extends ClusteringTestBase
       conn.close();
    }
 
+   /**
+    * This test was created as per http://jira.jboss.org/jira/browse/JBMESSAGING-696.
+    */
+   public void testCloseOnFailover() throws Exception
+   {
+      JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ConnectionFactory");
+
+      Connection conn1 = factory.createConnection();
+      Connection conn2 = factory.createConnection();
+      Connection conn3 = factory.createConnection();
+
+      Connection[] conn = new Connection[]{conn1, conn2, conn3};
+
+      log.info("Connection delegate information after creation");
+      for (int i = 0; i < conn.length; i++)
+      {
+         log.info("conn" + i + ".serverid=" + getServerId(conn[i]) + " conn" + i + ".ObjectID=" + getObjectId(conn[i])
+            + " locatorURL=" + getLocatorURL(conn[i]));
+      }
+
+      log.info("Killing server 1 and waiting 30 seconds for failover to kick in on client (from Lease)");
+      ServerManagement.kill(1);
+      Thread.sleep(30000);
+
+      log.info("Connection delegate information after failover");
+      for (int i = 0; i < conn.length; i++)
+      {
+         log.info("conn" + i + ".serverid=" + getServerId(conn[i]) + " conn" + i + ".ObjectID=" + getObjectId(conn[i])
+            + " locatorURL=" + getLocatorURL(conn[i]));
+      }
+
+      ConnectionState state2 = getConnectionState(conn2);
+      ConnectionState state3 = getConnectionState(conn3);
+
+      assertNotSame(state2.getRemotingConnection(), state3.getRemotingConnection());
+      assertNotSame(state2.getRemotingConnection().getInvokingClient(), state3.getRemotingConnection().getInvokingClient());
+
+
+
+      conn1.close();
+      assertNotNull(state2.getRemotingConnection());
+      assertNotNull(state2.getRemotingConnection().getInvokingClient().getInvoker());
+      assertTrue(state2.getRemotingConnection().getInvokingClient().getInvoker().isConnected());
+      conn2.close();
+
+      log.info("Closing connection 3 now");
+
+      assertNotNull(state3.getRemotingConnection());
+      assertNotNull(state3.getRemotingConnection().getInvokingClient().getInvoker());
+      assertTrue(state3.getRemotingConnection().getInvokingClient().getInvoker().isConnected());
+      // When I created the testcase this was failing, throwing exceptions. This was basically why I created this testcase
+      conn3.close();
+   }
+
    /*
     * Test that connections created using a clustered connection factory are created round robin on
     * different servers
