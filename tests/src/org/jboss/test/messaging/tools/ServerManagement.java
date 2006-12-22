@@ -378,7 +378,14 @@ public class ServerManagement
 
       //System.out.println("CLASSPATH: " + classPath);
 
-      sb.append("-cp").append(" \"").append(classPath).append("\" ");
+      if (System.getProperty("os.name").equals("Linux"))
+      {
+         sb.append("-cp").append(" ").append(classPath).append(" ");
+      }
+      else
+      {
+         sb.append("-cp").append(" \"").append(classPath).append("\" ");
+      }
 
       sb.append("org.jboss.test.messaging.tools.jmx.rmi.RMITestServer");
 
