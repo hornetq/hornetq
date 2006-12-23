@@ -1371,6 +1371,9 @@ public class XATest extends MessagingTestCase
          assertEquals("jellyfish2", r1.getText());
 
          cons1.close();
+         
+         //Cancel is asynch
+         Thread.sleep(500);
 
          MessageConsumer cons2 = sess2.createConsumer(queue);
          TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
