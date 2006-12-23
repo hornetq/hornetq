@@ -99,11 +99,13 @@ public class WireFormatTest extends MessagingTestCase
    
    protected Method cancelDeliveryMethod;
    
-   protected Method cancelDeliveriesMethod;
+   protected Method cancelDeliveriesMethod;      
    
    //Consumer
         
    protected Method changeRateMethod;
+   
+   protected Method cancelInflightMessagesMethod;
    
  
    //connection
@@ -150,6 +152,8 @@ public class WireFormatTest extends MessagingTestCase
       //Consumer
             
       changeRateMethod = consumerDelegate.getMethod("changeRate", new Class[] { Float.TYPE });
+      
+      cancelInflightMessagesMethod = consumerDelegate.getMethod("cancelInflightMessages", new Class[] { Long.TYPE });
 
       //Connection
       
@@ -195,6 +199,11 @@ public class WireFormatTest extends MessagingTestCase
    public void testChangeRate() throws Exception
    {
       wf.testChangeRate();
+   }
+   
+   public void testCancelInflightMessages() throws Exception
+   {
+      wf.testCancelInflightMessages();
    }
    
    
@@ -679,6 +688,91 @@ public class WireFormatTest extends MessagingTestCase
          assertEquals(cancel2.getDeliveryCount(), xack2.getDeliveryCount());
          
       }  
+      
+      public void testCancelInflightMessages() throws Exception
+      {
+         long methodHash = 6236354;
+         
+         int objectId = 543271;
+         
+         MethodInvocation mi = new MethodInvocation(null, methodHash, cancelInflightMessagesMethod, cancelInflightMessagesMethod, null);
+         
+         mi.getMetaData().addMetaData(Dispatcher.DISPATCHER, Dispatcher.OID, new Integer(objectId));   
+         
+         long lastDeliveryId = 765;
+         
+         Object[] args = new Object[] { new Long(lastDeliveryId) };
+         
+         mi.setArguments(args);
+         
+         MessagingMarshallable mm = new MessagingMarshallable((byte)77, mi);
+         
+         InvocationRequest ir = new InvocationRequest(null, null, mm, null, null, null);
+         
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         
+         OutputStream oos = new DataOutputStream(bos);
+                  
+         wf.write(ir, oos);
+         
+         oos.flush();
+         
+         byte[] bytes = bos.toByteArray();
+         
+         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                  
+         DataInputStream dis = new DataInputStream(bis); 
+                 
+         //Check the bytes
+         
+         //First byte should be version
+         assertEquals(77, dis.readByte());
+         
+         //First byte should be CANCEL
+         assertEquals(JMSWireFormat.CANCEL_INFLIGHT_MESSAGES, dis.readByte());
+         
+         //Next int should be objectId
+         assertEquals(objectId, dis.readInt());
+         
+         //Next long should be methodHash
+         assertEquals(methodHash, dis.readLong());
+         
+         //Next should be the lastdeliveryid
+         long l = dis.readLong();
+         
+         assertEquals(lastDeliveryId, l);
+         
+         //Now eos
+         try
+         {
+            dis.readByte();
+            fail("End of stream expected");
+         }
+         catch (EOFException e)
+         {
+            //Ok
+         }
+         
+         bis.reset();
+         
+         InputStream ois = new DataInputStream(bis);
+         
+         InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
+         
+         mm = (MessagingMarshallable)ir2.getParameter();
+         
+         assertEquals(77, mm.getVersion());
+         
+         MethodInvocation mi2 = (MethodInvocation)mm.getLoad();
+         
+         assertEquals(methodHash, mi2.getMethodHash());
+         
+         assertEquals(objectId, ((Integer)mi2.getMetaData().getMetaData(Dispatcher.DISPATCHER, Dispatcher.OID)).intValue());
+         
+         Long l2 = (Long)mi2.getArguments()[0];
+         
+         assertEquals(lastDeliveryId, l2.longValue());
+      }
       
       
       /*

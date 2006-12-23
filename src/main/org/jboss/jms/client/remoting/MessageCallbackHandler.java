@@ -38,7 +38,6 @@ import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Future;
-import org.jboss.remoting.callback.HandleCallbackException;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -452,10 +451,14 @@ public class MessageCallbackHandler
          //if we've already sent it - hence the check
          startSendingMessageSent = true;
             
+         if (trace) { log.trace("Telling server to start resume sending messages, buffer size is " + buffer.size()); }
+         
          sendChangeRateMessage(1);                    
       }
       
       m.incDeliveryCount();
+      
+      if (trace) { log.trace(this + " receive() returning " + m); }
       
       return m;
    }    
@@ -548,12 +551,10 @@ public class MessageCallbackHandler
    
    private void sendChangeRateMessage(float newRate) 
    {
-      //FIXME - We should be able to execute this invocation as a true
-      //remoting asynchronous invocation - i.e. it is written to the transport
-      //and no response is waited for
-      //Therefore there is no need to execute it here on a separate thread.
-      //Unfortunately remoting does not currently support this so this
-      //will be SLOW now.
+      // FIXME - when the latest remoting changes make it into a release, we need
+      //to use server side one way invocations here.
+      //I.e. we want to sent the invocation to the transport on the this thread and 
+      //return immediately without waiting for a response.
       try
       {
          consumerDelegate.changeRate(newRate);
@@ -671,7 +672,6 @@ public class MessageCallbackHandler
          m = (MessageProxy)buffer.removeFirst();
       }
 
-      if (trace) { log.trace(this + ".getMessage() returning " + m); }
       return m;
    }
    
@@ -767,6 +767,8 @@ public class MessageCallbackHandler
          if (!startSendingMessageSent && buffer.size() <= minBufferSize)
          {                    
             startSendingMessageSent = true;
+            
+            if (trace) { log.trace("Telling server to start resume sending messages, buffer size is " + buffer.size()); }            
             
             sendChangeRateMessage(1);
          } 

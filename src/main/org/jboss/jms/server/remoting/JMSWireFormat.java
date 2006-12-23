@@ -96,16 +96,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte CANCEL = 3;
    protected static final byte CANCEL_LIST = 4;
    protected static final byte SEND = 5;   
-   //protected static final byte MORE = 6;
-   
-   protected static final byte CHANGE_RATE = 6;
-   
+   protected static final byte CHANGE_RATE = 6; 
    protected static final byte SEND_TRANSACTION = 7;
    protected static final byte GET_ID_BLOCK = 8;
    protected static final byte RECOVER_DELIVERIES = 9;
-   //protected static final byte CONFIRM_DELIVERY = 10;
+   protected static final byte CANCEL_INFLIGHT_MESSAGES = 10;
    
-   
+
  
 
    // The response codes - start from 100
@@ -367,7 +364,18 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   if (trace) { log.trace("wrote getIdBlock()"); }
                }           
-               
+               else if ("cancelInflightMessages".equals(methodName))
+               {
+                  dos.writeByte(CANCEL_INFLIGHT_MESSAGES);
+                  
+                  writeHeader(mi, dos);
+                  
+                  long lastDeliveryId = ((Long)mi.getArguments()[0]).longValue();
+                  
+                  dos.writeLong(lastDeliveryId);
+                  
+                  dos.flush();
+               }
                else
                {
                   dos.write(SERIALIZED);
@@ -786,6 +794,26 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                if (trace) { log.trace("read unackedAckInfos()"); }
    
                return request;
+            }
+            case CANCEL_INFLIGHT_MESSAGES:
+            {
+               MethodInvocation mi = readHeader(dis);
+               
+               long lastDeliveryId = dis.readLong();
+               
+               Object[] args = new Object[] {new Long(lastDeliveryId)};
+               
+               mi.setArguments(args);
+   
+               InvocationRequest request =
+                  new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+                                        new MessagingMarshallable(version, mi), null, null, null);
+   
+               if (trace) { log.trace("read cancelInflightMessages()"); }
+   
+               return request;
+               
+               
             }
             case ID_BLOCK_RESPONSE:
             {

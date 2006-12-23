@@ -47,9 +47,6 @@ import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
-import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * Concrete implementation of ConsumerEndpoint.
  * 
@@ -221,6 +218,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
            
          try
          {
+            //FIXME - when the latest remoting changes make it into a release, we need
+            //to use server side one way callbacks here.
+            //I.e. we want to sent the invocation to the transport on the this thread and 
+            //return immediately without waiting for a response.
             callbackHandler.handleCallback(callback);  
          }
          catch (HandleCallbackException e)
