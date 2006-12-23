@@ -33,6 +33,7 @@ import javax.naming.InitialContext;
  */
 public class StatelessSessionExampleBean implements SessionBean
 {   
+
    private ConnectionFactory cf = null;
    
    public void drain(String queueName) throws Exception

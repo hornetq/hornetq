@@ -120,9 +120,9 @@ public class MDBExample implements MessageDrivenBean, MessageListener
       {
          con.close();         
       }
-      catch(JMSException jmse)
+      catch(JMSException e)
       {
-         System.out.println("Could not close connection " + con + " exception was " + jmse);
+         System.out.println("Could not close connection " + con + " exception was " + e);
       }
    }
    

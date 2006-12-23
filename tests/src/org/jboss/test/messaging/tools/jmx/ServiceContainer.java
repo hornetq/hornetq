@@ -1158,8 +1158,6 @@ public class ServiceContainer
 
       String transport = config.getRemotingTransport();
       
-      log.info("*** Using transport: " + transport);
-
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=" + serializationType + "&" +

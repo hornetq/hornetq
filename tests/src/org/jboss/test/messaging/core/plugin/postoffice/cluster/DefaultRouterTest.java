@@ -544,15 +544,12 @@ public class DefaultRouterTest extends PostOfficeTestBase
       {
          if (receiver != null)
          {
-            //Send to receiver
-            
-            Delivery del = receiver.handle(observer, reference, tx);
-            
-            return del;
+            // Send to receiver
+            return receiver.handle(observer, reference, tx);
          }
          else
          {
-            //Store internally
+            // Store internally
             refs.add(reference);
             
             return new SimpleDelivery(observer, reference);

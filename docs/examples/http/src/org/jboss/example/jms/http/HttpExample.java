@@ -110,7 +110,7 @@ public class HttpExample extends ExampleSupport
       }
    }
    
-   private void closeConnection(Connection con) throws JMSException
+   private void closeConnection(Connection con)
    {
       try
       {

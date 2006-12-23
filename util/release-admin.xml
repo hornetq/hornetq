@@ -25,14 +25,9 @@
    <property name="lib.jbossts.home" value="${lib.home}/jbossts"/>
    <property name="output.lib.home" value="../output/lib"/>
 
-<<<<<<< .working
    <!--
         DO NOT change these values here, otherwise the installation script won't work. If you need
         to change them, to it in do-not-distribute.properties.
-=======
-   <!-- DO NOT change this value here, otherwise the installation script won't work. Change it in
-        do-not-distribute.properties.
->>>>>>> .merge-right.r1823
    -->
    <property name="main.artifact.location" value=".."/>
    <property name="auxiliary.artifacts.location" value="../examples/config"/>

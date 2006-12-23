@@ -91,13 +91,13 @@ public class ManifestTest extends MessagingTestCase
       // Compare the value from ConnectionMetaData and MANIFEST.MF
       Attributes attrs = manifest.getMainAttributes();
       
-      System.out.println("META--> " + meta.getJMSMajorVersion()); 
-      System.out.println("META--> " + meta.getJMSMinorVersion()); 
-      System.out.println("META--> " + meta.getJMSProviderName()); 
-      System.out.println("META--> " + meta.getJMSVersion()); 
-      System.out.println("META--> " + meta.getProviderMajorVersion()); 
-      System.out.println("META--> " + meta.getProviderMinorVersion()); 
-      System.out.println("META--> " + meta.getProviderVersion());
+      log.info("META--> " + meta.getJMSMajorVersion());
+      log.info("META--> " + meta.getJMSMinorVersion());
+      log.info("META--> " + meta.getJMSProviderName());
+      log.info("META--> " + meta.getJMSVersion());
+      log.info("META--> " + meta.getProviderMajorVersion());
+      log.info("META--> " + meta.getProviderMinorVersion());
+      log.info("META--> " + meta.getProviderVersion());
       
       Iterator itr = attrs.entrySet().iterator();
       while (itr.hasNext()) {

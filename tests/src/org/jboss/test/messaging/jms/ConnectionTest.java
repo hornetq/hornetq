@@ -152,21 +152,21 @@ public class ConnectionTest extends MessagingTestCase
    
    public void testResourceManagerFactory()
    {
-      ResourceManager rm1 = ResourceManagerFactory.instance.checkOutResourceManager(1);
+      ResourceManagerFactory.instance.checkOutResourceManager(1);
       
-      ResourceManager rm2 = ResourceManagerFactory.instance.checkOutResourceManager(2);
+      ResourceManagerFactory.instance.checkOutResourceManager(2);
       
-      ResourceManager rm3 = ResourceManagerFactory.instance.checkOutResourceManager(3);
+      ResourceManagerFactory.instance.checkOutResourceManager(3);
       
-      ResourceManager rm4 = ResourceManagerFactory.instance.checkOutResourceManager(4);
-      
-      assertEquals(4, ResourceManagerFactory.instance.size());
-      
-      ResourceManager rm4_2 = ResourceManagerFactory.instance.checkOutResourceManager(4);
+      ResourceManagerFactory.instance.checkOutResourceManager(4);
       
       assertEquals(4, ResourceManagerFactory.instance.size());
       
-      ResourceManager rm4_3 = ResourceManagerFactory.instance.checkOutResourceManager(4);
+      ResourceManagerFactory.instance.checkOutResourceManager(4);
+      
+      assertEquals(4, ResourceManagerFactory.instance.size());
+      
+      ResourceManagerFactory.instance.checkOutResourceManager(4);
       
       assertEquals(4, ResourceManagerFactory.instance.size());
       
