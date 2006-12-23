@@ -101,10 +101,10 @@ public class ConsumerAspect
    public Object handleClosing(Invocation invocation) throws Throwable
    {      
       ConsumerState consumerState = getState(invocation);
+        
       
       // First we call close on the messagecallbackhandler which waits for onMessage invocations      
-      // to complete and then cancels anything in the client buffer.
-      // any further messages received will be ignored
+      // to complete any further messages received will be ignored
       consumerState.getMessageCallbackHandler().close();
       
       long lastDeliveryId = consumerState.getMessageCallbackHandler().getLastDeliveryId();
@@ -128,7 +128,13 @@ public class ConsumerAspect
       
       ConsumerDelegate del = (ConsumerDelegate)invocation.getTargetObject();
          
+      //Now we need to cancel any inflight messages - this must be done before
+      //cancelling the message callback handler buffer, so that messages end up back in the channel
+      //in the right order
       del.cancelInflightMessages(lastDeliveryId);
+      
+      //And then we cancel any messages still in the message callback handler buffer
+      consumerState.getMessageCallbackHandler().cancelBuffer();
                                    
       return res;
    }      

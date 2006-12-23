@@ -645,8 +645,6 @@ public abstract class ChannelSupport implements Channel
                      // state but before delivery being added (observed).
                      synchronized (del)
                      {
-                        if (trace) { log.trace(this + " incrementing delivery count for " + del); }
-
                         // FIXME - It's actually possible the delivery could be cancelled before it reaches
                         // here, in which case we wouldn't get a delivery but we still need to increment the
                         // delivery count. TODO http://jira.jboss.com/jira/browse/JBMESSAGING-355

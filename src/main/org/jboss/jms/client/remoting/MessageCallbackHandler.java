@@ -269,6 +269,43 @@ public class MessageCallbackHandler
       }   
    }
    
+   public void cancelBuffer() throws JMSException
+   {
+      synchronized (mainLock)
+      {      
+         // Now we cancel anything left in the buffer. The reason we do this now is that otherwise the
+         // deliveries wouldn't get cancelled until session close (since we don't cancel consumer's
+         // deliveries until then), which is too late - since we need to preserve the order of messages
+         // delivered in a session.
+         
+         if (!buffer.isEmpty())
+         {            
+            // Now we cancel any deliveries that might be waiting in our buffer. This is because
+            // otherwise the messages wouldn't get cancelled until the corresponding session died.
+            // So if another consumer in another session tried to consume from the channel before that
+            // session died it wouldn't receive those messages.
+            // We can't just cancel all the messages in the SCE since some of those messages might
+            // have actually been delivered (unlike these) and we may want to acknowledge them
+            // later, after this consumer has been closed
+   
+            List cancels = new ArrayList();
+   
+            for(Iterator i = buffer.iterator(); i.hasNext();)
+            {
+               MessageProxy mp = (MessageProxy)i.next();
+               
+               DefaultCancel ack = new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount());
+               
+               cancels.add(ack);
+            }
+                  
+            sessionDelegate.cancelDeliveries(cancels);
+            
+            buffer.clear();
+         }    
+      }
+   }
+   
    public void close() throws JMSException
    {   
       synchronized (mainLock)
@@ -291,38 +328,7 @@ public class MessageCallbackHandler
          this.listener = null;
       }
 
-      waitForOnMessageToComplete();
-      
-      // Now we cancel anything left in the buffer. The reason we do this now is that otherwise the
-      // deliveries wouldn't get cancelled until session close (since we don't cancel consumer's
-      // deliveries until then), which is too late - since we need to preserve the order of messages
-      // delivered in a session.
-      
-      if (!buffer.isEmpty())
-      {            
-         // Now we cancel any deliveries that might be waiting in our buffer. This is because
-         // otherwise the messages wouldn't get cancelled until the corresponding session died.
-         // So if another consumer in another session tried to consume from the channel before that
-         // session died it wouldn't receive those messages.
-         // We can't just cancel all the messages in the SCE since some of those messages might
-         // have actually been delivered (unlike these) and we may want to acknowledge them
-         // later, after this consumer has been closed
-
-         List cancels = new ArrayList();
-
-         for(Iterator i = buffer.iterator(); i.hasNext();)
-         {
-            MessageProxy mp = (MessageProxy)i.next();
-            
-            DefaultCancel ack = new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount());
-            
-            cancels.add(ack);
-         }
-               
-         sessionDelegate.cancelDeliveries(cancels);
-         
-         buffer.clear();
-      }                
+      waitForOnMessageToComplete();                  
       
       if (trace) { log.trace(this + " closed"); }
    }
@@ -665,7 +671,7 @@ public class MessageCallbackHandler
          m = (MessageProxy)buffer.removeFirst();
       }
 
-      if (trace) { log.trace("InterruptedException, " + this + ".getMessage() returning " + m); }
+      if (trace) { log.trace(this + ".getMessage() returning " + m); }
       return m;
    }
    

@@ -47,8 +47,8 @@ import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
-import EDU.oswego.cs.dl.util.concurrent.Executor;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Concrete implementation of ConsumerEndpoint.
@@ -102,9 +102,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Must be volatile
    private volatile boolean clientAccepting;
-   
-   private Executor executor; /// TEMPORARILY
-   
+
    // Constructors --------------------------------------------------
 
    ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
@@ -129,9 +127,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.noLocal = noLocal;
       
       this.destination = dest;
-      
-      //TEMP
-      this.executor = new QueuedExecutor();
       
       //Always start as false - wait for consumer to initiate
       this.clientAccepting = false;
@@ -223,43 +218,18 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          MessagingMarshallable mm = new MessagingMarshallable(versionToUse, del);
          
          Callback callback = new Callback(mm);
-   
-         //FIXME - we need to use the asynch callback API, this is the Sync one
-
-         //This is temporary - to ensure deliveries happen in sequence!!!!!!!!
-         
-         class Runner implements Runnable
-         {
-            Callback cb;
-            
-            Runner(Callback cb)
-            {
-               this.cb = cb;
-            }
-         
-            public void run()
-            {
-               try
-               {            
-                  callbackHandler.handleCallback(cb);               
-               }
-               catch (HandleCallbackException e)
-               {
-                  log.error("Failed to handle callback", e);
-               }
-               
-            }  
-         }
-         
+           
          try
          {
-            executor.execute(new Runner(callback));
+            callbackHandler.handleCallback(callback);  
          }
-         catch (InterruptedException e)
+         catch (HandleCallbackException e)
          {
-            //Ignore
+            log.error("Failed to handle callback", e);
+            
+            return null;
          }
-           
+              
          return delivery;      
       }
    }      
