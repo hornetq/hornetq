@@ -84,7 +84,10 @@ public class HAAspect
 
    public static final int MAX_RECONNECT_HOP_COUNT = 10;
 
-   public static final int MAX_IO_RETRY_COUNT = 10;
+   public static final int MAX_IO_RETRY_COUNT = 2;
+
+   // Setting this attribute to false will disable the valve
+   public static final boolean INSTALL_VALVE = false;
 
    // Static --------------------------------------------------------
 
@@ -164,10 +167,16 @@ public class HAAspect
 
       ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
 
-      ((ConnectionState) ((DelegateSupport) cd).getState()).
-         getRemotingConnectionListener().addDelegateListener(new ConnectionFailureListener(cd));
-
-      //installValveAspect(cd, new ValveAspect(cd, this));
+      // TODO: The valve is optional for now
+      if (INSTALL_VALVE)
+      {
+         installValveAspect(cd, new ValveAspect(cd, this));
+      }
+      else
+      {
+         ((ConnectionState) ((DelegateSupport) cd).getState()).
+            getRemotingConnectionListener().addDelegateListener(new ConnectionFailureListener(cd));
+      }
 
       if(trace) { log.trace(this + " got local connection delegate " + cd); }
 
