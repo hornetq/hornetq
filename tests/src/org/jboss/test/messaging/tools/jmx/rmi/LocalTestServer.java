@@ -177,6 +177,12 @@ public class LocalTestServer implements Server
       return true;
    }
 
+
+   public void ping() throws Exception
+   {
+      // noop... do nothing
+   }
+
    public synchronized void kill() throws Exception
    {
       throw new IllegalStateException("Cannot KILL a local server. Consider using stop() instead.");

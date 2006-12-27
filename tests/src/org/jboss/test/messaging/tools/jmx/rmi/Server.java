@@ -62,6 +62,14 @@ public interface Server extends Remote
    void kill() throws Exception;
 
    /**
+    * When kill is called you are actually schedulling the server to be killed in few milliseconds.
+    * There are certain cases where we need to assure the server was really killed.
+    * For that we have this dumb operation where we can verify if the server still alive or not.
+    * @throws Exception
+    */
+   void ping() throws Exception;
+
+   /**
     * Deploys and registers a service based on the MBean service descriptor element, specified as
     * a String. Supports XMBeans. The implementing class and the ObjectName are inferred from the
     * mbean element. If there are configuration attributed specified in the deployment descriptor,

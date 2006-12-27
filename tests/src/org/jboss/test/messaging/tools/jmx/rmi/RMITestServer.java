@@ -157,6 +157,12 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       new Thread(new VMKiller(), "VM Killer").start();
    }
 
+
+   public void ping() throws Exception
+   {
+      //noop - nothing to be done
+   }
+
    public ObjectName deploy(String mbeanConfiguration) throws Exception
    {
       return server.deploy(mbeanConfiguration);

@@ -260,6 +260,31 @@ public class ServerManagement
       }
    }
 
+   /** 
+    * Kills the server and wait keep trying any dumb communication until the server is effectively killed.
+    * We had to implement this method as kill will actually schedule a thread that will perform System.exit
+    * after few milliseconds.
+    * We will use this method in places where we need the server killed.
+    * */
+   public static synchronized void killAndWait(int i) throws Exception
+   {
+      Server server = servers[i].getServer();
+      kill(i);
+      try
+      {
+         while(true)
+         {
+            server.ping();
+            log.info("Server still alive... pinging again");
+            Thread.sleep(10);
+         }
+      }
+      catch (Throwable e)
+      {
+         e.printStackTrace();
+      }
+   }
+
    /**
     * This method make sure that all servers that have been implicitely spawned when as a side
     * effect of create() and/or start() are killed. The method is important because a forked
