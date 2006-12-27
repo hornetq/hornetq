@@ -74,11 +74,20 @@ public class FailoverTest extends ClusteringTestBase
 
          // kill node 1
 
-         ServerManagement.kill(1);
 
          log.info("########");
          log.info("######## KILLED NODE 1");
          log.info("########");
+
+         ServerManagement.killAndWait(1);
+         try
+         {
+            ic[1].lookup("queue"); // looking up anything
+            fail("The server still alive, kill didn't work yet");
+         }
+         catch (Exception e)
+         {
+         }
 
          // TODO - this shouldn't be necessary if we have the client valve in place
          log.info("Sleeping for 60 sec");
