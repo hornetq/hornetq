@@ -76,7 +76,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       MessageReference[] refs2 = new MessageReference[150];
       
       //Send 50 refs to both channels
-  
+      
       Transaction tx = this.createXATx();
       for (int i = 0; i < 50; i++)
       {
@@ -94,7 +94,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       }
       tx.prepare();
       tx.commit();
-      
+        
       //Queue1
       List refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
       assertEquals(0, refIds.size());
@@ -105,8 +105,8 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
-      
+      assertEquals(0, queue1.deliveringCount());
+       
       //Queue2
       
       refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
@@ -118,8 +118,8 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
-            
+      assertEquals(0, queue2.deliveringCount());
+           
       //Msgs
       
       assertEquals(50, ms.size());
@@ -148,7 +148,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       }
       tx.prepare();
       tx.commit();
-      
+       
       //Queue1
       refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
               
@@ -160,8 +160,8 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
-      
+      assertEquals(0, queue1.deliveringCount());
+        
       //Queue2
       
       refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
@@ -173,7 +173,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       
@@ -181,21 +181,19 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       msgIds = getMessageIds();
       assertEquals(25, msgIds.size());
-      
-      
-      
+       
       // Add 25 more
       tx = this.createXATx();
       for (int i = 75; i < 100; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         
+
          refs1[i] = ms.reference(msgs[i]);
                 
          queue1.handle(null, refs1[i], tx); 
          
          refs1[i].releaseMemoryReference();
-         
+
          refs2[i] = ms.reference(msgs[i]);
          
          queue2.handle(null, refs2[i], tx); 
@@ -216,7 +214,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertTrue(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
+      assertEquals(0, queue1.deliveringCount());
       
       //Queue2
       
@@ -229,7 +227,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       
@@ -237,7 +235,6 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       msgIds = getMessageIds();
       assertEquals(50, msgIds.size());
-      
       
       // Add 50 more
       tx = this.createXATx();
@@ -259,7 +256,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       }
       tx.prepare();
       tx.commit();
-      
+         
       //Queue1
       refIds = getReferenceIdsOrderedByPageOrd(queue1.getChannelID());
                 
@@ -271,7 +268,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertTrue(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
+      assertEquals(0, queue1.deliveringCount());
       
       //Queue2
       
@@ -284,19 +281,20 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
-            
+      assertEquals(0, queue2.deliveringCount());
+               
       //Msgs
       
       assertEquals(100, ms.size()); 
-      
+        
       msgIds = getMessageIds();
       assertEquals(100, msgIds.size());
-          
+             
       cancelDeliveries(queue1, 100);
-    
+      
       cancelDeliveries(queue2, 100);
       
+
       //Now consume them all
       
       this.consumeIn2PCTx(queue1, 0, refs1, 150);
@@ -314,8 +312,8 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
-      
+      assertEquals(0, queue1.deliveringCount());
+        
       //Queue2
       
       refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
@@ -327,7 +325,7 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
       
       assertFalse(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       

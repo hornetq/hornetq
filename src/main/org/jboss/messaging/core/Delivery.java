@@ -38,8 +38,6 @@ public interface Delivery
 
    boolean isDone();
    
-   boolean isCancelled();
-
    void setObserver(DeliveryObserver observer);
 
    DeliveryObserver getObserver();

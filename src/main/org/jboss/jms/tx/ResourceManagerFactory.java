@@ -141,7 +141,7 @@ public class ResourceManagerFactory
       }      
    }
    
-   private class Holder
+   private static class Holder
    {
       ResourceManager rm;
       

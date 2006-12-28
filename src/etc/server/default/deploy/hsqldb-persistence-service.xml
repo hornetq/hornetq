@@ -15,7 +15,7 @@
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
       <attribute name="DataSource">java:/DefaultDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
-      <attribute name="UsingBatchUpdates">true</attribute>
+      <attribute name="UsingBatchUpdates">false</attribute>
       <attribute name="MaxParams">500</attribute>
    </mbean>
 

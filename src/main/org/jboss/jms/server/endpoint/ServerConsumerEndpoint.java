@@ -189,11 +189,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return delivery;
          }
                  
-         if (delivery.isDone())
-         {
-            return delivery;
-         }
-         
          long deliveryId = sessionEndpoint.addDelivery(delivery, id);
    
          // We don't send the message as-is, instead we create a MessageProxy instance. This allows

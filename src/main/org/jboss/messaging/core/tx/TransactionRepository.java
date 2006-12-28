@@ -371,12 +371,6 @@ public class TransactionRepository implements MessagingComponent
 
             try
             {
-               //At this point there won't be a delivery in the channel for this ref - since
-               //we won't have loaded it when the queue was loaded (since the stat column would have been '-')
-               //so we add it
-               
-               queue.addDelivery(del);
-               
                del.acknowledge(tx);
             }
             catch (Throwable t)

@@ -100,7 +100,7 @@ public class FirstReceiverPointToPointRouter implements Router
 
             if (trace) { log.trace("receiver " + receiver + " handled " + ref + " and returned " + d); }
 
-            if (d != null && !d.isCancelled())
+            if (d != null)
             {
                if (d.isSelectorAccepted())
                {

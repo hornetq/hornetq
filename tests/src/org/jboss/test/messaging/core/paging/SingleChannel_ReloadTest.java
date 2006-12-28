@@ -107,7 +107,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertTrue(queue.isPaging());      
       
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       //Stop and restart the persistence manager
       //All the paged refs will survive
@@ -140,7 +140,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue2.downCacheCount());
       assertFalse(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
                    
       this.consume(queue2, 100, refs, 100);
       
@@ -153,7 +153,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertFalse(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
       
       assertEquals(0, queue2.messageCount());
       
@@ -203,7 +203,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertTrue(queue.isPaging());      
       
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       //Stop and restart the persistence manager
       //Only the paged messages will survive
@@ -243,7 +243,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       this.consume(queue2, 100, refs, 100);
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
       
       assertEquals(0, queue2.messageCount());
       
@@ -293,7 +293,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertTrue(queue.isPaging());      
       
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       queue.removeAllReferences();
       
@@ -309,7 +309,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertFalse(queue.isPaging());      
       
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       assertEquals(0, queue.messageCount());
       

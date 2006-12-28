@@ -466,6 +466,11 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          msgs = receiver6.getMessages();
          assertNotNull(msgs);
          assertTrue(msgs.isEmpty());
+         
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
       }
       finally
       {
@@ -474,10 +479,6 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
             postOffice.stop();
          }
          
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
       }
    
    }
@@ -511,7 +512,12 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
                
          List msgs = receiver1.getMessages();
          assertNotNull(msgs);
-         assertTrue(msgs.isEmpty());             
+         assertTrue(msgs.isEmpty());  
+         
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
          
       }
       finally
@@ -521,10 +527,6 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
             postOffice.stop();
          }
          
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
       }
    }
    
@@ -626,6 +628,11 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          assertNotNull(msgs);
          assertTrue(msgs.isEmpty()); 
          
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
+         
       }
       finally
       {
@@ -633,11 +640,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          {
             postOffice.stop();
          }
-         
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
+        
       }
    }
    
@@ -981,21 +984,11 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          receiver2.acknowledge(msgRec1, tx);
          receiver2.acknowledge(msgRec2, tx);
          
-         msgs = queue1.browse();
-         assertNotNull(msgs);
-         assertEquals(2, msgs.size());
-         msgRec1 = (Message)msgs.get(0);
-         msgRec2 = (Message)msgs.get(1);
-         assertTrue(msgRec1 == msg5);
-         assertTrue(msgRec2 == msg6);
+         int deliveringCount = queue1.deliveringCount();
+         assertEquals(2, deliveringCount);
          
-         msgs = queue2.browse();
-         assertNotNull(msgs);
-         assertEquals(2, msgs.size());
-         msgRec1 = (Message)msgs.get(0);
-         msgRec2 = (Message)msgs.get(1);
-         assertTrue(msgRec1 == msg5);
-         assertTrue(msgRec2 == msg6);
+         deliveringCount = queue2.deliveringCount();
+         assertEquals(2, deliveringCount);
          
          tx.commit();
          
@@ -1048,55 +1041,38 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          receiver2.acknowledge(msgRec1, tx);
          receiver2.acknowledge(msgRec2, tx);
          
-         msgs = queue1.browse();
-         assertNotNull(msgs);
-         assertEquals(2, msgs.size());
-         msgRec1 = (Message)msgs.get(0);
-         msgRec2 = (Message)msgs.get(1);
-         assertTrue(msgRec1 == msg7);
-         assertTrue(msgRec2 == msg8);
+         deliveringCount = queue1.deliveringCount();
+         assertEquals(2, deliveringCount);
          
-         msgs = queue2.browse();
-         assertNotNull(msgs);
-         assertEquals(2, msgs.size());
-         msgRec1 = (Message)msgs.get(0);
-         msgRec2 = (Message)msgs.get(1);
-         assertTrue(msgRec1 == msg7);
-         assertTrue(msgRec2 == msg8);
+         deliveringCount = queue2.deliveringCount();
+         assertEquals(2, deliveringCount);
          
          tx.rollback();
          
-         msgs = queue1.browse();
-         assertNotNull(msgs);
-         assertEquals(2, msgs.size());
-         msgRec1 = (Message)msgs.get(0);
-         msgRec2 = (Message)msgs.get(1);
-         assertTrue(msgRec1 == msg7);
-         assertTrue(msgRec2 == msg8);
+         deliveringCount = queue1.deliveringCount();
+         assertEquals(2, deliveringCount);                  
+         
          receiver1.acknowledge(msgRec1, null);
          receiver1.acknowledge(msgRec2, null);
          
-         msgs = queue2.browse();
-         assertNotNull(msgs);
-         assertEquals(2, msgs.size());
-         msgRec1 = (Message)msgs.get(0);
-         msgRec2 = (Message)msgs.get(1);
-         assertTrue(msgRec1 == msg7);
-         assertTrue(msgRec2 == msg8);    
+         deliveringCount = queue2.deliveringCount();
+         assertEquals(2, deliveringCount);     
+         
+         
          receiver2.acknowledge(msgRec1, null);
          receiver2.acknowledge(msgRec2, null);
+         
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
       }
       finally
       {
          if (postOffice != null)
          {
             postOffice.stop();
-         }
-         
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
+         }         
       }
    }
    

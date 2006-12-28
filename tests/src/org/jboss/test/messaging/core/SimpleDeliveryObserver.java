@@ -69,56 +69,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
 
    // Public --------------------------------------------------------
 
-   public synchronized void waitForCancellation(Delivery delivery) throws Exception
-   {
-      waitForCancellation(delivery, 0);
-   }
-
-   /**
-    * Waits until the delivery is cancelled, or timeout expires. If the delivery is already
-    * cancelled, exits immediately.
-    */
-   public synchronized boolean waitForCancellation(Delivery delivery, long timeout) throws Exception
-   {
-      try
-      {
-         if (delivery.isCancelled())
-         {
-            return true;
-         }
-
-         if (toBeCancelled != null)
-         {
-            throw new IllegalStateException("already waiting for another delivery cancellation");
-         }
-
-         toBeCancelled = delivery;
-
-         if (timeout <= 0)
-         {
-            this.wait();
-         }
-         else
-         {
-            this.wait(timeout);
-         }
-
-         if (toBeCancelled == null)
-         {
-            return true;
-         }
-         else
-         {
-            log.warn("exiting on timeout");
-            return false;
-         }
-      }
-      finally
-      {
-         toBeCancelled = null;
-      }
-   }
-
    public synchronized boolean waitForAcknowledgment(Delivery delivery) throws Exception
    {
       return waitForAcknowledgment(delivery, 0);

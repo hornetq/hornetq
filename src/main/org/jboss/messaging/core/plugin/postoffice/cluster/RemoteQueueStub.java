@@ -109,7 +109,7 @@ public class RemoteQueueStub implements ClusteredQueue
       }
 
       if (trace) { log.trace(this + " accepting " + reference + " for delivery"); }
-      return new SimpleDelivery(this, reference, false);
+      return new SimpleDelivery(this, reference);
    }
 
    // Distributor implementation ------------------------------------
@@ -288,7 +288,7 @@ public class RemoteQueueStub implements ClusteredQueue
       return "RemoteQueueStub[" + channelID + "/" + name + " -> " + nodeID + "]";
    }
 
-   public void addDelivery(Delivery del)
+   public int deliveringCount()
    {
       throw new UnsupportedOperationException();
    }

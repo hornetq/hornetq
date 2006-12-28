@@ -134,7 +134,7 @@ public class ValveAspect extends HAAspect implements Interceptor
          }
          catch (Throwable e)
          {
-            log.error("ValveAspect didn't catch the exception " + e + ", and it will be forwarded", e);
+            // just rethrow
             throw e;
          }
          finally

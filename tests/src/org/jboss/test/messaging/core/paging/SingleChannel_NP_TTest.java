@@ -109,7 +109,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       
       //Send one more ref
@@ -145,7 +145,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       //Send 9 more
@@ -182,7 +182,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -220,7 +220,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -257,7 +257,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -297,7 +297,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       //Send 100 more refs then roll back
       tx = tr.createTransaction();
@@ -348,7 +348,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -389,7 +389,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());  
 
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       
       
@@ -427,7 +427,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());  
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
                 
       
@@ -461,7 +461,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -498,7 +498,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -534,7 +534,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -568,7 +568,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -600,7 +600,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       
       
@@ -632,7 +632,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       
       
@@ -664,7 +664,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
             
       
       
@@ -701,7 +701,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       
       
@@ -739,7 +739,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertFalse(queue.isPaging());
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
       
       
@@ -778,7 +778,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify no deliveries
-      assertEquals(0, queue.memoryDeliveryCount());;      
+      assertEquals(0, queue.deliveringCount());;      
       
       
        
@@ -809,7 +809,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify 20 deliveries
-      assertEquals(20, queue.memoryDeliveryCount());;      
+      assertEquals(20, queue.deliveringCount());;      
       
       
        
@@ -844,7 +844,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify 13 deliveries
-      assertEquals(13, queue.memoryDeliveryCount());;      
+      assertEquals(13, queue.deliveringCount());;      
       
       
    
@@ -881,7 +881,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify 10 deliveries
-      assertEquals(10, queue.memoryDeliveryCount());;      
+      assertEquals(10, queue.deliveringCount());;      
       
             
       
@@ -919,7 +919,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertTrue(queue.isPaging());      
       
       //Verify 0 deliveries
-      assertEquals(0, queue.memoryDeliveryCount());;      
+      assertEquals(0, queue.deliveringCount());;      
       
       
       //Now there should be 120 message left to consume
@@ -948,7 +948,7 @@ public class SingleChannel_NP_TTest extends PagingStateTestBase
       assertFalse(queue.isPaging());      
       
       //Verify 0 deliveries
-      assertEquals(0, queue.memoryDeliveryCount());
+      assertEquals(0, queue.deliveringCount());
       
                   
       //Consume the rest

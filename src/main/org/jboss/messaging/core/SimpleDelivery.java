@@ -43,8 +43,7 @@ public class SimpleDelivery implements Delivery
    
    // Attributes ----------------------------------------------------
 
-   protected boolean done;
-   protected boolean cancelled;
+   protected volatile boolean done;
    protected boolean selectorAccepted;
    protected DeliveryObserver observer;
    protected MessageReference reference;
@@ -98,16 +97,11 @@ public class SimpleDelivery implements Delivery
       return reference;
    }
 
-   public synchronized boolean isDone()
+   public boolean isDone()
    {
       return done;
    }
    
-   public synchronized boolean isCancelled()
-   {
-      return cancelled;
-   }
-
    public boolean isSelectorAccepted()
    {
       return selectorAccepted;
@@ -123,30 +117,22 @@ public class SimpleDelivery implements Delivery
       return observer;
    }
 
-   public synchronized void acknowledge(Transaction tx) throws Throwable
+   public void acknowledge(Transaction tx) throws Throwable
    {        
       if (trace) { log.trace(this + " acknowledging delivery in tx:" + tx); }
       
-      // deals with the race condition when acknowledgment arrives before the delivery
-      // is returned back to the sending delivery observer      
       observer.acknowledge(this, tx);
 
-      //Important note! We must ALWAYS set done true irrespective of whether we are in a tx or not.
-      //Previously we were only setting done to true if there was no transaction.
-      //This meant that if the acknowledgement (in the tx) came in before the call to handle()
-      //had returned the delivery would end up in the delivery set in the channel and never
-      //get removed - causing a leak
       done = true;      
    }
 
-   public synchronized void cancel() throws Throwable
+   public void cancel() throws Throwable
    {
       if (trace) { log.trace(this + " cancelling delivery"); }
-      
-      // deals with the race condition when cancellation arrives before the delivery
-      // is returned back to the sending delivery observer      
+         
       observer.cancel(this);
-      cancelled = true;      
+      
+      done = true;
    }
    
    // Public --------------------------------------------------------
@@ -154,7 +140,7 @@ public class SimpleDelivery implements Delivery
    public String toString()
    {
       return "Delivery" + (reference == null ? "" : "[" + reference + "]") +
-         "(" + (cancelled ? "cancelled" : done ? "done" : "active") + ")";
+         "(" + ( done ? "done" : "active") + ")";
    }
 
    // Package protected ---------------------------------------------

@@ -194,19 +194,19 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          log.info("r2 " + receiver2.getMessages().size());
          
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());
+         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());
          
          assertEquals(0, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(0, queue2.memoryRefCount());
-         assertEquals(1, queue2.memoryDeliveryCount());
+         assertEquals(1, queue2.deliveringCount());
          
          this.acknowledgeAll(receiver2);
          
          assertEquals(0, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
          
          assertTrue(office1.getHoldingTransactions().isEmpty());         
          assertTrue(office2.getHoldingTransactions().isEmpty());
@@ -289,14 +289,14 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertEquals(1, office1.getHoldingTransactions().size());         
          assertTrue(office2.getHoldingTransactions().isEmpty());
          
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());
+         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());
          
          assertEquals(0, queue1.memoryRefCount());
-         assertEquals(1, queue1.memoryDeliveryCount());
+         assertEquals(1, queue1.deliveringCount());
          
          assertEquals(0, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
          
          //Now kill office 2 - this should cause office1 to remove the dead held transaction
          
@@ -308,7 +308,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          //The delivery should be cancelled back to the queue too
          
          assertEquals(1, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
             
       }
@@ -389,11 +389,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertEquals(1, office1.getHoldingTransactions().size());         
          assertTrue(office2.getHoldingTransactions().isEmpty());
          
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());
+         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());
          
          assertEquals(0, queue1.memoryRefCount());
-         assertEquals(1, queue1.memoryDeliveryCount());
+         assertEquals(1, queue1.deliveringCount());
             
          //Now kill office 2 - this should cause office1 to remove the dead held transaction
          
@@ -405,7 +405,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          //The delivery should be committed
          
          assertEquals(0, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
       }
       finally
@@ -486,14 +486,14 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertTrue(office2.getHoldingTransactions().isEmpty());        
          assertTrue(office2.getHoldingTransactions().isEmpty());
          
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());
+         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());
          
          assertEquals(1, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(0, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());                     
+         assertEquals(0, queue2.deliveringCount());                     
       }
       finally
       {
@@ -561,26 +561,26 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          //Check the sizes
          
          log.info("Here are the sizes:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
                
          assertEquals(NUM_MESSAGES, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(NUM_MESSAGES, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
            
          assertEquals(NUM_MESSAGES, queue3.memoryRefCount());
-         assertEquals(0, queue3.memoryDeliveryCount());
+         assertEquals(0, queue3.deliveringCount());
          
          assertEquals(NUM_MESSAGES, queue4.memoryRefCount());
-         assertEquals(0, queue4.memoryDeliveryCount());
+         assertEquals(0, queue4.deliveringCount());
          
          assertEquals(NUM_MESSAGES, queue5.memoryRefCount());
-         assertEquals(0, queue5.memoryDeliveryCount());
+         assertEquals(0, queue5.deliveringCount());
          
          SimpleReceiver receiver = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          
@@ -591,26 +591,26 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          Thread.sleep(7000);
          
          log.info("Here are the sizes:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
          
          assertEquals(0, queue1.memoryRefCount());
-         assertEquals(NUM_MESSAGES * 5, queue1.memoryDeliveryCount());
+         assertEquals(NUM_MESSAGES * 5, queue1.deliveringCount());
          
          assertEquals(0, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
            
          assertEquals(0, queue3.memoryRefCount());
-         assertEquals(0, queue3.memoryDeliveryCount());
+         assertEquals(0, queue3.deliveringCount());
          
          assertEquals(0, queue4.memoryRefCount());
-         assertEquals(0, queue4.memoryDeliveryCount());
+         assertEquals(0, queue4.deliveringCount());
          
          assertEquals(0, queue5.memoryRefCount());
-         assertEquals(0, queue5.memoryDeliveryCount());
+         assertEquals(0, queue5.deliveringCount());
          
          List messages = receiver.getMessages();
          
@@ -630,7 +630,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver.clear();
          
          assertEquals(0, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertTrue(office1.getHoldingTransactions().isEmpty());
          assertTrue(office2.getHoldingTransactions().isEmpty());
@@ -724,26 +724,26 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          //Check the sizes
          
          log.info("Here are the sizes 1:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
                
          assertEquals(NUM_MESSAGES, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(NUM_MESSAGES, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
            
          assertEquals(NUM_MESSAGES, queue3.memoryRefCount());
-         assertEquals(0, queue3.memoryDeliveryCount());
+         assertEquals(0, queue3.deliveringCount());
          
          assertEquals(NUM_MESSAGES, queue4.memoryRefCount());
-         assertEquals(0, queue4.memoryDeliveryCount());
+         assertEquals(0, queue4.deliveringCount());
          
          assertEquals(NUM_MESSAGES, queue5.memoryRefCount());
-         assertEquals(0, queue5.memoryDeliveryCount());
+         assertEquals(0, queue5.deliveringCount());
          
          assertTrue(office1.getHoldingTransactions().isEmpty());
          assertTrue(office2.getHoldingTransactions().isEmpty());
@@ -766,17 +766,17 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue1.deliver(false);         
          Thread.sleep(1000);         
          assertEquals(NUM_MESSAGES - 5, queue1.memoryRefCount());
-         assertEquals(5, queue1.memoryDeliveryCount());
+         assertEquals(5, queue1.deliveringCount());
          
          acknowledgeAll(receiver1);
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          receiver1.setMaxRefs(0);
          
          receiver2.setMaxRefs(10);         
          queue2.deliver(false);         
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 10, queue2.memoryRefCount());
-         assertEquals(10, queue2.memoryDeliveryCount());
+         assertEquals(10, queue2.deliveringCount());
          acknowledgeAll(receiver2);
          receiver2.setMaxRefs(0);
                   
@@ -784,7 +784,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue3.deliver(false);         
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 15, queue3.memoryRefCount());
-         assertEquals(15, queue3.memoryDeliveryCount());
+         assertEquals(15, queue3.deliveringCount());
          acknowledgeAll(receiver3);
          receiver3.setMaxRefs(0);
          
@@ -792,7 +792,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue4.deliver(false);         
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 20, queue4.memoryRefCount());
-         assertEquals(20, queue4.memoryDeliveryCount());
+         assertEquals(20, queue4.deliveringCount());
          acknowledgeAll(receiver4);
          receiver4.setMaxRefs(0);
          
@@ -800,7 +800,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue5.deliver(false);         
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 25, queue5.memoryRefCount());
-         assertEquals(25, queue5.memoryDeliveryCount());
+         assertEquals(25, queue5.deliveringCount());
          acknowledgeAll(receiver5);
          receiver5.setMaxRefs(0);
          
@@ -813,11 +813,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertTrue(office5.getHoldingTransactions().isEmpty());
          
          log.info("Here are the sizes 2:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
      
          //Consume the rest from queue 5
          receiver5.setMaxRefs(NUM_MESSAGES - 25);
@@ -827,34 +827,34 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          log.info("receiver5 msgs:" + receiver5.getMessages().size());
          
          log.info("Here are the sizes 3:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
          
          //This will result in an extra one being pulled from queue1 - we cannot avoid this
          //This is because the channel does not know that the receiver is full unless it tries
          //with a ref so it needs to retrieve one
      
          assertEquals(NUM_MESSAGES - 6, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 10, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
           
          assertEquals(NUM_MESSAGES - 15, queue3.memoryRefCount());
-         assertEquals(0, queue3.memoryDeliveryCount());
+         assertEquals(0, queue3.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 20, queue4.memoryRefCount());
-         assertEquals(0, queue4.memoryDeliveryCount());
+         assertEquals(0, queue4.deliveringCount());
          
          assertEquals(1, queue5.memoryRefCount());         
-         assertEquals(NUM_MESSAGES - 25, queue5.memoryDeliveryCount());
+         assertEquals(NUM_MESSAGES - 25, queue5.deliveringCount());
          
          acknowledgeAll(receiver5);
          
-         assertEquals(0, queue5.memoryDeliveryCount());
+         assertEquals(0, queue5.deliveringCount());
          
          receiver5.setMaxRefs(0);
          
@@ -873,31 +873,31 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          Thread.sleep(5000);
            
          log.info("Here are the sizes 4:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 11, queue1.memoryRefCount());
           
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 10, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
           
          assertEquals(NUM_MESSAGES - 15, queue3.memoryRefCount());
-         assertEquals(0, queue3.memoryDeliveryCount());
+         assertEquals(0, queue3.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 20, queue4.memoryRefCount());
-         assertEquals(0, queue4.memoryDeliveryCount());
+         assertEquals(0, queue4.deliveringCount());
          
          assertEquals(1, queue5.memoryRefCount());          
-         assertEquals(5, queue5.memoryDeliveryCount());
+         assertEquals(5, queue5.deliveringCount());
                
          acknowledgeAll(receiver5);
 
-         assertEquals(0, queue5.memoryDeliveryCount());
+         assertEquals(0, queue5.deliveringCount());
          
          receiver1.setMaxRefs(0);
            
@@ -914,30 +914,30 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          Thread.sleep(2000);
           
          log.info("Here are the sizes 5:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 11, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 11, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
           
          assertEquals(NUM_MESSAGES - 15, queue3.memoryRefCount());
-         assertEquals(0, queue3.memoryDeliveryCount());
+         assertEquals(0, queue3.deliveringCount());
          
          assertEquals(NUM_MESSAGES - 20, queue4.memoryRefCount());
-         assertEquals(0, queue4.memoryDeliveryCount());
+         assertEquals(0, queue4.deliveringCount());
          
          assertEquals(1, queue5.memoryRefCount());          
-         assertEquals(1, queue5.memoryDeliveryCount());
+         assertEquals(1, queue5.deliveringCount());
                   
          acknowledgeAll(receiver5);
          
-         assertEquals(0, queue5.memoryDeliveryCount());
+         assertEquals(0, queue5.deliveringCount());
          
          receiver5.setMaxRefs(0);
          
@@ -954,30 +954,30 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          Thread.sleep(7000);
          
          log.info("Here are the sizes 6:");         
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.memoryDeliveryCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.memoryDeliveryCount());         
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.memoryDeliveryCount());         
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.memoryDeliveryCount());         
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.memoryDeliveryCount());
+         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.deliveringCount());
+         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.deliveringCount());         
+         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.deliveringCount());         
+         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.deliveringCount());         
+         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.deliveringCount());
          
          assertEquals(0, queue1.memoryRefCount());
-         assertEquals(0, queue1.memoryDeliveryCount());
+         assertEquals(0, queue1.deliveringCount());
          
          assertEquals(0, queue2.memoryRefCount());
-         assertEquals(0, queue2.memoryDeliveryCount());
+         assertEquals(0, queue2.deliveringCount());
           
          assertEquals(0, queue3.memoryRefCount());
-         assertEquals(0, queue3.memoryDeliveryCount());
+         assertEquals(0, queue3.deliveringCount());
          
          assertEquals(0, queue4.memoryRefCount());
-         assertEquals(NUM_MESSAGES - 15 + NUM_MESSAGES - 20 + NUM_MESSAGES - 11 + NUM_MESSAGES - 11 + 1, queue4.memoryDeliveryCount());
+         assertEquals(NUM_MESSAGES - 15 + NUM_MESSAGES - 20 + NUM_MESSAGES - 11 + NUM_MESSAGES - 11 + 1, queue4.deliveringCount());
          
          assertEquals(0, queue5.memoryRefCount());          
-         assertEquals(0, queue5.memoryDeliveryCount());
+         assertEquals(0, queue5.deliveringCount());
                   
          acknowledgeAll(receiver4);
          
-         assertEquals(0, queue4.memoryDeliveryCount());
+         assertEquals(0, queue4.deliveringCount());
          
          assertTrue(office1.getHoldingTransactions().isEmpty());
          assertTrue(office2.getHoldingTransactions().isEmpty());

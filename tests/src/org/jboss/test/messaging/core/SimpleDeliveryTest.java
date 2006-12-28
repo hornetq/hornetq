@@ -89,15 +89,6 @@ public class SimpleDeliveryTest extends MessagingTestCase
       assertTrue(delivery.isDone());
    }
    
-   public void testCancellation() throws Throwable
-   {
-      assertFalse(delivery.isCancelled());
-
-      delivery.cancel();
-
-      assertTrue(delivery.isCancelled());
-   }
-   
    public void testDoneIsSetWithTransaction() throws Throwable
    {
       //Calling acknowledge on a SimpleDelivery

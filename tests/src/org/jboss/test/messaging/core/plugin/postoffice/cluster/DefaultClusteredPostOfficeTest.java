@@ -773,7 +773,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          msgs = queue3.browse();
          assertNotNull(msgs);
          assertTrue(msgs.isEmpty()); 
-         
+                  
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
       }
       finally
       {
@@ -787,10 +791,6 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office2.stop();
          }
          
-         if (checkNoMessageData())
-         {
-            fail("Message data still in database");
-         }
       }
    }
    
@@ -932,6 +932,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             assertTrue(msgs.isEmpty()); 
             receivers[i].clear();
          }
+         
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
 
       }
       finally
@@ -966,11 +971,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             }
             office2.stop();
          }
-         
-         if (checkNoMessageData())
-         {
-            fail("Message data still in database");
-         }
+        
       }
    }
    
@@ -1196,7 +1197,12 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          this.checkEmpty(receiver1);         
          this.checkEmpty(receiver2);
          checkContainsAndAcknowledge(msg, receiver3, sub2);           
-                 
+                         
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }
+         
       }
       finally
       {
@@ -1215,11 +1221,6 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office3.stop();
          }
          
-         
-         if (checkNoMessageData())
-         {
-            fail("Message data still in database");
-         }
       }
    }
    
@@ -1581,7 +1582,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          //n7
          checkContainsAndAcknowledge(msgs, receiver14, sharedDurable5);
-        
+         
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
+         }        
       }
       finally
       {
@@ -1661,11 +1666,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             }
             office7.stop();
          }
-         
-         if (checkNoMessageData())
-         {
-            fail("Message data still in database");
-         }
+        
       }
    }
    
@@ -1873,16 +1874,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                         
             receivers[i].acknowledge(msgRec1, tx);
             receivers[i].acknowledge(msgRec2, tx);
-                        
-            msgs = queues[i].browse();
+             
+            int deliveringCount = queues[i].deliveringCount();
             
-            assertNotNull(msgs);
-            assertEquals(2, msgs.size());
-            msgRec1 = (Message)msgs.get(0);
-            assertEquals(msg1.getMessageID(), msgRec1.getMessageID());
-            msgRec2 = (Message)msgs.get(1);
-            assertEquals(msg2.getMessageID(), msgRec2.getMessageID());
-            
+            assertEquals(2, deliveringCount);
+                       
             receivers[i].clear();
          }
          
@@ -1938,15 +1934,10 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                         
             receivers[i].acknowledge(msgRec1, tx);
             receivers[i].acknowledge(msgRec2, tx);
-                        
-            msgs = queues[i].browse();
+               
+            int deliveringCount = queues[i].deliveringCount();
             
-            assertNotNull(msgs);
-            assertEquals(2, msgs.size());
-            msgRec1 = (Message)msgs.get(0);
-            assertEquals(msg1.getMessageID(), msgRec1.getMessageID());
-            msgRec2 = (Message)msgs.get(1);
-            assertEquals(msg2.getMessageID(), msgRec2.getMessageID());
+            assertEquals(2, deliveringCount);
             
          }
          
@@ -1972,14 +1963,9 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             Message msgRec2 = (Message)msgs.get(1);
             assertEquals(msg2.getMessageID(), msgRec2.getMessageID());      
                                  
-            msgs = queues[i].browse();
+            int deliveringCount = queues[i].deliveringCount();
             
-            assertNotNull(msgs);
-            assertEquals(2, msgs.size());
-            msgRec1 = (Message)msgs.get(0);
-            assertEquals(msg1.getMessageID(), msgRec1.getMessageID());
-            msgRec2 = (Message)msgs.get(1);
-            assertEquals(msg2.getMessageID(), msgRec2.getMessageID());
+            assertEquals(2, deliveringCount);
             
             receivers[i].acknowledge(msgRec1, null);
             receivers[i].acknowledge(msgRec2, null);
@@ -2134,14 +2120,9 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             receivers[i].acknowledge(msgRec1, tx);
             receivers[i].acknowledge(msgRec2, tx);
                         
-            msgs = queues[i].browse();
+            int deliveringCount = queues[i].deliveringCount();
             
-            assertNotNull(msgs);
-            assertEquals(2, msgs.size());
-            msgRec1 = (Message)msgs.get(0);
-            assertEquals(msg1.getMessageID(), msgRec1.getMessageID());
-            msgRec2 = (Message)msgs.get(1);
-            assertEquals(msg2.getMessageID(), msgRec2.getMessageID());
+            assertEquals(2, deliveringCount);
             
             receivers[i].clear();
          }
@@ -2203,14 +2184,9 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             receivers[i].acknowledge(msgRec2, tx);
             
             
-            msgs = queues[i].browse();
+            int deliveringCount = queues[i].deliveringCount();
             
-            assertNotNull(msgs);
-            assertEquals(2, msgs.size());
-            msgRec1 = (Message)msgs.get(0);
-            assertEquals(msg1.getMessageID(), msgRec1.getMessageID());
-            msgRec2 = (Message)msgs.get(1);
-            assertEquals(msg2.getMessageID(), msgRec2.getMessageID());
+            assertEquals(2, deliveringCount);
          }
          
          
@@ -2237,19 +2213,18 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             Message msgRec2 = (Message)msgs.get(1);
             assertEquals(msg2.getMessageID(), msgRec2.getMessageID());      
                                               
-            msgs = queues[i].browse();
+            int deliveringCount = queues[i].deliveringCount();
             
-            assertNotNull(msgs);
-            assertEquals(2, msgs.size());
-            msgRec1 = (Message)msgs.get(0);
-            assertEquals(msg1.getMessageID(), msgRec1.getMessageID());
-            msgRec2 = (Message)msgs.get(1);
-            assertEquals(msg2.getMessageID(), msgRec2.getMessageID());
+            assertEquals(2, deliveringCount);
             
             receivers[i].acknowledge(msgRec1, null);
             receivers[i].acknowledge(msgRec2, null);             
             
             receivers[i].clear();
+         }
+         if (checkNoMessageData())
+         {
+            fail("Message data still in database");
          }
       }
       finally
@@ -2286,10 +2261,6 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             office2.stop();
          }
          
-         if (checkNoMessageData())
-         {
-            fail("Message data still in database");
-         }
       }
    }
    

@@ -261,10 +261,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }
    
-   
-   
-   
-      
+               
    // Related to counters
    // ===================
    
@@ -295,6 +292,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps.setString(1, counterName);
          
          rs = ps.executeQuery();
+         
          if (trace) { log.trace(JDBCUtil.statementToString(selectCounterSQL, counterName)); }         
          
          if (!rs.next())
@@ -311,7 +309,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             ps.setString(1, counterName);
             ps.setLong(2, size);
             
-            int rows = ps.executeUpdate();
+            int rows = updateWithRetry(ps);
             if (trace) { log.trace(JDBCUtil.statementToString(insertCounterSQL, counterName, new Integer(size)) + " inserted " + rows + " rows"); }
             
             ps.close();            
@@ -333,7 +331,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps.setLong(1, nextId + size);
          ps.setString(2, counterName);
          
-         int rows = ps.executeUpdate();
+         int rows = updateWithRetry(ps);
          if (trace) { log.trace(JDBCUtil.statementToString(updateCounterSQL, new Long(nextId + size), counterName) + " updated " + rows + " rows"); }
          
          return nextId;
@@ -627,7 +625,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psInsertReference.executeUpdate();
+               int rows = updateWithRetry(psInsertReference);
                
                if (trace)
                {
@@ -709,7 +707,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             {
                if (added)
                {
-                  int rows = psInsertMessage.executeUpdate();
+                  int rows = updateWithRetry(psInsertMessage);
                                       
                   if (trace)
                   {
@@ -718,7 +716,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                }
                else
                {               
-                  int rows = psUpdateMessage.executeUpdate();
+                  int rows = updateWithRetry(psUpdateMessage);
                   
                   if (trace)
                   {
@@ -734,19 +732,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (usingBatchUpdates)
          {
-            int[] rowsReference = psInsertReference.executeBatch();
+            int[] rowsReference = updateWithRetryBatch(psInsertReference);
             
             if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
             
             if (messageInsertsInBatch)
             {
-               int[] rowsMessage = psInsertMessage.executeBatch();
+               int[] rowsMessage = updateWithRetryBatch(psInsertMessage);
                
                if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE"), rowsMessage, "inserted"); }
             }
             if (messageUpdatesInBatch)
             {
-               int[] rowsMessage = psUpdateMessage.executeBatch();
+               int[] rowsMessage = updateWithRetryBatch(psUpdateMessage);
                
                if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNELCOUNT"), rowsMessage, "updated"); }
             }
@@ -864,7 +862,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psDeleteReference.executeUpdate();
+               int rows = updateWithRetry(psDeleteReference);
                
                if (trace) { log.trace("Deleted " + rows + " rows"); }
                
@@ -897,11 +895,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {  
-               int rows = psUpdateMessage.executeUpdate();
+               int rows = updateWithRetry(psUpdateMessage);
                                                  
                if (trace) { log.trace("Updated " + rows + " rows"); }
                
-               rows = psDeleteMessage.executeUpdate();
+               rows = updateWithRetry(psDeleteMessage);
         
                if (trace) { log.trace("Deleted " + rows + " rows"); }
             
@@ -915,15 +913,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (usingBatchUpdates)
          {
-            int[] rowsReference = psDeleteReference.executeBatch();
+            int[] rowsReference = updateWithRetryBatch(psDeleteReference);
             
             if (trace) { logBatchUpdate(getSQLStatement("DELETE_MESSAGE_REF"), rowsReference, "deleted"); }
             
-            rowsReference = psUpdateMessage.executeBatch();
+            rowsReference = updateWithRetryBatch(psUpdateMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rowsReference, "updated"); }
             
-            rowsReference = psDeleteMessage.executeBatch();
+            rowsReference = updateWithRetryBatch(psDeleteMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DELETE_MESSAGE"), rowsReference, "deleted"); }
                                     
@@ -1022,7 +1020,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             try
             {
-               int rows = ps.executeUpdate();
+               int rows = updateWithRetry(ps);
                  
                if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"), new Long(channelID),
                                       new Long(orderStart), new Long(orderEnd)) + " updated " + rows + " rows"); }
@@ -1130,7 +1128,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psUpdateReference.executeUpdate();
+               int rows = updateWithRetry(psUpdateReference);
                
                if (trace) { log.trace("Updated " + rows + " rows"); }
                
@@ -1141,7 +1139,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                      
          if (usingBatchUpdates)
          {
-            int[] rowsReference = psUpdateReference.executeBatch();
+            int[] rowsReference = updateWithRetryBatch(psUpdateReference);
             
             if (trace) { logBatchUpdate(getSQLStatement("UPDATE_PAGE_ORDER"), rowsReference, "updated"); }
                         
@@ -1435,7 +1433,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             // Add the reference
             addReference(channelID, ref, psReference, false);
             
-            int rows = psReference.executeUpdate();            
+            int rows = updateWithRetry(psReference);      
             
             if (trace) { log.trace("Inserted " + rows + " rows"); }
               
@@ -1456,7 +1454,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                incrementChannelCount(m, psMessage);
             }
                            
-            rows = psMessage.executeUpdate();
+            rows = updateWithRetry(psMessage);
             
             if (trace) { log.trace("Inserted/updated " + rows + " rows"); }     
             
@@ -1530,7 +1528,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          psReference.setLong(3, ref.getMessageID());
          
-         int rows = psReference.executeUpdate();
+         int rows = updateWithRetry(psReference);
 
          if (trace) { log.trace("Updated " + rows + " rows"); }
       }
@@ -1599,7 +1597,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             //Remove the message reference
             removeReference(channelID, ref, psReference);
             
-            int rows = psReference.executeUpdate();
+            int rows = updateWithRetry(psReference);
             
             if (rows != 1)
             {
@@ -1614,7 +1612,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             decrementChannelCount(m, psUpdate);
             
-            rows = psUpdate.executeUpdate();
+            rows = updateWithRetry(psUpdate);
             
             if (trace) { log.trace("Updated " + rows + " rows"); } 
             
@@ -1624,7 +1622,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             removeMessage(m, psMessage);
                        
-            rows = psMessage.executeUpdate();
+            rows = updateWithRetry(psMessage);
             
             if (trace) { log.trace("Delete " + rows + " rows"); }                           
          }
@@ -1864,7 +1862,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psReference.executeUpdate();
+               int rows = updateWithRetry(psReference);
                
                if (trace) { log.trace("Inserted " + rows + " rows"); }                              
                
@@ -1912,12 +1910,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             {
                if (added)
                {
-                  int rows = psInsertMessage.executeUpdate();
+                  int rows = updateWithRetry(psInsertMessage);
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
                }
                else
                {
-                  int rows = psIncMessage.executeUpdate();
+                  int rows = updateWithRetry(psIncMessage);
                   if (trace) { log.trace("Updated " + rows + " rows"); }
                }
                psInsertMessage.close();
@@ -1931,21 +1929,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             // Process the add batch
 
-
-
-            int[] rowsReference = psReference.executeBatch();
+            int[] rowsReference = updateWithRetryBatch(psReference);
             
             if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
             
             if (messageInsertsInBatch)
             {
-               int[] rowsMessage = psInsertMessage.executeBatch();
+               int[] rowsMessage = updateWithRetryBatch(psInsertMessage);
                if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE"), rowsMessage, "inserted"); }
             }
 
             if (messageUpdatesInBatch)
             {
-               int[] rowsMessage = psIncMessage.executeBatch();
+               int[] rowsMessage = updateWithRetryBatch(psIncMessage);
                if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNELCOUNT"), rowsMessage, "updated"); }
             }
             
@@ -1988,7 +1984,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psReference.executeUpdate();
+               int rows = updateWithRetry(psReference);
                if (trace) { log.trace("Deleted " + rows + " rows"); }
                psReference.close();
                psReference = null;
@@ -2017,10 +2013,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psDecMessage.executeUpdate();
+               int rows = updateWithRetry(psDecMessage);
                if (trace) { log.trace("Updated " + rows + " rows"); }
                
-               rows = psDeleteMessage.executeUpdate();
+               rows = updateWithRetry(psDeleteMessage);
                if (trace) { log.trace("Deleted " + rows + " rows"); }
 
                psDeleteMessage.close();
@@ -2034,15 +2030,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             // Process the remove batch
 
-            int[] rows = psReference.executeBatch();
+            int[] rows = updateWithRetryBatch(psReference);
             
             if (trace) { logBatchUpdate(getSQLStatement("DELETE_MESSAGE_REF"), rows, "deleted"); }
             
-            rows = psDecMessage.executeBatch();
+            rows = updateWithRetryBatch(psDecMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rows, "updated"); }
 
-            rows = psDeleteMessage.executeBatch();
+            rows = updateWithRetryBatch(psDeleteMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DELETE_MESSAGE"), rows, "deleted"); }
 
@@ -2208,11 +2204,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psUpdateMessage.executeUpdate();
+               int rows = updateWithRetry(psUpdateMessage);
                
                if (trace) { log.trace("Updated " + rows + " rows"); }
                
-               rows = psDeleteMessage.executeUpdate();
+               rows = updateWithRetry(psDeleteMessage);
                
                if (trace) { log.trace("Deleted " + rows + " rows"); }
                
@@ -2225,14 +2221,14 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (batch)
          {
-            int[] rows = psUpdateMessage.executeBatch();
+            int[] rows = updateWithRetryBatch(psUpdateMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rows, "updated"); }
             
             psUpdateMessage.close();
             psUpdateMessage = null;
             
-            rows = psDeleteMessage.executeBatch();
+            rows = updateWithRetryBatch(psDeleteMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DELETE_MESSAGE"), rows, "deleted"); }
             
@@ -2356,7 +2352,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psReference.executeUpdate();
+               int rows = updateWithRetry(psReference);
                
                if (trace) { log.trace("Inserted " + rows + " rows"); }
                
@@ -2408,13 +2404,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             {
                if (added)
                {
-                  int rows = psInsertMessage.executeUpdate();
+                  int rows = updateWithRetry(psInsertMessage);
                   
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
                }
                else
                {
-                  int rows = psUpdateMessage.executeUpdate();
+                  int rows = updateWithRetry(psUpdateMessage);
                   
                   if (trace) { log.trace("Updated " + rows + " rows"); }
                }
@@ -2427,19 +2423,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (batch)
          {
-            int[] rowsReference = psReference.executeBatch();
+            int[] rowsReference = updateWithRetryBatch(psReference);
             
             if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
             
             if (messageInsertsInBatch)
             {
-               int[] rowsMessage = psInsertMessage.executeBatch();
+               int[] rowsMessage = updateWithRetryBatch(psInsertMessage);
                
                if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE"), rowsMessage, "inserted"); }
             }
             if (messageUpdatesInBatch)
             {
-               int[] rowsMessage = psUpdateMessage.executeBatch();
+               int[] rowsMessage = updateWithRetryBatch(psUpdateMessage);
                
                if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNELCOUNT"), rowsMessage, "updated"); }
             }
@@ -2479,7 +2475,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psReference.executeUpdate();
+               int rows = updateWithRetry(psReference);
                
                if (trace) { log.trace("updated " + rows + " rows"); }
                
@@ -2490,7 +2486,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (batch)
          {
-            int[] rows = psReference.executeBatch();
+            int[] rows = updateWithRetryBatch(psReference);
             
             if (trace) { logBatchUpdate(getSQLStatement("UPDATE_MESSAGE_REF"), rows, "updated"); }
             
@@ -2628,11 +2624,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             }
             else
             {
-               int rows = psUpdateMessage.executeUpdate();
+               int rows = updateWithRetry(psUpdateMessage);
                
                if (trace) { log.trace("updated " + rows + " rows"); }
                
-               rows = psDeleteMessage.executeUpdate();
+               rows = updateWithRetry(psDeleteMessage);
                
                if (trace) { log.trace("deleted " + rows + " rows"); }
                
@@ -2645,11 +2641,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          if (batch)
          {
-            int[] rows = psUpdateMessage.executeBatch();
+            int[] rows = updateWithRetryBatch(psUpdateMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rows, "updated"); }
             
-            rows = psDeleteMessage.executeBatch();
+            rows = updateWithRetryBatch(psDeleteMessage);
             
             if (trace) { logBatchUpdate(getSQLStatement("DELETE_MESSAGE"), rows, "deleted"); }
             
@@ -2735,7 +2731,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps.setInt(3, formatID);
          ps.setBytes(4, xid.getGlobalTransactionId());
          
-         rows = ps.executeUpdate();
+         rows = updateWithRetry(ps);
          
       }
       finally
@@ -2760,7 +2756,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }
    
-   protected void removeTXRecord(Connection conn, Transaction tx) throws SQLException
+   protected void removeTXRecord(Connection conn, Transaction tx) throws Exception
    {
       PreparedStatement ps = null;
       try
@@ -2769,7 +2765,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ps.setLong(1, tx.getId());
          
-         int rows = ps.executeUpdate();
+         int rows = updateWithRetry(ps);
          
          if (trace)
          {
@@ -2864,7 +2860,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ps.setLong(1, tx.getId());        
          
-         int rows = ps.executeUpdate();
+         int rows = updateWithRetry(ps);
          
          if (trace)
          {
@@ -2875,7 +2871,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps = conn.prepareStatement(getSQLStatement("COMMIT_MESSAGE_REF2"));
          ps.setLong(1, tx.getId());         
          
-         rows = ps.executeUpdate();
+         rows = updateWithRetry(ps);
          
          if (trace)
          {
@@ -2910,7 +2906,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ps.setLong(1, tx.getId());         
          
-         int rows = ps.executeUpdate();
+         int rows = updateWithRetry(ps);
          
          if (trace)
          {
@@ -2922,7 +2918,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps = conn.prepareStatement(getSQLStatement("ROLLBACK_MESSAGE_REF2"));
          ps.setLong(1, tx.getId());
          
-         rows = ps.executeUpdate();
+         rows = updateWithRetry(ps);
          
          if (trace)
          {
@@ -3240,6 +3236,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       log.trace("Batch update " + name + ", " + action + " total of " + count + " rows");
    }
    
+   protected int updateWithRetry(PreparedStatement ps) throws Exception
+   {
+      return updateWithRetry(ps, false)[0];
+   }
+   
+   protected int[] updateWithRetryBatch(PreparedStatement ps) throws Exception
+   {
+      return updateWithRetry(ps, true);
+   }
+   
    //PersistentServiceSupport overrides ----------------------------
    
    protected Map getDefaultDDLStatements()
@@ -3335,6 +3341,60 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    }
    
    // Private -------------------------------------------------------
+   
+   private int[] updateWithRetry(PreparedStatement ps, boolean batch) throws Exception
+   {
+      final int MAX_TRIES = 25;      
+      
+      int rows = 0;
+      
+      int[] rowsArr = null;
+      
+      int tries = 0;
+      
+      while (true)
+      {
+         try
+         {
+            if (batch)
+            {
+               rowsArr = ps.executeBatch();
+            }
+            else
+            {
+               rows = ps.executeUpdate();
+            }
+            
+            if (tries > 0)
+            {
+               log.warn("Update worked after retry");
+            }
+            break;
+         }
+         catch (SQLException e)
+         {
+            log.warn("SQLException caught - assuming deadlock detected, try:" + (tries + 1), e);
+            tries++;
+            if (tries == MAX_TRIES)
+            {
+               log.error("Retried " + tries + " times, now giving up");
+               throw new IllegalStateException("Failed to update references");
+            }
+            log.warn("Trying again after a pause");
+            //Now we wait for a random amount of time to minimise risk of deadlock
+            Thread.sleep((long)(Math.random() * 500));
+         }  
+      }
+      
+      if (batch)
+      {
+         return rowsArr;
+      }
+      else
+      {
+         return new int[] { rows };
+      }
+   }
    
    private List getMessageChannelPair(String sqlQuery, long transactionId) throws Exception
    {

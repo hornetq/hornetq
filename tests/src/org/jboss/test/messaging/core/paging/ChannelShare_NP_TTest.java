@@ -107,7 +107,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
+      assertEquals(0, queue1.deliveringCount());
       
       //Queue2
       
@@ -120,7 +120,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       
@@ -161,7 +161,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
+      assertEquals(0, queue1.deliveringCount());
       
       //Queue2
       
@@ -174,7 +174,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       
@@ -216,7 +216,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertTrue(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
+      assertEquals(0, queue1.deliveringCount());
       
       //Queue2
       
@@ -229,7 +229,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       
@@ -270,7 +270,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertTrue(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
+      assertEquals(0, queue1.deliveringCount());
       
       //Queue2
       
@@ -283,7 +283,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       
@@ -314,7 +314,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.memoryDeliveryCount());
+      assertEquals(0, queue1.deliveringCount());
       
       //Queue2
       
@@ -327,7 +327,7 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       
       assertFalse(queue2.isPaging());      
       
-      assertEquals(0, queue2.memoryDeliveryCount());
+      assertEquals(0, queue2.deliveringCount());
             
       //Msgs
       

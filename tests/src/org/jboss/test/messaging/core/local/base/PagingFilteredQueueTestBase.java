@@ -2306,10 +2306,9 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       Delivery delivery = queue.handle(observer, ref, null);
 
       assertTrue(delivery.isDone());
-
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+   
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -2389,9 +2388,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -2403,13 +2401,15 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // transacted acknowledgment
       r.acknowledge(ackm, tx);
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       tx.commit();
 
       assertTrue(queue.browse().isEmpty());
+      
+      deliveringCount = queue.deliveringCount();
+      assertEquals(0, deliveringCount);
    }
 
 
@@ -2437,9 +2437,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -2451,15 +2450,13 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // transacted acknowledgment
       r.acknowledge(ackm, tx);
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       tx.rollback();
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       // acknowledge non-transactionally
       r.acknowledge(ackm, null);
@@ -2501,7 +2498,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -2544,7 +2540,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
       assertEqualSets(refs, r.getMessages());
 
       Transaction tx = tr.createTransaction();
@@ -2555,8 +2550,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          // transacted acknowledgment
          r.acknowledge(ackm, tx);
       }
-
-      assertEqualSets(refs, queue.browse());
 
       tx.commit();
 
@@ -2593,7 +2586,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
       assertEqualSets(refs, r.getMessages());
 
       Transaction tx = tr.createTransaction();
@@ -2605,11 +2597,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          r.acknowledge(ackm, tx);
       }
 
-      assertEqualSets(refs, queue.browse());
-
       tx.rollback();
-
-      assertEqualSets(refs, queue.browse());
 
       // acknowledge non-transactionally
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -2699,11 +2687,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List stored = queue.browse();
-      assertEquals(1, stored.size());
-      Message sm = (Message)stored.iterator().next();
-      assertTrue(sm.isReliable());
-      assertEquals(0, sm.getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List received = r.getMessages();
       assertEquals(1, received.size());
@@ -2759,11 +2744,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List stored = queue.browse();
-      assertEquals(1, stored.size());
-      Message sm = (Message)stored.iterator().next();
-      assertTrue(sm.isReliable());
-      assertEquals(0, sm.getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List received = r.getMessages();
       assertEquals(1, received.size());
@@ -2775,11 +2757,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       r.acknowledge(rm, tx);
 
-      stored = queue.browse();
-      assertEquals(1, stored.size());
-      sm = (Message)stored.iterator().next();
-      assertTrue(sm.isReliable());
-      assertEquals(0, sm.getMessageID());
+      deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       tx.commit();
 
@@ -2869,7 +2848,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -2928,7 +2906,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
       assertEqualSets(refs, r.getMessages());
 
       Transaction tx = tr.createTransaction();
@@ -2938,8 +2915,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          Message ackm = (Message)i.next();
          r.acknowledge(ackm, tx);
       }
-
-      assertEqualSets(refs, queue.browse());
 
       tx.commit();
 
@@ -2987,9 +2962,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();      
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -3040,7 +3014,6 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      assertEqualSets(refs, queue.browse());
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -3156,11 +3129,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      List stored = queue.browse();
-      assertEquals(1, stored.size());
-      Message sm = (Message)stored.iterator().next();
-      assertTrue(sm.isReliable());
-      assertEquals(0, sm.getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);      
 
       List received = r.getMessages();
       assertEquals(1, received.size());
@@ -3337,7 +3307,9 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      assertEqualSets(refs, queue.browse());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(NUMBER_OF_MESSAGES, deliveringCount);
+      
       assertEqualSets(refs, r.getMessages());
    }
 
@@ -3386,7 +3358,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      assertEqualSets(refs, queue.browse());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(NUMBER_OF_MESSAGES, deliveringCount);
       assertEqualSets(refs, r.getMessages());
    }
 
@@ -4882,9 +4855,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -4964,9 +4936,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -4978,9 +4949,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // transacted acknowledgment
       r.acknowledge(ackm, tx);
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       tx.commit();
 
@@ -5012,9 +4982,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -5026,15 +4995,13 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // transacted acknowledgment
       r.acknowledge(ackm, tx);
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       tx.rollback();
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       // acknowledge non-transactionally
       r.acknowledge(ackm, null);
@@ -5076,7 +5043,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -5119,7 +5086,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       Transaction tx = tr.createTransaction();
@@ -5131,7 +5098,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          r.acknowledge(ackm, tx);
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
 
       tx.commit();
 
@@ -5168,7 +5135,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       Transaction tx = tr.createTransaction();
@@ -5180,11 +5147,11 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          r.acknowledge(ackm, tx);
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
 
       tx.rollback();
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
 
       // acknowledge non-transactionally
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -5230,9 +5197,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();      
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -5366,9 +5332,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();      
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -5380,9 +5345,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // transacted acknowledgment
       r.acknowledge(ackm, tx);
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();      
+      assertEquals(1, deliveringCount);
 
       tx.commit();
 
@@ -5415,9 +5379,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(delivery.isDone());
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();      
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -5429,15 +5392,13 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // transacted acknowledgment
       r.acknowledge(ackm, tx);
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();      
+      assertEquals(1, deliveringCount);
 
       tx.rollback();
 
-      delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      deliveringCount = queue.deliveringCount();      
+      assertEquals(1, deliveringCount);
 
       // acknowledge non-transactionally
       r.acknowledge(ackm, null);
@@ -5480,7 +5441,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
+      
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -5523,7 +5485,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       Transaction tx = tr.createTransaction();
@@ -5535,7 +5497,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          r.acknowledge(ackm, tx);
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
 
       tx.commit();
 
@@ -5572,7 +5534,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          assertTrue(delivery.isDone());
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       Transaction tx = tr.createTransaction();
@@ -5584,11 +5546,11 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          r.acknowledge(ackm, tx);
       }
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
 
       tx.rollback();
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
 
       // acknowledge non-transactionally
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -5644,9 +5606,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -5698,7 +5659,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      assertEqualSets(refs, queue.browse());
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -5750,9 +5711,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       tx.commit();
 
-      List delivering = queue.browse();
-      assertEquals(1, delivering.size());
-      assertEquals(0, ((Message)delivering.get(0)).getMessageID());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List acknowledging = r.getMessages();
       assertEquals(1, acknowledging.size());
@@ -5802,8 +5762,9 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       assertTrue(r.getMessages().isEmpty());
 
       tx.commit();
-
-      assertEqualSets(refs, queue.browse());
+      
+      
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -5855,8 +5816,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       assertTrue(r.getMessages().isEmpty());
 
       tx.commit();
-
-      assertEqualSets(refs, queue.browse());
+      
+      assertEquals(NUMBER_OF_MESSAGES, queue.deliveringCount());
       assertEqualSets(refs, r.getMessages());
 
       for(Iterator i = r.getMessages().iterator(); i.hasNext();)
@@ -6232,7 +6193,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // receiver explicitely asks for message
       receiver.requestMessages();
 
-      assertEquals(1, queue.browse().size());
+      int deliveringCount = queue.deliveringCount();
+      assertEquals(1, deliveringCount);
 
       List messages = receiver.getMessages();
       assertEquals(1, messages.size());
@@ -6368,7 +6330,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       // receiver explicitely asks for message
       receiver.requestMessages();
 
-      assertEquals(1, queue.browse().size());
+      assertEquals(1, queue.deliveringCount());
 
       List messages = receiver.getMessages();
       assertEquals(1, messages.size());

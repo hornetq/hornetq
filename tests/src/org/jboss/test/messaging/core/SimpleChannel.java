@@ -226,6 +226,11 @@ public class SimpleChannel implements Channel
       throw new UnsupportedOperationException();
    }
 
+   public int deliveringCount()
+   {
+      throw new UnsupportedOperationException();
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

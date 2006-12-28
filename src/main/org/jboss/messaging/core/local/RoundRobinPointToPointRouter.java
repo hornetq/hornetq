@@ -109,7 +109,7 @@ public class RoundRobinPointToPointRouter implements Router
 
             if (trace) { log.trace("receiver " + r + " handled " + ref + " and returned " + d); }
 
-            if (d != null && !d.isCancelled())
+            if (d != null)
             {
                if (d.isSelectorAccepted())
                {

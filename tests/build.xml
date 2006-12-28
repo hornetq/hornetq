@@ -364,7 +364,7 @@
 
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="invm-stress-tests"/>
-      <antcall target="remote-stress-tests"/>  <!-- default remoting configuration (socket) -->
+      <antcall target="remote-stress-tests"/> <!-- default remoting configuration (socket) -->
       <antcall target="remote-stress-tests">
          <param name="test.remoting" value="http"/>
       </antcall>

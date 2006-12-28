@@ -381,6 +381,12 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
          // TODO Auto-generated method stub
          
       }
+
+      public int deliveringCount()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
       
    }
 

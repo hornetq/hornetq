@@ -364,17 +364,14 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                
                synchronized (refLock)
                {
-                  synchronized (deliveryLock)
+                  ref = removeFirstInMemory();
+                  
+                  if (ref != null)
                   {
-                     ref = removeFirstInMemory();
+                     del = new SimpleDelivery(LocalClusteredQueue.this, ref);
                      
-                     if (ref != null)
-                     {
-                        del = new SimpleDelivery(LocalClusteredQueue.this, ref);
-                        
-                        deliveries.add(del);
-                     }                      
-                  }
+                     deliveringCount.increment();
+                  }                                        
                }                    
             }
             

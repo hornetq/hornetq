@@ -22,7 +22,6 @@
 package org.jboss.messaging.core;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -203,20 +202,17 @@ public abstract class PagingChannelSupport extends ChannelSupport
    public void setPagingParams(int fullSize, int pageSize, int downCacheSize)
    {
       synchronized (refLock)
-      {
-         synchronized (deliveryLock)
-         {      
-            if (active)
-            {
-               throw new IllegalStateException("Cannot set paging params when active");
-            }
-            
-            this.fullSize = fullSize;
-            
-            this.pageSize = pageSize;
-            
-            this.downCacheSize = downCacheSize;
+      { 
+         if (active)
+         {
+            throw new IllegalStateException("Cannot set paging params when active");
          }
+         
+         this.fullSize = fullSize;
+         
+         this.pageSize = pageSize;
+         
+         this.downCacheSize = downCacheSize;         
       }
    }
    
@@ -270,23 +266,18 @@ public abstract class PagingChannelSupport extends ChannelSupport
    {
       synchronized (refLock)
       {
-         synchronized (deliveryLock)
+         if (active)
          {
-            if (active)
-            {
-               throw new IllegalStateException("Cannot unload channel when active");
-            }
-            
-            messageRefs.clear();
-            
-            deliveries.clear();
-            
-            downCache.clear();
-            
-            paging = false;
-            
-            firstPagingOrder = nextPagingOrder = 0;
+            throw new IllegalStateException("Cannot unload channel when active");
          }
+         
+         messageRefs.clear();
+         
+         downCache.clear();
+         
+         paging = false;
+         
+         firstPagingOrder = nextPagingOrder = 0;         
       }
    }
    
@@ -367,15 +358,15 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }    
    }
       
-   protected boolean cancelInternal(Delivery del) throws Exception
+   protected void cancelInternal(Delivery del) throws Exception
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
 
       synchronized (refLock)
       {         
-         boolean removed = super.cancelInternal(del);
+         super.cancelInternal(del);
          
-         if (removed && paging)
+         if (paging)
          {
             // if paging and the in memory queue is exactly full we need to evict the end reference to storage to
             // preserve the number of refs in the queue
@@ -388,8 +379,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
          }
                
          if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }      
-         
-         return removed;
       }
    }
       

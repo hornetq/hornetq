@@ -549,11 +549,11 @@ public class TopicManagementTest extends DestinationManagementTestBase
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
    
          // Create 1 durable subscription and 1 non-durable subscription
-         TopicSubscriber tsDurable = s.createDurableSubscriber(topic, "Durable1");
-         TopicSubscriber tsNonDurable = s.createSubscriber(topic);
+         s.createDurableSubscriber(topic, "Durable1");
+         s.createSubscriber(topic);
          
          // Send 1 message
-         prod.send(s.createTextMessage("First one"));
+         prod.send(s.createTextMessage("First one"));         
          
          ObjectName destObjectName = 
             new ObjectName("jboss.messaging.destination:service=Topic,name=TopicRemoveAllMessages");
@@ -578,18 +578,12 @@ public class TopicManagementTest extends DestinationManagementTestBase
    
          // Try to receive messages from the two subscriptions, should be null
          
-         //This is not valid - the messages will already be in the consumer endpoints and
-         //possibly the client consumers
-//         assertNull(tsDurable.receiveNoWait());
-//         assertNull(tsNonDurable.receiveNoWait());
-         
          listMsg = (List)ServerManagement.invoke(destObjectName, 
                   "listMessagesDurableSub",
                   new Object[] {"Durable1", "Client1", null},
                   new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});         
          assertEquals(0, listMsg.size());
-         
-         
+                  
          // Now close the connection
          conn.close();
          
@@ -606,19 +600,16 @@ public class TopicManagementTest extends DestinationManagementTestBase
          listMsg = (List)ServerManagement.invoke(destObjectName, 
                   "listMessagesDurableSub",
                   new Object[] {"Durable1", "Client1", null},
-                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});         
-         assertEquals(1, listMsg.size());
+                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});   
          
+         assertEquals(2, listMsg.size());
+
          // Start the connection for delivery
          conn.start();
          
          // Remove all messages from the topic
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
    
-         // Restore the durable subscription now, the message should be already gone
-         tsDurable = s.createDurableSubscriber(topic, "Durable1");
-         //assertNull(tsDurable.receiveNoWait());
-         
          listMsg = (List)ServerManagement.invoke(destObjectName, 
                   "listMessagesDurableSub",
                   new Object[] {"Durable1", "Client1", null},
@@ -670,49 +661,26 @@ public class TopicManagementTest extends DestinationManagementTestBase
          // There should be 3 subscriptions
          ObjectName destObjectName = 
             new ObjectName("jboss.messaging.destination:service=Topic,name=TopicMessageList");
-         String strSub = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
-         // Each subscription will have the same message
-         // Durable sub
-         List listMsg = (List)ServerManagement.invoke(destObjectName, 
-               "listMessagesDurableSub",
-               new Object[] {"SubscriberA", "Client1", null},
-               new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});
-         assertEquals(1, listMsg.size());
-         assertTrue(listMsg.get(0) instanceof TextMessage);
-         assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
          
-         // Non-durable sub 1
-         int ptr1 = strSub.indexOf("Non-durable, subscriptionID=\"");
-         int ptr2 = strSub.indexOf("\"", ptr1 + 30);
-         String sub = strSub.substring(ptr1 + 29, ptr2);
-         long sID1 = Long.parseLong(sub);
-         listMsg = (List)ServerManagement.invoke(destObjectName, 
-               "listMessagesNonDurableSub",
-               new Object[] {new Long(sID1), null},
-               new String[] {"long", "java.lang.String"});
-         assertEquals(1, listMsg.size());
-         assertTrue(listMsg.get(0) instanceof TextMessage);
-         assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
-   
-         // Non-durable sub 2
-         strSub = strSub.substring(ptr2 + 1);
-         ptr1 = strSub.indexOf("Non-durable, subscriptionID=\"");
-         ptr2 = strSub.indexOf("\"", ptr1 + 30);
-         sub = strSub.substring(ptr1 + 29, ptr2);
-         long sID2 = Long.parseLong(sub);
-         assertFalse(sID1 == sID2);
-         listMsg = (List)ServerManagement.invoke(destObjectName, 
-               "listMessagesNonDurableSub",
-               new Object[] {new Long(sID2), null},
-               new String[] {"long", "java.lang.String"});
-         assertEquals(1, listMsg.size());
-         assertTrue(listMsg.get(0) instanceof TextMessage);
-         assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
+         String strSub = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
+         
+         
+         // Note that listing the messages ONLY list those ones not in the process of delivery
+         // Therefore the following is invalid
+         
          
          // Send another message
          prod.send(s.createTextMessage("Second one"));
+                  
          
-         // The durable subscription has 2 messages
+         List listMsg = (List)ServerManagement.invoke(destObjectName, 
+                  "listMessagesDurableSub",
+                  new Object[] {"SubscriberA", "", null},
+                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});
+         assertEquals(0, listMsg.size());
+            
+         conn.close();
+         
          listMsg = (List)ServerManagement.invoke(destObjectName, 
                "listMessagesDurableSub",
                new Object[] {"SubscriberA", "", null},
@@ -723,8 +691,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
          assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
          assertEquals(((TextMessage)listMsg.get(1)).getText(), "Second one");
          
-         // Clean-up
-         conn.close();
       }
       finally
       {

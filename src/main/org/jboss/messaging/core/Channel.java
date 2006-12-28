@@ -76,8 +76,7 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    public boolean acceptReliableMessages();
 
    /**
-    * @return a List containing messages being held by the channel. The list includes messages in
-    *         process of being delivered and messages for which delivery hasn't been attempted yet.
+    * @return a List containing messages being held by the channel. 
     */
    List browse();
 
@@ -85,8 +84,7 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
     * @param filter - may be null, in which case no filter is applied.
     *
     * @return a List containing message references of messages whose state is maintained by this
-    *         State instance. The list includes references of messages in process of being delivered
-    *         and references of messages for which delivery has not been attempted yet.
+    *         State instance. 
     */
    List browse(Filter filter);
 
@@ -103,20 +101,6 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    void close();
 
    /**
-    * Get a list of message references of messages in the process of being delivered, subject to the filter
-    * @param filter
-    * @return the list
-    */
-   List delivering(Filter filter);
-
-   /**
-    * Get a list of message references of messages not in the process of being delivered, subject to the filter
-    * @param filter
-    * @return the list
-    */
-   List undelivered(Filter filter);   
-
-   /**
     * Clears non-recoverable state but not persisted state, so a recovery of the channel is possible
     * TODO really?
     */
@@ -126,7 +110,9 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
     * Message amount. 
     * @return message amount.
     */
-   int messageCount();   
+   int messageCount(); 
+   
+   int deliveringCount();
    
    /**
     * Remove all the references in the channel
@@ -145,10 +131,7 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    boolean isActive();
    
    List recoverDeliveries(List messageIds);
-   
-   //This method will be defunct very soon when we remove the delivery list from inside the channel
-   void addDelivery(Delivery del);
-
+  
 }
 
 

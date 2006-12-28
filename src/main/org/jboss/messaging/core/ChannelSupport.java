@@ -22,12 +22,9 @@
 package org.jboss.messaging.core;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -40,6 +37,7 @@ import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.util.Future;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * 
@@ -82,8 +80,6 @@ public abstract class ChannelSupport implements Channel
 
    protected PrioritizedDeque messageRefs;
 
-   protected Set deliveries;
-
    protected boolean acceptReliableMessages;
 
    protected boolean recoverable;
@@ -92,9 +88,14 @@ public abstract class ChannelSupport implements Channel
 
    protected Object refLock;
 
-   protected Object deliveryLock;
-
    protected boolean active = true;
+   
+   //TODO - I would like to get rid of this - the only reason we still keep a count of
+   //refs being delivered is because many tests require this
+   //Having to keep this count requires synchronization between delivery thread and acknowledgement
+   //thread which will hamper concurrency
+   //Suggest that we have a glag that disables this for production systems
+   protected SynchronizedInt deliveringCount;
    
    // Constructors --------------------------------------------------
 
@@ -129,11 +130,9 @@ public abstract class ChannelSupport implements Channel
 
       messageRefs = new BasicPrioritizedDeque(10);
 
-      deliveries = new LinkedHashSet();
-
       refLock = new Object();
-
-      deliveryLock = new Object();
+      
+      deliveringCount = new SynchronizedInt(0);
    }
 
    // Receiver implementation ---------------------------------------
@@ -178,7 +177,7 @@ public abstract class ChannelSupport implements Channel
    {
       if (trace) { log.trace("acknowledging " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
 
-      this.acknowledgeInternal(d, tx, true, false);
+      acknowledgeInternal(d, tx, true, false);
    }
 
 
@@ -263,33 +262,26 @@ public abstract class ChannelSupport implements Channel
    {
       if (trace) { log.trace(this + " browse" + (filter == null ? "" : ", filter = " + filter)); }
 
-      synchronized (deliveryLock)
+      synchronized (refLock)
       {
-         synchronized (refLock)
+         //FIXME - This is currently broken since it doesn't take into account
+         // refs paged into persistent storage
+         // Also is very inefficient since it makes a copy
+         // The way to implement this properly is to use the Prioritized deque iterator
+         // combined with an iterator over the refs in storage
+
+         //TODO use the ref queue iterator
+         List references = undelivered(filter);
+
+         // dereference pass
+         ArrayList messages = new ArrayList(references.size());
+         for (Iterator i = references.iterator(); i.hasNext();)
          {
-            //FIXME - This is currently broken since it doesn't take into account
-            // refs paged into persistent storage
-            // Also is very inefficient since it makes a copy
-            // The way to implement this properly is to use the Prioritized deque iterator
-            // combined with an iterator over the refs in storage
-
-            //TODO use the ref queue iterator
-            List references = delivering(filter);
-
-            List undel = undelivered(filter);
-
-            references.addAll(undel);
-
-            // dereference pass
-            ArrayList messages = new ArrayList(references.size());
-            for (Iterator i = references.iterator(); i.hasNext();)
-            {
-               MessageReference ref = (MessageReference) i.next();
-               messages.add(ref.getMessage());
-            }
-            return messages;
+            MessageReference ref = (MessageReference) i.next();
+            messages.add(ref.getMessage());
          }
-      }
+         return messages;
+      }      
    }
 
    public void deliver(boolean synchronous)
@@ -334,7 +326,7 @@ public abstract class ChannelSupport implements Channel
 
    /*
     * This method clears the channel.
-    * Basically it acknowledges any outstanding deliveries and consumes the rest of the messages in the channel.
+    * Basically it consumes the rest of the messages in the channel.
     * We can't just delete the corresponding references directly from the database since
     * a) We might be paging
     * b) The message might remain in the message store causing a leak
@@ -345,68 +337,27 @@ public abstract class ChannelSupport implements Channel
       log.debug(this + " remnoving all references");
       
       synchronized (refLock)
-      {
-         synchronized (deliveryLock)
+      {            
+         //Now we consume the rest of the messages
+         //This may take a while if we have a lot of messages including perhaps millions
+         //paged in the database - but there's no obvious other way to do it.
+         //We cannot just delete them directly from the database - because we may end up with messages leaking
+         //in the message store,
+         //also we might get race conditions when other channels are updating the same message in the db
+
+         //Note - we don't do this in a tx - because the tx could be too big if we have millions of refs
+         //paged in storage
+
+         MessageReference ref;
+         while ((ref = removeFirstInMemory()) != null)
          {
-            //Ack the deliveries
+            SimpleDelivery del = new SimpleDelivery(this, ref);
 
-            //Clone to avoid ConcurrentModificationException
-            Set dels = new HashSet(deliveries);
-
-            Iterator iter = dels.iterator();
-            while (iter.hasNext())
-            {
-               SimpleDelivery d = (SimpleDelivery) iter.next();
-
-               d.acknowledge(null);
-            }
-
-            //Now we consume the rest of the messages
-            //This may take a while if we have a lot of messages including perhaps millions
-            //paged in the database - but there's no obvious other way to do it.
-            //We cannot just delete them directly from the database - because we may end up with messages leaking
-            //in the message store,
-            //also we might get race conditions when other channels are updating the same message in the db
-
-            //Note - we don't do this in a tx - because the tx could be too big if we have millions of refs
-            //paged in storage
-
-            MessageReference ref;
-            while ((ref = removeFirstInMemory()) != null)
-            {
-               SimpleDelivery del = new SimpleDelivery(this, ref, false);
-
-               del.acknowledge(null);
-            }
-
-         }
+            del.acknowledge(null);
+         }         
+         
+         deliveringCount.set(0);
       }
-   }
-
-   public List delivering(Filter filter)
-   {
-      List delivering = new ArrayList();
-
-      synchronized (deliveryLock)
-      {
-         for (Iterator i = deliveries.iterator(); i.hasNext();)
-         {
-            Delivery d = (Delivery) i.next();
-
-            MessageReference r = d.getReference();
-
-            // TODO: I need to dereference the message each time I apply the
-            // filter. Refactor so the message reference will also contain JMS
-            // properties
-            if (filter == null || filter.accept(r.getMessage()))
-            {
-               delivering.add(r);
-            }
-         }
-      }
-      if (trace) { log.trace(this + ": the non-recoverable state has " + delivering.size() + " messages being delivered"); }
-
-      return delivering;
    }
 
    public List undelivered(Filter filter)
@@ -446,21 +397,20 @@ public abstract class ChannelSupport implements Channel
    {
       synchronized (refLock)
       {
-         synchronized (deliveryLock)
-         {
-            return messageRefs.size() + deliveries.size();
-         }
+         return messageRefs.size() + deliveringCount();     
       }
+   }
+   
+   public int deliveringCount()
+   {
+      return deliveringCount.get();
    }
 
    public void activate()
    {
       synchronized (refLock)
       {
-         synchronized (deliveryLock)
-         {
-            active = true;
-         }
+         active = true;         
       }
    }
 
@@ -468,10 +418,7 @@ public abstract class ChannelSupport implements Channel
    {
       synchronized (refLock)
       {
-         synchronized (deliveryLock)
-         {
-            active = false;
-         }
+         active = false;         
       }
    }
 
@@ -479,19 +426,7 @@ public abstract class ChannelSupport implements Channel
    {
       synchronized (refLock)
       {
-         synchronized (deliveryLock)
-         {
-            return active;
-         }
-      }
-   }
-   
-   //This method will be defunct very soon when we remove the delivery list from inside the channel
-   public void addDelivery(Delivery del)
-   {
-      synchronized (deliveryLock)
-      {
-         deliveries.add(del);
+         return active;         
       }
    }
    
@@ -504,41 +439,36 @@ public abstract class ChannelSupport implements Channel
       
       synchronized (refLock)
       {
-         synchronized (deliveryLock)
+         ListIterator liter = messageRefs.iterator();
+                           
+         while (iter.hasNext())
          {
-            ListIterator liter = messageRefs.iterator();
-                              
-            while (iter.hasNext())
-            {
-               Long id = (Long)iter.next();
-               
-               //Scan the queue
-               while (true)
-               {               
-                  if (!liter.hasNext())
-                  {
-                     // TODO we need to look in paging state too - currently not supported
-                     
-                     throw new IllegalStateException("Cannot find ref in queue! (Might be paged!) " + id);
-                  }
+            Long id = (Long)iter.next();
+            
+            //Scan the queue
+            while (true)
+            {               
+               if (!liter.hasNext())
+               {
+                  // TODO we need to look in paging state too - currently not supported
                   
-                  MessageReference ref = (MessageReference)liter.next();
-                  
-                  if (ref.getMessageID() == id.longValue())
-                  {
-                     liter.remove();
-                     
-                     Delivery del = new SimpleDelivery(this, ref);
-                     
-                     dels.add(del);
-                                    
-                     this.deliveries.add(del);
-                     
-                     break;
-                  }
+                  throw new IllegalStateException("Cannot find ref in queue! (Might be paged!) " + id);
                }
-            }  
-         }
+               
+               MessageReference ref = (MessageReference)liter.next();
+               
+               if (ref.getMessageID() == id.longValue())
+               {
+                  liter.remove();
+                  
+                  Delivery del = new SimpleDelivery(this, ref);
+                  
+                  dels.add(del);
+                                 
+                  break;
+               }
+            }
+         }           
       }
             
       return dels;
@@ -556,13 +486,6 @@ public abstract class ChannelSupport implements Channel
    }
 
    //Only used for testing
-   public int memoryDeliveryCount()
-   {
-      synchronized (deliveryLock)
-      {
-         return deliveries.size();
-      }
-   }
 
    public String toString()
    {
@@ -639,33 +562,9 @@ public abstract class ChannelSupport implements Channel
                      
                      // Receiver accepted the reference
                      
-                     // We must synchronize here to cope with a race condition where message
-                     // is cancelled/acked in flight while the following few actions are being
-                     // performed. e.g. delivery could be cancelled acked after being removed from
-                     // state but before delivery being added (observed).
-                     synchronized (del)
-                     {
-                        // FIXME - It's actually possible the delivery could be cancelled before it reaches
-                        // here, in which case we wouldn't get a delivery but we still need to increment the
-                        // delivery count. TODO http://jira.jboss.com/jira/browse/JBMESSAGING-355
-
-                        if (!del.isCancelled())
-                        {
-                           removeReference(iter);
-
-                           // delivered
-                           if (!del.isDone())
-                           {
-                              // Add the delivery to state
-                              synchronized (deliveryLock)
-                              {
-                                 deliveries.add(del);
-                                 
-                                 if (trace) { log.trace(this + " starting to track  " + del); }
-                              }
-                           }
-                        }
-                     }
+                     removeReference(iter);
+                     
+                     deliveringCount.increment();                     
                   }
                }
             }
@@ -794,18 +693,15 @@ public abstract class ChannelSupport implements Channel
                                       boolean synchronous) throws Exception
    {   
       if (tx == null)
-      {
-         synchronized (deliveryLock)
-         {
-            acknowledgeInMemory(d);
-         }
-            
+      {                  
          if (persist && recoverable && d.getReference().isReliable())
          {
             pm.removeReference(channelID, d.getReference(), null);
          }
               
-         d.getReference().releaseMemoryReference();             
+         d.getReference().releaseMemoryReference(); 
+         
+         deliveringCount.decrement();
       }
       else
       {
@@ -820,23 +716,6 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected boolean acknowledgeInMemory(Delivery d)
-   {
-      if (d == null)
-      {
-         throw new IllegalArgumentException("Can't acknowledge a null delivery");
-      }
-
-      boolean removed = deliveries.remove(d);
-
-      // It's ok if the delivery couldn't be found - this might happen
-      // if the delivery is acked before the call to handle() has returned
-
-      if (trace) { log.trace(this + " removed " + d + " from memory:" + removed); }
-      
-      return removed;
-   }    
-   
    protected InMemoryCallback getCallback(Transaction tx, boolean synchronous)
    {
       InMemoryCallback callback = (InMemoryCallback) tx.getCallback(this);            
@@ -860,45 +739,26 @@ public abstract class ChannelSupport implements Channel
    }
 
       
-   protected boolean cancelInternal(Delivery del) throws Exception
+   protected void cancelInternal(Delivery del) throws Exception
    {
       if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
 
-      boolean removed;
+      MessageReference ref = del.getReference();
       
-      synchronized (deliveryLock)
+      synchronized (refLock)
       {
-         removed = deliveries.remove(del);      
-      }
-
-      if (!removed)
-      {         
-         // This can happen if the message is cancelled before the result of
-         // ServerConsumerDelegate.handle has returned, in which case we won't have a record of the delivery
-         // In this case we don't want to add the message reference back into
-         // the state since it was never removed in the first place
-
-         if (trace) { log.trace(this + " can't find delivery " + del + " in state so not replacing messsage ref"); }
-      }
-      else
-      {
-         MessageReference ref = del.getReference();
-         
-         synchronized (refLock)
-         {
-            messageRefs.addFirst(ref, ref.getPriority());
-         }
-         
-         //We may need to update the delivery count in the database
-         if (ref.isReliable())
-         {
-            pm.updateDeliveryCount(this.channelID, ref);
-         }
-         
-         if (trace) { log.trace(this + " added " + ref + " back into state"); }
+         messageRefs.addFirst(ref, ref.getPriority());
       }
       
-      return removed;
+      //We may need to update the delivery count in the database
+      if (ref.isReliable())
+      {
+         pm.updateDeliveryCount(this.channelID, ref);
+      }
+      
+      deliveringCount.decrement();
+      
+      if (trace) { log.trace(this + " added " + ref + " back into state"); }
    }
    
    protected MessageReference removeFirstInMemory() throws Exception
@@ -1190,18 +1050,8 @@ public abstract class ChannelSupport implements Channel
             if (trace) { log.trace(this + " removing " + del + " after commit"); }
 
             del.getReference().releaseMemoryReference();
-
-            try
-            {
-               synchronized (deliveryLock)
-               {
-                  acknowledgeInMemory(del);
-               }
-            }
-            catch (Throwable t)
-            {
-               throw new TransactionException("Failed to ack message", t);
-            }
+            
+            deliveringCount.decrement();
          }
          
          //prompt delivery
