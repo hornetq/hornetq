@@ -495,8 +495,9 @@ public class MessageCallbackHandler
    
    public void copyState(MessageCallbackHandler newHandler)
    {
-      synchronized (mainLock)
-      {
+      // removed the synchronized block due to http://jira.jboss.org/jira/browse/JBMESSAGING-702
+      //synchronized (mainLock)
+      //{
          this.consumerID = newHandler.consumerID;
          
          this.consumerDelegate = newHandler.consumerDelegate;
@@ -504,7 +505,7 @@ public class MessageCallbackHandler
          this.sessionDelegate = newHandler.sessionDelegate;
          
          this.buffer.clear();
-      }
+      //}
    }
    
    public long getLastDeliveryId()
