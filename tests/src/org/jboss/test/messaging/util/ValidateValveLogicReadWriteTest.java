@@ -30,12 +30,7 @@ import EDU.oswego.cs.dl.util.concurrent.ReaderPreferenceReadWriteLock;
 
 /**
  *
- * ValidateValveLogicReadWriteTest and ValidateValveLogicValveTest were written
- * to validate lock mechanism to be used on ValveAspect.
- *
- * ValidateValveLogicTestValveTest uses org.jboss.messaging.util.Valve which avoid locking on reading threads
- * ValidateValveLogicReadWriteTest uses oswego.concurrent.ReadWriteLock which adds synchronization into reading threads also
- *
+ * I have written this test just to validate the ReadWriteLock options I had while writing the valve feature on HAAspect
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision:$</tt>
