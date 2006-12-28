@@ -87,7 +87,7 @@ public class HAAspect
    public static final int MAX_IO_RETRY_COUNT = 2;
 
    // Setting this attribute to false will disable the valve
-   public static final boolean INSTALL_VALVE = false;
+   public static final boolean INSTALL_VALVE = true;
 
    // Static --------------------------------------------------------
 

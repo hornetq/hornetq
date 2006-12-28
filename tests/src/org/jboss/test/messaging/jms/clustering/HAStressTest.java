@@ -34,6 +34,7 @@ import javax.jms.Destination;
 import javax.jms.Connection;
 import javax.jms.MessageProducer;
 import javax.jms.Message;
+import javax.jms.DeliveryMode;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -43,10 +44,13 @@ import java.util.Iterator;
  *          <p/>
  *          $Id:$
  */
-public class ValveTest extends ClusteringTestBase
+public class HAStressTest extends ClusteringTestBase
 {
 
-   public ValveTest(String name)
+   int NUMBER_OF_PRODUCER_THREADS=1;
+   int NUMBER_OF_CONSUMER_THREADS=1;
+
+   public HAStressTest(String name)
    {
       super(name);
    }
@@ -72,6 +76,7 @@ public class ValveTest extends ClusteringTestBase
 
       public LocalThreadConsumer(int id, Session session, Destination destination) throws Exception
       {
+         super("LocalThreadConsumer-" + id);
          consumer = session.createConsumer(destination);
          this.session = session;
          this.id = id;
@@ -128,8 +133,10 @@ public class ValveTest extends ClusteringTestBase
 
       public LocalThreadProducer(int id, Session session, Destination destination) throws Exception
       {
+         super("LocalThreadProducer-" + id);
          this.session = session;
          producer = session.createProducer(destination);
+         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
          this.id = id;
       }
 
@@ -174,75 +181,83 @@ public class ValveTest extends ClusteringTestBase
     */
    public void testMultiThreadFailover() throws Exception
    {
-       // This test will be disabled until we implement the valve
-//      JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
-//
-//      Connection conn1 = cf.createConnection();
-//      Connection conn2 = cf.createConnection();
-//      Connection conn3 = cf.createConnection();
-//
-//      log.info("Created connections");
-//
-//      checkConnectionsDifferentServers(new Connection[]{conn1, conn2, conn3});
-//
-//      Connection conn = getConnection(new Connection[]{conn1, conn2, conn3}, 1);
-//      conn.start();
-//
-//      for (int i = 0; i < 3; i++)
-//      {
-//         JBossConnection connTest = (JBossConnection)getConnection(new Connection[]{conn1, conn2, conn3}, i);
-//
-//         String locator = ((ClientConnectionDelegate) connTest.getDelegate()).getRemotingConnection().
-//            getInvokingClient().getInvoker().getLocator().getLocatorURI();
-//
-//         log.info("Server " + i + " has locator=" + locator);
-//
-//      }
-//
-//
-//      ArrayList list = new ArrayList();
-//
-//      for (int i = 0; i < 5; i++)
-//      {
-//         list.add(new LocalThreadProducer(i, conn.createSession(false, Session.AUTO_ACKNOWLEDGE), queue[1]));
-//         list.add(new LocalThreadConsumer(i, conn.createSession(false, Session.AUTO_ACKNOWLEDGE), queue[1]));
-//      }
-//
-//      for (Iterator iter = list.iterator(); iter.hasNext();)
-//      {
-//         Thread t = (Thread) iter.next();
-//         t.start();
-//      }
-//
-//      Thread.sleep(1000);
-//      synchronized (semaphore)
-//      {
-//         semaphore.notifyAll();
-//      }
-//
-//      Thread.sleep(30000);
-//
-//      log.info("Killing server 1");
-//      ServerManagement.log(ServerManagement.INFO, "Server 1 will be killed");
-//      ServerManagement.log(ServerManagement.INFO, "Server 1 will be killed", 2);
-//      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
-//
-//      ServerManagement.kill(1);
-//
-//      Thread.sleep(50000);
-//      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
-//      shouldStop = true;
-//
-//      for (Iterator iter = list.iterator(); iter.hasNext();)
-//      {
-//         Thread t = (Thread) iter.next();
-//         t.join();
-//      }
-//
-//      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
-//
-//      assertEquals(messageCounterProducer, messageCounterConsumer);
-//
+      // This test will be disabled until we implement the valve
+      //JBossConnectionFactory factory = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
+
+      Connection conn1 = cf.createConnection();
+      Connection conn2 = cf.createConnection();
+      Connection conn3 = cf.createConnection();
+
+      log.info("Created connections");
+
+      checkConnectionsDifferentServers(new Connection[]{conn1, conn2, conn3});
+
+      Connection conn = getConnection(new Connection[]{conn1, conn2, conn3}, 1);
+      conn.start();
+
+      for (int i = 0; i < 3; i++)
+      {
+         JBossConnection connTest = (JBossConnection) getConnection(new Connection[]{conn1, conn2, conn3}, i);
+
+         String locator = ((ClientConnectionDelegate) connTest.getDelegate()).getRemotingConnection().
+            getInvokingClient().getInvoker().getLocator().getLocatorURI();
+
+         log.info("Server " + i + " has locator=" + locator);
+
+      }
+
+
+      ArrayList threadList = new ArrayList();
+
+      for (int i = 0; i < NUMBER_OF_PRODUCER_THREADS; i++)
+      {
+         threadList.add(new LocalThreadProducer(i, conn.createSession(false, Session.AUTO_ACKNOWLEDGE), queue[1]));
+      }
+
+      for (int i = 0; i < NUMBER_OF_CONSUMER_THREADS; i++)
+      {
+         threadList.add(new LocalThreadConsumer(i, conn.createSession(false, Session.AUTO_ACKNOWLEDGE), queue[1]));
+      }
+
+      for (Iterator iter = threadList.iterator(); iter.hasNext();)
+      {
+         Thread t = (Thread) iter.next();
+         t.start();
+      }
+
+      Thread.sleep(1000);
+      synchronized (semaphore)
+      {
+         semaphore.notifyAll();
+      }
+
+      Thread.sleep(30000);
+
+      log.info("Killing server 1");
+      ServerManagement.log(ServerManagement.INFO, "Server 1 will be killed");
+      ServerManagement.log(ServerManagement.INFO, "Server 1 will be killed", 2);
+      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
+
+      ServerManagement.kill(1);
+
+      Thread.sleep(50000);
+      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
+      shouldStop = true;
+
+      for (Iterator iter = threadList.iterator(); iter.hasNext();)
+      {
+         Thread t = (Thread) iter.next();
+         t.join();
+      }
+
+      log.info("messageCounterConsumer=" + messageCounterConsumer + ", messageCounterProducer=" + messageCounterProducer);
+
+      assertEquals(messageCounterProducer, messageCounterConsumer);
+
+      conn1.close();
+      conn2.close();
+      conn3.close();
+
    }
 
    // Protected -----------------------------------------------------
@@ -251,14 +266,14 @@ public class ValveTest extends ClusteringTestBase
    {
       nodeCount = 3;
 
-      //super.setUp();
+      super.setUp();
 
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
-      //super.tearDown();
+      super.tearDown();
    }
 
 }
