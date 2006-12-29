@@ -61,7 +61,7 @@ public class LocalTestServer implements Server
 
    private static final Logger log = Logger.getLogger(LocalTestServer.class);
 
-   // Static --------------------------------------------------------    4
+   // Static --------------------------------------------------------
 
    public static void setEnvironmentServerIndex(int serverIndex)
    {

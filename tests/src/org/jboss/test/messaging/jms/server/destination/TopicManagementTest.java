@@ -34,7 +34,6 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
@@ -662,7 +661,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
          ObjectName destObjectName = 
             new ObjectName("jboss.messaging.destination:service=Topic,name=TopicMessageList");
          
-         String strSub = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
+         ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
          
          
          // Note that listing the messages ONLY list those ones not in the process of delivery

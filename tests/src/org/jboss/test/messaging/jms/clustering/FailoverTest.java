@@ -75,11 +75,13 @@ public class FailoverTest extends ClusteringTestBase
          // kill node 1
 
 
+
+         ServerManagement.killAndWait(1);
+
          log.info("########");
          log.info("######## KILLED NODE 1");
          log.info("########");
 
-         ServerManagement.killAndWait(1);
          try
          {
             ic[1].lookup("queue"); // looking up anything
