@@ -29,12 +29,14 @@ import javax.jms.ServerSessionPool;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.remoting.Client;
 
 /**
@@ -50,34 +52,71 @@ import org.jboss.remoting.Client;
  */
 public class ClientConnectionDelegate extends DelegateSupport implements ConnectionDelegate
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 6680015509555859038L;
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private int serverID;
-
    private transient JMSRemotingConnection remotingConnection;
-   
    private Version versionToUse;
    
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionDelegate(int objectID, int serverId)
+   public ClientConnectionDelegate(int objectID, int serverID)
    {
       super(objectID);
-      
-      this.serverID = serverId;
+      this.serverID = serverID;
    }
 
    public ClientConnectionDelegate()
    {
    }
 
-   // ConnectionDelegate implementation -----------------------------
+   // DelegateSupport overrides --------------------------------------------------------------------
+
+   public void synchronizeWith(DelegateSupport nd) throws Exception
+   {
+      super.synchronizeWith(nd);
+
+      ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)nd;
+
+      // synchronize the server endpoint state
+
+      // this is a bit counterintuitve, as we're not copying from new delegate, but modifying its
+      // state based on the old state. It makes sense, since in the end the state makes it to the
+      // server
+
+      ConnectionState thisState = (ConnectionState)state;
+
+      if (thisState.getClientID() != null)
+      {
+         newDelegate.setClientID(thisState.getClientID());
+      }
+
+      // synchronize the delegates
+
+      remotingConnection = newDelegate.getRemotingConnection();
+      versionToUse = newDelegate.getVersionToUse();
+
+      // There is one RM per server, so we need to merge the rms if necessary
+      ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
+
+      // synchronize (recursively) the client-side state
+
+      state.synchronizeWith(newDelegate.getState());
+
+      // start the new connection if necessary
+      if (thisState.isStarted())
+      {
+         newDelegate.start();
+      }
+   }
+
+   // ConnectionDelegate implementation ------------------------------------------------------------
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -213,12 +252,67 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   // Public --------------------------------------------------------
-
-   public String toString()
+   /**
+    * This invocation should be handled by the client-side interceptor chain.
+    */
+   public void registerFailoverListener(FailoverListener l)
    {
-      return "ConnectionDelegate[" + id + ", SID=" + serverID + "]";
+      throw new IllegalStateException("This invocation should not be handled here!");
    }
+
+   /**
+    * This invocation should be handled by the client-side interceptor chain.
+    */
+   public boolean unregisterFailoverListener(FailoverListener l)
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should be handled by the client-side interceptor chain.
+    */
+   public void performFailover()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void closeValve()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void openValve()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public boolean isValveOpen()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public int getActiveThreadsCount()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public void init()
    {
@@ -249,27 +343,23 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       this.versionToUse = versionToUse;
    }
-   
-   public void copyAttributes(DelegateSupport newDelegate)
+
+   public String toString()
    {
-      super.copyAttributes(newDelegate);
-      
-      this.remotingConnection = ((ClientConnectionDelegate)newDelegate).getRemotingConnection();
-      
-      this.versionToUse = ((ClientConnectionDelegate)newDelegate).getVersionToUse();
+      return "ConnectionDelegate[" + id + ", SID=" + serverID + "]";
    }
 
-   // Protected -----------------------------------------------------   
+   // Protected ------------------------------------------------------------------------------------
 
    protected Client getClient()
    {
       return ((ConnectionState)state).getRemotingConnection().getInvokingClient();
    }
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 
 }

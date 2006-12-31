@@ -79,7 +79,8 @@ public class SessionAspect
       SessionState state = getState(invocation);
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
             
-      if (trace) { log.trace("In handleClosing"); }
+      if (trace) { log.trace("handleClosing()"); }
+
       //Sanity check
       if (state.isXA())
       {
@@ -204,25 +205,25 @@ public class SessionAspect
       {
          // We collect acknowledgments in the list
          
-         if (trace) { log.trace(this + " delivery id: " + info.getDeliveryId() + " added to client ack list"); }
+         if (trace) { log.trace(this + " added to CLIENT_ACKNOWLEDGE list delivery " + info); }
          
-         //Sanity check
+         // Sanity check
          if (info.getConnectionConsumerSession() != null)
          {
             throw new IllegalStateException("CLIENT_ACKNOWLEDGE cannot be used with a connection consumer");
          }
                   
-         state.getClientAckList().add(info);         
+         state.getClientAckList().add(info);
       }
       else if (ackMode == Session.AUTO_ACKNOWLEDGE ||
                ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
                (state.isXA() && state.getCurrentTxId() == null))
       {
-         //We collect the single acknowledgement in the state.
-         //Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE
-         //Also XA sessions not enlisted in a global tx are treated as AUTO_ACKNOWLEDGE
+         // We collect the single acknowledgement in the state. Currently DUPS_OK is treated the
+         // same as AUTO_ACKNOWLDGE. Also XA sessions not enlisted in a global tx are treated as
+         // AUTO_ACKNOWLEDGE.
                            
-         if (trace) { log.trace(this + " delivery id: " + info.getDeliveryId() + " added to client ack member"); }
+         if (trace) { log.trace(this + " added " + info + " to session state"); }
          
          state.setAutoAckInfo(info);         
       }
@@ -280,22 +281,22 @@ public class SessionAspect
          //will be redelivered
          if (!state.isRecoverCalled())
          {
-            DeliveryInfo deliveryInfo = state.getAutoAckInfo();
+            DeliveryInfo delivery = state.getAutoAckInfo();
             
-            if (deliveryInfo == null)
+            if (delivery == null)
             {
-               throw new IllegalStateException("Cannot find delivery to auto ack");
+               throw new IllegalStateException("Cannot find delivery to AUTO_ACKNOWLEDGE");
             }
                                  
-            if (trace) { log.trace(this + " auto acking delivery " + deliveryInfo.getDeliveryId()); }
+            if (trace) { log.trace(this + " auto acknowledging delivery " + delivery); }
                         
-            ackDelivery(sd, deliveryInfo);            
-            
+            ackDelivery(sd, delivery);
+
             state.setAutoAckInfo(null);
          }
          else
          {
-            if (trace) { log.trace("recover called, so NOT acknowledging"); }
+            if (trace) { log.trace(this + " recover called, so NOT acknowledging"); }
 
             state.setRecoverCalled(false);
          }
@@ -553,6 +554,12 @@ public class SessionAspect
    {
       return new Integer(getState(invocation).getAcknowledgeMode());
    }
+
+   public String toString()
+   {
+      return "SessionAspect[" + Integer.toHexString(hashCode()) + "]";
+   }
+
    
 
    // Class YYY overrides -------------------------------------------

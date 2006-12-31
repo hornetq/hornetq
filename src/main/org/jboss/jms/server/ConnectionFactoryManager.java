@@ -36,8 +36,6 @@ public interface ConnectionFactoryManager extends MessagingComponent
    /**
     * @param jndiBindings - if null, the connection factory will be created and registered with the
     *        AOP subsystem, but not bound in JNDI.
-    *
-    * @return an identifier that uniques identifies the registered ConnectionFactory.
     */
    void registerConnectionFactory(String uniqueName, String clientID, JNDIBindings jndiBindings,
                                  String locatorURI, boolean clientPing,

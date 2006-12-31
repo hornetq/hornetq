@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -37,7 +38,7 @@ import javax.naming.NamingException;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.ClusteredClientConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
@@ -45,6 +46,7 @@ import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JNDIUtil;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.ReplicationListener;
 import org.jboss.messaging.core.plugin.contract.Replicator;
@@ -72,8 +74,6 @@ public class ConnectionFactoryJNDIMapper
 
    // Attributes ----------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
-
    protected Context initialContext;
    protected ServerPeer serverPeer;
 
@@ -85,11 +85,9 @@ public class ConnectionFactoryJNDIMapper
 
    private Replicator replicator;
 
-   /*
-   We cache the map of node->failover node in here.
-   This is then updated when node joins or leaves the cluster via the replicationListener
-   When new cfs are deployed we use the cached map
-   */
+   // Map<Integer(nodeID)->Integer(failoverNodeID)>
+   // The map is updated when a node joins of leaves the cluster via the replicationListener. When
+   // a new ConnectionFactories are deployed we use the cached map.
    protected Map failoverMap;
 
    // Constructors --------------------------------------------------
@@ -115,12 +113,14 @@ public class ConnectionFactoryJNDIMapper
                                                       boolean clustered)
       throws Exception
    {
-      log.debug(this + " registering connection factory '" + uniqueName + "', bindings: " + jndiBindings);
+      log.debug(this + " registering connection factory '" + uniqueName +
+         "', bindings: " + jndiBindings);
 
       // Sanity check
       if (delegates.containsKey(uniqueName))
       {
-         throw new IllegalArgumentException("There's already a connection factory registered with name " + uniqueName);
+         throw new IllegalArgumentException("There's already a connection factory " +
+                                            "registered with name " + uniqueName);
       }
 
       int id = serverPeer.getNextObjectID();
@@ -134,15 +134,11 @@ public class ConnectionFactoryJNDIMapper
                                              defaultTempQueueDownCacheSize);
       endpoints.put(uniqueName, endpoint);
 
-      ClientConnectionFactoryDelegate delegate = null;
+      ConnectionFactoryDelegate delegate = null;
 
       if (clustered)
       {
          setupReplicator();
-      }
-      else
-      {
-         log.info("ConnectionFactoryJNDIMapper is non clustered");
       }
 
       boolean creatingClustered = clustered && replicator != null;
@@ -150,6 +146,8 @@ public class ConnectionFactoryJNDIMapper
       ClientConnectionFactoryDelegate localDelegate =
          new ClientConnectionFactoryDelegate(id, serverPeer.getServerPeerID(),
                                              locatorURI, version, clientPing);
+
+      log.debug(this + " created local delegate " + localDelegate);
 
       // When registering a new clustered connection factory I should first create it with the
       // available delegates then send the replication message. We then listen for connection
@@ -169,6 +167,7 @@ public class ConnectionFactoryJNDIMapper
          Map localDelegates = replicator.get(CF_PREFIX + uniqueName);
          delegate = createClusteredDelegate(localDelegates.values());
 
+         log.debug(this + " created clustered delegate " + delegate);
       }
       else
       {
@@ -216,8 +215,7 @@ public class ConnectionFactoryJNDIMapper
       log.trace("Removing delegate from delegates list with key=" + uniqueName + " at serverPeerID=" +
                   this.serverPeer.getServerPeerID());
 
-      ClientConnectionFactoryDelegate delegate =
-         (ClientConnectionFactoryDelegate)delegates.remove(uniqueName);
+      ConnectionFactoryDelegate delegate = (ConnectionFactoryDelegate)delegates.remove(uniqueName);
 
       if (delegate == null)
       {
@@ -293,7 +291,7 @@ public class ConnectionFactoryJNDIMapper
             // failoverMap and rebind all connection factories with the new mapping. We cannot just
             // reference a single map since the objects are bound in JNDI in serialized form.
 
-            recalculateFailoverMap(updatedReplicantMap);
+            failoverMap = recalculateFailoverMap(updatedReplicantMap.keySet());
 
             // Rebind
 
@@ -304,8 +302,8 @@ public class ConnectionFactoryJNDIMapper
                ServerConnectionFactoryEndpoint endpoint =
                   (ServerConnectionFactoryEndpoint)entry.getValue();
 
-               ClusteredClientConnectionFactoryDelegate del =
-                  (ClusteredClientConnectionFactoryDelegate)delegates.get(uniqueName);
+               ClientClusteredConnectionFactoryDelegate del =
+                  (ClientClusteredConnectionFactoryDelegate)delegates.get(uniqueName);
 
                if (del == null)
                {
@@ -328,15 +326,15 @@ public class ConnectionFactoryJNDIMapper
 
             log.debug(this + " received '" + uniqueName + "' connection factory update " + updatedReplicantMap);
 
-            ClusteredClientConnectionFactoryDelegate del =
-               (ClusteredClientConnectionFactoryDelegate)delegates.get(uniqueName);
+            ClientClusteredConnectionFactoryDelegate del =
+               (ClientClusteredConnectionFactoryDelegate)delegates.get(uniqueName);
 
             if (del == null)
             {
                throw new IllegalStateException("Cannot find cf with name " + uniqueName);
             }
 
-            List newDels = sortCFS(updatedReplicantMap.values());
+            List newDels = sortDelegatesOnServerID(updatedReplicantMap.values());
 
             ClientConnectionFactoryDelegate[] delArr =
                (ClientConnectionFactoryDelegate[])newDels.
@@ -382,25 +380,29 @@ public class ConnectionFactoryJNDIMapper
 
    private void setupReplicator() throws Exception
    {
-      this.serverPeer.getPostOfficeInstance();
-   }
-
-   private void recalculateFailoverMap(Map nodeAddressMap) throws Exception
-   {
-      FailoverMapper mapper = replicator.getFailoverMapper();
-      failoverMap = mapper.generateMapping(nodeAddressMap.keySet());
+      serverPeer.getPostOfficeInstance();
    }
 
    /**
-    * @param localDelegates - Map<Integer(nodeId) - ClientConnectionFactoryDelegate>
+    * @param nodeIDs Set<Integer(nodeID)>
+    * @return Map<Integer(nodeID)->Integer(failoverNodeID)>
     */
-   private ClusteredClientConnectionFactoryDelegate
-      createClusteredDelegate(Collection localDelegates)  throws Exception
+   private Map recalculateFailoverMap(Set nodeIDs) throws Exception
    {
-      if (trace) { log.trace(this + " updating failover delegates with " + localDelegates); }
+      FailoverMapper mapper = replicator.getFailoverMapper();
+      return mapper.generateMapping(nodeIDs);
+   }
 
-      // First sort the local delegates in order of server id
-      List sortedLocalDelegates = sortCFS(localDelegates);
+   /**
+    * @param localDelegates - Collection<ClientConnectionFactoryDelegate>
+    */
+   private ClientClusteredConnectionFactoryDelegate
+      createClusteredDelegate(Collection localDelegates) throws Exception
+   {
+      log.trace(this + " creating a clustered ConnectionFactoryDelegate based on " + localDelegates);
+
+      // First sort the local delegates in order of server ID
+      List sortedLocalDelegates = sortDelegatesOnServerID(localDelegates);
 
       ClientConnectionFactoryDelegate[] delegates =
          (ClientConnectionFactoryDelegate[])sortedLocalDelegates.
@@ -417,39 +419,14 @@ public class ConnectionFactoryJNDIMapper
             throw new IllegalStateException("Cannot find address node mapping!");
          }
 
-         recalculateFailoverMap(nodeAddressMap);
+         failoverMap = recalculateFailoverMap(nodeAddressMap.keySet());
       }
 
-      // The main delegated is needed for the construction of
-      // ClusteredClientConnectionFactoryDelegate. ClusteredClientConnectionFactoryDelegate extends
-      // ClientConnectionFactoryDelegate and it will need the current server's delegate properties
-      // to be bound to ObjectId, ServerLocator and other connection properties.
-      // The ClusteredCFDelegate will copy these properties on its contructor defined bellow after
-      // this loop.
-
-      ClientConnectionFactoryDelegate mainDelegate = null;
-
-      for(Iterator i = localDelegates.iterator(); i.hasNext();)
-      {
-         ClientConnectionFactoryDelegate del = (ClientConnectionFactoryDelegate)i.next();
-
-         if (del.getServerID() == serverPeer.getServerPeerID())
-         {
-            // sanity check
-            if (mainDelegate != null)
-            {
-               throw new IllegalStateException("There are two servers with serverID=" +
-                        this.serverPeer.getServerPeerID() + ", verify your clustering configuration");
-            }
-            mainDelegate = del;
-         }
-      }
-
-      return new ClusteredClientConnectionFactoryDelegate(mainDelegate, delegates, failoverMap);
+      return new ClientClusteredConnectionFactoryDelegate(delegates, failoverMap);
    }
 
    private void rebindConnectionFactory(Context ic, JNDIBindings jndiBindings,
-                                        ClientConnectionFactoryDelegate delegate)
+                                        ConnectionFactoryDelegate delegate)
       throws NamingException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(delegate);
@@ -466,10 +443,7 @@ public class ConnectionFactoryJNDIMapper
       }
    }
 
-   /**
-    * Sort the collection of delegates in order of server id
-    */
-   private List sortCFS(Collection delegates)
+   private List sortDelegatesOnServerID(Collection delegates)
    {
       List localDels = new ArrayList(delegates);
 

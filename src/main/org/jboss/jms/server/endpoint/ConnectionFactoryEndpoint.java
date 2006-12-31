@@ -39,11 +39,9 @@ public interface ConnectionFactoryEndpoint
 { 
    CreateConnectionResult createConnectionDelegate(String username,
                                                    String password, 
-                                                   int failedNodeId)
+                                                   int failedNodeID)
       throws JMSException;
    
-   byte[] getClientAOPConfig() throws JMSException;
-
    IDBlock getIdBlock(int size) throws JMSException;
 }
 

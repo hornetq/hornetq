@@ -25,14 +25,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class manages instances of ResourceManager. It ensures there is one instance per instance
- * of JMS server as specified by the server id.
+ * This class manages ResourceManager instances. It ensures there is one instance per instance of
+ * JMS server as specified by the server ID.
  * 
- * This allows different JMS connections to the same JMS server (the underlying resource is the JMS server)
- * to use the same resource manager.
+ * This allows different JMS connections to the same JMS server (the underlying resource is the JMS
+ * server) to use the same resource manager.
  * 
- * This means isSameRM() on XAResource returns true, allowing the Transaction manager to join work in one
- * tx to another thus allowing 1PC optimization which should help performance.
+ * This means isSameRM() on XAResource returns true, allowing the Transaction manager to join work
+ * in one tx to another thus allowing 1PC optimization which should help performance.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision: 1329 $
@@ -40,107 +40,120 @@ import java.util.Map;
  * $Id: ResourceManagerFactory.java 1329 2006-09-20 21:29:56Z ovidiu.feodorov@jboss.com $
  */
 public class ResourceManagerFactory
-{      
+{
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
    public static ResourceManagerFactory instance = new ResourceManagerFactory();
-   
+
+   // Attributes -----------------------------------------------------------------------------------
+
    private Map holders;
-   
+
+   // Constructors ---------------------------------------------------------------------------------
+
    private ResourceManagerFactory()
-   {      
+   {
       holders = new HashMap();
    }
-   
-   /*
-    * Need to failover rm from old server id to new server id, merging resource managers if it already exists
-    */
-   public synchronized void handleFailover(int oldServerId, int newServerId)
-   {       
-      Holder hOld = (Holder)holders.remove(new Integer(oldServerId));
-      
-      if (hOld == null)
-      {
-         //This is ok - this would happen if there are more than one connections for the old server failing
-         //in which only the first one to fail would failover the resource manager factory - since they
-         //share the same rm
-         return;
-      }
-      
-      ResourceManager oldRM = hOld.rm;
-      
-      ResourceManager newRM = null;
-      
-      Holder hNew = (Holder)holders.get(new Integer(newServerId));      
-      
-      if (hNew != null)
-      {
-         //Need to merge into the new
-         
-         newRM = hNew.rm;
-         
-         newRM.merge(oldRM);         
-      }
-      else
-      {
-         //re-register the old rm with the new id
-         
-         Holder h = new Holder(oldRM);
-         
-         holders.put(new Integer(newServerId), h);
-      }  
-   }
-   
+
+   // Public ---------------------------------------------------------------------------------------
+
    public synchronized int size()
    {
       return holders.size();
    }
-      
+
    public synchronized boolean containsResourceManager(int serverID)
    {
       return holders.containsKey(new Integer(serverID));
    }
-   
+
    /**
     * @param serverID - server peer ID.
     */
    public synchronized ResourceManager checkOutResourceManager(int serverID)
    {
       Integer i = new Integer(serverID);
-      
+
       Holder h = (Holder)holders.get(i);
-      
+
       if (h == null)
       {
          h = new Holder();
-         
          holders.put(i, h);
       }
       else
       {
          h.refCount++;
       }
-      
+
       return h.rm;
    }
-   
+
    public synchronized void checkInResourceManager(int serverID)
    {
       Integer i = new Integer(serverID);
-      
       Holder h = (Holder)holders.get(i);
-      
+
       if (h == null)
       {
          throw new IllegalArgumentException("Cannot find resource manager for server: " + serverID);
       }
-      
+
       h.refCount--;
-      
+
       if (h.refCount == 0)
       {
          holders.remove(i);
-      }      
+      }
    }
-   
+
+   /**
+    * Need to failover rm from old server id to new server id, merging resource managers if it
+    * already exists.
+    */
+   public synchronized void handleFailover(int oldServerID, int newServerID)
+   {
+      Holder hOld = (Holder)holders.remove(new Integer(oldServerID));
+
+      if (hOld == null)
+      {
+         // This is ok - this would happen if there are more than one connections for the old server
+         // failing in which only the first one to fail would failover the resource manager factory
+         // - since they share the same rm.
+         return;
+      }
+
+      ResourceManager oldRM = hOld.rm;
+      ResourceManager newRM = null;
+      Holder hNew = (Holder)holders.get(new Integer(newServerID));
+
+      if (hNew != null)
+      {
+         // need to merge into the new
+
+         newRM = hNew.rm;
+         newRM.merge(oldRM);
+      }
+      else
+      {
+         // re-register the old rm with the new id
+
+         Holder h = new Holder(oldRM);
+         holders.put(new Integer(newServerID), h);
+      }
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
    private static class Holder
    {
       ResourceManager rm;
@@ -157,5 +170,4 @@ public class ResourceManagerFactory
       
       int refCount = 1;
    }
-  
 }

@@ -126,7 +126,7 @@ public class ClosedInterceptor implements Interceptor
          id = DelegateIdentity.getIdentity(invocation);
       }
 
-      String methodName = ((MethodInvocation) invocation).getMethod().getName();
+      String methodName = ((MethodInvocation)invocation).getMethod().getName();
 
       if ("isClosed".equals(methodName))
       {

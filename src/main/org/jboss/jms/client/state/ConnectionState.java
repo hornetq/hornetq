@@ -22,12 +22,19 @@
 package org.jboss.jms.client.state;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
+import org.jboss.jms.client.FailoverEvent;
+import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.tx.ResourceManager;
@@ -43,21 +50,23 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public class ConnectionState extends HierarchicalStateSupport
 {
+   // Constants ------------------------------------------------------------------------------------
+
    private static final Logger log = Logger.getLogger(ConnectionState.class);
 
-   private JMSRemotingConnection remotingConnection;
+   // Static ---------------------------------------------------------------------------------------
 
-   private ConsolidatedRemotingConnectionListener remotingConnectionListener;
+   private static boolean trace = log.isTraceEnabled();
 
-   private ResourceManager resourceManager;
-
-   private MessageIdGenerator idGenerator;
+   // Attributes -----------------------------------------------------------------------------------
 
    private int serverID;
 
@@ -65,19 +74,31 @@ public class ConnectionState extends HierarchicalStateSupport
 
    private ConnectionDelegate delegate;
 
-   // This is filled from and for the HA interceptors only
-   private transient String user;
-
-   // This is filled from and for the HA interceptors only
-   private transient String password;
-
    protected boolean started;
 
-   /** This property used to be delcared on ConnectionAspect */
+   private boolean justCreated = true;
+
    private String clientID;
 
-    /** This property used to be delcared on ConnectionAspect */
-   private boolean justCreated = true;
+   private JMSRemotingConnection remotingConnection;
+   private ConsolidatedRemotingConnectionListener remotingConnectionListener;
+   private ResourceManager resourceManager;
+   private MessageIdGenerator idGenerator;
+
+   // Cached by the connection state in case ClusteringAspect needs to re-try establishing
+   // connection on a different node
+   private transient String username;
+
+   // Cached by the connection state in case ClusteringAspect needs to re-try establishing
+   // connection on a different node
+   private transient String password;
+
+   private List failoverListeners;
+
+   // needed to try re-creating connection in case failure is detected on the current connection
+   private ConnectionFactoryDelegate clusteredConnectionFactoryDelegate;
+
+   // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionState(int serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection,
@@ -99,13 +120,74 @@ public class ConnectionState extends HierarchicalStateSupport
       remotingConnectionListener.setConnectionState(this);
 
       // Each connection has its own resource manager. If we can failover all connections with the
-      // same server id at the same time then we can maintain one rm per unique server as opposed to
-      // per connection.
+      // same server id at the same time then we can maintain one rm per unique server as opposed
+      // to per connection.
       this.resourceManager = ResourceManagerFactory.instance.checkOutResourceManager(serverID);
 
       this.idGenerator = gen;
       this.serverID = serverID;
+
+      failoverListeners = new ArrayList();
    }
+
+   // HierarchicalState implementation -------------------------------------------------------------
+
+   public DelegateSupport getDelegate()
+   {
+      return (DelegateSupport) delegate;
+   }
+
+   public void setDelegate(DelegateSupport delegate)
+   {
+      this.delegate = (ConnectionDelegate) delegate;
+   }
+
+   public HierarchicalState getParent()
+   {
+      // A connection doesn't have a parent
+      return null;
+   }
+
+   public void setParent(HierarchicalState parent)
+   {
+      // noop - a connection doesn't have a parent
+   }
+
+   public Version getVersionToUse()
+   {
+      return versionToUse;
+   }
+
+   public void synchronizeWith(HierarchicalState ns) throws Exception
+   {
+      ConnectionState newState = (ConnectionState)ns;
+
+      remotingConnection = newState.remotingConnection;
+      idGenerator = newState.idGenerator;
+      serverID = newState.serverID;
+      versionToUse = newState.versionToUse;
+
+      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
+      //this.delegate = newState.delegate;
+
+      ConnectionDelegate newDelegate = (ConnectionDelegate)newState.getDelegate();
+
+      for(Iterator i = getChildren().iterator(); i.hasNext(); )
+      {
+         SessionState sessionState = (SessionState)i.next();
+         ClientSessionDelegate sessionDelegate = (ClientSessionDelegate)sessionState.getDelegate();
+
+         // create a new session on the new connection for each session on the old connection
+         ClientSessionDelegate newSessionDelegate = (ClientSessionDelegate)newDelegate.
+            createSessionDelegate(sessionState.isTransacted(),
+                                  sessionState.getAcknowledgeMode(),
+                                  sessionState.isXA());
+
+         sessionDelegate.synchronizeWith(newSessionDelegate);
+      }
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public ResourceManager getResourceManager()
    {
@@ -127,31 +209,9 @@ public class ConnectionState extends HierarchicalStateSupport
       return remotingConnectionListener;
    }
 
-   public Version getVersionToUse()
-   {
-      return versionToUse;
-   }
-
    public int getServerID()
    {
       return serverID;
-   }
-
-   public DelegateSupport getDelegate()
-   {
-      return (DelegateSupport) delegate;
-   }
-
-   public void setDelegate(DelegateSupport delegate)
-   {
-      this.delegate = (ConnectionDelegate) delegate;
-   }
-
-   /**
-    * Connection doesn't have a parent
-    */
-   public void setParent(HierarchicalState parent)
-   {
    }
 
    public boolean isStarted()
@@ -174,14 +234,14 @@ public class ConnectionState extends HierarchicalStateSupport
       this.password = password;
    }
 
-   public String getUser()
+   public String getUsername()
    {
-      return user;
+      return username;
    }
 
-   public void setUser(String user)
+   public void setUsername(String username)
    {
-      this.user = user;
+      this.username = username;
    }
 
    public String getClientID()
@@ -204,29 +264,69 @@ public class ConnectionState extends HierarchicalStateSupport
       this.justCreated = justCreated;
    }
 
-   /**
-    * Connection doesn't have a parent
-    */
-   public HierarchicalState getParent()
+   public void broadcastFailoverEvent(FailoverEvent e)
    {
-      return null;
+      if (trace) { log.trace(this + " broadcasting " + e); }
+
+      List listenersCopy;
+
+      synchronized(failoverListeners)
+      {
+         listenersCopy = new ArrayList(failoverListeners);
+      }
+
+      for(Iterator i = listenersCopy.iterator(); i.hasNext(); )
+      {
+         FailoverListener listener = (FailoverListener)i.next();
+
+         try
+         {
+            listener.failoverEventOccured(e);
+         }
+         catch(Exception ex)
+         {
+            log.warn("Failover listener " + listener + " did not accept event", ex);
+         }
+      }
    }
 
-   //When failing over a connection, we keep the old connection's state but there are certain fields
-   //we need to update
-   public void copyState(ConnectionState newState)
+   public void registerFailoverListener(FailoverListener listener)
    {
-      this.remotingConnection = newState.remotingConnection;
-      this.idGenerator = newState.idGenerator;
-      this.serverID = newState.serverID;
-      this.versionToUse = newState.versionToUse;
+      synchronized(failoverListeners)
+      {
+         failoverListeners.add(listener);
+      }
+   }
 
-      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
-      //this.delegate = newState.delegate;
+   public boolean unregisterFailoverListener(FailoverListener listener)
+   {
+      synchronized(failoverListeners)
+      {
+         return failoverListeners.remove(listener);
+      }
+   }
+
+   public void setClusteredConnectionFactoryDeleage(ConnectionFactoryDelegate d)
+   {
+      this.clusteredConnectionFactoryDelegate = d;
+   }
+
+   public ConnectionFactoryDelegate getClusteredConnectionFactoryDelegate()
+   {
+      return clusteredConnectionFactoryDelegate;
    }
 
    public String toString()
    {
       return "ConnectionState[" + ((ClientConnectionDelegate)delegate).getID() + "]";
    }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }

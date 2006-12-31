@@ -134,6 +134,10 @@ public class ConsumerState extends HierarchicalStateSupport
       return parent.getVersionToUse();
    }
 
+   public void synchronizeWith(HierarchicalState newState) throws Exception {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
    public int getBufferSize()
    {
       return bufferSize;

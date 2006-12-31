@@ -22,11 +22,12 @@
 package org.jboss.jms.client.state;
 
 import java.util.Set;
+import java.util.Iterator;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.Valve;
 
 /**
- * 
  * Base implementation of HierarchicalState.
  * 
  * State is created and maintained by the StateCreationAspect. The state is placed in the meta data
@@ -36,48 +37,80 @@ import org.jboss.jms.client.delegate.DelegateSupport;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public abstract class HierarchicalStateSupport implements HierarchicalState
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
+   // Set<HierarchicalState>
    protected Set children;
 
+   // Static ---------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public HierarchicalStateSupport(HierarchicalState parent, DelegateSupport delegate)
    {
-      this.setParent(parent);
-      this.setDelegate(delegate); // TODO - find a more elegant solution, delegate must implement an interface that has getID()
+      setParent(parent);
+      setDelegate(delegate); // TODO - find a more elegant solution, delegate must implement an interface that has getID()
       if (parent != null)
       {
          parent.getChildren().add(this);
       }
    }
 
-   // HierarchicalState implementation -------------------------------
+   // HierarchicalState implementation -------------------------------------------------------------
 
+   /**
+    * @return Set<HierarchicalState>
+    */
    public Set getChildren()
    {
       return children;
    }
 
+   public void closeChildrensValves() throws Exception
+   {
+      if (children == null)
+      {
+         return;
+      }
 
-   // Public --------------------------------------------------------
+      for(Iterator i = children.iterator(); i.hasNext(); )
+      {
+         HierarchicalState s = (HierarchicalState)i.next();
+         ((Valve)s.getDelegate()).closeValve();
+      }
+   }
 
-   // Protected ------------------------------------------------------
+   public void openChildrensValves() throws Exception
+   {
+      if (children == null)
+      {
+         return;
+      }
 
-   // Package Private ------------------------------------------------
+      for(Iterator i = children.iterator(); i.hasNext(); )
+      {
+         HierarchicalState s = (HierarchicalState)i.next();
+         ((Valve)s.getDelegate()).openValve();
+      }
+   }
 
-   // Private --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Inner Classes --------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
+
+   // Package Private ------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner Classes --------------------------------------------------------------------------------
 }

@@ -63,6 +63,10 @@ public class ProducerState extends HierarchicalStateSupport
       children = Collections.EMPTY_SET;
       this.destination = dest;
    }
+
+   public void synchronizeWith(HierarchicalState newState) throws Exception {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
    
    public Destination getDestination()
    {

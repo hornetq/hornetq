@@ -79,7 +79,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
 
          try
          {
-            log.debug(this + " forwarding remoting failure " + throwable + " to " + l);
+            log.debug(this + " forwarding remoting failure \"" + throwable + "\" to " + l);
             l.handleConnectionException(throwable, client);
          }
          catch(Exception e)
@@ -154,9 +154,9 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
    {
       if (state == null)
       {
-         return "ConsolidatedRemotingConnectionListener(UNINITIALIZED)";
+         return "ConsolidatedListener(UNINITIALIZED)";
       }
-      return state + ".ConsolidatedRemotingConnectionListener";
+      return state + ".ConsolidatedListener";
    }
 
    // Package protected ---------------------------------------------

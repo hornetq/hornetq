@@ -70,32 +70,36 @@ public class ConnectionFactory extends ServiceMBeanSupport
    {
       try
       {
+         log.debug(this + " starting");
+
          started = true;
          
          if (connectorObjectName == null)
          {
-            throw new IllegalArgumentException("A Connector must be specified for each Connection Factory");
+            throw new IllegalArgumentException("A Connector must be specified for " +
+                                               "each Connection Factory");
          }
          
          if (serverPeerObjectName == null)
          {
-            throw new IllegalArgumentException("ServerPeer must be specified for each Connection Factory");
+            throw new IllegalArgumentException("ServerPeer must be specified for " +
+                                               "each Connection Factory");
          }
       
          String locatorURI = (String)server.getAttribute(connectorObjectName, "InvokerLocator");
-         
          ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
          
          connectionFactoryManager = serverPeer.getConnectionFactoryManager();
          connectorManager = serverPeer.getConnectorManager();
          connectionManager = serverPeer.getConnectionManager();
-         
-         long leasePeriod = ((Long)server.getAttribute(connectorObjectName, "LeasePeriod")).longValue();
-         
-         // if leasePeriod <= 0, disable pinging altogether
-         
+
          int refCount = connectorManager.registerConnector(connectorObjectName.getCanonicalName());
-         
+
+         long leasePeriod =
+            ((Long)server.getAttribute(connectorObjectName, "LeasePeriod")).longValue();
+
+         // if leasePeriod <= 0, disable pinging altogether
+
          boolean enablePing = leasePeriod > 0;
          
          if (refCount == 1 && enablePing)
@@ -109,15 +113,15 @@ public class ConnectionFactory extends ServiceMBeanSupport
          // We use the MBean service name to uniquely identify the connection factory
          
          connectionFactoryManager.
-            registerConnectionFactory(getServiceName().toString(), clientID, jndiBindings, locatorURI,
-                                      enablePing, prefetchSize, defaultTempQueueFullSize,
-                                      defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
-                                      clustered);
+            registerConnectionFactory(getServiceName().toString(), clientID, jndiBindings,
+                                      locatorURI, enablePing, prefetchSize,
+                                      defaultTempQueueFullSize, defaultTempQueuePageSize,
+                                      defaultTempQueueDownCacheSize, clustered);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
 
-         String info =
-            "Connector " + locator.getProtocol() + "://" + locator.getHost() + ":" + locator.getPort();
+         String info = "Connector " + locator.getProtocol() + "://" +
+            locator.getHost() + ":" + locator.getPort();
                  
          if (enablePing)
          {
@@ -129,7 +133,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
          }
       
          log.info(info);
-         log.info(this + " deployed");
+         log.info(this + " started");
       }
       catch (Throwable t)
       {

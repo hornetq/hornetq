@@ -53,6 +53,10 @@ public class BrowserState extends HierarchicalStateSupport
       this.messageSelector=selector;
    }
 
+   public void synchronizeWith(HierarchicalState newState) throws Exception {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+   
    public DelegateSupport getDelegate()
    {
       return (DelegateSupport)delegate;

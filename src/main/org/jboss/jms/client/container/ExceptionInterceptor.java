@@ -76,7 +76,7 @@ public class ExceptionInterceptor implements Interceptor
       }
       catch (Throwable t)
       {
-         //We log everything else
+         // We log everything else
          
          log(t);
          

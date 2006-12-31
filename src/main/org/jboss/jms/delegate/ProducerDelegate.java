@@ -25,6 +25,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.Valve;
 import org.jboss.jms.destination.JBossDestination;
 
 /**
@@ -34,7 +35,7 @@ import org.jboss.jms.destination.JBossDestination;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public interface ProducerDelegate extends Closeable
+public interface ProducerDelegate extends Valve, Closeable
 {
    void setDisableMessageID(boolean value) throws JMSException;
    

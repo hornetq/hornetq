@@ -37,6 +37,7 @@ import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
+import org.jboss.jms.client.Valve;
 
 /**
  * Represents the minimal set of operations to provide session functionality.
@@ -48,12 +49,12 @@ import org.jboss.jms.server.endpoint.SessionEndpoint;
  *
  * $Id$
  */
-public interface SessionDelegate extends SessionEndpoint
-{   
+public interface SessionDelegate extends Valve, SessionEndpoint
+{
    MessageProxy createMessage() throws JMSException;
-   
+
    BytesMessageProxy createBytesMessage() throws JMSException;
-  
+
    MapMessageProxy createMapMessage() throws JMSException;
 
    ObjectMessageProxy createObjectMessage() throws JMSException;
@@ -63,37 +64,37 @@ public interface SessionDelegate extends SessionEndpoint
    StreamMessageProxy createStreamMessage() throws JMSException;
 
    TextMessageProxy createTextMessage() throws JMSException;
-   
+
    TextMessageProxy createTextMessage(String text) throws JMSException;
-   
+
    void preDeliver(DeliveryInfo deliveryInfo) throws JMSException;
-   
+
    void postDeliver() throws JMSException;
-   
+
    MessageListener getMessageListener() throws JMSException;
-   
+
    void setMessageListener(MessageListener listener) throws JMSException;
-   
+
    void run();
-   
+
    XAResource getXAResource();
-   
+
    void addAsfMessage(MessageProxy m, int consumerID, long channelID,
                       int maxDeliveries, SessionDelegate connectionConsumerDelegate);
-   
+
    boolean getTransacted();
-   
+
    int getAcknowledgeMode();
-   
+
    void commit() throws JMSException;
-   
+
    void rollback() throws JMSException;
-   
+
    void recover() throws JMSException;
-   
+
    void redeliver(List deliveryInfos) throws JMSException;
-   
+
    ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
-   
+
    void acknowledgeAll() throws JMSException;
 }

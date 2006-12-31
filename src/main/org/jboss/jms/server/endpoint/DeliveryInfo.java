@@ -127,7 +127,7 @@ public class DeliveryInfo implements Ack
 
    public String toString()
    {
-      return "Delivery[" + msg + "]";
+      return "Delivery[" + getDeliveryId() + ", " + msg + "]";
    }
 
    // Ack Implementation  -------------------------------------------

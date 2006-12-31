@@ -61,15 +61,15 @@ import org.jboss.remoting.Client;
  */
 public class ClientSessionDelegate extends DelegateSupport implements SessionDelegate
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -8096852898620279131L;
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ClientSessionDelegate(int objectID)
    {
@@ -79,8 +79,25 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public ClientSessionDelegate()
    {      
    }
-   
-   // SessionDelegate implementation --------------------------------
+
+   // DelegateSupport overrides --------------------------------------------------------------------
+
+   public void synchronizeWith(DelegateSupport nd) throws Exception
+   {
+      super.synchronizeWith(nd);
+
+      ClientSessionDelegate newDelegate = (ClientSessionDelegate)nd;
+
+      // synchronize server endpoint state
+
+      // synchronize the delegates
+
+      // synchronize (recursively) the client-side state
+      
+      state.synchronizeWith(newDelegate.getState());
+   }
+
+   // SessionDelegate implementation ---------------------------------------------------------------
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -189,7 +206,8 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     */
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
-                                                  boolean connectionConsumer, long failoverChannelId) throws JMSException
+                                                  boolean connectionConsumer,
+                                                  long failoverChannelId) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -447,16 +465,51 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
 
-   // Public --------------------------------------------------------
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void closeValve()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void openValve()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public boolean isValveOpen()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public int getActiveThreadsCount()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "SessionDelegate[" + id + "]";
    }
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
    protected Client getClient()
    {
@@ -465,10 +518,10 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    }
 
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 
 }

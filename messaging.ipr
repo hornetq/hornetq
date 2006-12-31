@@ -234,7 +234,9 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-aop.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://C:/work/src/jboss-aop_1.5.0.GA/src/aspect-framework/main" />
+      </SOURCES>
     </library>
     <library name="jboss-remoting">
       <CLASSES>

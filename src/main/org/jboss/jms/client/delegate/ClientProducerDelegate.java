@@ -212,6 +212,42 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void closeValve()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public void openValve()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public boolean isValveOpen()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
+   public int getActiveThreadsCount()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
    // Public --------------------------------------------------------
 
    public String toString()

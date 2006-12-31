@@ -40,11 +40,14 @@ import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.server.endpoint.advised.ClientAOPStackProviderAdvised;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.client.ClientAOPStackProvider;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.memory.MemoryManager;
@@ -81,7 +84,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-public class ServerPeer extends ServiceMBeanSupport
+public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackProvider
 {
    // Constants -----------------------------------------------------
 
@@ -96,7 +99,7 @@ public class ServerPeer extends ServiceMBeanSupport
    // Attributes ----------------------------------------------------
 
    private int serverPeerID;
-   private byte[] clientAOPConfig;
+   private byte[] clientAOPStack;
    private Version version;
 
    private String defaultQueueJNDIContext;
@@ -245,6 +248,10 @@ public class ServerPeer extends ServiceMBeanSupport
          txRepository.loadPreparedTransactions();
          
          initializeRemoting(mbeanServer);
+
+         // Register myself as ClientAOPStackProvider with the JMSDispatcher
+         ClientAOPStackProviderAdvised advised = new ClientAOPStackProviderAdvised(this);
+         JMSDispatcher.instance.registerTarget(new Integer(serverPeerID), advised);
 
          started = true;
 
@@ -597,6 +604,13 @@ public class ServerPeer extends ServiceMBeanSupport
       }
    }
 
+   // ClientAOPStackProvider implementation -------------------------------
+
+   public byte[] getClientAOPStack()
+   {
+      return clientAOPStack;
+   }
+
    // Public --------------------------------------------------------
    
    public IDManager getMessageIDManager()
@@ -710,11 +724,6 @@ public class ServerPeer extends ServiceMBeanSupport
       return started;
    }
 
-   public byte[] getClientAOPConfig()
-   {
-      return clientAOPConfig;
-   }
-
    public Version getVersion()
    {
       return version;
@@ -774,8 +783,7 @@ public class ServerPeer extends ServiceMBeanSupport
       // We get the reference lazily to avoid problems with MBean circular dependencies
       if (postOffice == null)
       {
-         postOffice = (PostOffice)getServer().
-            getAttribute(postOfficeObjectName, "Instance");
+         postOffice = (PostOffice)getServer().getAttribute(postOfficeObjectName, "Instance");
 
          // We also inject the replicator dependency into the ConnectionFactoryJNDIMapper. This is
          // a bit messy but we have a circular dependency POJOContainer should be able to help us
@@ -788,8 +796,8 @@ public class ServerPeer extends ServiceMBeanSupport
             rep.registerListener(new FailoverListener());
          }
          
-         //Also need to inject into txRepository
-         this.txRepository.injectPostOffice(postOffice);
+         // Also need to inject into txRepository
+         txRepository.injectPostOffice(postOffice);
       }
       return postOffice;
    }
@@ -978,7 +986,7 @@ public class ServerPeer extends ServiceMBeanSupport
             os.write(b);
          }
          os.flush();
-         clientAOPConfig = os.toByteArray();
+         clientAOPStack = os.toByteArray();
       }
       finally
       {

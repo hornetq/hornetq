@@ -176,7 +176,7 @@ public class TransactionRepository implements MessagingComponent
 
       prepared = persistenceManager.retrievePreparedTransactions();
 
-      if (trace) log.trace ("Found " + prepared.size() + " transactions in prepared state:");
+      if (trace) log.trace ("found " + prepared.size() + " transactions in prepared state");
 
       if (prepared != null)
       {
@@ -186,7 +186,7 @@ public class TransactionRepository implements MessagingComponent
          {
             PreparedTxInfo txInfo = (PreparedTxInfo) iter.next();
 
-            if (trace) log.trace("Reinstating TX(XID: " + txInfo.getXid() + ", LocalId " + txInfo.getTxId() +")");
+            if (trace) log.trace("reinstating TX(XID: " + txInfo.getXid() + ", LocalId " + txInfo.getTxId() +")");
             
             Transaction tx = createTransaction(txInfo);
             

@@ -41,7 +41,7 @@ import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.ClusteredClientConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
@@ -156,8 +156,8 @@ public class HATest extends ClusteringTestBase
    {
       JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
 
-      ClusteredClientConnectionFactoryDelegate delegate =
-         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+      ClientClusteredConnectionFactoryDelegate delegate =
+         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
       log.info ("number of delegates = " + delegate.getDelegates().length);
       log.info ("number of servers = " + ServerManagement.getServer(0).getNodeIDView().size());
@@ -368,8 +368,8 @@ public class HATest extends ClusteringTestBase
       {
          JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
 
-         ClusteredClientConnectionFactoryDelegate delegate =
-            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         ClientClusteredConnectionFactoryDelegate delegate =
+            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
          assertEquals(3, ServerManagement.getServer(0).getNodeIDView().size());
 
@@ -429,8 +429,8 @@ public class HATest extends ClusteringTestBase
 
          log.info("Got connection factory");
 
-         ClusteredClientConnectionFactoryDelegate delegate =
-            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         ClientClusteredConnectionFactoryDelegate delegate =
+            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
          ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
 
@@ -475,8 +475,8 @@ public class HATest extends ClusteringTestBase
 
          JBossConnectionFactory factory =  (JBossConnectionFactory )ic[2].lookup("/ConnectionFactory");
 
-         ClusteredClientConnectionFactoryDelegate delegate =
-            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         ClientClusteredConnectionFactoryDelegate delegate =
+            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
          ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
 
@@ -503,8 +503,8 @@ public class HATest extends ClusteringTestBase
 
          log.info("Got connection factory");
 
-         ClusteredClientConnectionFactoryDelegate delegate =
-            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         ClientClusteredConnectionFactoryDelegate delegate =
+            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
          ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
 
@@ -544,8 +544,8 @@ public class HATest extends ClusteringTestBase
 
          log.info("Got connection factory");
 
-         ClusteredClientConnectionFactoryDelegate delegate =
-            (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+         ClientClusteredConnectionFactoryDelegate delegate =
+            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
          ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
 
@@ -588,8 +588,8 @@ public class HATest extends ClusteringTestBase
    {
       JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
 
-      ClusteredClientConnectionFactoryDelegate delegate =
-         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+      ClientClusteredConnectionFactoryDelegate delegate =
+         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
       Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
       assertEquals(3, nodeIDView.size());
@@ -726,8 +726,8 @@ public class HATest extends ClusteringTestBase
    {
       JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
 
-      ClusteredClientConnectionFactoryDelegate delegate =
-         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+      ClientClusteredConnectionFactoryDelegate delegate =
+         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
       Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
       assertEquals(3, nodeIDView.size());
@@ -919,8 +919,8 @@ public class HATest extends ClusteringTestBase
    {
       JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
 
-      ClusteredClientConnectionFactoryDelegate delegate =
-         (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+      ClientClusteredConnectionFactoryDelegate delegate =
+         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
       Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
       assertEquals(3, nodeIDView.size());
@@ -1189,8 +1189,8 @@ public class HATest extends ClusteringTestBase
 // try
 // {
 // JBossConnectionFactory factory =  (JBossConnectionFactory )ic[2].lookup("/ConnectionFactory");
-// ClusteredClientConnectionFactoryDelegate delegate =
-// (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+// ClientClusteredConnectionFactoryDelegate delegate =
+// (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 // log.info ("number of delegates = " + delegate.getDelegates().length);
 // log.info ("number of servers = " + ServerManagement.getServer(0).getNumberOfNodesOnCluster());
 // 
@@ -1218,7 +1218,7 @@ public class HATest extends ClusteringTestBase
 // ServerManagement.log(ServerManagement.INFO,"##### Looking up ConnectionFactory at testConnectionFactoryConnect");
 // 
 // factory =  (JBossConnectionFactory )ic[2].lookup("/ConnectionFactory");
-// delegate = (ClusteredClientConnectionFactoryDelegate)factory.getDelegate();
+// delegate = (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 // 
 // assertEquals(2, ServerManagement.getServer(0).getNumberOfNodesOnCluster());
 // assertEquals(2, delegate.getDelegates().length);
@@ -1240,7 +1240,7 @@ public class HATest extends ClusteringTestBase
 // 
 // 
 // JBossConnectionFactory jbcf1 = (JBossConnectionFactory)cf;
-// assertTrue(jbcf1.getDelegate() instanceof ClusteredClientConnectionFactoryDelegate);
+// assertTrue(jbcf1.getDelegate() instanceof ClientClusteredConnectionFactoryDelegate);
 // 
 // log.info(">>Lookup Queue");
 // Destination destination = (Destination) ic[2].lookup("topic/testDistributedTopic");

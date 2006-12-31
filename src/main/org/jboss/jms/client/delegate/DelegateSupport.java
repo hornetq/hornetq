@@ -54,9 +54,9 @@ import org.jboss.remoting.Client;
  *
  * $Id$
  */
-public abstract class DelegateSupport implements Interceptor, Serializable
+public abstract class DelegateSupport implements Interceptor, Serializable, Initializable
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 8005108339439737469L;
 
@@ -64,7 +64,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    private static boolean trace = log.isTraceEnabled();
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    // This is set on the server.
    protected int id;
@@ -75,9 +75,9 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    // queried for many aspects in an a single invocation.
    protected transient HierarchicalState state;
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public DelegateSupport(int id)
    {
@@ -94,7 +94,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
 
    public String getName()
    {
-      // it's needed a meaninful name to change the aop stack programatically (HA uses that)
+      // Neede a meaninful name to change the aop stack programatically (HA uses that)
       return this.getClass().getName();
    }
 
@@ -104,7 +104,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable
     */
    public Object invoke(Invocation invocation) throws Throwable
    {
-      if (trace) { log.trace("invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
+      if (trace) { log.trace(this + " invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
@@ -116,12 +116,19 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       MessagingMarshallable request = new MessagingMarshallable(version, invocation);
       MessagingMarshallable response = (MessagingMarshallable)getClient().invoke(request, null);
 
-      if (trace) { log.trace("got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
+      if (trace) { log.trace(this + " got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
 
       return response.getLoad();
    }
 
-   // Public --------------------------------------------------------
+   // Initializable implemenation ------------------------------------------------------------------
+
+   public void init()
+   {
+      ((Advised)this)._getInstanceAdvisor().appendInterceptor(this);
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public HierarchicalState getState()
    {
@@ -133,34 +140,25 @@ public abstract class DelegateSupport implements Interceptor, Serializable
       this.state = state;
    }
 
-   /**
-    *  Add Invoking interceptor and prepare the stack for invocations.
-    */
-   public void init()
-   {
-      ((Advised)this)._getInstanceAdvisor().appendInterceptor(this);
-
-      checkMarshallers();
-   }
-
    public int getID()
    {
       return id;
    }
 
    /**
-    * During HA events, a new object is created on the new server and the state on that new object
-    * has to be transfered to this actual object. For example, a Connection will have to assume the
-    * ObjectID of the new connection endpoint and the new RemotingConnection.
+    * During HA events, delegates corresponding to new enpoints on the new server are created and
+    * the state of those delegates has to be transfered to the "failed" delegates. For example, a
+    * "failed" connection delegate will have to assume the ID of the new connection endpoint, the
+    * new RemotingConnection instance, etc.
     */
-   public void copyAttributes(DelegateSupport newDelegate)
+   public void synchronizeWith(DelegateSupport newDelegate) throws Exception
    {
       id = newDelegate.getID();
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
    protected SimpleMetaData getMetaData()
    {
@@ -170,24 +168,8 @@ public abstract class DelegateSupport implements Interceptor, Serializable
    protected abstract Client getClient() throws Exception;
 
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   private static boolean checked;
-
-   /**
-    * Check that the correct marshallers have been registered with the MarshalFactory.
-    * This is only done once.
-    */
-   private synchronized void checkMarshallers()
-   {
-      if (checked)
-      {
-         return;
-      }
-
-      checked = true;
-   }
-
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

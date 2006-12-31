@@ -358,7 +358,7 @@
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="remote-tests">
-            <param name="test.remoting" value="http"/>
+         <param name="test.remoting" value="http"/>
       </antcall>
    </target>
 

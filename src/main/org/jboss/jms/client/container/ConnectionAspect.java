@@ -27,6 +27,7 @@ import javax.jms.IllegalStateException;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionMetaData;
+import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
@@ -191,6 +192,30 @@ public class ConnectionAspect
       ResourceManagerFactory.instance.checkInResourceManager(state.getServerID());
 
       return ret;
+   }
+
+   public Object  handleRegisterFailoverListener(Invocation invocation) throws Throwable
+   {
+      ConnectionState state = getConnectionState(invocation);
+
+      MethodInvocation mi = (MethodInvocation)invocation;
+      FailoverListener listener = (FailoverListener)mi.getArguments()[0];
+
+      state.registerFailoverListener(listener);
+
+      return null;
+   }
+
+   public Object handleUnregisterFailoverListener(Invocation invocation) throws Throwable
+   {
+      ConnectionState state = getConnectionState(invocation);
+
+      MethodInvocation mi = (MethodInvocation)invocation;
+      FailoverListener listener = (FailoverListener)mi.getArguments()[0];
+
+      boolean result = state.unregisterFailoverListener(listener);
+
+      return new Boolean(result);
    }
 
    public String toString()

@@ -25,8 +25,8 @@ import org.jboss.aop.Dispatcher;
 
 /**
  * 
- * We have our own Dispatcher so we don't have the possibility with conflicts with other
- * systems using the same object ids
+ * We have our own Dispatcher so we don't have the possibility with conflicts with other systems
+ * using the same object ids.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version 1.1

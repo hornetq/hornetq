@@ -41,8 +41,9 @@ import java.util.Iterator;
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision:$</tt>
- *          <p/>
- *          $Id:$
+ *
+ * 
+ * $Id:$
  */
 public class HAStressTest extends ClusteringTestBase
 {

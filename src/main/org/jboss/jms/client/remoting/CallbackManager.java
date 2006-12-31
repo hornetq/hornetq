@@ -40,8 +40,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * The CallbackManager is an InvocationHandler used for handling callbacks to message consumers.
  * The callback is received and dispatched off to the relevant consumer.
  * 
- * There is one instance of this class per remoting connection - which is to a unique server - therefore
- * there is no need to add the server id to the key when doing look ups
+ * There is one instance of this class per remoting connection - which is to a unique server -
+ * therefore there is no need to add the server id to the key when doing look ups.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -51,13 +51,13 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  */
 public class CallbackManager implements InvokerCallbackHandler
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    protected static final Logger log;
 
    public static final String JMS_CALLBACK_SUBSYSTEM = "CALLBACK";
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    protected static CallbackManager theManager;
    
@@ -69,19 +69,19 @@ public class CallbackManager implements InvokerCallbackHandler
       trace = log.isTraceEnabled();
    }
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    // Map<Long(lookup)-MessageCallbackHandler>
    protected Map callbackHandlers;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public CallbackManager()
    {
       callbackHandlers = new ConcurrentReaderHashMap();
    }
 
-   // InvokerCallbackHandler implementation -------------------------
+   // InvokerCallbackHandler implementation --------------------------------------------------------
 
    public void handleCallback(Callback callback) throws HandleCallbackException
    {
@@ -89,7 +89,8 @@ public class CallbackManager implements InvokerCallbackHandler
       ClientDelivery dr = (ClientDelivery)mm.getLoad();
       MessageProxy msg = dr.getMessage();
 
-      MessageCallbackHandler handler = (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
+      MessageCallbackHandler handler =
+         (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
 
       if (handler == null)
       {
@@ -103,7 +104,7 @@ public class CallbackManager implements InvokerCallbackHandler
       handler.handleMessage(msg);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void registerHandler(int consumerID, MessageCallbackHandler handler)
    {
@@ -115,12 +116,12 @@ public class CallbackManager implements InvokerCallbackHandler
       return (MessageCallbackHandler)callbackHandlers.remove(new Integer(consumerID));
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

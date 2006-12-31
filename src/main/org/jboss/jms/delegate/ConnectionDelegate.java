@@ -28,6 +28,8 @@ import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
+import org.jboss.jms.client.FailoverListener;
+import org.jboss.jms.client.Valve;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 
 /**
@@ -40,7 +42,7 @@ import org.jboss.jms.server.endpoint.ConnectionEndpoint;
  *
  * $Id$
  */
-public interface ConnectionDelegate extends ConnectionEndpoint
+public interface ConnectionDelegate extends Valve, ConnectionEndpoint
 {      
    ExceptionListener getExceptionListener() throws JMSException;
    
@@ -53,4 +55,10 @@ public interface ConnectionDelegate extends ConnectionEndpoint
                                                     String messageSelector,
                                                     ServerSessionPool sessionPool,
                                                     int maxMessages) throws JMSException;
+
+   void registerFailoverListener(FailoverListener failoverListener);
+   boolean unregisterFailoverListener(FailoverListener failoverListener);
+
+   void performFailover() throws Exception;
+
 }

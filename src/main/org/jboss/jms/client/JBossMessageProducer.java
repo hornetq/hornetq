@@ -45,7 +45,7 @@ import org.jboss.logging.Logger;
  *
  * $Id$
  */
-class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher, Serializable
+public class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher, Serializable
 {
    // Constants -----------------------------------------------------
    
@@ -225,6 +225,11 @@ class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublish
    }
    
    // Public --------------------------------------------------------
+
+   public ProducerDelegate getDelegate()
+   {
+      return delegate;
+   }
 
    public String toString()
    {

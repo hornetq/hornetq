@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 
 import org.jboss.aop.Dispatcher;
+import org.jboss.aop.Advised;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.metadata.SimpleMetaData;
@@ -58,13 +59,13 @@ import org.jboss.remoting.InvokerLocator;
 public class ClientConnectionFactoryDelegate
    extends DelegateSupport implements ConnectionFactoryDelegate
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 2512460695662741413L;
 
    private static final Logger log = Logger.getLogger(ClientConnectionFactoryDelegate.class);
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    //This data is needed in order to create a connection
    private String serverLocatorURI;
@@ -77,7 +78,7 @@ public class ClientConnectionFactoryDelegate
    
    private transient boolean trace;
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
    /*
     * Calculate what version to use.
@@ -90,7 +91,8 @@ public class ClientConnectionFactoryDelegate
 
       Version versionToUse;
 
-      if (connectionVersion.getProviderIncrementingVersion() <= clientVersion.getProviderIncrementingVersion())
+      if (connectionVersion.getProviderIncrementingVersion() <=
+          clientVersion.getProviderIncrementingVersion())
       {
          versionToUse = connectionVersion;
       }
@@ -102,39 +104,50 @@ public class ClientConnectionFactoryDelegate
       return versionToUse;
    }
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(int objectID, int serverId, String serverLocatorURI,
-                                          Version serverVersion,
-                                          boolean clientPing)
+   public ClientConnectionFactoryDelegate(int objectID, int serverID, String serverLocatorURI,
+                                          Version serverVersion, boolean clientPing)
    {
       super(objectID);
 
-      this.serverID = serverId;
+      this.serverID = serverID;
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
       this.clientPing = clientPing;
       trace = log.isTraceEnabled();
    }
 
-   // ConnectionFactoryDelegateImplementation -----------------------
+   // ClientAOPStackProvider implementation --------------------------------------------------------
+
+   public byte[] getClientAOPStack()
+   {
+      // When the invocation lands here the first time, the AOP stack hasn't been initialized yet,
+      // so we "manually" add this delegate at the end of its empty stack and re-send the invocation
+      // down the stack; it will eventually end up on the server.
+
+      ((Advised)this)._getInstanceAdvisor().appendInterceptor(this);
+
+      byte[] clientAOPStack = this.getClientAOPStack();
+
+      // remove ourselves from the end of our own AOP stack now that we have the "real" AOP
+      // configuration that we can use.
+
+      ((Advised)this)._getInstanceAdvisor().removeInterceptor(this.getName());
+
+      return clientAOPStack;
+   }
+
+   // ConnectionFactoryDelegate implementation -----------------------------------------------------
  
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public CreateConnectionResult createConnectionDelegate(String username, String password, int failedNodeId)
+   public CreateConnectionResult createConnectionDelegate(String username,
+                                                          String password,
+                                                          int failedNodeID)
       throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    * @see org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint#getClientAOPConfig()
-    */
-   public byte[] getClientAOPConfig()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -149,7 +162,7 @@ public class ClientConnectionFactoryDelegate
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public synchronized Object invoke(Invocation invocation) throws Throwable
    {
@@ -160,21 +173,31 @@ public class ClientConnectionFactoryDelegate
 
       SimpleMetaData md = mi.getMetaData();
 
-      md.addMetaData(Dispatcher.DISPATCHER,
-                     Dispatcher.OID,
-                     new Integer(id),
-                     PayloadKey.AS_IS);
+      if ("getClientAOPStack".equals(methodName))
+      {
+         // the ClientAOPStackProvider on the server-side is the ServerPeer itself
+         md.addMetaData(Dispatcher.DISPATCHER,
+                        Dispatcher.OID,
+                        new Integer(serverID),
+                        PayloadKey.AS_IS);
+      }
+      else
+      {
+         md.addMetaData(Dispatcher.DISPATCHER,
+                        Dispatcher.OID,
+                        new Integer(id),
+                        PayloadKey.AS_IS);
+      }
 
-      /*
-       * If the method being invoked is createConnectionDelegate then we must invoke it on the same
-       * remoting client subsequently used by the connection.
-       * This is because we need to pass in the remoting session id in the call to createConnection
-       * All other invocations can be invoked on an arbitrary client, which can be created for each invocation.
-       * If we disable pinging on the client then it is a reasonably light weight operation to create the client
-       * since it will use the already existing invoker.
-       * This prevents us from having to maintain a Client instance per connection factory, which gives
-       * difficulties in knowing when to close it.
-       */
+      // If the method being invoked is createConnectionDelegate() then we must invoke it on the
+      // same remoting client subsequently used by the connection. This is because we need to pass
+      // in the remoting session id in the call to createConnection. All other invocations can be
+      // invoked on an arbitrary client, which can be created for each invocation.
+      //
+      // If we disable pinging on the client then it is a reasonably light weight operation to
+      // create the client since it will use the already existing invoker. This prevents us from
+      // having to maintain a Client instance per connection factory, which gives difficulties in
+      // knowing when to close it.
 
       Client client;
 
@@ -208,16 +231,14 @@ public class ClientConnectionFactoryDelegate
          configuration.put(Client.ENABLE_LEASE, String.valueOf(false));
 
          client = new Client(new InvokerLocator(serverLocatorURI), configuration);
-
          client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
-
          client.connect();
 
          client.setMarshaller(new JMSWireFormat());
          client.setUnMarshaller(new JMSWireFormat());
       }
 
-      //What version should we use for invocations on this connection factory?
+      // What version should we use for invocations on this connection factory?
       Version version = getVersionToUse(serverVersion);
       byte v = version.getProviderIncrementingVersion();
 
@@ -233,8 +254,8 @@ public class ClientConnectionFactoryDelegate
       }
       catch (Throwable t)
       {
-         //If we were invoking createConnectionDelegate and failure occurs then we need to clear
-         //up the JMSRemotingConnection
+         // If we were invoking createConnectionDelegate and failure occurs then we need to clear
+         // up the JMSRemotingConnection
 
          if (remotingConnection != null)
          {
@@ -253,9 +274,9 @@ public class ClientConnectionFactoryDelegate
       {
          if (remotingConnection == null)
          {
-            //Not a call to createConnectionDelegate - disconnect the client
+            // Not a call to createConnectionDelegate - disconnect the client
 
-            //client.disconnect();
+            // client.disconnect();
          }
       }
 
@@ -317,24 +338,22 @@ public class ClientConnectionFactoryDelegate
       return serverVersion;
    }
    
-   public void copyAttributes(DelegateSupport newDelegate)
+   public void synchronizeWith(DelegateSupport newDelegate) throws Exception
    {
-      super.copyAttributes(newDelegate);
+      super.synchronizeWith(newDelegate);
    }
 
-   // Protected -----------------------------------------------------
-
-   
+   // Protected ------------------------------------------------------------------------------------
 
    protected Client getClient()
    {
       return null;
    }
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 
 }

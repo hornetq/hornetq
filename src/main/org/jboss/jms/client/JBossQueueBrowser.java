@@ -35,7 +35,7 @@ import org.jboss.jms.delegate.BrowserDelegate;
  *
  * $Id$
  */
-class JBossQueueBrowser implements QueueBrowser, Serializable
+public class JBossQueueBrowser implements QueueBrowser, Serializable
 {
    // Constants -----------------------------------------------------
 
@@ -88,6 +88,11 @@ class JBossQueueBrowser implements QueueBrowser, Serializable
    public String toString()
    {
       return "JBossQueueBrowser->" + delegate;
+   }
+
+   public BrowserDelegate getDelegate()
+   {
+      return delegate;
    }
 
    // Package protected ---------------------------------------------

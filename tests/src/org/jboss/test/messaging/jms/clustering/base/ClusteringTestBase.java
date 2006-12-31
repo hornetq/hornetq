@@ -132,7 +132,8 @@ public class ClusteringTestBase extends MessagingTestCase
 
    protected String getLocatorURL(Connection conn)
    {
-      return getConnectionState(conn).getRemotingConnection().getInvokingClient().getInvoker().getLocator().getLocatorURI();
+      return getConnectionState(conn).getRemotingConnection().
+         getInvokingClient().getInvoker().getLocator().getLocatorURI();
    }
 
    protected int getServerId(Connection conn)
@@ -152,7 +153,8 @@ public class ClusteringTestBase extends MessagingTestCase
          getDelegate()).getState());
    }
 
-   protected Connection createConnectionOnServer(ConnectionFactory factory, int serverId) throws Exception
+   protected Connection createConnectionOnServer(ConnectionFactory factory, int serverId)
+      throws Exception
    {
       int count=0;
 

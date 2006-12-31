@@ -275,7 +275,7 @@ public class ServerManagement
          while(true)
          {
             server.ping();
-            log.info("Server still alive... pinging again");
+            log.debug("Server " + i + " still alive... pinging again");
             Thread.sleep(10);
          }
       }

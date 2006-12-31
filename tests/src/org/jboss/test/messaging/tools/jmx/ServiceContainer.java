@@ -510,7 +510,7 @@ public class ServiceContainer
       String persistenceConfigFile =
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
 
-      log.info("********* Using config file: " + persistenceConfigFile);
+      log.info("Peristence config file: .. " + persistenceConfigFile);
 
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
@@ -548,7 +548,7 @@ public class ServiceContainer
       String persistenceConfigFile =
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
 
-      log.info("********* Using config file: " + persistenceConfigFile);
+      log.info("Peristence config file: .. " + persistenceConfigFile);
 
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
@@ -595,7 +595,7 @@ public class ServiceContainer
             "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
       }
 
-      log.info("********* Using config file: " + persistenceConfigFile);
+      log.info("Peristence config file: .. " + persistenceConfigFile);
 
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)

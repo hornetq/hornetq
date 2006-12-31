@@ -27,6 +27,7 @@ import javax.jms.MessageListener;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
+import org.jboss.jms.client.Valve;
 
 /**
  * Represents the minimal set of operations to provide consumer
@@ -40,17 +41,17 @@ import org.jboss.jms.server.endpoint.ConsumerEndpoint;
  *
  * $Id$
  */
-public interface ConsumerDelegate extends ConsumerEndpoint
+public interface ConsumerDelegate extends Valve, ConsumerEndpoint
 {
    MessageListener getMessageListener();
-   
+
    void setMessageListener(MessageListener listener);
-   
+
    JBossDestination getDestination();
-   
+
    boolean getNoLocal();
-   
-   String getMessageSelector();   
-   
+
+   String getMessageSelector();
+
    Message receive(long timeout) throws JMSException;
 }

@@ -6,6 +6,7 @@
 <aop>
 
   <!-- Prepare the client stub classes - these provide the client side advice stack -->
+  <prepare expr="execution(* org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))"/>
   <prepare expr="execution(* org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate->$implementing{org.jboss.jms.delegate.ConnectionFactoryDelegate}(..))"/>
   <prepare expr="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->$implementing{org.jboss.jms.delegate.ConnectionDelegate}(..))"/>
   <prepare expr="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.delegate.SessionDelegate}(..))"/>
@@ -14,6 +15,7 @@
   <prepare expr="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->$implementing{org.jboss.jms.delegate.BrowserDelegate}(..))"/>
  
   <!-- Prepare the server delegate classes - these provide the server side advice stack -->
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ClientAOPStackProviderAdvised->$implementing{org.jboss.jms.client.ClientAOPStackProvider}(..))"/>
   <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint}(..))"/>
   <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))"/>
   <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))"/> 

@@ -79,8 +79,6 @@ public class StateCreationAspect
 
    // Public --------------------------------------------------------
 
-   // Interceptor implementation -----------------------------------
-
    public Object handleCreateConnectionDelegate(Invocation inv) throws Throwable
    {
       ConnectionFactoryDelegate cfd = (ConnectionFactoryDelegate)inv.getTargetObject();
@@ -117,14 +115,10 @@ public class StateCreationAspect
             MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
 
          ConnectionState connectionState =
-            new ConnectionState(serverID, connectionDelegate, remotingConnection,
-                                listener, versionToUse, idGenerator);
+            new ConnectionState(serverID, connectionDelegate,
+                                remotingConnection, listener, versionToUse, idGenerator);
 
          connectionDelegate.setState(connectionState);
-
-         // the delegate is completely configured now; will use this state to avoid redundant
-         // configuration on a double pass through StateCreationAspect, which happens for clustered
-         // connections
       }
 
       return res;
