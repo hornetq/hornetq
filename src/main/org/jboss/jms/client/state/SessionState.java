@@ -72,6 +72,9 @@ public class SessionState extends HierarchicalStateSupport
    // List<DeliveryInfo>
    private List clientAckList;
    
+   // List<DeliveryInfo>
+   //private List clientCancelList;
+   
    private DeliveryInfo autoAckInfo;
 
    private ConnectionState parent;
@@ -111,6 +114,8 @@ public class SessionState extends HierarchicalStateSupport
       
       clientAckList = new ArrayList();
       
+     // clientCancelList = new ArrayList();
+      
       // TODO could optimise this to use the same map of callbackmanagers (which holds refs
       // to callbackhandlers) in the connection, instead of maintaining another map
       callbackHandlers = new HashMap();
@@ -135,8 +140,7 @@ public class SessionState extends HierarchicalStateSupport
    {
       this.delegate=(SessionDelegate)delegate;
    }
-   
-   
+      
    /**
     * @return List<AckInfo>
     */
@@ -232,9 +236,7 @@ public class SessionState extends HierarchicalStateSupport
    // When failing over a session, we keep the old session's state but there are certain fields
    // we need to update
    public void copyState(SessionState newState)
-   {      
-      //this.delegate = newState.delegate;
-      
+   {       
       this.sessionId = newState.sessionId;
    }
 }

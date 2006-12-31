@@ -46,7 +46,11 @@ public class DefaultCancel implements Cancel
    
    private long deliveryId;
    
-   private int deliveryCount;      
+   private int deliveryCount;    
+   
+   private boolean expired;
+   
+   private boolean reachedMaxDeliveryAttempts;
 
    // Static --------------------------------------------------------
    
@@ -56,11 +60,15 @@ public class DefaultCancel implements Cancel
    {      
    }
    
-   public DefaultCancel(long deliveryId, int deliveryCount)
+   public DefaultCancel(long deliveryId, int deliveryCount, boolean expired, boolean maxDeliveries)
    {      
       this.deliveryId = deliveryId;
       
       this.deliveryCount = deliveryCount;
+      
+      this.expired = expired;
+      
+      this.reachedMaxDeliveryAttempts = maxDeliveries;
    }
 
    // Public --------------------------------------------------------
@@ -73,6 +81,16 @@ public class DefaultCancel implements Cancel
    public int getDeliveryCount()
    {
       return deliveryCount;
+   }
+   
+   public boolean isExpired()
+   {
+      return expired;
+   }
+   
+   public boolean isReachedMaxDeliveryAttempts()
+   {
+      return reachedMaxDeliveryAttempts;
    }
 
    // Class YYY overrides -------------------------------------------

@@ -519,54 +519,45 @@ public abstract class ChannelSupport implements Channel
             {
                ref = nextReference(iter);               
             }
+            
             if (ref != null)
             {
-               // Check if message is expired (we also do this on the clientside) If so ack it from the channel
-               if (ref.isExpired())
+               // Attempt to push the ref to a receiver
+               
+               if (trace) { log.trace(this + " pushing " + ref); }                                  
+
+               Delivery del = router.handle(this, ref, null);
+
+               receiversReady = del != null;
+               
+               if (del == null)
                {
-                  expireRef(ref, iter);
+                  // No receiver, broken receiver or full receiver so we stop delivering
+                  if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
+
+                  break;
+               }
+               else if (!del.isSelectorAccepted())
+               {
+                  // No receiver accepted the message because no selectors matched, so we create
+                  // an iterator (if we haven't already created it) to iterate through the refs
+                  // in the channel. No delivery was really performed
+                  
+                  if (iter == null)
+                  {
+                     iter = messageRefs.iterator();
+                  }                     
                }
                else
                {
-                  // Reference is not expired
-
-                  // Attempt to push the ref to a receiver
+                  if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
                   
-                  if (trace) { log.trace(this + " pushing " + ref); }                                  
-
-                  Delivery del = router.handle(this, ref, null);
-
-                  receiversReady = del != null;
+                  // Receiver accepted the reference
                   
-                  if (del == null)
-                  {
-                     // No receiver, broken receiver or full receiver so we stop delivering
-                     if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
-
-                     break;
-                  }
-                  else if (!del.isSelectorAccepted())
-                  {
-                     // No receiver accepted the message because no selectors matched, so we create
-                     // an iterator (if we haven't already created it) to iterate through the refs
-                     // in the channel. No delivery was really performed
-                     
-                     if (iter == null)
-                     {
-                        iter = messageRefs.iterator();
-                     }                     
-                  }
-                  else
-                  {
-                     if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
-                     
-                     // Receiver accepted the reference
-                     
-                     removeReference(iter);
-                     
-                     deliveringCount.increment();                     
-                  }
-               }
+                  removeReference(iter);
+                  
+                  deliveringCount.increment();                     
+               }               
             }
             else
             {
@@ -782,28 +773,6 @@ public abstract class ChannelSupport implements Channel
    }    
    
    // Private -------------------------------------------------------
-   
-   private void expireRef(MessageReference ref, ListIterator iter) throws Exception
-   {
-      if (trace) { log.trace("Message reference: " + ref + " has expired"); }
-
-      // remove and acknowledge it
-      synchronized (refLock)
-      {
-         if (iter == null)
-         {
-            removeFirstInMemory();
-         }
-         else
-         {
-            iter.remove();
-         }
-      }
-
-      Delivery delivery = new SimpleDelivery(this, ref, true);
-
-      acknowledgeInternal(delivery, null, true, false);
-   }
    
    private void removeReference(ListIterator iter) throws Exception
    {

@@ -59,6 +59,18 @@
       <name>ServerPeer</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getDLQ" setMethod="setDLQ">
+      <description>The DLQ for this queue, overrides the default DLQ on the server peer</description>
+      <name>DLQ</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="getExpiryQueue" setMethod="setExpiryQueue">
+      <description>The expiry queue for this queue, overrides the default expiry queue on the server peer</description>
+      <name>ExpiryQueue</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
 
    <attribute access="read-write" getMethod="getSecurityConfig" setMethod="setSecurityConfig">
       <description>The destination's security configuration</description>
@@ -101,6 +113,14 @@
       <name>Clustered</name>
       <type>boolean</type>
    </attribute>   
+   
+   <!-- instance access -->
+
+   <attribute access="read-only" getMethod="getInstance">
+      <description>The instance to be accessed by select plugins via a typed hard reference</description>
+      <name>Instance</name>
+      <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
+   </attribute>
    
    <!-- Managed operations -->
 

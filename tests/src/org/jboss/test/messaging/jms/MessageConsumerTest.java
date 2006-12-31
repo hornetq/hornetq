@@ -3055,6 +3055,7 @@ public class MessageConsumerTest extends MessagingTestCase
       Session sess1 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       MessageConsumer cons1 = sess1.createConsumer(queue);
       TextMessage tm2 = (TextMessage)cons1.receive(3000);
+      
       assertNotNull(tm2);
       assertEquals("testRedeliveredDifferentSessions", tm2.getText());
 
@@ -3064,6 +3065,7 @@ public class MessageConsumerTest extends MessagingTestCase
       Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       MessageConsumer cons2 = sess2.createConsumer(queue);
       TextMessage tm3 = (TextMessage)cons2.receive(3000);
+      
       assertNotNull(tm3);
       assertEquals("testRedeliveredDifferentSessions", tm3.getText());
       

@@ -285,6 +285,10 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   
                   dos.writeInt(cancel.getDeliveryCount());
                   
+                  dos.writeBoolean(cancel.isExpired());
+                  
+                  dos.writeBoolean(cancel.isReachedMaxDeliveryAttempts());
+                  
                   dos.flush();
    
                   if (trace) { log.trace("wrote cancelDelivery()"); }
@@ -308,6 +312,10 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                      dos.writeLong(cancel.getDeliveryId());
                      
                      dos.writeInt(cancel.getDeliveryCount());
+                     
+                     dos.writeBoolean(cancel.isExpired());
+                     
+                     dos.writeBoolean(cancel.isReachedMaxDeliveryAttempts());
                   }
    
                   dos.flush();
@@ -723,7 +731,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                int deliveryCount = dis.readInt();
                
-               Object[] args = new Object[] {new DefaultCancel(deliveryId, deliveryCount)};
+               boolean expired = dis.readBoolean();
+               
+               boolean reachedMaxDeliveries = dis.readBoolean();
+               
+               Object[] args = new Object[] {new DefaultCancel(deliveryId, deliveryCount, expired, reachedMaxDeliveries)};
    
                mi.setArguments(args);
    
@@ -749,7 +761,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   
                   int deliveryCount = dis.readInt();
                   
-                  DefaultCancel cancel = new DefaultCancel(deliveryId, deliveryCount);
+                  boolean expired = dis.readBoolean();
+                  
+                  boolean reachedMaxDeliveries = dis.readBoolean();
+                  
+                  DefaultCancel cancel = new DefaultCancel(deliveryId, deliveryCount, expired, reachedMaxDeliveries);
                                     
                   acks.add(cancel);
                }

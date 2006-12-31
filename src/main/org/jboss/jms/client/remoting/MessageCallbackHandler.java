@@ -34,11 +34,14 @@ import javax.jms.Session;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Future;
 
+import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
@@ -63,6 +66,67 @@ public class MessageCallbackHandler
       log = Logger.getLogger(MessageCallbackHandler.class);
       trace = log.isTraceEnabled();
    }
+   
+   //FIXME temporary - until remoting provides true asynch invocations
+   static Executor exec = new QueuedExecutor();
+   
+   private static boolean checkExpiredOrReachedMaxdeliveries(MessageProxy proxy, SessionDelegate del,
+                                                             int maxDeliveries) throws JMSException
+   {
+      Message msg = proxy.getMessage();
+      
+      boolean expired = msg.isExpired();
+      
+      boolean reachedMaxDeliveries = proxy.getDeliveryCount() == maxDeliveries;
+      
+      if (expired || reachedMaxDeliveries)
+      {
+         if (trace)
+         {
+            if (expired)
+            {
+               log.trace("Message " + proxy.getMessage() + " has expired - cancelling to server");
+            }
+            else
+            {
+               log.trace("Message " + proxy.getMessage() + " has reached max deliveries - cancelling to server");
+            }
+         }
+         final Cancel cancel = new DefaultCancel(proxy.getDeliveryId(), proxy.getDeliveryCount(),
+                                           expired, reachedMaxDeliveries);
+         
+         //FIXME - this cancel should be sent using remoting true asynch invocations
+         //for now we just send on a different thread to prevent deadlocks
+         
+         final SessionDelegate sess = del;
+         
+         try
+         {
+            
+            exec.execute(new Runnable() { public void run()
+            {
+               try
+               {
+                  sess.cancelDelivery(cancel);
+               }
+               catch (JMSException e)
+               {
+                  log.error("Failed to cancel delivery", e);
+               }
+            }});
+         }
+         catch (InterruptedException e)
+         {
+            log.error("Thread interrupted", e);
+         }
+                  
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
      
    //This is static so it can be called by the asf layer too
    public static void callOnMessage(SessionDelegate sess,
@@ -75,79 +139,58 @@ public class MessageCallbackHandler
                                     int maxDeliveries,
                                     SessionDelegate connectionConsumerSession)
       throws JMSException
-   {
+   {      
+      if (checkExpiredOrReachedMaxdeliveries(m, sess, maxDeliveries))
+      {
+         //Message has been cancelled
+         return;
+      }
+      
+      DeliveryInfo deliveryInfo = new DeliveryInfo(m, consumerID, channelID, connectionConsumerSession);
+            
+      m.incDeliveryCount();
+      
       // If this is the callback-handler for a connection consumer we don't want to acknowledge or
       // add anything to the tx for this session.
       if (!isConnectionConsumer)
       {
-         sess.preDeliver(new DeliveryInfo(m, consumerID, channelID, connectionConsumerSession));
-      }  
-                  
-      int tries = 0;
+         //We need to call preDeliver, deliver the message then call postDeliver - this is because
+         //it is legal to call session.recover(), or session.rollback() from within the onMessage()
+         //method in which case the last message needs to be delivered so it needs to know about it
+         sess.preDeliver(deliveryInfo);
+      } 
       
-      boolean cancel = false;
-      
-      while (true)
+      try
       {
-         try
-         {
-            if (trace) { log.trace("calling listener's onMessage(" + m + ")"); }
-            
-            m.incDeliveryCount();
-            
-            listener.onMessage(m);
+         if (trace) { log.trace("calling listener's onMessage(" + m + ")"); }
+                     
+         listener.onMessage(m);
 
-            if (trace) { log.trace("listener's onMessage() finished"); }
-            
-            break;
-         }
-         catch (RuntimeException e)
-         {
-            long id = m.getMessage().getMessageID();
-   
-            log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
-            
-            // See JMS 1.1 spec 4.5.2
-   
-            if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-            {
-               // We redeliver a certain number of times
-               if (tries < maxDeliveries)
-               {                            
-                  tries++;
-               }
-               else
-               {
-                  log.error("Max redeliveries has occurred for message: " + m.getJMSMessageID());
-                  
-                  // postdeliver will do a cancel rather than an ack which will cause the mesage
-                  // to end up in the DLQ
-                  
-                  cancel = true;
-                  
-                  break;
-               }
-            }
-            else
-            {
-               // Session is either transacted or CLIENT_ACKNOWLEDGE
-               // We just deliver next message
-               if (trace) { log.trace("ignoring exception on " + id); }
-               
-               break;
-            }
-         }
+         if (trace) { log.trace("listener's onMessage() finished"); }
       }
+      catch (RuntimeException e)
+      {
+         long id = m.getMessage().getMessageID();
+
+         log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
+         
+         // See JMS 1.1 spec 4.5.2
+
+         if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+         {              
+            sess.recover();
+         }
+      }   
 
       if (!sess.isClosed())
       {
          // postDeliver only if the session is not closed
-
+               
          // If this is the callback-handler for a connection consumer we don't want to acknowledge or
          // add anything to the tx for this session
          if (!isConnectionConsumer)
          {
-            sess.postDeliver(cancel);
+            sess.postDeliver();
          }   
       }
    }
@@ -278,7 +321,7 @@ public class MessageCallbackHandler
          // delivered in a session.
          
          if (!buffer.isEmpty())
-         {            
+         {                        
             // Now we cancel any deliveries that might be waiting in our buffer. This is because
             // otherwise the messages wouldn't get cancelled until the corresponding session died.
             // So if another consumer in another session tried to consume from the channel before that
@@ -293,7 +336,7 @@ public class MessageCallbackHandler
             {
                MessageProxy mp = (MessageProxy)i.next();
                
-               DefaultCancel ack = new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount());
+               DefaultCancel ack = new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
                
                cancels.add(ack);
             }
@@ -409,17 +452,20 @@ public class MessageCallbackHandler
                               
                if (trace) { log.trace(this + " received " + m + " after being blocked on buffer"); }
                        
-               // If message is expired we still call pre and post deliver. This makes sure the
-               // message is acknowledged so it gets removed from the queue/subscription.
-
-               if (!isConnectionConsumer)
-               {
-                  sessionDelegate.preDeliver(new DeliveryInfo(m, consumerID, channelID, null));
-                  
-                  sessionDelegate.postDeliver(false);
-               }
+               boolean ignore = checkExpiredOrReachedMaxdeliveries(m, sessionDelegate, maxDeliveries);
                
-               if (!m.getMessage().isExpired())
+               if (!isConnectionConsumer && !ignore)
+               {
+                  DeliveryInfo info = new DeliveryInfo(m, consumerID, channelID, null);
+                                                    
+                  m.incDeliveryCount();           
+ 
+                  sessionDelegate.preDeliver(info);                  
+                  
+                  sessionDelegate.postDeliver();                                    
+               }
+                                             
+               if (!ignore)
                {
                   if (trace) { log.trace(this + ": message " + m + " is not expired, pushing it to the caller"); }
                   
@@ -428,7 +474,7 @@ public class MessageCallbackHandler
                
                if (trace)
                {
-                  log.trace(this + ": message expired, discarding");
+                  log.trace(this + ": message expired or exceeded max deliveries, discarding");
                }
                
                // the message expired, so discard the message, adjust timeout and reenter the buffer
@@ -456,8 +502,6 @@ public class MessageCallbackHandler
          sendChangeRateMessage(1);                    
       }
       
-      m.incDeliveryCount();
-      
       if (trace) { log.trace(this + " receive() returning " + m); }
       
       return m;
@@ -480,7 +524,7 @@ public class MessageCallbackHandler
 
    public void setConsumerId(int consumerId)
    {
-       this.consumerID=consumerId;
+       this.consumerID = consumerId;
    }
    
    public void addToFrontOfBuffer(MessageProxy proxy)

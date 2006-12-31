@@ -48,7 +48,6 @@ public class ClientTransaction
    
    private static final Logger log = Logger.getLogger(ClientTransaction.class);
    
-
    public final static byte TX_OPEN = 0;
    
    public final static byte TX_ENDED = 1;

@@ -10,11 +10,9 @@
    <interceptor class="org.jboss.jms.client.container.ConcurrencyInterceptor" scope="PER_INSTANCE"/>
 
    <aspect class="org.jboss.jms.client.container.StateCreationAspect" scope="PER_VM"/>
-   <aspect class="org.jboss.jms.client.container.ReceiverAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.ConsumerAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_VM"/>
-   <aspect class="org.jboss.jms.client.container.TransactionAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.AsfAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.BrowserAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ConnectionAspect" scope="PER_INSTANCE"/>
@@ -141,19 +139,13 @@
       <advice name="handleClose" aspect="org.jboss.jms.client.container.SessionAspect"/>         
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->commit())">
-      <advice name="handleCommit" aspect="org.jboss.jms.client.container.TransactionAspect"/>
+      <advice name="handleCommit" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->rollback())">
-      <advice name="handleRollback" aspect="org.jboss.jms.client.container.TransactionAspect"/>
+      <advice name="handleRollback" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->preDeliver(..))">
-      <advice name="handlePreDeliver" aspect="org.jboss.jms.client.container.TransactionAspect"/>
-   </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->send(..))">
-      <advice name="handleSend" aspect="org.jboss.jms.client.container.TransactionAspect"/>
-   </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->close())">
-      <advice name="handleClose" aspect="org.jboss.jms.client.container.TransactionAspect"/>
+      <advice name="handleSend" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
@@ -181,16 +173,16 @@
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>          
    </bind>       
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->getMessageListener())">
-      <advice name="handleGetMessageListener" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
+      <advice name="handleGetMessageListener" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->setMessageListener(..))">
-      <advice name="handleSetMessageListener" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
+      <advice name="handleSetMessageListener" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->receive(..))">
-      <advice name="handleReceive" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
+      <advice name="handleReceive" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>  
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->receiveNoWait())">
-      <advice name="handleReceiveNoWait" aspect="org.jboss.jms.client.container.ReceiverAspect"/>         
+      <advice name="handleReceiveNoWait" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>    
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->closing())">
       <advice name="handleClosing" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         

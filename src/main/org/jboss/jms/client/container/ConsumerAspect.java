@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.client.container;
 
+import javax.jms.MessageListener;
+
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
@@ -31,6 +33,8 @@ import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -49,6 +53,8 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 public class ConsumerAspect
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ConsumerAspect.class);
    
    // Static --------------------------------------------------------
 
@@ -133,11 +139,41 @@ public class ConsumerAspect
       //in the right order
       del.cancelInflightMessages(lastDeliveryId);
       
-      //And then we cancel any messages still in the message callback handler buffer
+      //And then we cancel any messages still in the message callback handler buffer     
       consumerState.getMessageCallbackHandler().cancelBuffer();
                                    
       return res;
    }      
+   
+   public Object handleReceive(Invocation invocation) throws Throwable
+   {
+      MethodInvocation mi = (MethodInvocation)invocation;
+      Object[] args = mi.getArguments();
+      long timeout = args == null ? 0 : ((Long)args[0]).longValue();
+      
+      return getMessageCallbackHandler(invocation).receive(timeout);
+   }
+   
+   public Object handleReceiveNoWait(Invocation invocation) throws Throwable
+   {      
+      return getMessageCallbackHandler(invocation).receive(-1);
+   }
+   
+   public Object handleSetMessageListener(Invocation invocation) throws Throwable
+   {   
+      MethodInvocation mi = (MethodInvocation)invocation;
+      Object[] args = mi.getArguments();
+      MessageListener l = (MessageListener)args[0];
+      
+      getMessageCallbackHandler(invocation).setMessageListener(l);
+      
+      return null;
+   }
+   
+   public MessageListener handleGetMessageListener(Invocation invocation) throws Throwable
+   {       
+      return getMessageCallbackHandler(invocation).getMessageListener();
+   }
    
    public Object handleGetDestination(Invocation invocation) throws Throwable
    {
@@ -163,6 +199,12 @@ public class ConsumerAspect
    private ConsumerState getState(Invocation inv)
    {
       return (ConsumerState)((DelegateSupport)inv.getTargetObject()).getState();
+   }
+   
+   private MessageCallbackHandler getMessageCallbackHandler(Invocation inv)
+   {      
+      ConsumerState state = (ConsumerState)((DelegateSupport)inv.getTargetObject()).getState();
+      return state.getMessageCallbackHandler();      
    }
    
    // Inner classes -------------------------------------------------

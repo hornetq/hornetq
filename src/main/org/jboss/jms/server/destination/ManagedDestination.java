@@ -21,6 +21,8 @@
  */
 package org.jboss.jms.server.destination;
 
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.w3c.dom.Element;
 
@@ -33,7 +35,7 @@ import org.w3c.dom.Element;
  * $Id$
  *
  */
-public abstract class ManagedDestination
+public abstract class ManagedDestination implements MessagingComponent
 {
    private static final int DEFAULT_FULL_SIZE = 75000;
    
@@ -61,6 +63,10 @@ public abstract class ManagedDestination
    protected Element securityConfig;
    
    protected PostOffice postOffice;
+   
+   protected Queue dlq;
+   
+   protected Queue expiryQueue;
    
    public ManagedDestination()
    {      
@@ -167,5 +173,35 @@ public abstract class ManagedDestination
       this.temporary = temporary;
    }
    
+   public Queue getDLQ()
+   {
+      return dlq;
+   }
+   
+   public void setDLQ(Queue dlq)
+   {
+      this.dlq = dlq;
+   }
+   
+   public Queue getExpiryQueue()
+   {
+      return expiryQueue;
+   }
+   
+   public void setExpiryQueue(Queue expiryQueue)
+   {
+      this.expiryQueue = expiryQueue;
+   }
+   
    public abstract boolean isQueue();
+
+   public void start() throws Exception
+   {
+      //NOOP
+   }
+
+   public void stop() throws Exception
+   {   
+      //NOOP
+   }
 }

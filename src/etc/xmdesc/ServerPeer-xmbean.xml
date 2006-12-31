@@ -46,6 +46,18 @@
       <type>javax.management.ObjectName</type>
    </attribute>   
    
+   <attribute access="read-write" getMethod="getDefaultDLQ" setMethod="setDefaultDLQ">
+      <description>The ObjectName of the default DLQ - used when an individual queue does not specify a DLQ</description>
+      <name>DefaultDLQ</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>  
+   
+   <attribute access="read-write" getMethod="getDefaultExpiryQueue" setMethod="setDefaultExpiryQueue">
+      <description>The ObjectName of the default expiry queue - used when an individual queue does not specify an expiry queue</description>
+      <name>DefaultExpiryQueue</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>    
+   
    <!-- instance access -->
 
    <attribute access="read-only" getMethod="getInstance">
@@ -139,17 +151,11 @@
       <name>QueuedExecutorPoolSize</name>
       <type>int</type>
    </attribute>
-   
-   <attribute access="read-write" getMethod="getMaxDeliveryAttempts" setMethod="setMaxDeliveryAttempts">
-      <description>The maximum delivery attempts for destinations</description>
-      <name>MaxDeliveryAttempts</name>
+         
+   <attribute access="read-write" getMethod="getDefaultMaxDeliveryAttempts" setMethod="setDefaultMaxDeliveryAttempts">
+      <description>The default maximum delivery attempts for destinations, unless overridden on the destination</description>
+      <name>DefaultMaxDeliveryAttempts</name>
       <type>int</type>
-   </attribute>  
-   
-   <attribute access="read-write" getMethod="getDLQName" setMethod="setDLQName">
-      <description>The JNDI name of the DLQ</description>
-      <name>DLQName</name>
-      <type>java.lang.String</type>
    </attribute>  
    
    <attribute access="read-write" getMethod="getFailoverStartTimeout" setMethod="setFailoverStartTimeout">

@@ -29,6 +29,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.util.ExceptionUtil;
@@ -37,6 +38,7 @@ import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
@@ -92,6 +94,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private JBossDestination destination;
    
+   private Queue dlq;
+   
+   private Queue expiryQueue;
+   
    private boolean started;
    
    //This lock protects starting and stopping
@@ -103,9 +109,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    // Constructors --------------------------------------------------
 
    ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
-                         ServerSessionEndpoint sessionEndpoint,
-                         String selector, boolean noLocal, JBossDestination dest)
-                         throws InvalidSelectorException
+                          ServerSessionEndpoint sessionEndpoint,
+                          String selector, boolean noLocal, JBossDestination dest,
+                          Queue dlq, Queue expiryQueue)
+                          throws InvalidSelectorException
    {
       if (trace) { log.trace("constructing consumer endpoint " + id); }
 
@@ -124,6 +131,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.noLocal = noLocal;
       
       this.destination = dest;
+      
+      this.dlq = dlq;
+      
+      this.expiryQueue = expiryQueue;
       
       //Always start as false - wait for consumer to initiate
       this.clientAccepting = false;
@@ -163,6 +174,20 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          if (trace) { log.trace(this + " the client is not currently accepting messages"); }
          
          return null;
+      }
+      
+      if (ref.isExpired())
+      {
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref);
+         
+         try
+         {
+            sessionEndpoint.expireDelivery(delivery, expiryQueue);
+         }
+         catch (Throwable t)
+         {
+            log.error("Failed to expire delivery: " + delivery, t);
+         }
       }
         
       synchronized (startStopLock)
@@ -385,6 +410,16 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    // Package protected ---------------------------------------------
    
+   Queue getDLQ()
+   {
+      return dlq;
+   }
+   
+   Queue getExpiryQueue()
+   {
+      return expiryQueue;
+   }
+     
    void localClose() throws Throwable
    {      
       if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }

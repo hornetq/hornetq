@@ -135,7 +135,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private PostOffice postOffice;
    private int nodeId;
    private int maxDeliveryAttempts;
-   private Queue dlq;
+   private Queue defaultDLQ;
+   private Queue defaultExpiryQueue;
    
    // Map < deliveryId, Delivery>
    private Map deliveries;
@@ -166,9 +167,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       consumers = new HashMap();
 		browsers = new HashMap();
       
-      dlq = sp.getDLQ();
+      defaultDLQ = sp.getDefaultDLQInstance();
+      defaultExpiryQueue = sp.getDefaultExpiryQueueInstance();
       tr = sp.getTxRepository();
-      maxDeliveryAttempts = sp.getMaxDeliveryAttempts();
+      maxDeliveryAttempts = sp.getDefaultMaxDeliveryAttempts();
       
       deliveries = new ConcurrentHashMap();
       
@@ -371,7 +373,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeBatch");
       }
    }
-       
+             
    public void cancelDelivery(Cancel cancel) throws JMSException
    {
       if (trace) {log.trace(this + " cancelDelivery " + cancel); }
@@ -386,31 +388,30 @@ public class ServerSessionEndpoint implements SessionEndpoint
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " cancelDelivery");
-      }
-     
-   }      
+      }     
+   }            
 
    public void cancelDeliveries(List cancels) throws JMSException
    {
       if (trace) {log.trace(this + " cancelDeliveries " + cancels); }
-      
+        
       try
       {
          // deliveries must be cancelled in reverse order
 
          Set channels = new HashSet();
-                           
+                          
          for (int i = cancels.size() - 1; i >= 0; i--)
          {
             Cancel cancel = (Cancel)cancels.get(i);       
             
             if (trace) { log.trace(this + " cancelling delivery " + cancel.getDeliveryId()); }
-            
+                        
             Delivery del = cancelDeliveryInternal(cancel);
             
             channels.add(del.getObserver());
          }
-                  
+                              
          // need to prompt delivery for all affected channels
          
          promptDelivery(channels);
@@ -430,8 +431,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Recovering deliveries but post office is not clustered!");
          }
-         
-         ClusteredPostOffice po = (ClusteredPostOffice)postOffice;
          
          long maxDeliveryId = 0;
                   
@@ -465,7 +464,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             Long channelId = (Long)entry.getKey();
             
             //Look up channel
-            Binding binding = po.getBindingforChannelId(channelId.longValue());
+            Binding binding = postOffice.getBindingforChannelId(channelId.longValue());
             
             if (binding == null)
             {
@@ -703,6 +702,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
 
    // Package protected ---------------------------------------------
+   
+   void expireDelivery(Delivery del, Queue expiryQueue) throws Throwable
+   {
+      if (trace) { log.trace("Reference has expired: " + del.getReference()); }
+      
+      if (expiryQueue != null)
+      {
+         if (trace) { log.trace("Sending to expiry queue"); }
+         
+         moveInTransaction(del, expiryQueue);
+      }
+      else
+      {
+         log.warn("No expiry queue has been configured so removing the reference");
+      }
+   }
       
    void cancelDeliveriesForConsumerAfterDeliveryId(int consumerId, long lastDeliveryId) throws Throwable
    {
@@ -921,6 +936,105 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    // Private -------------------------------------------------------
    
+   private Delivery cancelDeliveryInternal(Cancel cancel) throws Throwable
+   {
+      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(cancel.getDeliveryId()));
+      
+      if (rec == null)
+      {
+         throw new IllegalStateException("Cannot find delivery to cancel " + cancel.getDeliveryId());
+      }
+                 
+      //Note we check the flag *and* evaluate again, this is because the server and client clocks may
+      //be out of synch and don't want to send back to the client a message it thought it has sent to
+      //the expiry queue  
+      boolean expired = cancel.isExpired() || rec.del.getReference().isExpired();
+      
+      //Note we check the flag *and* evaluate again, this is because the server value of maxDeliveries
+      //might get changed after the client has sent the cancel - and we don't want to end up cancelling
+      //back to the original queue
+      boolean reachedMaxDeliveryAttempts =
+         cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >= maxDeliveryAttempts;
+         
+      if (!expired && !reachedMaxDeliveryAttempts)
+      {
+         //Normal cancel back to the queue
+         
+         rec.del.getReference().setDeliveryCount(cancel.getDeliveryCount());
+         
+         rec.del.cancel();
+      }
+      else
+      {
+         ServerConsumerEndpoint consumer = null;
+         
+         synchronized (consumers)
+         {
+            consumer = (ServerConsumerEndpoint)consumers.get(new Integer(rec.consumerId));
+         }
+         
+         if (consumer == null)
+         {
+            throw new IllegalStateException("Cannot find consumer with id " + rec.consumerId);
+         }
+         
+         if (expired)
+         {
+            //Sent to expiry queue
+            
+            this.moveInTransaction(rec.del, consumer.getExpiryQueue());
+         }
+         else
+         {
+            //Send to DLQ
+            
+            this.moveInTransaction(rec.del, consumer.getDLQ());
+         }
+      }      
+      
+      return rec.del;
+   }      
+   
+   private void moveInTransaction(Delivery del, Queue queue) throws Throwable
+   {
+      Transaction tx = tr.createTransaction();
+      
+      try
+      {               
+         if (queue != null)
+         {                               
+            //Need to reset expiration and delivery account
+            del.getReference().setExpiration(0);
+            del.getReference().getMessage().setExpiration(0);
+            del.getReference().setDeliveryCount(0);
+            
+            queue.handle(null, del.getReference(), tx);
+            
+            del.acknowledge(tx);           
+         }
+         else
+         {
+            log.warn("Cannot move to destination since destination has not been deployed! The message will be removed");
+            
+            del.acknowledge(tx);
+         }             
+         
+         tx.commit();
+         
+         if (queue != null)
+         {
+            queue.deliver(false);
+         }
+      }
+      catch (Throwable t)
+      {
+         tx.rollback();
+         
+         throw t;
+      } 
+   }
+   
+   
    private void acknowledgeDeliveryInternal(Ack ack) throws Throwable
    {
       if (trace) { log.trace(this + " acknowledging delivery " + ack.getDeliveryId()); }
@@ -935,59 +1049,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       rec.del.acknowledge(null);    
    } 
    
-   private Delivery cancelDeliveryInternal(Cancel cancel) throws Throwable
-   {
-      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(cancel.getDeliveryId()));
-      
-      if (rec == null)
-      {
-         throw new IllegalStateException("Cannot find delivery to cancel " + cancel.getDeliveryId());
-      }
-                              
-      if (cancel.getDeliveryCount() >= maxDeliveryAttempts)
-      {
-         //Send to DLQ
-         
-         //We do this in a tx so we don't end up with the message in both the original queue
-         //and the dlq if it fails half way through
-         Transaction tx = tr.createTransaction();
-         
-         try
-         {               
-            if (dlq != null)
-            {         
-               //reset delivery count to zero
-               rec.del.getReference().setDeliveryCount(0);
-               
-               dlq.handle(null, rec.del.getReference(), tx);
-               
-               rec.del.acknowledge(tx);           
-            }
-            else
-            {
-               log.warn("Cannot send to DLQ since DLQ has not been deployed! The message will be removed");
-               
-               rec.del.acknowledge(tx);
-            }                              
-                        
-            tx.commit();
-         }
-         catch (Throwable t)
-         {
-            tx.rollback();
-            
-            throw t;
-         }         
-      }
-      else
-      {                                                   
-         rec.del.getReference().setDeliveryCount(cancel.getDeliveryCount());
-         
-         rec.del.cancel();
-      }
-      
-      return rec.del;
-   }
+   
 
    private ConsumerDelegate failoverConsumer(JBossDestination jmsDestination,
                                              String selectorString,
@@ -1023,10 +1085,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
       int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
       int prefetchSize = connectionEndpoint.getPrefetchSize();
       
+      ManagedDestination dest = 
+         sp.getDestinationManager().getDestination(jmsDestination.getName(), jmsDestination.isQueue());
+      
+      if (dest == null)
+      {
+         throw new IllegalStateException("Cannot find managed destination for dest: " + jmsDestination);
+      }
+      
+      Queue dlqToUse = dest.getDLQ() == null ? defaultDLQ : dest.getDLQ();
+      
+      Queue expiryQueueToUse = dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
+            
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, binding.getQueue(),
                                     binding.getQueue().getName(), this, selectorString, noLocal,
-                                    jmsDestination);
+                                    jmsDestination, dlqToUse, expiryQueueToUse);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
 
@@ -1295,10 +1369,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       int prefetchSize = connectionEndpoint.getPrefetchSize();
       
+      Queue dlqToUse = mDest.getDLQ() == null ? defaultDLQ : mDest.getDLQ();
+      
+      Queue expiryQueueToUse = mDest.getExpiryQueue() == null ? defaultExpiryQueue : mDest.getExpiryQueue();
+      
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
                   binding.getQueue().getName(), this, selectorString, noLocal,
-                  jmsDestination);
+                  jmsDestination, dlqToUse, expiryQueueToUse);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
       
@@ -1342,7 +1420,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
     * In such a case we might otherwise end up with the consumer closing but not all it's deliveries being
     * cancelled, which would mean they wouldn't be cancelled until the session is closed which is too late
     */
-   private class DeliveryRecord
+   private static class DeliveryRecord
    {
       Delivery del;
       

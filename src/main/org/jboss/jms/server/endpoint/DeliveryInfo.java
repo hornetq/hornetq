@@ -58,6 +58,10 @@ public class DeliveryInfo implements Ack
    //to the connection consumer's session, otherwise it will be null
    private SessionDelegate connectionConsumerSession;
    
+  // private boolean exceedDeliveryAttempts;
+   
+  // private boolean expired;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -95,6 +99,31 @@ public class DeliveryInfo implements Ack
    {
       return connectionConsumerSession;
    }
+   
+//   public void setExceededDeliveryAttempts()
+//   {
+//      exceedDeliveryAttempts = true;
+//   }
+//   
+//   public void setExpired()
+//   {
+//      expired = true;
+//   }
+//        
+//   public boolean exceededDeliveryAttempts()
+//   {
+//      return exceedDeliveryAttempts;
+//   }
+//   
+//   public boolean isExpired()
+//   {
+//      return expired;
+//   }
+//   
+//   public boolean isToCancel()
+//   {
+//      return exceedDeliveryAttempts || expired;
+//   }
 
    public String toString()
    {

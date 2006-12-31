@@ -147,6 +147,11 @@ public abstract class RoutableSupport implements Routable
    {
       return expiration;
    }
+   
+   public void setExpiration(long expiration)
+   {
+      this.expiration = expiration;
+   }
 
    public long getTimestamp()
    {

@@ -26,18 +26,24 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.jms.IllegalStateException;
+import javax.jms.Message;
 import javax.jms.Session;
+import javax.jms.TransactionInProgressException;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
+import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 
@@ -109,7 +115,7 @@ public class SessionAspect
           ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
           (state.isXA() && state.getCurrentTxId() == null))
       {
-         //Acknowledge any outstanding auto ack
+         //Acknowledge or cancel any outstanding auto ack
          
          DeliveryInfo remainingAutoAck = state.getAutoAckInfo();
          
@@ -117,8 +123,8 @@ public class SessionAspect
          {
             if (trace) { log.trace(this + " handleClosing(). Found remaining auto ack. Will ack it " + remainingAutoAck.getDeliveryId()); }
             
-            ackDelivery(del, remainingAutoAck);
-            
+            ackDelivery(del, remainingAutoAck);            
+                        
             if (trace) { log.trace(this + " acked it"); }
             
             state.setAutoAckInfo(null);
@@ -139,34 +145,46 @@ public class SessionAspect
          {
             DeliveryInfo ack = (DeliveryInfo)i.next();            
             
-            DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(), ack.getMessageProxy().getDeliveryCount());
+            DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(),
+                                                     ack.getMessageProxy().getDeliveryCount(),
+                                                     false, false);
+            
             cancels.add(cancel);
-         }
+         }         
          
          if (!cancels.isEmpty())
-         {            
-            del.cancelDeliveries(cancels);            
+         {
+            del.cancelDeliveries(cancels);
          }
          
          state.getClientAckList().clear();
       }
-      
-      
+            
       //TODO - we should also cancel any deliveries remaining in any transaction for the session
       //so the delivery count gets updated to the server, and not rely on the server side close
       //cancelling them
       
       return invocation.invokeNext();
    }
-
-
+   
    public Object handleClose(Invocation invocation) throws Throwable
    {      
       Object res = invocation.invokeNext();
+      
+      SessionState state = getState(invocation);
+
+      ConnectionState connState = (ConnectionState)state.getParent();
+
+      Object xid = state.getCurrentTxId();
+
+      if (xid != null)
+      {
+         //Remove transaction from the resource manager
+         connState.getResourceManager().removeTx(xid);
+      }
 
       // We must explicitly shutdown the executor
 
-      SessionState state = getState(invocation);
       state.getExecutor().shutdownNow();
 
       return res;
@@ -194,10 +212,7 @@ public class SessionAspect
             throw new IllegalStateException("CLIENT_ACKNOWLEDGE cannot be used with a connection consumer");
          }
                   
-         state.getClientAckList().add(info);
-         
-         //We can return immediately
-         return null;
+         state.getClientAckList().add(info);         
       }
       else if (ackMode == Session.AUTO_ACKNOWLEDGE ||
                ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
@@ -206,36 +221,39 @@ public class SessionAspect
          //We collect the single acknowledgement in the state.
          //Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE
          //Also XA sessions not enlisted in a global tx are treated as AUTO_ACKNOWLEDGE
-                  
-         
+                           
          if (trace) { log.trace(this + " delivery id: " + info.getDeliveryId() + " added to client ack member"); }
          
          state.setAutoAckInfo(info);         
-         
-         //We can return immediately         
-         return null;
       }
-              
-      //Transactional - need to carry on down the stack
-      return invocation.invokeNext();
-   }
+      else
+      {             
+         Object txID = state.getCurrentTxId();
    
-   /* Used for client acknowledge */
-   public Object handleAcknowledgeAll(Invocation invocation) throws Throwable
-   {    
-      MethodInvocation mi = (MethodInvocation)invocation;
-      SessionState state = getState(invocation);
-      SessionDelegate del = (SessionDelegate)mi.getTargetObject();
-    
-      if (!state.getClientAckList().isEmpty())
-      {                 
-         //CLIENT_ACKNOWLEDGE can't be used with a MDB so it is safe to always acknowledge all
-         //on this session (rather than the connection consumer session)
-         del.acknowledgeDeliveries(state.getClientAckList());
-      
-         state.getClientAckList().clear();
+         if (txID != null)
+         {
+            // the session is non-XA and transacted, or XA and enrolled in a global transaction. An
+            // XA session that has not been enrolled in a global transaction behaves as a
+            // non-transacted session.
+            
+            ConnectionState connState = (ConnectionState)state.getParent();
+   
+            if (trace) { log.trace("sending acknowlegment transactionally, queueing on resource manager"); }
+   
+            //If the ack is for a delivery that came through via a connection consumer then we
+            //use the connectionConsumer session as the session id, otherwise we use this sessions'
+            //session id
+            
+            ClientSessionDelegate connectionConsumerDelegate =
+               (ClientSessionDelegate)info.getConnectionConsumerSession();
+            
+            int sessionId = connectionConsumerDelegate != null ?
+               connectionConsumerDelegate.getID() : state.getSessionId();
+            
+            connState.getResourceManager().addAck(txID, sessionId, info);
+         }        
       }
-        
+      
       return null;
    }
    
@@ -245,13 +263,6 @@ public class SessionAspect
       SessionState state = getState(invocation);
       
       int ackMode = state.getAcknowledgeMode();
-      
-      boolean cancel = ((Boolean)mi.getArguments()[0]).booleanValue();
-      
-      if (cancel && ackMode != Session.AUTO_ACKNOWLEDGE && ackMode != Session.DUPS_OK_ACKNOWLEDGE)
-      {
-         throw new IllegalStateException("Ack mode must be AUTO_ACKNOWLEDGE or DUPS_OK_ACKNOWLEDGE");
-      }
       
       if (ackMode == Session.AUTO_ACKNOWLEDGE ||
           ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
@@ -263,6 +274,10 @@ public class SessionAspect
          
          SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
 
+         //It is possible that session.recover() is called inside a message listener onMessage
+         //method - i.e. between the invocations of preDeliver and postDeliver.
+         //In this case we don't want to acknowledge the last delivered messages - since it
+         //will be redelivered
          if (!state.isRecoverCalled())
          {
             DeliveryInfo deliveryInfo = state.getAutoAckInfo();
@@ -274,14 +289,7 @@ public class SessionAspect
                                  
             if (trace) { log.trace(this + " auto acking delivery " + deliveryInfo.getDeliveryId()); }
                         
-            if (cancel)
-            {
-               cancelDelivery(sd, deliveryInfo);
-            }
-            else
-            {
-               ackDelivery(sd, deliveryInfo);
-            }
+            ackDelivery(sd, deliveryInfo);            
             
             state.setAutoAckInfo(null);
          }
@@ -295,7 +303,26 @@ public class SessionAspect
 
       return null;
    }
-                  
+   
+   /* Used for client acknowledge */
+   public Object handleAcknowledgeAll(Invocation invocation) throws Throwable
+   {    
+      MethodInvocation mi = (MethodInvocation)invocation;
+      SessionState state = getState(invocation);
+      SessionDelegate del = (SessionDelegate)mi.getTargetObject();            
+    
+      if (!state.getClientAckList().isEmpty())
+      {                 
+         //CLIENT_ACKNOWLEDGE can't be used with a MDB so it is safe to always acknowledge all
+         //on this session (rather than the connection consumer session)
+         del.acknowledgeDeliveries(state.getClientAckList());
+      
+         state.getClientAckList().clear();
+      }      
+        
+      return null;
+   }
+                       
    /*
     * Called when session.recover is called
     */
@@ -325,7 +352,11 @@ public class SessionAspect
       }
       else
       {
+         //auto_ack or dups_ok
+         
          DeliveryInfo info = state.getAutoAckInfo();
+         
+         //Don't recover if it's already to cancel
          
          if (info != null)
          {
@@ -377,18 +408,17 @@ public class SessionAspect
    public Object handleRedeliver(Invocation invocation) throws Throwable
    {            
       MethodInvocation mi = (MethodInvocation)invocation;
-      SessionState state = getState(invocation);
+      SessionState state = getState(invocation);            
             
-      // We put the messages back in the front of their appropriate consumer buffers and set
-      // JMSRedelivered to true.
+      // We put the messages back in the front of their appropriate consumer buffers
       
       List toRedeliver = (List)mi.getArguments()[0];
-      
+       
       if (trace) { log.trace(this + " handleRedeliver() called: " + toRedeliver); }
       
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
-      // Need to be recovered in reverse order.
+      // Need to be redelivered in reverse order.
       for (int i = toRedeliver.size() - 1; i >= 0; i--)
       {
          DeliveryInfo info = (DeliveryInfo)toRedeliver.get(i);
@@ -400,16 +430,113 @@ public class SessionAspect
          {
             // This is ok. The original consumer has closed, so we cancel the message
             
+            //FIXME - this needs to be done atomically for all cancels
+            
             cancelDelivery(del, info);
          }
          else
          {
             if (trace) { log.trace("Adding proxy back to front of buffer"); }
+            
             handler.addToFrontOfBuffer(proxy);
          }                                    
       }
               
       return null;  
+   }
+   
+   public Object handleCommit(Invocation invocation) throws Throwable
+   {
+      SessionState state = getState(invocation);
+
+      if (!state.isTransacted())
+      {
+         throw new IllegalStateException("Cannot commit a non-transacted session");
+      }
+
+      if (state.isXA())
+      {
+         throw new TransactionInProgressException("Cannot call commit on an XA session");
+      }
+
+      ConnectionState connState = (ConnectionState)state.getParent();
+      ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
+
+      try
+      {
+         connState.getResourceManager().commitLocal((LocalTx)state.getCurrentTxId(), conn);
+      }
+      finally
+      {
+         //Start new local tx
+         Object xid = connState.getResourceManager().createLocalTx();
+
+         state.setCurrentTxId(xid);
+      }
+      
+      //TODO on commit we don't want to ACK any messages that have exceeded the max delivery count OR
+
+      return null;
+   }
+
+   public Object handleRollback(Invocation invocation) throws Throwable
+   {
+      SessionState state = getState(invocation);
+
+      if (!state.isTransacted())
+      {
+         throw new IllegalStateException("Cannot rollback a non-transacted session");
+      }
+
+      if (state.isXA())
+      {
+         throw new TransactionInProgressException("Cannot call rollback on an XA session");
+      }
+      
+      ConnectionState connState = (ConnectionState)state.getParent();
+      ResourceManager rm = connState.getResourceManager();
+      ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
+
+      try
+      {
+         rm.rollbackLocal((LocalTx)state.getCurrentTxId(), conn);
+      }
+      finally
+      {
+         // start new local tx
+         Object xid = rm.createLocalTx();
+         state.setCurrentTxId(xid);
+      }
+
+      return null;
+   }
+   
+   public Object handleSend(Invocation invocation) throws Throwable
+   {
+      SessionState state = getState(invocation);
+      Object txID = state.getCurrentTxId();
+
+      if (txID != null)
+      {
+         // the session is non-XA and transacted, or XA and enrolled in a global transaction, so
+         // we add the message to a transaction instead of sending it now. An XA session that has
+         // not been enrolled in a global transaction behaves as a non-transacted session.
+
+         ConnectionState connState = (ConnectionState)state.getParent();
+         MethodInvocation mi = (MethodInvocation)invocation;
+         Message m = (Message)mi.getArguments()[0];
+
+         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager txID=" + txID + " sessionID= " + state.getSessionId()); }
+
+         connState.getResourceManager().addMessage(txID, state.getSessionId(), (JBossMessage)m);
+
+         // ... and we don't invoke any further interceptors in the stack
+         return null;
+      }
+
+      if (trace) { log.trace("sending message NON-transactionally"); }
+
+      return invocation.invokeNext();
    }
    
    public Object handleGetXAResource(Invocation invocation) throws Throwable
@@ -462,7 +589,8 @@ public class SessionAspect
       
       SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
       
-      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryId(), delivery.getMessageProxy().getDeliveryCount()));      
+      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryId(),
+                                  delivery.getMessageProxy().getDeliveryCount(), false, false));      
    }
 
    // Inner Classes -------------------------------------------------

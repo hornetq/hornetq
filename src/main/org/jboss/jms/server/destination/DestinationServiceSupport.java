@@ -6,6 +6,7 @@
  */
 package org.jboss.jms.server.destination;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
@@ -13,10 +14,14 @@ import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.contract.ServerPlugin;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -33,7 +38,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public abstract class DestinationServiceSupport extends ServiceMBeanSupport
+public abstract class DestinationServiceSupport extends ServiceMBeanSupport implements ServerPlugin
 {
    // Constants -----------------------------------------------------
 
@@ -42,6 +47,10 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    // Attributes ----------------------------------------------------
 
    private ObjectName serverPeerObjectName;
+   
+   private ObjectName dlqObjectName;
+   
+   private ObjectName expiryQueueObjectName;
    
    protected boolean started = false;
    
@@ -78,6 +87,13 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    public DestinationServiceSupport()
    {
+   }
+   
+   // ServerPlugin implementation ------------------------------------------
+   
+   public MessagingComponent getInstance()
+   {
+      return destination;
    }
 
    // ServiceMBeanSupport overrides -----------------------------------
@@ -167,7 +183,74 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    {
       return serverPeerObjectName;
    }
-
+   
+   public void setDLQ(ObjectName on)
+   {
+      dlqObjectName = on;
+      
+      ManagedQueue dest = null;
+      
+      try
+      {
+         
+         try
+         {         
+            dest = (ManagedQueue)getServer().
+               getAttribute(dlqObjectName, "Instance");
+         }
+         catch (InstanceNotFoundException e)
+         {
+            //Ok
+         }
+         
+         Queue dlq = null;
+   
+         if (dest != null)
+         {            
+            Binding binding = postOffice.getBindingForQueueName(dest.getName());
+            
+            if (binding != null && binding.getQueue().isActive())
+            {
+               dlq =  binding.getQueue();
+            }
+         }
+         
+         destination.setDLQ(dlq); 
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to set DLQ", e);
+      }
+   }
+   
+   public ObjectName getDLQ()
+   {
+      return dlqObjectName;
+   }
+   
+   public void setExpiryQueue(ObjectName on)
+   {
+      expiryQueueObjectName = on;
+      
+      Queue expiryQueue = null;
+      
+      try
+      {
+         expiryQueue = (Queue)server.getAttribute(expiryQueueObjectName, "Instance");
+      }
+      catch (Exception e)
+      {
+         //Ok
+      }
+      
+      destination.setExpiryQueue(expiryQueue);
+   }
+   
+   public ObjectName getExpiryQueue()
+   {
+      return expiryQueueObjectName;
+   }
+   
    public void setSecurityConfig(Element securityConfig) throws Exception
    {
       try

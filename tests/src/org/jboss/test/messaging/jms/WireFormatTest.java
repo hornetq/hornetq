@@ -486,7 +486,7 @@ public class WireFormatTest extends MessagingTestCase
          
          int deliveryCount = 12;
          
-         Cancel cancel = new DefaultCancel(deliveryID, deliveryCount);
+         Cancel cancel = new DefaultCancel(deliveryID, deliveryCount, true, true);
          
          Object[] args = new Object[] { cancel };
          
@@ -530,9 +530,17 @@ public class WireFormatTest extends MessagingTestCase
          //Then delivery count
          int count = dis.readInt();
          
+         boolean expired = dis.readBoolean();
+         
+         boolean reachedMaxDeliveries = dis.readBoolean();
+         
          assertEquals(deliveryID, l);
          
          assertEquals(deliveryCount, count);
+         
+         assertEquals(expired, true);
+         
+         assertEquals(reachedMaxDeliveries, true);
 
          //Now eos
          try
@@ -567,6 +575,10 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(deliveryCount, l2.getDeliveryCount());
          
+         assertEquals(expired, l2.isExpired());
+         
+         assertEquals(reachedMaxDeliveries, l2.isReachedMaxDeliveryAttempts());
+         
       }
       
       public void testCancelDeliveries() throws Exception
@@ -577,8 +589,8 @@ public class WireFormatTest extends MessagingTestCase
          
          List cancels = new ArrayList();
          
-         DefaultCancel cancel1 = new DefaultCancel(65654, 43);
-         DefaultCancel cancel2 = new DefaultCancel(65765, 2);
+         DefaultCancel cancel1 = new DefaultCancel(65654, 43, true, false);
+         DefaultCancel cancel2 = new DefaultCancel(65765, 2, false, true);
          cancels.add(cancel1);
          cancels.add(cancel2);
          
@@ -629,19 +641,31 @@ public class WireFormatTest extends MessagingTestCase
          //then the AckInfos
          long deliveryId = dis.readLong();
          int deliveryCount = dis.readInt();
-         DefaultCancel rcancel1 = new DefaultCancel(deliveryId, deliveryCount);
+         boolean expired = dis.readBoolean();
+         boolean reachedMaxDeliveries = dis.readBoolean();
+         DefaultCancel rcancel1 = new DefaultCancel(deliveryId, deliveryCount, expired, reachedMaxDeliveries);
          
          deliveryId = dis.readLong();
          deliveryCount = dis.readInt();
-         DefaultCancel rcancel2 = new DefaultCancel(deliveryId, deliveryCount);
+         expired = dis.readBoolean();
+         reachedMaxDeliveries = dis.readBoolean();
+         DefaultCancel rcancel2 = new DefaultCancel(deliveryId, deliveryCount, expired, reachedMaxDeliveries);
 
          assertEquals(cancel1.getDeliveryCount(), rcancel1.getDeliveryCount());
          
          assertEquals(cancel1.getDeliveryId(), cancel1.getDeliveryId());
          
+         assertEquals(cancel1.isExpired(), cancel1.isExpired());
+         
+         assertEquals(cancel1.isReachedMaxDeliveryAttempts(), cancel1.isReachedMaxDeliveryAttempts());
+         
          assertEquals(cancel2.getDeliveryCount(), rcancel2.getDeliveryCount());
          
          assertEquals(cancel2.getDeliveryId(), cancel2.getDeliveryId());
+         
+         assertEquals(cancel2.isExpired(), cancel2.isExpired());
+         
+         assertEquals(cancel2.isReachedMaxDeliveryAttempts(), cancel2.isReachedMaxDeliveryAttempts());
                    
          //should be eos
                 

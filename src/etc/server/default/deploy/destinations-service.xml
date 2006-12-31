@@ -9,7 +9,7 @@
 <server>
 
    <!--
-      The Dead Letter Queue. This destination is a dependency of an EJB MDB container.
+      The Default Dead Letter Queue. This destination is a dependency of an EJB MDB container.
    -->
 
    <mbean code="org.jboss.jms.server.destination.QueueService"
@@ -18,6 +18,17 @@
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
+   
+   <!--
+      The Default Expiry Queue.
+   -->
+
+   <mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=ExpiryQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+   </mbean>   
 
    <!--
         Example destinations.
@@ -111,6 +122,41 @@
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends>jboss.messaging:service=PostOffice</depends>
    </mbean>
+   
+   <!-- It's possible for indiviual queues and topics to use a specific queue for
+   an expiry or DLQ -->
+   
+   <mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=PrivateDLQ"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+   </mbean>      
+   
+   <mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=QueueWithOwnDLQAndExpiryQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+      <attribute name="DLQ">jboss.messaging.destination:service=Queue,name=PrivateDLQ</attribute>
+      <attribute name="ExpiryQueue">jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue</attribute>
+   </mbean> 
+   
+   <mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=TopicWithOwnDLQAndExpiryQueue"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+      <attribute name="DLQ">jboss.messaging.destination:service=Queue,name=PrivateDLQ</attribute>
+      <attribute name="ExpiryQueue">jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue</attribute>
+   </mbean>       
    
    <!--
         Example clustered destinations.

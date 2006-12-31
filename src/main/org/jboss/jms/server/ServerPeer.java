@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.management.Attribute;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -37,6 +38,7 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
+import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
@@ -106,9 +108,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private int objectIDSequence = 1;
 
-   private int maxDeliveryAttempts = 10;
-
-   private String dlqName;
+   //The default maximum number of delivery attempts before sending to DLQ - can be overridden on the destination
+   private int defaultMaxDeliveryAttempts = 10;
 
    private Object failoverStatusLock;
    
@@ -143,6 +144,12 @@ public class ServerPeer extends ServiceMBeanSupport
 
    protected ObjectName jmsUserManagerObjectName;
    protected JMSUserManager jmsUserManager;
+   
+   protected ObjectName defaultDLQObjectName;
+   protected Queue defaultDLQ;
+   
+   protected ObjectName defaultExpiryQueueObjectName;
+   protected Queue defaultExpiryQueue;
 
    //Other stuff
 
@@ -304,60 +311,81 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // JMX Attributes ------------------------------------------------
 
-   public String getDLQName()
-   {
-      return dlqName;
-   }
-
-   public void setDLQName(String dlqName)
-   {
-      this.dlqName = dlqName;
-   }
-
-   public int getMaxDeliveryAttempts()
-   {
-      return maxDeliveryAttempts;
-   }
-
-   public void setMaxDeliveryAttempts(int attempts)
-   {
-      this.maxDeliveryAttempts = attempts;
-   }
-
-   public ObjectName getPersistenceManager()
+   // Plugins
+   
+   public synchronized ObjectName getPersistenceManager()
    {
       return persistenceManagerObjectName;
    }
 
-   public void setPersistenceManager(ObjectName on)
+   public synchronized void setPersistenceManager(ObjectName on)
    {
+      if (started)
+      {
+         log.warn("Cannot set persistence manager on server peer when server peer is started");
+         return;         
+      }
       persistenceManagerObjectName = on;
    }
 
-   public ObjectName getPostOffice()
+   public synchronized ObjectName getPostOffice()
    {
       return postOfficeObjectName;
    }
 
-   public void setPostOffice(ObjectName on)
+   public synchronized void setPostOffice(ObjectName on)
    {
+      if (started)
+      {
+         log.warn("Cannot set post office on server peer when server peer is started");
+         return;         
+      }
       postOfficeObjectName = on;
    }
 
-   public ObjectName getJmsUserManager()
+   public synchronized ObjectName getJmsUserManager()
    {
       return jmsUserManagerObjectName;
    }
 
-   public void setJMSUserManager(ObjectName on)
+   public synchronized void setJMSUserManager(ObjectName on)
    {
+      if (started)
+      {
+         log.warn("Cannot set jms user manager on server peer when server peer is started");
+         return;         
+      }
       jmsUserManagerObjectName = on;
    }
+   
+   public synchronized ObjectName getDefaultDLQ()
+   {
+      return defaultDLQObjectName;
+   }
+
+   public synchronized void setDefaultDLQ(ObjectName on)
+   {
+      defaultDLQObjectName = on;
+   }
+   
+   public synchronized ObjectName getDefaultExpiryQueue()
+   {
+      return defaultExpiryQueueObjectName;
+   }
+
+   public synchronized void setDefaultExpiryQueue(ObjectName on)
+   {
+      this.defaultExpiryQueueObjectName = on;
+   }
+   
+   // Instance access
 
    public Object getInstance()
    {
       return this;
    }
+   
+   //read only JMX attributes
 
    public String getJMSVersion()
    {
@@ -408,8 +436,10 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return defaultTopicJNDIContext;
    }
+   
+   //Read - write attributes
 
-   public void setSecurityDomain(String securityDomain) throws Exception
+   public synchronized void setSecurityDomain(String securityDomain) throws Exception
    {
       try
       {
@@ -421,64 +451,64 @@ public class ServerPeer extends ServiceMBeanSupport
       }
    }
 
-   public String getSecurityDomain()
+   public synchronized String getSecurityDomain()
    {
       return securityStore.getSecurityDomain();
    }
 
-   public void setDefaultSecurityConfig(Element conf) throws Exception
+   public synchronized void setDefaultSecurityConfig(Element conf) throws Exception
    {
       securityStore.setDefaultSecurityConfig(conf);
    }
 
-   public Element getDefaultSecurityConfig()
+   public synchronized Element getDefaultSecurityConfig()
    {
       return securityStore.getDefaultSecurityConfig();
    }
-
-   public IDManager getMessageIDManager()
-   {
-      return messageIDManager;
-   }
-
-   public IDManager getChannelIDManager()
-   {
-      return channelIDManager;
-   }
-
-   public ServerInvocationHandler getInvocationHandler()
-   {
-      return handler;
-   }
-
-   public int getQueuedExecutorPoolSize()
+        
+   public synchronized int getQueuedExecutorPoolSize()
    {
       return queuedExecutorPoolSize;
    }
 
-   public void setQueuedExecutorPoolSize(int poolSize)
+   public synchronized void setQueuedExecutorPoolSize(int poolSize)
    {
+      if (started)
+      {
+         log.warn("Cannot set jms queued executor pool size on server peer when server peer is started");
+         return;         
+      }
       this.queuedExecutorPoolSize = poolSize;
    }
    
-   public long getFailoverStartTimeout()
+   public synchronized long getFailoverStartTimeout()
    {
       return this.failoverStartTimeout;
    }
    
-   public void setFailoverStartTimeout(long timeout)
+   public synchronized void setFailoverStartTimeout(long timeout)
    {
       this.failoverStartTimeout = timeout;
    }
    
-   public long getFailoverCompleteTimeout()
+   public synchronized long getFailoverCompleteTimeout()
    {
       return this.failoverCompleteTimeout;
    }
    
-   public void setFailoverCompleteTimeout(long timeout)
+   public synchronized void setFailoverCompleteTimeout(long timeout)
    {
       this.failoverCompleteTimeout = timeout;
+   }
+   
+   public synchronized int getDefaultMaxDeliveryAttempts()
+   {
+      return defaultMaxDeliveryAttempts;
+   }
+
+   public synchronized void setDefaultMaxDeliveryAttempts(int attempts)
+   {
+      this.defaultMaxDeliveryAttempts = attempts;
    }
    
    // JMX Operations ------------------------------------------------
@@ -569,6 +599,21 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // Public --------------------------------------------------------
    
+   public IDManager getMessageIDManager()
+   {
+      return messageIDManager;
+   }
+
+   public IDManager getChannelIDManager()
+   {
+      return channelIDManager;
+   }
+
+   public ServerInvocationHandler getInvocationHandler()
+   {
+      return handler;
+   }
+   
    public ServerSessionEndpoint getSession(Integer sessionID)
    {
       return (ServerSessionEndpoint)sessions.get(sessionID);
@@ -587,26 +632,72 @@ public class ServerPeer extends ServiceMBeanSupport
       }
    }
 
-   public Queue getDLQ() throws Exception
+   public synchronized Queue getDefaultDLQInstance() throws Exception
    {
-      if (dlqName == null)
-      {
-         //No DLQ name specified so there is no DLQ
-         return null;
-      }
-
-      PostOffice postOffice = getPostOfficeInstance();
-
-      Binding binding = postOffice.getBindingForQueueName(dlqName);
+      Queue dlq = null;
       
-      if (binding != null && binding.getQueue().isActive())
-      {
-         return binding.getQueue();
+      if (defaultDLQObjectName != null)
+      { 
+         ManagedQueue dest = null;
+         
+         try
+         {         
+            dest = (ManagedQueue)getServer().
+               getAttribute(defaultDLQObjectName, "Instance");
+         }
+         catch (InstanceNotFoundException e)
+         {
+            //Ok
+         }
+         
+         if (dest != null)
+         {            
+            PostOffice po = getPostOfficeInstance();
+            
+            Binding binding = po.getBindingForQueueName(dest.getName());
+            
+            if (binding != null && binding.getQueue().isActive())
+            {
+               dlq =  binding.getQueue();
+            }
+         }
       }
-      else
+      
+      return dlq;
+   }
+   
+   public synchronized Queue getDefaultExpiryQueueInstance() throws Exception
+   {
+      Queue expiryQueue = null;
+      
+      if (defaultExpiryQueueObjectName != null)
       {
-         return null;
-      }   
+         ManagedQueue dest = null;
+         
+         try
+         {         
+            dest = (ManagedQueue)getServer().
+               getAttribute(defaultExpiryQueueObjectName, "Instance");
+         }
+         catch (InstanceNotFoundException e)
+         {
+            //Ok
+         }
+
+         if (dest != null)
+         {            
+            PostOffice po = getPostOfficeInstance();
+            
+            Binding binding = po.getBindingForQueueName(dest.getName());
+            
+            if (binding != null && binding.getQueue().isActive())
+            {
+               expiryQueue =  binding.getQueue();
+            }
+         }
+      }
+      
+      return expiryQueue;
    }
 
    public TransactionRepository getTxRepository()
@@ -735,8 +826,8 @@ public class ServerPeer extends ServiceMBeanSupport
       
       Replicator replicator = getReplicator();
 
-      long startToWait = failoverStartTimeout;
-      long completeToWait = failoverCompleteTimeout;
+      long startToWait = getFailoverStartTimeout();
+      long completeToWait = getFailoverCompleteTimeout();
                      
       // Must lock here
       synchronized (failoverStatusLock)

@@ -22,20 +22,29 @@
       </constructor>
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>    
+      
       <depends optional-attribute-name="JMSUserManager">jboss.messaging:service=JMSUserManager</depends>
+      
       <depends>jboss.messaging:service=Connector,transport=socket</depends>
 
 	   <attribute name="PostOffice">jboss.messaging:service=PostOffice</attribute>
 
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>
+      
       <attribute name="DefaultSecurityConfig">
         <security>
             <role name="guest" read="true" write="true" create="true"/>
         </security>
       </attribute>
-      <attribute name="MaxDeliveryAttempts">10</attribute>
-      <attribute name="DLQName">DLQ</attribute>
+      
+      <attribute name="DefaultDLQ">jboss.messaging.destination:service=Queue,name=DLQ</attribute>
+      
+      <attribute name="DefaultMaxDeliveryAttempts">10</attribute>           
+      
+      <attribute name="DefaultExpiryQueue">jboss.messaging.destination:service=Queue,name=ExpiryQueue</attribute> 
+
       <attribute name="FailoverStartTimeout">3000</attribute>
+      
       <attribute name="FailoverCompleteTimeout">12000</attribute>
    </mbean>
 

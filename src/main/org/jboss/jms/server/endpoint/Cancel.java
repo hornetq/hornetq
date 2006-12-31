@@ -35,4 +35,8 @@ public interface Cancel
    long getDeliveryId();
    
    int getDeliveryCount();
+   
+   boolean isExpired();
+   
+   boolean isReachedMaxDeliveryAttempts();
 }

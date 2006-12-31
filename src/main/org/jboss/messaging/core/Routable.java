@@ -72,6 +72,8 @@ public interface Routable extends Streamable
    long getExpiration();
 
    boolean isExpired();
+   
+   void setExpiration(long expiration);
 
    /**
     * @return the time (in GMT milliseconds) when this routable was delivered to the provider.
