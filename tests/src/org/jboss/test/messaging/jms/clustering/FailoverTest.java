@@ -52,6 +52,68 @@ public class FailoverTest extends ClusteringTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
+   public void testSimpleFailover() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+         conn.start();
+
+         // create a producer/consumer on node 1
+
+         // make sure we're connecting to node 1
+
+         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
+            getDelegate()).getState()).getServerID();
+
+         assertEquals(1, nodeID);
+
+         Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer c1 = s1.createConsumer(queue[1]);
+         MessageProducer p1 = s1.createProducer(queue[1]);
+         p1.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         // send a message
+
+         p1.send(s1.createTextMessage("blip"));
+
+         // kill node 1
+
+
+         ServerManagement.killAndWait(1);
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         try
+         {
+            ic[1].lookup("queue"); // looking up anything
+            fail("The server still alive, kill didn't work yet");
+         }
+         catch (Exception e)
+         {
+         }
+
+         // we must receive the message
+
+         TextMessage tm = (TextMessage)c1.receive(1000);
+         assertEquals("blip", tm.getText());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    public void testSimpleConnectionFailover() throws Exception
    {
       Connection conn = null;
