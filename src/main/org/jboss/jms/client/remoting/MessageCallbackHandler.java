@@ -70,8 +70,9 @@ public class MessageCallbackHandler
    //FIXME temporary - until remoting provides true asynch invocations
    static Executor exec = new QueuedExecutor();
    
-   private static boolean checkExpiredOrReachedMaxdeliveries(MessageProxy proxy, SessionDelegate del,
-                                                             int maxDeliveries) throws JMSException
+   private static boolean checkExpiredOrReachedMaxdeliveries(MessageProxy proxy,
+                                                             SessionDelegate del,
+                                                             int maxDeliveries)
    {
       Message msg = proxy.getMessage();
       
@@ -249,7 +250,7 @@ public class MessageCallbackHandler
 
    /**
     * Handles a message sent from the server
-    * @param msgs The message
+    * @param msg The message
     */
    public void handleMessage(MessageProxy msg)
    {                      
@@ -536,20 +537,23 @@ public class MessageCallbackHandler
          messageAdded();
       }
    }
-   
-   public void copyState(MessageCallbackHandler newHandler)
+
+   /**
+    * Needed for failover
+    */
+   public void synchronizeWith(MessageCallbackHandler newHandler)
    {
-      // removed the synchronized block due to http://jira.jboss.org/jira/browse/JBMESSAGING-702
-      //synchronized (mainLock)
-      //{
-         this.consumerID = newHandler.consumerID;
-         
-         this.consumerDelegate = newHandler.consumerDelegate;
-         
-         this.sessionDelegate = newHandler.sessionDelegate;
-         
-         this.buffer.clear();
-      //}
+      consumerID = newHandler.consumerID;
+      consumerDelegate = newHandler.consumerDelegate;
+      sessionDelegate = newHandler.sessionDelegate;
+
+      // Clear the buffer. This way the non persistent messages that managed to arive are
+      // irremendiably lost, while the peristent ones are failed-over on the server and will be
+      // resent
+
+      // TODO If we don't zap this buffer, we may be able to salvage some non-persistent messages
+
+      buffer.clear();
    }
    
    public long getLastDeliveryId()
@@ -666,7 +670,7 @@ public class MessageCallbackHandler
       }     
    }
         
-   private MessageProxy getMessage(long timeout) throws JMSException
+   private MessageProxy getMessage(long timeout)
    {
       if (timeout == -1)
       {

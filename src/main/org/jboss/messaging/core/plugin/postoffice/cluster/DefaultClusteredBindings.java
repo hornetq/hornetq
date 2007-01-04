@@ -24,6 +24,7 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Iterator;
 
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.DefaultBindings;
@@ -48,7 +49,7 @@ class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindi
 
    // Attributes ----------------------------------------------------
 
-   // Map <name, router>
+   // Map <name, ClusterRouter>
    private Map nameMap;
    private int thisNode;
    private int localDurableCount;
@@ -119,7 +120,19 @@ class DefaultClusteredBindings extends DefaultBindings implements ClusteredBindi
 
    public String toString()
    {
-      return "CusteredBindings[" + super.toString() + " count=" + nameMap.size() + "]";
+      StringBuffer sb = new StringBuffer();
+      sb.append(super.toString());
+      sb.append(":ClusteredBindings[");
+      for(Iterator i = nameMap.keySet().iterator(); i.hasNext();)
+      {
+         sb.append(i.next());
+         if (i.hasNext())
+         {
+            sb.append(',');
+         }
+      }
+      sb.append("]");
+      return sb.toString();
    }
 
    // Package protected ---------------------------------------------

@@ -181,7 +181,7 @@ public class SimpleChannel implements Channel
       throw new NotYetImplementedException();
    }
 
-   public int messageCount()
+   public int getMessageCount()
    {
       throw new NotYetImplementedException();
    }
@@ -226,7 +226,7 @@ public class SimpleChannel implements Channel
       throw new UnsupportedOperationException();
    }
 
-   public int deliveringCount()
+   public int getDeliveringCount()
    {
       throw new UnsupportedOperationException();
    }

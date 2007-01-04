@@ -46,6 +46,8 @@ import java.util.List;
  */
 public interface Channel extends DeliveryObserver, Distributor, Receiver
 {
+   public final boolean SYNCHRONOUS = true;
+   public final boolean ASYNCRHONOUS = false;
 
    /**    
     * @return the unique ID of the channel
@@ -89,8 +91,8 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    List browse(Filter filter);
 
    /**
-    * Delivers as many references as possible to it's router until no more deliveries are returned
-    *
+    * Delivers as many references as possible to its router until no more deliveries are returned.
+    * @param synchronous - one of Channel.SYNCHRONOUS, Channel.ASYNCRHONOUS.
     */
    void deliver(boolean synchronous);
 
@@ -110,9 +112,9 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
     * Message amount. 
     * @return message amount.
     */
-   int messageCount(); 
+   int getMessageCount();
    
-   int deliveringCount();
+   int getDeliveringCount();
    
    /**
     * Remove all the references in the channel

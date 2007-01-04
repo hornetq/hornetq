@@ -100,7 +100,7 @@ public class SessionAspect
          //transaction is committed, then this means the same message has been delivered twice
          //which breaks the once and only once delivery guarantee
          
-         if (rm.checkForAcksInSession(state.getSessionId()))
+         if (rm.checkForAcksInSession(state.getSessionID()))
          {
             throw new java.lang.IllegalStateException("Attempt to close an XASession when there are still uncommitted acknowledgements!");
          }        
@@ -122,7 +122,7 @@ public class SessionAspect
          
          if (remainingAutoAck != null)
          {
-            if (trace) { log.trace(this + " handleClosing(). Found remaining auto ack. Will ack it " + remainingAutoAck.getDeliveryId()); }
+            if (trace) { log.trace(this + " handleClosing(). Found remaining auto ack. Will ack " + remainingAutoAck); }
             
             ackDelivery(del, remainingAutoAck);            
                         
@@ -249,7 +249,7 @@ public class SessionAspect
                (ClientSessionDelegate)info.getConnectionConsumerSession();
             
             int sessionId = connectionConsumerDelegate != null ?
-               connectionConsumerDelegate.getID() : state.getSessionId();
+               connectionConsumerDelegate.getID() : state.getSessionID();
             
             connState.getResourceManager().addAck(txID, sessionId, info);
          }        
@@ -527,9 +527,9 @@ public class SessionAspect
          MethodInvocation mi = (MethodInvocation)invocation;
          Message m = (Message)mi.getArguments()[0];
 
-         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager txID=" + txID + " sessionID= " + state.getSessionId()); }
+         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager txID=" + txID + " sessionID= " + state.getSessionID()); }
 
-         connState.getResourceManager().addMessage(txID, state.getSessionId(), (JBossMessage)m);
+         connState.getResourceManager().addMessage(txID, state.getSessionID(), (JBossMessage)m);
 
          // ... and we don't invoke any further interceptors in the stack
          return null;
@@ -596,7 +596,7 @@ public class SessionAspect
       
       SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
       
-      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryId(),
+      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryID(),
                                   delivery.getMessageProxy().getDeliveryCount(), false, false));      
    }
 

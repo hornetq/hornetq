@@ -34,7 +34,6 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.DefaultAck;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
 
 /**
@@ -45,8 +44,6 @@ import org.jboss.messaging.core.message.MessageFactory;
 public class ClientTransaction
 {  
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ClientTransaction.class);
    
    public final static byte TX_OPEN = 0;
    
@@ -152,37 +149,39 @@ public class ClientTransaction
    }   
    
    /*
-    * Substitute newSessionId for oldSessionId
+    * Substitute newSessionID for oldSessionID
     */
-   public void handleFailover(int newServerId, int oldSessionId, int newSessionId)
+   public void handleFailover(int newServerID, int oldSessionID, int newSessionID)
    {    
       if (!clientSide)
       {
          throw new IllegalStateException("Cannot call this method on the server side");
       }
-      //Note we have to do this in one go since there may be overlap between old and new session ids
-      //and we don't want to overwrite keys in the map
+
+      // Note we have to do this in one go since there may be overlap between old and new session
+      // IDs and we don't want to overwrite keys in the map.
       
       if (sessionStatesMap != null)
       {                          
-         Iterator iter = sessionStatesMap.values().iterator();
-         
-         while (iter.hasNext())
+         for(Iterator i = sessionStatesMap.values().iterator(); i.hasNext();)
          {
-            SessionTxState state = (SessionTxState)iter.next();
-            
-            state.handleFailover(newServerId, oldSessionId, newSessionId);            
+            SessionTxState state = (SessionTxState)i.next();
+            state.handleFailover(newServerID, oldSessionID, newSessionID);
          }
       }
    }
-   
-   public List getDeliveriesForSession(int sessionId)
+
+   /**
+    * May return an empty list, but never null.
+    */
+   public List getDeliveriesForSession(int sessionID)
    {
       if (!clientSide)
       {
          throw new IllegalStateException("Cannot call this method on the server side");
       }
-      SessionTxState state = getSessionTxState(sessionId);
+
+      SessionTxState state = getSessionTxState(sessionID);
       
       if (state != null)
       {
@@ -190,7 +189,7 @@ public class ClientTransaction
       }
       else
       {
-         return null;
+         return Collections.EMPTY_LIST;
       }
    }
    
@@ -323,9 +322,19 @@ public class ClientTransaction
    
    public class SessionTxState
    {
-      SessionTxState(int sessionId)
+      private int sessionID;
+
+      // We record the server id when doing failover to avoid overwriting the sesion ID again
+      // if multiple connections fail on the same resource mamanger but fail onto old values of the
+      // session ID. This prevents the ID being failed over more than once for the same server.
+      private int serverID = -1;
+
+      private List msgs = new ArrayList();
+      private List acks = new ArrayList();
+
+      SessionTxState(int sessionID)
       {
-         this.sessionId = sessionId;
+         this.sessionID = sessionID;
       }
       
       void addMessage(JBossMessage msg)
@@ -350,28 +359,24 @@ public class ClientTransaction
       
       public int getSessionId()
       {
-         return sessionId;
+         return sessionID;
       }
       
-      void handleFailover(int newServerId, int oldSessionId, int newSessionId)
+      void handleFailover(int newServerID, int oldSessionID, int newSessionID)
       {
-         if (this.sessionId == oldSessionId && this.serverId != newServerId)
+         if (sessionID == oldSessionID && serverID != newServerID)
          {            
-            this.sessionId = newSessionId;
+            sessionID = newSessionID;
+            serverID = newServerID;
             
-            this.serverId = newServerId;
-            
-            //Remove any non persistent acks
-            
-            Iterator iter = acks.iterator();
-            
-            while (iter.hasNext())
+            // Remove any non persistent acks
+            for(Iterator i = acks.iterator(); i.hasNext(); )
             {
-               DeliveryInfo info = (DeliveryInfo)iter.next();
+               DeliveryInfo di = (DeliveryInfo)i.next();
                
-               if (!info.getMessageProxy().getMessage().isReliable())
+               if (!di.getMessageProxy().getMessage().isReliable())
                {
-                  iter.remove();
+                  i.remove();
                }
             }
          }
@@ -383,16 +388,6 @@ public class ClientTransaction
          msgs.clear();
       }
       
-      private int sessionId;
-      
-      //we record the server id when doing failover to avoid overwriting the sesion id again
-      //if multiple connections fail on the same resource mamanger but fail onto old values of the session id
-      //this prevents the id being failed over more than once for the same server
-      private int serverId = -1;
-      
-      private List msgs = new ArrayList();
-      
-      private List acks = new ArrayList();            
    }
       
 }

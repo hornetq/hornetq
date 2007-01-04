@@ -74,13 +74,12 @@ public interface PostOffice extends MessagingComponent
 
    /**
     * Route a reference.
-    * @param ref
-    * @param condition The message will be routed to a queue if specified condition matches the condition
-    * of the binding
-    * 
-    * @param tx The transaction or null if not in the context of a transaction
-    * @return true if ref was accepted by at least one queue
-    * @throws Exception
+    *
+    * @param condition - the message will be routed to a queue if specified condition matches the
+    *        condition of the binding.
+    * @param tx - the transaction or null if not in the context of a transaction.
+    *
+    * @return true if reference was accepted by at least one queue.
     */
    boolean route(MessageReference ref, Condition condition, Transaction tx) throws Exception; 
    

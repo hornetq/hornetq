@@ -35,28 +35,33 @@ import org.jboss.jms.client.delegate.DelegateSupport;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodoorv</a>
+ *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public class ProducerState extends HierarchicalStateSupport
 {
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
    private Destination destination;
 
    private boolean disableMessageID = false;
-
    private boolean disableMessageTimestamp = false;
-
    private int priority = 4;
-
    private long timeToLive = 0;
-
    private int deliveryMode = DeliveryMode.PERSISTENT;
 
    private SessionState parent;
-
    private ProducerDelegate delegate;
-   
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public ProducerState(SessionState parent, ProducerDelegate delegate, Destination dest)
    {
       super(parent, (DelegateSupport)delegate);
@@ -64,103 +69,111 @@ public class ProducerState extends HierarchicalStateSupport
       this.destination = dest;
    }
 
-   public void synchronizeWith(HierarchicalState newState) throws Exception {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-   
-   public Destination getDestination()
-   {
-      return destination;
-   }
-      
+   // HierarchicalState implementation -------------------------------------------------------------
+
    public DelegateSupport getDelegate()
    {
       return (DelegateSupport)delegate;
    }
-   
+
    public void setDelegate(DelegateSupport delegate)
    {
       this.delegate=(ProducerDelegate)delegate;
    }
-      
+
    public void setParent(HierarchicalState parent)
    {
       this.parent = (SessionState)parent;
    }
-   
+
    public HierarchicalState getParent()
    {
       return parent;
    }
-      
+
+   public Version getVersionToUse()
+   {
+      return parent.getVersionToUse();
+   }
+
+   // HierarchicalStateSupport overrides -----------------------------------------------------------
+
+   public void synchronizeWith(HierarchicalState newState) throws Exception
+   {
+      // nothing to do here, ProducerState is a modest state
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public Destination getDestination()
+   {
+      return destination;
+   }
+
    public void setDestination(Destination dest)
    {
       this.destination = dest;
-      
+
    }
    public boolean isDisableMessageID()
    {
       return disableMessageID;
    }
-   
+
    public void setDisableMessageID(boolean disableMessageID)
    {
       this.disableMessageID = disableMessageID;
    }
-   
+
    public boolean isDisableMessageTimestamp()
    {
       return disableMessageTimestamp;
    }
-   
+
    public void setDisableMessageTimestamp(boolean disableMessageTimestamp)
    {
       this.disableMessageTimestamp = disableMessageTimestamp;
    }
-   
+
    public int getPriority()
    {
       return priority;
    }
-   
+
    public void setPriority(int priority)
    {
       this.priority = priority;
    }
-   
+
    public long getTimeToLive()
    {
       return timeToLive;
    }
-   
+
    public void setTimeToLive(long timeToLive)
    {
       this.timeToLive = timeToLive;
    }
-   
+
    public int getDeliveryMode()
    {
       return deliveryMode;
    }
-   
+
    public void setDeliveryMode(int deliveryMode)
    {
       this.deliveryMode = deliveryMode;
    }
-   
-   public Version getVersionToUse()
-   {
-      return parent.getVersionToUse();
-   }
-   
-   // When failing over a producer, we keep the old producer's state but there are certain fields
-   // we need to update
-   public void copyState(ProducerState newState)
-   {      
-      //Actually only one field
-      //this.delegate = newState.delegate;
-   }
-   
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
+
 }
 
 

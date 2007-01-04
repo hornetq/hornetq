@@ -167,7 +167,7 @@ public class StateCreationAspect
 
       int maxDeliveries = consumerDelegate.getMaxDeliveries();
 
-      long channelId = consumerDelegate.getChannelId();
+      long channelId = consumerDelegate.getChannelID();
 
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,

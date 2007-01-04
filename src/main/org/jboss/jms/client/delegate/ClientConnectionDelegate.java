@@ -97,6 +97,10 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
          newDelegate.setClientID(thisState.getClientID());
       }
 
+      // synchronize (recursively) the client-side state
+
+      state.synchronizeWith(newDelegate.getState());
+
       // synchronize the delegates
 
       remotingConnection = newDelegate.getRemotingConnection();
@@ -104,10 +108,6 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
       // There is one RM per server, so we need to merge the rms if necessary
       ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
-
-      // synchronize (recursively) the client-side state
-
-      state.synchronizeWith(newDelegate.getState());
 
       // start the new connection if necessary
       if (thisState.isStarted())

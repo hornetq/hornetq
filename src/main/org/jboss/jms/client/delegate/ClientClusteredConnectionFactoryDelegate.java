@@ -148,6 +148,7 @@ public class ClientClusteredConnectionFactoryDelegate
       }
       else
       {
+         sb.append("SIDs={");
          for(int i = 0; i < delegates.length; i++)
          {
             sb.append(delegates[i].getServerID());
@@ -156,7 +157,7 @@ public class ClientClusteredConnectionFactoryDelegate
                sb.append(',');
             }
          }
-         sb.append("]");
+         sb.append("}]");
       }
       return sb.toString();
    }

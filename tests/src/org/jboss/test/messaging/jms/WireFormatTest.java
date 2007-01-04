@@ -359,7 +359,7 @@ public class WireFormatTest extends MessagingTestCase
          
          Ack l2 = (Ack)mi2.getArguments()[0];
          
-         assertEquals(deliveryID, l2.getDeliveryId());
+         assertEquals(deliveryID, l2.getDeliveryID());
          
       }
       
@@ -466,9 +466,9 @@ public class WireFormatTest extends MessagingTestCase
          
          assertEquals(3, acks.size());
          
-         assertEquals(ackA, ((DefaultAck)acks2.get(0)).getDeliveryId());
-         assertEquals(ackB, ((DefaultAck)acks2.get(1)).getDeliveryId());
-         assertEquals(ackC, ((DefaultAck)acks2.get(2)).getDeliveryId());
+         assertEquals(ackA, ((DefaultAck)acks2.get(0)).getDeliveryID());
+         assertEquals(ackB, ((DefaultAck)acks2.get(1)).getDeliveryID());
+         assertEquals(ackC, ((DefaultAck)acks2.get(2)).getDeliveryID());
          
       }
       
@@ -1157,7 +1157,7 @@ public class WireFormatTest extends MessagingTestCase
          
          Ack ack = (Ack)sess.getAcks().get(0);
          
-         assertEquals(deliveryId, ack.getDeliveryId());
+         assertEquals(deliveryId, ack.getDeliveryID());
          
          bis.reset();
          
@@ -1191,7 +1191,7 @@ public class WireFormatTest extends MessagingTestCase
          
          Ack ack2 = (Ack)sess2.getAcks().get(0);
          
-         assertEquals(deliveryId, ack2.getDeliveryId());
+         assertEquals(deliveryId, ack2.getDeliveryID());
          
       }  
             

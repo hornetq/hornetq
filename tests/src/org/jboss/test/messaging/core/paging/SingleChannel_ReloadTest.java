@@ -107,7 +107,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertTrue(queue.isPaging());      
       
-      assertEquals(0, queue.deliveringCount());
+      assertEquals(0, queue.getDeliveringCount());
       
       //Stop and restart the persistence manager
       //All the paged refs will survive
@@ -140,7 +140,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue2.downCacheCount());
       assertFalse(queue2.isPaging());      
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
                    
       this.consume(queue2, 100, refs, 100);
       
@@ -153,9 +153,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertFalse(queue2.isPaging());      
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
       
-      assertEquals(0, queue2.messageCount());
+      assertEquals(0, queue2.getMessageCount());
       
       assertEquals(0, LockMap.instance.getSize());
    }
@@ -203,7 +203,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertTrue(queue.isPaging());      
       
-      assertEquals(0, queue.deliveringCount());
+      assertEquals(0, queue.getDeliveringCount());
       
       //Stop and restart the persistence manager
       //Only the paged messages will survive
@@ -243,9 +243,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       this.consume(queue2, 100, refs, 100);
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
       
-      assertEquals(0, queue2.messageCount());
+      assertEquals(0, queue2.getMessageCount());
       
       assertEquals(0, LockMap.instance.getSize());
    }
@@ -293,7 +293,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertTrue(queue.isPaging());      
       
-      assertEquals(0, queue.deliveringCount());
+      assertEquals(0, queue.getDeliveringCount());
       
       queue.removeAllReferences();
       
@@ -309,9 +309,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertFalse(queue.isPaging());      
       
-      assertEquals(0, queue.deliveringCount());
+      assertEquals(0, queue.getDeliveringCount());
       
-      assertEquals(0, queue.messageCount());
+      assertEquals(0, queue.getMessageCount());
       
       assertEquals(0, LockMap.instance.getSize());
    }

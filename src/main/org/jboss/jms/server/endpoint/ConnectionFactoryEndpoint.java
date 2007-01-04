@@ -36,7 +36,11 @@ import org.jboss.messaging.core.plugin.IDBlock;
  * $Id$
  */
 public interface ConnectionFactoryEndpoint
-{ 
+{
+   /**
+    * @param failedNodeID - zero or positive values mean the connection creation attempt is result
+    *        of failover. Negative values are ignored (mean regular connection creation attempt).
+    */
    CreateConnectionResult createConnectionDelegate(String username,
                                                    String password, 
                                                    int failedNodeID)

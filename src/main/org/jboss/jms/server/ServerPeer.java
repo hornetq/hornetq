@@ -164,6 +164,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
                      String defaultQueueJNDIContext,
                      String defaultTopicJNDIContext) throws Exception
    {
+      if (serverPeerID < 0)
+      {
+         throw new IllegalArgumentException("ID cannot be negative");
+      }
+
       this.serverPeerID = serverPeerID;
       this.defaultQueueJNDIContext = defaultQueueJNDIContext;
       this.defaultTopicJNDIContext = defaultTopicJNDIContext;

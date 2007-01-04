@@ -52,6 +52,7 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.ToString;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
@@ -70,70 +71,66 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
  */
 public class ServerConnectionEndpoint implements ConnectionEndpoint
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(ServerConnectionEndpoint.class);
    
-   // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
-   
-   private volatile boolean closed;
-   
-   private volatile boolean started;
+   private static boolean trace = log.isTraceEnabled();
+
+   // Attributes -----------------------------------------------------------------------------------
 
    private int id;
-   
-   private String remotingClientSessionId;
-   
-   private String jmsClientVMId;
-   
+
+   private volatile boolean closed;
+   private volatile boolean started;
+
    private String clientID;
-
-   // Map<sessionID - ServerSessionEndpoint>
-   private Map sessions;
-   
-   private Set temporaryDestinations;
-
    private String username;
-   
    private String password;
+
+   private String remotingClientSessionId;
+   private String jmsClientVMId;
 
    // the server itself
    private ServerPeer serverPeer;
-
    // access to server's extensions
    private PostOffice postOffice;
-   
    private SecurityManager sm;
-   
    private ConnectionManager cm;
-   
    private TransactionRepository tr;
-   
    private MessageStore ms;
-   
    private ServerInvokerCallbackHandler callbackHandler;
-   
-   private byte usingVersion;
-   
+
+   // Map<sessionID - ServerSessionEndpoint>
+   private Map sessions;
+
+   // Set<?>
+   private Set temporaryDestinations;
+
    private int prefetchSize;
-   
    private int defaultTempQueueFullSize;
-   
    private int defaultTempQueuePageSize;
-   
    private int defaultTempQueueDownCacheSize;
 
-   // Constructors --------------------------------------------------
-   
+   private byte usingVersion;
+
+   // a non-null value here means connection is a fail-over connection
+   private Integer failedNodeID;
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   /**
+    * @param failedNodeID - zero or positive values mean connection creation attempt is result of
+    *        failover. Negative values are ignored (mean regular connection creation attempt).
+    */
    protected ServerConnectionEndpoint(ServerPeer serverPeer, String clientID,
                                       String username, String password, int prefetchSize,
                                       int defaultTempQueueFullSize,
                                       int defaultTempQueuePageSize,
-                                      int defaultTempQueueDownCacheSize) throws Exception
+                                      int defaultTempQueueDownCacheSize,
+                                      int failedNodeID) throws Exception
    {
       this.serverPeer = serverPeer;
       
@@ -158,9 +155,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       this.username = username;
       this.password = password;
+
+      if (failedNodeID > 0)
+      {
+         this.failedNodeID = new Integer(failedNodeID);
+      }
    }
    
-   // ConnectionDelegate implementation -----------------------------
+   // ConnectionDelegate implementation ------------------------------------------------------------
    
    public SessionDelegate createSessionDelegate(boolean transacted,
                                                 int acknowledgmentMode,
@@ -169,7 +171,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       try
       {
-         log.debug("creating session " + (transacted ? "transacted" :"non transacted")+ ", " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " + (isXA ? "XA": "non XA"));
+         log.debug(this + " creating " + (transacted ? "transacted" : "non transacted") + " session, " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " + (isXA ? "XA": "non XA"));
 
          if (closed)
          {
@@ -192,13 +194,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          Integer iSessionID = new Integer(sessionID);
          
          serverPeer.addSession(iSessionID, ep);
-         
+
          JMSDispatcher.instance.registerTarget(iSessionID, sessionAdvised);
+
+         log.debug("created and registered " + ep);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
                  
          log.debug("created " + d);
-         log.debug("created and registered " + ep);
 
          return d;
       }
@@ -354,7 +357,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                               
          if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST)
          {
-            if (trace) { log.trace("one phase commit request received"); }
+            if (trace) { log.trace(this + " received ONE_PHASE_COMMIT request"); }
             
             Transaction tx = tr.createTransaction();
             processTransaction(request.getState(), tx);
@@ -362,7 +365,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }        
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
          {                        
-            if (trace) { log.trace("Two phase commit prepare request received"); }   
+            if (trace) { log.trace(this + " received TWO_PHASE_COMMIT prepare request"); }
             
             Transaction tx = tr.createTransaction(request.getXid());
             processTransaction(request.getState(), tx);     
@@ -370,7 +373,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
          {   
-            if (trace) { log.trace("Two phase commit commit request received"); }
+            if (trace) { log.trace(this + " received TWO_PHASE_COMMIT commit request"); }
              
             Transaction tx = tr.getPreparedTx(request.getXid());            
             if (trace) { log.trace("Committing " + tx); }
@@ -378,13 +381,15 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_ROLLBACK_REQUEST)
          {
-            if (trace) { log.trace("Two phase commit rollback request received"); }
+            if (trace) { log.trace(this + " received TWO_PHASE_COMMIT rollback request"); }
              
-            //For 2pc rollback - we just don't cancel any messages back to the channel
-            //this is driven from the client side
+            // for 2pc rollback - we just don't cancel any messages back to the channel; this is
+            // driven from the client side.
              
-            Transaction tx =  tr.getPreparedTx(request.getXid());              
-            if (trace) { log.trace("Rolling back " + tx); }
+            Transaction tx =  tr.getPreparedTx(request.getXid());
+
+            if (trace) { log.trace(this + " rolling back " + tx); }
+
             tx.rollback();
          }      
                  
@@ -420,7 +425,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       throw new IllegalStateException("isClosed should never be handled on the server side");
    }
   
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
    
    public String getUsername()
    {
@@ -487,7 +492,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return "ConnectionEndpoint[" + id + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
    byte getUsingVersion()
    {
@@ -579,10 +584,19 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
       // This allows the no-local consumers to filter out the messages that come from the same
-      // connection
+      // connection.
+
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
       msg.setConnectionID(id);
-      
+
+      // messages arriving over a failed-over connections will be give preferential treatment by
+      // routers, which will send them directly to their corresponding failover queues, not to
+      // the "local" queues, to reduce clutter and unnecessary "pull policy" revving.
+      if (failedNodeID != null)
+      {
+         msg.putHeader(Routable.FAILED_NODE_ID, failedNodeID);
+      }
+
       // We must reference the message *before* we send it the destination to be handled. This is
       // so we can guarantee that the message doesn't disappear from the store before the
       // handling is complete. Each channel then takes copies of the reference if they decide to
@@ -617,9 +631,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       if (trace) { log.trace("sent " + msg); }
    }
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
      
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private void setStarted(boolean s) throws Throwable
    {
@@ -637,39 +651,37 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     
    private void processTransaction(ClientTransaction txState, Transaction tx) throws Throwable
    {
-      if (trace) { log.trace(tx + " :processing transaction"); }
+      if (trace) { log.trace(this + " processing transaction " + tx); }
       
       synchronized (sessions)
       {         
          for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
          {
             SessionTxState sessionState = (SessionTxState)i.next();
+
+            // send the messages
             
-            List msgs = sessionState.getMsgs();
-            
-            for (Iterator i2 = msgs.iterator(); i2.hasNext(); )
+            for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
             {
-               JBossMessage msg = (JBossMessage)i2.next();
-                     
-               sendMessage(msg, tx);
+               sendMessage((JBossMessage)j.next(), tx);
             }
+
+            // send the acks
                      
-            List acks = sessionState.getAcks();
+            // We need to lookup the session in a global map maintained on the server peer. We can't
+            // just assume it's one of the sessions in the connection. This is because in the case
+            // of a connection consumer, the message might be delivered through one connection and
+            // the transaction committed/rolledback through another. ConnectionConsumers suck.
             
-            //We need to lookup the session in a global map maintained on the server peer.
-            //We can't just assume it's one of the sessions in the connection.
-            //This is because in the case of a connection consumer, the message might be delivered through one
-            //connection and the transaction committed/rolledback through another.
-            //ConnectionConsumers suck.
-            
-            ServerSessionEndpoint session = serverPeer.getSession(new Integer(sessionState.getSessionId()));
-            
-            session.acknowledgeTransactionally(acks, tx);      
+            ServerSessionEndpoint session =
+               serverPeer.getSession(new Integer(sessionState.getSessionId()));
+
+            session.acknowledgeTransactionally(sessionState.getAcks(), tx);
          }
       }
       
-      if (trace) { log.trace(tx + " :Processed transaction"); }
+      if (trace) { log.trace(this + " processed transaction " + tx); }
    }   
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

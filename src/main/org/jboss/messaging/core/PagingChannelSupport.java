@@ -158,18 +158,15 @@ public abstract class PagingChannelSupport extends ChannelSupport
       active = true;
    }
     
-   // Receiver implementation
-   // -----------------------------------------------------------------
-   
-   
-   // Channel implementation
-   // ---------------------------------------------------------------
-         
-   public int messageCount()
+   // Receiver implementation ----------------------------------------------------------------------
+
+   // Channel implementation -----------------------------------------------------------------------
+
+   public int getMessageCount()
    {   
-      int count = super.messageCount();
+      int count = super.getMessageCount();
       
-      //Also need to add the paged refs
+      // Also need to add the paged refs
       
       synchronized (refLock)
       {      
@@ -179,7 +176,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       return count;
    }
    
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    //Only used in testing
    public int downCacheCount()
@@ -289,7 +286,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }
    }
    
-   // Protected -------------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
    protected void loadPagedReferences(long number) throws Exception
    {
@@ -538,7 +535,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       if (trace) { log.trace(this + " cleared downcache"); }
    }
         
-   // Private ------------------------------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private MessageReference addFromRefInfo(ReferenceInfo info, Map refMap)
    {

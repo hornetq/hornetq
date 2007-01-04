@@ -48,6 +48,8 @@ public interface Routable extends Streamable
    static final String REPLICATOR_ID = "REPLICATOR_ID";
    static final String COLLECTOR_ID = "COLLECTOR_ID";
 
+   static final String FAILED_NODE_ID = "FAILED_NODE_ID";
+
    long getMessageID();
 
    /**

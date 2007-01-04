@@ -516,7 +516,7 @@ public class DefaultRouterTest extends PostOfficeTestBase
          
       }
 
-      public int messageCount()
+      public int getMessageCount()
       {
          // TODO Auto-generated method stub
          return 0;
@@ -619,7 +619,7 @@ public class DefaultRouterTest extends PostOfficeTestBase
          
       }
 
-      public int deliveringCount()
+      public int getDeliveringCount()
       {
          // TODO Auto-generated method stub
          return 0;

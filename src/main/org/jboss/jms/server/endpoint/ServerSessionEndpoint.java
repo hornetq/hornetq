@@ -86,14 +86,16 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 /**
  * The server side representation of a JMS session.
  * 
- * A user must not invoke methods of a session concurrently on different threads, however
- * there are situations where multiple threads may access this object concurrently, for instance:
- * 
- * A session can be closed when it's connection is closed by the user which might be called on a different thread
- * A session can be closed when the server determines the connection is dead.
- * If the session represents a connection consumer's session then the connection consumer will farm off
- * messages to different sessions obtained from a pool, these may then cancel/ack etc on different threads, but
- * the acks/cancels/etc will end up back here on the connection consumer session instance.
+ * A user must not invoke methods of a session concurrently on different threads, however there are
+ * situations where multiple threads may access this object concurrently, for instance:
+ * - A session can be closed when it's connection is closed by the user which might be called on a
+ *   different thread.
+ * - A session can be closed when the server determines the connection is dead.
+ *
+ * If the session represents a connection consumer's session then the connection consumer will farm
+ * off messages to different sessions obtained from a pool, these may then cancel/ack etc on
+ * different threads, but the acks/cancels/etc will end up back here on the connection consumer
+ * session instance.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -104,13 +106,13 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
  */
 public class ServerSessionEndpoint implements SessionEndpoint
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerSessionEndpoint.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
 
@@ -138,13 +140,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private Queue defaultDLQ;
    private Queue defaultExpiryQueue;
    
-   // Map < deliveryId, Delivery>
+   // Map <deliveryID, Delivery>
    private Map deliveries;
    
    private SynchronizedLong deliveryIdSequence;
    
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    ServerSessionEndpoint(int sessionID, ServerConnectionEndpoint connectionEndpoint)
       throws Exception
@@ -177,30 +179,29 @@ public class ServerSessionEndpoint implements SessionEndpoint
       deliveryIdSequence = new SynchronizedLong(0);
    }
    
-   // SessionDelegate implementation --------------------------------
+   // SessionDelegate implementation ---------------------------------------------------------------
        
    public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
                                                   String selectorString,
                                                   boolean noLocal,
                                                   String subscriptionName,
                                                   boolean isCC,
-                                                  long failoverChannelId) throws JMSException
+                                                  long failoverChannelID) throws JMSException
    {
       try
       {
-         if (failoverChannelId == -1)
+         if (failoverChannelID == -1)
          {
-            //Standard createConsumerDelegate
-            
-            return createConsumerDelegateInternal(jmsDestination, selectorString, noLocal, subscriptionName,
-                                                  isCC);
+            // Standard createConsumerDelegate
+            return createConsumerDelegateInternal(jmsDestination, selectorString,
+                                                  noLocal, subscriptionName);
          }
          else
          {
-            //Failover of consumer
-            
-            return failoverConsumer(jmsDestination, selectorString, noLocal, subscriptionName,
-                                    isCC, failoverChannelId);
+            // Failover of consumer
+            return createFailoverConsumerDelegateInternal(jmsDestination, selectorString,
+                                                          noLocal, subscriptionName,
+                                                          failoverChannelID);
          }         
       }
       catch (Throwable t)
@@ -355,7 +356,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
    public void acknowledgeDeliveries(List acks) throws JMSException
    {    
-      if (trace) {log.trace(this + " acknowledgeDeliveries " + acks); }
+      if (trace) {log.trace(this + " acknowledges deliveries " + acks); }
       
       try
       {
@@ -393,7 +394,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    public void cancelDeliveries(List cancels) throws JMSException
    {
-      if (trace) {log.trace(this + " cancelDeliveries " + cancels); }
+      if (trace) {log.trace(this + " cancels deliveries " + cancels); }
         
       try
       {
@@ -424,7 +425,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void recoverDeliveries(List deliveryRecoveryInfos) throws JMSException
    {
-      if (trace) { log.trace(this + "recovering deliveries " + deliveryRecoveryInfos); }
+      if (trace) { log.trace(this + "recovers deliveries " + deliveryRecoveryInfos); }
+
       try
       {
          if (postOffice.isLocal())
@@ -689,7 +691,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       throw new IllegalStateException("isClosed should never be handled on the server side");
    }
     
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
    
    public ServerConnectionEndpoint getConnectionEndpoint()
    {
@@ -701,7 +703,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return "SessionEndpoint[" + id + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
    void expireDelivery(Delivery del, Queue expiryQueue) throws Throwable
    {
@@ -895,7 +897,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          Ack ack = (Ack)iter.next();
          
-         Long id = new Long(ack.getDeliveryId());
+         Long id = new Long(ack.getDeliveryID());
            
          DeliveryRecord rec = (DeliveryRecord)deliveries.get(id);
          
@@ -932,9 +934,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    } 
 
-   // Protected -----------------------------------------------------        
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private Delivery cancelDeliveryInternal(Cancel cancel) throws Throwable
    {
@@ -1034,39 +1036,41 @@ public class ServerSessionEndpoint implements SessionEndpoint
       } 
    }
    
-   
    private void acknowledgeDeliveryInternal(Ack ack) throws Throwable
    {
-      if (trace) { log.trace(this + " acknowledging delivery " + ack.getDeliveryId()); }
+      if (trace) { log.trace(this + " acknowledging delivery " + ack); }
       
-      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(ack.getDeliveryId()));
+      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(ack.getDeliveryID()));
       
       if (rec == null)
       {
-         throw new IllegalStateException("Cannot find delivery to acknowledge: " + ack.getDeliveryId());
+         throw new IllegalStateException("Cannot find " + ack + " to acknowledge");
       }
       
       rec.del.acknowledge(null);    
    } 
-   
-   
 
-   private ConsumerDelegate failoverConsumer(JBossDestination jmsDestination,
-                                             String selectorString,
-                                             boolean noLocal,  String subscriptionName,
-                                             boolean connectionConsumer,
-                                             long oldChannelID) throws Exception
+   private ConsumerDelegate createFailoverConsumerDelegateInternal(JBossDestination jmsDestination,
+                                                                   String selectorString,
+                                                                   boolean noLocal,
+                                                                   String subscriptionName,
+                                                                   long oldChannelID)
+      throws Exception
    {
+      log.debug(this + " creating FAILOVER consumer for failed channel " +
+         oldChannelID + " for " + jmsDestination +
+         (selectorString == null ? "" : ", selector '" + selectorString + "'") +
+         (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
+         (noLocal ? ", noLocal" : ""));
+
       // fail over channel
       if (postOffice.isLocal())
       {
-         throw new IllegalStateException("Cannot failover on a non clustered post office!");
+         throw new IllegalStateException("Cannot failover on a non-clustered post office!");
       }
 
-      log.debug(this + " failing over consumer");
-      
-      // this is a Clustered operation... so postOffice here must be Clustered
       Binding binding = ((ClusteredPostOffice)postOffice).getBindingforChannelId(oldChannelID);
+
       if (binding == null)
       {
          throw new IllegalStateException("Can't find failed over channel " + oldChannelID);
@@ -1074,33 +1078,41 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       if (trace)
       {
-         long newChannelID =
-            binding.getQueue() instanceof RemoteQueueStub ?
-               ((RemoteQueueStub)binding.getQueue()).getChannelID() :
-               ((PagingFilteredQueue)binding.getQueue()).getChannelID();
+         long newChannelID;
 
-         log.trace(this + "failing over from channel " + oldChannelID + " to channel " + newChannelID);
+         if (binding.getQueue() instanceof RemoteQueueStub)
+         {
+            newChannelID = ((RemoteQueueStub)binding.getQueue()).getChannelID();
+         }
+         else
+         {
+            newChannelID = ((PagingFilteredQueue)binding.getQueue()).getChannelID();
+         }
+
+         log.trace(this + " failing over from channel " + oldChannelID + " to channel " + newChannelID);
       }
 
       int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
       int prefetchSize = connectionEndpoint.getPrefetchSize();
       
-      ManagedDestination dest = 
-         sp.getDestinationManager().getDestination(jmsDestination.getName(), jmsDestination.isQueue());
+      ManagedDestination dest = sp.getDestinationManager().
+         getDestination(jmsDestination.getName(), jmsDestination.isQueue());
       
       if (dest == null)
       {
-         throw new IllegalStateException("Cannot find managed destination for dest: " + jmsDestination);
+         throw new IllegalStateException("Cannot find managed destination for " + jmsDestination);
       }
       
-      Queue dlqToUse = dest.getDLQ() == null ? defaultDLQ : dest.getDLQ();
+      Queue dlqToUse =
+         dest.getDLQ() == null ? defaultDLQ : dest.getDLQ();
       
-      Queue expiryQueueToUse = dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
+      Queue expiryQueueToUse =
+         dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
             
       ServerConsumerEndpoint ep =
-         new ServerConsumerEndpoint(consumerID, binding.getQueue(),
-                                    binding.getQueue().getName(), this, selectorString, noLocal,
-                                    jmsDestination, dlqToUse, expiryQueueToUse);
+         new ServerConsumerEndpoint(consumerID, binding.getQueue(), binding.getQueue().getName(),
+                                    this, selectorString, noLocal, jmsDestination, dlqToUse,
+                                    expiryQueueToUse);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
 
@@ -1119,8 +1131,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private ConsumerDelegate createConsumerDelegateInternal(JBossDestination jmsDestination,
                                                            String selectorString,
                                                            boolean noLocal,
-                                                           String subscriptionName,
-                                                           boolean isCC) throws Throwable
+                                                           String subscriptionName)
+      throws Throwable
    {
       if (closed)
       {
@@ -1407,7 +1419,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
    
    /*
     * Holds a record of a delivery - we need to store the consumer id as well

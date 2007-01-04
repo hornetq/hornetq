@@ -310,7 +310,7 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
          
       }
 
-      public int messageCount()
+      public int getMessageCount()
       {
          // TODO Auto-generated method stub
          return 0;
@@ -382,7 +382,7 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
          
       }
 
-      public int deliveringCount()
+      public int getDeliveringCount()
       {
          // TODO Auto-generated method stub
          return 0;

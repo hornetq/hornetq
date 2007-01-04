@@ -154,7 +154,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
       this.consumerID = state.getConsumerID();      
       
-      this.channelID = state.getChannelId();
+      this.channelID = state.getChannelID();
       
       this.maxDeliveries = state.getMaxDeliveries();
 

@@ -58,13 +58,13 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  */
 public abstract class ChannelSupport implements Channel
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ChannelSupport.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
 
@@ -97,7 +97,7 @@ public abstract class ChannelSupport implements Channel
    //Suggest that we have a glag that disables this for production systems
    protected SynchronizedInt deliveringCount;
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    protected ChannelSupport(long channelID, MessageStore ms,
                             PersistenceManager pm,
@@ -135,7 +135,7 @@ public abstract class ChannelSupport implements Channel
       deliveringCount = new SynchronizedInt(0);
    }
 
-   // Receiver implementation ---------------------------------------
+   // Receiver implementation ----------------------------------------------------------------------
 
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
@@ -171,7 +171,7 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   // DeliveryObserver implementation --------------------------
+   // DeliveryObserver implementation --------------------------------------------------------------
 
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
@@ -187,7 +187,7 @@ public abstract class ChannelSupport implements Channel
       this.executor.execute(new CancelRunnable(d));      
    }
 
-   // Distributor implementation ------------------------------------
+   // Distributor implementation -------------------------------------------------------------------
 
    public boolean add(Receiver r)
    {
@@ -236,7 +236,7 @@ public abstract class ChannelSupport implements Channel
       return router.numberOfReceivers();
    }
 
-   // Channel implementation ----------------------------------------
+   // Channel implementation -----------------------------------------------------------------------
 
    public long getChannelID()
    {
@@ -297,11 +297,11 @@ public abstract class ChannelSupport implements Channel
          {
             future = new Future();
          }
-         //TODO we should keep track of how many deliveries are currently in the queue
-         //so we don't execute another delivery when one is in the queue, since
-         //this is pointless
 
-         this.executor.execute(new DeliveryRunnable(future));
+         //TODO we should keep track of how many deliveries are currently in the queue so we don't
+         //     execute another delivery when one is in the queue, since this is pointless.
+
+         executor.execute(new DeliveryRunnable(future));
 
          if (synchronous)
          {
@@ -393,15 +393,15 @@ public abstract class ChannelSupport implements Channel
    /**
     * Returns the count of messages stored AND being delivered.
     */
-   public int messageCount()
+   public int getMessageCount()
    {
       synchronized (refLock)
       {
-         return messageRefs.size() + deliveringCount();     
+         return messageRefs.size() + getDeliveringCount();
       }
    }
    
-   public int deliveringCount()
+   public int getDeliveringCount()
    {
       return deliveringCount.get();
    }
@@ -474,7 +474,7 @@ public abstract class ChannelSupport implements Channel
       return dels;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    //Only used for testing
    public int memoryRefCount()
@@ -492,9 +492,9 @@ public abstract class ChannelSupport implements Channel
       return "ChannelSupport[" + channelID + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
    /*
     * This methods delivers as many messages as possible to the router until no
@@ -533,8 +533,7 @@ public abstract class ChannelSupport implements Channel
                if (del == null)
                {
                   // No receiver, broken receiver or full receiver so we stop delivering
-                  if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
-
+                  if (trace) { log.trace(this + " got no delivery for " + ref + " so no receiver got the message. Stopping delivery."); }
                   break;
                }
                else if (!del.isSelectorAccepted())
@@ -550,7 +549,7 @@ public abstract class ChannelSupport implements Channel
                }
                else
                {
-                  if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
+                  if (trace) { log.trace(this + ": " + del + " returned for message " + ref); }
                   
                   // Receiver accepted the reference
                   
@@ -772,7 +771,7 @@ public abstract class ChannelSupport implements Channel
       if (trace){ log.trace(this + " added " + ref + " non-transactionally in memory"); }      
    }    
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private void removeReference(ListIterator iter) throws Exception
    {
@@ -821,7 +820,7 @@ public abstract class ChannelSupport implements Channel
       return ref;
    } 
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
    private class InMemoryCallback implements TxCallback, Runnable
    {
@@ -1062,11 +1061,11 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
  
 
   
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
    protected class DeliveryRunnable implements Runnable
    {
@@ -1079,7 +1078,7 @@ public abstract class ChannelSupport implements Channel
       
       public void run()
       {
-         try         
+         try
          {
             if (router.numberOfReceivers() > 0)
             {               

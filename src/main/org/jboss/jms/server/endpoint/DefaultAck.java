@@ -32,15 +32,42 @@ package org.jboss.jms.server.endpoint;
  */
 public class DefaultAck implements Ack
 {
-   private long deliveryId;
-   
+
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   private long deliveryID;
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public DefaultAck(long deliveryId)
    {
-      this.deliveryId = deliveryId;
+      this.deliveryID = deliveryId;
    }
-   
-   public long getDeliveryId()
+
+   // Ack implementation ---------------------------------------------------------------------------
+
+   public long getDeliveryID()
    {
-      return deliveryId;
+      return deliveryID;
    }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String toString()
+   {
+      return "ACK[" + deliveryID + "]";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }

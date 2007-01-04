@@ -43,6 +43,7 @@ public class DefaultBindings implements Bindings
 
    // Attributes ----------------------------------------------------
 
+   // List<Binding>
    private List bindings;
    private int durableCount;
 
@@ -100,7 +101,10 @@ public class DefaultBindings implements Bindings
 
    public String toString()
    {
-      return "Bindings[" + Integer.toHexString(hashCode()) + ", count=" + bindings.size() + "]";
+      StringBuffer sb = new StringBuffer("LocalBindings[");
+      sb.append(bindings);
+      sb.append(']');
+      return sb.toString();
    }
 
    // Package protected ---------------------------------------------

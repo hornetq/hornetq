@@ -170,8 +170,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       // This is ok to have outside lock - is volatile
       if (!clientAccepting)
       {
-         if (trace) { log.trace(this + " the client is not currently accepting messages"); }
-         
+         if (trace) { log.trace(this + "'s client is NOT accepting messages!"); }
          return null;
       }
       
@@ -328,23 +327,22 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    public void changeRate(float newRate) throws JMSException
    {
-      if (trace) { log.trace(this + " changeRate: " + newRate); }
+      if (trace) { log.trace(this + " changing rate to " + newRate); }
       
       try
       {      
-         //For now we just support a binary on/off
-         //The client will send newRate = 0, to say it does not want any more messages when it's client side
-         //buffer gets full
-         //or it will send an arbitrary non zero number to say it does want more messages, when it's client side
-         //buffer empties to half it's full size.
-         //Note the client does not wait until the client side buffer is empty before sending a newRate(+ve)
-         //message since this would add extra latency.
+         // For now we just support a binary on/off.
+         // The client will send newRate = 0, to say it does not want any more messages when its
+         // client side buffer gets full or it will send an arbitrary non zero number to say it
+         // does want more messages, when its client side buffer empties to half its full size.
+         // Note the client does not wait until the client side buffer is empty before sending a
+         // newRate(+ve) message since this would add extra latency.
          
-         //In the future we can fine tune this by allowing the client to specify an actual rate in the newRate value
-         //so this is basically a placeholder for the future so we don't have to change the wire format when
-         //we support it
+         // In the future we can fine tune this by allowing the client to specify an actual rate in
+         // the newRate value so this is basically a placeholder for the future so we don't have to
+         // change the wire format when we support it.
          
-         //No need to synchronize - clientAccepting is volatile
+         // No need to synchronize - clientAccepting is volatile
          
          if (newRate == 0)
          {
@@ -353,7 +351,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          else
          {
             clientAccepting = true;
-            
             promptDelivery();
          }            
       }   
@@ -475,35 +472,35 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          }
          
          started = false;                  
-         
-         /*
-          * 
-         Any message deliveries already transit to the consumer, will just
-         be ignored by the MessageCallbackHandler since it will be closed 
-   
-         To clarify, the close protocol (from connection) is as follows:
-                  
-         1) MessageCallbackHandler::close() - any messages in buffer are cancelled to the server session, and any
-            subsequent receive messages will be ignored         
-         
-         2) ServerConsumerEndpoint::closing() causes stop() this flushes any deliveries yet to deliver to the client callback handler
-         
-         3) MessageCallbackHandler::cancelInflightMessages(long lastDeliveryId) - any deliveries after lastDeliveryId
-         for the consumer will be considered in flight and cancelled.
-         
-         4) ServerConsumerEndpoint:close() - endpoint is deregistered
-         
-         5) Session.close() - acks or cancels any remaining deliveries in the SessionState as appropriate
-         
-         6) ServerSessionEndpoint::close() - cancels any remaining deliveries and deregisters session
-         
-         7) Client side session executor is shutdown
-         
-         8) ServerConnectionEndpoint::close() - connection is deregistered.
-         
-         9) Remoting connection listener is removed and remoting connection stopped.
-         
-         */
+
+         // Any message deliveries already transit to the consumer, will just be ignored by the
+         // MessageCallbackHandler since it will be closed.
+         //
+         // To clarify, the close protocol (from connection) is as follows:
+         //
+         // 1) MessageCallbackHandler::close() - any messages in buffer are cancelled to the server
+         //    session, and any subsequent receive messages will be ignored.
+         //
+         // 2) ServerConsumerEndpoint::closing() causes stop() this flushes any deliveries yet to
+         //    deliver to the client callback handler.
+         //
+         // 3) MessageCallbackHandler::cancelInflightMessages(long lastDeliveryId) - any deliveries
+         //    after lastDeliveryId for the consumer will be considered in flight and cancelled.
+         //
+         // 4) ServerConsumerEndpoint:close() - endpoint is deregistered.
+         //
+         // 5) Session.close() - acks or cancels any remaining deliveries in the SessionState as
+         //    appropriate.
+         //
+         // 6) ServerSessionEndpoint::close() - cancels any remaining deliveries and deregisters
+         //    session.
+         //
+         // 7) Client side session executor is shutdown.
+         //
+         // 8) ServerConnectionEndpoint::close() - connection is deregistered.
+         //
+         // 9) Remoting connection listener is removed and remoting connection stopped.
+
       }
    }
          
@@ -513,7 +510,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private void promptDelivery()
    {
-      messageQueue.deliver(false);
+      messageQueue.deliver(Channel.ASYNCRHONOUS);
    }
    
    // Inner classes -------------------------------------------------   

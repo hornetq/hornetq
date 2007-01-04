@@ -206,7 +206,7 @@ public class RemoteQueueStub implements ClusteredQueue
       throw new UnsupportedOperationException();
    }
 
-   public int messageCount()
+   public int getMessageCount()
    {
       throw new UnsupportedOperationException();
    }
@@ -288,7 +288,7 @@ public class RemoteQueueStub implements ClusteredQueue
       return "RemoteQueueStub[" + channelID + "/" + name + " -> " + nodeID + "]";
    }
 
-   public int deliveringCount()
+   public int getDeliveringCount()
    {
       throw new UnsupportedOperationException();
    }

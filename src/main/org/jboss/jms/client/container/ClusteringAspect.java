@@ -91,11 +91,15 @@ public class ClusteringAspect
 
       while (attemptCount < MAX_RECONNECT_HOP_COUNT)
       {
+
+         int failedNodeIDToServer = -1;
+
          if (delegate == null)
          {
             if (failedNodeID != null && failedNodeID.intValue() >= 0)
             {
                delegate = getFailoverDelegateForNode(failedNodeID);
+               failedNodeIDToServer = failedNodeID.intValue();
             }
             else
             {
@@ -106,7 +110,8 @@ public class ClusteringAspect
          log.debug(this + " has chosen " + delegate + " as target, " +
             (attemptCount == 0 ? "first connection attempt" : attemptCount + " connection attempts"));
 
-         CreateConnectionResult res = delegate.createConnectionDelegate(username, password, -1); // TODO get rid of -1 from signature
+         CreateConnectionResult res = delegate.
+            createConnectionDelegate(username, password, failedNodeIDToServer);
          ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
 
          if (cd != null)

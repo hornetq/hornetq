@@ -59,7 +59,7 @@ public class QueueService extends DestinationServiceSupport
       {
          if (!started)
          {
-            log.warn("Queue is stopped.");
+            log.warn("Queue is stopped");
             return 0;
          }
          

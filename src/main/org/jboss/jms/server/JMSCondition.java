@@ -35,94 +35,107 @@ import org.jboss.messaging.core.plugin.contract.Condition;
  */
 public class JMSCondition implements Condition
 {
-   private boolean queue;
-   
-   private String name;
-   
+   // Constants ------------------------------------------------------------------------------------
+
    private static final String QUEUE_PREFIX = "queue.";
-   
    private static final String TOPIC_PREFIX = "topic.";
-   
-   //Cache the hash code
+
+   // Static ---------------------------------------------------------------------------------------
+
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   private boolean queue;
+   private String name;
+
+   // cache the hash code
    private int hash = -1;
-   
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public JMSCondition(boolean queue, String name)
    {
       this.queue = queue;
-      
       this.name = name;
    }
-   
+
    public JMSCondition(String text)
    {
       if (text.startsWith(QUEUE_PREFIX))
       {
          queue = true;
-         
          name = text.substring(QUEUE_PREFIX.length());
       }
       else if (text.startsWith(TOPIC_PREFIX))
       {
          queue = false;
-         
          name = text.substring(TOPIC_PREFIX.length());
       }
       else
       {
          throw new IllegalArgumentException("Illegal text: " + text);
       }
-         
    }
-   
-   public boolean isQueue()
-   {
-      return queue;
-   }
-   
-   public String getName()
-   {
-      return name;
-   }
+
+   // Condition implementation ---------------------------------------------------------------------
 
    public boolean matches(Condition routingCondition, MessageReference ref)
    {
       return equals(routingCondition);
    }
-   
+
+   public String toText()
+   {
+      return (queue ? QUEUE_PREFIX : TOPIC_PREFIX) + name;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public boolean isQueue()
+   {
+      return queue;
+   }
+
+   public String getName()
+   {
+      return name;
+   }
+
    public boolean equals(Object other)
    {
       if (!(other instanceof JMSCondition))
       {
          return false;
       }
-      
+
       JMSCondition jmsCond = (JMSCondition)other;
-      
+
       return ((jmsCond.queue == this.queue) && (jmsCond.name.equals(this.name)));
    }
-   
+
    public int hashCode()
    {
       if (hash == -1)
-      {               
+      {
          hash = 17;
-         
          hash = 37 * hash + (queue ? 0 : 1);
-         
          hash = 37 * hash + name.hashCode();
       }
-      
-      return hash;      
+
+      return hash;
    }
 
-   public String toText()
-   {      
-      return (queue ? QUEUE_PREFIX : TOPIC_PREFIX) + name;
-   }
-   
    public String toString()
    {
       return toText();
    }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
 
 }

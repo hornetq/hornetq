@@ -30,6 +30,7 @@ import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
+import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -41,6 +42,7 @@ import org.jboss.messaging.core.tx.Transaction;
  * If there is no local queue, then it will round robin between the non local queues.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
@@ -48,26 +50,27 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public class DefaultRouter implements ClusterRouter
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(DefaultRouter.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
 
-   // MUST be an arraylist for fast index access
+   // ArrayList<>; MUST be an arraylist for fast index access
    private ArrayList nonLocalQueues;
 
+   // ArrayList<FailedOverQueue>; MUST be an arraylist for fast index access
    private ArrayList failedOverQueues;
 
    private ClusteredQueue localQueue;
 
    private int target;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public DefaultRouter()
    {
@@ -75,43 +78,64 @@ public class DefaultRouter implements ClusterRouter
       failedOverQueues = new ArrayList();
    }
 
-   // Receiver implementation ---------------------------------------
+   // Receiver implementation ----------------------------------------------------------------------
 
-   public Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx)
+   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
-      if (trace) { log.trace(this + " routing " + reference); }
+      if (trace) { log.trace(this + " routing " + ref); }
 
       // Favour the local queue or the failedOver queue in round robin
 
       if (!failedOverQueues.isEmpty())
       {
-         if (trace) { log.trace(this + " round robin on failedover queue, current target " + target);}
+         // If the message arrived over a failed-over connection, try to send the message to its
+         // corresponding "failed-over" queue.
 
-         LocalClusteredQueue queueToUse = null;
+         Integer failedNodeID = (Integer)ref.getHeader(Routable.FAILED_NODE_ID);
 
-         if (target == -1)
+         if (failedNodeID != null)
          {
-            queueToUse = (LocalClusteredQueue)this.localQueue;
+            Delivery del = null;
+
+            LocalClusteredQueue targetFailoverQueue = locateFailoverQueue(failedNodeID.intValue());
+
+            if (targetFailoverQueue != null)
+            {
+               del = targetFailoverQueue.handle(observer, ref, tx);
+            }
+
+            if (trace) { log.trace(this + " routed message to fail-over queue " + targetFailoverQueue + ", returned " + del) ;}
+
+            return del;
          }
          else
          {
-            queueToUse = (LocalClusteredQueue)failedOverQueues.get(target);
+            LocalClusteredQueue queueToUse = null;
+
+            if (target == -1)
+            {
+               queueToUse = (LocalClusteredQueue)localQueue;
+            }
+            else
+            {
+               queueToUse = (LocalClusteredQueue)failedOverQueues.get(target);
+            }
+
+            incTargetFailedOver();
+
+            Delivery del = queueToUse.handle(observer, ref, tx);
+
+            if (trace) { log.trace(this + " routed message to failed queue, using failed-over round robbing, returned " + del); }
+
+            return del;
          }
-
-         incTargetFailedOver();
-
-         Delivery del = queueToUse.handle(observer, reference, tx);
-
-         if (trace) { log.trace(this + " routed to failed queue, using failedOver round robbing, returned " + del); }
-
-         return del;
       }
       else if (localQueue != null)
       {
          // The only time the local queue won't accept is if the selector doesn't match, in which
          // case it won't match at any other nodes too so no point in trying them
 
-         Delivery del = localQueue.handle(observer, reference, tx);
+         Delivery del = localQueue.handle(observer, ref, tx);
 
          if (trace) { log.trace(this + " routed to local queue, it returned " + del); }
 
@@ -125,7 +149,7 @@ public class DefaultRouter implements ClusterRouter
          {
             ClusteredQueue queue = (ClusteredQueue)nonLocalQueues.get(target);
 
-            Delivery del = queue.handle(observer, reference, tx);
+            Delivery del = queue.handle(observer, ref, tx);
 
             if (trace) { log.trace(this + " routed to remote queue, it returned " + del); }
 
@@ -143,7 +167,7 @@ public class DefaultRouter implements ClusterRouter
       return null;
    }
 
-   // Distributor implementation ------------------------------------
+   // Distributor implementation -------------------------------------------------------------------
 
    public boolean contains(Receiver queue)
    {
@@ -207,7 +231,7 @@ public class DefaultRouter implements ClusterRouter
    }
 
 
-   // ClusterRouter implementation ----------------------------------
+   // ClusterRouter implementation -----------------------------------------------------------------
 
    public List getQueues()
    {
@@ -260,7 +284,7 @@ public class DefaultRouter implements ClusterRouter
       return true;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public int size()
    {
@@ -272,11 +296,11 @@ public class DefaultRouter implements ClusterRouter
       return "Router[" + Integer.toHexString(hashCode()) + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private void incTargetFailedOver()
    {
@@ -299,7 +323,21 @@ public class DefaultRouter implements ClusterRouter
       }
    }
 
-   // Inner classes -------------------------------------------------
+   private FailedOverQueue locateFailoverQueue(int failedNodeID)
+   {
+      // TODO - this is a VERY slow sequential pass; I am sure we can come with a smarter way to
+      //        locate the queue
+      for(int i = 0; i < failedOverQueues.size(); i++)
+      {
+         if (((FailedOverQueue)failedOverQueues.get(i)).getFailedNodeID() == failedNodeID)
+         {
+            return (FailedOverQueue)failedOverQueues.get(i);
+         }
+      }
+      return null;
+   }
+
+   // Inner classes --------------------------------------------------------------------------------
 
 }
 

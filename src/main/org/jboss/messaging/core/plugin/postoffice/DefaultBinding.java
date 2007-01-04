@@ -100,16 +100,17 @@ public class DefaultBinding implements Binding
    {
       if (toString == null)
       {
-         StringBuffer sb = new StringBuffer("Binding[");
+         StringBuffer sb = new StringBuffer("[");
 
          sb.append(nodeID).append(',');
-         sb.append(queue).append('(');
-         sb.append(queue.getClass().getName()).append(')');
-
-         if (condition != null)
-         {
-            sb.append(", condition: ").append(condition);
-         }
+         sb.append(queue);
+//         sb.append('(');
+//         sb.append(queue.getClass().getName()).append(')');
+//
+//         if (condition != null)
+//         {
+//            sb.append(", condition: ").append(condition);
+//         }
          sb.append("]");
          toString = sb.toString();
       }

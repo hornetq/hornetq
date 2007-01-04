@@ -30,6 +30,7 @@ import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.logging.Logger;
 
 /**
  * A ManagedQueue
@@ -44,47 +45,72 @@ import org.jboss.messaging.core.plugin.postoffice.Binding;
  */
 public class ManagedQueue extends ManagedDestination
 {
+   // Constants ------------------------------------------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(ManagedQueue.class);
+
+   // Static ---------------------------------------------------------------------------------------
+
+   private static boolean trace = log.isTraceEnabled();
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public ManagedQueue()
-   {      
+   {
    }
-   
+
    public ManagedQueue(String name, int fullSize, int pageSize, int downCacheSize)
    {
       super(name, fullSize, pageSize, downCacheSize);
    }
 
+   // ManagedDestination overrides -----------------------------------------------------------------
+
+   public boolean isQueue()
+   {
+      return true;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
    public int getMessageCount() throws Exception
    {
       JMSCondition queueCond = new JMSCondition(true, name);
-      
+
       Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
-      
+
       if (binding == null)
       {
          throw new IllegalStateException("Cannot find binding for queue:" + name);
       }
-      
+
       Queue queue = binding.getQueue();
 
-      return queue.messageCount();
+      int count = queue.getMessageCount();
+
+      if (trace) { log.trace(this + " returning MessageCount = " + count); }
+
+      return count;
    }
-   
+
    public void removeAllMessages() throws Throwable
    {
       JMSCondition queueCond = new JMSCondition(true, name);
-      
+
       Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
-      
+
       if (binding == null)
       {
          throw new IllegalStateException("Cannot find binding for queue:" + name);
       }
-      
+
       Queue queue = binding.getQueue();
 
       queue.removeAllReferences();
    }
-   
+
    public List listMessages(String selector) throws Exception
    {
       if (selector != null)
@@ -95,19 +121,19 @@ public class ManagedQueue extends ManagedDestination
             selector = null;
          }
       }
-      
+
       JMSCondition queueCond = new JMSCondition(true, name);
-      
+
       Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
-      
+
       if (binding == null)
       {
          throw new IllegalStateException("Cannot find binding for queue:" + name);
       }
-      
+
       Queue queue = binding.getQueue();
 
-      try 
+      try
       {
          List msgs;
          if (selector == null)
@@ -128,8 +154,17 @@ public class ManagedQueue extends ManagedDestination
       }
    }
 
-   public boolean isQueue()
+   public String toString()
    {
-      return true;
+      return "ManagedQueue[" + name + "]";
    }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }

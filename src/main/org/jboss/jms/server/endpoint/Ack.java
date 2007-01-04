@@ -32,5 +32,5 @@ package org.jboss.jms.server.endpoint;
  */
 public interface Ack
 {
-   long getDeliveryId();
+   long getDeliveryID();
 }

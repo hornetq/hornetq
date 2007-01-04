@@ -65,6 +65,10 @@ public class ToString
       {
          return "DUPS_OK_ACKNOWLEDGE";
       }
+      if (ack == Session.SESSION_TRANSACTED)
+      {
+         return "SESSION_TRANSACTED";
+      }
       return "UNKNOWN";
    }
 

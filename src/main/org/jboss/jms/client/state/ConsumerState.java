@@ -26,7 +26,9 @@ import java.util.Collections;
 import javax.jms.Destination;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.server.Version;
 
@@ -35,40 +37,40 @@ import org.jboss.jms.server.Version;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public class ConsumerState extends HierarchicalStateSupport
 {
-   private Destination destination;
+   // Constants ------------------------------------------------------------------------------------
 
-   private String selector;
+   // Static ---------------------------------------------------------------------------------------
 
-   String subscriptionName;
-
-   private boolean noLocal;
+   // Attributes -----------------------------------------------------------------------------------
 
    private int consumerID;
-
+   private Destination destination;
+   private String selector;
+   private String subscriptionName;
+   private boolean noLocal;
    private boolean isConnectionConsumer;
-
    private MessageCallbackHandler messageCallbackHandler;
-
    private int bufferSize;
-   
-   private SessionState parent;
-   
-   private ConsumerDelegate delegate;
-   
    private int maxDeliveries;
-   
-   //Needed for failover
-   private long channelId;
-   
+
+   // Needed for failover
+   private long channelID;
+
+   private SessionState parent;
+   private ConsumerDelegate delegate;
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
                         String selector, boolean noLocal, String subscriptionName, int consumerID,
-                        boolean isCC, int bufferSize, int maxDeliveries, long channelId)
+                        boolean isCC, int bufferSize, int maxDeliveries, long channelID)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
@@ -80,8 +82,10 @@ public class ConsumerState extends HierarchicalStateSupport
       this.bufferSize = bufferSize;
       this.subscriptionName=subscriptionName;
       this.maxDeliveries = maxDeliveries;
-      this.channelId = channelId;
+      this.channelID = channelID;
    }
+
+   // HierarchicalState implementation -------------------------------------------------------------
 
    public DelegateSupport getDelegate()
    {
@@ -93,6 +97,46 @@ public class ConsumerState extends HierarchicalStateSupport
       this.delegate = (ConsumerDelegate)delegate;
    }
 
+   public HierarchicalState getParent()
+   {
+      return parent;
+   }
+
+   public void setParent(HierarchicalState parent)
+   {
+      this.parent=(SessionState)parent;
+   }
+
+   public Version getVersionToUse()
+   {
+      return parent.getVersionToUse();
+   }
+
+   // HierarchicalStateSupport overrides -----------------------------------------------------------
+
+   public void synchronizeWith(HierarchicalState ns) throws Exception
+   {
+      ConsumerState newState = (ConsumerState)ns;
+
+      int oldConsumerID = consumerID;
+      consumerID = newState.consumerID;
+      channelID = newState.channelID;
+
+      CallbackManager oldCallbackManager = ((ClientConnectionDelegate)getParent().getParent().
+         getDelegate()).getRemotingConnection().getCallbackManager();
+      CallbackManager newCallbackManager = ((ClientConnectionDelegate)ns.getParent().getParent().
+         getDelegate()).getRemotingConnection().getCallbackManager();
+
+      // We need to synchronize the old message callback handler using the new one
+
+      MessageCallbackHandler handler = oldCallbackManager.unregisterHandler(oldConsumerID);
+      MessageCallbackHandler newHandler = newCallbackManager.unregisterHandler(consumerID);
+
+      handler.synchronizeWith(newHandler);
+      newCallbackManager.registerHandler(consumerID, handler);
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public Destination getDestination()
    {
@@ -129,28 +173,9 @@ public class ConsumerState extends HierarchicalStateSupport
       return messageCallbackHandler;
    }
 
-   public Version getVersionToUse()
-   {
-      return parent.getVersionToUse();
-   }
-
-   public void synchronizeWith(HierarchicalState newState) throws Exception {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
    public int getBufferSize()
    {
       return bufferSize;
-   }
-
-   public HierarchicalState getParent()
-   {
-      return parent;
-   }
-
-   public void setParent(HierarchicalState parent)
-   {
-      this.parent=(SessionState)parent;
    }
 
    public String getSubscriptionName()
@@ -167,22 +192,18 @@ public class ConsumerState extends HierarchicalStateSupport
    {
       return maxDeliveries;
    }
-   
-   public long getChannelId()
-   {
-      return channelId;
-   }
-   
-   // When failing over a consumer, we keep the old consumer's state but there are certain fields
-   // we need to update
-   public void copyState(ConsumerState newState)
-   {      
-      this.consumerID = newState.consumerID;
 
-      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
-      //this.delegate = newState.delegate;
-      
-      this.channelId = newState.channelId;
+   public long getChannelID()
+   {
+      return channelID;
    }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
 
 }

@@ -984,10 +984,10 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          receiver2.acknowledge(msgRec1, tx);
          receiver2.acknowledge(msgRec2, tx);
          
-         int deliveringCount = queue1.deliveringCount();
+         int deliveringCount = queue1.getDeliveringCount();
          assertEquals(2, deliveringCount);
          
-         deliveringCount = queue2.deliveringCount();
+         deliveringCount = queue2.getDeliveringCount();
          assertEquals(2, deliveringCount);
          
          tx.commit();
@@ -1041,21 +1041,21 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          receiver2.acknowledge(msgRec1, tx);
          receiver2.acknowledge(msgRec2, tx);
          
-         deliveringCount = queue1.deliveringCount();
+         deliveringCount = queue1.getDeliveringCount();
          assertEquals(2, deliveringCount);
          
-         deliveringCount = queue2.deliveringCount();
+         deliveringCount = queue2.getDeliveringCount();
          assertEquals(2, deliveringCount);
          
          tx.rollback();
          
-         deliveringCount = queue1.deliveringCount();
+         deliveringCount = queue1.getDeliveringCount();
          assertEquals(2, deliveringCount);                  
          
          receiver1.acknowledge(msgRec1, null);
          receiver1.acknowledge(msgRec2, null);
          
-         deliveringCount = queue2.deliveringCount();
+         deliveringCount = queue2.getDeliveringCount();
          assertEquals(2, deliveringCount);     
          
          

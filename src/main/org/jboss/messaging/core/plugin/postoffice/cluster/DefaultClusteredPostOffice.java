@@ -595,8 +595,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                nodeId + ", queue " + queueName);
          }
 
-         binding =
-            createBinding(nodeId, condition, queueName, channelID, filterString, durable, failed);
+         binding = createBinding(nodeId, condition, queueName, channelID,
+                                 filterString, durable, failed, null);
 
          addBinding(binding);
       }
@@ -700,7 +700,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       }
    }
 
-   public void routeFromCluster(org.jboss.messaging.core.Message message, String routingKeyText,
+   public void routeFromCluster(org.jboss.messaging.core.Message message,
+                                String routingKeyText,
                                 Map queueNameNodeIdMap) throws Exception
    {
       if (trace) { log.trace(this + " routing from cluster " + message + ", routing key " + routingKeyText + ", map " + queueNameNodeIdMap); }
@@ -1158,7 +1159,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          if (cb != null)
          {
-            if (trace) { log.trace(this + " found clustered bindings " + cb); }
+            if (trace) { log.trace(this + " found " + cb); }
 
             if (tx == null && ref.isReliable())
             {
@@ -1189,6 +1190,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             for(Iterator i = cb.getRouters().iterator(); i.hasNext(); )
             {
                ClusterRouter router = (ClusterRouter)i.next();
+
+               if (trace) { log.trace(this + " sending " + ref + " to " + router); }
 
                Delivery del = router.handle(null, ref, tx);
 
@@ -1646,22 +1649,42 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       }
    }
 
-   protected Binding createBinding(int nodeId, Condition condition, String queueName, long channelId, Filter filter, boolean durable, boolean failed)
+   protected Binding createBinding(int nodeId, Condition condition, String queueName,
+                                   long channelId, String filterString, boolean durable,
+                                   boolean failed, Integer failedNodeID) throws Exception
+   {
+      Filter filter = filterFactory.createFilter(filterString);
+      return createBinding(nodeId, condition, queueName, channelId,
+                           filter, durable, failed, failedNodeID);
+   }
+
+   protected Binding createBinding(int nodeID, Condition condition, String queueName,
+                                   long channelId, Filter filter, boolean durable,
+                                   boolean failed, Integer failedNodeID)
    {
       Queue queue;
-      if (nodeId == this.currentNodeId)
+
+      if (nodeID == currentNodeId)
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
 
-         queue = new LocalClusteredQueue(this, nodeId, queueName, channelId, ms, pm, true,
-                  durable, executor, filter, tr);
+         if (failedNodeID == null)
+         {
+            queue = new LocalClusteredQueue(this, nodeID, queueName, channelId, ms, pm, true,
+                                            durable, executor, filter, tr);
+         }
+         else
+         {
+            queue = new FailedOverQueue(this, nodeID, queueName, channelId, ms, pm, true,
+                                        durable, executor, filter, tr, failedNodeID.intValue());
+         }
       }
       else
       {
-         queue = new RemoteQueueStub(nodeId, queueName, channelId, durable, pm, filter);
+         queue = new RemoteQueueStub(nodeID, queueName, channelId, durable, pm, filter);
       }
 
-      return new DefaultBinding(nodeId, condition, queue, failed);
+      return new DefaultBinding(nodeID, condition, queue, failed);
    }
 
    // Private -------------------------------------------------------
@@ -1670,8 +1693,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       throws Exception
    {
       BindRequest request =
-         new BindRequest(this.currentNodeId, queue.getName(), condition.toText(), queue.getFilter() == null ? null : queue.getFilter().getFilterString(),
-                         binding.getQueue().getChannelID(), queue.isRecoverable(), binding.isFailed());
+         new BindRequest(this.currentNodeId, queue.getName(), condition.toText(),
+                         queue.getFilter() == null ? null : queue.getFilter().getFilterString(),
+                         binding.getQueue().getChannelID(), queue.isRecoverable(),
+                         binding.isFailed());
 
       syncSendRequest(request);
    }
@@ -1881,21 +1906,18 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       if (trace) { log.trace(this + " received " + state.getBindings().size() + " bindings and map " + state.getReplicatedData()); }
 
       nameMaps.clear();
-
       conditionMap.clear();
 
       List bindings = state.getBindings();
-
       Iterator iter = bindings.iterator();
 
       while (iter.hasNext())
       {
          BindingInfo info = (BindingInfo)iter.next();
-
          Condition condition = conditionFactory.createCondition(info.getConditionText());
-
-         Binding binding = this.createBinding(info.getNodeId(), condition, info.getQueueName(), info.getChannelId(),
-                                              info.getFilterString(), info.isDurable(),info.isFailed());
+         Binding binding =
+            createBinding(info.getNodeId(), condition, info.getQueueName(), info.getChannelId(),
+                          info.getFilterString(), info.isDurable(), info.isFailed(), null);
 
          if (binding.getNodeID() == this.currentNodeId)
          {
@@ -2062,9 +2084,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     * This method fails over all the queues from node <failedNodeId> onto this node. It is triggered
     * when a JGroups view change occurs due to a member leaving and it's determined the member
     * didn't leave cleanly.
-    *
-    * @param failedNodeID
-    * @throws Exception
     */
    private void performFailover(Integer failedNodeID) throws Exception
    {
@@ -2143,8 +2162,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                // Sanity check
                if (queue.isLocal())
                {
-                  throw new IllegalStateException("Queue " + binding.getQueue().getName() +
-                     " is local!");
+                  throw new IllegalStateException("Queue " + queue.getName() + " is local!");
                }
 
                namesToRemove.add(entry);
@@ -2168,17 +2186,17 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                log.debug(this + " deleted binding for " + queueName);
 
                // Note we do not need to send an unbind request across the cluster - this is because
-               // when the node crashes a view change will hit the other nodes and that will cause all
-               // binding data for that node to be removed anyway.
+               // when the node crashes a view change will hit the other nodes and that will cause
+               // all binding data for that node to be removed anyway.
 
                // If there is already a queue registered with the same name, then we set a flag
                // "failed" on the binding and then the queue will go into a special list of failed
                // bindings otherwise we treat at as a normal queue.
-               // This is because we cannot deal with more than one queue with the same name. Any new
-               // consumers will always only connect to queues in the main name map. This may mean that
-               // queues in the failed map have messages stranded in them if consumers disconnect
-               // (since no more can reconnect). However we message redistribution activated other
-               // queues will be able to consume from them.
+               // This is because we cannot deal with more than one queue with the same name. Any
+               // new consumers will always only connect to queues in the main name map. This may
+               // mean that queues in the failed map have messages stranded in them if consumers
+               // disconnect (since no more can reconnect). However we message redistribution
+               // activated other queues will be able to consume from them.
 
                //TODO allow message redistribution for queues in the failed list
 
@@ -2195,9 +2213,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                }
 
                // Create a new binding
-               Binding newBinding = createBinding(currentNodeId, binding.getCondition(),
-                                                  stub.getName(), stub.getChannelID(),
-                                                  stub.getFilter(), stub.isRecoverable(), failed);
+               Binding newBinding =
+                  createBinding(currentNodeId, binding.getCondition(), stub.getName(),
+                                stub.getChannelID(), stub.getFilter(), stub.isRecoverable(),
+                                failed, failedNodeID);
 
                // Insert it into the database
                insertBinding(newBinding);

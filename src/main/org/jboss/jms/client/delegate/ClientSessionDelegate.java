@@ -90,11 +90,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
       // synchronize server endpoint state
 
-      // synchronize the delegates
-
       // synchronize (recursively) the client-side state
-      
+
       state.synchronizeWith(newDelegate.getState());
+
+      // synchronize the delegates
    }
 
    // SessionDelegate implementation ---------------------------------------------------------------

@@ -42,35 +42,55 @@ import org.jboss.remoting.Client;
  */
 public class ClientConsumerDelegate extends DelegateSupport implements ConsumerDelegate
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -2578195153435251519L;
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    private int bufferSize;
-   
    private int maxDeliveries;
+   private long channelID;
 
-   private long channelId;
+   // Static ---------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
-
-   public ClientConsumerDelegate(int objectID, long channelId, int bufferSize, int maxDeliveries)
+   public ClientConsumerDelegate(int objectID, long channelID, int bufferSize, int maxDeliveries)
    {
       super(objectID);
       this.bufferSize = bufferSize;
-      this.channelId = channelId;
       this.maxDeliveries = maxDeliveries;
+      this.channelID = channelID;
    }
    
    public ClientConsumerDelegate()
    {      
    }
 
-   // ConsumerDelegate implementation -------------------------------
+   // DelegateSupport overrides --------------------------------------------------------------------
+
+   public void synchronizeWith(DelegateSupport nd) throws Exception
+   {
+      super.synchronizeWith(nd);
+
+      ClientConsumerDelegate newDelegate = (ClientConsumerDelegate)nd;
+
+      // synchronize server endpoint state
+
+      // synchronize (recursively) the client-side state
+
+      state.synchronizeWith(newDelegate.getState());
+
+      // synchronize the delegates
+
+      bufferSize = newDelegate.getBufferSize();
+      maxDeliveries = newDelegate.getMaxDeliveries();
+      channelID = newDelegate.getChannelID();
+
+   }
+
+   // ConsumerDelegate implementation --------------------------------------------------------------
    
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -207,11 +227,11 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
-      return "ConsumerDelegate[" + id + "](ChannelId=" + this.channelId+")" ;
+      return "ConsumerDelegate[" + id + ", ChID=" + channelID + "]";
    }
    
    public int getBufferSize()
@@ -224,25 +244,12 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       return maxDeliveries;
    }
    
-   public long getChannelId()
+   public long getChannelID()
    {
-      return channelId;
+      return channelID;
    }
    
-   public void synchronizeWith(DelegateSupport newDelegate) throws Exception
-   {
-      super.synchronizeWith(newDelegate);
-      
-      this.bufferSize = ((ClientConsumerDelegate)newDelegate).getBufferSize();
-      
-      this.maxDeliveries = ((ClientConsumerDelegate)newDelegate).getMaxDeliveries();
-      
-      this.channelId = ((ClientConsumerDelegate)newDelegate).getChannelId();
-   }
-
-   // Protected -----------------------------------------------------
-   
-
+   // Protected ------------------------------------------------------------------------------------
 
    protected Client getClient()
    {
@@ -252,9 +259,9 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    }
 
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 }

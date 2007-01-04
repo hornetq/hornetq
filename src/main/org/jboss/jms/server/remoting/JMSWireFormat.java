@@ -245,7 +245,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   
                   Ack ack = (Ack)mi.getArguments()[0];
                   
-                  dos.writeLong(ack.getDeliveryId());
+                  dos.writeLong(ack.getDeliveryID());
    
                   dos.flush();
    
@@ -266,7 +266,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   while (iter.hasNext())
                   {
                      Ack ack = (Ack)iter.next();
-                     dos.writeLong(ack.getDeliveryId());
+                     dos.writeLong(ack.getDeliveryID());
                   }
    
                   dos.flush();

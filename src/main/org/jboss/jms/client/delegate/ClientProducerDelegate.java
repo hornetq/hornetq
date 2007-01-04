@@ -41,22 +41,40 @@ import org.jboss.remoting.Client;
  */
 public class ClientProducerDelegate extends DelegateSupport implements ProducerDelegate
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -6976930316308905681L;
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ClientProducerDelegate()
    {
       super(-1);
    }
 
-   // ProducerDelegate implementation -------------------------------
+   // DelegateSupport overrides --------------------------------------------------------------------
+
+   public void synchronizeWith(DelegateSupport nd) throws Exception
+   {
+      super.synchronizeWith(nd);
+
+      ClientProducerDelegate newDelegate = (ClientProducerDelegate)nd;
+
+      // synchronize server endpoint state
+
+      // synchronize (recursively) the client-side state
+
+      state.synchronizeWith(newDelegate.getState());
+
+      // synchronize the delegates
+
+   }
+
+   // ProducerDelegate implementation --------------------------------------------------------------
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -248,24 +266,24 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "ProducerDelegate[" + id + "]";
    }
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
    protected Client getClient()
    {
       throw new UnsupportedOperationException("Producers only exist on the client");
    }
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 
 }

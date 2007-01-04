@@ -94,7 +94,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    // Map <NodeID, Map<queueName, Binding>>
    protected Map nameMaps;
    
-   // Map <condition, List<Binding>>
+   // Map <Condition, Bindings>
    protected Map conditionMap;
    
    protected FilterFactory filterFactory;
@@ -283,7 +283,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
 
    /**
     * Internal methods (e.g. failOver) will already hold a lock and will need to call
-    * getBindingForQueueNames without a lock. (Also... I dind't move this method to the protected
+    * getBindingForQueueNames() without a lock. (Also... I dind't move this method to the protected
     * section of the code as this is related to getBindingForQueueNames).
     */
    protected Binding internalGetBindingForQueueName(String queueName)
@@ -491,11 +491,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          while (rs.next())
          {
             int nodeId = rs.getInt(1);
-            
             String queueName = rs.getString(2);
-            
             String conditionText = rs.getString(3);
-            
             String selector = rs.getString(4);
             
             if (rs.wasNull())
@@ -504,17 +501,18 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             }
             
             long channelId = rs.getLong(5);
-
             boolean failed = rs.getString(6).equals("Y");
 
-            log.info("PostOffice " + this.officeName + " nodeId=" + nodeId + " condition=" + conditionText + " queueName=" + queueName + " channelId=" + channelId + " selector=" + selector);
+            log.info("PostOffice " + this.officeName + " nodeId=" +
+               nodeId + " condition=" + conditionText + " queueName=" +
+               queueName + " channelId=" + channelId + " selector=" + selector);
                                              
             Condition condition = conditionFactory.createCondition(conditionText);
             
-            Binding binding = this.createBinding(nodeId, condition, queueName, channelId, selector, true, failed);
+            Binding binding =
+               createBinding(nodeId, condition, queueName, channelId, selector, true, failed);
             
             binding.getQueue().deactivate();
-            
             addBinding(binding);
          }
       }
@@ -538,33 +536,33 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
    }
    
-   protected Binding createBinding(int nodeId, Condition condition, String queueName, long channelId, String filterString, boolean durable, boolean failed) throws Exception
+   protected Binding createBinding(int nodeID, Condition condition, String queueName,
+                                   long channelId, String filterString, boolean durable,
+                                   boolean failed) throws Exception
    {      
-      
       Filter filter = filterFactory.createFilter(filterString);
-      
-      return createBinding(nodeId, condition, queueName, channelId, filter, durable, failed);
+      return createBinding(nodeID, condition, queueName, channelId, filter, durable, failed);
    }
    
-   protected Binding createBinding(int nodeId, Condition condition, String queueName, long channelId, Filter filter, boolean durable, boolean failed)
+   protected Binding createBinding(int nodeID, Condition condition, String queueName,
+                                   long channelID, Filter filter, boolean durable,
+                                   boolean failed)
    {
       Queue queue;
-      if (nodeId == this.currentNodeId)
+
+      if (nodeID == currentNodeId)
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
-         
-         queue = new PagingFilteredQueue(queueName, channelId, ms, pm, true,
-                  true, executor, filter);
+         queue =
+            new PagingFilteredQueue(queueName, channelID, ms, pm, true, true, executor, filter);
       }
       else
       {
-         throw new IllegalStateException("This is a non clustered post office - should not have bindings from different nodes!");
+         throw new IllegalStateException("This is a non clustered post office - should not " +
+            "have bindings from different nodes!");
       }
       
-      Binding binding = new DefaultBinding(nodeId, condition, queue, failed);
-      
-      return binding;
-      
+      return new DefaultBinding(nodeID, condition, queue, failed);
    }
    
    protected void insertBinding(Binding binding) throws Exception

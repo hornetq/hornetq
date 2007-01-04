@@ -167,9 +167,6 @@ public class ConnectionState extends HierarchicalStateSupport
       serverID = newState.serverID;
       versionToUse = newState.versionToUse;
 
-      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
-      //this.delegate = newState.delegate;
-
       ConnectionDelegate newDelegate = (ConnectionDelegate)newState.getDelegate();
 
       for(Iterator i = getChildren().iterator(); i.hasNext(); )

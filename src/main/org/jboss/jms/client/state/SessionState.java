@@ -31,12 +31,10 @@ import java.util.Collections;
 
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
-import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
@@ -56,6 +54,7 @@ import javax.jms.Session;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -74,7 +73,7 @@ public class SessionState extends HierarchicalStateSupport
    private ConnectionState parent;
    private SessionDelegate delegate;
 
-   private int sessionId;
+   private int sessionID;
    private int acknowledgeMode;
    private boolean transacted;
    private boolean xa;
@@ -104,7 +103,7 @@ public class SessionState extends HierarchicalStateSupport
    {
       super(parent, (DelegateSupport)delegate);
 
-      this.sessionId = delegate.getID();
+      this.sessionID = delegate.getID();
 
       children = new HashSet();
       this.acknowledgeMode = ackMode;
@@ -171,8 +170,8 @@ public class SessionState extends HierarchicalStateSupport
    {
       SessionState newState = (SessionState)ns;
 
-      int oldSessionID = sessionId;
-      sessionId = newState.sessionId;
+      int oldSessionID = sessionID;
+      sessionID = newState.sessionID;
 
       ClientSessionDelegate newDelegate = (ClientSessionDelegate)newState.getDelegate();
 
@@ -180,14 +179,36 @@ public class SessionState extends HierarchicalStateSupport
       {
          HierarchicalState child = (HierarchicalState)i.next();
 
-         if (child instanceof ProducerState)
+         if (child instanceof ConsumerState)
          {
-            handleFailoverOnProducer((ProducerState)child, newDelegate);
+            ConsumerState consState = (ConsumerState)child;
+            ClientConsumerDelegate consDelegate = (ClientConsumerDelegate)consState.getDelegate();
+
+            // create a new consumer over the new session for each consumer on the old session
+            ClientConsumerDelegate newConsDelegate = (ClientConsumerDelegate)newDelegate.
+               createConsumerDelegate((JBossDestination)consState.getDestination(),
+                                      consState.getSelector(),
+                                      consState.isNoLocal(),
+                                      consState.getSubscriptionName(),
+                                      consState.isConnectionConsumer(),
+                                      consState.getChannelID());
+            log.debug(this + " created new consumer " + newConsDelegate);
+
+            consDelegate.synchronizeWith(newConsDelegate);
+            log.debug(this + " synchronized failover consumer " + consDelegate);
          }
-         else if (child instanceof ConsumerState)
+         else if (child instanceof ProducerState)
          {
-            handleFailoverOnConsumer((ClientConnectionDelegate)getParent().getDelegate(),
-                                     (ConsumerState)child, newDelegate);
+            ProducerState prodState = (ProducerState)child;
+            ClientProducerDelegate prodDelegate = (ClientProducerDelegate)prodState.getDelegate();
+
+            // create a new producer over the new session for each producer on the old session
+            ClientProducerDelegate newProdDelegate = (ClientProducerDelegate)newDelegate.
+               createProducerDelegate((JBossDestination)prodState.getDestination());
+            log.debug(this + " created new producer " + newProdDelegate);
+
+            prodDelegate.synchronizeWith(newProdDelegate);
+            log.debug(this + " synchronized failover producer " + prodDelegate);
          }
          else if (child instanceof BrowserState)
          {
@@ -199,7 +220,7 @@ public class SessionState extends HierarchicalStateSupport
       ResourceManager rm = connState.getResourceManager();
 
       // We need to failover from one session ID to another in the resource manager
-      rm.handleFailover(connState.getServerID(), oldSessionID, newState.sessionId);
+      rm.handleFailover(connState.getServerID(), oldSessionID, newState.sessionID);
 
       List ackInfos = Collections.EMPTY_LIST;
 
@@ -254,7 +275,7 @@ public class SessionState extends HierarchicalStateSupport
          // Transacted session - we need to get the acks from the resource manager. BTW we have
          // kept the old resource manager
 
-         ackInfos = rm.getDeliveriesForSession(getSessionId());
+         ackInfos = rm.getDeliveriesForSession(getSessionID());
       }
 
       if (!ackInfos.isEmpty())
@@ -275,12 +296,12 @@ public class SessionState extends HierarchicalStateSupport
             recoveryInfos.add(recInfo);
          }
 
-         log.debug(this + " sending delivery recovery info: " + recoveryInfos);
+         log.debug(this + " sending delivery recovery " + recoveryInfos + " on failover");
          nd.recoverDeliveries(recoveryInfos);
       }
       else
       {
-         log.debug(this + " no delivery recovery info to send");
+         log.debug(this + " no delivery recovery info to send on failover");
       }
    }
 
@@ -368,14 +389,14 @@ public class SessionState extends HierarchicalStateSupport
       callbackHandlers.remove(new Integer(handler.getConsumerId()));
    }
 
-   public int getSessionId()
+   public int getSessionID()
    {
-      return sessionId;
+      return sessionID;
    }
 
    public String toString()
    {
-      return "SessionState[" + sessionId + "]";
+      return "SessionState[" + sessionID + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -383,96 +404,6 @@ public class SessionState extends HierarchicalStateSupport
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-   /**
-    * TODO See http://jira.jboss.org/jira/browse/JBMESSAGING-708
-    */
-   private void handleFailoverOnConsumer(ClientConnectionDelegate failedConnectionDelegate,
-                                         ConsumerState failedConsumerState,
-                                         ClientSessionDelegate newSessionDelegate)
-
-      throws Exception
-   {
-      log.debug(this + " failing over consumer " + failedConsumerState);
-
-      CallbackManager oldCallbackManager =
-         failedConnectionDelegate.getRemotingConnection().getCallbackManager();
-
-      ClientConsumerDelegate failedConsumerDelegate =
-         (ClientConsumerDelegate)failedConsumerState.getDelegate();
-
-      log.debug(this + " creating alternate consumer");
-
-      ClientConsumerDelegate newConsumerDelegate = (ClientConsumerDelegate)newSessionDelegate.
-         createConsumerDelegate((JBossDestination)failedConsumerState.getDestination(),
-                                failedConsumerState.getSelector(),
-                                failedConsumerState.isNoLocal(),
-                                failedConsumerState.getSubscriptionName(),
-                                failedConsumerState.isConnectionConsumer(),
-                                failedConsumerState.getChannelId());
-
-      log.debug(this + " alternate consumer created");
-
-      // Copy the attributes from the new consumer to the old consumer
-      failedConsumerDelegate.synchronizeWith(newConsumerDelegate);
-
-      ConsumerState newState = (ConsumerState)newConsumerDelegate.getState();
-
-      int oldConsumerID = failedConsumerState.getConsumerID();
-
-      // Update attributes on the old state
-      failedConsumerState.copyState(newState);
-
-      // We need to re-use the existing message callback handler
-
-      MessageCallbackHandler oldHandler =
-         oldCallbackManager.unregisterHandler(oldConsumerID);
-
-      ConnectionState newConnectionState = (ConnectionState)failedConnectionDelegate.getState();
-
-      CallbackManager newCallbackManager =
-         newConnectionState.getRemotingConnection().getCallbackManager();
-
-      // Remove the new handler
-      MessageCallbackHandler newHandler = newCallbackManager.
-         unregisterHandler(newState.getConsumerID());
-
-      log.debug("New handler is " + System.identityHashCode(newHandler));
-
-      //But we need to update some fields from the new one
-      oldHandler.copyState(newHandler);
-
-      //Now we re-register the old handler with the new callback manager
-
-      newCallbackManager.registerHandler(newState.getConsumerID(),
-                                         oldHandler);
-
-      // We don't need to add the handler to the session state since it is already there - we
-      // are re-using the old handler
-
-      log.debug(this + " failed over consumer");
-   }
-
-
-   /**
-    * TODO see http://jira.jboss.org/jira/browse/JBMESSAGING-709
-    */
-   private void handleFailoverOnProducer(ProducerState failedProducerState,
-                                         ClientSessionDelegate failedSessionDelegate)
-      throws Exception
-   {
-      ClientProducerDelegate newProducerDelegate = (ClientProducerDelegate)failedSessionDelegate.
-         createProducerDelegate((JBossDestination)failedProducerState.getDestination());
-
-      ClientProducerDelegate failedProducerDelegate =
-         (ClientProducerDelegate)failedProducerState.getDelegate();
-
-      failedProducerDelegate.synchronizeWith(newProducerDelegate);
-      failedProducerState.copyState((ProducerState)newProducerDelegate.getState());
-
-      log.debug("handling fail over on producerDelegate " + failedProducerDelegate + " destination=" + failedProducerState.getDestination());
-   }
-
 
    /**
     * TODO see http://jira.jboss.org/jira/browse/JBMESSAGING-710

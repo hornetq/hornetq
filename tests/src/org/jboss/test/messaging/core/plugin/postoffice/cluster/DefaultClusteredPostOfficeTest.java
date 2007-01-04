@@ -1875,7 +1875,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             receivers[i].acknowledge(msgRec1, tx);
             receivers[i].acknowledge(msgRec2, tx);
              
-            int deliveringCount = queues[i].deliveringCount();
+            int deliveringCount = queues[i].getDeliveringCount();
             
             assertEquals(2, deliveringCount);
                        
@@ -1935,7 +1935,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             receivers[i].acknowledge(msgRec1, tx);
             receivers[i].acknowledge(msgRec2, tx);
                
-            int deliveringCount = queues[i].deliveringCount();
+            int deliveringCount = queues[i].getDeliveringCount();
             
             assertEquals(2, deliveringCount);
             
@@ -1963,7 +1963,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             Message msgRec2 = (Message)msgs.get(1);
             assertEquals(msg2.getMessageID(), msgRec2.getMessageID());      
                                  
-            int deliveringCount = queues[i].deliveringCount();
+            int deliveringCount = queues[i].getDeliveringCount();
             
             assertEquals(2, deliveringCount);
             
@@ -2120,7 +2120,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             receivers[i].acknowledge(msgRec1, tx);
             receivers[i].acknowledge(msgRec2, tx);
                         
-            int deliveringCount = queues[i].deliveringCount();
+            int deliveringCount = queues[i].getDeliveringCount();
             
             assertEquals(2, deliveringCount);
             
@@ -2184,7 +2184,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             receivers[i].acknowledge(msgRec2, tx);
             
             
-            int deliveringCount = queues[i].deliveringCount();
+            int deliveringCount = queues[i].getDeliveringCount();
             
             assertEquals(2, deliveringCount);
          }
@@ -2213,7 +2213,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             Message msgRec2 = (Message)msgs.get(1);
             assertEquals(msg2.getMessageID(), msgRec2.getMessageID());      
                                               
-            int deliveringCount = queues[i].deliveringCount();
+            int deliveringCount = queues[i].getDeliveringCount();
             
             assertEquals(2, deliveringCount);
             

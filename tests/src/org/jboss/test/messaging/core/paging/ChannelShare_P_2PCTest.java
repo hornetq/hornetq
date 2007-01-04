@@ -105,7 +105,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.deliveringCount());
+      assertEquals(0, queue1.getDeliveringCount());
       
       //Queue2
       
@@ -121,7 +121,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
             
       //Msgs
       
@@ -165,7 +165,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.deliveringCount());
+      assertEquals(0, queue1.getDeliveringCount());
       
       //Queue2
       
@@ -181,7 +181,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
             
       //Msgs
       
@@ -227,7 +227,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertTrue(queue1.isPaging());      
       
-      assertEquals(0, queue1.deliveringCount());
+      assertEquals(0, queue1.getDeliveringCount());
       
       //Queue2
       
@@ -243,7 +243,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
             
       //Msgs
       
@@ -288,7 +288,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertTrue(queue1.isPaging());      
       
-      assertEquals(0, queue1.deliveringCount());
+      assertEquals(0, queue1.getDeliveringCount());
       
       //Queue2
       
@@ -304,7 +304,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertTrue(queue2.isPaging());      
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
             
       //Msgs
       
@@ -335,7 +335,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertFalse(queue1.isPaging());      
       
-      assertEquals(0, queue1.deliveringCount());
+      assertEquals(0, queue1.getDeliveringCount());
       
       //Queue2
       
@@ -348,7 +348,7 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       assertFalse(queue2.isPaging());      
       
-      assertEquals(0, queue2.deliveringCount());
+      assertEquals(0, queue2.getDeliveringCount());
             
       //Msgs
       
@@ -359,9 +359,9 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
       
       //Should be none left
       
-      assertEquals(0, queue1.messageCount());
+      assertEquals(0, queue1.getMessageCount());
       
-      assertEquals(0, queue2.messageCount());
+      assertEquals(0, queue2.getMessageCount());
       
       assertEquals(0, LockMap.instance.getSize());
       

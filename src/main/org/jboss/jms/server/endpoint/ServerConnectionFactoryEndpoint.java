@@ -43,13 +43,13 @@ import org.jboss.messaging.core.plugin.IDBlock;
  */
 public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoint
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerConnectionFactoryEndpoint.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private ServerPeer serverPeer;
 
@@ -68,7 +68,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    protected int defaultTempQueueDownCacheSize;
 
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    /**
     * @param jndiBindings - names under which the corresponding JBossConnectionFactory is bound in
@@ -92,8 +92,12 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
    }
 
-   // ConnectionFactoryDelegate implementation ----------------------
-   
+   // ConnectionFactoryDelegate implementation -----------------------------------------------------
+
+   /**
+    * @param failedNodeID - zero or positive values mean connection creation attempt is result of
+    *        failover. Negative values are ignored (mean regular connection creation attempt).
+    */
    public CreateConnectionResult createConnectionDelegate(String username,
                                                           String password,
                                                           int failedNodeID)
@@ -101,10 +105,12 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       try
       {
-         if (failedNodeID == -1)
+         if (failedNodeID < 0)
          {
             // Just a standard createConnection
-            return new CreateConnectionResult(createConnectionDelegateInternal(username, password));            
+            ConnectionDelegate cd =
+               createConnectionDelegateInternal(username, password, failedNodeID);
+            return new CreateConnectionResult(cd);
          }
          else
          {
@@ -116,15 +122,16 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
             
             if (failoverNodeID == -1 || failoverNodeID != serverPeer.getServerPeerID())
             {
-               //We are on the wrong node - or no failover has occurred
+               log.debug(this + " realized that we are on the wrong node or no failover has occured");
                return new CreateConnectionResult(failoverNodeID);
             }
             else
             {
-               //We are on the right node, and failover has completed
-               //we can now create a connection delegate
-               return new CreateConnectionResult(createConnectionDelegateInternal(username,
-                                                                                  password));
+               log.debug(this + " received notification that server-side failover completed, " +
+                  "creating connection delegate ...");
+               ConnectionDelegate cd =
+                  createConnectionDelegateInternal(username, password, failedNodeID);
+               return new CreateConnectionResult(cd);
             }
          }
       }
@@ -134,8 +141,14 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       }
       
    }
-   
-   private ConnectionDelegate createConnectionDelegateInternal(String username, String password)
+
+   /**
+    * @param failedNodeID - zero or positive values mean connection creation attempt is result of
+    *        failover. Negative values are ignored (mean regular connection creation attempt).
+    */
+   private ConnectionDelegate createConnectionDelegateInternal(String username,
+                                                               String password,
+                                                               int failedNodeID)
       throws Exception
    {
       log.debug("creating a new connection for user " + username);        
@@ -160,7 +173,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       ServerConnectionEndpoint endpoint =
          new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
-                                      defaultTempQueueDownCacheSize);
+                                      defaultTempQueueDownCacheSize, failedNodeID);
 
       int connectionID = endpoint.getConnectionID();
 
@@ -185,7 +198,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    }
 
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
    
    public int getID()
    {
@@ -202,11 +215,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return "ConnectionFactoryEndpoint[" + id + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes --------------------------------------------------------------------------------
 }

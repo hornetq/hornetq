@@ -63,25 +63,25 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  */
 public class ResourceManager
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
    
    private ConcurrentHashMap transactions = new ConcurrentHashMap();
    
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(ResourceManager.class);
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
    
    ResourceManager()
    {      
    }
     
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
    
    /*
     * Merge another resource manager into this one - used in failover
@@ -119,51 +119,42 @@ public class ResourceManager
     * @param xid - The id of the transaction to add the message to
     * @param m The message
     */
-   public void addMessage(Object xid, int sessionId, JBossMessage msg)
+   public void addMessage(Object xid, int sessionId, JBossMessage m)
    {
       if (trace) { log.trace("addding message for xid " + xid); }
       
       ClientTransaction tx = getTxInternal(xid);
       
-      tx.addMessage(sessionId, msg);
+      tx.addMessage(sessionId, m);
    }
    
    /*
-    * Failover session from old session id -> new session id
+    * Failover session from old session ID -> new session ID
     */
-   public void handleFailover(int newServerId, int oldSessionId, int newSessionId)
+   public void handleFailover(int newServerID, int oldSessionID, int newSessionID)
    {
-      Iterator iter = this.transactions.values().iterator();
-      
-      while (iter.hasNext())
+      for(Iterator i = this.transactions.values().iterator(); i.hasNext(); )
       {
-         ClientTransaction tx = (ClientTransaction)iter.next();
-         
-         tx.handleFailover(newServerId, oldSessionId, newSessionId);
+         ClientTransaction tx = (ClientTransaction)i.next();
+         tx.handleFailover(newServerID, oldSessionID, newSessionID);
       }                
    }   
    
    /*
-    * Get all the deliveries corresponding to the session id
+    * Get all the deliveries corresponding to the session ID
     */
-   public List getDeliveriesForSession(int sessionId)
+   public List getDeliveriesForSession(int sessionID)
    {
-      Iterator iter = this.transactions.values().iterator();
-      
       List ackInfos = new ArrayList();
-      
-      while (iter.hasNext())
+
+      for(Iterator i = transactions.values().iterator(); i.hasNext(); )
       {
-         ClientTransaction tx = (ClientTransaction)iter.next();
+         ClientTransaction tx = (ClientTransaction)i.next();
+         List acks = tx.getDeliveriesForSession(sessionID);
          
-         List acks = tx.getDeliveriesForSession(sessionId);
-         
-         if (acks != null)
-         {
-            ackInfos.addAll(acks);
-         }
+         ackInfos.addAll(acks);
       }
-      
+
       return ackInfos;
    }
    
@@ -190,14 +181,14 @@ public class ResourceManager
          
    public void commitLocal(LocalTx xid, ConnectionDelegate connection) throws JMSException
    {
-      if (trace) { log.trace("commiting local xid " + xid); }
+      if (trace) { log.trace("committing " + xid); }
       
       ClientTransaction tx = this.getTxInternal(xid);
       
-      //Invalid xid
+      // Invalid xid
       if (tx == null)
       {
-         throw new IllegalStateException("Cannot find transaction with xid:" + xid);
+         throw new IllegalStateException("Cannot find transaction " + xid);
       }
       
       TransactionRequest request =
@@ -207,18 +198,17 @@ public class ResourceManager
       {
          connection.sendTransaction(request);
          
-         //If we get this far we can remove the transaction
+         // If we get this far we can remove the transaction
          
          this.removeTxInternal(xid);
       }
       catch (Throwable t)
       {
-         //If a problem occurs during commit processing the session should be rolled back
+         // If a problem occurs during commit processing the session should be rolled back
          rollbackLocal(xid, connection);
          
          JMSException e = new MessagingTransactionRolledBackException(t.getMessage());
          e.initCause(t);
-         
          throw e;         
       }
    }
@@ -264,17 +254,15 @@ public class ResourceManager
       {         
          Map.Entry entry = (Map.Entry)iter.next();
       
-         Object xid = entry.getKey();
-         
          ClientTransaction tx = (ClientTransaction)entry.getValue();
                   
          if (tx.getState() == ClientTransaction.TX_PREPARED)
          {            
             List dels = tx.getDeliveriesForSession(sessionId);
             
-            if (dels != null && !dels.isEmpty())
+            if (!dels.isEmpty())
             {
-               //There are outstanding prepared acks in this session
+               // There are outstanding prepared acks in this session
                
                return true;
             }
@@ -283,9 +271,9 @@ public class ResourceManager
       return false;
    }
     
-   // Protected ------------------------------------------------------      
+   // Protected ------------------------------------------------------------------------------------
    
-   // Package Private ------------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
    
    void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
    {
@@ -557,7 +545,7 @@ public class ResourceManager
       }
    }
    
-   // Private --------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private ClientTransaction getTxInternal(Object xid)
    {
@@ -629,6 +617,6 @@ public class ResourceManager
       }
    }
    
-   // Inner Classes --------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
   
 }
