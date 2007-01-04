@@ -68,12 +68,12 @@ import org.jboss.messaging.core.plugin.contract.Replicator;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.DefaultBinding;
 import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.ChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.StreamUtils;
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
@@ -82,7 +82,6 @@ import org.jgroups.View;
 import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
-import org.w3c.dom.Element;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -163,12 +162,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    private boolean started;
 
-   private Element syncChannelConfigElement;
-   private String syncChannelConfig;
+   private ChannelFactory channelFactory;
+
    private Channel syncChannel;
 
-   private Element asyncChannelConfigElement;
-   private String asyncChannelConfig;
    private Channel asyncChannel;
 
    private MessageDispatcher controlMessageDispatcher;
@@ -233,73 +230,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                                      ConditionFactory conditionFactory,
                                      QueuedExecutorPool pool,
                                      String groupName,
-                                     Element syncChannelConfig,
-                                     Element asyncChannelConfig,
+                                     ChannelFactory channelFactory,
                                      long stateTimeout, long castTimeout,
                                      MessagePullPolicy redistributionPolicy,
                                      ClusterRouterFactory rf,
                                      FailoverMapper failoverMapper,
                                      long statsSendPeriod)
       throws Exception
-   {
-      this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           pm, tr, filterFactory, conditionFactory, pool, groupName, stateTimeout, castTimeout,
-           redistributionPolicy, rf, failoverMapper, statsSendPeriod);
-
-      this.syncChannelConfigElement = syncChannelConfig;
-      this.asyncChannelConfigElement = asyncChannelConfig;
-   }
-
-   /*
-    * Constructor using String for configuration
-    */
-   public DefaultClusteredPostOffice(DataSource ds,
-                                     TransactionManager tm,
-                                     Properties sqlProperties,
-                                     boolean createTablesOnStartup,
-                                     int nodeId,
-                                     String officeName,
-                                     MessageStore ms,
-                                     PersistenceManager pm,
-                                     TransactionRepository tr,
-                                     FilterFactory filterFactory,
-                                     ConditionFactory conditionFactory,
-                                     QueuedExecutorPool pool,
-                                     String groupName,
-                                     String syncChannelConfig,
-                                     String asyncChannelConfig,
-                                     long stateTimeout, long castTimeout,
-                                     MessagePullPolicy redistributionPolicy,
-                                     ClusterRouterFactory rf,
-                                     FailoverMapper failoverMapper,
-                                     long statsSendPeriod) throws Exception
-   {
-      this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms,
-           pm, tr, filterFactory, conditionFactory, pool, groupName, stateTimeout, castTimeout,
-           redistributionPolicy, rf, failoverMapper, statsSendPeriod);
-
-      this.syncChannelConfig = syncChannelConfig;
-      this.asyncChannelConfig = asyncChannelConfig;
-   }
-
-   private DefaultClusteredPostOffice(DataSource ds,
-                                      TransactionManager tm,
-                                      Properties sqlProperties,
-                                      boolean createTablesOnStartup,
-                                      int nodeId,
-                                      String officeName,
-                                      MessageStore ms,
-                                      PersistenceManager pm,
-                                      TransactionRepository tr,
-                                      FilterFactory filterFactory,
-                                      ConditionFactory conditionFactory,
-                                      QueuedExecutorPool pool,
-                                      String groupName,
-                                      long stateTimeout, long castTimeout,
-                                      MessagePullPolicy redistributionPolicy,
-                                      ClusterRouterFactory rf,
-                                      FailoverMapper failoverMapper,
-                                      long statsSendPeriod)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr,
              filterFactory, conditionFactory, pool);
@@ -335,6 +272,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       nbSupport = new NotificationBroadcasterSupport();
 
       viewExecutor = new QueuedExecutor();
+
+      this.channelFactory = channelFactory;
    }
 
    // MessagingComponent overrides ----------------------------------
@@ -348,16 +287,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (trace) { log.trace(this + " starting"); }
 
-      if (syncChannelConfigElement != null)
-      {
-         this.syncChannel = new JChannel(syncChannelConfigElement);
-         this.asyncChannel = new JChannel(asyncChannelConfigElement);
-      }
-      else
-      {
-         this.syncChannel = new JChannel(syncChannelConfig);
-         this.asyncChannel = new JChannel(asyncChannelConfig);
-      }
+      this.syncChannel = channelFactory.createSyncChannel();
+      this.asyncChannel = channelFactory.createASyncChannel();
 
       // We don't want to receive local messages on any of the channels
       syncChannel.setOpt(Channel.LOCAL, Boolean.FALSE);

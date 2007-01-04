@@ -43,6 +43,9 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOf
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.Peer;
+import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.ChannelFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.MultiplexorChannelFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.XMLChannelFactory;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -71,8 +74,13 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    private boolean started;
 
+   // This group of properties is used on JGroups Channel configuration
    private Element syncChannelConfig;
    private Element asyncChannelConfig;
+   private ObjectName channelFactoryName;
+   private String syncChannelName;
+   private String asyncChannelName;
+   private String channelPartitionName;
 
    private ObjectName serverPeerObjectName;
 
@@ -158,6 +166,47 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
          return;
       }
       this.officeName = name;
+   }
+
+
+   public ObjectName getChannelFactoryName()
+   {
+      return channelFactoryName;
+   }
+
+   public void setChannelFactoryName(ObjectName channelFactoryName)
+   {
+      this.channelFactoryName = channelFactoryName;
+   }
+
+   public String getSyncChannelName()
+   {
+      return syncChannelName;
+   }
+
+   public void setSyncChannelName(String syncChannelName)
+   {
+      this.syncChannelName = syncChannelName;
+   }
+
+   public String getAsyncChannelName()
+   {
+      return asyncChannelName;
+   }
+
+   public void setAsyncChannelName(String asyncChannelName)
+   {
+      this.asyncChannelName = asyncChannelName;
+   }
+
+   public String getChannelPartitionName()
+   {
+      return channelPartitionName;
+   }
+
+   public void setChannelPartitionName(String channelPartitionName)
+   {
+      this.channelPartitionName = channelPartitionName;
    }
 
    public void setSyncChannelConfig(Element config) throws Exception
@@ -282,13 +331,43 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
          FilterFactory ff = new SelectorFactory();
          FailoverMapper mapper = new DefaultFailoverMapper();
 
+         ChannelFactory channelFactory = null;
+
+         if (this.channelFactoryName != null)
+         {
+            Object info = null;
+            try
+            {
+               info = server.getMBeanInfo(channelFactoryName);
+            }
+            catch (Exception e)
+            {
+               log.error("Error", e);
+               // noop... means we couldn't find the channel hence we should use regular XMLChannelFactories
+            }
+            if (info!=null)
+            {
+               log.debug("*********************************** Using Multiplexor");
+               channelFactory = new MultiplexorChannelFactory(server, channelFactoryName, channelPartitionName, syncChannelName, asyncChannelName);
+            }
+            else
+            {
+               log.debug("*********************************** Using XMLChannelFactory");
+               channelFactory = new XMLChannelFactory(syncChannelConfig, asyncChannelConfig);
+            }
+         }
+         else
+         {
+            log.debug("*********************************** Using XMLChannelFactory");
+            channelFactory = new XMLChannelFactory(syncChannelConfig, asyncChannelConfig);
+         }
+
          postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties,
                                                       createTablesOnStartup,
                                                       nodeId, officeName, ms,
                                                       pm, tr, ff, cf, pool,
                                                       groupName,
-                                                      syncChannelConfig,
-                                                      asyncChannelConfig,
+                                                      channelFactory,
                                                       stateTimeout, castTimeout,
                                                       pullPolicy, rf,
                                                       mapper,

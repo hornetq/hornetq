@@ -35,6 +35,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.NameChannelFactory;
 import org.jboss.test.messaging.core.SimpleCondition;
 import org.jboss.test.messaging.core.SimpleConditionFactory;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
@@ -385,17 +386,17 @@ public class DefaultClusteredPostOfficeWithDefaultRouterTest extends PostOfficeT
       
       FailoverMapper mapper = new DefaultFailoverMapper();
       
-      ConditionFactory cf = new SimpleConditionFactory();      
-      
-      DefaultClusteredPostOffice postOffice = 
+      ConditionFactory cf = new SimpleConditionFactory();
+
+      DefaultClusteredPostOffice postOffice =
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                                 sc.getClusteredPostOfficeSQLProperties(), true, nodeId,
-                                 "Clustered", ms, pm, tr, ff, cf, pool,
-                                 groupName,
-                                 JGroupsUtil.getControlStackProperties(),
-                                 JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, rf, mapper, 1000);
-      
+            sc.getClusteredPostOfficeSQLProperties(), true, nodeId,
+            "Clustered", ms, pm, tr, ff, cf, pool,
+            groupName,
+            new NameChannelFactory(JGroupsUtil.getControlStackProperties(),
+               JGroupsUtil.getDataStackProperties()),
+            5000, 5000, redistPolicy, rf, mapper, 1000);
+
       postOffice.start();      
       
       return postOffice;

@@ -37,6 +37,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.NameChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.test.messaging.core.SimpleCondition;
@@ -49,23 +50,21 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
- * 
  * A RecoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
- *
- * $Id$
- *
+ *          <p/>
+ *          $Id$
  */
 public class RecoveryTest extends PostOfficeTestBase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    public RecoveryTest(String name)
@@ -81,305 +80,303 @@ public class RecoveryTest extends PostOfficeTestBase
    }
 
    public void tearDown() throws Exception
-   {      
+   {
       super.tearDown();
    }
-   
+
    public void testCrashBeforePersist() throws Exception
    {
       DefaultClusteredPostOffice office1 = null;
-      
+
       DefaultClusteredPostOffice office2 = null;
-      
+
       DefaultClusteredPostOffice office3 = null;
-      
+
       try
-      {      
-         office1 = (DefaultClusteredPostOffice)createClusteredPostOffice(1, "testgroup");
-         
-         office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
-         
-         office3 = (DefaultClusteredPostOffice)createClusteredPostOffice(3, "testgroup");
-         
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
+      {
+         office1 = (DefaultClusteredPostOffice) createClusteredPostOffice(1, "testgroup");
+
+         office2 = (DefaultClusteredPostOffice) createClusteredPostOffice(2, "testgroup");
+
+         office3 = (DefaultClusteredPostOffice) createClusteredPostOffice(3, "testgroup");
+
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
-         
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
+
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
-         
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
+
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
          Binding binding3 =
             office3.bindClusteredQueue(new SimpleCondition("topic1"), queue3);
-         
+
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue2.add(receiver2);
          SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue3.add(receiver3);
-         
+
          //This will make it fail after casting but before persisting the message in the db
          office1.setFail(true, false, false);
-         
+
          Transaction tx = tr.createTransaction();
-         
+
          final int NUM_MESSAGES = 10;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            Message msg = CoreMessageFactory.createCoreMessage(i);   
+            Message msg = CoreMessageFactory.createCoreMessage(i);
             msg.setReliable(true);
-            
-            MessageReference ref = ms.reference(msg);  
-            
+
+            MessageReference ref = ms.reference(msg);
+
             office1.route(ref, new SimpleCondition("topic1"), tx);
          }
-         
+
          Thread.sleep(1000);
-         
+
          List msgs = receiver1.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          try
          {
             //An exception should be thrown            
             tx.commit();
-            fail();                        
+            fail();
          }
          catch (TransactionException e)
          {
             //Ok
          }
-         
+
          Thread.sleep(1000);
-         
+
          msgs = receiver1.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          //Nodes 2 and 3 should have a held tx
-         
+
          assertTrue(office1.getHoldingTransactions().isEmpty());
 
          assertEquals(1, office2.getHoldingTransactions().size());
-         
+
          assertEquals(1, office3.getHoldingTransactions().size());
-         
+
          //We now kill the office - this should make the other offices do their transaction check
          office1.stop();
-         
+
          Thread.sleep(1000);
-         
+
          //This should result in the held txs being rolled back
-         
+
          assertTrue(office1.getHoldingTransactions().isEmpty());
-         
+
          assertTrue(office2.getHoldingTransactions().isEmpty());
-         
+
          assertTrue(office3.getHoldingTransactions().isEmpty());
-         
+
          //The tx should be removed from the holding area and nothing should be received
          //remember node1 has now crashed so no point checking receiver1
-         
+
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
       }
       finally
       {
          if (office1 != null)
-         {           
+         {
             office1.stop();
          }
-         
+
          if (office2 != null)
-         {           
+         {
             office2.stop();
          }
-         
-         if (office3!= null)
-         {           
+
+         if (office3 != null)
+         {
             office3.stop();
          }
       }
    }
-   
+
    public void testCrashAfterPersist() throws Exception
    {
       DefaultClusteredPostOffice office1 = null;
-      
+
       DefaultClusteredPostOffice office2 = null;
-      
+
       DefaultClusteredPostOffice office3 = null;
-      
+
       try
-      {      
-         office1 = (DefaultClusteredPostOffice)createClusteredPostOffice(1, "testgroup");
-         
-         office2 = (DefaultClusteredPostOffice)createClusteredPostOffice(2, "testgroup");
-         
-         office3 = (DefaultClusteredPostOffice)createClusteredPostOffice(3, "testgroup");
-         
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
+      {
+         office1 = (DefaultClusteredPostOffice) createClusteredPostOffice(1, "testgroup");
+
+         office2 = (DefaultClusteredPostOffice) createClusteredPostOffice(2, "testgroup");
+
+         office3 = (DefaultClusteredPostOffice) createClusteredPostOffice(3, "testgroup");
+
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
-         
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
+
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue2", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
-         
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), null, tr);
+
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue3", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
          Binding binding3 =
             office3.bindClusteredQueue(new SimpleCondition("topic1"), queue3);
-         
+
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.add(receiver1);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue2.add(receiver2);
          SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue3.add(receiver3);
-         
+
          //This will make it fail after casting and persisting the message in the db
          office1.setFail(false, true, false);
-         
+
          Transaction tx = tr.createTransaction();
-         
+
          final int NUM_MESSAGES = 10;
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            Message msg = CoreMessageFactory.createCoreMessage(i);   
+            Message msg = CoreMessageFactory.createCoreMessage(i);
             msg.setReliable(true);
-            
-            MessageReference ref = ms.reference(msg);  
-            
+
+            MessageReference ref = ms.reference(msg);
+
             office1.route(ref, new SimpleCondition("topic1"), tx);
          }
-         
+
          Thread.sleep(1000);
-         
+
          List msgs = receiver1.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          try
          {
             //An exception should be thrown            
             tx.commit();
-            fail();                       
+            fail();
          }
          catch (TransactionException e)
          {
             //Ok
          }
-         
+
          Thread.sleep(1000);
-         
+
          msgs = receiver1.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver2.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          msgs = receiver3.getMessages();
          assertTrue(msgs.isEmpty());
-         
+
          //There should be held tx in 2 and 3 but not in 1
-         
+
          assertTrue(office1.getHoldingTransactions().isEmpty());
-         
+
          assertEquals(1, office2.getHoldingTransactions().size());
-         
+
          assertEquals(1, office3.getHoldingTransactions().size());
-         
+
          //We now kill the office - this should make the other office do it's transaction check
          office1.stop();
-         
+
          Thread.sleep(1000);
-         
+
          assertTrue(office1.getHoldingTransactions().isEmpty());
-         
+
          assertTrue(office2.getHoldingTransactions().isEmpty());
-         
+
          assertTrue(office3.getHoldingTransactions().isEmpty());
-         
+
          //The tx should be removed from the holding area and messages be received
          //no point checking receiver1 since node1 has crashed
-         
+
          msgs = receiver2.getMessages();
          assertEquals(NUM_MESSAGES, msgs.size());
-         
+
          msgs = receiver3.getMessages();
          assertEquals(NUM_MESSAGES, msgs.size());
-         
-         
+
+
       }
       finally
       {
          if (office1 != null)
-         {           
+         {
             office1.stop();
          }
-         
+
          if (office2 != null)
-         {           
+         {
             office2.stop();
          }
       }
    }
-   
-   
-  
-   
+
+
    protected ClusteredPostOffice createClusteredPostOffice(int nodeId, String groupName) throws Exception
    {
       MessagePullPolicy redistPolicy = new NullMessagePullPolicy();
-      
+
       FilterFactory ff = new SimpleFilterFactory();
-      
+
       ClusterRouterFactory rf = new DefaultRouterFactory();
-      
+
       FailoverMapper mapper = new DefaultFailoverMapper();
-      
-      ConditionFactory cf = new SimpleConditionFactory();            
-      
-      DefaultClusteredPostOffice postOffice = 
+
+      ConditionFactory cf = new SimpleConditionFactory();
+
+      DefaultClusteredPostOffice postOffice =
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                                 sc.getClusteredPostOfficeSQLProperties(), true, nodeId, "Clustered",
-                                 ms, pm, tr, ff, cf, pool,
-                                 groupName,
-                                 JGroupsUtil.getControlStackProperties(),
-                                 JGroupsUtil.getDataStackProperties(),
-                                 5000, 5000, redistPolicy, rf, mapper, 1000);
-      
-      postOffice.start();      
-      
+            sc.getClusteredPostOfficeSQLProperties(), true, nodeId, "Clustered",
+            ms, pm, tr, ff, cf, pool,
+            groupName,
+            new NameChannelFactory(JGroupsUtil.getControlStackProperties(),
+               JGroupsUtil.getDataStackProperties()),
+            5000, 5000, redistPolicy, rf, mapper, 1000);
+
+      postOffice.start();
+
       return postOffice;
    }
 
    // Private -------------------------------------------------------
-      
+
    // Inner classes -------------------------------------------------   
 
 }

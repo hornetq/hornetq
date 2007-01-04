@@ -82,6 +82,12 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_
       <attribute name="MessagePullPolicy">org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</attribute>
       <attribute name="ClusterRouterFactory">org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory</attribute>
 
+
+      <attribute name="ChannelFactoryName">jgroups.mux:name=Multiplexer</attribute>
+      <attribute name="SyncChannelName">udp-sync</attribute>
+      <attribute name="AsyncChannelName">udp</attribute>
+      <attribute name="ChannelPartitionName">${jboss.partition.name:DefaultPartition}-JMS</attribute>
+
       <attribute name="AsyncChannelConfig">
          <config>
             <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"

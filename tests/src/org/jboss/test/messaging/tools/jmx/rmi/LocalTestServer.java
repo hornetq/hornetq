@@ -297,6 +297,33 @@ public class LocalTestServer implements Server
             throw new Exception("Cannot find " + mainConfigFile + " in the classpath");
          }
 
+         if (clustered)
+         {
+            log.info("Starting multiplexer");
+            String multiplexerConfigFile = "server/default/deploy/multiplexer-service.xml";
+            URL multiplexerCofigURL = getClass().getClassLoader().getResource(multiplexerConfigFile);
+            if (multiplexerCofigURL == null)
+            {
+               throw new Exception("Cannot find " + multiplexerCofigURL + " in the classpath");
+            }
+            ServiceDeploymentDescriptor multiplexerDD = new ServiceDeploymentDescriptor(multiplexerCofigURL);
+            List services = multiplexerDD.query("name","Multiplexer");
+            if (services.isEmpty())
+            {
+               log.info("Couldn't find multiplexer config");
+            }
+            else
+            {
+               log.info("Could find multiplexer config");
+            }
+
+            MBeanConfigurationElement multiplexerConfig = (MBeanConfigurationElement) services.iterator().next();
+            ObjectName nameMultiplexer = sc.registerAndConfigureService(multiplexerConfig);
+            sc.invoke(nameMultiplexer,"create", new Object[0], new String[0]);
+            sc.invoke(nameMultiplexer,"start", new Object[0], new String[0]);
+
+         }
+
          String databaseType = sc.getDatabaseType();
          String persistenceConfigFile;
 

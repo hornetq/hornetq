@@ -412,6 +412,13 @@ public class ServerManagement
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
 
+      // As there is a problem with Multicast and JGroups on Linux (in certain JDKs)
+      // The stack introduced by multiplexor might fail under Linux if we don't have this
+      if (System.getProperty("os.name").equals("Linux"))
+      {
+         sb.append(" -Djava.net.preferIPv4Stack=true ");
+      }
+
       sb.append("org.jboss.test.messaging.tools.jmx.rmi.RMITestServer");
 
       String commandLine = sb.toString();

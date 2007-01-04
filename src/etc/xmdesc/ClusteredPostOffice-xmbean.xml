@@ -111,7 +111,31 @@
       <description>The ObjectName of the server peer this destination was deployed on</description>
       <name>ServerPeer</name>
       <type>javax.management.ObjectName</type>
-   </attribute>   
+   </attribute>
+
+   <attribute access="read-write" getMethod="getChannelFactoryName" setMethod="setChannelFactoryName">
+      <description>The ObjectName of the JGroups Multiplexer used to create JChannels</description>
+      <name>ChannelFactoryName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getSyncChannelName" setMethod="setSyncChannelName">
+      <description>The name of the stack used on multiplexer for Sync Channels</description>
+      <name>SyncChannelName</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getAsyncChannelName" setMethod="setAsyncChannelName">
+      <description>The name of the stack used on multiplexer for Async Channels</description>
+      <name>AsyncChannelName</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getChannelPartitionName" setMethod="setChannelPartitionName">
+      <description>The partition name used to identify JMS/Postoffice on the JGroups Multiplexor</description>
+      <name>ChannelPartitionName</name>
+      <type>java.lang.String</type>
+   </attribute>
 
    <!-- Managed operations -->
 

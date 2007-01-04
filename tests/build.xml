@@ -287,6 +287,7 @@
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="java.net.preferIPv4Stack" value="true"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -305,6 +306,7 @@
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
+         <sysproperty key="java.net.preferIPv4Stack" value="true"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -783,6 +785,7 @@
          <sysproperty key="test.clustered" value="true"/>
          <sysproperty key="test.logfile.suffix" value="clustering-client"/>
          <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
          <!--
          <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=antjunit"/>
           -->
