@@ -27,36 +27,47 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.Version;
 
 /**
- * State corresponding to a browser
- * This state is acessible inside aspects/interceptors
+ * State corresponding to a browser. This state is acessible inside aspects/interceptors.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public class BrowserState extends HierarchicalStateSupport
 {
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
 
    private SessionState parent;
    private BrowserDelegate delegate;
 
-   // Data used to recreate the Browser in case of failover
+   // data used to recreate the Browser in case of failover
    private JBossDestination jmsDestination;
    private String messageSelector;
 
-   public BrowserState(SessionState parent, BrowserDelegate delegate, JBossDestination jmsDestination, String selector)
+   // Needed for failover
+   private long channelID;
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   public BrowserState(SessionState parent, BrowserDelegate delegate,
+                       JBossDestination jmsDestination, String selector, long channelID)
    {
       super(parent, (DelegateSupport)delegate);
-      this.jmsDestination=jmsDestination;
-      this.messageSelector=selector;
+      this.jmsDestination = jmsDestination;
+      this.messageSelector = selector;
+      this.channelID = channelID;
    }
 
-   public void synchronizeWith(HierarchicalState newState) throws Exception {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-   
+   // HierarchicalState implementation -------------------------------------------------------------
+
    public DelegateSupport getDelegate()
    {
       return (DelegateSupport)delegate;
@@ -66,10 +77,30 @@ public class BrowserState extends HierarchicalStateSupport
       this.delegate=(BrowserDelegate)delegate;
    }
 
+   public void setParent(HierarchicalState parent)
+   {
+      this.parent = (SessionState)parent;
+   }
+
+   public HierarchicalState getParent()
+   {
+      return parent;
+   }
+
    public Version getVersionToUse()
    {
       return parent.getVersionToUse();
    }
+
+   // HierarchicalStateSupport overrides -----------------------------------------------------------
+
+   public void synchronizeWith(HierarchicalState ns) throws Exception
+   {
+      BrowserState newState = (BrowserState)ns;
+      channelID = newState.channelID;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public org.jboss.jms.destination.JBossDestination getJmsDestination()
    {
@@ -80,24 +111,19 @@ public class BrowserState extends HierarchicalStateSupport
    {
       return messageSelector;
    }
-   
-   public void setParent(HierarchicalState parent)
+
+   public long getChannelID()
    {
-      this.parent=(SessionState)parent;
+      return channelID;
    }
-   
-   public HierarchicalState getParent()
-   {
-      return parent;
-   }
-   
-   // When failing over a browser, we keep the old browser's state but there are certain fields
-   // we need to update
-   public void copyState(BrowserState newState)
-   {      
-      //Actually only one field
-      // I removed this due to http://jira.jboss.com/jira/browse/JBMESSAGING-686
-      //this.delegate = newState.delegate;
-   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }
 

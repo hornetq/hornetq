@@ -30,6 +30,7 @@ import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.state.BrowserState;
@@ -38,7 +39,6 @@ import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
@@ -162,17 +162,14 @@ public class StateCreationAspect
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
 
       int consumerID = consumerDelegate.getID();
-
       int bufferSize = consumerDelegate.getBufferSize();
-
       int maxDeliveries = consumerDelegate.getMaxDeliveries();
-
-      long channelId = consumerDelegate.getChannelID();
+      long channelID = consumerDelegate.getChannelID();
 
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,
                            subscriptionName, consumerID, connectionConsumer, bufferSize,
-                           maxDeliveries, channelId);
+                           maxDeliveries, channelID);
 
       delegate.setState(consumerState);
       return consumerDelegate;
@@ -190,7 +187,6 @@ public class StateCreationAspect
       MethodInvocation mi = (MethodInvocation)invocation;
       Destination dest = ((Destination)mi.getArguments()[0]);
 
-
       ProducerState producerState = new ProducerState(sessionState, producerDelegate, dest);
 
       delegate.setState(producerState);
@@ -207,7 +203,7 @@ public class StateCreationAspect
    {
       MethodInvocation mi = (MethodInvocation)invocation;
 
-      BrowserDelegate browserDelegate = (BrowserDelegate)invocation.invokeNext();
+      ClientBrowserDelegate browserDelegate = (ClientBrowserDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)browserDelegate;
 
       delegate.init();
@@ -217,7 +213,10 @@ public class StateCreationAspect
       JBossDestination destination = (JBossDestination)mi.getArguments()[0];
       String selector = (String)mi.getArguments()[1];
 
-      BrowserState state = new BrowserState(sessionState, browserDelegate, destination, selector);
+      long channelID = browserDelegate.getChannelID();
+
+      BrowserState state =
+         new BrowserState(sessionState, browserDelegate, destination, selector, channelID);
 
       delegate.setState(state);
       return browserDelegate;

@@ -82,15 +82,17 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
-                                                  boolean connectionConsumer, long failoverChannelId) throws JMSException
+                                                  boolean connectionConsumer,
+                                                  Long failoverChannelID) throws JMSException
    {
-      return endpoint.createConsumerDelegate(destination, selector, noLocal, subscriptionName, connectionConsumer, failoverChannelId);
+      return endpoint.createConsumerDelegate(destination, selector, noLocal, subscriptionName,
+                                             connectionConsumer, failoverChannelID);
    }
    
-   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
-      throws JMSException
+   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
+                                                Long failoverChannelID) throws JMSException                                                 
    {
-      return endpoint.createBrowserDelegate(queue, messageSelector);
+      return endpoint.createBrowserDelegate(queue, messageSelector, failoverChannelID);
    }
 
    public JBossQueue createQueue(String queueName) throws JMSException
@@ -147,7 +149,6 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    {
       return endpoint.isClosed();
    }
-   
 
    // AdvisedSupport overrides --------------------------------------
 
@@ -160,7 +161,6 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    {
       return "SessionAdvised->" + endpoint;
    }
-
 
    // Public --------------------------------------------------------
 

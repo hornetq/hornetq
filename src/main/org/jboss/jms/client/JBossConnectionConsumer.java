@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.ConnectionConsumer;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -78,9 +77,6 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    private int consumerID;
    
-   /** The destination this consumer will receive messages from */
-   private Destination destination;
-   
    /** The ServerSessionPool that is implemented by the AS */
    private ServerSessionPool serverSessionPool;
    
@@ -108,25 +104,13 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    // Constructors --------------------------------------------------
 
-   /**
-    * JBossConnectionConsumer constructor
-    * 
-    * @param conn the connection
-    * @param dest destination
-    * @param messageSelector the message selector
-    * @param sessPool the server session pool
-    * @param maxMessages the maxmimum messages
-    * @exception JMSException for any error
-    */
-   public JBossConnectionConsumer(ConnectionDelegate conn, JBossDestination dest, 
+   public JBossConnectionConsumer(ConnectionDelegate conn, JBossDestination dest,
                                   String subName, String messageSelector,
                                   ServerSessionPool sessPool, int maxMessages) throws JMSException
    {
-      trace = log.isTraceEnabled();
-
-      this.destination = dest;
       this.serverSessionPool = sessPool;
       this.maxMessages = maxMessages;
+
       if (this.maxMessages < 1)
       {
          this.maxMessages = 1;
@@ -138,12 +122,11 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       {
          tccc.set(getClass().getClassLoader());
 
-         // Create a consumer.
-         // The MessageCallbackhandler knows we are a connection consumer so will not 
-         // call pre or postDeliver so messages won't be acked, or stored in session/tx
+         // Create a consumer. The MessageCallbackhandler knows we are a connection consumer so will
+         // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
          sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
 
-         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true, -1);
+         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true, null);
       }
       finally
       {
@@ -159,7 +142,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       this.maxDeliveries = state.getMaxDeliveries();
 
       id = threadId.increment();
-      internalThread = new Thread(this, "Connection Consumer for dest " + destination + " id=" + id);
+      internalThread = new Thread(this, "Connection Consumer for dest " + dest + " id=" + id);
       internalThread.start();
 
       if (trace) { log.trace(this + " created"); }
@@ -213,7 +196,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
             if (closed)
             {
                if (trace) { log.trace("Connection consumer is closed, breaking"); }
-               break outer;
+               break;
             }
             
             if (mesList.isEmpty())
@@ -243,7 +226,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                   if (m == null)
                   {
                      if (trace) { log.trace("receiveNoWait did not retrieve any message"); }
-                     break inner;
+                     break;
                   }
 
                   if (trace) { log.trace("receiveNoWait got message " + m + " adding to queue"); }

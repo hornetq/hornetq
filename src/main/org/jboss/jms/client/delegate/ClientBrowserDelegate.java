@@ -40,26 +40,47 @@ import org.jboss.remoting.Client;
  */
 public class ClientBrowserDelegate extends DelegateSupport implements BrowserDelegate
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 8293543769773757409L;
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   private long channelID;
 
-   // Constructors --------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   public ClientBrowserDelegate(int objectID)
+   // Constructors ---------------------------------------------------------------------------------
+
+   public ClientBrowserDelegate(int objectID, long channelID)
    {
       super(objectID);
+      this.channelID = channelID;
    }
    
    public ClientBrowserDelegate()
    {     
    }
 
-   // BrowserDelegate implementation --------------------------------
+   // DelegateSupport overrides --------------------------------------------------------------------
+
+   public void synchronizeWith(DelegateSupport nd) throws Exception
+   {
+      super.synchronizeWith(nd);
+
+      ClientBrowserDelegate newDelegate = (ClientBrowserDelegate)nd;
+
+      // synchronize server endpoint state
+
+      // synchronize (recursively) the client-side state
+
+      state.synchronizeWith(newDelegate.getState());
+
+      // synchronize the delegates
+
+   }
+
+   // BrowserDelegate implementation ---------------------------------------------------------------
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -70,26 +91,46 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public void closing() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public boolean isClosed()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public boolean hasNextMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public Message nextMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
@@ -131,11 +172,16 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String getStackName()
    {
       return "BrowserStack";
+   }
+
+   public long getChannelID()
+   {
+      return channelID;
    }
 
    public String toString()
@@ -143,7 +189,7 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       return "BrowserDelegate[" + id + "]";
    }
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
    protected Client getClient()
    {
@@ -152,10 +198,10 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
          getInvokingClient();
    }
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 
 }

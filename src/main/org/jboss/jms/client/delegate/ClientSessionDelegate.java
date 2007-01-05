@@ -184,8 +184,8 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
-      throws JMSException
+   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
+                                                Long failoverChannelID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -207,7 +207,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean connectionConsumer,
-                                                  long failoverChannelId) throws JMSException
+                                                  Long failoverChannelID) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

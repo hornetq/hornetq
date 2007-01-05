@@ -45,13 +45,21 @@ import org.jboss.jms.message.JBossMessage;
  */
 public interface SessionEndpoint extends Closeable
 {
+   /**
+    * @param failoverChannelID - the ID of the channel for which there is a failover process in
+    *        progress. Null means regular (non-failover) consumer delegate creation.
+    */
    ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer,
-                                           long failoverChannelID) throws JMSException;
-   
-   BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
-      throws JMSException;
+                                           Long failoverChannelID) throws JMSException;
+
+   /**
+    * @param failoverChannelID - the ID of the channel for which there is a failover process in
+    *        progress. Null means regular (non-failover) browser delegate creation.
+    */
+   BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
+                                         Long failoverChannelID) throws JMSException;
 
    /**
     * Creates a queue identity given a Queue name. Does NOT create the physical queue. The physical
@@ -118,10 +126,7 @@ public interface SessionEndpoint extends Closeable
    void send(JBossMessage message) throws JMSException;
    
    /**
-    * Send delivery info to the server so the delivery lists can be repopulated
-    * used at failover
-    * @param ackInfos
-    * @throws JMSException
+    * Send delivery info to the server so the delivery lists can be repopulated used at failover
     */
    void recoverDeliveries(List createInfos) throws JMSException;
 }

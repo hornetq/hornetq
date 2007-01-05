@@ -46,32 +46,28 @@ import org.jboss.messaging.core.Routable;
  */
 public class ServerBrowserEndpoint implements BrowserEndpoint
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerBrowserEndpoint.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
-   
-   private boolean trace = log.isTraceEnabled();
+   private static boolean trace = log.isTraceEnabled();
 
-   private Iterator iterator;
-   
-   private ServerSessionEndpoint session;
-   
+   // Attributes -----------------------------------------------------------------------------------
+
    private int id;
-   
    private boolean closed;
+   private Iterator iterator;
+   private ServerSessionEndpoint session;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
                          Channel destination, String messageSelector)
       throws JMSException
    {     
       this.session = session;
-      
       this.id = id;
       
 		Filter filter = null;
@@ -84,7 +80,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 		iterator = destination.browse(filter).iterator();
    }
 
-   // BrowserEndpoint implementation --------------------------------
+   // BrowserEndpoint implementation ---------------------------------------------------------------
 
    public boolean hasNextMessage() throws JMSException
    {
@@ -94,7 +90,10 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          {
             throw new IllegalStateException("Browser is closed");
          }
-         return iterator.hasNext();
+
+         boolean has = iterator.hasNext();
+         if (trace) { log.trace(this + (has ? " has": " DOESN'T have") + " a next message"); }
+         return has;
       }   
       catch (Throwable t)
       {
@@ -110,9 +109,10 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          {
             throw new IllegalStateException("Browser is closed");
          }
+
          Routable r = (Routable)iterator.next();
    
-         if (trace) { log.trace("returning the message corresponding to " + r); }
+         if (trace) { log.trace(this + " returning " + r); }
          
          return (Message)r.getMessage();
       }   
@@ -121,12 +121,12 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " nextMessage");
       }
    }
-   
-   
-	//Is this the most efficient way to pass it back?
-	//why not just pass back the arraylist??
+
    public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
+
+      if (trace) { log.trace(this + " returning next message block of " + maxMessages); }
+
       try
       {
          if (closed)
@@ -164,8 +164,8 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       try
       {
          localClose();
-         
          session.removeBrowser(id);
+         log.debug(this + " closed");
       }   
       catch (Throwable t)
       {
@@ -183,14 +183,14 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       throw new IllegalStateException("isClosed should never be handled on the server side");
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "BrowserEndpoint[" + id + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
    void localClose() throws JMSException
    {
@@ -206,10 +206,10 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       closed = true;
    }
 
-   // Protected -----------------------------------------------------      
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

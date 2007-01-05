@@ -251,10 +251,10 @@ public class JBossSession implements
       {
          tccc.set(getClass().getClassLoader());
 
-         ConsumerDelegate consumerDelegate = delegate.
-            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, -1);
+         ConsumerDelegate cd = delegate.
+            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, null);
          
-         return new JBossMessageConsumer(consumerDelegate);
+         return new JBossMessageConsumer(cd);
       }
       finally
       {
@@ -304,10 +304,10 @@ public class JBossSession implements
       {
          tccc.set(getClass().getClassLoader());
 
-         ConsumerDelegate consumerDelegate =
-            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false, -1);
+         ConsumerDelegate cd =
+            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false, null);
 
-         return new JBossMessageConsumer(consumerDelegate);
+         return new JBossMessageConsumer(cd);
       }
       finally
       {
@@ -338,9 +338,11 @@ public class JBossSession implements
       {
          messageSelector = null;
       }
-      ConsumerDelegate consumerDelegate =
-         delegate.createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false, -1);
-      return new JBossMessageConsumer(consumerDelegate);
+
+      ConsumerDelegate cd = delegate.
+         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false, null);
+
+      return new JBossMessageConsumer(cd);
    }
 
    public QueueBrowser createBrowser(Queue queue) throws JMSException
@@ -374,7 +376,9 @@ public class JBossSession implements
       {
          tccc.set(getClass().getClassLoader());
 
-         BrowserDelegate del = this.delegate.createBrowserDelegate((JBossQueue)queue, messageSelector);
+         BrowserDelegate del =
+            delegate.createBrowserDelegate((JBossQueue)queue, messageSelector, null);
+         
          return new JBossQueueBrowser(queue, messageSelector, del);
       }
       finally

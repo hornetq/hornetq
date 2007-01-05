@@ -191,7 +191,7 @@ public class SessionState extends HierarchicalStateSupport
                                       consState.isNoLocal(),
                                       consState.getSubscriptionName(),
                                       consState.isConnectionConsumer(),
-                                      consState.getChannelID());
+                                      new Long(consState.getChannelID()));
             log.debug(this + " created new consumer " + newConsDelegate);
 
             consDelegate.synchronizeWith(newConsDelegate);
@@ -212,7 +212,19 @@ public class SessionState extends HierarchicalStateSupport
          }
          else if (child instanceof BrowserState)
          {
-             handleFailoverOnBrowser((BrowserState)child, newDelegate);
+            BrowserState browserState = (BrowserState)child;
+            ClientBrowserDelegate browserDelegate =
+               (ClientBrowserDelegate)browserState.getDelegate();
+
+            // create a new browser over the new session for each browser on the old session
+            ClientBrowserDelegate newBrowserDelegate = (ClientBrowserDelegate)newDelegate.
+               createBrowserDelegate(browserState.getJmsDestination(),
+                                     browserState.getMessageSelector(),
+                                     new Long(browserState.getChannelID()));
+            log.debug(this + " created new browser " + newBrowserDelegate);
+
+            browserDelegate.synchronizeWith(newBrowserDelegate);
+            log.debug(this + " synchronized failover browser " + browserDelegate);
          }
       }
 
@@ -405,31 +417,7 @@ public class SessionState extends HierarchicalStateSupport
 
    // Private --------------------------------------------------------------------------------------
 
-   /**
-    * TODO see http://jira.jboss.org/jira/browse/JBMESSAGING-710
-    */
-   private void handleFailoverOnBrowser(BrowserState failedBrowserState,
-                                        ClientSessionDelegate failedSessionDelegate)
-      throws Exception
-   {
-      ClientBrowserDelegate newBrowserDelegate = (ClientBrowserDelegate)failedSessionDelegate.
-         createBrowserDelegate(failedBrowserState.getJmsDestination(),
-                               failedBrowserState.getMessageSelector());
-
-      ClientBrowserDelegate failedBrowserDelegate =
-         (ClientBrowserDelegate)failedBrowserState.getDelegate();
-
-      failedBrowserDelegate.synchronizeWith(newBrowserDelegate);
-      failedBrowserState.copyState((BrowserState)newBrowserDelegate.getState());
-
-      log.debug("handling fail over on browserDelegate " + failedBrowserDelegate + " destination=" + failedBrowserState.getJmsDestination() + " selector=" + failedBrowserState.getMessageSelector());
-
-   }
-
-
    // Inner classes --------------------------------------------------------------------------------
-
-
 
 }
 
