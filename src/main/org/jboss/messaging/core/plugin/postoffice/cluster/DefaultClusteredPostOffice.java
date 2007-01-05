@@ -1555,28 +1555,28 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (!isState)
       {
-         //Must be first member in group or non clustered- we load the state ourself from the database
+         // Must be first member in group or non clustered, we load the state ourself from
+         // the database.
 
          if (trace) { log.trace(this + " is the first member of group, so will load bindings from database"); }
-
          super.loadBindings();
       }
       else
       {
-         //The state will be set in due course via the MessageListener - we must wait until this happens
+         // The state will be set in due course via the MessageListener, we must wait until this
+         // happens.
 
-         if (trace) { log.trace(this.currentNodeId + " Not first member of group- so waiting for state to arrive...."); }
+         if (trace) { log.trace(this + " not first member of group, so waiting for state to arrive...."); }
 
-      synchronized (setStateLock)
-      {
-         //TODO we should implement a timeout on this
-         while (!stateSet)
+         synchronized (setStateLock)
          {
-            setStateLock.wait();
+            //TODO we should implement a timeout on this
+            while (!stateSet)
+            {
+               setStateLock.wait();
+            }
          }
-      }
-
-         if (trace) { log.trace(this.currentNodeId + " Received state"); }
+         if (trace) { log.trace(this + " received state"); }
       }
    }
 

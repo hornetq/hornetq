@@ -28,6 +28,8 @@ import org.jboss.messaging.core.plugin.contract.Condition;
  * A Binding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
@@ -35,14 +37,16 @@ import org.jboss.messaging.core.plugin.contract.Condition;
  */
 public interface Binding
 {
-   public int getNodeID();
+   int getNodeID();
    
-   public Condition getCondition();
+   Condition getCondition();
    
-   public Queue getQueue();
+   Queue getQueue();
 
-   public boolean isFailed();
+   boolean isFailed();
 
-   public void setFailed(boolean failed);
+   void setFailed(boolean failed);
+
+   Integer getFailedNodeID();
 
 }

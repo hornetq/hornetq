@@ -1128,7 +1128,6 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-
    public void testSimpleFailover() throws Exception
    {
       Connection conn = null;
@@ -1190,8 +1189,6 @@ public class FailoverTest extends ClusteringTestBase
          }
       }
    }
-
-
 
    // Package protected ----------------------------------------------------------------------------
 

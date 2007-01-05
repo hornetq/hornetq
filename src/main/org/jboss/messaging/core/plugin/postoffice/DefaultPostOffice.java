@@ -484,13 +484,13 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          
          ps = conn.prepareStatement(getSQLStatement("LOAD_BINDINGS"));
                  
-         ps.setString(1, this.officeName);
+         ps.setString(1, officeName);
 
          rs = ps.executeQuery();
               
          while (rs.next())
          {
-            int nodeId = rs.getInt(1);
+            int nodeID = rs.getInt(1);
             String queueName = rs.getString(2);
             String conditionText = rs.getString(3);
             String selector = rs.getString(4);
@@ -500,17 +500,23 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                selector = null;
             }
             
-            long channelId = rs.getLong(5);
+            long channelID = rs.getLong(5);
             boolean failed = rs.getString(6).equals("Y");
 
-            log.info("PostOffice " + this.officeName + " nodeId=" +
-               nodeId + " condition=" + conditionText + " queueName=" +
-               queueName + " channelId=" + channelId + " selector=" + selector);
-                                             
+            Integer failedNodeID = null;
+            int i = rs.getInt(7);
+
+            if(!rs.wasNull())
+            {
+               failedNodeID = new Integer(i);
+            }
+
             Condition condition = conditionFactory.createCondition(conditionText);
-            
-            Binding binding =
-               createBinding(nodeId, condition, queueName, channelId, selector, true, failed);
+
+            Binding binding = createBinding(nodeID, condition, queueName, channelID,
+                                            selector, true, failed, failedNodeID);
+
+            log.debug(this + " loaded from database " + binding);
             
             binding.getQueue().deactivate();
             addBinding(binding);
@@ -535,18 +541,25 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          wrap.end();
       }
    }
-   
+
+   /**
+    * @param failedNodeID - ignored for non-clustered bindings.
+    */
    protected Binding createBinding(int nodeID, Condition condition, String queueName,
-                                   long channelId, String filterString, boolean durable,
-                                   boolean failed) throws Exception
+                                   long channelID, String filterString, boolean durable,
+                                   boolean failed, Integer failedNodeID) throws Exception
    {      
       Filter filter = filterFactory.createFilter(filterString);
-      return createBinding(nodeID, condition, queueName, channelId, filter, durable, failed);
+      return createBinding(nodeID, condition, queueName, channelID,
+                           filter, durable, failed, failedNodeID);
    }
-   
+
+   /**
+    * @param failedNodeID - ignored for non-clustered bindings.
+    */
    protected Binding createBinding(int nodeID, Condition condition, String queueName,
                                    long channelID, Filter filter, boolean durable,
-                                   boolean failed)
+                                   boolean failed, Integer failedNodeID)
    {
       Queue queue;
 
@@ -577,10 +590,12 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          
          ps = conn.prepareStatement(getSQLStatement("INSERT_BINDING"));
          
-         String filterString = binding.getQueue().getFilter() == null ? null : binding.getQueue().getFilter().getFilterString();
+         String filterString =
+            binding.getQueue().getFilter() == null ?
+               null : binding.getQueue().getFilter().getFilterString();
                   
-         ps.setString(1, this.officeName);
-         ps.setInt(2, this.currentNodeId);
+         ps.setString(1, officeName);
+         ps.setInt(2, currentNodeId);
          ps.setString(3, binding.getQueue().getName());
          ps.setString(4, binding.getCondition().toText());         
          if (filterString != null)
@@ -593,6 +608,16 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          }
          ps.setLong(6, binding.getQueue().getChannelID());
          ps.setString(7,binding.isFailed() ? "Y":"N");
+
+         Integer failedNodeID = binding.getFailedNodeID();
+         if (failedNodeID == null)
+         {
+            ps.setNull(8, Types.INTEGER);
+         }
+         else
+         {
+            ps.setInt(8, failedNodeID.intValue());
+         }
 
          ps.executeUpdate();
       }
@@ -814,7 +839,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       
       if (bindings == null)
       {
-         throw new IllegalStateException("Cannot find condition bindings for " + binding.getCondition());
+         throw new IllegalStateException("Cannot find condition bindings for " +
+            binding.getCondition());
       }
       
       boolean removed = bindings.removeBinding(binding);
@@ -833,14 +859,33 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    protected Map getDefaultDMLStatements()
    {                
       Map map = new LinkedHashMap();
+
       map.put("INSERT_BINDING",
-              "INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, CHANNEL_ID, IS_FAILED_OVER) " +
-              "VALUES (?, ?, ?, ?, ?, ?, ?)");
+              "INSERT INTO JMS_POSTOFFICE (" +
+                 "POSTOFFICE_NAME, " +
+                 "NODE_ID, " +
+                 "QUEUE_NAME, " +
+                 "CONDITION, " +
+                 "SELECTOR, " +
+                 "CHANNEL_ID, " +
+                 "IS_FAILED_OVER, " +
+                 "FAILED_NODE_ID) " +
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
       map.put("DELETE_BINDING",
               "DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
+
       map.put("LOAD_BINDINGS",
-              "SELECT NODE_ID, QUEUE_NAME, CONDITION, SELECTOR, CHANNEL_ID, IS_FAILED_OVER FROM JMS_POSTOFFICE " +
-              "WHERE POSTOFFICE_NAME  = ?");
+              "SELECT " +
+                 "NODE_ID, " +
+                 "QUEUE_NAME, " +
+                 "CONDITION, " +
+                 "SELECTOR, " +
+                 "CHANNEL_ID, " +
+                 "IS_FAILED_OVER, " +
+                 "FAILED_NODE_ID " +
+                 "FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?");
+
       return map;
    }
    
@@ -850,7 +895,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       map.put("CREATE_POSTOFFICE_TABLE",
               "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER," +
               "QUEUE_NAME VARCHAR(1023), CONDITION VARCHAR(1023), " +
-              "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, IS_FAILED_OVER CHAR(1))");
+              "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, IS_FAILED_OVER CHAR(1), " +
+              "FAILED_NODE_ID INTEGER)");
       return map;
    }
    

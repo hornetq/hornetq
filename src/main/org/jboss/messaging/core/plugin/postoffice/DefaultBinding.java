@@ -23,12 +23,15 @@ package org.jboss.messaging.core.plugin.postoffice;
 
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.contract.Condition;
+import org.jboss.messaging.core.plugin.postoffice.cluster.FailedOverQueue;
 
 /**
  * 
  * A DefaultBinding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
@@ -36,11 +39,11 @@ import org.jboss.messaging.core.plugin.contract.Condition;
  */
 public class DefaultBinding implements Binding
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private int nodeID;
 
@@ -53,7 +56,7 @@ public class DefaultBinding implements Binding
    // this only works if we keep DefautlBinding immutable
    private String toString;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public DefaultBinding()
    {
@@ -67,7 +70,7 @@ public class DefaultBinding implements Binding
       this.failed = failed;
    }
 
-   // Binding implementation ----------------------------------------
+   // Binding implementation -----------------------------------------------------------------------
 
    public int getNodeID()
    {
@@ -94,7 +97,16 @@ public class DefaultBinding implements Binding
       this.failed = failed;
    }
 
-   // Public --------------------------------------------------------
+   public Integer getFailedNodeID()
+   {
+      if (queue instanceof FailedOverQueue)
+      {
+         return new Integer(((FailedOverQueue)queue).getFailedNodeID());
+      }
+      return null;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
@@ -118,13 +130,12 @@ public class DefaultBinding implements Binding
       return toString;
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
-
+   // Inner classes --------------------------------------------------------------------------------
 
 }
