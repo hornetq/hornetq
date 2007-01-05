@@ -1248,125 +1248,125 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-//   public void testFailoverMessageOnServer2() throws Exception
-//   {
-//      Connection conn = null;
-//
-//      try
-//      {
-//         conn = cf.createConnection();
-//         conn.close();
-//
-//         conn = cf.createConnection();
-//         conn.start();
-//
-//         assertEquals(1, ((JBossConnection)conn).getServerID());
-//
-//         SimpleFailoverListener listener = new SimpleFailoverListener();
-//         ((JBossConnection)conn).registerFailoverListener(listener);
-//
-//         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         MessageProducer prod = session.createProducer(queue[1]);
-//         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-//
-//         // send a message
-//
-//         prod.send(session.createTextMessage("blip"));
-//
-//         // kill node 1
-//
-//         log.debug("killing node 1");
-//
-//         ServerManagement.kill(1);
-//
-//         log.info("########");
-//         log.info("######## KILLED NODE 1");
-//         log.info("########");
-//
-//         // wait until the failure (not the completion of client-side failover) is detected
-//
-//         assertEquals(FailoverEvent.FAILURE_DETECTED, listener.getEvent(60000).getType());
-//
-//         // create a consumer the very next moment the failure is detected. This way, we also
-//         // test the client-side failover valve
-//
-//         MessageConsumer cons = session.createConsumer(queue[0]);
-//
-//         // we must receive the message
-//
-//         TextMessage tm = (TextMessage)cons.receive(60000);
-//         assertEquals("blip", tm.getText());
-//      }
-//      finally
-//      {
-//         if (conn != null)
-//         {
-//            conn.close();
-//         }
-//      }
-//   }
-//
-//   public void testSimpleFailover() throws Exception
-//   {
-//      Connection conn = null;
-//
-//      try
-//      {
-//         conn = cf.createConnection();
-//         conn.close();
-//
-//         conn = cf.createConnection();
-//         conn.start();
-//
-//         // create a producer/consumer on node 1
-//
-//         // make sure we're connecting to node 1
-//
-//         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
-//            getDelegate()).getState()).getServerID();
-//
-//         assertEquals(1, nodeID);
-//
-//         Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         MessageConsumer c1 = s1.createConsumer(queue[1]);
-//         MessageProducer p1 = s1.createProducer(queue[1]);
-//         p1.setDeliveryMode(DeliveryMode.PERSISTENT);
-//
-//         // send a message
-//
-//         p1.send(s1.createTextMessage("blip"));
-//
-//         // kill node 1
-//
-//
-//         ServerManagement.killAndWait(1);
-//         log.info("########");
-//         log.info("######## KILLED NODE 1");
-//         log.info("########");
-//
-//         try
-//         {
-//            ic[1].lookup("queue"); // looking up anything
-//            fail("The server still alive, kill didn't work yet");
-//         }
-//         catch (Exception e)
-//         {
-//         }
-//
-//         // we must receive the message
-//
-//         TextMessage tm = (TextMessage)c1.receive(1000);
-//         assertEquals("blip", tm.getText());
-//
-//      }
-//      finally
-//      {
-//         if (conn != null)
-//         {
-//            conn.close();
-//         }
-//      }
-//   }
+   public void testFailoverMessageOnServer2() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+         conn.start();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         SimpleFailoverListener listener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(listener);
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(queue[1]);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         // send a message
+
+         prod.send(session.createTextMessage("blip"));
+
+         // kill node 1
+
+         log.debug("killing node 1");
+
+         ServerManagement.kill(1);
+
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         // wait until the failure (not the completion of client-side failover) is detected
+
+         assertEquals(FailoverEvent.FAILURE_DETECTED, listener.getEvent(60000).getType());
+
+         // create a consumer the very next moment the failure is detected. This way, we also
+         // test the client-side failover valve
+
+         MessageConsumer cons = session.createConsumer(queue[0]);
+
+         // we must receive the message
+
+         TextMessage tm = (TextMessage)cons.receive(60000);
+         assertEquals("blip", tm.getText());
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   public void testSimpleFailover() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+         conn.start();
+
+         // create a producer/consumer on node 1
+
+         // make sure we're connecting to node 1
+
+         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
+            getDelegate()).getState()).getServerID();
+
+         assertEquals(1, nodeID);
+
+         Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer c1 = s1.createConsumer(queue[1]);
+         MessageProducer p1 = s1.createProducer(queue[1]);
+         p1.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         // send a message
+
+         p1.send(s1.createTextMessage("blip"));
+
+         // kill node 1
+
+
+         ServerManagement.killAndWait(1);
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         try
+         {
+            ic[1].lookup("queue"); // looking up anything
+            fail("The server still alive, kill didn't work yet");
+         }
+         catch (Exception e)
+         {
+         }
+
+         // we must receive the message
+
+         TextMessage tm = (TextMessage)c1.receive(1000);
+         assertEquals("blip", tm.getText());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
    // Package protected ----------------------------------------------------------------------------
 
