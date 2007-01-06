@@ -44,7 +44,6 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPoli
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.NameChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleCondition;
 import org.jboss.test.messaging.core.SimpleConditionFactory;
@@ -60,7 +59,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * A RedistributionWithDefaultMessagePullPolicyTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *          <p/>
  *          $Id$
  */
@@ -1165,7 +1164,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
             sc.getClusteredPostOfficeSQLProperties(), true, nodeId,
             "Clustered", ms, pm, tr, ff, cf, pool,
             groupName,
-            new NameChannelFactory(JGroupsUtil.getControlStackProperties(),
+            new NamedJChannelFactory(JGroupsUtil.getControlStackProperties(),
                JGroupsUtil.getDataStackProperties()),
             10000, 10000, pullPolicy, rf, mapper, 1000);
 

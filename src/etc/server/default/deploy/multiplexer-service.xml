@@ -15,7 +15,7 @@
     <mbean code="org.jgroups.jmx.JChannelFactory" name="jgroups.mux:name=Multiplexer">
     <!--mbean code="org.jgroups.JChannelFactory" name="jgroups.mux:name=Multiplexer" xmbean-dd="resource:META-INF/multiplexer-xmbean.xml" -->
         <attribute name="Domain">jgroups.mux</attribute>
-        <attribute name="MultiplexerConfig">META-INF/multiplexer-stacks.xml</attribute>
+        <attribute name="MultiplexerConfig">multiplexer-stacks.xml</attribute>
         <attribute name="ExposeChannels">true</attribute>
         <attribute name="ExposeProtocols">true</attribute>
 

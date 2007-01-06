@@ -47,7 +47,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.QueueStats;
-import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.NameChannelFactory;
+import org.jboss.test.messaging.core.plugin.postoffice.cluster.NamedJChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleConditionFactory;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
@@ -60,7 +60,7 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
  * A DefaultRouterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
@@ -367,7 +367,7 @@ public class DefaultRouterTest extends PostOfficeTestBase
             sc.getClusteredPostOfficeSQLProperties(), true, nodeId,
             "Clustered", ms, pm, tr, ff, cf, pool,
             groupName,
-            new NameChannelFactory(JGroupsUtil.getControlStackProperties(),
+            new NamedJChannelFactory(JGroupsUtil.getControlStackProperties(),
                JGroupsUtil.getDataStackProperties()),
             5000, 5000, redistPolicy, rf, mapper, 1000);
 

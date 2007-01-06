@@ -37,7 +37,6 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.NameChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.test.messaging.core.SimpleCondition;
@@ -53,7 +52,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * A RecoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *          <p/>
  *          $Id$
  */
@@ -366,7 +365,7 @@ public class RecoveryTest extends PostOfficeTestBase
             sc.getClusteredPostOfficeSQLProperties(), true, nodeId, "Clustered",
             ms, pm, tr, ff, cf, pool,
             groupName,
-            new NameChannelFactory(JGroupsUtil.getControlStackProperties(),
+            new NamedJChannelFactory(JGroupsUtil.getControlStackProperties(),
                JGroupsUtil.getDataStackProperties()),
             5000, 5000, redistPolicy, rf, mapper, 1000);
 
