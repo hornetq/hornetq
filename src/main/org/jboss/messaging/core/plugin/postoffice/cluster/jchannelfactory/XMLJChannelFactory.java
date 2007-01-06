@@ -20,32 +20,32 @@
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
 
-package org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory;
+package org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory;
 
+import org.w3c.dom.Element;
 import org.jgroups.JChannel;
 
 /**
- * A ChannelFactory that will use config names (from channelfactory)
+ * A JChannelFactory that will use Elements to create channels.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision:$</tt>
+ * @version <tt>$Revision$</tt>
  *          <p/>
  *          $Id$
  */
-public class NameChannelFactory implements ChannelFactory
+public class XMLJChannelFactory implements JChannelFactory
 {
 
    // Constants
 
    // Attributes
-
-   String asyncConfig;
-   String syncConfig;
+   Element syncConfig;
+   Element asyncConfig;
 
    // Static
 
    // Constructors
 
-   public NameChannelFactory(String syncConfig, String asyncConfig)
+   public XMLJChannelFactory(Element syncConfig, Element asyncConfig)
    {
       this.syncConfig = syncConfig;
       this.asyncConfig = asyncConfig;
@@ -53,28 +53,27 @@ public class NameChannelFactory implements ChannelFactory
 
    // Public
 
-   public String getAsyncConfig()
-   {
-      return asyncConfig;
-   }
-
-   public void setAsyncConfig(String asyncConfig)
-   {
-      this.asyncConfig = asyncConfig;
-   }
-
-   public String getSyncConfig()
+   public Element getSyncConfig()
    {
       return syncConfig;
    }
 
-   public void setSyncConfig(String syncConfig)
+   public void setSyncConfig(Element syncConfig)
    {
       this.syncConfig = syncConfig;
    }
 
-   // ChannelFactory implementation
+   public Element getAsyncConfig()
+   {
+      return asyncConfig;
+   }
 
+   public void setAsyncConfig(Element asyncConfig)
+   {
+      this.asyncConfig = asyncConfig;
+   }
+
+   // implementation of JChannelFactory
    public JChannel createSyncChannel() throws Exception
    {
       return new JChannel(syncConfig);

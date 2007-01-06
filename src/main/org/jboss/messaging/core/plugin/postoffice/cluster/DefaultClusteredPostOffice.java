@@ -68,7 +68,7 @@ import org.jboss.messaging.core.plugin.contract.Replicator;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.DefaultBinding;
 import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.ChannelFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.JChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.StreamUtils;
@@ -92,7 +92,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
@@ -163,7 +163,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    private volatile boolean started;
    private volatile boolean stopping;
 
-   private ChannelFactory channelFactory;
+   private JChannelFactory JChannelFactory;
 
    private Channel syncChannel;
 
@@ -231,7 +231,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                                      ConditionFactory conditionFactory,
                                      QueuedExecutorPool pool,
                                      String groupName,
-                                     ChannelFactory channelFactory,
+                                     JChannelFactory JChannelFactory,
                                      long stateTimeout, long castTimeout,
                                      MessagePullPolicy redistributionPolicy,
                                      ClusterRouterFactory rf,
@@ -274,7 +274,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       viewExecutor = new QueuedExecutor();
 
-      this.channelFactory = channelFactory;
+      this.JChannelFactory = JChannelFactory;
    }
 
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -288,8 +288,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (trace) { log.trace(this + " starting"); }
 
-      this.syncChannel = channelFactory.createSyncChannel();
-      this.asyncChannel = channelFactory.createASyncChannel();
+      this.syncChannel = JChannelFactory.createSyncChannel();
+      this.asyncChannel = JChannelFactory.createASyncChannel();
 
       // We don't want to receive local messages on any of the channels
       syncChannel.setOpt(Channel.LOCAL, Boolean.FALSE);

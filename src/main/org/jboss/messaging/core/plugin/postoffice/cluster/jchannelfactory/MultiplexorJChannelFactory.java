@@ -20,21 +20,21 @@
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
 
-package org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory;
+package org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import org.jgroups.JChannel;
 
 /**
- * A ChannelFactory that will use the MBean JChannelFactory interface
+ * A JChannelFactory that will use the MBean JChannelFactory interface
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision:$</tt>
+ * @version <tt>$Revision$</tt>
  *          <p/>
  *          $Id$
  */
-public class MultiplexorChannelFactory implements ChannelFactory
+public class MultiplexorJChannelFactory implements JChannelFactory
 {
 
    // Constants
@@ -52,7 +52,7 @@ public class MultiplexorChannelFactory implements ChannelFactory
 
    // Constructors
 
-   public MultiplexorChannelFactory(MBeanServer server,
+   public MultiplexorJChannelFactory(MBeanServer server,
                                     ObjectName channelFactory,
                                     String uniqueID,
                                     String syncStack,

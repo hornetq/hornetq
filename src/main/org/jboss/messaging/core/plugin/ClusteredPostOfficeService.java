@@ -43,9 +43,9 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOf
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.Peer;
-import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.ChannelFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.MultiplexorChannelFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.channelfactory.XMLChannelFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.JChannelFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.MultiplexorJChannelFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.XMLJChannelFactory;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
 
@@ -59,7 +59,7 @@ import java.util.Collections;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
@@ -331,7 +331,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
          FilterFactory ff = new SelectorFactory();
          FailoverMapper mapper = new DefaultFailoverMapper();
 
-         ChannelFactory channelFactory = null;
+         JChannelFactory JChannelFactory = null;
 
          if (this.channelFactoryName != null)
          {
@@ -348,18 +348,18 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
             if (info!=null)
             {
                log.debug("*********************************** Using Multiplexor");
-               channelFactory = new MultiplexorChannelFactory(server, channelFactoryName, channelPartitionName, syncChannelName, asyncChannelName);
+               JChannelFactory = new MultiplexorJChannelFactory(server, channelFactoryName, channelPartitionName, syncChannelName, asyncChannelName);
             }
             else
             {
-               log.debug("*********************************** Using XMLChannelFactory");
-               channelFactory = new XMLChannelFactory(syncChannelConfig, asyncChannelConfig);
+               log.debug("*********************************** Using XMLJChannelFactory");
+               JChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
             }
          }
          else
          {
-            log.debug("*********************************** Using XMLChannelFactory");
-            channelFactory = new XMLChannelFactory(syncChannelConfig, asyncChannelConfig);
+            log.debug("*********************************** Using XMLJChannelFactory");
+            JChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
          }
 
          postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties,
@@ -367,7 +367,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
                                                       nodeId, officeName, ms,
                                                       pm, tr, ff, cf, pool,
                                                       groupName,
-                                                      channelFactory,
+            JChannelFactory,
                                                       stateTimeout, castTimeout,
                                                       pullPolicy, rf,
                                                       mapper,
