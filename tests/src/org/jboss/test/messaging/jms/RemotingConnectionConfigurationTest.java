@@ -103,7 +103,7 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
 
          ClientConnectionDelegate delegate = (ClientConnectionDelegate)connection.getDelegate();
          JMSRemotingConnection remotingConnection = delegate.getRemotingConnection();
-         Client client = remotingConnection.getInvokingClient();
+         Client client = remotingConnection.getRemotingClient();
 
          Field field = JMSRemotingConnection.class.getDeclaredField("serverLocator");
          field.setAccessible(true);
@@ -163,7 +163,7 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
 
          ClientConnectionDelegate delegate = (ClientConnectionDelegate)connection.getDelegate();
          JMSRemotingConnection remotingConnection = delegate.getRemotingConnection();
-         Client client = remotingConnection.getInvokingClient();
+         Client client = remotingConnection.getRemotingClient();
 
          Field field = JMSRemotingConnection.class.getDeclaredField("serverLocator");
          field.setAccessible(true);

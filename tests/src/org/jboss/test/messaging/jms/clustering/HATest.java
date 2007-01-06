@@ -129,21 +129,21 @@ public class HATest extends ClusteringTestBase
       ConnectionState state3 = getConnectionState(conn3);
 
       assertNotSame(state2.getRemotingConnection(), state3.getRemotingConnection());
-      assertNotSame(state2.getRemotingConnection().getInvokingClient(), state3.getRemotingConnection().getInvokingClient());
+      assertNotSame(state2.getRemotingConnection().getRemotingClient(), state3.getRemotingConnection().getRemotingClient());
 
 
 
       conn1.close();
       assertNotNull(state2.getRemotingConnection());
-      assertNotNull(state2.getRemotingConnection().getInvokingClient().getInvoker());
-      assertTrue(state2.getRemotingConnection().getInvokingClient().getInvoker().isConnected());
+      assertNotNull(state2.getRemotingConnection().getRemotingClient().getInvoker());
+      assertTrue(state2.getRemotingConnection().getRemotingClient().getInvoker().isConnected());
       conn2.close();
 
       log.info("Closing connection 3 now");
 
       assertNotNull(state3.getRemotingConnection());
-      assertNotNull(state3.getRemotingConnection().getInvokingClient().getInvoker());
-      assertTrue(state3.getRemotingConnection().getInvokingClient().getInvoker().isConnected());
+      assertNotNull(state3.getRemotingConnection().getRemotingClient().getInvoker());
+      assertTrue(state3.getRemotingConnection().getRemotingClient().getInvoker().isConnected());
       // When I created the testcase this was failing, throwing exceptions. This was basically why I created this testcase
       conn3.close();
    }

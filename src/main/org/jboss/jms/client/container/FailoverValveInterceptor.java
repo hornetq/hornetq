@@ -18,6 +18,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.io.IOException;
 
 /**
  * An interceptor that acts as a failover valve: it allows all invocations to go through as long
@@ -201,6 +202,12 @@ public class FailoverValveInterceptor implements Interceptor
          if (trace) { log.trace(this + " allowed " + (exempt ? "exempt" : "") + " method " + methodName + "() to pass through"); }
 
          return invocation.invokeNext();
+
+      }
+      catch(IOException e)
+      {
+         // transport-level failure detected while being in the middle of an invocation
+         throw e;
       }
       finally
       {
@@ -217,7 +224,6 @@ public class FailoverValveInterceptor implements Interceptor
                activeMethods.remove(methodName);
             }
          }
-
       }
    }
 

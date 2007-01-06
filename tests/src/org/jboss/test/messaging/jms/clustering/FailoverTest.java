@@ -16,8 +16,10 @@ import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.JBossQueueBrowser;
 import org.jboss.jms.client.JBossMessageConsumer;
 import org.jboss.jms.client.JBossMessageProducer;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -1570,6 +1572,42 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
+   public void testTemp() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         ServerManagement.killAndWait(1);
+
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    public void testSimpleFailover() throws Exception
    {
       Connection conn = null;
@@ -1581,8 +1619,6 @@ public class FailoverTest extends ClusteringTestBase
 
          conn = cf.createConnection();
          conn.start();
-
-         // create a producer/consumer on node 1
 
          // make sure we're connecting to node 1
 
@@ -1601,7 +1637,6 @@ public class FailoverTest extends ClusteringTestBase
          p1.send(s1.createTextMessage("blip"));
 
          // kill node 1
-
 
          ServerManagement.killAndWait(1);
          log.info("########");

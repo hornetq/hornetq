@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.logging.Logger;
@@ -201,7 +200,7 @@ public class HAStressTest extends ClusteringTestBase
          JBossConnection connTest = (JBossConnection) getConnection(new Connection[]{conn1, conn2, conn3}, i);
 
          String locator = ((ClientConnectionDelegate) connTest.getDelegate()).getRemotingConnection().
-            getInvokingClient().getInvoker().getLocator().getLocatorURI();
+            getRemotingClient().getInvoker().getLocator().getLocatorURI();
 
          log.info("Server " + i + " has locator=" + locator);
 

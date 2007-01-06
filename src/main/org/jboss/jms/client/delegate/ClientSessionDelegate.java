@@ -514,7 +514,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    protected Client getClient()
    {
       //Use the Client in the Connection's state
-      return ((ConnectionState)state.getParent()).getRemotingConnection().getInvokingClient();
+      return ((ConnectionState)state.getParent()).getRemotingConnection().getRemotingClient();
    }
 
 

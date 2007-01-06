@@ -90,7 +90,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
       this(Integer.MIN_VALUE);
    }
 
-   // Interceptor implementation ------------------------------------
+   // Interceptor implementation -------------------------------------------------------------------
 
    public String getName()
    {
@@ -99,8 +99,8 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
    }
 
    /**
-    * DelegateSupport also acts as an interceptor - the last interceptor in the chain which
-    * invokes on the server.
+    * DelegateSupport also acts as an interceptor - the last interceptor in the chain which invokes
+    * on the server.
     */
    public Object invoke(Invocation invocation) throws Throwable
    {
@@ -111,10 +111,11 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
                                            new Integer(id),
                                            PayloadKey.AS_IS);
 
+      Client client = getClient();
       byte version = getState().getVersionToUse().getProviderIncrementingVersion();
-
       MessagingMarshallable request = new MessagingMarshallable(version, invocation);
-      MessagingMarshallable response = (MessagingMarshallable)getClient().invoke(request, null);
+
+      MessagingMarshallable response = (MessagingMarshallable)client.invoke(request, null);
 
       if (trace) { log.trace(this + " got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
 

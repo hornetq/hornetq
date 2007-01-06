@@ -37,7 +37,8 @@ import org.jboss.remoting.transport.socket.SocketServerInvoker;
 /**
  * Encapsulates the state and behaviour from jboss remoting needed for a JMS connection.
  * 
- * Each JMS connection maintains a single Client instance for invoking on the server
+ * Each JMS connection maintains a single Client instance for invoking on the server.
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version 1.1
@@ -46,25 +47,29 @@ import org.jboss.remoting.transport.socket.SocketServerInvoker;
  */
 public class JMSRemotingConnection
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    public static final String CALLBACK_POLL_PERIOD_DEFAULT = "100";
 
    private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   protected Client client;
-   protected boolean clientPing;
-   protected InvokerLocator serverLocator;
-   protected CallbackManager callbackManager;
+   private Client client;
+   private boolean clientPing;
+   private InvokerLocator serverLocator;
+   private CallbackManager callbackManager;
 
-   /** When a failover is performed, this flag is set to true */
-   protected boolean failed=false;
+   // When a failover is performed, this flag is set to true
+   protected boolean failed = false;
 
-   // Constructors --------------------------------------------------
+   // Maintaining a reference to the remoting connection listener for cases when we need to
+   // explicitly remove it from the remoting client
+   private ConsolidatedRemotingConnectionListener remotingConnectionListener;
+
+   // Constructors ---------------------------------------------------------------------------------
 
    public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Throwable
    {
@@ -74,7 +79,7 @@ public class JMSRemotingConnection
       log.debug(this + " created");
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void start() throws Throwable
    {
@@ -104,14 +109,18 @@ public class JMSRemotingConnection
       // For socket transport allow true push callbacks, with callback Connector.
       // For http transport, simulate push callbacks.
       boolean doPushCallbacks = "socket".equals(serverLocator.getProtocol());
+
       if (doPushCallbacks)
       {
          if (log.isTraceEnabled()) log.trace("doing push callbacks");
          HashMap metadata = new HashMap();
          metadata.put(InvokerLocator.DATATYPE, "jms");
-         metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms"); //Not actually used at present - but it does no harm         
-         metadata.put(MicroSocketClientInvoker.CLIENT_SOCKET_CLASS_FLAG, "org.jboss.jms.client.remoting.ClientSocketWrapper");
-         metadata.put(SocketServerInvoker.SERVER_SOCKET_CLASS_FLAG, "org.jboss.jms.server.remoting.ServerSocketWrapper");
+         // Not actually used at present - but it does no harm
+         metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms");
+         metadata.put(MicroSocketClientInvoker.CLIENT_SOCKET_CLASS_FLAG,
+                      "org.jboss.jms.client.remoting.ClientSocketWrapper");
+         metadata.put(SocketServerInvoker.SERVER_SOCKET_CLASS_FLAG,
+                      "org.jboss.jms.server.remoting.ServerSocketWrapper");
          
          String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
          if (bindAddress != null)
@@ -176,7 +185,7 @@ public class JMSRemotingConnection
       log.debug(this + " closed");
    }
 
-   public Client getInvokingClient()
+   public Client getRemotingClient()
    {
       return client;
    }
@@ -185,7 +194,6 @@ public class JMSRemotingConnection
    {
       return callbackManager;
    }
-
 
    public boolean isFailed()
    {
@@ -197,17 +205,60 @@ public class JMSRemotingConnection
       this.failed = failed;
    }
 
+   /**
+    * @return true if the listener was correctly installed, or false if the add attepmt was ignored
+    *         because there is already another listener installed.
+    */
+   public synchronized boolean addConnectionListener(ConsolidatedRemotingConnectionListener listener)
+   {
+      if (remotingConnectionListener != null)
+      {
+         return false;
+      }
+
+      client.addConnectionListener(listener);
+      remotingConnectionListener = listener;
+
+      return true;
+   }
+
+   public synchronized ConsolidatedRemotingConnectionListener getConnectionListener()
+   {
+      return remotingConnectionListener;
+   }
+
+   /**
+    * May return null, if no connection listener was previously installed.
+    */
+   public synchronized ConsolidatedRemotingConnectionListener removeConnectionListener()
+   {
+      if (remotingConnectionListener == null)
+      {
+         return null;
+      }
+
+      if (!client.removeConnectionListener(remotingConnectionListener))
+      {
+         throw new IllegalStateException("Failed to remove remoting connection listener");
+      }
+
+      log.debug(this + " removed consolidated connection listener from " + client);
+      ConsolidatedRemotingConnectionListener toReturn = remotingConnectionListener;
+      remotingConnectionListener = null;
+      return toReturn;
+   }
+
    public String toString()
    {
       return "JMSRemotingConnection[" + serverLocator.getLocatorURI() + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

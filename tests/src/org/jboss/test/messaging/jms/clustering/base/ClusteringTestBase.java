@@ -133,7 +133,7 @@ public class ClusteringTestBase extends MessagingTestCase
    protected String getLocatorURL(Connection conn)
    {
       return getConnectionState(conn).getRemotingConnection().
-         getInvokingClient().getInvoker().getLocator().getLocatorURI();
+         getRemotingClient().getInvoker().getLocator().getLocatorURI();
    }
 
    protected int getServerId(Connection conn)

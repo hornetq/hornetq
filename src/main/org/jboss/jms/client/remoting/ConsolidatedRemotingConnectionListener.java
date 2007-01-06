@@ -31,13 +31,13 @@ import java.util.Iterator;
  */
 public class ConsolidatedRemotingConnectionListener implements ConnectionListener
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ConsolidatedRemotingConnectionListener.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private ConnectionState state;
 
@@ -46,14 +46,14 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
    // List<ConnectionListener>
    private List delegateListeners;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ConsolidatedRemotingConnectionListener()
    {
       delegateListeners = new ArrayList();
    }
 
-   // ConnectionListener implementation -----------------------------
+   // ConnectionListener implementation ------------------------------------------------------------
 
    public void handleConnectionException(Throwable throwable, Client client)
    {
@@ -116,7 +116,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
       }
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public synchronized boolean addDelegateListener(ConnectionListener l)
    {
@@ -159,12 +159,12 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
       return state + ".ConsolidatedListener";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

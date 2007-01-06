@@ -34,8 +34,6 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
 
 /**
  * Handles operations related to the connection
@@ -53,8 +51,6 @@ public class ConnectionAspect
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ConnectionAspect.class);
-   
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -114,7 +110,7 @@ public class ConnectionAspect
       ConnectionState state = getConnectionState(invocation);
       state.setJustCreated(false);
       
-      return state.getRemotingConnectionListener().getJMSExceptionListener();
+      return state.getRemotingConnection().getConnectionListener().getJMSExceptionListener();
    }
    
    public Object handleSetExceptionListener(Invocation invocation) throws Throwable
@@ -124,7 +120,8 @@ public class ConnectionAspect
       
       MethodInvocation mi = (MethodInvocation)invocation;
       ExceptionListener exceptionListener = (ExceptionListener)mi.getArguments()[0];
-      state.getRemotingConnectionListener().addJMSExceptionListener(exceptionListener);
+      state.getRemotingConnection().getConnectionListener().
+         addJMSExceptionListener(exceptionListener);
 
       return null;
    }
@@ -173,14 +170,12 @@ public class ConnectionAspect
       JMSRemotingConnection remotingConnection = state.getRemotingConnection();
 
       // remove the consolidated remoting connection listener
-      ConsolidatedRemotingConnectionListener listener = state.getRemotingConnectionListener();
-      listener.clear();
 
-      Client client = remotingConnection.getInvokingClient();
-      boolean removed = client.removeConnectionListener(listener);
-
-      log.debug(this + (removed ? " removed " : " failed to remove ") +
-                "the consolidated remoting connection listener from " + client);
+      ConsolidatedRemotingConnectionListener l = remotingConnection.removeConnectionListener();
+      if (l != null)
+      {
+         l.clear();
+      }
 
       // Finished with the connection - we need to shutdown callback server
       remotingConnection.stop();

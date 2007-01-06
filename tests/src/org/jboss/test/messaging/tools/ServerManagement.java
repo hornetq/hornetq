@@ -275,7 +275,7 @@ public class ServerManagement
          while(true)
          {
             server.ping();
-            log.debug("Server " + i + " still alive... pinging again");
+            log.debug("server " + i + " still alive ...");
             Thread.sleep(10);
          }
       }
@@ -283,6 +283,8 @@ public class ServerManagement
       {
         // e.printStackTrace();
       }
+
+      log.debug("server " + i + " killed and dead");
    }
 
    /**

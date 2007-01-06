@@ -30,7 +30,6 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.delegate.ConnectionDelegate;
@@ -81,7 +80,6 @@ public class ConnectionState extends HierarchicalStateSupport
    private String clientID;
 
    private JMSRemotingConnection remotingConnection;
-   private ConsolidatedRemotingConnectionListener remotingConnectionListener;
    private ResourceManager resourceManager;
    private MessageIdGenerator idGenerator;
 
@@ -102,7 +100,6 @@ public class ConnectionState extends HierarchicalStateSupport
 
    public ConnectionState(int serverID, ConnectionDelegate delegate,
                           JMSRemotingConnection remotingConnection,
-                          ConsolidatedRemotingConnectionListener remotingConnectionListener,
                           Version versionToUse,
                           MessageIdGenerator gen)
       throws Exception
@@ -115,9 +112,6 @@ public class ConnectionState extends HierarchicalStateSupport
 
       this.remotingConnection = remotingConnection;
       this.versionToUse = versionToUse;
-
-      this.remotingConnectionListener = remotingConnectionListener;
-      remotingConnectionListener.setConnectionState(this);
 
       // Each connection has its own resource manager. If we can failover all connections with the
       // same server id at the same time then we can maintain one rm per unique server as opposed
@@ -199,11 +193,6 @@ public class ConnectionState extends HierarchicalStateSupport
    public JMSRemotingConnection getRemotingConnection()
    {
       return remotingConnection;
-   }
-
-   public ConsolidatedRemotingConnectionListener getRemotingConnectionListener()
-   {
-      return remotingConnectionListener;
    }
 
    public int getServerID()

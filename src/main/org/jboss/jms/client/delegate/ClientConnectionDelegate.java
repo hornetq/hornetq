@@ -353,7 +353,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    protected Client getClient()
    {
-      return ((ConnectionState)state).getRemotingConnection().getInvokingClient();
+      return ((ConnectionState)state).getRemotingConnection().getRemotingClient();
    }
 
    // Package Private ------------------------------------------------------------------------------

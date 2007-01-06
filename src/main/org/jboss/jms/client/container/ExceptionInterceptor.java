@@ -32,6 +32,9 @@ import org.jboss.logging.Logger;
  * 
  * This interceptor is PER_VM
  *
+ * TODO: This interceptor seem a bit useless. For logging, we can use the ClientLoggingInterceptor.
+ *       Remove it?
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -40,21 +43,21 @@ import org.jboss.logging.Logger;
  */
 public class ExceptionInterceptor implements Interceptor
 {	
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ExceptionInterceptor.class);
       
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Interceptor implementation ------------------------------------
+   // Interceptor implementation -------------------------------------------------------------------
 
    public String getName()
    {
@@ -70,8 +73,7 @@ public class ExceptionInterceptor implements Interceptor
       catch(JMSException e)
       {
          // JMSException should not be logged unless trace is on
-         if (trace)  { log.trace("Caught JMSException:", e); }
-         
+         if (trace) { log.trace("Caught JMSException", e); }
          throw e;
       }
       catch (Throwable t)
@@ -84,11 +86,11 @@ public class ExceptionInterceptor implements Interceptor
       }      
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private void log(Throwable e)
    {

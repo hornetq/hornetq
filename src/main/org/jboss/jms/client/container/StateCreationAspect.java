@@ -102,8 +102,10 @@ public class StateCreationAspect
          // install the consolidated remoting connection listener; it will be de-installed on
          // connection closing by ConnectionAspect
 
-         ConsolidatedRemotingConnectionListener listener = new ConsolidatedRemotingConnectionListener();
-         remotingConnection.getInvokingClient().addConnectionListener(listener);
+         ConsolidatedRemotingConnectionListener listener =
+            new ConsolidatedRemotingConnectionListener();
+
+         remotingConnection.addConnectionListener(listener);
 
          if (versionToUse == null)
          {
@@ -116,8 +118,9 @@ public class StateCreationAspect
 
          ConnectionState connectionState =
             new ConnectionState(serverID, connectionDelegate,
-                                remotingConnection, listener, versionToUse, idGenerator);
+                                remotingConnection, versionToUse, idGenerator);
 
+         listener.setConnectionState(connectionState);
          connectionDelegate.setState(connectionState);
       }
 

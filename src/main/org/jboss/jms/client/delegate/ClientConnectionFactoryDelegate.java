@@ -210,7 +210,7 @@ public class ClientConnectionFactoryDelegate
          remotingConnection = new JMSRemotingConnection(serverLocatorURI, clientPing);
          remotingConnection.start();
 
-         client = remotingConnection.getInvokingClient();
+         client = remotingConnection.getRemotingClient();
 
          md.addMetaData(MetaDataConstants.JMS,
                         MetaDataConstants.REMOTING_SESSION_ID,

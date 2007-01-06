@@ -255,7 +255,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       // Use the Client in the Connection's state
       return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getInvokingClient();
+         getRemotingClient();
    }
 
 

@@ -224,7 +224,7 @@ public class JBossConnection implements
    {
       ConnectionState state = (ConnectionState)((ClientConnectionDelegate)delegate).getState();
       
-      return state.getRemotingConnection().getInvokingClient().getSessionId();
+      return state.getRemotingConnection().getRemotingClient().getSessionId();
    }
 
    public ConnectionDelegate getDelegate()
