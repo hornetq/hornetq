@@ -1646,7 +1646,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    /*
     * Removes all non durable binding data, and any local replicant data for the specified node.
     */
-   private void removeDataForNode(Integer nodeToRemove) throws Exception
+   private void cleanLocalDataForNode(Integer nodeToRemove) throws Exception
    {
       log.debug(this + " cleaning local data for node " + nodeToRemove);
 
@@ -1738,7 +1738,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    }
 
    //TODO - this is a bit tortuous - needs optimising
-   private Integer getNodeIdForSyncAddress(Address address) throws Exception
+   private Integer getNodeIDForSyncAddress(Address address) throws Exception
    {
       synchronized (replicatedData)
       {
@@ -1971,45 +1971,46 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       log.debug(this + ": " + address + " left");
 
-      Integer nid = getNodeIdForSyncAddress(address);
+      Integer leftNodeID = getNodeIDForSyncAddress(address);
 
-      if (nid == null)
+      if (leftNodeID == null)
       {
          throw new IllegalStateException(this + " cannot find node ID for address " + address);
       }
 
-      boolean crashed = !this.leaveMessageReceived(nid);
+      boolean crashed = !this.leaveMessageReceived(leftNodeID);
 
-      log.debug(this + ": node " + nid + " has " + (crashed ? "crashed" : "cleanly left the group"));
+      log.debug(this + ": node " + leftNodeID + " has " +
+         (crashed ? "crashed" : "cleanly left the group"));
 
       // Cleanup any hanging transactions - we do this irrespective of whether we crashed
-      checkTransactions(nid);
+      checkTransactions(leftNodeID);
 
       synchronized (failoverMap)
       {
          // Need to evaluate this before we regenerate the failover map
-         Integer failoverNode = (Integer)failoverMap.get(nid);
+         Integer failoverNode = (Integer)failoverMap.get(leftNodeID);
 
          if (failoverNode == null)
          {
-            throw new IllegalStateException(this + " cannot find failover node for node " + nid);
+            throw new IllegalStateException(this + " cannot find failover node for node " + leftNodeID);
          }
 
          // Remove any replicant data and non durable bindings for the node - again we need to do
          // this irrespective of whether we crashed. This will notify any listeners which will
          // recalculate the connection factory delegates and failover delegates.
 
-         removeDataForNode(nid);
+         cleanLocalDataForNode(leftNodeID);
 
          if (currentNodeId == failoverNode.intValue() && crashed)
          {
             // The node crashed and we are the failover node so let's perform failover
 
-            log.info(this + ": I am the failover node for node " + nid + " that crashed");
+            log.info(this + ": I am the failover node for node " + leftNodeID + " that crashed");
 
             //TODO server side valve
 
-            performFailover(nid);
+            performFailover(leftNodeID);
          }
       }
    }
@@ -2502,16 +2503,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                                       boolean added, int originatorNodeID)
       {
          log.debug(DefaultClusteredPostOffice.this + " received " + key +
-            " replication change from node " + originatorNodeID + ": " + updatedReplicantMap);
+            " replication change from node " + originatorNodeID + ", new map " + updatedReplicantMap);
 
          if (key instanceof String && ((String)key).equals(ADDRESS_INFO_KEY))
          {
-            log.debug("Cluster map:\n" + dumpClusterMap(updatedReplicantMap));
+            log.debug("Updated cluster map:\n" + dumpClusterMap(updatedReplicantMap));
 
                // A node-address mapping has been added/removed from global state, we need to update
                // the failover map.
                failoverMap = failoverMapper.generateMapping(updatedReplicantMap.keySet());
-               log.debug("Failover map:\n" + dumpFailoverMap(failoverMap));
+               log.debug("Updated failover map:\n" + dumpFailoverMap(failoverMap));
             }
          }
       }

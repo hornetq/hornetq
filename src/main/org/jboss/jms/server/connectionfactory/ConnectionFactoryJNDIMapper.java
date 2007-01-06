@@ -271,7 +271,7 @@ public class ConnectionFactoryJNDIMapper
                                                 boolean added, int originatorNodeID)
    {
       log.debug(this + " received " + key + " replication change from node " + originatorNodeID +
-         ": " + updatedReplicantMap);
+         ", new map " + updatedReplicantMap);
 
       try
       {
@@ -284,8 +284,6 @@ public class ConnectionFactoryJNDIMapper
 
          if (sKey.equals(DefaultClusteredPostOffice.ADDRESS_INFO_KEY))
          {
-            log.debug(this + " received address mapping change " + updatedReplicantMap);
-
             // We respond to changes in the node-address mapping. This will be replicated whan a
             // node joins / leaves the group. When this happens we need to recalculate the
             // failoverMap and rebind all connection factories with the new mapping. We cannot just
@@ -311,7 +309,6 @@ public class ConnectionFactoryJNDIMapper
                }
 
                del.setFailoverMap(failoverMap);
-               rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
             }
          }
          else if (sKey.startsWith(CF_PREFIX) && originatorNodeID != serverPeer.getServerPeerID())
