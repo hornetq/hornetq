@@ -4,7 +4,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 /**
- * 
  * A LeaveClusterRequest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -12,13 +11,20 @@ import java.io.DataOutputStream;
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
- *
  */
 public class LeaveClusterRequest extends ClusterRequest
 {
+   // Constants ------------------------------------------------------------------------------------
+
    static final int TYPE = 11;
 
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
    private int nodeId;
+
+   // Constructors ---------------------------------------------------------------------------------
 
    public LeaveClusterRequest(int nodeId)
    {
@@ -27,23 +33,13 @@ public class LeaveClusterRequest extends ClusterRequest
 
    /**
     * This constructor only exist because it's an Streamable requirement.
-    * @see ClusterRequest#createFromStream(java.io.DataInputStream)  
+    * @see ClusterRequest#createFromStream(java.io.DataInputStream)
     */
    public LeaveClusterRequest()
    {
    }
 
-   Object execute(PostOfficeInternal office) throws Throwable
-   {
-      office.handleNodeLeft(nodeId);
-      
-      return null;
-   }
-
-   byte getType()
-   {
-      return TYPE;
-   }
+   // Streamable implementation --------------------------------------------------------------------
 
    public void write(DataOutputStream out) throws Exception
    {
@@ -54,4 +50,32 @@ public class LeaveClusterRequest extends ClusterRequest
    {
       nodeId = in.readInt();
    }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String toString()
+   {
+      return "LeaveClusterRequest[NID="  + nodeId + "]";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   Object execute(PostOfficeInternal office) throws Throwable
+   {
+      office.handleNodeLeft(nodeId);
+
+      return null;
+   }
+
+   byte getType()
+   {
+      return TYPE;
+   }
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }

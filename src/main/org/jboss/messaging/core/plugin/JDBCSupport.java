@@ -152,7 +152,6 @@ public class JDBCSupport implements MessagingComponent
    {
       log.debug(this + " stopped");
    }
-    
    
    // Protected ----------------------------------------------------------     
    

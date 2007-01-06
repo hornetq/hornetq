@@ -100,7 +100,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 public class DefaultClusteredPostOffice extends DefaultPostOffice
    implements ClusteredPostOffice, PostOfficeInternal, Replicator
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(DefaultClusteredPostOffice.class);
 
@@ -110,7 +110,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    // Key for looking up node id -> failed over for node id mapping from replicated data
    public static final String FAILED_OVER_FOR_KEY = "FAILED_OVER_FOR";
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    /**
     * @param map - Map<Integer(nodeID)-Integer(failoverNodeID)>
@@ -146,7 +146,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       return sb.toString();
    }
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    // Used for failure testing
 
@@ -160,7 +160,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    private String groupName;
 
-   private boolean started;
+   private volatile boolean started;
+   private volatile boolean stopping;
 
    private ChannelFactory channelFactory;
 
@@ -212,7 +213,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    private QueuedExecutor viewExecutor;
 
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    /*
     * Constructor using Element for configuration
@@ -276,7 +277,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       this.channelFactory = channelFactory;
    }
 
-   // MessagingComponent overrides ----------------------------------
+   // MessagingComponent overrides -----------------------------------------------------------------
 
    public synchronized void start() throws Exception
    {
@@ -299,7 +300,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       MembershipListener ml = new ControlMembershipListener();
       RequestHandler rh = new PostOfficeRequestHandler();
 
-      //Register as a listener for nodeid-adress mapping events
+      // register as a listener for nodeid-adress mapping events
       nodeAddressMapListener = new NodeAddressMapListener();
 
       registerListener(nodeAddressMapListener);
@@ -307,21 +308,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       this.controlMessageDispatcher = new MessageDispatcher(syncChannel, cml, ml, rh, true);
 
       Receiver r = new DataReceiver();
-
       asyncChannel.setReceiver(r);
 
       syncChannel.connect(groupName);
-
       asyncChannel.connect(groupName);
 
       super.start();
 
       Address syncAddress = syncChannel.getLocalAddress();
-
       Address asyncAddress = asyncChannel.getLocalAddress();
-
       PostOfficeAddressInfo info = new PostOfficeAddressInfo(syncAddress, asyncAddress);
-
       put(ADDRESS_INFO_KEY, info);
 
       statsSender.start();
@@ -333,31 +329,39 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    public synchronized void stop(boolean sendNotification) throws Exception
    {
+      if (trace) { log.trace(this + " stopping"); }
+
       if (!started)
       {
          log.warn("Attempt to stop() but " + this + " is not started");
+         return;
       }
-      else
-      {
-         syncSendRequest(new LeaveClusterRequest(this.getNodeId()));
 
-         super.stop(sendNotification);
+      stopping = true;
 
-         unregisterListener(nodeAddressMapListener);
+      syncSendRequest(new LeaveClusterRequest(getNodeId()));
 
-         statsSender.stop();
+      statsSender.stop();
 
-         syncChannel.close();
+      super.stop(sendNotification);
 
-         asyncChannel.close();
+      //  TODO in case of shared channels, we should have some sort of unsetReceiver(r)
+      asyncChannel.setReceiver(null);
 
-         started = false;
+      unregisterListener(nodeAddressMapListener);
 
-         if (trace) { log.trace("Stopped " + this); }
-      }
+      // TODO - what happens if we share the channel? Don't we mess up the other applications this way?
+      syncChannel.close();
+
+      // TODO - what happens if we share the channel? Don't we mess up the other applications this way?
+      asyncChannel.close();
+
+      started = false;
+
+      log.debug(this + " stopped");
    }
 
-   // NotificationBroadcaster implementation ------------------------
+   // NotificationBroadcaster implementation -------------------------------------------------------
 
    public void addNotificationListener(NotificationListener listener,
                                        NotificationFilter filter,
@@ -377,7 +381,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       return new MBeanNotificationInfo[0];
    }
 
-   // Peer implementation -------------------------------------------
+   // Peer implementation --------------------------------------------------------------------------
 
    public Set getNodeIDView()
    {
@@ -418,7 +422,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       return nodeIDView;
    }
 
-   // ClusteredPostOffice implementation ----------------------------
+   // ClusteredPostOffice implementation -----------------------------------------------------------
 
    public Binding bindClusteredQueue(Condition condition, LocalClusteredQueue queue) throws Exception
    {
@@ -484,7 +488,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       }
    }
 
-   // PostOfficeInternal implementation -----------------------------
+   // PostOfficeInternal implementation ------------------------------------------------------------
 
    /*
     * Called when another node adds a binding
@@ -994,7 +998,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       }
    }
 
-   // Replicator implementation -------------------------------------
+   // Replicator implementation --------------------------------------------------------------------
 
    public void put(Serializable key, Serializable replicant) throws Exception
    {
@@ -1061,7 +1065,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       return failoverMapper;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public boolean route(MessageReference ref, Condition condition, Transaction tx) throws Exception
    {
@@ -1456,9 +1460,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       return holdingArea.values();
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
    protected void addToNameMap(Binding binding)
    {
@@ -1618,7 +1622,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       return new DefaultBinding(nodeID, condition, queue, failed);
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private void sendBindRequest(Condition condition, LocalClusteredQueue queue, Binding binding)
       throws Exception
@@ -2214,7 +2218,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       log.debug(this + " sent " + notificationType + " JMX notification");
    }
 
-   // Inner classes -------------------------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
    /*
     * This class is used to manage state on the control channel
@@ -2223,6 +2227,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       public byte[] getState()
       {
+         if (stopping)
+         {
+            return null;
+         }
+
          try
          {
             lock.writeLock().acquire();
@@ -2251,10 +2260,19 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       public void receive(Message message)
       {
+         if (stopping)
+         {
+            return;
+         }
       }
 
       public void setState(byte[] bytes)
       {
+         if (stopping)
+         {
+            return;
+         }
+
          if (bytes != null)
          {
             try
@@ -2298,16 +2316,21 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       public void block()
       {
-         //NOOP
+         // NOOP
       }
 
       public void suspect(Address address)
       {
-         //NOOP
+         // NOOP
       }
 
       public void viewAccepted(View newView)
       {
+         if (stopping)
+         {
+            return;
+         }
+
          try
          {
             // We queue up changes and execute them asynchronously.
@@ -2325,7 +2348,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       public byte[] getState()
       {
-         //NOOP
+         // NOOP
          return null;
       }
    }
@@ -2341,9 +2364,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       public void run()
       {
-         //TODO: (by Clebert) Most JBoss Services use info on viewAccepted,
-         //TODO:     can't we do the same since this is pretty useful?
-         log.info(DefaultClusteredPostOffice.this  + " got new view: " + newView);
+         log.info(DefaultClusteredPostOffice.this  + " got new view " + newView);
 
          // JGroups will make sure this method is never called by more than one thread concurrently
 
@@ -2447,6 +2468,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    {
       public Object handle(Message message)
       {
+         if (stopping)
+         {
+            return null;
+         }
+
          if (trace) { log.trace(DefaultClusteredPostOffice.this + ".RequestHandler received " + message + " on the SYNC channel"); }
 
          try
