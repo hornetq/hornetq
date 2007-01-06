@@ -632,6 +632,24 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }
    
    // Protected ------------------------------------------------------------------------------------
+
+   /**
+    * Give access to children enpoints to the failed node ID, in case this is a failover connection.
+    * Return null if the connection is regular (not failover).
+    */
+   Integer getFailedNodeID()
+   {
+      return failedNodeID;
+   }
+
+   /**
+    * Tell children enpoints (and anybody from this package, for that matter) whether this
+    * connection is a regular or failover connection.
+    */
+   boolean isFailoverConnection()
+   {
+      return failedNodeID != null;
+   }
      
    // Private --------------------------------------------------------------------------------------
    

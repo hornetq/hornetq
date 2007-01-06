@@ -73,7 +73,7 @@ public class TopicService extends DestinationServiceSupport
          JMSCondition topicCond = new JMSCondition(false, destination.getName());
                     
          // We deploy any queues corresponding to pre-existing durable subscriptions
-         Collection bindings = postOffice.listBindingsForCondition(topicCond);
+         Collection bindings = postOffice.getBindingForCondition(topicCond);
          Iterator iter = bindings.iterator();
          while (iter.hasNext())
          {
@@ -116,7 +116,7 @@ public class TopicService extends DestinationServiceSupport
          
          JMSCondition topicCond = new JMSCondition(false, destination.getName());         
          
-         Collection bindings = postOffice.listBindingsForCondition(topicCond);
+         Collection bindings = postOffice.getBindingForCondition(topicCond);
          
          Iterator iter = bindings.iterator();
          while (iter.hasNext())            

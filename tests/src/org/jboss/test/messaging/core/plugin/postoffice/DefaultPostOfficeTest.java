@@ -247,22 +247,22 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
             office.bindQueue(new SimpleCondition("condition2"), queue8);
          
          
-         Collection bindings = office.listBindingsForCondition(new SimpleCondition("dummy"));
+         Collection bindings = office.getBindingForCondition(new SimpleCondition("dummy"));
          assertNotNull(bindings);
          assertTrue(bindings.isEmpty());
          
          //We don't match on substrings
-         bindings = office.listBindingsForCondition(new SimpleCondition("condition123"));
+         bindings = office.getBindingForCondition(new SimpleCondition("condition123"));
          assertNotNull(bindings);
          assertTrue(bindings.isEmpty());
          
          //We don't currently support hierarchies
-         bindings = office.listBindingsForCondition(new SimpleCondition("condition1.subcondition"));
+         bindings = office.getBindingForCondition(new SimpleCondition("condition1.subcondition"));
          assertNotNull(bindings);
          assertTrue(bindings.isEmpty());
          
          //We currently just do an exact match
-         bindings = office.listBindingsForCondition(new SimpleCondition("condition1"));
+         bindings = office.getBindingForCondition(new SimpleCondition("condition1"));
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -272,7 +272,7 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
          assertEquivalent((Binding)iter.next(), binding3);
          assertEquivalent((Binding)iter.next(), binding4);
          
-         bindings = office.listBindingsForCondition(new SimpleCondition("condition2"));
+         bindings = office.getBindingForCondition(new SimpleCondition("condition2"));
          assertNotNull(bindings);
          assertEquals(4, bindings.size());
          
@@ -1079,9 +1079,16 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
    protected void assertEquivalent(Binding binding1, Binding binding2)
    {
       assertEquals(binding1.getNodeID(), binding2.getNodeID());
-      assertEquals(binding1.getQueue().getName(), binding2.getQueue().getName()); 
-      String selector1 = binding1.getQueue().getFilter() != null ? binding1.getQueue().getFilter().getFilterString() : null;
-      String selector2 = binding2.getQueue().getFilter() != null ? binding2.getQueue().getFilter().getFilterString() : null;
+      assertEquals(binding1.getQueue().getName(), binding2.getQueue().getName());
+
+      String selector1 =
+         binding1.getQueue().getFilter() != null ?
+            binding1.getQueue().getFilter().getFilterString() : null;
+
+      String selector2 =
+         binding2.getQueue().getFilter() != null ?
+            binding2.getQueue().getFilter().getFilterString() : null;
+
       assertEquals(selector1, selector2);
       assertEquals(binding1.getQueue().getChannelID(), binding2.getQueue().getChannelID());
       assertEquals(binding1.getQueue().isRecoverable(), binding2.getQueue().isRecoverable());

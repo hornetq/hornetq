@@ -32,13 +32,12 @@ import org.jboss.messaging.core.tx.Transaction;
  * 
  * A PostOffice
  * 
- * A post office holds bindings of queues to conditions.
+ * A post office holds bindings of queues to conditions. When routing a reference, the post office
+ * routes the reference to any binding whose condition matches the condition specified in the call
+ * to route(...)
  * 
- * When routing a reference, the post office routes the reference to any binding whose
- * condition matches the condition specified in the call to route(...)
- * 
- * Currently we only support conditions where the condition is an exact text match, and
- * there is a single binding per queue.
+ * Currently we only support conditions where the condition is an exact text match, and there is a
+ * single binding per queue.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -58,17 +57,12 @@ public interface PostOffice extends MessagingComponent
 
    /**
     * List the bindings that match the specified condition
-    * @param condition
-    * @return
-    * @throws Exception
     */
-   Collection listBindingsForCondition(Condition condition) throws Exception;
+   Collection getBindingForCondition(Condition condition) throws Exception;
+
    
    /**
-    * Get the binding for the specified queue name
-    * @param queueName
-    * @return
-    * @throws Exception
+    * Get the binding for the specified queue name.
     */
    Binding getBindingForQueueName(String queueName) throws Exception;
 

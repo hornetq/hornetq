@@ -60,7 +60,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.listBindingsForCondition(topicCond);
+      Collection subs = postOffice.getBindingForCondition(topicCond);
       
       //XXX How to lock down all subscriptions?
       Iterator iter = subs.iterator();
@@ -76,7 +76,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.listBindingsForCondition(topicCond);
+      Collection subs = postOffice.getBindingForCondition(topicCond);
       
       return subs.size();         
    }
@@ -85,7 +85,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.listBindingsForCondition(topicCond);
+      Collection subs = postOffice.getBindingForCondition(topicCond);
       
       Iterator iter = subs.iterator();
       
@@ -108,7 +108,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.listBindingsForCondition(topicCond);
+      Collection subs = postOffice.getBindingForCondition(topicCond);
       
       return getSubscriptionsAsText(subs, true) + getSubscriptionsAsText(subs, false);
    }
@@ -117,7 +117,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.listBindingsForCondition(topicCond);
+      Collection subs = postOffice.getBindingForCondition(topicCond);
       
       return getSubscriptionsAsText(subs, durable);
    }
@@ -127,7 +127,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.listBindingsForCondition(topicCond);
+      Collection subs = postOffice.getBindingForCondition(topicCond);
       
       return getMessagesFromDurableSub(subs, subName, clientID, trimSelector(selector));
    }
@@ -137,7 +137,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.listBindingsForCondition(topicCond);
+      Collection subs = postOffice.getBindingForCondition(topicCond);
       
       return getMessagesFromNonDurableSub(subs, channelID, trimSelector(selector));
    }

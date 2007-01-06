@@ -136,7 +136,6 @@ public class SessionState extends HierarchicalStateSupport
       callbackHandlers = new HashMap();
    }
 
-
    // HierarchicalState implementation -------------------------------------------------------------
 
    public DelegateSupport getDelegate()

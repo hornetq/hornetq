@@ -257,7 +257,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
    }   
    
-   public Collection listBindingsForCondition(Condition condition) throws Exception
+   public Collection getBindingForCondition(Condition condition) throws Exception
    {
       return listBindingsForConditionInternal(condition, true);
    }  

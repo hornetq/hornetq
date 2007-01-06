@@ -181,7 +181,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // SessionDelegate implementation ---------------------------------------------------------------
        
    public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
-                                                  String selectorString,
+                                                  String selector,
                                                   boolean noLocal,
                                                   String subscriptionName,
                                                   boolean isCC,
@@ -189,19 +189,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       try
       {
-         if (failoverChannelID == null)
+         if (!connectionEndpoint.isFailoverConnection())
          {
             // regular consumer
-            return createConsumerDelegateInternal(jmsDestination, selectorString,
+            return createConsumerDelegateInternal(jmsDestination, selector,
                                                   noLocal, subscriptionName);
          }
-         else
-         {
-            // failover consumer
-            return createFailoverConsumerDelegateInternal(jmsDestination, selectorString,
-                                                          noLocal, subscriptionName,
-                                                          failoverChannelID);
-         }         
+
+         // we're child of a failover connection. Favor failover channels when creating new
+         // consumers
+         return createFailoverConsumerDelegateInternal(jmsDestination, selector,
+                                                       noLocal, subscriptionName,
+                                                       failoverChannelID);
       }
       catch (Throwable t)
       {
@@ -210,22 +209,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
       
 	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination,
-                                                String messageSelector,
-                                                Long failoverChannelID) throws JMSException
+                                                String selector, Long failoverChannelID)
+      throws JMSException
 	{
       try
       {
-         if (failoverChannelID == null)
+         if (!connectionEndpoint.isFailoverConnection())
          {
             // regular browser
-            return createBrowserDelegateInternal(jmsDestination, messageSelector);
+            return createBrowserDelegateInternal(jmsDestination, selector);
          }
-         else
-         {
-            // failover browser
-            return createFailoverBrowserDelegateInternal(jmsDestination, messageSelector,
-                                                          failoverChannelID);
-         }
+
+         // we're child of a failover connection. Favor failover channels when creating new
+         // browsers
+         return createFailoverBrowserDelegateInternal(jmsDestination, selector, failoverChannelID);
       }
       catch (Throwable t)
       {
@@ -567,7 +564,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          else
          {
             //Topic            
-            Collection bindings = postOffice.listBindingsForCondition(new JMSCondition(false, dest.getName()));
+            Collection bindings = postOffice.getBindingForCondition(new JMSCondition(false, dest.getName()));
             
             if (!bindings.isEmpty())
             {
@@ -1019,17 +1016,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       rec.del.acknowledge(null);    
-   } 
+   }
 
+   /**
+    * @param oldChannelID - old channel ID. It may be null when creating consumer subsequently to
+    *        the actual failover, so it's our responsibility to look the proper channel.
+    * @return
+    * @throws Exception
+    */
    private ConsumerDelegate createFailoverConsumerDelegateInternal(JBossDestination jmsDestination,
                                                                    String selectorString,
                                                                    boolean noLocal,
                                                                    String subscriptionName,
-                                                                   Long ocid)
+                                                                   Long oldChannelID)
       throws Exception
    {
       log.debug(this + " creating FAILOVER consumer for failed channel " +
-         ocid + " for " + jmsDestination +
+         oldChannelID + " for " + jmsDestination +
          (selectorString == null ? "" : ", selector '" + selectorString + "'") +
          (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
          (noLocal ? ", noLocal" : ""));
@@ -1040,18 +1043,38 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Cannot failover on a non-clustered post office!");
       }
 
-      long oldChannelID = ocid.longValue();
-      Binding binding = ((ClusteredPostOffice)postOffice).getBindingforChannelId(oldChannelID);
+      Binding binding = null;
+
+      if (oldChannelID != null)
+      {
+         binding = postOffice.getBindingforChannelId(oldChannelID.longValue());
+      }
+      else
+      {
+         // locate the binding based on destination name and the failed node ID
+         Collection c = postOffice.
+            getBindingForCondition(new JMSCondition(true, jmsDestination.getName()));
+
+         for(Iterator i = c.iterator(); i.hasNext(); )
+         {
+            Binding b = (Binding)i.next();
+            if (connectionEndpoint.getFailedNodeID().equals(b.getFailedNodeID()))
+            {
+               binding = b;
+               break;
+            }
+         }
+      }
 
       if (binding == null)
       {
-         throw new IllegalStateException("Can't find failed over channel " + oldChannelID);
+         throw new IllegalStateException("Can't find failed over " +
+            (oldChannelID != null ?
+               "channel " +  oldChannelID : "queue " + jmsDestination.getName()));
       }
 
       Queue newQueue = binding.getQueue();
       long newChannelID = newQueue.getChannelID();
-
-      if (trace) { log.trace(this + " failing over from channel " + oldChannelID + " to channel " + newChannelID); }
 
       int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
       int prefetchSize = connectionEndpoint.getPrefetchSize();
@@ -1369,9 +1392,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    private BrowserDelegate createFailoverBrowserDelegateInternal(JBossDestination jmsDestination,
                                                                  String selector,
-                                                                 Long ocid) throws Throwable
+                                                                 Long oldChannelID) throws Throwable
    {
-      log.debug(this + " creating FAILOVER browser for failed channel " + ocid + " for " +
+      log.debug(this + " creating FAILOVER browser for failed channel " + oldChannelID + " for " +
          jmsDestination + (selector == null ? "" : ", selector '" + selector + "'"));
 
       if (postOffice.isLocal())
@@ -1379,18 +1402,37 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Cannot failover on a non-clustered post office!");
       }
 
-      long oldChannelID = ocid.longValue();
+      Binding binding = null;
 
-      Binding binding = ((ClusteredPostOffice)postOffice).getBindingforChannelId(oldChannelID);
+      if (oldChannelID != null)
+      {
+         binding = postOffice.getBindingforChannelId(oldChannelID.longValue());
+      }
+      else
+      {
+         // locate the binding based on destination name and the failed node ID
+         Collection c = postOffice.
+            getBindingForCondition(new JMSCondition(true, jmsDestination.getName()));
+
+         for(Iterator i = c.iterator(); i.hasNext(); )
+         {
+            Binding b = (Binding)i.next();
+            if (connectionEndpoint.getFailedNodeID().equals(b.getFailedNodeID()))
+            {
+               binding = b;
+               break;
+            }
+         }
+      }
 
       if (binding == null)
       {
-         throw new IllegalStateException("Can't find failed over channel " + oldChannelID);
+         throw new IllegalStateException("Can't find failed over " +
+            (oldChannelID != null ?
+               "channel " +  oldChannelID : "queue " + jmsDestination.getName()));
       }
 
       Channel newChannel = binding.getQueue();
-
-      if (trace) { log.trace(this + " failing over from channel " + oldChannelID + " to channel " + newChannel.getChannelID()); }
 
       int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
 

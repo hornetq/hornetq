@@ -79,7 +79,7 @@ public class ManagedQueue extends ManagedDestination
    {
       JMSCondition queueCond = new JMSCondition(true, name);
 
-      Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
+      Binding binding = (Binding)postOffice.getBindingForCondition(queueCond).iterator().next();
 
       if (binding == null)
       {
@@ -99,7 +99,7 @@ public class ManagedQueue extends ManagedDestination
    {
       JMSCondition queueCond = new JMSCondition(true, name);
 
-      Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
+      Binding binding = (Binding)postOffice.getBindingForCondition(queueCond).iterator().next();
 
       if (binding == null)
       {
@@ -124,7 +124,7 @@ public class ManagedQueue extends ManagedDestination
 
       JMSCondition queueCond = new JMSCondition(true, name);
 
-      Binding binding = (Binding)postOffice.listBindingsForCondition(queueCond).iterator().next();
+      Binding binding = (Binding)postOffice.getBindingForCondition(queueCond).iterator().next();
 
       if (binding == null)
       {
