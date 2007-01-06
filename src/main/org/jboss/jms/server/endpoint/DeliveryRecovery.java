@@ -39,56 +39,74 @@ import org.jboss.messaging.util.Streamable;
  *
  */
 public class DeliveryRecovery implements Streamable
-{   
-   private long deliveryId;
-   
-   private long messageId;
-   
-   private long channelId;
-   
+{
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   private long deliveryID;
+   private long messageID;
+   private long channelID;
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public DeliveryRecovery()
-   {      
-   }
-   
-   public DeliveryRecovery(long deliveryId, long messageId, long channelId)
    {
-      this.deliveryId = deliveryId;
-      
-      this.messageId = messageId;
-      
-      this.channelId = channelId;
    }
-   
-   public long getDeliveryId()
+
+   public DeliveryRecovery(long deliveryID, long messageID, long channelID)
    {
-      return deliveryId;
+      this.deliveryID = deliveryID;
+      this.messageID = messageID;
+      this.channelID = channelID;
    }
-   
-   public long getMessageId()
-   {
-      return messageId;
-   }
-   
-   public long getChannelId()
-   {
-      return channelId;
-   }
+
+   // Streamable implementation --------------------------------------------------------------------
 
    public void read(DataInputStream in) throws Exception
    {
-      deliveryId = in.readLong();
-      
-      messageId = in.readLong();
-      
-      channelId = in.readLong();
+      deliveryID = in.readLong();
+      messageID = in.readLong();
+      channelID = in.readLong();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeLong(deliveryId);
-      
-      out.writeLong(messageId);
-      
-      out.writeLong(channelId);
+      out.writeLong(deliveryID);
+      out.writeLong(messageID);
+      out.writeLong(channelID);
    }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public long getDeliveryID()
+   {
+      return deliveryID;
+   }
+
+   public long getMessageID()
+   {
+      return messageID;
+   }
+
+   public long getChannelID()
+   {
+      return channelID;
+   }
+
+   public String toString()
+   {
+      return "DeliveryRecovery[ID=" + deliveryID + ", MID=" + messageID + ", CID=" + channelID + "]";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }

@@ -1047,9 +1047,273 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-   // TODO add a test whose session has NON-TRANSACTED, PERSISTENT and NON-PERSISTENT ACKS.
+   public void testSessionWithAcknowledgmentsFailover() throws Exception
+   {
+      Connection conn = null;
 
-   // TODO add a test whose session has TRANSACTED, PERSISTENT and NON-PERSISTENT ACKS.
+      try
+      {
+         // skip connection to node 0
+         conn = cf.createConnection();
+         conn.close();
+
+         // create a connection to node 1
+         conn = cf.createConnection();
+
+         conn.start();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+         // send 2 messages (one persistent and one non-persistent)
+
+         MessageProducer prod = session.createProducer(queue[1]);
+
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         prod.send(session.createTextMessage("clik-persistent"));
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         prod.send(session.createTextMessage("clak-non-persistent"));
+
+         // close the producer
+         prod.close();
+
+         // create a consumer and receive messages, but don't acknowledge
+
+         MessageConsumer cons = session.createConsumer(queue[1]);
+         TextMessage clik = (TextMessage)cons.receive(2000);
+         assertEquals("clik-persistent", clik.getText());
+         TextMessage clak = (TextMessage)cons.receive(2000);
+         assertEquals("clak-non-persistent", clak.getText());
+
+         // register a failover listener
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(failoverListener);
+
+         log.debug("killing node 1 ....");
+
+         ServerManagement.kill(1);
+
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+
+         // failover complete
+         log.info("failover completed");
+
+         assertEquals(0, ((JBossConnection)conn).getServerID());
+
+         // acknowledge the messages
+         clik.acknowledge();
+         clak.acknowledge();
+
+         // make sure no messages are left in the queue
+         Message m = cons.receive(1000);
+         assertNull(m);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   public void testTransactedSessionWithAcknowledgmentsCommitOnFailover() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         // skip connection to node 0
+         conn = cf.createConnection();
+         conn.close();
+
+         // create a connection to node 1
+         conn = cf.createConnection();
+
+         conn.start();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         // send 2 messages (one persistent and one non-persistent)
+
+         MessageProducer prod = session.createProducer(queue[1]);
+
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         prod.send(session.createTextMessage("clik-persistent"));
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         prod.send(session.createTextMessage("clak-non-persistent"));
+
+         session.commit();
+
+         // close the producer
+         prod.close();
+
+         // create a consumer and receive messages, but don't acknowledge
+
+         MessageConsumer cons = session.createConsumer(queue[1]);
+         TextMessage clik = (TextMessage)cons.receive(2000);
+         assertEquals("clik-persistent", clik.getText());
+         TextMessage clak = (TextMessage)cons.receive(2000);
+         assertEquals("clak-non-persistent", clak.getText());
+
+         // register a failover listener
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(failoverListener);
+
+         log.debug("killing node 1 ....");
+
+         ServerManagement.kill(1);
+
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+
+         // failover complete
+         log.info("failover completed");
+
+         assertEquals(0, ((JBossConnection)conn).getServerID());
+
+         // acknowledge the messages
+         session.commit();
+
+         // make sure no messages are left in the queue
+         Message m = cons.receive(1000);
+         assertNull(m);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   public void testTransactedSessionWithAcknowledgmentsRollbackOnFailover() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         // skip connection to node 0
+         conn = cf.createConnection();
+         conn.close();
+
+         // create a connection to node 1
+         conn = cf.createConnection();
+
+         conn.start();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         // send 2 messages (one persistent and one non-persistent)
+
+         MessageProducer prod = session.createProducer(queue[1]);
+
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         prod.send(session.createTextMessage("clik-persistent"));
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         prod.send(session.createTextMessage("clak-non-persistent"));
+
+         session.commit();
+
+         // close the producer
+         prod.close();
+
+         // create a consumer and receive messages, but don't acknowledge
+
+         MessageConsumer cons = session.createConsumer(queue[1]);
+         TextMessage clik = (TextMessage)cons.receive(2000);
+         assertEquals("clik-persistent", clik.getText());
+         TextMessage clak = (TextMessage)cons.receive(2000);
+         assertEquals("clak-non-persistent", clak.getText());
+
+         // register a failover listener
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(failoverListener);
+
+         log.debug("killing node 1 ....");
+
+         ServerManagement.kill(1);
+
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+
+         // failover complete
+         log.info("failover completed");
+
+         assertEquals(0, ((JBossConnection)conn).getServerID());
+
+         session.rollback();
+
+         TextMessage m = (TextMessage)cons.receive(2000);
+         assertNotNull(m);
+         assertEquals("clik-persistent", m.getText());
+
+         m = (TextMessage)cons.receive(2000);
+         assertNull(m);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
 
    public void testFailoverListener() throws Exception

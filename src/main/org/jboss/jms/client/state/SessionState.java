@@ -238,9 +238,9 @@ public class SessionState extends HierarchicalStateSupport
       if (!isTransacted() || (isXA() && getCurrentTxId() == null))
       {
          // Non transacted session or an XA session with no transaction set (it falls back
-         // to auto_ack)
+         // to AUTO_ACKNOWLEDGE)
 
-         log.debug(this + " is not transacted (or XA with no tx set), " +
+         log.debug(this + " is not transacted (or XA with no transaction set), " +
             "retrieving deliveries from session state");
 
          // We remove any unacked non-persistent messages - this is because we don't want to ack
@@ -284,31 +284,27 @@ public class SessionState extends HierarchicalStateSupport
       else
       {
          // Transacted session - we need to get the acks from the resource manager. BTW we have
-         // kept the old resource manager
+         // kept the old resource manager.
 
          ackInfos = rm.getDeliveriesForSession(getSessionID());
       }
 
       if (!ackInfos.isEmpty())
       {
-         SessionDelegate nd = (SessionDelegate)getDelegate();
-
          List recoveryInfos = new ArrayList();
-
          for (Iterator i = ackInfos.iterator(); i.hasNext(); )
          {
-            DeliveryInfo info = (DeliveryInfo)i.next();
-
+            DeliveryInfo del = (DeliveryInfo)i.next();
             DeliveryRecovery recInfo =
-               new DeliveryRecovery(info.getMessageProxy().getDeliveryId(),
-                                    info.getMessageProxy().getMessage().getMessageID(),
-                                    info.getChannelId());
+               new DeliveryRecovery(del.getMessageProxy().getDeliveryId(),
+                                    del.getMessageProxy().getMessage().getMessageID(),
+                                    del.getChannelId());
 
             recoveryInfos.add(recInfo);
          }
 
          log.debug(this + " sending delivery recovery " + recoveryInfos + " on failover");
-         nd.recoverDeliveries(recoveryInfos);
+         newDelegate.recoverDeliveries(recoveryInfos);
       }
       else
       {

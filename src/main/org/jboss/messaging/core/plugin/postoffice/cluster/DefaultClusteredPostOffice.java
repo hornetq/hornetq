@@ -479,7 +479,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          {
             binding = super.getBindingforChannelId(channelId);
          }
-         log.info("Returned " + binding);
          return binding;
       }
       finally
@@ -2144,7 +2143,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                }
                else
                {
-                  log.info(this + " has already a " + queueName + " queue so adding to failed map");
+                  log.debug(this + " has already a " + queueName + " queue so adding to failed map");
                }
 
                // Create a new binding

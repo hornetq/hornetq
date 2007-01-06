@@ -31,8 +31,8 @@ import org.jgroups.JChannel;
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
+ * 
+ * $Id$
  */
 public class MultiplexorJChannelFactory implements JChannelFactory
 {

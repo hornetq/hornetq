@@ -259,7 +259,9 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/jgroups/lib/jgroups.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://C:/work/src/JGroups-2.4.1.src/src" />
+      </SOURCES>
     </library>
     <library name="junit">
       <CLASSES>

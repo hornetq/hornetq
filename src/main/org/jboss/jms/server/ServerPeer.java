@@ -835,7 +835,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
       // This node may be failing over for another node - in which case we must wait for that to be
       // complete.
       
-      log.info(this + " waiting for server-side failover for failed node " + failedNodeID + " to complete");
+      log.debug(this + " waiting for server-side failover for failed node " + failedNodeID + " to complete");
       
       Replicator replicator = getReplicator();
 
@@ -863,12 +863,12 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
                   
                   if (status.isFailedOverForNode(failedNodeID))
                   {
-                     log.info(this + ": failover is complete on node " + nid);
+                     log.debug(this + ": failover is complete on node " + nid);
                      return nid.intValue();
                   }
                   else if (status.isFailingOverForNode(failedNodeID))
                   {
-                     log.info(this + ": fail over is in progress on node " + nid);
+                     log.debug(this + ": fail over is in progress on node " + nid);
                      
                      // A server has started failing over for the failed node, but not completed.
                      // If it's not this node then we immediately return so the connection can be
@@ -883,7 +883,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
                      if (completeToWait <= 0)
                      {
                         // Give up now
-                        log.info(this + " already waited long enough for failover to complete, giving up");
+                        log.debug(this + " already waited long enough for failover to complete, giving up");
                         return -1;
                      }
                      
@@ -919,7 +919,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
                if (startToWait <= 0)
                {
                   // Don't want to wait again
-                  log.info(this + " already waited long enough for failover to start, giving up");
+                  log.debug(this + " already waited long enough for failover to start, giving up");
                   return -1;
                }
                

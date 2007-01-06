@@ -35,6 +35,7 @@ import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.DefaultAck;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.logging.Logger;
 
 /**
  * Holds the state of a transaction on the client side
@@ -42,47 +43,47 @@ import org.jboss.messaging.core.message.MessageFactory;
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox </a>
  */
 public class ClientTransaction
-{  
+{
    // Constants -----------------------------------------------------
-   
+
+   private static final Logger log = Logger.getLogger(ClientTransaction.class);
+
    public final static byte TX_OPEN = 0;
-   
    public final static byte TX_ENDED = 1;
-   
    public final static byte TX_PREPARED = 2;
-   
    public final static byte TX_COMMITED = 3;
-   
    public final static byte TX_ROLLEDBACK = 4;
-   
+
+   private static boolean trace = log.isTraceEnabled();
+
    // Attributes ----------------------------------------------------
-   
+
    private byte state = TX_OPEN;
-   
-   //Maintained on the client side
+
+   // Map<Integer(sessionID) - SessionTxState> maintained on the client side
    private Map sessionStatesMap;
-   
-   //Read from on the server side
+
+   // Read from on the server side
    private List sessionStatesList;
-   
+
    private boolean clientSide;
-   
+
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    public ClientTransaction()
-   {                  
+   {
       clientSide = true;
    }
-   
+
    // Public --------------------------------------------------------
-   
+
    public byte getState()
    {
       return state;
    }
-   
+
    public void addMessage(int sessionId, JBossMessage msg)
    {
       if (!clientSide)
@@ -90,10 +91,10 @@ public class ClientTransaction
          throw new IllegalStateException("Cannot call this method on the server side");
       }
       SessionTxState sessionTxState = getSessionTxState(sessionId);
-      
+
       sessionTxState.addMessage(msg);
    }
-   
+
    public void addAck(int sessionId, DeliveryInfo info)
    {
       if (!clientSide)
@@ -101,32 +102,29 @@ public class ClientTransaction
          throw new IllegalStateException("Cannot call this method on the server side");
       }
       SessionTxState sessionTxState = getSessionTxState(sessionId);
-      
+
       sessionTxState.addAck(info);
-   }      
-   
+   }
+
    public void clearMessages()
    {
       if (!clientSide)
       {
          throw new IllegalStateException("Cannot call this method on the server side");
       }
-      
+
       if (sessionStatesMap != null)
       {
-         //This can be null if the tx was recreated on the client side due to recovery
-         
-         Iterator iter = sessionStatesMap.values().iterator();
-         
-         while (iter.hasNext())
+         // This can be null if the tx was recreated on the client side due to recovery
+
+         for(Iterator i = sessionStatesMap.values().iterator(); i.hasNext(); )
          {
-            SessionTxState sessionTxState = (SessionTxState)iter.next();
-            
+            SessionTxState sessionTxState = (SessionTxState)i.next();
             sessionTxState.clearMessages();
          }
       }
    }
-   
+
    public void setState(byte state)
    {
       if (!clientSide)
@@ -135,7 +133,7 @@ public class ClientTransaction
       }
       this.state = state;
    }
-   
+
    public List getSessionStates()
    {
       if (sessionStatesList != null)
@@ -144,15 +142,16 @@ public class ClientTransaction
       }
       else
       {
-         return sessionStatesMap == null ? Collections.EMPTY_LIST : new ArrayList(sessionStatesMap.values());
+         return sessionStatesMap == null ?
+            Collections.EMPTY_LIST : new ArrayList(sessionStatesMap.values());
       }
-   }   
-   
+   }
+
    /*
-    * Substitute newSessionID for oldSessionID
-    */
+   * Substitute newSessionID for oldSessionID
+   */
    public void handleFailover(int newServerID, int oldSessionID, int newSessionID)
-   {    
+   {
       if (!clientSide)
       {
          throw new IllegalStateException("Cannot call this method on the server side");
@@ -160,14 +159,29 @@ public class ClientTransaction
 
       // Note we have to do this in one go since there may be overlap between old and new session
       // IDs and we don't want to overwrite keys in the map.
-      
+
+      Map tmpMap = null;
+
       if (sessionStatesMap != null)
-      {                          
+      {
          for(Iterator i = sessionStatesMap.values().iterator(); i.hasNext();)
          {
+
             SessionTxState state = (SessionTxState)i.next();
             state.handleFailover(newServerID, oldSessionID, newSessionID);
+
+            if (tmpMap == null)
+            {
+               tmpMap = new LinkedHashMap();
+            }
+            tmpMap.put(new Integer(newSessionID), state);
          }
+      }
+
+      if (tmpMap != null)
+      {
+         // swap
+         sessionStatesMap = tmpMap;
       }
    }
 
@@ -182,7 +196,7 @@ public class ClientTransaction
       }
 
       SessionTxState state = getSessionTxState(sessionID);
-      
+
       if (state != null)
       {
          return state.getAcks();
@@ -192,9 +206,9 @@ public class ClientTransaction
          return Collections.EMPTY_LIST;
       }
    }
-   
+
    // Streamable implementation ---------------------------------
-   
+
    public void write(DataOutputStream out) throws Exception
    {
       out.writeByte(state);
@@ -246,86 +260,84 @@ public class ClientTransaction
          }
       }
    }
-    
-   
+
+
    public void read(DataInputStream in) throws Exception
    {
       clientSide = false;
-      
+
       state = in.readByte();
-      
+
       int numSessions = in.readInt();
-      
+
       //Read in as a list since we don't want the extra overhead of putting into a map
       //which won't be used on the server side
       sessionStatesList = new ArrayList(numSessions);
-      
+
       for (int i = 0; i < numSessions; i++)
       {
          int sessionId = in.readInt();
-         
+
          SessionTxState sessionState = new SessionTxState(sessionId);
-         
+
          sessionStatesList.add(sessionState);
-         
+
          int numMsgs = in.readInt();
-         
-         for (int j = 0; j < numMsgs; j++)            
+
+         for (int j = 0; j < numMsgs; j++)
          {
             byte type = in.readByte();
-            
+
             JBossMessage msg = (JBossMessage)MessageFactory.createMessage(type);
-            
+
             msg.read(in);
-            
+
             sessionState.addMessage(msg);
          }
-         
+
          int numAcks = in.readInt();
-         
-         for (int j = 0; j < numAcks; j++)            
+
+         for (int j = 0; j < numAcks; j++)
          {
             long ack = in.readLong();
-            
+
             sessionState.addAck(new DefaultAck(ack));
          }
-      }      
+      }
    }
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Package Private -----------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   private SessionTxState getSessionTxState(int sessionId)
-   {                  
+
+   private SessionTxState getSessionTxState(int sessionID)
+   {
       if (sessionStatesMap == null)
       {
          sessionStatesMap = new LinkedHashMap();
       }
-      
-      SessionTxState sessionTxState = (SessionTxState)sessionStatesMap.get(new Integer(sessionId));
-      
+
+      SessionTxState sessionTxState = (SessionTxState)sessionStatesMap.get(new Integer(sessionID));
+
       if (sessionTxState == null)
       {
-         sessionTxState = new SessionTxState(sessionId);
-         
-         sessionStatesMap.put(new Integer(sessionId), sessionTxState);
+         sessionTxState = new SessionTxState(sessionID);
+         sessionStatesMap.put(new Integer(sessionID), sessionTxState);
       }
-      
+
       return sessionTxState;
    }
-         
-      
+
    // Inner Classes -------------------------------------------------
-   
+
    public class SessionTxState
    {
       private int sessionID;
 
-      // We record the server id when doing failover to avoid overwriting the sesion ID again
-      // if multiple connections fail on the same resource mamanger but fail onto old values of the
+      // We record the server id when doing failover to avoid overwriting the sesion ID again if
+      // multiple connections fail on the same resource mamanger but fail onto old values of the
       // session ID. This prevents the ID being failed over more than once for the same server.
       private int serverID = -1;
 
@@ -336,58 +348,58 @@ public class ClientTransaction
       {
          this.sessionID = sessionID;
       }
-      
+
       void addMessage(JBossMessage msg)
       {
          msgs.add(msg);
       }
-      
+
       void addAck(Ack ack)
       {
          acks.add(ack);
       }
-      
+
       public List getMsgs()
       {
          return msgs;
       }
-      
+
       public List getAcks()
       {
          return acks;
       }
-      
+
       public int getSessionId()
       {
          return sessionID;
       }
-      
+
       void handleFailover(int newServerID, int oldSessionID, int newSessionID)
       {
          if (sessionID == oldSessionID && serverID != newServerID)
-         {            
+         {
             sessionID = newSessionID;
             serverID = newServerID;
-            
+
             // Remove any non persistent acks
             for(Iterator i = acks.iterator(); i.hasNext(); )
             {
                DeliveryInfo di = (DeliveryInfo)i.next();
-               
+
                if (!di.getMessageProxy().getMessage().isReliable())
                {
+                  if (trace) { log.trace(this + " discarded non-persistent " + di + " on failover"); }
                   i.remove();
                }
             }
          }
-
       }
-      
+
       void clearMessages()
       {
          msgs.clear();
       }
-      
+
    }
-      
+
 }

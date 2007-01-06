@@ -411,7 +411,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             DeliveryRecovery deliveryInfo = (DeliveryRecovery)iter.next();
                 
-            Long channelId = new Long(deliveryInfo.getChannelId());
+            Long channelId = new Long(deliveryInfo.getChannelID());
             
             List acks = (List)ackMap.get(channelId);
             
@@ -449,7 +449,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             {
                DeliveryRecovery info = (DeliveryRecovery)iter2.next();
                
-               ids.add(new Long(info.getMessageId()));
+               ids.add(new Long(info.getMessageID()));
             }
             
             Queue queue = binding.getQueue();
@@ -466,7 +466,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                DeliveryRecovery info = (DeliveryRecovery)iter3.next();
                
-               long deliveryId = info.getDeliveryId();
+               long deliveryId = info.getDeliveryID();
                
                maxDeliveryId = Math.max(maxDeliveryId, deliveryId);
                
@@ -849,7 +849,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    void acknowledgeTransactionally(List acks, Transaction tx) throws Throwable
    {
-      if (trace) { log.trace(this + " acknowledging transactionally " + acks.size() + " for tx: " + tx); }
+      if (trace) { log.trace(this + " acknowledging transactionally " + acks.size() + " messages for " + tx); }
       
       DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getCallback(this);
       
@@ -859,14 +859,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
          tx.addCallback(deliveryCallback, this);
       }
             
-      Iterator iter = acks.iterator();
-      
-      while (iter.hasNext())
+      for(Iterator i = acks.iterator(); i.hasNext(); )
       {
-         Ack ack = (Ack)iter.next();
-         
+         Ack ack = (Ack)i.next();
          Long id = new Long(ack.getDeliveryID());
-           
          DeliveryRecord rec = (DeliveryRecord)deliveries.get(id);
          
          if (rec == null)
@@ -875,7 +871,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
                            
          deliveryCallback.addDeliveryId(id);
-         
          rec.del.acknowledge(tx);
       }      
    }

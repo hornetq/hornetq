@@ -126,7 +126,8 @@ public interface SessionEndpoint extends Closeable
    void send(JBossMessage message) throws JMSException;
    
    /**
-    * Send delivery info to the server so the delivery lists can be repopulated used at failover
+    * Send delivery info to the server so the delivery lists can be repopulated. Used only in
+    * failover.
     */
    void recoverDeliveries(List createInfos) throws JMSException;
 }

@@ -317,7 +317,7 @@ public class LocalTestServer implements Server
                log.info("Could find multiplexer config");
             }
 
-            MBeanConfigurationElement multiplexerConfig = (MBeanConfigurationElement) services.iterator().next();
+            MBeanConfigurationElement multiplexerConfig = (MBeanConfigurationElement)services.iterator().next();
             ObjectName nameMultiplexer = sc.registerAndConfigureService(multiplexerConfig);
             sc.invoke(nameMultiplexer,"create", new Object[0], new String[0]);
             sc.invoke(nameMultiplexer,"start", new Object[0], new String[0]);

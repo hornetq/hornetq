@@ -119,7 +119,7 @@ public class SimpleDelivery implements Delivery
 
    public void acknowledge(Transaction tx) throws Throwable
    {        
-      if (trace) { log.trace(this + " acknowledging delivery in tx:" + tx); }
+      if (trace) { log.trace(this + " acknowledging delivery in " + tx); }
       
       observer.acknowledge(this, tx);
 

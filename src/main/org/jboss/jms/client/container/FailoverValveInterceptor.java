@@ -164,22 +164,29 @@ public class FailoverValveInterceptor implements Interceptor
 
       // attempt to grab the reader's lock and go forward
 
+      boolean exempt = false;
+
       try
       {
-         boolean acquired = false;
+         exempt = isInvocationExempt(methodName);
 
-         while(!acquired)
+         if (!exempt)
          {
-            try
-            {
-               acquired = readLock.attempt(500);
-            }
-            catch(InterruptedException e)
-            {
-               // OK
-            }
+            boolean acquired = false;
 
-            if (trace && !acquired ) { log.trace(methodName + "() trying to pass through " + this); }
+            while(!acquired)
+            {
+               try
+               {
+                  acquired = readLock.attempt(500);
+               }
+               catch(InterruptedException e)
+               {
+                  // OK
+               }
+
+               if (trace && !acquired ) { log.trace(methodName + "() trying to pass through " + this); }
+            }
          }
 
          synchronized(this)
@@ -191,13 +198,17 @@ public class FailoverValveInterceptor implements Interceptor
             }
          }
 
-         if(trace) { log.trace(this + " has let " + methodName + "() pass through"); }
+         if (trace) { log.trace(this + " allowed " + (exempt ? "exempt" : "") + " method " + methodName + "() to pass through"); }
 
          return invocation.invokeNext();
       }
       finally
       {
-         readLock.release();
+         if (!exempt)
+         {
+            readLock.release();
+         }
+
          synchronized(this)
          {
             activeThreadsCount--;
@@ -206,6 +217,7 @@ public class FailoverValveInterceptor implements Interceptor
                activeMethods.remove(methodName);
             }
          }
+
       }
    }
 
@@ -224,6 +236,11 @@ public class FailoverValveInterceptor implements Interceptor
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+
+   private boolean isInvocationExempt(String methodName)
+   {
+      return "recoverDeliveries".equals(methodName);
+   }
 
    // Inner classes --------------------------------------------------------------------------------
 }
