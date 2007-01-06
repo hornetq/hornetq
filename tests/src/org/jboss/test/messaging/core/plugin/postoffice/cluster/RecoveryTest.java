@@ -53,8 +53,8 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
+ * 
+ * $Id$
  */
 public class RecoveryTest extends PostOfficeTestBase
 {

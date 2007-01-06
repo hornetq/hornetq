@@ -163,7 +163,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    private volatile boolean started;
    private volatile boolean stopping;
 
-   private JChannelFactory JChannelFactory;
+   private JChannelFactory jChannelFactory;
 
    private Channel syncChannel;
 
@@ -274,7 +274,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       viewExecutor = new QueuedExecutor();
 
-      this.JChannelFactory = JChannelFactory;
+      this.jChannelFactory = JChannelFactory;
    }
 
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -288,8 +288,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (trace) { log.trace(this + " starting"); }
 
-      this.syncChannel = JChannelFactory.createSyncChannel();
-      this.asyncChannel = JChannelFactory.createASyncChannel();
+      this.syncChannel = jChannelFactory.createSyncChannel();
+      this.asyncChannel = jChannelFactory.createASyncChannel();
 
       // We don't want to receive local messages on any of the channels
       syncChannel.setOpt(Channel.LOCAL, Boolean.FALSE);

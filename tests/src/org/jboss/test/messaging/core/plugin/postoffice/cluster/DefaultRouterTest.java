@@ -31,7 +31,6 @@ import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
@@ -47,7 +46,6 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.QueueStats;
-import org.jboss.test.messaging.core.plugin.postoffice.cluster.NamedJChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleConditionFactory;
 import org.jboss.test.messaging.core.SimpleFilterFactory;
@@ -321,35 +319,33 @@ public class DefaultRouterTest extends PostOfficeTestBase
       receiver.clear();
    }
    
-   private void sendAndCheck(ClusterRouter router, Queue queue) throws Throwable
-   {
-      Message msg = CoreMessageFactory.createCoreMessage(nextId++, false, null);      
-      
-      MessageReference ref = ms.reference(msg);         
-      
-      Delivery del = router.handle(null, ref, null);
-      
-      assertNotNull(del);
-      
-      assertTrue(del.isSelectorAccepted());
-            
-      Thread.sleep(250);
-      
-      List msgs = queue.browse();
-      
-      assertNotNull(msgs);
-      
-      assertEquals(1, msgs.size());
-      
-      Message msgRec = (Message)msgs.get(0);
-      
-      assertTrue(msg == msgRec);  
-      
-      queue.removeAllReferences();
-   }
-   
-   
-   
+//   private void sendAndCheck(ClusterRouter router, Queue queue) throws Throwable
+//   {
+//      Message msg = CoreMessageFactory.createCoreMessage(nextId++, false, null);
+//
+//      MessageReference ref = ms.reference(msg);
+//
+//      Delivery del = router.handle(null, ref, null);
+//
+//      assertNotNull(del);
+//
+//      assertTrue(del.isSelectorAccepted());
+//
+//      Thread.sleep(250);
+//
+//      List msgs = queue.browse();
+//
+//      assertNotNull(msgs);
+//
+//      assertEquals(1, msgs.size());
+//
+//      Message msgRec = (Message)msgs.get(0);
+//
+//      assertTrue(msg == msgRec);
+//
+//      queue.removeAllReferences();
+//   }
+
    protected ClusteredPostOffice createClusteredPostOffice(int nodeId, String groupName) throws Exception
    {
       MessagePullPolicy redistPolicy = new NullMessagePullPolicy();

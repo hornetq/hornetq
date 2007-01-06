@@ -331,9 +331,9 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
          FilterFactory ff = new SelectorFactory();
          FailoverMapper mapper = new DefaultFailoverMapper();
 
-         JChannelFactory JChannelFactory = null;
+         JChannelFactory jChannelFactory = null;
 
-         if (this.channelFactoryName != null)
+         if (channelFactoryName != null)
          {
             Object info = null;
             try
@@ -347,19 +347,21 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
             }
             if (info!=null)
             {
-               log.debug("*********************************** Using Multiplexor");
-               JChannelFactory = new MultiplexorJChannelFactory(server, channelFactoryName, channelPartitionName, syncChannelName, asyncChannelName);
+               log.debug(this + " uses multiplexor");
+               jChannelFactory =
+                  new MultiplexorJChannelFactory(server, channelFactoryName, channelPartitionName,
+                                                 syncChannelName, asyncChannelName);
             }
             else
             {
-               log.debug("*********************************** Using XMLJChannelFactory");
-               JChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
+               log.debug(this + " uses XMLJChannelFactory");
+               jChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
             }
          }
          else
          {
-            log.debug("*********************************** Using XMLJChannelFactory");
-            JChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
+            log.debug(this + " uses XMLJChannelFactory");
+            jChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
          }
 
          postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties,
@@ -367,7 +369,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
                                                       nodeId, officeName, ms,
                                                       pm, tr, ff, cf, pool,
                                                       groupName,
-            JChannelFactory,
+                                                      jChannelFactory,
                                                       stateTimeout, castTimeout,
                                                       pullPolicy, rf,
                                                       mapper,
