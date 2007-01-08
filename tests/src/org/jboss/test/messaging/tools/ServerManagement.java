@@ -415,7 +415,7 @@ public class ServerManagement
       }
 
       // As there is a problem with Multicast and JGroups on Linux (in certain JDKs)
-      // The stack introduced by multiplexor might fail under Linux if we don't have this
+      // The stack introduced by multiplexer might fail under Linux if we don't have this
       if (System.getProperty("os.name").equals("Linux"))
       {
          sb.append(" -Djava.net.preferIPv4Stack=true ");

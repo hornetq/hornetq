@@ -399,6 +399,10 @@ public class ServiceContainer
 
          loadJNDIContexts();
 
+         // it will aways install the multiplexer as this is a chep operation.
+         // The actual JChannels are started only over demand
+         startMultiplexer();
+
          log.debug("loaded JNDI context");
 
          String transport = config.getRemotingTransport();
@@ -1319,6 +1323,33 @@ public class ServiceContainer
       {
          //Ignore - tables might not exist
       }
+   }
+
+   private void startMultiplexer()
+      throws Exception
+   {
+      log.info("Starting multiplexer");
+      String multiplexerConfigFile = "server/default/deploy/multiplexer-service.xml";
+      URL multiplexerCofigURL = getClass().getClassLoader().getResource(multiplexerConfigFile);
+      if (multiplexerCofigURL == null)
+      {
+         throw new Exception("Cannot find " + multiplexerCofigURL + " in the classpath");
+      }
+      ServiceDeploymentDescriptor multiplexerDD = new ServiceDeploymentDescriptor(multiplexerCofigURL);
+      List services = multiplexerDD.query("name","Multiplexer");
+      if (services.isEmpty())
+      {
+         log.info("Couldn't find multiplexer config");
+      }
+      else
+      {
+         log.info("Could find multiplexer config");
+      }
+
+      MBeanConfigurationElement multiplexerConfig = (MBeanConfigurationElement)services.iterator().next();
+      ObjectName nameMultiplexer = registerAndConfigureService(multiplexerConfig);
+      invoke(nameMultiplexer,"create", new Object[0], new String[0]);
+      invoke(nameMultiplexer,"start", new Object[0], new String[0]);
    }
 
    private void parseConfig(String config)

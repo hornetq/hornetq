@@ -44,7 +44,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.Peer;
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.JChannelFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.MultiplexorJChannelFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.MultiplexerJChannelFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.XMLJChannelFactory;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
@@ -347,9 +347,9 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
             }
             if (info!=null)
             {
-               log.debug(this + " uses multiplexor");
+               log.debug(this + " uses MultiplexerJChannelFactory");
                jChannelFactory =
-                  new MultiplexorJChannelFactory(server, channelFactoryName, channelPartitionName,
+                  new MultiplexerJChannelFactory(server, channelFactoryName, channelPartitionName,
                                                  syncChannelName, asyncChannelName);
             }
             else

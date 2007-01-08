@@ -34,7 +34,7 @@ import org.jgroups.JChannel;
  * 
  * $Id$
  */
-public class MultiplexorJChannelFactory implements JChannelFactory
+public class MultiplexerJChannelFactory implements JChannelFactory
 {
 
    // Constants
@@ -52,7 +52,7 @@ public class MultiplexorJChannelFactory implements JChannelFactory
 
    // Constructors
 
-   public MultiplexorJChannelFactory(MBeanServer server,
+   public MultiplexerJChannelFactory(MBeanServer server,
                                     ObjectName channelFactory,
                                     String uniqueID,
                                     String syncStack,
