@@ -29,7 +29,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * and relay them back to the topic with a different selector, then consume that with more consumers
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

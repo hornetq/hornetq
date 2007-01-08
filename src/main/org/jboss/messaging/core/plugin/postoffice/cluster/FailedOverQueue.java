@@ -18,7 +18,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * A LocalClusteredQueue
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

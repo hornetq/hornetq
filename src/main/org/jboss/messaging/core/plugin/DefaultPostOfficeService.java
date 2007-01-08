@@ -43,7 +43,7 @@ import org.jboss.messaging.core.tx.TransactionRepository;
  * MBean wrapper for a simple post office
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

@@ -32,7 +32,7 @@ import java.util.Set;
  * This class is a state machine for failover state for a node
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

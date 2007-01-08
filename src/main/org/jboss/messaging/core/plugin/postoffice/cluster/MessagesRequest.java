@@ -34,7 +34,7 @@ import java.util.List;
  * Used when sending multiple messages non reliably across the group
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

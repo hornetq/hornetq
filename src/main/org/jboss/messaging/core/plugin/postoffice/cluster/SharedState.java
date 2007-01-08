@@ -40,7 +40,7 @@ import org.jboss.messaging.util.Streamable;
  * This comprise the bindings, and the arbitrary replicated data
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

@@ -44,7 +44,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * This allows us to support logical channels holding many millions of messages without running out of memory.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

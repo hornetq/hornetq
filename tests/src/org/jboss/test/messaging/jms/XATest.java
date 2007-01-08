@@ -50,7 +50,7 @@ import org.jboss.tm.TxUtils;
  * A XATest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  *
  * $Id$

@@ -29,7 +29,7 @@ package org.jboss.messaging.core;
  * we don't have dependencies on jms selectors
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

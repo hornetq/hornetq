@@ -21,7 +21,7 @@ import javax.naming.InitialContext;
  * to the server (which are outside of of my control if I use ClusteringTestBase).
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */

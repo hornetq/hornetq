@@ -30,7 +30,7 @@ import java.util.Set;
  * Determines the mapping between a set of nodes and their failover nodes
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
