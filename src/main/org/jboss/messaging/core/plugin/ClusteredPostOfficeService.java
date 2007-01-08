@@ -342,7 +342,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
             }
             catch (Exception e)
             {
-               log.error("Error", e);
+               // log.error("Error", e);
                // noop... means we couldn't find the channel hence we should use regular XMLChannelFactories
             }
             if (info!=null)
