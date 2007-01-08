@@ -16,7 +16,7 @@ import com.arjuna.ats.jta.recovery.XAResourceRecovery;
  * 
  * A MessagingXAResourceRecovery
  *
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

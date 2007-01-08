@@ -28,7 +28,7 @@ import org.jboss.messaging.core.FilterFactory;
  * A SimpleFilterFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
