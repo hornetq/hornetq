@@ -47,7 +47,7 @@ import org.jboss.serial.io.JBossObjectOutputStream;
  * Utility methods for reading and writing stuff to and from streams
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
