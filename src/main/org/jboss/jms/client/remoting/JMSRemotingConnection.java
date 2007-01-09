@@ -237,10 +237,7 @@ public class JMSRemotingConnection
          return null;
       }
 
-      if (!client.removeConnectionListener(remotingConnectionListener))
-      {
-         throw new IllegalStateException("Failed to remove remoting connection listener");
-      }
+      client.removeConnectionListener(remotingConnectionListener);
 
       log.debug(this + " removed consolidated connection listener from " + client);
       ConsolidatedRemotingConnectionListener toReturn = remotingConnectionListener;
