@@ -122,14 +122,15 @@ public class ClusteringAspect
             log.debug(this + " got local connection delegate " + cd);
 
             ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
+
+            state.configureFailoverCommandCenter();
+
             FailoverCommandCenter fcc = state.getFailoverCommandCenter();
 
             // add a connection listener to detect failure; the consolidated remoting connection
             // listener must be already in place and configured
             state.getRemotingConnection().getConnectionListener().
                addDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
-
-            state.configureFailoverCommandCenter();
 
             log.debug(this + " installed failure listener on " + cd);
 
