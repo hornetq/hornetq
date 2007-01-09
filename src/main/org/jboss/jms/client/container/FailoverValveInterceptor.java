@@ -99,8 +99,7 @@ public class FailoverValveInterceptor implements Interceptor
       {
          valve.enter();
 
-         // it's important to retrieve the remotingConnection while inside the Valve, as there's no
-         // guaranteed that no failover has happened yet
+         // it's important to retrieve the remotingConnection while inside the Valve
          remotingConnection = fcc.getRemotingConnection();
          return invocation.invokeNext();
       }
