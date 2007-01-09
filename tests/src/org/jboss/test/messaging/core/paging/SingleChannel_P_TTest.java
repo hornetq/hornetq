@@ -41,9 +41,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * Persistent messages, transactional, recoverable
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * SingleChannel_P_T.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * $Id$
  */
 public class SingleChannel_P_TTest extends PagingStateTestBase
 {

@@ -34,9 +34,9 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
  * A IdManagerTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * IdManagerTest.java,v 1.1 2006/03/07 17:11:18 timfox Exp
+ * $Id$
  */
 public class IdManagerTest extends MessagingTestCase
 {

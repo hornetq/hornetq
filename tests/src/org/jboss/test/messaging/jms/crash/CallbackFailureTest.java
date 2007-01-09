@@ -38,9 +38,9 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
  * A CallbackFailureTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * CallbackFailureTest.java,v 1.1 2006/02/21 08:22:28 timfox Exp
+ * $Id$
  */
 public class CallbackFailureTest extends MessagingTestCase
 {

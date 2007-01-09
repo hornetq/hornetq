@@ -38,9 +38,9 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
  * A ClientCrashNoLeaseTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * ClientCrashNegativeLeaseTest.java,v 1.1 2006/04/13 19:43:06 timfox Exp
+ * $Id$
  */
 public class ClientCrashNegativeLeaseTest extends MessagingTestCase
 {

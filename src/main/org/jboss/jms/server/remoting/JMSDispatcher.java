@@ -29,9 +29,9 @@ import org.jboss.aop.Dispatcher;
  * using the same object ids.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * JMSDispatcher.java,v 1.1 2006/02/01 17:38:32 timfox Exp
+ * $Id$
  */
 public class JMSDispatcher extends Dispatcher
 {

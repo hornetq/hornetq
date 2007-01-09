@@ -34,9 +34,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * Offers same concurrency as ConcurrentHashMap but for a Set
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * ConcurrentReaderHashSet.java,v 1.1 2006/04/20 20:42:27 timfox Exp
+ * $Id$
  */
 public class ConcurrentReaderHashSet extends AbstractSet
 {

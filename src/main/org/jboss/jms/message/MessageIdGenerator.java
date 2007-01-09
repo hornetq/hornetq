@@ -33,9 +33,9 @@ import org.jboss.messaging.core.plugin.IDBlock;
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * MessageIdGenerator.java,v 1.1 2006/03/07 17:11:14 timfox Exp
+ * $Id$
  */
 public class MessageIdGenerator
 {

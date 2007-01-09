@@ -29,9 +29,9 @@ import org.jboss.messaging.core.Message;
  * A MessageHolder.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * MessageHolder.java,v 1.1 2006/02/23 17:45:58 timfox Exp
+ * $Id$
  */
 class MessageHolder
 {

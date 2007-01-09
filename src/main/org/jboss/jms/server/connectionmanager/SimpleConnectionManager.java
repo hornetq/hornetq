@@ -41,9 +41,9 @@ import org.jboss.remoting.ConnectionListener;
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * SimpleConnectionManager.java,v 1.1 2006/02/21 07:44:00 timfox Exp
+ * $Id$
  */
 public class SimpleConnectionManager implements ConnectionManager, ConnectionListener
 {

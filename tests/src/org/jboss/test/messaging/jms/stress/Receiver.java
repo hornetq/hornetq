@@ -44,9 +44,9 @@ import org.jboss.logging.Logger;
  * Receives messages from a dstination for stress testing
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * Receiver.java,v 1.1 2006/01/17 12:15:33 timfox Exp
+ * $Id$
  */
 public class Receiver extends Runner implements MessageListener
 {

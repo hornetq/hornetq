@@ -61,9 +61,9 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * Ideally we would automate this.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * MemLeakTest.java,v 1.1 2006/03/29 18:51:23 timfox Exp
+ * $Id$
  */
 public class MemLeakTest extends MessagingTestCase
 {

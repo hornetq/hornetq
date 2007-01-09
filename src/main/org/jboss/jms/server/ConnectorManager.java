@@ -28,9 +28,9 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
  * A ConnectorManager.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * ConnectorManager.java,v 1.1 2006/04/13 19:43:05 timfox Exp
+ * $Id$
  */
 public interface ConnectorManager extends MessagingComponent
 {

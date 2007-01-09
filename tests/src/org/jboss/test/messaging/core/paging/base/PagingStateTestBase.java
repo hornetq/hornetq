@@ -55,9 +55,9 @@ import org.jboss.util.id.GUID;
  * A PagingStateTestBase.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * PagingStateTestBase.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * $Id$
  */
 public class PagingStateTestBase extends MessagingTestCase
 {

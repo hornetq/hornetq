@@ -74,9 +74,9 @@ import org.jboss.serial.io.JBossObjectOutputStream;
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * JMSWireFormat.java,v 1.1 2006/02/01 17:38:32 timfox Exp
+ * $Id$
  */
 public class JMSWireFormat implements Marshaller, UnMarshaller
 {

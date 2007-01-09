@@ -34,9 +34,9 @@ import org.jboss.logging.Logger;
  * Sends messages to a destination, used in stress testing
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * Sender.java,v 1.1 2006/01/17 12:15:33 timfox Exp
+ * $Id$
  */
 public class Sender extends Runner
 {

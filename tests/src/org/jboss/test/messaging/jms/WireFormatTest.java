@@ -70,9 +70,9 @@ import org.jboss.util.id.GUID;
  * A WireFormatTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * WireFormatTest.java,v 1.1 2006/02/02 17:35:29 timfox Exp
+ * $Id$
  */
 public class WireFormatTest extends MessagingTestCase
 {

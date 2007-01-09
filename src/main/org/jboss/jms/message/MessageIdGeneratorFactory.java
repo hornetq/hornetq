@@ -34,9 +34,9 @@ import org.jboss.logging.Logger;
  * of JMS server as specified by the server id.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * MessageIdGeneratorFactory.java,v 1.1 2006/03/07 17:11:14 timfox Exp
+ * $Id$
  */
 public class MessageIdGeneratorFactory
 {

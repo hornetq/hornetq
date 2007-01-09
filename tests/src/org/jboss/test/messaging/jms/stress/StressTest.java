@@ -36,9 +36,9 @@ import javax.jms.XASession;
  * A StressTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * StressTest.java,v 1.1 2006/04/24 13:14:31 timfox Exp
+ * $Id$
  */
 public class StressTest extends StressTestBase
 {

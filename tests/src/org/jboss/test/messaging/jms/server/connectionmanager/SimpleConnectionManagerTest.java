@@ -46,9 +46,9 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * A SimpleConnectionManagerTest.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * SimpleConnectionManagerTest.java,v 1.1 2006/04/14 12:27:06 timfox Exp
+ * $Id$
  */
 public class SimpleConnectionManagerTest extends MessagingTestCase
 {

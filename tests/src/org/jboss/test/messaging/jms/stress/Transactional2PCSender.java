@@ -41,9 +41,9 @@ import org.jboss.util.id.GUID;
  * <nuMessages> must be a multiple of <commitSize>
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * Transactional2PCSender.java,v 1.1 2006/01/17 12:15:33 timfox Exp
+ * $Id$
  */
 public class Transactional2PCSender extends Sender
 {

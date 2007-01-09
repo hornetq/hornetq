@@ -42,9 +42,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * 
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * SingleChannel_Reload.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * $Id$
  */
 public class SingleChannel_ReloadTest extends PagingStateTestBase
 {

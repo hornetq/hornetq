@@ -37,9 +37,9 @@ import org.jboss.logging.Logger;
  * <nuMessages> must be a multiple of <commitSize>
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * TransactionalReceiver.java,v 1.1 2006/01/17 12:15:33 timfox Exp
+ * $Id$
  */
 public class TransactionalReceiver extends Receiver
 {

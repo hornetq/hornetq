@@ -35,9 +35,9 @@ import org.jboss.logging.Logger;
  * typically to socket output streams.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * CountingOutputStream.java,v 1.1 2006/02/01 17:38:32 timfox Exp
+ * $Id$
  */
 public class CountingOutputStream extends OutputStream
 {

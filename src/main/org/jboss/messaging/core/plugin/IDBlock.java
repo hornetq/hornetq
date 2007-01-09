@@ -31,9 +31,9 @@ import org.jboss.messaging.util.Streamable;
  * A IDBlock.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * IDBlock.java,v 1.1 2006/03/07 17:11:15 timfox Exp
+ * $Id$
  */
 public class IDBlock implements Streamable
 {

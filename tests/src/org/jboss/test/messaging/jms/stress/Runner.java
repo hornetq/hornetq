@@ -30,9 +30,9 @@ import javax.jms.Session;
  * Base class for running components of a stress test
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * Runner.java,v 1.1 2006/01/17 12:15:33 timfox Exp
+ * $Id$
  */
 public abstract class Runner implements Runnable
 {

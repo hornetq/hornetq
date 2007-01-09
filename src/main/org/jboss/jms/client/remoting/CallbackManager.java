@@ -45,9 +45,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * CallbackManager.java,v 1.1 2006/02/01 17:38:30 timfox Exp
+ * $Id$
  */
 public class CallbackManager implements InvokerCallbackHandler
 {

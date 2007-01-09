@@ -30,9 +30,9 @@ import java.io.Serializable;
  * This interface is implemented by any classes that wish to be executed on a server
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * Command.java,v 1.1 2006/02/21 08:25:32 timfox Exp
+ * $Id$
  */
 public interface Command extends Serializable
 {

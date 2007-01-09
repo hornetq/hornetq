@@ -38,9 +38,9 @@ import org.jboss.jms.server.ConnectorManager;
  * get rid of this class, but currently remoting does not provide this functionality
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * SimpleConnectorManager.java,v 1.1 2006/04/13 19:43:05 timfox Exp
+ * $Id$
  */
 public class SimpleConnectorManager implements ConnectorManager
 {

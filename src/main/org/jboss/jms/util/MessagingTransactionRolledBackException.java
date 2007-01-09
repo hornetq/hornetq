@@ -28,9 +28,9 @@ import javax.jms.TransactionRolledBackException;
  * A JBossTransactionRolledBackException.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * MessagingTransactionRolledBackException.java,v 1.1 2006/03/28 14:26:17 timfox Exp
+ * $Id$
  */
 public class MessagingTransactionRolledBackException extends TransactionRolledBackException
 {

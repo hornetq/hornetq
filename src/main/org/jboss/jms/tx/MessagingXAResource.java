@@ -46,9 +46,9 @@ import org.jboss.messaging.core.tx.XidImpl;
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * 
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * MessagingXAResource.java,v 1.1 2006/04/21 12:41:13 timfox Exp
+ * $Id$
  */
 public class MessagingXAResource implements XAResource
 {

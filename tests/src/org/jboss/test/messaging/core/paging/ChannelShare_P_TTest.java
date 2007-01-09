@@ -38,9 +38,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  * A ChannelShare_P_T_Recoverable.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * ChannelShare_P_T.java,v 1.1 2006/03/22 10:23:35 timfox Exp
+ * $Id$
  */
 public class ChannelShare_P_TTest extends PagingStateTestBase
 {

@@ -51,9 +51,9 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
- * RemotingTest.java,v 1.1 2006/03/28 14:26:20 timfox Exp
+ * $Id$
  */
 public class RemotingTest extends MessagingTestCase
 {

@@ -40,7 +40,7 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
- * @version 1.1
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
