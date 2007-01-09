@@ -29,7 +29,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Topic;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.container.SessionAspect;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.Command;
 

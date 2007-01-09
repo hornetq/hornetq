@@ -399,8 +399,8 @@ public class ServiceContainer
 
          loadJNDIContexts();
 
-         // it will aways install the multiplexer as this is a chep operation.
-         // The actual JChannels are started only over demand
+         // aways install multiplexer as this is a cheap operation. The actual JChannels are started
+         // only on demand
          startMultiplexer();
 
          log.debug("loaded JNDI context");
