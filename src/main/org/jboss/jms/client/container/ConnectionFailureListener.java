@@ -12,6 +12,7 @@ import org.jboss.logging.Logger;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverCommandCenter;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 
 /**
@@ -35,11 +36,16 @@ public class ConnectionFailureListener implements ConnectionListener
 
    private FailoverCommandCenter fcc;
 
-   // Constructors ---------------------------------------------------------------------------------
+   // The remotingConnection is needed here to validate that the failure wasn't captured after failover
+   // was already called
+   private JMSRemotingConnection remotingConnection;
 
-   ConnectionFailureListener(FailoverCommandCenter fcc)
+      // Constructors ---------------------------------------------------------------------------------
+
+   ConnectionFailureListener(FailoverCommandCenter fcc, JMSRemotingConnection remotingConnection)
    {
       this.fcc = fcc;
+      this.remotingConnection = remotingConnection;
    }
 
    // ConnectionListener implementation ------------------------------------------------------------
@@ -50,7 +56,7 @@ public class ConnectionFailureListener implements ConnectionListener
       {
          log.debug(this + " is being notified of connection failure: " + throwable);
 
-         fcc.failureDetected(throwable, null);
+         fcc.failureDetected(throwable, remotingConnection);
 
       }
       catch (Throwable e)

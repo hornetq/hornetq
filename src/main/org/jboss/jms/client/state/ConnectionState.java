@@ -115,8 +115,6 @@ public class ConnectionState extends HierarchicalStateSupport
 
       this.idGenerator = gen;
       this.serverID = serverID;
-
-      fcc = new FailoverCommandCenter(this);
    }
 
    // HierarchicalState implementation -------------------------------------------------------------
@@ -258,6 +256,13 @@ public class ConnectionState extends HierarchicalStateSupport
    public FailoverCommandCenter getFailoverCommandCenter()
    {
       return fcc;
+   }
+
+
+   /** Creates the FailoverCommandCenter as this is a clustered Connection*/
+   public void configureFailoverCommandCenter()
+   {
+      this.fcc = new FailoverCommandCenter(this);
    }
 
    public String toString()

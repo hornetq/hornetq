@@ -127,7 +127,9 @@ public class ClusteringAspect
             // add a connection listener to detect failure; the consolidated remoting connection
             // listener must be already in place and configured
             state.getRemotingConnection().getConnectionListener().
-               addDelegateListener(new ConnectionFailureListener(fcc));
+               addDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
+
+            state.configureFailoverCommandCenter();
 
             log.debug(this + " installed failure listener on " + cd);
 

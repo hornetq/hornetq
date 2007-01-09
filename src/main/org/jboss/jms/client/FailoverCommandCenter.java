@@ -76,15 +76,13 @@ public class FailoverCommandCenter
 
          valve.close();
 
-         if (remotingConnection != null)
+         if (remotingConnection.isFailed())
          {
-            if (remotingConnection.isFailed())
-            {
-               log.debug(this + " ignoring failure detection notification, as failover was " +
-                  "already performed on this connection");
-            }
-            remotingConnection.setFailed(true);
+            log.debug(this + " ignoring failure detection notification, as failover was " +
+               "already performed on this connection");
+            return;
          }
+         remotingConnection.setFailed(true);
 
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,
          // to insure the client-side stack is in a deterministic state
@@ -115,16 +113,23 @@ public class FailoverCommandCenter
       }
       finally
       {
-         if (failoverSuccessful)
+         // I have this secondary try..finally block, just because if broadcastFailoverEvent throws any exceptions
+         // I don't want a dead lock on everybody waiting the valve to be opened.
+         try
          {
-            broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_COMPLETED, this));
+            if (failoverSuccessful)
+            {
+               broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_COMPLETED, this));
+            }
+            else
+            {
+               broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));
+            }
          }
-         else
+         finally
          {
-            broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));
+            valve.open();
          }
-
-         valve.open();
       }
    }
 
