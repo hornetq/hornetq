@@ -14,6 +14,7 @@ import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 
 import javax.jms.JMSException;
@@ -121,21 +122,22 @@ public class ClusteringAspect
             log.debug(this + " got local connection delegate " + cd);
 
             ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
+            FailoverCommandCenter fcc = state.getFailoverCommandCenter();
 
             // add a connection listener to detect failure; the consolidated remoting connection
             // listener must be already in place and configured
             state.getRemotingConnection().getConnectionListener().
-               addDelegateListener(new ConnectionFailureListener(cd));
+               addDelegateListener(new ConnectionFailureListener(fcc));
 
             log.debug(this + " installed failure listener on " + cd);
 
-            // also cache the username and the password into state, useful in case FailoverAspect
-            // needs to create a new connection instead of a failed on
+            // also cache the username and the password into state, useful in case
+            // FailoverCommandCenter needs to create a new connection instead of a failed on
             state.setUsername(username);
             state.setPassword(password);
 
             // also add a reference to the clustered ConnectionFactory delegate, useful in case
-            // FailoverAspect needs to create a new connection instead of a failed on
+            // FailoverCommandCenter needs to create a new connection instead of a failed on
             state.setClusteredConnectionFactoryDeleage(clusteredDelegate);
 
             return new CreateConnectionResult(cd);

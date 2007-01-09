@@ -19,7 +19,6 @@
    <aspect class="org.jboss.jms.client.container.ConnectionAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ClusteringAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.FactoryAspect" scope="PER_INSTANCE"/>
-   <aspect class="org.jboss.jms.client.container.FailoverAspect" scope="PER_VM"/>
 
    <!--
        Clustered ConnectionFactory Stack
@@ -49,10 +48,6 @@
         Connection Stack
    -->
 
-   <!-- It is important that FailoverAspect intercepts performFailover() before FailoverValveInterceptor -->
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->performFailover())">
-      <advice name="handlePerformFailover" aspect="org.jboss.jms.client.container.FailoverAspect"/>
-   </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->$implementing{org.jboss.jms.delegate.ConnectionDelegate}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.ClientLogInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.FailoverValveInterceptor"/>

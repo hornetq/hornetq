@@ -2178,7 +2178,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             }
          }
 
-         log.info(this + ": server side fail over is now complete");
+         log.debug(this + " finished to fail over destinations");
 
          //TODO - should this be in a finally? I'm not sure
          status.finishFailingOver();
@@ -2190,6 +2190,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          log.debug(this + " announced the cluster that failover procedure is complete");
 
          sendJMXNotification(FAILOVER_COMPLETED_NOTIFICATION);
+
+         log.info(this + ": server side fail over is now complete");
       }
       finally
       {

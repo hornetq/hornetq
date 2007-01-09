@@ -22,10 +22,8 @@
 package org.jboss.jms.client.state;
 
 import java.util.Set;
-import java.util.Iterator;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.Valve;
 
 /**
  * Base implementation of HierarchicalState.
@@ -74,34 +72,6 @@ public abstract class HierarchicalStateSupport implements HierarchicalState
    public Set getChildren()
    {
       return children;
-   }
-
-   public void closeChildrensValves() throws Exception
-   {
-      if (children == null)
-      {
-         return;
-      }
-
-      for(Iterator i = children.iterator(); i.hasNext(); )
-      {
-         HierarchicalState s = (HierarchicalState)i.next();
-         ((Valve)s.getDelegate()).closeValve();
-      }
-   }
-
-   public void openChildrensValves() throws Exception
-   {
-      if (children == null)
-      {
-         return;
-      }
-
-      for(Iterator i = children.iterator(); i.hasNext(); )
-      {
-         HierarchicalState s = (HierarchicalState)i.next();
-         ((Valve)s.getDelegate()).openValve();
-      }
    }
 
    // Public ---------------------------------------------------------------------------------------

@@ -11,6 +11,7 @@ import org.jboss.remoting.Client;
 import org.jboss.logging.Logger;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.FailoverEvent;
+import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.state.ConnectionState;
 
 /**
@@ -32,13 +33,13 @@ public class ConnectionFailureListener implements ConnectionListener
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ClientConnectionDelegate cd;
+   private FailoverCommandCenter fcc;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ConnectionFailureListener(ClientConnectionDelegate cd)
+   ConnectionFailureListener(FailoverCommandCenter fcc)
    {
-      this.cd = cd;
+      this.fcc = fcc;
    }
 
    // ConnectionListener implementation ------------------------------------------------------------
@@ -49,13 +50,8 @@ public class ConnectionFailureListener implements ConnectionListener
       {
          log.debug(this + " is being notified of connection failure: " + throwable);
 
-         // generate a FAILURE_DETECTED event
-         ((ConnectionState)cd.getState()).
-            broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILURE_DETECTED, cd));
+         fcc.failureDetected(throwable, null);
 
-         log.debug(this + " initiating client-side failover");
-
-         cd.performFailover();
       }
       catch (Throwable e)
       {
@@ -67,7 +63,7 @@ public class ConnectionFailureListener implements ConnectionListener
 
    public String toString()
    {
-      return "ConnectionFailureListener[" + cd + "]";
+      return "ConnectionFailureListener[" + fcc + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------

@@ -196,7 +196,7 @@ public class ConnectionAspect
       MethodInvocation mi = (MethodInvocation)invocation;
       FailoverListener listener = (FailoverListener)mi.getArguments()[0];
 
-      state.registerFailoverListener(listener);
+      state.getFailoverCommandCenter().registerFailoverListener(listener);
 
       return null;
    }
@@ -208,7 +208,7 @@ public class ConnectionAspect
       MethodInvocation mi = (MethodInvocation)invocation;
       FailoverListener listener = (FailoverListener)mi.getArguments()[0];
 
-      boolean result = state.unregisterFailoverListener(listener);
+      boolean result = state.getFailoverCommandCenter().unregisterFailoverListener(listener);
 
       return new Boolean(result);
    }

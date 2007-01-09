@@ -29,7 +29,6 @@ import javax.jms.ServerSessionPool;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.FailoverListener;
-import org.jboss.jms.client.Valve;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 
 /**
@@ -42,7 +41,7 @@ import org.jboss.jms.server.endpoint.ConnectionEndpoint;
  *
  * $Id$
  */
-public interface ConnectionDelegate extends Valve, ConnectionEndpoint
+public interface ConnectionDelegate extends ConnectionEndpoint
 {      
    ExceptionListener getExceptionListener() throws JMSException;
    
@@ -58,7 +57,5 @@ public interface ConnectionDelegate extends Valve, ConnectionEndpoint
 
    void registerFailoverListener(FailoverListener failoverListener);
    boolean unregisterFailoverListener(FailoverListener failoverListener);
-
-   void performFailover() throws Exception;
 
 }

@@ -37,7 +37,6 @@ import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
-import org.jboss.jms.client.Valve;
 
 /**
  * Represents the minimal set of operations to provide session functionality.
@@ -49,7 +48,7 @@ import org.jboss.jms.client.Valve;
  *
  * $Id$
  */
-public interface SessionDelegate extends Valve, SessionEndpoint
+public interface SessionDelegate extends SessionEndpoint
 {
    MessageProxy createMessage() throws JMSException;
 

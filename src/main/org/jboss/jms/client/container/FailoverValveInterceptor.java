@@ -8,23 +8,23 @@ package org.jboss.jms.client.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.logging.Logger;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.HierarchicalState;
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.FailoverCommandCenter;
+import org.jboss.jms.client.FailoverValve;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.remoting.CannotConnectException;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.IOException;
 
 /**
  * An interceptor that acts as a failover valve: it allows all invocations to go through as long
  * as there is no failover in progress (valve is open), and holds all invocations while client-side
- * failover is taking place (valve is closed). The interceptor fields org.jboss.jms.client.Valve's
- * method calls.
+ * failover is taking place (valve is closed). The interceptor is also a failover detector, in that
+ * it catches "failure-triggering" exceptions, and notifies the failover command center.
+ *
+ * The interceptor fields org.jboss.jms.client.Valve's method calls.
  *
  * It is a PER_INSTANCE interceptor.
  *
@@ -39,38 +39,15 @@ public class FailoverValveInterceptor implements Interceptor
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(FailoverValveInterceptor.class);
-
    // Static ---------------------------------------------------------------------------------------
-
-   private static boolean trace = log.isTraceEnabled();
 
    // Attributes -----------------------------------------------------------------------------------
 
    private DelegateSupport delegate;
-   private HierarchicalState state;
-   private volatile boolean valveOpen;
-
-   private ReadWriteLock rwLock;
-
-   // the number of threads currently "penetrating" the open valve
-   private int activeThreadsCount;
-
-   // only for tracing
-   private List activeMethods;
+   private FailoverCommandCenter fcc;
+   private FailoverValve valve;
 
    // Constructors ---------------------------------------------------------------------------------
-
-   public FailoverValveInterceptor()
-   {
-      valveOpen = true;
-      activeThreadsCount = 0;
-      rwLock = new WriterPreferenceReadWriteLock();
-      if (trace)
-      {
-         activeMethods = new ArrayList();
-      }
-   }
 
    // Interceptor implemenation --------------------------------------------------------------------
 
@@ -81,149 +58,52 @@ public class FailoverValveInterceptor implements Interceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
-      // maintain a reference to the delegate that sends invocation through this interceptor. It
-      // makes sense, since it's an PER_INSTANCE interceptor.
-      if (delegate == null)
+      // maintain a reference to the FailoverCommandCenter instance.
+
+      if (fcc == null)
       {
          delegate = (DelegateSupport)invocation.getTargetObject();
-         state = delegate.getState();
-      }
 
-      String methodName = ((MethodInvocation)invocation).getMethod().getName();
-      Sync writeLock =  rwLock.writeLock();
-      Sync readLock = rwLock.readLock();
-
-      if("closeValve".equals(methodName))
-      {
-         if (!valveOpen)
+         HierarchicalState hs = delegate.getState();
+         while (hs != null && !(hs instanceof ConnectionState))
          {
-            // valve already closed, this is a noop
-            log.warn(this + " already closed!");
-            return null;
+            hs = hs.getParent();
          }
 
-         state.closeChildrensValves();
-
-         boolean acquired = false;
-
-         while(!acquired)
-         {
-            try
-            {
-               acquired = writeLock.attempt(500);
-            }
-            catch(InterruptedException e)
-            {
-               // OK
-            }
-
-            if (!acquired)
-            {
-               log.debug(this + " failed to close");
-            }
-         }
-
-         valveOpen = false;
-
-         log.debug(this + " has been closed");
-
-         return null;
-      }
-      else if("openValve".equals(methodName))
-      {
-         if (valveOpen)
-         {
-            // valve already open, this is a noop
-            log.warn(this + " already open!");
-            return null;
-         }
-
-         state.openChildrensValves();
-
-         writeLock.release();
-         valveOpen = true;
-
-         log.debug(this + " has been opened");
-
-         return null;
-      }
-      else if("isValveOpen".equals(methodName))
-      {
-         if (valveOpen)
-         {
-            return Boolean.TRUE;
-         }
-         else
-         {
-            return Boolean.FALSE;
-         }
-      }
-      else if("getActiveThreadsCount".equals(methodName))
-      {
-         return new Integer(activeThreadsCount);
+         fcc = ((ConnectionState)hs).getFailoverCommandCenter();
+         valve = fcc.getValve();
       }
 
-      // attempt to grab the reader's lock and go forward
-
-      boolean exempt = false;
+      JMSRemotingConnection remotingConnection = null;
 
       try
       {
-         exempt = isInvocationExempt(methodName);
+         valve.enter();
 
-         if (!exempt)
-         {
-            boolean acquired = false;
-
-            while(!acquired)
-            {
-               try
-               {
-                  acquired = readLock.attempt(500);
-               }
-               catch(InterruptedException e)
-               {
-                  // OK
-               }
-
-               if (trace && !acquired ) { log.trace(methodName + "() trying to pass through " + this); }
-            }
-         }
-
-         synchronized(this)
-         {
-            activeThreadsCount++;
-            if (trace)
-            {
-               activeMethods.add(methodName);
-            }
-         }
-
-         if (trace) { log.trace(this + " allowed " + (exempt ? "exempt" : "") + " method " + methodName + "() to pass through"); }
-
+         // it's important to retrieve the remotingConnection while inside the Valve, as there's
+         // guaranteed that no failover has happened yet
+         // guarantee that no failover has happened yet
+         remotingConnection = fcc.getRemotingConnection();
          return invocation.invokeNext();
-
       }
-      catch(IOException e)
+      catch (CannotConnectException e)
       {
-         // transport-level failure detected while being in the middle of an invocation
+         fcc.failureDetected(e, remotingConnection);
+         return invocation.invokeNext();
+      }
+      catch (IOException e)
+      {
+         fcc.failureDetected(e, remotingConnection);
+         return invocation.invokeNext();
+      }
+      catch (Throwable e)
+      {
+         // not failover-triggering, rethrow
          throw e;
       }
       finally
       {
-         if (!exempt)
-         {
-            readLock.release();
-         }
-
-         synchronized(this)
-         {
-            activeThreadsCount--;
-            if (trace)
-            {
-               activeMethods.remove(methodName);
-            }
-         }
+         valve.leave();
       }
    }
 
@@ -231,10 +111,7 @@ public class FailoverValveInterceptor implements Interceptor
 
    public String toString()
    {
-      return "FailoverValve." +
-         (delegate == null ? "UNITIALIZED" : delegate.toString()) +
-         (valveOpen ? "[OPEN(" + activeThreadsCount +
-            (trace ? " " + activeMethods.toString() : "") + ")]":"[CLOSED]");
+      return "FailoverValve." + (delegate == null ? "UNITIALIZED" : delegate.toString());
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -242,11 +119,6 @@ public class FailoverValveInterceptor implements Interceptor
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-   private boolean isInvocationExempt(String methodName)
-   {
-      return "recoverDeliveries".equals(methodName);
-   }
 
    // Inner classes --------------------------------------------------------------------------------
 }

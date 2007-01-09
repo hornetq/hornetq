@@ -27,7 +27,6 @@ import javax.jms.MessageListener;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
-import org.jboss.jms.client.Valve;
 
 /**
  * Represents the minimal set of operations to provide consumer
@@ -41,7 +40,7 @@ import org.jboss.jms.client.Valve;
  *
  * $Id$
  */
-public interface ConsumerDelegate extends Valve, ConsumerEndpoint
+public interface ConsumerDelegate extends ConsumerEndpoint
 {
    MessageListener getMessageListener();
 

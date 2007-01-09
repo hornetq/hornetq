@@ -52,18 +52,6 @@ public interface HierarchicalState
    Version getVersionToUse();
 
    /**
-    * Closes children's failover valves, by sending closeValve() invocations down children's
-    * delegate stack. It is NOT intended to be recursive, unless the children chose so.
-    */
-   void closeChildrensValves() throws Exception;
-
-   /**
-    * Opens children's failover valves, by sending openValve() invocations down children's
-    * delegate stack. It is NOT intended to be recursive, unless the children chose so.
-    */
-   void openChildrensValves() throws Exception;
-
-   /**
     * Update my own state based on the new state.
     */
    void synchronizeWith(HierarchicalState newState) throws Exception;

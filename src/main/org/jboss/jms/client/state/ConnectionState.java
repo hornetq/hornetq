@@ -22,16 +22,13 @@
 package org.jboss.jms.client.state;
 
 import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.FailoverEvent;
-import org.jboss.jms.client.FailoverListener;
+import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
@@ -63,8 +60,6 @@ public class ConnectionState extends HierarchicalStateSupport
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static boolean trace = log.isTraceEnabled();
-
    // Attributes -----------------------------------------------------------------------------------
 
    private int serverID;
@@ -91,10 +86,10 @@ public class ConnectionState extends HierarchicalStateSupport
    // connection on a different node
    private transient String password;
 
-   private List failoverListeners;
-
    // needed to try re-creating connection in case failure is detected on the current connection
    private ConnectionFactoryDelegate clusteredConnectionFactoryDelegate;
+
+   private FailoverCommandCenter fcc;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -121,7 +116,7 @@ public class ConnectionState extends HierarchicalStateSupport
       this.idGenerator = gen;
       this.serverID = serverID;
 
-      failoverListeners = new ArrayList();
+      fcc = new FailoverCommandCenter(this);
    }
 
    // HierarchicalState implementation -------------------------------------------------------------
@@ -250,48 +245,6 @@ public class ConnectionState extends HierarchicalStateSupport
       this.justCreated = justCreated;
    }
 
-   public void broadcastFailoverEvent(FailoverEvent e)
-   {
-      if (trace) { log.trace(this + " broadcasting " + e); }
-
-      List listenersCopy;
-
-      synchronized(failoverListeners)
-      {
-         listenersCopy = new ArrayList(failoverListeners);
-      }
-
-      for(Iterator i = listenersCopy.iterator(); i.hasNext(); )
-      {
-         FailoverListener listener = (FailoverListener)i.next();
-
-         try
-         {
-            listener.failoverEventOccured(e);
-         }
-         catch(Exception ex)
-         {
-            log.warn("Failover listener " + listener + " did not accept event", ex);
-         }
-      }
-   }
-
-   public void registerFailoverListener(FailoverListener listener)
-   {
-      synchronized(failoverListeners)
-      {
-         failoverListeners.add(listener);
-      }
-   }
-
-   public boolean unregisterFailoverListener(FailoverListener listener)
-   {
-      synchronized(failoverListeners)
-      {
-         return failoverListeners.remove(listener);
-      }
-   }
-
    public void setClusteredConnectionFactoryDeleage(ConnectionFactoryDelegate d)
    {
       this.clusteredConnectionFactoryDelegate = d;
@@ -300,6 +253,11 @@ public class ConnectionState extends HierarchicalStateSupport
    public ConnectionFactoryDelegate getClusteredConnectionFactoryDelegate()
    {
       return clusteredConnectionFactoryDelegate;
+   }
+
+   public FailoverCommandCenter getFailoverCommandCenter()
+   {
+      return fcc;
    }
 
    public String toString()

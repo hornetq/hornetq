@@ -1161,13 +1161,15 @@ public class ServiceContainer
       //is always currently used - (we could make this configurable)
 
       String transport = config.getRemotingTransport();
+
+      long clientLeasePeriod = 20000;
       
       String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
                       "serializationtype=" + serializationType + "&" +
                       "dataType=jms&" +
                       "socket.check_connection=false&" +
-                      "clientLeasePeriod=20000&" +
+                      "clientLeasePeriod=" + clientLeasePeriod + "&" +
                       "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
                       "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
                       "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper";

@@ -22,7 +22,6 @@
 package org.jboss.jms.delegate;
 
 import org.jboss.jms.server.endpoint.BrowserEndpoint;
-import org.jboss.jms.client.Valve;
 
 /**
  * Represents the minimal set of operations to provide browser
@@ -33,7 +32,7 @@ import org.jboss.jms.client.Valve;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public interface BrowserDelegate extends Valve, BrowserEndpoint
+public interface BrowserDelegate extends BrowserEndpoint
 {
 }
    

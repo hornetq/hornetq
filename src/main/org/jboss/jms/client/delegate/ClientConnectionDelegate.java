@@ -268,50 +268,6 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should be handled by the client-side interceptor chain.
-    */
-   public void performFailover()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void closeValve()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void openValve()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean isValveOpen()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public int getActiveThreadsCount()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public void init()

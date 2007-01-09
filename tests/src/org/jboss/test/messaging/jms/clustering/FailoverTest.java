@@ -11,15 +11,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.FailoverEvent;
-import org.jboss.jms.client.Valve;
-import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.JBossQueueBrowser;
-import org.jboss.jms.client.JBossMessageConsumer;
-import org.jboss.jms.client.JBossMessageProducer;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -1377,77 +1370,6 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-   public void testCloseValveHierarchy() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
-
-         assertTrue(((Valve)((JBossConnection)conn).getDelegate()).isValveOpen());
-
-         Session session1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session session2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         assertTrue(((Valve)((JBossSession)session1).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossSession)session2).getDelegate()).isValveOpen());
-
-         MessageProducer prod1 = session1.createProducer(queue[0]);
-         assertTrue(((Valve)((JBossMessageProducer)prod1).getDelegate()).isValveOpen());
-
-         MessageConsumer cons1 = session1.createConsumer(queue[0]);
-         assertTrue(((Valve)((JBossMessageConsumer)cons1).getDelegate()).isValveOpen());
-
-         QueueBrowser browser1 = session1.createBrowser(queue[0]);
-         assertTrue(((Valve)((JBossQueueBrowser)browser1).getDelegate()).isValveOpen());
-
-         MessageProducer prod2 = session2.createProducer(queue[0]);
-         assertTrue(((Valve)((JBossMessageProducer)prod2).getDelegate()).isValveOpen());
-
-         MessageConsumer cons2 = session2.createConsumer(queue[0]);
-         assertTrue(((Valve)((JBossMessageConsumer)cons2).getDelegate()).isValveOpen());
-
-         QueueBrowser browser2 = session2.createBrowser(queue[0]);
-         assertTrue(((Valve)((JBossQueueBrowser)browser2).getDelegate()).isValveOpen());
-
-         ((JBossConnection)conn).getDelegate().closeValve();
-
-         log.debug("top level valve closed");
-
-         assertFalse(((Valve)((JBossConnection)conn).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossSession)session1).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossSession)session2).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossMessageProducer)prod1).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossMessageConsumer)cons1).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossQueueBrowser)browser1).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossMessageProducer)prod2).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossMessageConsumer)cons2).getDelegate()).isValveOpen());
-         assertFalse(((Valve)((JBossQueueBrowser)browser2).getDelegate()).isValveOpen());
-
-         ((JBossConnection)conn).getDelegate().openValve();
-
-         log.debug("top level valve open");
-
-         assertTrue(((Valve)((JBossConnection)conn).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossSession)session1).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossSession)session2).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossMessageProducer)prod1).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossMessageConsumer)cons1).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossQueueBrowser)browser1).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossMessageProducer)prod2).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossMessageConsumer)cons2).getDelegate()).isValveOpen());
-         assertTrue(((Valve)((JBossQueueBrowser)browser2).getDelegate()).isValveOpen());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
    public void testFailoverMessageOnServer() throws Exception
    {
       Connection conn = null;
@@ -1572,42 +1494,6 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-   public void testTemp() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
-         conn.close();
-
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
-
-         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
-         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
-         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
-            getDelegate()).getRemotingConnection();
-         rc.removeConnectionListener();
-
-         ServerManagement.killAndWait(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
-
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
    public void testSimpleFailover() throws Exception
    {
       Connection conn = null;
@@ -1666,6 +1552,42 @@ public class FailoverTest extends ClusteringTestBase
          }
       }
    }
+
+//   public void testTemp() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//         conn = cf.createConnection();
+//         conn.close();
+//
+//         conn = cf.createConnection();
+//
+//         assertEquals(1, ((JBossConnection)conn).getServerID());
+//
+//         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+//         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+//         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+//            getDelegate()).getRemotingConnection();
+//         rc.removeConnectionListener();
+//
+//         ServerManagement.killAndWait(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
 
    // Package protected ----------------------------------------------------------------------------
 
