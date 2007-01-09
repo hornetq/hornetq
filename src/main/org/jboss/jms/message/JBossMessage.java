@@ -24,6 +24,7 @@ package org.jboss.jms.message;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.util.Primitives;
@@ -57,6 +59,12 @@ import org.jboss.util.Strings;
 /**
  * 
  * Implementation of a JMS Message
+ * 
+ * Note that the only reason this class is Serializable is so that messages
+ * can be returned from JMX operations.
+ * 
+ * Java serialization is not used to serialize messages between client and server
+ * in normal JMS operations
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -70,10 +78,11 @@ import org.jboss.util.Strings;
  *
  * $Id$
  */
-public class JBossMessage extends MessageSupport implements javax.jms.Message
+public class JBossMessage extends MessageSupport implements javax.jms.Message, Serializable
 {
    // Constants -----------------------------------------------------
-          
+   private static final long serialVersionUID = 2833181306818971346L;
+
    public static final byte TYPE = 0;
    
    private static final byte NULL = 0;
@@ -85,6 +94,13 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    private static final byte TEMP_QUEUE = 5;
    
    private static final byte TEMP_TOPIC = 6;
+   
+   private static final String JMSX_DELIVERY_COUNT_PROP_NAME = "JMSXDeliveryCount";   
+   
+   public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY";
+   
+   private static final Logger log = Logger.getLogger(JBossMessage.class);
+
 
    // Static --------------------------------------------------------
 
@@ -265,7 +281,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
             expiration,
             timestamp,
             priority,
-            0,
+            0, 0,
             coreHeaders,
             payloadAsByteArray);
 
@@ -346,14 +362,14 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
          properties = new HashMap();
       }
 
-      for(Enumeration props = foreign.getPropertyNames(); props.hasMoreElements(); )
+      for (Enumeration props = foreign.getPropertyNames(); props.hasMoreElements(); )
       {
          String name = (String)props.nextElement();
          
          Object prop = foreign.getObjectProperty(name);
-         if ("JMSXDeliveryCount".equals(name))
+         if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
          {
-            deliveryCount = foreign.getIntProperty("JMSXDeliveryCount");
+            deliveryCount = foreign.getIntProperty(JMSX_DELIVERY_COUNT_PROP_NAME);
          }
          else
          {
@@ -548,7 +564,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public boolean propertyExists(String name) throws JMSException
    {
-      return properties.containsKey(name) || "JMSXDeliveryCount".equals(name);
+      return properties.containsKey(name) || JMSX_DELIVERY_COUNT_PROP_NAME.equals(name) ||
+      (this.scheduledDeliveryTime != 0 && JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name));
    }
 
    public boolean getBooleanProperty(String name) throws JMSException
@@ -597,11 +614,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public int getIntProperty(String name) throws JMSException
    {
-      if ("JMSXDeliveryCount".equals(name))
+      if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
       {
          return deliveryCount;
       }
-      
+               
       Object value = properties.get(name);
 
       if (value == null)
@@ -633,9 +650,13 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public long getLongProperty(String name) throws JMSException
    {
-      if ("JMSXDeliveryCount".equals(name))
+      if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
       {
          return (long)deliveryCount;
+      }
+      else if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name) && scheduledDeliveryTime > 0)
+      {
+         return scheduledDeliveryTime;
       }
 
       Object value = properties.get(name);
@@ -703,9 +724,13 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public String getStringProperty(String name) throws JMSException
    {
-      if ("JMSXDeliveryCount".equals(name))
+      if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
       {
          return String.valueOf(deliveryCount);
+      }
+      else if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name) && scheduledDeliveryTime > 0)
+      {
+         return String.valueOf(scheduledDeliveryTime);
       }
 
       Object value = properties.get(name);
@@ -759,7 +784,11 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
    {
       HashSet set = new HashSet();
       set.addAll(properties.keySet());
-      set.add("JMSXDeliveryCount");
+      set.add(JMSX_DELIVERY_COUNT_PROP_NAME);
+      if (this.scheduledDeliveryTime > 0)
+      {
+         set.add(JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME);
+      }
       return Collections.enumeration(set);
    }
 
@@ -793,9 +822,16 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message
 
    public void setLongProperty(String name, long value) throws JMSException
    {
-      Long l = new Long(value);
-      checkProperty(name, l);
-      properties.put(name, l);
+      if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name))
+      {
+         this.scheduledDeliveryTime = value;
+      }
+      else
+      {
+         Long l = new Long(value);
+         checkProperty(name, l);
+         properties.put(name, l);
+      }
    }
 
    public void setFloatProperty(String name, float value) throws JMSException

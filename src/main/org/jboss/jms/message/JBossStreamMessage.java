@@ -54,6 +54,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = 7469150228071568233L;
+
    public static final byte TYPE = 4;
 
    // Attributes ----------------------------------------------------

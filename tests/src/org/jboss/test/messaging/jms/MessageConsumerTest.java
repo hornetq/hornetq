@@ -146,6 +146,61 @@ public class MessageConsumerTest extends MessagingTestCase
       super.tearDown();
    }
 
+   
+   public void testReceiveWithClientAckThenCloseSession() throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         
+         final int NUM_MESSAGES = 5;
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess.createTextMessage("message" + i);
+            
+            prod.send(tm);
+         }
+         
+         Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sess2.createConsumer(queue);
+         
+         conn.start();
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(500);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         //Now close the session
+ 
+         long now = System.currentTimeMillis();
+         
+         sess2.close();
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+       
+   }
+   
+   
    public void testRelayMessage() throws Exception
    {
       Connection conn = cf.createConnection();

@@ -26,6 +26,7 @@ import java.util.List;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -38,9 +39,10 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.destination.SubscriptionInfo;
 import org.jboss.test.messaging.jms.server.destination.base.DestinationManagementTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
-
 
 /**
  * Tests a topic's management interface.
@@ -191,340 +193,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
    }
    
    /**
-    * Test subscriptionCount() and subscriptionCount(boolean durable).
-    * @throws Exception
-    */
-   public void testSubscriptionCount() throws Exception
-   {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
-      ServerManagement.deployTopic("TopicSubscription");
-      
-      try
-      {
-         Topic topic = (Topic)ic.lookup("/topic/TopicSubscription");
-   
-         TopicConnection conn = cf.createTopicConnection();
-   
-         conn.setClientID("Client1");
-   
-         TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(topic);
-         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-   
-         // Create 1 durable subscription and 2 non-durable subscription
-         s.createDurableSubscriber(topic, "SubscriberA");
-         
-         s.createSubscriber(topic);
-         s.createSubscriber(topic);
-   
-         // There should be 3 subscriptions
-         ObjectName destObjectName = 
-            new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscription");
-         Integer count = (Integer)ServerManagement.invoke(destObjectName, "subscriptionCount", null, null);
-         assertEquals(3, count.intValue());
-         
-         // There should be 1 durable subscription
-         Integer duraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.TRUE}, 
-               new String[] {"boolean"});
-         assertEquals(1, duraCount.intValue());
-         
-         // There should be 2 non-durable subscription
-         Integer nonduraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.FALSE}, 
-               new String[] {"boolean"});
-         assertEquals(2, nonduraCount.intValue());
-         
-         // Now disconnect
-         conn.close();
-         
-         // There should be only 1 subscription totally
-         count = (Integer)ServerManagement.invoke(destObjectName, "subscriptionCount", null, null);
-         assertEquals(1, count.intValue());
-         
-         // There should be 1 durable subscription
-         duraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.TRUE}, 
-               new String[] {"boolean"});
-         assertEquals(1, duraCount.intValue());
-         
-         // There should be 0 non-durable subscription
-         nonduraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.FALSE}, 
-               new String[] {"boolean"});
-         assertEquals(0, nonduraCount.intValue());
-         
-         // Now connect again and restore the durable subscription
-         conn = cf.createTopicConnection();
-         conn.setClientID("Client1");
-         s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         s.createDurableSubscriber(topic, "SubscriberA");
-         
-         // There should be still 1 subscription
-         count = (Integer)ServerManagement.invoke(destObjectName, "subscriptionCount", null, null);
-         assertEquals(1, count.intValue());
-   
-         // Now create another durable subscription
-         s.createDurableSubscriber(topic, "SubscriberB");
-         
-         // There should be 2 durable subscription
-         duraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.TRUE}, 
-               new String[] {"boolean"});
-         assertEquals(2, duraCount.intValue());
-         
-         // There should be 0 non-durable subscription
-         nonduraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.FALSE}, 
-               new String[] {"boolean"});
-         assertEquals(0, nonduraCount.intValue());
-   
-         // And close the connection
-         conn.close();
-         
-         // There should be 2 subscription still
-         count = (Integer)ServerManagement.invoke(destObjectName, "subscriptionCount", null, null);
-         assertEquals(2, count.intValue());
-   
-         // There should be 2 durable subscription
-         duraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.TRUE}, 
-               new String[] {"boolean"});
-         assertEquals(2, duraCount.intValue());
-         
-         // There should be 0 non-durable subscription
-         nonduraCount = (Integer)ServerManagement.invoke(
-               destObjectName, 
-               "subscriptionCount", 
-               new Object[] {Boolean.FALSE}, 
-               new String[] {"boolean"});
-         assertEquals(0, nonduraCount.intValue());
-         
-      }
-      finally
-      {
-      
-         ServerManagement.undeployTopic("TopicSubscription");
-      }
-   }
-
-   /**
-    * XXX Placeholder
-    * Test listSubscriptions() and listSubscriptions(boolean durable).
-    * @throws Exception
-    */
-   /*
-   public void testListSubscriptions() throws Exception
-   {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
-      ServerManagement.deployTopic("TopicSubscriptionList");
-      Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionList");
-
-      TopicConnection conn = cf.createTopicConnection();
-
-      conn.setClientID("Client1");
-
-      TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      // Create 1 durable subscription and 2 non-durable subscription
-      s.createDurableSubscriber(topic, "SubscriberA");
-      
-      s.createSubscriber(topic);
-      s.createSubscriber(topic);
-
-      // There should be 3 subscriptions
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscriptionList");
-      List list = (List)ServerManagement.invoke(destObjectName, "listSubscriptions", null, null);
-      assertEquals(3, list.size());
-      
-      // There should be 1 durable subscription
-      List duraList = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listSubscriptions", 
-            new Object[] {Boolean.TRUE}, 
-            new String[] {"boolean"});
-      assertEquals(1, duraList.size());
-      // String[] {ChannelID, ClientID, SubscriptionName}
-      String[] strs = (String[])duraList.get(0);
-      assertEquals("Client1", strs[1]);
-      assertEquals("SubscriberA", strs[2]);
-      
-      // There should be 2 non-durable subscription
-      List nonduraList = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listSubscriptions", 
-            new Object[] {Boolean.FALSE}, 
-            new String[] {"boolean"});
-      assertEquals(2, nonduraList.size());
-      // String[] {ChannelID, ClientID, SubscriptionName}
-      strs = (String[])nonduraList.get(0);
-      assertEquals("", strs[1]);
-      assertEquals("", strs[2]);
-      // String[] {ChannelID, ClientID, SubscriptionName}
-      strs = (String[])nonduraList.get(1);
-      assertEquals("", strs[1]);
-      assertEquals("", strs[2]);
-      
-      // Now disconnect
-      conn.close();
-      
-      // There should be only 1 subscription totally
-      list = (List)ServerManagement.invoke(destObjectName, "listSubscriptions", null, null);
-      assertEquals(1, list.size());
-      
-      // There should be 1 durable subscription
-      duraList = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listSubscriptions", 
-            new Object[] {Boolean.TRUE}, 
-            new String[] {"boolean"});
-      assertEquals(1, duraList.size());
-       
-      // There should be 0 non-durable subscription
-      nonduraList = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listSubscriptions", 
-            new Object[] {Boolean.FALSE}, 
-            new String[] {"boolean"});
-      assertEquals(0, nonduraList.size());
-      ServerManagement.undeployTopic("TopicSubscriptionList");
-   }
-   */
-
-   /**
-    * Test listSubscriptionsAsText().
-    * @throws Exception
-    */
-   public void testListSubscriptionsAsText() throws Exception
-   {
-      ServerManagement.deployTopic("TopicSubscription");
-      
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
-      ServerManagement.deployTopic("TopicSubscriptionListAsText");
-      
-      try
-      {
-         Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionListAsText");
-   
-         TopicConnection conn = cf.createTopicConnection();
-   
-         conn.setClientID("Client1");
-   
-         TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(topic);
-         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-   
-         // Create 1 durable subscription and 2 non-durable subscription
-         s.createDurableSubscriber(topic, "SubscriberA");
-         
-         s.createSubscriber(topic);
-         s.createSubscriber(topic);
-   
-         // There should be 3 subscriptions
-         ObjectName destObjectName = 
-            new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscriptionListAsText");
-         String text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
-         //System.out.println("Text: \n" + text);
-         
-         // Find the location of durable
-         int durableStart = text.indexOf("Durable");
-         assertTrue (durableStart != -1);
-         assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
-         assertTrue (text.indexOf("Client1", durableStart) != -1);
-         // Find the first location of Non-durable
-         int nonDurableStart = text.indexOf("Non-durable");
-         assertTrue(nonDurableStart != -1);
-         // Find the 2nd Non-durable
-         int nonDurableSecond = text.substring(nonDurableStart).indexOf("Non-durable", 1);
-         assertTrue(nonDurableSecond != -1);
-         
-         // Test durable subscriptions
-         text = (String)ServerManagement.invoke(
-               destObjectName, 
-               "listSubscriptionsAsText", 
-               new Object[] {Boolean.TRUE},
-               new String[] {"boolean"});
-         //System.out.println("Durable Text: \n" + text);
-         
-         durableStart = text.indexOf("Durable");
-         assertTrue (durableStart != -1);
-         assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
-         assertTrue (text.indexOf("Client1", durableStart) != -1);
-         
-         // Test non-durable subscriptions
-         text = (String)ServerManagement.invoke(
-               destObjectName, 
-               "listSubscriptionsAsText", 
-               new Object[] {Boolean.FALSE},
-               new String[] {"boolean"});
-         //System.out.println("Non-durable Text: \n" + text);
-         nonDurableStart = text.indexOf("Non-durable");
-         assertTrue(nonDurableStart != -1);
-         // Find the 2nd Non-durable
-         nonDurableSecond = text.substring(nonDurableStart).indexOf("Non-durable", 1);
-         assertTrue(nonDurableSecond != -1);     
-         
-         // Now disconnect
-         conn.close();
-         
-         // There should be only 1 subscription totally
-         text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
-         durableStart = text.indexOf("Durable");
-         assertTrue (durableStart != -1);
-         assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
-         assertTrue (text.indexOf("Client1", durableStart) != -1);
-         
-         // There should be 1 durable subscription
-         text = (String)ServerManagement.invoke(
-               destObjectName, 
-               "listSubscriptionsAsText", 
-               new Object[] {Boolean.TRUE}, 
-               new String[] {"boolean"});
-         durableStart = text.indexOf("Durable");
-         assertTrue (durableStart != -1);
-         assertTrue (text.indexOf("SubscriberA", durableStart) != -1);
-         assertTrue (text.indexOf("Client1", durableStart) != -1);
-          
-         // There should be 0 non-durable subscription
-         text = (String)ServerManagement.invoke(
-               destObjectName, 
-               "listSubscriptionsAsText", 
-               new Object[] {Boolean.FALSE}, 
-               new String[] {"boolean"});
-         nonDurableStart = text.indexOf("Non-durable");
-         assertTrue(-1 == nonDurableStart);
-      }
-      finally
-      {      
-         ServerManagement.undeployTopic("TopicSubscriptionListAsText");
-         ServerManagement.undeployTopic("TopicSubscription");
-      }
-   }
-
-   /**
     * Test removeAllMessages().
     * @throws Exception
     */
@@ -556,14 +224,10 @@ public class TopicManagementTest extends DestinationManagementTestBase
          
          ObjectName destObjectName = 
             new ObjectName("jboss.messaging.destination:service=Topic,name=TopicRemoveAllMessages");
-         List listMsg = (List)ServerManagement.invoke(destObjectName, 
-                  "listMessagesDurableSub",
-                  new Object[] {"Durable1", "Client1", null},
-                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});         
-         assertEquals(1, listMsg.size());
          
-         //TODO - Why the heck isn't there a messageCount method on the subscription
-         //like there is on queue??????????
+         int count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
+         
+         assertEquals(2, count);
          
          // Start the connection for delivery
          conn.start();
@@ -575,16 +239,16 @@ public class TopicManagementTest extends DestinationManagementTestBase
          
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
    
-         // Try to receive messages from the two subscriptions, should be null
+         count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
          
-         listMsg = (List)ServerManagement.invoke(destObjectName, 
-                  "listMessagesDurableSub",
-                  new Object[] {"Durable1", "Client1", null},
-                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});         
-         assertEquals(0, listMsg.size());
+         assertEquals(0, count);
                   
          // Now close the connection
          conn.close();
+         
+         count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
+         
+         assertEquals(0, count);
          
          // Connect again to the same topic
          conn = cf.createTopicConnection();
@@ -596,12 +260,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
          // Send another message
          prod.send(s.createTextMessage("Second one"));
          
-         listMsg = (List)ServerManagement.invoke(destObjectName, 
-                  "listMessagesDurableSub",
-                  new Object[] {"Durable1", "Client1", null},
-                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});   
+         count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
          
-         assertEquals(2, listMsg.size());
+         assertEquals(1, count);
 
          // Start the connection for delivery
          conn.start();
@@ -609,11 +270,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
          // Remove all messages from the topic
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
    
-         listMsg = (List)ServerManagement.invoke(destObjectName, 
-                  "listMessagesDurableSub",
-                  new Object[] {"Durable1", "Client1", null},
-                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});         
-         assertEquals(0, listMsg.size());
+         count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
+         
+         assertEquals(0, count);
          
          // Clean-up
          conn.close();
@@ -624,20 +283,21 @@ public class TopicManagementTest extends DestinationManagementTestBase
       }
    }
   
-   public void testListMessages() throws Exception
+   public void testMessageCount() throws Exception
    {
-      ServerManagement.deployTopic("TopicSubscriptionListAsText");
-      
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
  
-      ServerManagement.deployTopic("TopicMessageList");
+      ServerManagement.deployTopic("TopicGetAllMessageCount");
+      
+      TopicConnection conn = null;
+      
       
       try
-      {
-         Topic topic = (Topic)ic.lookup("/topic/TopicMessageList");
+      {                  
+         Topic topic = (Topic)ic.lookup("/topic/TopicGetAllMessageCount");
    
-         TopicConnection conn = cf.createTopicConnection();
+         conn = cf.createTopicConnection();
    
          conn.setClientID("Client1");
    
@@ -651,178 +311,583 @@ public class TopicManagementTest extends DestinationManagementTestBase
          s.createSubscriber(topic);
          s.createSubscriber(topic);
          
-         // Send 1 message
-         prod.send(s.createTextMessage("First one"));
+         //Send a couple of messages
+         TextMessage tm1 = s.createTextMessage("message1");
+         TextMessage tm2 = s.createTextMessage("message2");
+         
+         prod.send(tm1);
+         prod.send(tm2);
+   
+         // There should be 3 subscriptions
+         ObjectName destObjectName = 
+            new ObjectName("jboss.messaging.destination:service=Topic,name=TopicGetAllMessageCount");
+         
+         Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount");
+         assertEquals(6, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "DurableMessageCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "NonDurableMessageCount");
+         assertEquals(4, count.intValue());
+                  
+         // Now disconnect
+         conn.close();
+         
+         // Only the durable should survive
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "DurableMessageCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "NonDurableMessageCount");
+         assertEquals(0, count.intValue());
+         
+         // Now connect again and restore the durable subscription
+         conn = cf.createTopicConnection();
+         conn.setClientID("Client1");
+         s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = s.createDurableSubscriber(topic, "SubscriberA");
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount");
+         assertEquals(2, count.intValue());
+   
+         // Now create another durable subscription
+         s.createDurableSubscriber(topic, "SubscriberB");
+         
+         //Now consume
+         
+         conn.start();
+         
+         TextMessage rm1 = (TextMessage)cons.receive(500);
+         assertNotNull(rm1);
+         assertEquals(tm1.getText(), rm1.getText());
+         
+         TextMessage rm2 = (TextMessage)cons.receive(500);
+         assertNotNull(rm2);
+         assertEquals(tm2.getText(), rm2.getText());
+         
+         Message m = cons.receive(500);
+         assertNull(m);
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount");
+         assertEquals(0, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "DurableMessageCount");
+         assertEquals(0, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "NonDurableMessageCount");
+         assertEquals(0, count.intValue());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         ServerManagement.undeployTopic("TopicGetAllMessageCount");
+      }
+   }
+   
+
+   public void testSubscriptionsCount() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+ 
+      ServerManagement.deployTopic("TopicSubscriptionsCount");
+      
+      TopicConnection conn = null;
+            
+      try
+      {
+         Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionsCount");
+   
+         conn = cf.createTopicConnection();
+   
+         conn.setClientID("Client1");
+   
+         TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         // Create 2 durable subscription and 4 non-durable subscription
+         s.createDurableSubscriber(topic, "SubscriberA");
+         s.createDurableSubscriber(topic, "SubscriberB");
+         
+         s.createSubscriber(topic);
+         s.createSubscriber(topic);
+         s.createSubscriber(topic);
+         s.createSubscriber(topic);
+   
+         // There should be 6 subscriptions
+         ObjectName destObjectName = 
+            new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscriptionsCount");
+         
+         Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "AllSubscriptionsCount");
+         assertEquals(6, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "DurableSubscriptionsCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "NonDurableSubscriptionsCount");
+         assertEquals(4, count.intValue());
+         
+                
+         // Now disconnect
+         conn.close();
+         
+         // Only the durable should survive
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "AllSubscriptionsCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "DurableSubscriptionsCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "NonDurableSubscriptionsCount");
+         assertEquals(0, count.intValue());
+         
+         
+         // Now connect again and restore the durable subscription
+         conn = cf.createTopicConnection();
+         conn.setClientID("Client1");
+         s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+         s.createDurableSubscriber(topic, "SubscriberA");
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "AllSubscriptionsCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "DurableSubscriptionsCount");
+         assertEquals(2, count.intValue());
+         
+         count = (Integer)ServerManagement.getAttribute(destObjectName, "NonDurableSubscriptionsCount");
+         assertEquals(0, count.intValue());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+         ServerManagement.undeployTopic("TopicSubscriptionsCount");
+      }
+   }
+
+   
+   public void testListSubscriptions() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+ 
+      ServerManagement.deployTopic("TopicSubscriptionList");
+      Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionList");
+
+      TopicConnection conn = null;
+      
+      try
+      {
+         conn = cf.createTopicConnection();
+   
+         conn.setClientID("Client1");
+   
+         TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         // Create 2 durable subscription and 2 non-durable subscription
+         s.createDurableSubscriber(topic, "SubscriberA");
+         
+         s.createDurableSubscriber(topic, "SubscriberB", "wibble is null", false);
+         
+         s.createSubscriber(topic);
+         
+         s.createSubscriber(topic);
+         
+         MessageProducer prod = s.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         // Send a couple of messages
+         TextMessage tm1 = s.createTextMessage("message1");
+         TextMessage tm2 = s.createTextMessage("message2");
+         
+         prod.send(tm1);
+         prod.send(tm2);
+      
+         // There should be 4 subscriptions
+         ObjectName destObjectName = 
+            new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscriptionList");
+         
+         List list = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
+         
+         assertEquals(4, list.size());
+         
+         SubscriptionInfo sub1 = (SubscriptionInfo)list.get(0);
+         SubscriptionInfo sub2 = (SubscriptionInfo)list.get(1);
+         SubscriptionInfo sub3 = (SubscriptionInfo)list.get(2);
+         SubscriptionInfo sub4 = (SubscriptionInfo)list.get(3);
+         
+         assertEquals("Client1", sub1.getClientID());
+         assertEquals(-1, sub1.getMaxSize());
+         assertEquals(2, sub1.getMessageCount());
+         assertEquals(null, sub1.getSelector());
+         assertEquals("SubscriberA", sub1.getName());
+         
+         assertEquals("Client1", sub2.getClientID());
+         assertEquals(-1, sub2.getMaxSize());
+         assertEquals(2, sub2.getMessageCount());
+         assertEquals("wibble is null", sub2.getSelector());
+         assertEquals("SubscriberB", sub2.getName());
+         
+
+         assertEquals(null, sub3.getClientID());
+         assertEquals(-1, sub3.getMaxSize());
+         assertEquals(2, sub3.getMessageCount());
+         assertEquals(null, sub3.getSelector());
+         assertEquals(null, sub3.getName());
+         
+         assertEquals(null, sub4.getClientID());
+         assertEquals(-1, sub4.getMaxSize());
+         assertEquals(2, sub4.getMessageCount());
+         assertEquals(null, sub4.getSelector());
+         assertEquals(null, sub4.getName());
+         
+         //Now the durable
+         
+         list = (List)ServerManagement.invoke(destObjectName, "listDurableSubscriptions", null, null);
+         
+         assertEquals(2, list.size());
+         
+         sub1 = (SubscriptionInfo)list.get(0);
+         sub2 = (SubscriptionInfo)list.get(1);
+
+         
+         assertEquals("Client1", sub1.getClientID());
+         assertEquals(-1, sub1.getMaxSize());
+         assertEquals(2, sub1.getMessageCount());
+         assertEquals(null, sub1.getSelector());
+         assertEquals("SubscriberA", sub1.getName());
+         
+         assertEquals("Client1", sub2.getClientID());
+         assertEquals(-1, sub2.getMaxSize());
+         assertEquals(2, sub2.getMessageCount());
+         assertEquals("wibble is null", sub2.getSelector());
+         assertEquals("SubscriberB", sub2.getName());
+         
+         //and the non durable
+         
+         list = (List)ServerManagement.invoke(destObjectName, "listNonDurableSubscriptions", null, null);
+         
+         assertEquals(2, list.size());
+         
+         sub3 = (SubscriptionInfo)list.get(0);
+         sub4 = (SubscriptionInfo)list.get(1);
+         
+         assertEquals(null, sub3.getClientID());
+         assertEquals(-1, sub3.getMaxSize());
+         assertEquals(2, sub3.getMessageCount());
+         assertEquals(null, sub3.getSelector());
+         assertEquals(null, sub3.getName());
+         
+         assertEquals(null, sub4.getClientID());
+         assertEquals(-1, sub4.getMaxSize());
+         assertEquals(2, sub4.getMessageCount());
+         assertEquals(null, sub4.getSelector());
+         assertEquals(null, sub4.getName());
+         
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      
+         ServerManagement.undeployTopic("TopicSubscriptionList");
+      }
+   }
+   
+
+   public void testListSubscriptionsAsHTML() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+ 
+      ServerManagement.deployTopic("TopicSubscriptionList");
+      Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionList");
+
+      TopicConnection conn = null;
+      
+      try
+      {
+         conn = cf.createTopicConnection();
+   
+         conn.setClientID("Client1");
+   
+         TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         // Create 2 durable subscription and 2 non-durable subscription
+         s.createDurableSubscriber(topic, "SubscriberA");
+         
+         s.createDurableSubscriber(topic, "SubscriberB", "wibble is null", false);
+         
+         s.createSubscriber(topic);
+         
+         s.createSubscriber(topic);
+         
+         MessageProducer prod = s.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+         
+         // Send a couple of messages
+         TextMessage tm1 = s.createTextMessage("message1");
+         TextMessage tm2 = s.createTextMessage("message2");
+         
+         prod.send(tm1);
+         prod.send(tm2);
+      
+         // There should be 4 subscriptions
+         ObjectName destObjectName = 
+            new ObjectName("jboss.messaging.destination:service=Topic,name=TopicSubscriptionList");
+         
+         String html = (String)ServerManagement.invoke(destObjectName, "listAllSubscriptionsAsHTML", null, null);
+         
+         assertTrue(html.startsWith("<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"));
+         assertTrue(html.endsWith("</table>"));
+         
+         assertTrue(html.indexOf("SubscriberA") != -1);
+         assertTrue(html.indexOf("Client1") != -1);
+         assertTrue(html.indexOf("SubscriberB") != -1);
+         assertTrue(html.indexOf("wibble is null") != -1);
+         
+         
+         //Now the durable
+         
+         html = (String)ServerManagement.invoke(destObjectName, "listDurableSubscriptionsAsHTML", null, null);
+         
+         assertTrue(html.startsWith("<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"));
+         assertTrue(html.endsWith("</table>"));
+         
+         assertTrue(html.indexOf("SubscriberA") != -1);
+         assertTrue(html.indexOf("Client1") != -1);
+         assertTrue(html.indexOf("SubscriberB") != -1);
+         assertTrue(html.indexOf("wibble is null") != -1);
+         
+         // Now the non durable
+         
+         html = (String)ServerManagement.invoke(destObjectName, "listNonDurableSubscriptionsAsHTML", null, null);
+         
+         assertTrue(html.startsWith("<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"));
+         assertTrue(html.endsWith("</table>"));
+         
+         assertFalse(html.indexOf("SubscriberA") != -1);
+         assertFalse(html.indexOf("Client1") != -1);
+         assertFalse(html.indexOf("SubscriberB") != -1);
+         assertFalse(html.indexOf("wibble is null") != -1);
+                
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      
+         ServerManagement.undeployTopic("TopicSubscriptionList");
+      }
+   }
+   
+  
+   public void testListMessages() throws Exception
+   {   
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+ 
+      ServerManagement.deployTopic("TopicMessageList");
+      
+      TopicConnection conn = null;
+      
+      try
+      {
+         Topic topic = (Topic)ic.lookup("/topic/TopicMessageList");
+   
+         conn = cf.createTopicConnection();
+   
+         conn.setClientID("Client1");
+   
+         TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = s.createProducer(topic);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+   
+         MessageConsumer cons = s.createDurableSubscriber(topic, "SubscriberA");
+         
+         // Send some persistent message
+         TextMessage tm1 = s.createTextMessage("message1");
+         tm1.setStringProperty("vegetable", "parsnip");
+         TextMessage tm2 = s.createTextMessage("message2");
+         tm2.setStringProperty("vegetable", "parsnip");
+         TextMessage tm3 = s.createTextMessage("message3");
+         tm3.setStringProperty("vegetable", "parsnip");
+         prod.send(tm1);
+         prod.send(tm2);
+         prod.send(tm3);
+         
+         // and some non persistent with a selector
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
+         TextMessage tm4 = s.createTextMessage("message4");
+         tm4.setStringProperty("vegetable", "artichoke");
+         TextMessage tm5 = s.createTextMessage("message5");
+         tm5.setStringProperty("vegetable", "artichoke");
+         TextMessage tm6 = s.createTextMessage("message6");
+         tm6.setStringProperty("vegetable", "artichoke");
+         prod.send(tm4);
+         prod.send(tm5);
+         prod.send(tm6);
          
          // Start the connection for delivery
          conn.start();
    
-         // There should be 3 subscriptions
+         // There should be 1 subscription
          ObjectName destObjectName = 
             new ObjectName("jboss.messaging.destination:service=Topic,name=TopicMessageList");
          
-         ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
+         List durableSubs = (List)ServerManagement.invoke(destObjectName, "listDurableSubscriptions", null, null);
+         
+         assertNotNull(durableSubs);
+         assertEquals(1, durableSubs.size());
          
          
-         // Note that listing the messages ONLY list those ones not in the process of delivery
-         // Therefore the following is invalid
+         //Note that listing messages DOES NOT list messages that are in the process of being delivered
+         //or scheduled
+         
+         //so we need to close the consumers otherwise the messages will be buffered in them and not
+         //visible
+         
+         cons.close();
+         
+         //Give time for cancel to occur
+         Thread.sleep(500);
+         
+         String sub1Id = ((SubscriptionInfo)durableSubs.get(0)).getId();
+                
+         List allMsgs = (List)ServerManagement.invoke(destObjectName, "listAllMessages", new Object[] { sub1Id }, new String[] { "java.lang.String" });
+         
+         assertNotNull(allMsgs);         
+         assertEquals(6, allMsgs.size());
+         
+         TextMessage rm1 = (TextMessage)allMsgs.get(0);
+         TextMessage rm2 = (TextMessage)allMsgs.get(1);
+         TextMessage rm3 = (TextMessage)allMsgs.get(2);
+         TextMessage rm4 = (TextMessage)allMsgs.get(3);
+         TextMessage rm5 = (TextMessage)allMsgs.get(4);
+         TextMessage rm6 = (TextMessage)allMsgs.get(5);
+         
+         assertEquals(tm1.getText(), rm1.getText());
+         assertEquals(tm2.getText(), rm2.getText());
+         assertEquals(tm3.getText(), rm3.getText());
+         assertEquals(tm4.getText(), rm4.getText());
+         assertEquals(tm5.getText(), rm5.getText());
+         assertEquals(tm6.getText(), rm6.getText());
+         
+         assertTrue(rm1.getJMSDeliveryMode() == DeliveryMode.PERSISTENT);
+         assertTrue(rm2.getJMSDeliveryMode() == DeliveryMode.PERSISTENT);
+         assertTrue(rm3.getJMSDeliveryMode() == DeliveryMode.PERSISTENT);         
+         assertTrue(rm4.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm5.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm6.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         
+         List durMsgs = (List)ServerManagement.invoke(destObjectName, "listDurableMessages", new Object[] { sub1Id }, new String[] { "java.lang.String" });
+         
+         assertNotNull(durMsgs);         
+         assertEquals(3, durMsgs.size());
+         
+         rm1 = (TextMessage)durMsgs.get(0);
+         rm2 = (TextMessage)durMsgs.get(1);
+         rm3 = (TextMessage)durMsgs.get(2);
+                
+         assertEquals(tm1.getText(), rm1.getText());
+         assertEquals(tm2.getText(), rm2.getText());
+         assertEquals(tm3.getText(), rm3.getText());
+         
+         assertTrue(rm1.getJMSDeliveryMode() == DeliveryMode.PERSISTENT);
+         assertTrue(rm2.getJMSDeliveryMode() == DeliveryMode.PERSISTENT);
+         assertTrue(rm3.getJMSDeliveryMode() == DeliveryMode.PERSISTENT);                 
          
          
-         // Send another message
-         prod.send(s.createTextMessage("Second one"));
-                  
+         List nondurMsgs = (List)ServerManagement.invoke(destObjectName, "listNonDurableMessages", new Object[] { sub1Id }, new String[] { "java.lang.String" });
          
-         List listMsg = (List)ServerManagement.invoke(destObjectName, 
-                  "listMessagesDurableSub",
-                  new Object[] {"SubscriberA", "", null},
-                  new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});
-         assertEquals(0, listMsg.size());
+         assertNotNull(nondurMsgs);         
+         assertEquals(3, nondurMsgs.size());
+               
+         rm4 = (TextMessage)nondurMsgs.get(0);
+         rm5 = (TextMessage)nondurMsgs.get(1);
+         rm6 = (TextMessage)nondurMsgs.get(2);
+                 
+         assertEquals(tm4.getText(), rm4.getText());
+         assertEquals(tm5.getText(), rm5.getText());
+         assertEquals(tm6.getText(), rm6.getText());
+             
+         assertTrue(rm4.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm5.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm6.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         
+         //Now with a selector
+         
+         String sel = "vegetable='artichoke'";
+         
+         allMsgs = (List)ServerManagement.invoke(destObjectName, "listAllMessages", new Object[] { sub1Id, sel }, new String[] { "java.lang.String", "java.lang.String" });
+         
+         assertNotNull(allMsgs);         
+         assertEquals(3, allMsgs.size());
+         
+         rm4 = (TextMessage)allMsgs.get(0);
+         rm5 = (TextMessage)allMsgs.get(1);
+         rm6 = (TextMessage)allMsgs.get(2);
+         
+         assertEquals(tm4.getText(), rm4.getText());
+         assertEquals(tm5.getText(), rm5.getText());
+         assertEquals(tm6.getText(), rm6.getText());
             
-         conn.close();
+         assertTrue(rm4.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm5.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm6.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+                  
+         durMsgs = (List)ServerManagement.invoke(destObjectName, "listDurableMessages", new Object[] { sub1Id, sel }, new String[] { "java.lang.String" , "java.lang.String" });
          
-         listMsg = (List)ServerManagement.invoke(destObjectName, 
-               "listMessagesDurableSub",
-               new Object[] {"SubscriberA", "", null},
-               new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});
-         assertEquals(2, listMsg.size());
-         assertTrue(listMsg.get(0) instanceof TextMessage);
-         assertTrue(listMsg.get(1) instanceof TextMessage);
-         assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
-         assertEquals(((TextMessage)listMsg.get(1)).getText(), "Second one");
+         assertNotNull(durMsgs);         
+         assertEquals(0, durMsgs.size());
+         
+         
+         nondurMsgs = (List)ServerManagement.invoke(destObjectName, "listNonDurableMessages", new Object[] { sub1Id, sel }, new String[] { "java.lang.String", "java.lang.String" });
+         
+         assertNotNull(nondurMsgs);         
+         assertEquals(3, nondurMsgs.size());
+               
+         rm4 = (TextMessage)nondurMsgs.get(0);
+         rm5 = (TextMessage)nondurMsgs.get(1);
+         rm6 = (TextMessage)nondurMsgs.get(2);
+                 
+         assertEquals(tm4.getText(), rm4.getText());
+         assertEquals(tm5.getText(), rm5.getText());
+         assertEquals(tm6.getText(), rm6.getText());
+             
+         assertTrue(rm4.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm5.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);
+         assertTrue(rm6.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT);                  
          
       }
       finally
       {
-         ServerManagement.undeployTopic("TopicMessageList");
-      
-         ServerManagement.undeployTopic("TopicSubscriptionListAsText");
-      }
-   }
-
-//   /*
-//    * XXX Placeholder
-//    * 
-//   public void testListMessages() throws Exception
-//   {
-//      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-//      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-// 
-//      ServerManagement.deployTopic("TopicMessageList");
-//      Topic topic = (Topic)ic.lookup("/topic/TopicMessageList");
-//
-//      TopicConnection conn = cf.createTopicConnection();
-//
-//      conn.setClientID("Client1");
-//
-//      TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-//      MessageProducer prod = s.createProducer(topic);
-//      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-//
-//      // Create 1 durable subscription and 2 non-durable subscription
-//      s.createDurableSubscriber(topic, "SubscriberA");
-//      
-//      s.createSubscriber(topic);
-//      s.createSubscriber(topic);
-//      
-//      // Send 1 message
-//      prod.send(s.createTextMessage("First one"));
-//      
-//      // Start the connection for delivery
-//      conn.start();
-//
-//      // There should be 3 subscriptions
-//      ObjectName destObjectName = 
-//         new ObjectName("jboss.messaging.destination:service=Topic,name=TopicMessageList");
-//      List listSub = (List)ServerManagement.invoke(destObjectName, "listSubscriptions", null, null);
-//      assertEquals(3, listSub.size());
-//      // Each subscription will have the same message
-//      for (int i = 0; i < 3; i++)
-//      {
-//         String[] strs = (String[])listSub.get(i);
-//         List listMsg = (List)ServerManagement.invoke(destObjectName, 
-//               "listMessages",
-//               new Object[] {new Long(strs[0]), strs[1], strs[2], null},
-//               new String[] {"long", "java.lang.String", "java.lang.String", "java.lang.String"});
-//         assertEquals(1, listMsg.size());
-//         assertTrue(listMsg.get(0) instanceof TextMessage);
-//         assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
-//      }
-//
-//      // Send another message
-//      prod.send(s.createTextMessage("Second one"));
-//
-//      // There should be 1 durable subscription
-//      List duraListSub = (List)ServerManagement.invoke(
-//            destObjectName, 
-//            "listSubscriptions", 
-//            new Object[] {Boolean.TRUE}, 
-//            new String[] {"boolean"});
-//      assertEquals(1, duraListSub.size());
-//      String[] strs = (String[])duraListSub.get(0);
-//      // The durable subscription has 2 messages
-//      List listMsg = (List)ServerManagement.invoke(destObjectName, 
-//            "listMessages",
-//            new Object[] {new Long(strs[0]), strs[1], strs[2], null},
-//            new String[] {"long", "java.lang.String", "java.lang.String", "java.lang.String"});
-//      assertEquals(2, listMsg.size());
-//      assertTrue(listMsg.get(0) instanceof TextMessage);
-//      assertTrue(listMsg.get(1) instanceof TextMessage);
-//      assertEquals(((TextMessage)listMsg.get(0)).getText(), "First one");
-//      assertEquals(((TextMessage)listMsg.get(1)).getText(), "Second one");
-//      
-//      // Clean-up
-//      conn.close();
-//      ServerManagement.undeployTopic("TopicMessageList");
-//   }
-//   */
-//   
-   /**
-    * The jmx-console has the habit of sending an empty string if no argument is specified, so
-    * we test this eventuality.
-    */
-   public void testListMessagesEmptySelector() throws Exception
-   {
-      ServerManagement.deployTopic("TopicMessageList");
-      
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      ServerManagement.deployTopic("TopicMessageList2");
-      
-      try
-      {
-         Topic topic = (Topic)ic.lookup("/topic/TopicMessageList2");
-   
-         TopicConnection conn = cf.createTopicConnection();
-         conn.setClientID("Client1");
-         TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-   
-         s.createDurableSubscriber(topic, "SubscriberA");
-   
-         ObjectName topicON =
-            new ObjectName("jboss.messaging.destination:service=Topic,name=TopicMessageList2");
-   
-         List messages = (List)ServerManagement.invoke(topicON,
-               "listMessagesDurableSub",
-               new Object[] {"SubscriberA", "Client1", ""},
-               new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});
-         assertTrue(messages.isEmpty());
+         if (conn != null)
+         {
+            conn.close();
+         }
          
-         messages = (List)ServerManagement.invoke(topicON,
-               "listMessagesDurableSub",
-               new Object[] {"SubscriberA", "Client1", "                   "},
-               new String[] {"java.lang.String", "java.lang.String", "java.lang.String"});
-         assertTrue(messages.isEmpty());
-   
-         // Clean-up
-         conn.close();
-      }
-      finally
-      {
-         ServerManagement.undeployTopic("TopicMessageList2");
          ServerManagement.undeployTopic("TopicMessageList");
+      
       }
    }
+
+
 
    // Package protected ---------------------------------------------
    

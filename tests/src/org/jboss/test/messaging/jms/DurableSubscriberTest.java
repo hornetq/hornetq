@@ -21,6 +21,8 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.List;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -39,6 +41,7 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.jms.server.destination.SubscriptionInfo;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -112,17 +115,27 @@ public class DurableSubscriberTest extends MessagingTestCase
 
       ObjectName destObjectName =
          new ObjectName("jboss.messaging.destination:service=Topic,name=Topic");
-      String text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
+      List subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
+      
+      assertNotNull(subs);
+      
+      assertEquals(1, subs.size());
+      
+      SubscriptionInfo info = (SubscriptionInfo)subs.get(0);
 
-      assertTrue(text.indexOf("monicabelucci") != -1);
+      assertEquals("monicabelucci", info.getName());
 
       prod.send(s.createTextMessage("k"));
 
       conn.close();
 
-      text = (String)ServerManagement.invoke(destObjectName, "listSubscriptionsAsText", null, null);
+      subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
 
-      assertTrue(text.indexOf("monicabelucci") != -1);
+      assertEquals(1, subs.size());
+      
+      info = (SubscriptionInfo)subs.get(0);
+
+      assertEquals("monicabelucci", info.getName());
 
       conn = cf.createConnection();
       conn.setClientID("brookeburke");
@@ -448,6 +461,10 @@ public class DurableSubscriberTest extends MessagingTestCase
       conn.start();
 
       assertNull(ds.receive(1000));
+      
+      ds.close();
+      
+      s.unsubscribe("uzzi");
 
       conn.close();
    }
@@ -498,6 +515,8 @@ public class DurableSubscriberTest extends MessagingTestCase
       }
          
       dursub.close();
+      
+      s.unsubscribe("dursub0");
 
       conn.close();
    }

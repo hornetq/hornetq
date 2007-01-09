@@ -58,7 +58,7 @@ public interface PostOffice extends MessagingComponent
    /**
     * List the bindings that match the specified condition
     */
-   Collection getBindingForCondition(Condition condition) throws Exception;
+   Collection getBindingsForCondition(Condition condition) throws Exception;
 
    
    /**

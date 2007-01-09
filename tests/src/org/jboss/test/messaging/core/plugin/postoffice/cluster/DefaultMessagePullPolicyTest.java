@@ -358,7 +358,7 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
          return null;
       }
 
-      public int numberOfReceivers()
+      public int getNumberOfReceivers()
       {
          // TODO Auto-generated method stub
          return 0;
@@ -383,6 +383,30 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
       }
 
       public int getDeliveringCount()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public int getMaxSize()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public int getMessagesAdded()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public void setMaxSize(int newSize)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public int getScheduledCount()
       {
          // TODO Auto-generated method stub
          return 0;

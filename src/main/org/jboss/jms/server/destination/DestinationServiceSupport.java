@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.StringTokenizer;
+
 import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
 
@@ -13,6 +15,7 @@ import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.IDManager;
@@ -38,7 +41,8 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public abstract class DestinationServiceSupport extends ServiceMBeanSupport implements ServerPlugin
+public abstract class DestinationServiceSupport extends ServiceMBeanSupport
+   implements ServerPlugin, DestinationMBean
 {
    // Constants -----------------------------------------------------
 
@@ -75,8 +79,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
    protected IDManager idm;
    
    protected int nodeId;
-   
+    
    private boolean createdProgrammatically;
+   
    
    // Constructors --------------------------------------------------
    
@@ -151,20 +156,32 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
    
    // JMX managed attributes ----------------------------------------
    
+   public String getName()
+   {
+      return destination.getName();
+   }
+   
    public String getJNDIName()
    {
       return destination.getJndiName();
    }
 
-   public void setJNDIName(String jndiName)
+   public void setJNDIName(String jndiName) throws Exception
    {
-      if (started)
+      try
       {
-         log.warn("Cannot change the value of the JNDI name after initialization!");
-         return;
+         if (started)
+         {
+            log.warn("Cannot change the value of the JNDI name after initialization!");
+            return;
+         }
+   
+         destination.setJndiName(jndiName);      
       }
-
-      destination.setJndiName(jndiName);
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " setJNDIName");
+      }
    }
 
    public void setServerPeer(ObjectName on)
@@ -184,7 +201,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
       return serverPeerObjectName;
    }
    
-   public void setDLQ(ObjectName on)
+   public void setDLQ(ObjectName on) throws Exception
    {
       dlqObjectName = on;
       
@@ -215,11 +232,11 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
             }
          }
          
-         destination.setDLQ(dlq); 
+         destination.setDLQ(dlq);       
       }
-      catch (Exception e)
+      catch (Throwable t)
       {
-         log.error("Failed to set DLQ", e);
+         throw ExceptionUtil.handleJMXInvocation(t, this + " setDLQ");
       }
    }
    
@@ -228,7 +245,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
       return dlqObjectName;
    }
    
-   public void setExpiryQueue(ObjectName on)
+   public void setExpiryQueue(ObjectName on) throws Exception
    {
       expiryQueueObjectName = on;
       
@@ -236,19 +253,52 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
       
       try
       {
-         expiryQueue = (Queue)server.getAttribute(expiryQueueObjectName, "Instance");
+         
+         try
+         {
+            expiryQueue = (Queue)server.getAttribute(expiryQueueObjectName, "Instance");
+         }
+         catch (Exception e)
+         {
+            //Ok
+         }
+         
+         destination.setExpiryQueue(expiryQueue);
       }
-      catch (Exception e)
+      catch (Throwable t)
       {
-         //Ok
+         throw ExceptionUtil.handleJMXInvocation(t, this + " setExpiryQueue");
       }
-      
-      destination.setExpiryQueue(expiryQueue);
    }
    
    public ObjectName getExpiryQueue()
    {
       return expiryQueueObjectName;
+   }
+   
+   public long getRedeliveryDelay()
+   {
+      return destination.getRedeliveryDelay();
+   }
+   
+   public void setRedeliveryDelay(long delay)
+   {
+      destination.setRedeliveryDelay(delay);
+   }
+   
+   public int getMaxSize()
+   {
+      return destination.getMaxSize();
+   }
+   
+   public void setMaxSize(int maxSize) throws Exception
+   {
+      destination.setMaxSize(maxSize);
+   }
+   
+   public Element getSecurityConfig()
+   {
+      return destination.getSecurityConfig();
    }
    
    public void setSecurityConfig(Element securityConfig) throws Exception
@@ -268,17 +318,6 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
          ExceptionUtil.handleJMXInvocation(t, this + " setSecurityConfig");
       }
    }
-
-   public Element getSecurityConfig()
-   {
-      return destination.getSecurityConfig();
-   }
-
-   public String getName()
-   {
-      return destination.getName();
-   }
-
 
    /**
     * Get in-memory message limit
@@ -368,52 +407,21 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
    {
       return createdProgrammatically;
    }
-
+   
+   public int getMessageCounterHistoryDayLimit()
+   {
+      return destination.getMessageCounterHistoryDayLimit();
+   }
+   
+   public void setMessageCounterHistoryDayLimit(int limit) throws Exception
+   {
+      destination.setMessageCounterHistoryDayLimit(limit);
+   }
+   
    // JMX managed operations ----------------------------------------
    
-   // TODO implement the following:
-
-//   void removeAllMessages() throws Exception;
-//
-//   public MessageCounter[] getMessageCounter();
-//
-//   public MessageStatistics[] getMessageStatistics() throws Exception;
-//
-//   public String listMessageCounter();
-//
-//   public void resetMessageCounter();
-//
-//   public String listMessageCounterHistory();
-//
-//   public void resetMessageCounterHistory();
-//
-//   public void setMessageCounterHistoryDayLimit( int days );
-//
-//   public int getMessageCounterHistoryDayLimit();
-//
-//   public int getMaxDepth();
-//
-//   public void setMaxDepth(int depth);
-//
-//   public boolean getInMemory();
-//
-//   public void setInMemory(boolean mode);
-//
-//   public int getRedeliveryLimit();
-//
-//   public void setRedeliveryLimit(int limit);
-//
-//   public long getRedeliveryDelay();
-//
-//   public void setRedeliveryDelay(long rDelay);
-//
-//   public Class getReceiversImpl();
-//
-//   public void setReceiversImpl(Class receivers);
-//
-//   public int getRecoveryRetries();
-//
-//   public void setRecoveryRetries(int retries);
+   public abstract void removeAllMessages() throws Exception;
+   
 
    // Public --------------------------------------------------------
 
@@ -454,6 +462,144 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   /**
+    * List message counters as HTML table
+    * 
+    * @return String
+    */
+   protected String listMessageCounterAsHTML(MessageCounter[] counters)
+   {
+      if (counters == null)
+         return null;
+      
+      String ret = "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"  +
+                   "<tr>"                  +
+                   "<th>Type</th>"         +
+                   "<th>Name</th>"         +
+                   "<th>Subscription</th>" +
+                   "<th>Durable</th>"      +
+                   "<th>Count</th>"        +
+                   "<th>CountDelta</th>"   +
+                   "<th>Depth</th>"        +
+                   "<th>DepthDelta</th>"   +
+                   "<th>Last Add</th>"     +
+                   "</tr>";
+      
+      for( int i=0; i<counters.length; i++ )
+      {
+         String            data = counters[i].getCounterAsString();
+         StringTokenizer   token = new StringTokenizer( data, ",");
+         String            value;
+         
+         ret += "<tr bgcolor=\"#" + ( (i%2)==0 ? "FFFFFF" : "F0F0F0") + "\">";
+
+         ret += "<td>" + token.nextToken() + "</td>"; // type
+         ret += "<td>" + token.nextToken() + "</td>"; // name
+         ret += "<td>" + token.nextToken() + "</td>"; // subscription
+         ret += "<td>" + token.nextToken() + "</td>"; // durable
+
+         ret += "<td>" + token.nextToken() + "</td>"; // count
+         
+         value = token.nextToken(); // countDelta
+
+         if( value.equalsIgnoreCase("0") )
+             value = "-";
+             
+         ret += "<td>" + value + "</td>";
+         
+         ret += "<td>" + token.nextToken() + "</td>"; // depth
+         
+         value = token.nextToken(); // depthDelta
+         
+         if( value.equalsIgnoreCase("0") )
+             value = "-";
+             
+         ret += "<td>" + value + "</td>";
+
+         ret += "<td>" + token.nextToken() + "</td>"; // date last add
+
+         ret += "</tr>";
+      }
+      
+      ret += "</table>";
+      
+      return ret;
+   }      
+   
+   /**
+    * List destination message counter history as HTML table
+    * 
+    * @return String
+    */
+   protected String listMessageCounterHistoryAsHTML(MessageCounter[] counters)
+   {
+      if (counters == null)
+         return null;
+      
+      String           ret = "";
+               
+      for( int i=0; i<counters.length; i++ )
+      {
+         // destination name
+         ret += ( counters[i].getDestinationTopic() ? "Topic '" : "Queue '" );
+         ret += counters[i].getDestinationName() + "'";
+         
+         if( counters[i].getDestinationSubscription() != null )
+            ret += "Subscription '" + counters[i].getDestinationSubscription() + "'";
+            
+                     
+         // table header
+         ret += "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"  +
+                "<tr>"                  +
+                "<th>Date</th>";
+
+         for( int j = 0; j < 24; j++ )
+            ret += "<th width=\"4%\">" + j + "</th>";
+
+         ret += "<th>Total</th></tr>";
+
+         // get history data as CSV string         
+         StringTokenizer tokens = new StringTokenizer( counters[i].getHistoryAsString(), ",\n");
+         
+         // get history day count
+         int days = Integer.parseInt( tokens.nextToken() );
+         
+         for( int j=0; j<days; j++ )
+         {
+            // next day counter row 
+            ret += "<tr bgcolor=\"#" + ((j%2)==0 ? "FFFFFF" : "F0F0F0") + "\">";
+         
+            // date 
+            ret += "<td>" + tokens.nextToken() + "</td>";
+             
+            // 24 hour counters
+            int total = 0;
+            
+            for( int k=0; k<24; k++ )
+            {
+               int value = Integer.parseInt( tokens.nextToken().trim() );
+            
+               if( value == -1 )
+               {
+                    ret += "<td></td>";
+               }  
+               else
+               {
+                    ret += "<td>" + value + "</td>";
+                    
+                    total += value;
+               } 
+            }
+
+            ret += "<td>" + total + "</td></tr>";
+         }
+
+         ret += "</table><br><br>";
+      }
+
+      return ret;
+   }
 
    protected abstract boolean isQueue();
 

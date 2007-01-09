@@ -197,6 +197,11 @@ public class TransactionRepository implements MessagingComponent
          }
       }
    }
+   
+   public List getPreparedTransactions()
+   {
+      return new ArrayList(globalToLocalMap.keySet());
+   }
 
 
    public Transaction getPreparedTx(Xid xid) throws Exception

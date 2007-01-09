@@ -26,11 +26,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.jms.InvalidSelectorException;
-
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.JMSCondition;
+import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 
@@ -46,7 +47,9 @@ import org.jboss.messaging.core.plugin.postoffice.Binding;
  *
  */
 public class ManagedTopic extends ManagedDestination
-{
+{  
+   private static final Logger log = Logger.getLogger(ManagedTopic.class); 
+   
    public ManagedTopic()
    {      
    }
@@ -60,7 +63,7 @@ public class ManagedTopic extends ManagedDestination
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.getBindingForCondition(topicCond);
+      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
       
       //XXX How to lock down all subscriptions?
       Iterator iter = subs.iterator();
@@ -72,20 +75,247 @@ public class ManagedTopic extends ManagedDestination
       }
    }
    
-   public int subscriptionCount() throws Exception
+   public int getAllMessageCount() throws Exception
+   {
+      return getMessageCount(ALL);
+   }     
+   
+   public int getDurableMessageCount() throws Exception
+   {
+      return getMessageCount(DURABLE);
+   }
+   
+   public int getNonDurableMessageCount() throws Exception
+   {
+      return getMessageCount(NON_DURABLE);
+   }
+   
+   public int getAllSubscriptionsCount() throws Exception
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.getBindingForCondition(topicCond);
+      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
       
       return subs.size();         
    }
+      
+   public int getDurableSubscriptionsCount() throws Exception
+   {
+      return getSubscriptionsCount(true);
+   }
    
-   public int subscriptionCount(boolean durable) throws Exception
+   public int getNonDurableSubscriptionsCount() throws Exception
+   {
+      return getSubscriptionsCount(false);
+   }
+   
+   public List listAllSubscriptions() throws Exception
+   {
+      return listSubscriptions(ALL);
+   }
+   
+   public List listDurableSubscriptions() throws Exception
+   {
+      return listSubscriptions(DURABLE);
+   }
+   
+   public List listNonDurableSubscriptions() throws Exception
+   {
+      return listSubscriptions(NON_DURABLE);
+   }
+   
+
+   public String listAllSubscriptionsAsHTML() throws Exception
+   {
+      return listSubscriptionsAsHTML(ALL);
+   }
+   
+   public String listDurableSubscriptionsAsHTML() throws Exception
+   {
+      return listSubscriptionsAsHTML(DURABLE);
+   }
+   
+   public String listNonDurableSubscriptionsAsHTML() throws Exception
+   {
+      return listSubscriptionsAsHTML(NON_DURABLE);
+   }
+   
+   
+   public List listAllMessages(String subId, String selector) throws Exception
+   {
+      return listMessages(ALL, subId, selector);
+   }
+   
+   public List listDurableMessages(String subId, String selector) throws Exception
+   {
+      return listMessages(DURABLE, subId, selector);
+   }
+   
+   public List listNonDurableMessages(String subId, String selector) throws Exception
+   {
+      return listMessages(NON_DURABLE, subId, selector);
+   }
+   
+   public List getMessageCounters() throws Exception
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.getBindingForCondition(topicCond);
+      List counters = new ArrayList();
+      
+      // We deploy any queues corresponding to pre-existing durable subscriptions
+      Collection bindings = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
+      Iterator iter = bindings.iterator();
+      while (iter.hasNext())
+      {
+         Binding binding = (Binding)iter.next();
+         
+         Queue queue = binding.getQueue();
+         
+         String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
+         
+         MessageCounter counter = serverPeer.getMessageCounterManager().getMessageCounter(counterName);
+         
+         if (counter == null)
+         {
+            throw new IllegalStateException("Cannot find counter with name " + counterName);
+         }
+         
+         counters.add(counter);
+      }
+      
+      return counters; 
+   }
+   
+   public boolean isQueue()
+   {
+      return false;
+   }
+   
+   public void setMessageCounterHistoryDayLimit(int limit) throws Exception
+   {
+      super.setMessageCounterHistoryDayLimit(limit);
+      
+      List counters = getMessageCounters();
+      
+      Iterator iter = counters.iterator();
+      
+      while (iter.hasNext())
+      {
+         MessageCounter counter = (MessageCounter)iter.next();
+         
+         counter.setHistoryLimit(limit);
+      }
+   }
+   
+   // Private -------------------------------------------------------------
+   
+   private List listMessages(int type, String subId, String selector) throws Exception
+   { 
+      List msgs = new ArrayList();
+      
+      Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(subId);
+      
+      if (binding == null)
+      {
+         throw new IllegalArgumentException("Cannot find subscription with id " + subId);
+      }
+      
+      Selector sel = null;
+      
+      if (selector != null && "".equals(selector.trim()))
+      {
+         selector = null;
+      }
+         
+      if (selector != null)
+      {  
+         sel = new Selector(selector);
+      }
+      
+      List allMsgs = binding.getQueue().browse(sel);
+      
+      Iterator iter = allMsgs.iterator();
+      
+      while (iter.hasNext())
+      {
+         Message msg = (Message)iter.next();
+         
+         if (type == ALL || (type == DURABLE && msg.isReliable()) || (type == NON_DURABLE && !msg.isReliable()))
+         {
+            msgs.add(msg);
+         }
+      }
+      
+      return msgs;
+   }
+   
+   private List listSubscriptions(int type) throws Exception
+   {      
+      List subs = new ArrayList();
+   
+      JMSCondition topicCond = new JMSCondition(false, name);      
+      
+      Collection bindings = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
+      
+      Iterator iter = bindings.iterator();
+      
+      while (iter.hasNext())
+      {
+         Binding binding = (Binding)iter.next();
+         
+         Queue queue = binding.getQueue();
+         
+         if (type == ALL || (type == DURABLE && queue.isRecoverable()) || (type == NON_DURABLE && !queue.isRecoverable()))
+         {         
+            String subName = null;
+            String clientID = null;
+            
+            if (queue.isRecoverable())
+            {
+               MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(queue.getName());
+               subName = helper.getSubName();
+               clientID = helper.getClientId();
+            }
+            
+            SubscriptionInfo info = new SubscriptionInfo(queue.getName(), queue.isRecoverable(), subName, clientID,
+                     queue.getFilter() == null ? null : queue.getFilter().getFilterString(), queue.getMessageCount(), queue.getMaxSize());
+            
+            subs.add(info);
+         }
+      }
+      
+      return subs;
+   }
+   
+   private int getMessageCount(int type) throws Exception
+   {
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
+      
+      Iterator iter = subs.iterator();
+      
+      int count = 0;
+      
+      while (iter.hasNext())
+      {
+         Binding binding = (Binding)iter.next();
+         
+         if (type == ALL || (type == DURABLE && binding.getQueue().isRecoverable())
+             || (type == NON_DURABLE && !binding.getQueue().isRecoverable()))
+         {            
+            count += binding.getQueue().getMessageCount();
+         }
+      }
+
+      return count;
+   }  
+   
+   private int getSubscriptionsCount(boolean durable) throws Exception
+   {
+      JMSCondition topicCond = new JMSCondition(false, name);
+      
+      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
       
       Iterator iter = subs.iterator();
       
@@ -104,171 +334,62 @@ public class ManagedTopic extends ManagedDestination
       return count;
    }
    
-   public String listSubscriptionsAsText() throws Exception
+   
+   private String listSubscriptionsAsHTML(int type) throws Exception
    {
       JMSCondition topicCond = new JMSCondition(false, name);
       
-      Collection subs = postOffice.getBindingForCondition(topicCond);
-      
-      return getSubscriptionsAsText(subs, true) + getSubscriptionsAsText(subs, false);
-   }
-   
-   public String listSubscriptionsAsText(boolean durable) throws Exception
-   {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection subs = postOffice.getBindingForCondition(topicCond);
-      
-      return getSubscriptionsAsText(subs, durable);
-   }
-   
-   public List listMessagesDurableSub(String subName, String clientID, String selector)
-      throws Exception
-   {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection subs = postOffice.getBindingForCondition(topicCond);
-      
-      return getMessagesFromDurableSub(subs, subName, clientID, trimSelector(selector));
-   }
-   
-   public List listMessagesNonDurableSub(long channelID, String selector)
-      throws Exception
-   {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection subs = postOffice.getBindingForCondition(topicCond);
-      
-      return getMessagesFromNonDurableSub(subs, channelID, trimSelector(selector));
-   }
-   
-   public boolean isQueue()
-   {
-      return false;
-   }
-   
-   // Private -------------------------------------------------------------
-   
-   
-   
-   private String getSubscriptionsAsText(Collection bindings, boolean durable)
-   {
+      Collection bindings = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
+           
       StringBuffer sb = new StringBuffer();
+      
+      sb.append("<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"  +
+                  "<tr>"                  +
+                  "<th>Id</th>"         +
+                  "<th>Durable</th>" +
+                  "<th>Subscription Name</th>"      +
+                  "<th>Client ID</th>"        +
+                  "<th>Selector</th>"   +
+                  "<th>Message Count</th>"        +
+                  "<th>Max Size</th>"   +
+                  "</tr>");
+      
       Iterator iter = bindings.iterator();
       while (iter.hasNext())
       {
          Binding binding = (Binding)iter.next();
          
-         String filterString = binding.getQueue().getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
-                  
-         if (durable && binding.getQueue().isRecoverable())
-         {                      
-            MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueue().getName());
-            
-            sb.append("Durable, subscriptionID=\"");
-            sb.append(binding.getQueue().getChannelID());    
-            sb.append("\", name=\"");
-            sb.append(helper.getSubName());
-            sb.append("\", clientID=\"");
-            sb.append(helper.getClientId());
-            sb.append("\", selector=\"");
-            sb.append(filterString);
-            sb.append("\"\n");
-         }
-         else if (!durable && !binding.getQueue().isRecoverable())
-         {            
-            sb.append("Non-durable, subscriptionID=\"");
-            sb.append(binding.getQueue().getChannelID());
-            sb.append("\", selector=\"");
-            sb.append(filterString);
-            sb.append("\"\n");
-         }
-      }
-      return sb.toString();
-   }
-     
-   // Test if the durable subscriptions match
-   private boolean matchDurableSubscription(String name, String clientID, Binding binding)
-   {
-      // Validate the name
-      if (null == name)
-         throw new IllegalArgumentException();
-      // Must be durable
-      if (!binding.getQueue().isRecoverable())
-         return false;
-      
-      MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(binding.getQueue().getName());
-
-      // Subscription name check
-      if (!name.equals(helper.getSubName()))
-         return false;
-      // Client ID check: if no client ID specified, it's considered as matched 
-      if (null == clientID || 0 == clientID.length())
-         return true;
-      if (!clientID.equals(helper.getClientId()))
-         return false;
-      return true;
-   }
-   
-   // Test if the non-durable subscriptions match
-   private boolean matchNonDurableSubscription(long channelID, Binding binding)
-   {
-      // Must be non-durable
-      if (binding.getQueue().isRecoverable())
-         return false;
-      // Channel ID must be the same
-      if (channelID != binding.getQueue().getChannelID())
-         return false;
-      return true;
-   }
-   
-   private List getMessagesFromDurableSub(Collection bindings, String name,
-            String clientID, String selector) throws InvalidSelectorException
-   {
-      Iterator iter = bindings.iterator();
-      while (iter.hasNext())
-      {
-         Binding binding = (Binding)iter.next();
-         // If subID matches, then get message list from the subscription
-         if (matchDurableSubscription(name, clientID, binding))
+         Queue queue = binding.getQueue();
+         
+         if (type == ALL || (type == DURABLE && queue.isRecoverable())
+                  || (type == NON_DURABLE && !queue.isRecoverable()))
          {
-            Queue queue = binding.getQueue();
-            return queue.browse(null == selector ? null : new Selector(selector));
+            
+            String filterString = queue.getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
+                     
+            String subName = null;
+            String clientID = null;
+            
+            if (queue.isRecoverable())
+            {
+               MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(queue.getName());
+               subName = helper.getSubName();
+               clientID = helper.getClientId();
+            }
+            
+            sb.append("<tr><td>").append(queue.getName()).append("</td>");
+            sb.append("<td>").append(queue.isRecoverable() ? "Durable" : "Non Durable").append("</td>");
+            sb.append("<td>").append(subName != null ? subName : "").append("</td>");
+            sb.append("<td>").append(clientID != null ? clientID : "").append("</td>");
+            sb.append("<td>").append(filterString != null ? filterString : "").append("</td>");
+            sb.append("<td>").append(queue.getMessageCount()).append("</td>");
+            sb.append("<td>").append(queue.getMaxSize()).append("</td>");
+            sb.append("</tr>");
          }
-      }   
-      // No match, return an empty list
-      return new ArrayList();
-   }
-   
-   private List getMessagesFromNonDurableSub(Collection bindings, long channelID, String selector) throws InvalidSelectorException
-   {
-      Iterator iter = bindings.iterator();
-      while (iter.hasNext())
-      {
-         Binding binding = (Binding)iter.next();
-         // If subID matches, then get message list from the subscription
-         if (matchNonDurableSubscription(channelID, binding))
-            return binding.getQueue().browse(null == selector ? null : new Selector(selector));
-      }   
-      // No match, return an empty list
-      return new ArrayList();
-   }
-   
-   private String trimSelector(String selector)
-   {
-      if (selector == null)
-      {
-         return null;
       }
-
-      selector = selector.trim();
-
-      if (selector.length() == 0)
-      {
-         return null;
-      }
-
-      return selector;
+      sb.append("</table>");
+      
+      return sb.toString();                                
    }
-
+      
 }

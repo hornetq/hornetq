@@ -44,6 +44,8 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = -2374448267737763502L;
+   
    public static final byte TYPE = 3;
 
    // Attributes ----------------------------------------------------

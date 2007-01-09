@@ -98,6 +98,8 @@ public class XATest extends MessagingTestCase
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
       queue = (Destination)initialContext.lookup("/queue/Queue");
+      
+      drainDestination(cf, queue);
 
 
       if (!ServerManagement.isRemote())
@@ -137,6 +139,340 @@ public class XATest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
+   
+   
+
+   //http://jira.jboss.com/jira/browse/JBMESSAGING-721
+   public void testConvertFromLocalTx() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      Connection conn = null;
+      
+      XAConnection xaConn = null;
+      
+      try
+      {
+      
+         //First send some messages to a queue
+         
+         conn = cf.createConnection();
+         
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(queue);
+         
+         TextMessage tm1 = sessSend.createTextMessage("message1");
+         
+         TextMessage tm2 = sessSend.createTextMessage("message2");
+         
+         prod.send(tm1);
+         
+         prod.send(tm2);
+         
+         
+         xaConn = cf.createXAConnection();
+         
+         XASession xaSession = xaConn.createXASession();
+         
+         xaConn.start();
+         
+         MessageConsumer cons = xaSession.createConsumer(queue);
+         
+         //Receive the two messages outside of a transaction
+         
+         TextMessage rm1 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm1);
+         
+         assertEquals("message1", rm1.getText());
+         
+         TextMessage rm2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm2);
+         
+         assertEquals("message2", rm2.getText());
+         
+         Message rm3 = cons.receive(1000);
+         
+         assertNull(rm3);
+         
+         //Now we enlist the session in an xa transaction
+         
+         XAResource res = xaSession.getXAResource();
+         
+         tm.begin();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         
+         //This should cause the work done previously to be converted into work done in the xa transaction
+         //this is what an MDB does
+         //There is a difficulty in transactional delivery with an MDB.
+         //The message is received from the destination and then sent to the mdb container so
+         //it can call onMessage.
+         //For transactional delivery the receipt of the message should be in a transaction but by the time
+         //the mdb container is invoked the message has already been received it is too late - the message
+         //has already been received and passed on (see page 199 (chapter 5 JMS and Transactions, section "Application Server Integration"
+         //of Mark Little's book Java Transaction processing
+         //for a discussion of how different app serves deal with this)
+         //The way jboss messaging (and jboss mq) deals with this is to convert any work done
+         //prior to when the xasession is enlisted in the tx, into work done in the xa tx
+         
+         //Now rollback the tx - this should cause redelivery of the two messages
+         tx.rollback();
+         
+         rm1 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm1);
+         
+         assertEquals("message1", rm1.getText());
+         
+         rm2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm2);
+         
+         assertEquals("message2", rm2.getText());
+         
+         rm3 = cons.receive(1000);
+         
+         assertNull(rm3);
+      }
+      finally
+      {         
+         if (conn != null)
+         {
+            conn.close();
+         }
+         
+         if (xaConn != null)
+         {
+            xaConn.close();
+         }
+      }
+   }
+   
+   //http://jira.jboss.com/jira/browse/JBMESSAGING-721
+   public void testTransactionIdSetAfterCommit() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      Connection conn = null;
+      
+      XAConnection xaConn = null;
+      
+      try
+      {
+      
+         //First send some messages to a queue
+         
+         conn = cf.createConnection();
+         
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(queue);
+         
+         TextMessage tm1 = sessSend.createTextMessage("message1");
+         
+         TextMessage tm2 = sessSend.createTextMessage("message2");
+         
+         prod.send(tm1);
+         
+         prod.send(tm2);
+         
+         
+         xaConn = cf.createXAConnection();
+         
+         XASession xaSession = xaConn.createXASession();
+         
+         xaConn.start();
+         
+         MessageConsumer cons = xaSession.createConsumer(queue);
+         
+         //Now we enlist the session in an xa transaction
+         
+         XAResource res = xaSession.getXAResource();
+         
+         tm.begin();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         
+         //Then we do a commit
+         tm.commit();
+         
+         //And enlist again
+         
+         tx = tm.getTransaction();
+         
+
+         tm.begin();
+         
+         tx = tm.getTransaction();
+         tx.enlistResource(res);
+                  
+         //Then we receive the messages
+         
+         TextMessage rm1 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm1);
+         
+         assertEquals("message1", rm1.getText());
+         
+         TextMessage rm2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm2);
+         
+         assertEquals("message2", rm2.getText());
+         
+         Message rm3 = cons.receive(1000);
+         
+         assertNull(rm3);
+               
+         //Now rollback the tx - this should cause redelivery of the two messages
+         tx.rollback();
+         
+         rm1 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm1);
+         
+         assertEquals("message1", rm1.getText());
+         
+         rm2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm2);
+         
+         assertEquals("message2", rm2.getText());
+         
+         rm3 = cons.receive(1000);
+         
+         assertNull(rm3);
+      }
+      finally
+      {         
+         if (conn != null)
+         {
+            conn.close();
+         }
+         
+         if (xaConn != null)
+         {
+            xaConn.close();
+         }
+      }
+
+   }
+   
+   //http://jira.jboss.com/jira/browse/JBMESSAGING-721
+   public void testTransactionIdSetAfterRollback() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+      
+      Connection conn = null;
+      
+      XAConnection xaConn = null;
+      
+      try
+      {
+      
+         //First send some messages to a queue
+         
+         conn = cf.createConnection();
+         
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(queue);
+         
+         TextMessage tm1 = sessSend.createTextMessage("message1");
+         
+         TextMessage tm2 = sessSend.createTextMessage("message2");
+         
+         prod.send(tm1);
+         
+         prod.send(tm2);
+         
+         
+         xaConn = cf.createXAConnection();
+         
+         XASession xaSession = xaConn.createXASession();
+         
+         xaConn.start();
+         
+         MessageConsumer cons = xaSession.createConsumer(queue);
+         
+         //Now we enlist the session in an xa transaction
+         
+         XAResource res = xaSession.getXAResource();
+         
+         tm.begin();
+         
+         Transaction tx = tm.getTransaction();
+         tx.enlistResource(res);
+         
+         //Then we do a rollback
+         tm.rollback();
+         
+         tm.begin();
+                  
+         //And enlist again
+         
+         tx = tm.getTransaction();
+         tx.enlistResource(res);
+
+         //Then we receive the messages
+         
+         TextMessage rm1 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm1);
+         
+         assertEquals("message1", rm1.getText());
+         
+         TextMessage rm2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm2);
+         
+         assertEquals("message2", rm2.getText());
+         
+         Message rm3 = cons.receive(1000);
+         
+         assertNull(rm3);
+               
+         //Now rollback the tx - this should cause redelivery of the two messages
+         tx.rollback();
+         
+         rm1 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm1);
+         
+         assertEquals("message1", rm1.getText());
+         
+         rm2 = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(rm2);
+         
+         assertEquals("message2", rm2.getText());
+         
+         rm3 = cons.receive(1000);
+         
+         assertNull(rm3);
+      }
+      finally
+      {         
+         if (conn != null)
+         {
+            conn.close();
+         }
+         
+         if (xaConn != null)
+         {
+            xaConn.close();
+         }
+      }
+
+   }
+   
+   
+   
    
    public void test2PCSendCommit1PCOptimization() throws Exception
    {

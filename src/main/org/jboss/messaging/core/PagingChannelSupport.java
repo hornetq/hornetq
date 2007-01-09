@@ -102,9 +102,9 @@ public abstract class PagingChannelSupport extends ChannelSupport
     */
    public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
                                boolean acceptReliableMessages, boolean recoverable,                        
-                               QueuedExecutor executor)
+                               QueuedExecutor executor, int maxSize)
    {
-      super(channelID, ms, pm, acceptReliableMessages, recoverable, executor);
+      super(channelID, ms, pm, acceptReliableMessages, recoverable, executor, maxSize);
       
       downCache = new ArrayList(downCacheSize);    
       
@@ -125,10 +125,10 @@ public abstract class PagingChannelSupport extends ChannelSupport
     */
    public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
                                boolean acceptReliableMessages, boolean recoverable,                        
-                               QueuedExecutor executor,
+                               QueuedExecutor executor, int maxSize,
                                int fullSize, int pageSize, int downCacheSize)
    {
-      super(channelID, ms, pm, acceptReliableMessages, recoverable, executor);
+      super(channelID, ms, pm, acceptReliableMessages, recoverable, executor, maxSize);
       
       if (pageSize >= fullSize)
       {
@@ -274,7 +274,9 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          paging = false;
          
-         firstPagingOrder = nextPagingOrder = 0;         
+         firstPagingOrder = nextPagingOrder = 0;  
+         
+         clearAllScheduledDeliveries();
       }
    }
    
@@ -355,13 +357,11 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }    
    }
       
-   protected void cancelInternal(Delivery del) throws Exception
+   protected void cancelInternal(MessageReference ref) throws Exception
    {
-      if (trace) { log.trace(this + " cancelling " + del + " in memory"); }
-
       synchronized (refLock)
       {         
-         super.cancelInternal(del);
+         super.cancelInternal(ref);
          
          if (paging)
          {
@@ -369,13 +369,13 @@ public abstract class PagingChannelSupport extends ChannelSupport
             // preserve the number of refs in the queue
             if (messageRefs.size() == fullSize + 1)
             {
-               MessageReference ref = (MessageReference)messageRefs.removeLast();
+               MessageReference refCancel = (MessageReference)messageRefs.removeLast();
     
-               addToDownCache(ref, true);
+               addToDownCache(refCancel, true);
             }
          }
                
-         if (trace) { log.trace(this + " added " + del.getReference() + " back into state"); }      
+         if (trace) { log.trace(this + " added " + ref + " back into state"); }      
       }
    }
       
@@ -547,6 +547,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
       ref.setPagingOrder(-1);
       
+      ref.setScheduledDeliveryTime(info.getScheduledDelivery());
+      
       //We ignore the reliable field from the message - this is because reliable might be true on the message
       //but this is a non recoverable state
       
@@ -554,8 +556,12 @@ public abstract class PagingChannelSupport extends ChannelSupport
       //Reliability is an attribute of the message reference, not the message
       
       ref.setReliable(info.isReliable());
-      
-      messageRefs.addLast(ref, ref.getPriority());
+            
+      //Schedule the delivery if necessary, or just add to the in memory queue
+      if (!checkAndSchedule(ref))
+      {
+         messageRefs.addLast(ref, ref.getPriority());
+      }
       
       return ref;
    }

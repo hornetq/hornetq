@@ -29,15 +29,6 @@
       <type>java.lang.String</type>
    </attribute>
 
-   <!-- This managed attribute is exposed here for backward compatibility with JBossMQ topics
-        management interface only. It will probably dissapear in the future.
-   -->
-   <attribute access="read-only" getMethod="getName">
-      <description>The topic name (deprecated management attribute)</description>
-      <name>TopicName</name>
-      <type>java.lang.String</type>
-   </attribute>
-
    <!-- This attribute is writable to allow configuring an arbitrary JNDI name in the topic's
         service deployment descriptor. Any attempt to change the attribute after initialization
         will be ignored.
@@ -69,6 +60,12 @@
       <name>ExpiryQueue</name>
       <type>javax.management.ObjectName</type>
    </attribute>   
+   
+   <attribute access="read-write" getMethod="getRedeliveryDelay" setMethod="setRedeliveryDelay">
+      <description>The delay before redelivering</description>
+      <name>RedeliveryDelay</name>
+      <type>long</type>
+   </attribute>    
 
    <attribute access="read-write" getMethod="getSecurityConfig" setMethod="setSecurityConfig">
       <description>The destination's security configuration</description>
@@ -81,6 +78,12 @@
       <name>CreatedProgrammatically</name>
       <type>boolean</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getMaxSize" setMethod="setMaxSize">
+      <description>The maximum number of messages subscriptions of this topic can hold before they are dropped</description>
+      <name>MaxSize</name>
+      <type>int</type>
+   </attribute>    
 
    <attribute access="read-write" getMethod="getFullSize" setMethod="setFullSize">
       <description>The in-memory message limit, can only be set when topic is stopped</description>
@@ -105,6 +108,55 @@
       <name>Clustered</name>
       <type>boolean</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getMessageCounterHistoryDayLimit" setMethod="setMessageCounterHistoryDayLimit">
+      <description>The day limit for the message counters of this topic</description>
+      <name>MessageCounterHistoryDayLimit</name>
+      <type>int</type>
+   </attribute>   
+   
+   <attribute access="read-only" getMethod="getMessageCounters">
+      <description>The message counters for the topic</description>
+      <name>MessageCounters</name>
+      <type>java.util.List</type>
+   </attribute>  
+   
+   <attribute access="read-only" getMethod="getAllMessageCount">
+      <description>The count of all messages in all subscriptions of this topic</description>
+      <name>AllMessageCount</name>
+      <type>int</type>
+   </attribute> 
+   
+   <attribute access="read-only" getMethod="getDurableMessageCount">
+      <description>The count of all messages in all durable subscriptions of this topic</description>
+      <name>DurableMessageCount</name>
+      <type>int</type>
+   </attribute>   
+   
+   <attribute access="read-only" getMethod="getNonDurableMessageCount">
+      <description>The count of all messages in all non durable subscriptions of this topic</description>
+      <name>NonDurableMessageCount</name>
+      <type>int</type>
+   </attribute>      
+   
+   <attribute access="read-only" getMethod="getAllSubscriptionsCount">
+      <description>The count of all subscriptions of this topic</description>
+      <name>AllSubscriptionsCount</name>
+      <type>int</type>
+   </attribute> 
+   
+   <attribute access="read-only" getMethod="getDurableSubscriptionsCount">
+      <description>The count of all durable subscriptions of this topic</description>
+      <name>DurableSubscriptionsCount</name>
+      <type>int</type>
+   </attribute>    
+   
+   <attribute access="read-only" getMethod="getNonDurableSubscriptionsCount">
+      <description>The count of all non durable subscriptions of this topic</description>
+      <name>NonDurableSubscriptionsCount</name>
+      <type>int</type>
+   </attribute>    
+   
    
    <!-- instance access -->
 
@@ -142,73 +194,122 @@
    </operation>
 
    <operation>
-      <description>Get all subscription count</description>
-      <name>subscriptionCount</name>
-      <return-type>int</return-type>
-   </operation>
-
-   <operation>
-      <description>Get durable/nondurable subscription count</description>
-      <name>subscriptionCount</name>
-      <parameter>
-         <description>Set the value to true to get durable subscription count; false to get nondurable count</description>
-         <name>durable</name>
-         <type>boolean</type>
-      </parameter>
-      <return-type>int</return-type>
-   </operation>
-
-   <operation>
-      <description>Returns a readable list containing the names of current subscriptions.</description>
-      <name>listSubscriptionsAsText</name>
-      <return-type>java.lang.String</return-type>
-   </operation>
-
-   <operation>
-      <description>Returns a readable list containing the names of current subscriptions.</description>
-      <name>listSubscriptionsAsText</name>
-      <parameter>
-         <description>Set the value to true to get durable subscription list; false to get nondurable list</description>
-         <name>durable</name>
-         <type>boolean</type>
-      </parameter>
-      <return-type>java.lang.String</return-type>
-   </operation>
-
-   <operation>
-      <description>Get a list of messages for a durable subscription that filtered by selector</description>
-      <name>listMessagesDurableSub</name>
-      <parameter>
-         <description>The durable subscription name (must specify)</description>
-         <name>name</name>
-         <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-         <description>The durable subscription client ID (if empty, the first matched subscription name will be chosen)</description>
-         <name>clientID</name>
-         <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-          <description>Expression to define the selector</description>
-         <name>selector</name>
-         <type>java.lang.String</type>
-      </parameter>
+      <description>Return all subscriptions for the topic</description>
+      <name>listAllSubscriptions</name>
       <return-type>java.util.List</return-type>
    </operation>
+   
+   <operation>
+      <description>Return all durable subscriptions for the topic</description>
+      <name>listDurableSubscriptions</name>
+      <return-type>java.util.List</return-type>
+   </operation> 
+   
+   <operation>
+      <description>Return all non durable subscriptions for the topic</description>
+      <name>listNonDurableSubscriptions</name>
+      <return-type>java.util.List</return-type>
+   </operation>     
+   
+   <operation>
+      <description>Return all subscriptions for the topic in HTML</description>
+      <name>listAllSubscriptionsAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   
+   <operation>
+      <description>Return all durable subscriptions for the topic in HTML</description>
+      <name>listDurableSubscriptionsAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation> 
+   
+   <operation>
+      <description>Return all non durable subscriptions for the topic in HTML</description>
+      <name>listNonDurableSubscriptionsAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation>      
 
    <operation>
-      <description>Get a list of messages for a non-durable subscription that filtered by selector</description>
-      <name>listMessagesNonDurableSub</name>
+      <description>List all messages for the specified subscription</description>
+      <name>listAllMessages</name>
       <parameter>
-         <description>The non-durable subscription ID (must specify)</description>
+         <description>The subscription id</description>
          <name>subscriptionID</name>
-         <type>long</type>
-      </parameter>
+         <type>java.lang.String</type>
+      </parameter>     
+      <return-type>java.util.List</return-type>
+   </operation>
+   
+   <operation>
+      <description>List all messages for the specified subscription with the specified selector</description>
+      <name>listAllMessages</name>
       <parameter>
-         <description>Expression to define the selector</description>
+         <description>The subscription id</description>
+         <name>subscriptionID</name>
+         <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+         <description>The selector</description>
          <name>selector</name>
          <type>java.lang.String</type>
       </parameter>
       <return-type>java.util.List</return-type>
-  </operation>
+   </operation>   
+   
+   
+   <operation>
+      <description>List all durable messages for the specified subscription</description>
+      <name>listDurableMessages</name>
+      <parameter>
+         <description>The subscription id</description>
+         <name>subscriptionID</name>
+         <type>java.lang.String</type>
+      </parameter>     
+      <return-type>java.util.List</return-type>
+   </operation>
+   
+   <operation>
+      <description>List all durable messages for the specified subscription with the specified selector</description>
+      <name>listDurableMessages</name>
+      <parameter>
+         <description>The subscription id</description>
+         <name>subscriptionID</name>
+         <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+         <description>The selector</description>
+         <name>selector</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>  
+   
+   <operation>
+      <description>List all non durable messages for the specified subscription</description>
+      <name>listNonDurableMessages</name>
+      <parameter>
+         <description>The subscription id</description>
+         <name>subscriptionID</name>
+         <type>java.lang.String</type>
+      </parameter>     
+      <return-type>java.util.List</return-type>
+   </operation>
+   
+   <operation>
+      <description>List all non durable messages for the specified subscription with the specified selector</description>
+      <name>listNonDurableMessages</name>
+      <parameter>
+         <description>The subscription id</description>
+         <name>subscriptionID</name>
+         <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+         <description>The selector</description>
+         <name>selector</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>     
+   
+
 </mbean>

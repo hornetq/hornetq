@@ -31,15 +31,6 @@
       <type>java.lang.String</type>
    </attribute>
 
-   <!-- This managed attribute is exposed here for backward compatibility with JBossMQ queues
-        management interface only. It will probably dissapear in the future.
-   -->
-   <attribute access="read-only" getMethod="getName">
-      <description>The queue name (deprecated management attribute)</description>
-      <name>QueueName</name>
-      <type>java.lang.String</type>
-   </attribute>
-
    <!-- This attribute is writable to allow configuring an arbitrary JNDI name in the queue's
         service deployment descriptor. Any attempt to change the attribute after initialization
         will be ignored.
@@ -71,6 +62,12 @@
       <name>ExpiryQueue</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getRedeliveryDelay" setMethod="setRedeliveryDelay">
+      <description>The delay before redelivering</description>
+      <name>RedeliveryDelay</name>
+      <type>long</type>
+   </attribute>   
 
    <attribute access="read-write" getMethod="getSecurityConfig" setMethod="setSecurityConfig">
       <description>The destination's security configuration</description>
@@ -89,6 +86,18 @@
       <name>MessageCount</name>
       <type>int</type>
    </attribute>
+   
+   <attribute access="read-only" getMethod="getScheduledMessageCount">
+      <description>The number of scheduled messages in the queue</description>
+      <name>ScheduledMessageCount</name>
+      <type>int</type>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="getMaxSize" setMethod="setMaxSize">
+      <description>The maximum number of messages this queue can hold before they are dropped</description>
+      <name>MaxSize</name>
+      <type>int</type>
+   </attribute>   
 
    <attribute access="read-write" getMethod="getFullSize" setMethod="setFullSize">
       <description>The in-memory message limit, can only be set when queue is stopped</description>
@@ -112,6 +121,30 @@
       <description>Is this a clustered destination?</description>
       <name>Clustered</name>
       <type>boolean</type>
+   </attribute>   
+   
+   <attribute access="read-only" getMethod="getMessageCounter">
+      <description>Get the message counter for the queue</description>
+      <name>MessageCounter</name>
+      <type>org.jboss.jms.server.messagecounter.MessageCounter</type>
+   </attribute>
+   
+   <attribute access="read-only" getMethod="getMessageStatistics">
+      <description>Get the message statistics for the queue</description>
+      <name>MessageStatistics</name>
+      <type>org.jboss.jms.server.messagecounter.MessageStatistics</type>
+   </attribute>   
+   
+   <attribute access="read-write" getMethod="getMessageCounterHistoryDayLimit" setMethod="setMessageCounterHistoryDayLimit">
+      <description>The day limit for the message counter</description>
+      <name>MessageCounterHistoryDayLimit</name>
+      <type>int</type>
+   </attribute>
+   
+   <attribute access="read-only" getMethod="getConsumerCount">
+      <description>The number of consumers on the queue</description>
+      <name>ConsumerCount</name>
+      <type>int</type>
    </attribute>   
    
    <!-- instance access -->
@@ -150,6 +183,57 @@
    </operation>
 
    <operation>
+      <description>List all messages</description>
+      <name>listAllMessages</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   
+   <operation>
+      <description>List all messages with selector</description>
+      <name>listAllMessages</name>
+      <parameter>
+         <description>Expression to define the selector</description>
+         <name>selector</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>   
+   
+   <operation>
+      <description>List durable messages</description>
+      <name>listDurableMessages</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   
+   <operation>
+      <description>List durable messages with selector</description>
+      <name>listDurableMessages</name>
+      <parameter>
+         <description>Expression to define the selector</description>
+         <name>selector</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>  
+   
+   <operation>
+      <description>List non durable messages</description>
+      <name>listNonDurableMessages</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   
+   <operation>
+      <description>List non durable messages with selector</description>
+      <name>listNonDurableMessages</name>
+      <parameter>
+         <description>Expression to define the selector</description>
+         <name>selector</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>      
+
+   <operation>
       <description>List all messages which meet the condition described in selector</description>
       <name>listMessages</name>
       <parameter>
@@ -159,5 +243,27 @@
       </parameter>
       <return-type>java.util.List</return-type>
    </operation>
+   
+   <operation>
+      <description>Reset the message counter</description>
+      <name>resetMessageCounter</name>
+   </operation>   
+   
+   <operation>
+      <description>Reset the message counter history</description>
+      <name>resetMessageCounterHistory</name>
+   </operation>   
+   
+   <operation>
+      <description>Get the message counter as HTML</description>
+      <name>getMessageCounterAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   
+   <operation>
+      <description>Get the message counter history as HTML</description>
+      <name>getMessageCounterHistoryAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation>       
    
 </mbean>

@@ -109,12 +109,22 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    void clear();
    
    /**
-    * Message amount. 
-    * @return message amount.
+    * 
+    * @return Total message count = undelivered + delivering + scheduled
     */
    int getMessageCount();
    
+   /**
+    * 
+    * @return Count being delivered
+    */
    int getDeliveringCount();
+   
+   /**
+    * Count scheduled for delivery
+    * @return
+    */
+   int getScheduledCount();
    
    /**
     * Remove all the references in the channel
@@ -134,6 +144,12 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    
    List recoverDeliveries(List messageIds);
   
+   int getMaxSize();
+   
+   void setMaxSize(int newSize);
+   
+   //Count of messages added since server was started (needed for stats)
+   int getMessagesAdded();
 }
 
 

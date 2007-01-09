@@ -191,7 +191,7 @@ public class SimpleChannel implements Channel
       throw new NotYetImplementedException();
    }
 
-   public int numberOfReceivers()
+   public int getNumberOfReceivers()
    {
       throw new NotYetImplementedException();
    }
@@ -227,6 +227,26 @@ public class SimpleChannel implements Channel
    }
 
    public int getDeliveringCount()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public int getMaxSize()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public int getMessagesAdded()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public void setMaxSize(int newSize)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public int getScheduledCount()
    {
       throw new UnsupportedOperationException();
    }

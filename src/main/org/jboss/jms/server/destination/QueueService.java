@@ -9,9 +9,14 @@ package org.jboss.jms.server.destination;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jms.IllegalStateException;
+
 import org.jboss.jms.server.JMSCondition;
+import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.jms.server.messagecounter.MessageStatistics;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
@@ -29,9 +34,11 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id$
  */
-public class QueueService extends DestinationServiceSupport
+public class QueueService extends DestinationServiceSupport implements QueueMBean
 {
    // Constants -----------------------------------------------------
+   
+   private static final String QUEUE_MESSAGECOUNTER_PREFIX = "Queue.";
 
    // Static --------------------------------------------------------
    
@@ -51,27 +58,7 @@ public class QueueService extends DestinationServiceSupport
       destination = new ManagedQueue();      
    }
    
-   // JMX managed attributes ----------------------------------------
-   
-   public int getMessageCount() throws Exception
-   {
-      try
-      {
-         if (!started)
-         {
-            log.warn("Queue is stopped");
-            return 0;
-         }
-         
-         return ((ManagedQueue)destination).getMessageCount();
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " getMessageCount");
-      }
-   }
-
-   // JMX managed operations ----------------------------------------
+   // ServiceMBeanSupport overrides --------------------------------
    
    public synchronized void startService() throws Exception
    {
@@ -81,22 +68,28 @@ public class QueueService extends DestinationServiceSupport
       {                           
          postOffice = serverPeer.getPostOfficeInstance();
          
-         destination.setPostOffice(postOffice);
+         destination.setServerPeer(serverPeer);
 
          //Binding must be added before destination is registered in JNDI
          //otherwise the user could get a reference to the destination and use it
          //while it is still being loaded
-         
+             
          //Binding might already exist
             
          Binding binding = postOffice.getBindingForQueueName(destination.getName());
          
+         PagingFilteredQueue queue;
+         
          if (binding != null)
          {     
-            PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
-            
+            queue = (PagingFilteredQueue)binding.getQueue();
+                
             queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
             queue.load();
+            
+            //Must be done after load
+            queue.setMaxSize(destination.getMaxSize());
+            
             queue.activate();
          }
          else
@@ -105,14 +98,12 @@ public class QueueService extends DestinationServiceSupport
             
             //Create a new queue       
             
-            PagingFilteredQueue queue;
-            
             JMSCondition queueCond = new JMSCondition(true, destination.getName());
             
             if (postOffice.isLocal())
             {
                queue = new PagingFilteredQueue(destination.getName(), idm.getID(), ms, pm, true, true,
-                                               executor, null,
+                                               executor, destination.getMaxSize(), null,
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
                
                
@@ -122,7 +113,7 @@ public class QueueService extends DestinationServiceSupport
             else
             {               
                queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(), idm.getID(), ms, pm, true, true,
-                                               executor, null, tr, 
+                                               executor, destination.getMaxSize(), null, tr, 
                                                destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
                
                ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
@@ -138,6 +129,25 @@ public class QueueService extends DestinationServiceSupport
             }                        
          }
          
+         ((ManagedQueue)destination).setQueue(queue);
+         
+         String counterName = QUEUE_MESSAGECOUNTER_PREFIX + destination.getName();
+         
+         int dayLimitToUse = destination.getMessageCounterHistoryDayLimit();
+         if (dayLimitToUse == -1)
+         {
+            //Use override on server peer
+            dayLimitToUse = serverPeer.getDefaultMessageCounterHistoryDayLimit();
+         }
+         
+         MessageCounter counter =
+            new MessageCounter(counterName, null, queue, false, false,
+                               dayLimitToUse);
+         
+         ((ManagedQueue)destination).setMessageCounter(counter);
+                  
+         serverPeer.getMessageCounterManager().registerMessageCounter(counterName, counter);
+                       
          dm.registerDestination(destination);
         
          log.debug(this + " security configuration: " + (destination.getSecurityConfig() == null ?
@@ -160,10 +170,16 @@ public class QueueService extends DestinationServiceSupport
       {
          dm.unregisterDestination(destination);
          
-         //We undeploy the queue from memory - this also deactivates the binding
-         Binding binding = postOffice.getBindingForQueueName(destination.getName());
+         Queue queue = ((ManagedQueue)destination).getQueue();
          
-         PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
+         String counterName = QUEUE_MESSAGECOUNTER_PREFIX + destination.getName();
+                  
+         MessageCounter counter = serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);
+         
+         if (counter == null)
+         {
+            throw new IllegalStateException("Cannot find counter to unregister " + counterName);
+         }
          
          queue.deactivate();
          queue.unload();
@@ -178,6 +194,72 @@ public class QueueService extends DestinationServiceSupport
       }
    }
    
+   
+   // JMX managed attributes ----------------------------------------
+   
+   public int getMessageCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped");
+            return 0;
+         }
+         
+         return ((ManagedQueue)destination).getMessageCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getMessageCount");
+      }
+   }
+   
+   public int getScheduledMessageCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped");
+            return 0;
+         }
+         
+         return ((ManagedQueue)destination).getScheduledMessageCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getMessageCount");
+      }
+   }
+   
+   public MessageCounter getMessageCounter()
+   {
+      return ((ManagedQueue)destination).getMessageCounter();
+   }
+   
+   public MessageStatistics getMessageStatistics() throws Exception
+   {
+      List counters = new ArrayList();
+      counters.add(getMessageCounter());
+      
+      List stats = MessageCounter.getMessageStatistics(counters);
+      
+      return (MessageStatistics)stats.get(0);
+   }
+   
+   public String getMessageCounterAsHTML()
+   {
+      return super.listMessageCounterAsHTML(new MessageCounter[] { getMessageCounter() });
+   }
+   
+   public int getConsumerCount() throws Exception
+   {
+      return ((ManagedQueue)destination).getConsumersCount();
+   }
+     
+   // JMX managed operations ----------------------------------------
+      
    public void removeAllMessages() throws Exception
    {
       try
@@ -196,24 +278,129 @@ public class QueueService extends DestinationServiceSupport
       } 
    }
    
-   public List listMessages(String selector) throws Exception
+   public List listAllMessages() throws Exception
    {
       try
       {
          if (!started)
          {
             log.warn("Queue is stopped.");
-            return new ArrayList();
+            return null;
          }
          
-         return ((ManagedQueue)destination).listMessages(selector);
+         return ((ManagedQueue)destination).listAllMessages(null);
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " listMessages");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listAllMessages");
       } 
    }
-    
+   
+   public List listAllMessages(String selector) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped.");
+            return null;
+         }
+         
+         return ((ManagedQueue)destination).listAllMessages(selector);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listAllMessages");
+      } 
+   }
+   
+   public List listDurableMessages() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped.");
+            return null;
+         }
+         
+         return ((ManagedQueue)destination).listDurableMessages(null);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listDurableMessages");
+      } 
+   }
+   
+   public List listDurableMessages(String selector) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped.");
+            return null;
+         }
+         
+         return ((ManagedQueue)destination).listDurableMessages(selector);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listDurableMessages");
+      } 
+   }
+   
+   public List listNonDurableMessages() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped.");
+            return null;
+         }
+         
+         return ((ManagedQueue)destination).listNonDurableMessages(null);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listNonDurableMessages");
+      } 
+   }
+   
+   public List listNonDurableMessages(String selector) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped.");
+            return null;
+         }
+         
+         return ((ManagedQueue)destination).listNonDurableMessages(selector);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listNonDurableMessages");
+      } 
+   }
+            
+   public void resetMessageCounter()
+   {
+      ((ManagedQueue)destination).getMessageCounter().resetCounter();
+   }
+   
+   public String getMessageCounterHistoryAsHTML()
+   {
+      return super.listMessageCounterHistoryAsHTML(new MessageCounter[] { getMessageCounter() });
+   }
+ 
+   public void resetMessageCounterHistory()
+   {
+      ((ManagedQueue)destination).getMessageCounter().resetHistory();
+   }
+       
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

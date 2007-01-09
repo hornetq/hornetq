@@ -76,6 +76,17 @@ public interface Routable extends Streamable
    boolean isExpired();
    
    void setExpiration(long expiration);
+   
+   
+   /**
+    * 
+    * @return The time in the future that delivery will be delayed until, or zero if
+    * no scheduled delivery will occur
+    */
+   long getScheduledDeliveryTime();
+   
+   void setScheduledDeliveryTime(long scheduledDeliveryTime);
+   
 
    /**
     * @return the time (in GMT milliseconds) when this routable was delivered to the provider.

@@ -209,7 +209,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
    {
       Filter f = new SimpleFilter(3);
             
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), f);
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), -1, f);
       
       Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null);
       Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null);
@@ -5299,7 +5299,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       catch(IllegalStateException e)
       {
          // OK
-         log.info(e);
+         log.trace(e);
 
       }
 

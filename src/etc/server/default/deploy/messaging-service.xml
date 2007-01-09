@@ -43,9 +43,15 @@
       
       <attribute name="DefaultExpiryQueue">jboss.messaging.destination:service=Queue,name=ExpiryQueue</attribute> 
 
+      <attribute name="DefaultRedeliveryDelay">0</attribute>
+      
+      <attribute name="QueueStatsSamplePeriod">5000</attribute>
+      
       <attribute name="FailoverStartTimeout">3000</attribute>
       
       <attribute name="FailoverCompleteTimeout">12000</attribute>
+      
+      <attribute name="DefaultMessageCounterHistoryDayLimit">-1</attribute>
    </mbean>
 
 </server>

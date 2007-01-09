@@ -166,6 +166,42 @@ public class MessageProducerTest extends MessagingTestCase
          cconn.close();
       }
    }
+   
+   //I moved this into it's own class so we can catch any exception that occurs
+   //Since this test intermittently fails.
+   //(As an aside, technically this test is invalid anyway since the sessions is used for sending
+   //and consuming concurrently - and sessions are supposed to be single threaded)
+   private class Sender implements Runnable
+   {
+      volatile Exception ex;
+      
+      MessageProducer prod;
+      
+      Message m;
+      
+      Sender(MessageProducer prod, Message m)
+      {
+         this.prod = prod;
+         
+         this.m = m;
+      }
+      
+      public void run()
+      {
+         try
+         {
+            // this is needed to make sure the main thread has enough time to block
+            Thread.sleep(3000);
+            prod.send(m);
+         }
+         catch(Exception e)
+         {
+            log.error(e);
+            
+            ex = e;
+         }
+      }
+   }
 
    public void testPersistentSendToTopic() throws Exception
    {
@@ -182,28 +218,21 @@ public class MessageProducerTest extends MessagingTestCase
 
          cconn.start();
 
-         final TextMessage m1 = ps.createTextMessage("test");
+         TextMessage m1 = ps.createTextMessage("test");
+          
+         Sender sender = new Sender(p, m1);
 
-         Thread t = new Thread(new Runnable()
-         {
-            public void run()
-            {
-               try
-               {
-                  // this is needed to make sure the main thread has enough time to block
-                  Thread.sleep(3000);
-                  p.send(m1);
-               }
-               catch(Exception e)
-               {
-                  log.error(e);
-               }
-            }
-         }, "Producer Thread");
+         Thread t = new Thread(sender, "Producer Thread");
 
          t.start();
 
          TextMessage m2 = (TextMessage)c.receive(8000);
+         
+         if (sender.ex != null)
+         {
+            //If an exception was caught in sending we rethrow here so as not to lose it
+            throw sender.ex;
+         }
 
          assertEquals(m2.getJMSMessageID(), m1.getJMSMessageID());
          assertEquals("test", m2.getText());

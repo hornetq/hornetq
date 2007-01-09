@@ -53,6 +53,8 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = 7939593521831220924L;
+   
    public static final byte TYPE = 2;
 
    // Attributes ----------------------------------------------------

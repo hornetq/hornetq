@@ -97,7 +97,8 @@ public class MessageFactory
                                        String correlationID,
                                        byte[] correlationIDBytes,
                                        JBossDestination destination,
-                                       JBossDestination replyTo,                                                                              
+                                       JBossDestination replyTo, 
+                                       long scheduledDeliveryTime,
                                        HashMap jmsProperties)
 
    {

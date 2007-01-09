@@ -57,7 +57,7 @@ public class StatsSender implements MessagingComponent
       this.period = period;
    }
 
-   public synchronized void start() throws Exception
+   public synchronized void start()
    {
       if (started)
       {
@@ -77,7 +77,7 @@ public class StatsSender implements MessagingComponent
       started = true;
    }
 
-   public synchronized void stop() throws Exception
+   public synchronized void stop() 
    {
       if (!started)
       {
@@ -97,7 +97,7 @@ public class StatsSender implements MessagingComponent
    
    class SendStatsTimerTask extends TimerTask
    {
-      public synchronized void run()
+      public void run()
       {
          try
          {

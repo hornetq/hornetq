@@ -158,6 +158,24 @@
       <attribute name="ExpiryQueue">jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue</attribute>
    </mbean>       
    
+   <!-- Queues and Topics can also specify their own redelivery delay -->
+   
+   <mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=QueueWithOwnRedeliveryDelay"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+      <attribute name="RedeliveryDelay">5000</attribute>
+   </mbean>
+   
+   <mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=TopicWithOwnRedeliveryDelay"
+      xmbean-dd="xmdesc/Topic-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+      <attribute name="RedeliveryDelay">5000</attribute>
+   </mbean>     
+   
    <!--
         Example clustered destinations.
    -->

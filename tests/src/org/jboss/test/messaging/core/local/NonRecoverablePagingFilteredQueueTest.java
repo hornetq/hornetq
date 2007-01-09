@@ -55,7 +55,7 @@ public class NonRecoverablePagingFilteredQueueTest extends PagingFilteredQueueTe
    {
       super.setUp();
       
-      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), null);
+      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), -1, null);
    }
    
    public void tearDown() throws Exception
@@ -71,7 +71,7 @@ public class NonRecoverablePagingFilteredQueueTest extends PagingFilteredQueueTe
 
    public void recoverChannel() throws Exception
    {
-      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), null);
+      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), -1, null);
    }
 
    // Public --------------------------------------------------------

@@ -29,6 +29,8 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.destination.TopicService;
+import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.util.ExceptionUtil;
@@ -97,6 +99,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private Queue expiryQueue;
    
+   private long redeliveryDelay;
+   
    private boolean started;
    
    //This lock protects starting and stopping
@@ -110,7 +114,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
                           ServerSessionEndpoint sessionEndpoint,
                           String selector, boolean noLocal, JBossDestination dest,
-                          Queue dlq, Queue expiryQueue)
+                          Queue dlq, Queue expiryQueue, long redeliveryDelay)
                           throws InvalidSelectorException
    {
       if (trace) { log.trace("constructing consumer endpoint " + id); }
@@ -132,6 +136,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.destination = dest;
       
       this.dlq = dlq;
+      
+      this.redeliveryDelay = redeliveryDelay;
       
       this.expiryQueue = expiryQueue;
       
@@ -212,7 +218,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return delivery;
          }
                  
-         long deliveryId = sessionEndpoint.addDelivery(delivery, id);
+         long deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
    
          // We don't send the message as-is, instead we create a MessageProxy instance. This allows
          // local fields such as deliveryCount to be handled by the proxy but global data to be
@@ -415,6 +421,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       return expiryQueue;
    }
+   
+   long getRedliveryDelay()
+   {
+      return redeliveryDelay;
+   }
      
    void localClose() throws Throwable
    {      
@@ -441,6 +452,16 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          if (binding != null && !binding.getQueue().isRecoverable())
          {
             postOffice.unbindQueue(queueName);
+            
+            String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
+            
+            MessageCounter counter = 
+               sessionEndpoint.getConnectionEndpoint().getServerPeer().getMessageCounterManager().unregisterMessageCounter(counterName);
+            
+            if (counter == null)
+            {
+               throw new IllegalStateException("Cannot find counter to remove " + counterName);
+            }
          }
       }
      

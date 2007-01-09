@@ -97,34 +97,34 @@ public class DefaultRouterTest extends PostOfficeTestBase
       ClusteredQueue queue1 = new SimpleQueue(true);
       dr.add(queue1);
       
-      assertEquals(1, dr.numberOfReceivers());
+      assertEquals(1, dr.getNumberOfReceivers());
       assertEquals(1, dr.getQueues().size());
       
       ClusteredQueue queue2 = new SimpleQueue(false);
       dr.add(queue2);
       
-      assertEquals(2, dr.numberOfReceivers());
+      assertEquals(2, dr.getNumberOfReceivers());
       assertEquals(2, dr.getQueues().size());
       
       ClusteredQueue queue3 = new SimpleQueue(false);
       dr.add(queue3);
       
-      assertEquals(3, dr.numberOfReceivers());
+      assertEquals(3, dr.getNumberOfReceivers());
       assertEquals(3, dr.getQueues().size());
       
       dr.remove(queue3);
       
-      assertEquals(2, dr.numberOfReceivers());
+      assertEquals(2, dr.getNumberOfReceivers());
       assertEquals(2, dr.getQueues().size());
       
       dr.remove(queue2);
       
-      assertEquals(1, dr.numberOfReceivers());
+      assertEquals(1, dr.getNumberOfReceivers());
       assertEquals(1, dr.getQueues().size());
       
       dr.remove(queue1);
       
-      assertEquals(0, dr.numberOfReceivers());
+      assertEquals(0, dr.getNumberOfReceivers());
       assertTrue(dr.getQueues().isEmpty());
       
    }
@@ -586,7 +586,7 @@ public class DefaultRouterTest extends PostOfficeTestBase
          return null;
       }
 
-      public int numberOfReceivers()
+      public int getNumberOfReceivers()
       {
          if (receiver != null)
          {
@@ -617,6 +617,30 @@ public class DefaultRouterTest extends PostOfficeTestBase
       }
 
       public int getDeliveringCount()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public int getMaxSize()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public int getMessagesAdded()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public void setMaxSize(int newSize)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public int getScheduledCount()
       {
          // TODO Auto-generated method stub
          return 0;

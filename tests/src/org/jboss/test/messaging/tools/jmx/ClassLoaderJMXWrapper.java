@@ -21,6 +21,7 @@
 */
 package org.jboss.test.messaging.tools.jmx;
 
+import java.lang.reflect.Array;
 import java.net.URLClassLoader;
 import java.net.URL;
 
@@ -56,7 +57,24 @@ public class ClassLoaderJMXWrapper extends URLClassLoader implements ClassLoader
 
    public Class loadClass(String name) throws ClassNotFoundException
    {
-      return delegate.loadClass(name);
+      if (name.endsWith("[]"))
+      {
+         name = name.substring(0, name.length() - 2);
+         
+         //The classloader of an array type is the classloader of it's element (if non primitive)
+         
+         Class cl = delegate.loadClass(name);
+         
+         Object arr = Array.newInstance(cl, 0);
+         
+         Class arrayClass = arr.getClass();
+         
+         return arrayClass;
+      }
+      else
+      {      
+         return delegate.loadClass(name);
+      }
    }
 
    // ClassLoader overrides -----------------------------------------

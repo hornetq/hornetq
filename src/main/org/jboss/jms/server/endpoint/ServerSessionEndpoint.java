@@ -37,9 +37,10 @@ import java.util.Set;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
+import javax.jms.Message;
 
-import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
+import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
@@ -54,8 +55,10 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.destination.ManagedTopic;
-import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
+import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
+import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
+import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
@@ -63,6 +66,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.IDManager;
@@ -108,7 +112,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerSessionEndpoint.class);
+   
+   static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
+   
+   public static final String JBOSS_MESSAGING_ORIG_DESTINATION = "JBM_ORIG_DESTINATION";
 
+   public static final String JBOSS_MESSAGING_ORIG_MESSAGEID = "JBM_ORIG_MESSAGEID";
+   
+   public static final String JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME = "JBM_ACTUAL_EXPIRY";
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
@@ -318,7 +330,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledge");
+         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDelivery");
       }
    }     
          
@@ -339,7 +351,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeBatch");
+         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDeliveries");
       }
    }
              
@@ -454,6 +466,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             Queue queue = binding.getQueue();
             
+            JMSCondition cond = (JMSCondition)binding.getCondition();                        
+            
+            ManagedDestination dest = sp.getDestinationManager().getDestination(cond.getName(), cond.isQueue());
+            
+            if (dest == null)
+            {
+               throw new IllegalStateException("Cannot find managed destination with name " + cond.getName() + " isQueue" + cond.isQueue());
+            }
+            
+            Queue dlqToUse =
+               dest.getDLQ() == null ? defaultDLQ : dest.getDLQ();
+            
+            Queue expiryQueueToUse =
+               dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
+            
             List dels = queue.recoverDeliveries(ids);
             
             Iterator iter2 = dels.iterator();
@@ -472,7 +499,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (trace) { log.trace(this + " Recovered delivery " + deliveryId + ", " + del); }
                
-               deliveries.put(new Long(deliveryId), new DeliveryRecord(del, -1));
+               deliveries.put(new Long(deliveryId), new DeliveryRecord(del, -1, dlqToUse, expiryQueueToUse, dest.getRedeliveryDelay()));
             }
          }
          
@@ -523,8 +550,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             PagingFilteredQueue q = 
                new PagingFilteredQueue(dest.getName(), idm.getID(), ms, pm, true, false,
-                                       executor, null, fullSize, pageSize, downCacheSize);                        
+                                       executor, -1, null, fullSize, pageSize, downCacheSize);     
+                        
+            String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
             
+            MessageCounter counter = new MessageCounter(counterName, null, q, false, false, sp.getDefaultMessageCounterHistoryDayLimit());
+            
+            sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+                                 
             //Make a binding for this queue
             postOffice.bindQueue(new JMSCondition(true, dest.getName()), q);
          }         
@@ -560,11 +593,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             //Unbind
             postOffice.unbindQueue(dest.getName());
+            
+            String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
+            
+            connectionEndpoint.removeTemporaryDestination(dest);
+            
+            MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);  
+            
+            if (counter == null)
+            {
+               throw new IllegalStateException("Cannot find counter to unregister " + counterName);
+            }
          }
          else
          {
             //Topic            
-            Collection bindings = postOffice.getBindingForCondition(new JMSCondition(false, dest.getName()));
+            Collection bindings = postOffice.getBindingsForCondition(new JMSCondition(false, dest.getName()));
             
             if (!bindings.isEmpty())
             {
@@ -572,9 +616,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
          }
          
-         dm.unregisterDestination(mDest);         
-            
-         connectionEndpoint.removeTemporaryDestination(dest);
+         dm.unregisterDestination(mDest);                             
       }
       catch (Throwable t)
       {
@@ -621,7 +663,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          Queue sub = binding.getQueue();
          
-         if (sub.numberOfReceivers() != 0)
+         if (sub.getNumberOfReceivers() != 0)
          {
             throw new IllegalStateException("Cannot unsubscribe durable subscription " +
                                             subscriptionName + " since it has active subscribers");
@@ -646,6 +688,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
          else
          {         
             postOffice.unbindQueue(queueName);
+         }
+         
+         String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + sub.getName();
+         
+         MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
+         
+         if (counter == null)
+         {
+            throw new IllegalStateException("Cannot find counter to remove " + counterName);
          }
       }
       catch (Throwable t)
@@ -681,7 +732,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          if (trace) { log.trace("Sending to expiry queue"); }
          
-         moveInTransaction(del, expiryQueue);
+         JBossMessage copy = makeCopyForDLQOrExpiry(true, del);
+         
+         moveInTransaction(copy, del, expiryQueue);
       }
       else
       {
@@ -836,11 +889,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       rec.del.cancel();
    }
    
-   long addDelivery(Delivery del, int consumerId)
+   long addDelivery(Delivery del, int consumerId, Queue dlq, Queue expiryQueue, long redeliveryDelay)
    {
       long deliveryId = deliveryIdSequence.increment();
       
-      deliveries.put(new Long(deliveryId), new DeliveryRecord(del, consumerId));
+      deliveries.put(new Long(deliveryId), new DeliveryRecord(del, consumerId, dlq, expiryQueue, redeliveryDelay));
       
       if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + del); }
       
@@ -920,60 +973,97 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //back to the original queue
       boolean reachedMaxDeliveryAttempts =
          cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >= maxDeliveryAttempts;
+                    
+      Delivery del = rec.del;   
          
       if (!expired && !reachedMaxDeliveryAttempts)
       {
          //Normal cancel back to the queue
          
-         rec.del.getReference().setDeliveryCount(cancel.getDeliveryCount());
+         del.getReference().setDeliveryCount(cancel.getDeliveryCount());
          
-         rec.del.cancel();
+         //Do we need to set a redelivery delay?
+         
+         if (rec.redeliveryDelay != 0)
+         {
+            del.getReference().setScheduledDeliveryTime(System.currentTimeMillis() + rec.redeliveryDelay);
+         }
+         
+         del.cancel();
       }
       else
-      {
-         ServerConsumerEndpoint consumer = null;
-         
-         synchronized (consumers)
-         {
-            consumer = (ServerConsumerEndpoint)consumers.get(new Integer(rec.consumerId));
-         }
-         
-         if (consumer == null)
-         {
-            throw new IllegalStateException("Cannot find consumer with id " + rec.consumerId);
-         }
-         
+      {                  
          if (expired)
          {
             //Sent to expiry queue
             
-            this.moveInTransaction(rec.del, consumer.getExpiryQueue());
+            JBossMessage copy = makeCopyForDLQOrExpiry(true, del);
+            
+            moveInTransaction(copy, del, rec.expiryQueue);
          }
          else
          {
             //Send to DLQ
             
-            this.moveInTransaction(rec.del, consumer.getDLQ());
+            JBossMessage copy = makeCopyForDLQOrExpiry(false, del);
+            
+            moveInTransaction(copy, del, rec.dlq);
          }
       }      
       
       return rec.del;
    }      
    
-   private void moveInTransaction(Delivery del, Queue queue) throws Throwable
+   private JBossMessage makeCopyForDLQOrExpiry(boolean expiry, Delivery del) throws Exception
+   {
+      //We copy the message and send that to the dlq/expiry queue - this is because
+      //otherwise we may end up with a ref with the same message id in the queue more than once
+      //which would barf - this might happen if the same message had been expire from multiple
+      //subscriptions of a topic for example
+      //We set headers that hold the original message destination, expiry time and original message id
+      
+      JBossMessage msg = ((JBossMessage)del.getReference().getMessage());
+      
+      JBossMessage copy = msg.doShallowCopy();
+      
+      long newMessageId = sp.getMessageIDManager().getID();
+      
+      copy.setMessageId(newMessageId);
+      
+      //reset delivery count and expiry
+      copy.setDeliveryCount(0);
+      
+      copy.setExpiration(0);
+      
+      String origMessageId = msg.getJMSMessageID();
+      
+      String origDest = msg.getJMSDestination().toString();
+            
+      copy.setStringProperty(JBOSS_MESSAGING_ORIG_MESSAGEID, origMessageId);
+      
+      copy.setStringProperty(JBOSS_MESSAGING_ORIG_DESTINATION, origDest);
+      
+      if (expiry)
+      {
+         long actualExpiryTime = System.currentTimeMillis();
+         
+         copy.setLongProperty(JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+      }
+      
+      return copy;
+   }
+   
+   private void moveInTransaction(JBossMessage msg, Delivery del, Queue queue) throws Throwable
    {
       Transaction tx = tr.createTransaction();
       
+      MessageReference ref = ms.reference(msg);
+                       
       try
       {               
          if (queue != null)
-         {                               
-            //Need to reset expiration and delivery account
-            del.getReference().setExpiration(0);
-            del.getReference().getMessage().setExpiration(0);
-            del.getReference().setDeliveryCount(0);
-            
-            queue.handle(null, del.getReference(), tx);
+         {                                                       
+            queue.handle(null, ref, tx);
             
             del.acknowledge(tx);           
          }
@@ -984,12 +1074,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             del.acknowledge(tx);
          }             
          
-         tx.commit();
-         
-         if (queue != null)
-         {
-            queue.deliver(false);
-         }
+         tx.commit();         
       }
       catch (Throwable t)
       {
@@ -997,6 +1082,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          throw t;
       } 
+      finally
+      {
+         if (ref != null)
+         {
+            ref.releaseMemoryReference();
+         }
+      }
+      
+      //Need to prompt delivery on the dlq/expiry queue
+      if (queue != null)
+      {
+         queue.deliver(false);
+      }
    }
    
    private void acknowledgeDeliveryInternal(Ack ack) throws Throwable
@@ -1048,7 +1146,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          // locate the binding based on destination name and the failed node ID
          Collection c = postOffice.
-            getBindingForCondition(new JMSCondition(true, jmsDestination.getName()));
+            getBindingsForCondition(new JMSCondition(true, jmsDestination.getName()));
 
          for(Iterator i = c.iterator(); i.hasNext(); )
          {
@@ -1087,11 +1185,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       Queue expiryQueueToUse =
          dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
+      
+      long redeliveryDelay = dest.getRedeliveryDelay();
+      
+      if (redeliveryDelay == 0)
+      {
+         redeliveryDelay = sp.getDefaultRedeliveryDelay();
+      }
             
       ServerConsumerEndpoint ep =
-         new ServerConsumerEndpoint(consumerID, newQueue, newQueue.getName(), this, selectorString,
-                                    noLocal, jmsDestination, dlqToUse, expiryQueueToUse);
-      
+
+         new ServerConsumerEndpoint(consumerID, binding.getQueue(),
+                                    binding.getQueue().getName(), this, selectorString, noLocal,
+                                    jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
+
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
 
       ClientConsumerDelegate stub =
@@ -1121,10 +1228,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
          selectorString = null;
       }
       
-      log.debug(this + " creating consumer for " + jmsDestination +
-         (selectorString == null ? "" : ", selector '" + selectorString + "'") +
-         (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
-         (noLocal ? ", noLocal" : ""));
+      if (trace)
+      {
+         log.trace(this + " creating consumer for " + jmsDestination +
+            (selectorString == null ? "" : ", selector '" + selectorString + "'") +
+            (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
+            (noLocal ? ", noLocal" : ""));
+      }
 
       ManagedDestination mDest = dm.
          getDestination(jmsDestination.getName(), jmsDestination.isQueue());
@@ -1141,7 +1251,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          if (!connectionEndpoint.hasTemporaryDestination(jmsDestination))
          {
             String msg = "Cannot create a message consumer on a different connection " +
-            "to that which created the temporary destination";
+                         "to that which created the temporary destination";
             throw new IllegalStateException(msg);
          }
       }
@@ -1174,7 +1284,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             if (postOffice.isLocal())
             {
                q = new PagingFilteredQueue(new GUID().toString(), idm.getID(), ms, pm, true, false,
-                        executor, selector,
+                        executor, mDest.getMaxSize(), selector,
                         mDest.getFullSize(),
                         mDest.getPageSize(),
                         mDest.getDownCacheSize());
@@ -1184,7 +1294,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             else
             {
                q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(), idm.getID(), ms, pm, true, false,
-                        executor, selector, tr,
+                        executor, mDest.getMaxSize(), selector, tr,
                         mDest.getFullSize(),
                         mDest.getPageSize(),
                         mDest.getDownCacheSize());
@@ -1200,6 +1310,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   binding = cpo.bindQueue(topicCond, q);
                }
             }
+            String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + q.getName();
+  
+            int dayLimitToUse = mDest.getMessageCounterHistoryDayLimit();
+            if (dayLimitToUse == -1)
+            {
+               //Use override on server peer
+               dayLimitToUse = sp.getDefaultMessageCounterHistoryDayLimit();
+            }
+            
+            MessageCounter counter =
+               new MessageCounter(counterName, null, q, true, false,
+                                  dayLimitToUse);
+            
+            sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
          }
          else
          {
@@ -1233,7 +1357,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                if (postOffice.isLocal())
                {
                   q = new PagingFilteredQueue(name, idm.getID(), ms, pm, true, true,
-                                              executor, selector,
+                                              executor, mDest.getMaxSize(), selector,
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
@@ -1244,7 +1368,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                {
                   q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getID(),
                                               ms, pm, true, true,
-                                              executor, selector, tr,
+                                              executor, mDest.getMaxSize(), selector, tr,
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
@@ -1260,6 +1384,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                      binding = cpo.bindQueue(topicCond, q);
                   }
                }
+               String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + q.getName();
+                       
+               MessageCounter counter =
+                  new MessageCounter(counterName, subscriptionName, q, true, true,
+                                     mDest.getMessageCounterHistoryDayLimit());
+               
+               sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
             }
             else
             {
@@ -1316,7 +1447,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   if (postOffice.isLocal())
                   {
                      q = new PagingFilteredQueue(name, idm.getID(), ms, pm, true, true,
-                              executor, selector,
+                              executor, mDest.getMaxSize(), selector,
                               mDest.getFullSize(),
                               mDest.getPageSize(),
                               mDest.getDownCacheSize());
@@ -1325,7 +1456,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   else
                   {
                      q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getID(), ms, pm, true, true,
-                              executor, selector, tr,
+                              executor, mDest.getMaxSize(), selector, tr,
                               mDest.getFullSize(),
                               mDest.getPageSize(),
                               mDest.getDownCacheSize());
@@ -1341,6 +1472,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                         binding = cpo.bindQueue(topicCond, (LocalClusteredQueue)q);
                      }
                   }
+                  String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + q.getName();
+                  
+                  MessageCounter counter =
+                     new MessageCounter(counterName, subscriptionName, q, true, true,
+                                        mDest.getMessageCounterHistoryDayLimit());
+                  
+                  sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
                }
             }
          }
@@ -1364,10 +1502,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       Queue expiryQueueToUse = mDest.getExpiryQueue() == null ? defaultExpiryQueue : mDest.getExpiryQueue();
       
+      long redeliveryDelay = mDest.getRedeliveryDelay();
+      
+      if (redeliveryDelay == 0)
+      {
+         redeliveryDelay = sp.getDefaultRedeliveryDelay();
+      }
+      
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
                   binding.getQueue().getName(), this, selectorString, noLocal,
-                  jmsDestination, dlqToUse, expiryQueueToUse);
+                  jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
       
       JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
       
@@ -1383,7 +1528,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       log.debug(this + " created and registered " + ep);
       
       return stub;
-   }
+   }   
 
    private BrowserDelegate createFailoverBrowserDelegateInternal(JBossDestination jmsDestination,
                                                                  String selector,
@@ -1407,7 +1552,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          // locate the binding based on destination name and the failed node ID
          Collection c = postOffice.
-            getBindingForCondition(new JMSCondition(true, jmsDestination.getName()));
+            getBindingsForCondition(new JMSCondition(true, jmsDestination.getName()));
 
          for(Iterator i = c.iterator(); i.hasNext(); )
          {
@@ -1510,13 +1655,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
    /*
     * Holds a record of a delivery - we need to store the consumer id as well
     * hence this class
-    * The only reason we need to store the consumer id is that on consumer close, we need to 
-    * cancel any deliveries corresponding to that consumer.
     * We can't rely on the cancel being driven from the MessageCallbackHandler since
     * the deliveries may have got lost in transit (ignored) since the consumer might have closed
     * when they were in transit.
     * In such a case we might otherwise end up with the consumer closing but not all it's deliveries being
     * cancelled, which would mean they wouldn't be cancelled until the session is closed which is too late
+    * 
+    * We need to store various pieces of information, such as consumer id, dlq, expiry queue
+    * since we need this at cancel time, but by then the actual consumer might have closed
     */
    private static class DeliveryRecord
    {
@@ -1524,11 +1670,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       int consumerId;
       
-      DeliveryRecord(Delivery del, int consumerId)
+      Queue dlq;
+      
+      Queue expiryQueue;
+      
+      long redeliveryDelay;
+      
+      DeliveryRecord(Delivery del, int consumerId, Queue dlq, Queue expiryQueue, long redeliveryDelay)
       {
          this.del = del;
          
          this.consumerId = consumerId;
+         
+         this.dlq = dlq;
+         
+         this.expiryQueue = expiryQueue;
+         
+         this.redeliveryDelay = redeliveryDelay;
       }            
    }
    

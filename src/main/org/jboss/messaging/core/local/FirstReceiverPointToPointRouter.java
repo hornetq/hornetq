@@ -176,7 +176,7 @@ public class FirstReceiverPointToPointRouter implements Router
       }
    }
    
-   public int numberOfReceivers()
+   public int getNumberOfReceivers()
    {
       synchronized(receivers)
       {

@@ -62,11 +62,12 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id,
                               MessageStore ms, PersistenceManager pm,
                               boolean acceptReliableMessages, boolean recoverable,
-                              QueuedExecutor executor, Filter filter, TransactionRepository tr,
+                              QueuedExecutor executor, int maxSize,
+                              Filter filter, TransactionRepository tr,
                               int fullSize, int pageSize, int downCacheSize)
    {
       super(name, id, ms, pm, acceptReliableMessages, recoverable, 
-            executor, filter, fullSize, pageSize, downCacheSize);
+            executor, maxSize, filter, fullSize, pageSize, downCacheSize);
      
       this.nodeId = nodeId;
       this.tr = tr;
@@ -76,9 +77,10 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id,
                               MessageStore ms, PersistenceManager pm,
                               boolean acceptReliableMessages, boolean recoverable,
-                              QueuedExecutor executor, Filter filter, TransactionRepository tr)
+                              QueuedExecutor executor, int maxSize,
+                              Filter filter, TransactionRepository tr)
    {
-      super(name, id, ms, pm, acceptReliableMessages, recoverable, executor, filter);
+      super(name, id, ms, pm, acceptReliableMessages, recoverable, executor, maxSize, filter);
       
       this.nodeId = nodeId;
       this.tr = tr;
@@ -217,7 +219,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       return ((Integer)result.getResult()).intValue();
    }
    
-   protected void deliverInternal() throws Throwable
+   protected void deliverInternal()
    {      
       super.deliverInternal();
         
@@ -230,7 +232,14 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
          //We don't do this synchronously with a message dispatcher since that can lead to distributed
          //deadlock
           
-         sendPullMessage();
+         try
+         {
+            sendPullMessage();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to send pull message", e);
+         }
       }
    }
    

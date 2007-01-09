@@ -225,7 +225,7 @@ public class DefaultRouter implements ClusterRouter
       target = 0;
    }
 
-   public int numberOfReceivers()
+   public int getNumberOfReceivers()
    {
       return nonLocalQueues.size() + (localQueue != null ? 1 : 0);
    }

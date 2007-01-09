@@ -116,13 +116,17 @@ public interface PersistenceManager extends MessagingComponent
       
       private boolean reliable;
       
-      public ReferenceInfo(long msgId, int deliveryCount, boolean reliable)
+      private long scheduledDelivery;
+      
+      public ReferenceInfo(long msgId, int deliveryCount, boolean reliable, long scheduledDelivery)
       {
          this.messageId = msgId;
          
          this.deliveryCount = deliveryCount;
          
          this.reliable = reliable;
+         
+         this.scheduledDelivery = scheduledDelivery;
       }    
       
       public long getMessageId()
@@ -138,6 +142,11 @@ public interface PersistenceManager extends MessagingComponent
       public boolean isReliable()
       {
          return reliable;
+      }
+      
+      public long getScheduledDelivery()
+      {
+         return scheduledDelivery;
       }
    }
    class InitialLoadInfo

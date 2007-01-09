@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.server.destination;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -14,7 +13,9 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import org.jboss.jms.server.JMSCondition;
+import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
@@ -31,9 +32,11 @@ import org.jboss.messaging.core.plugin.postoffice.Binding;
  *
  * $Id$
  */
-public class TopicService extends DestinationServiceSupport
+public class TopicService extends DestinationServiceSupport implements TopicMBean
 {
    // Constants -----------------------------------------------------
+   
+   public static final String SUBSCRIPTION_MESSAGECOUNTER_PREFIX = "Subscription.";
 
    // Static --------------------------------------------------------
 
@@ -52,10 +55,8 @@ public class TopicService extends DestinationServiceSupport
       
       destination = new ManagedTopic();      
    }
-
-   // JMX managed attributes ----------------------------------------
-
-   // JMX managed operations ----------------------------------------
+   
+   // ServiceMBeanSupport overrides ---------------------------------
    
    public synchronized void startService() throws Exception
    {
@@ -67,23 +68,46 @@ public class TopicService extends DestinationServiceSupport
 
          if (postOffice == null)
           throw new IllegalArgumentException("Post Office instance not found. Check your destination configuration.");
-
-         destination.setPostOffice(postOffice);
+         destination.setServerPeer(serverPeer);
          
          JMSCondition topicCond = new JMSCondition(false, destination.getName());
                     
          // We deploy any queues corresponding to pre-existing durable subscriptions
-         Collection bindings = postOffice.getBindingForCondition(topicCond);
+         Collection bindings = postOffice.getBindingsForCondition(topicCond);
          Iterator iter = bindings.iterator();
          while (iter.hasNext())
          {
             Binding binding = (Binding)iter.next();
             
             PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
-                        
+                     
+            //TODO We need to set the paging params this way since the post office doesn't store them
+            //instead we should never create queues inside the postoffice - only do it at deploy time
             queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
+            
             queue.load();
-            queue.activate();            
+            queue.activate();  
+            
+            //Must be done after load
+            queue.setMaxSize(destination.getMaxSize());  
+            
+            //Create a counter
+            String counterName = SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
+            
+            String subName = MessageQueueNameHelper.createHelper(queue.getName()).getSubName();
+            
+            int dayLimitToUse = destination.getMessageCounterHistoryDayLimit();
+            if (dayLimitToUse == -1)
+            {
+               //Use override on server peer
+               dayLimitToUse = serverPeer.getDefaultMessageCounterHistoryDayLimit();
+            }
+            
+            MessageCounter counter =
+               new MessageCounter(counterName, subName, queue, true, true,
+                                  dayLimitToUse);
+            
+            serverPeer.getMessageCounterManager().registerMessageCounter(counterName, counter);
          }
 
          dm.registerDestination(destination);
@@ -116,7 +140,7 @@ public class TopicService extends DestinationServiceSupport
          
          JMSCondition topicCond = new JMSCondition(false, destination.getName());         
          
-         Collection bindings = postOffice.getBindingForCondition(topicCond);
+         Collection bindings = postOffice.getBindingsForCondition(topicCond);
          
          Iterator iter = bindings.iterator();
          while (iter.hasNext())            
@@ -132,6 +156,11 @@ public class TopicService extends DestinationServiceSupport
                         
             queue.deactivate();
             queue.unload();
+            
+            //unregister counter
+            String counterName = SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
+            
+            serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);
          }
           
          started = false;
@@ -142,6 +171,125 @@ public class TopicService extends DestinationServiceSupport
          ExceptionUtil.handleJMXInvocation(t, this + " stopService");
       }
    }
+
+   // JMX managed attributes ----------------------------------------
+   
+   public int getAllMessageCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return -1;
+         }
+         
+         return ((ManagedTopic)destination).getAllMessageCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getAllMessageCount");
+      } 
+   }
+   
+   
+   public int getDurableMessageCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return -1;
+         }
+         
+         return ((ManagedTopic)destination).getDurableMessageCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getDurableMessageCount");
+      }
+   }
+   
+   public int getNonDurableMessageCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return -1;
+         }
+         
+         return ((ManagedTopic)destination).getNonDurableMessageCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getNonDurableMessageCount");
+      }
+   }
+   
+   /**
+    * All subscription count
+    * @return all subscription count
+    * @throws JMSException
+    */
+   public int getAllSubscriptionsCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return 0;
+         }
+   
+         return ((ManagedTopic)destination).getAllSubscriptionsCount();        
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getAllSubscriptionsCount");
+      } 
+   }
+
+   public int getDurableSubscriptionsCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return 0;
+         }
+         
+         return ((ManagedTopic)destination).getDurableSubscriptionsCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getDurableSubscriptionsCount");
+      } 
+   }
+   
+   public int getNonDurableSubscriptionsCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return 0;
+         }
+         
+         return ((ManagedTopic)destination).getNonDurableSubscriptionsCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getNonDurableSubscriptionsCount");
+      } 
+   }
+
+   // JMX managed operations ----------------------------------------
+      
 
    /**
     * Remove all messages from subscription's storage.
@@ -162,74 +310,63 @@ public class TopicService extends DestinationServiceSupport
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " removeAllMessages");
       } 
-   }
+   }         
    
-   /**
-    * All subscription count
-    * @return all subscription count
-    * @throws JMSException
-    */
-   public int subscriptionCount() throws Exception
+   public List listAllSubscriptions() throws Exception
    {
       try
       {
          if (!started)
          {
             log.warn("Topic is stopped.");
-            return 0;
-         }
-   
-         return ((ManagedTopic)destination).subscriptionCount();        
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " subscriptionCount");
-      } 
-   }
-
-   /**
-    * Durable/nondurable subscription count
-    * @param durable If true return durable subscription count.
-    *                If false return nondurable subscription count.
-    * @return either durable or nondurable subscription count depending on param.
-    * @throws JMSException
-    */
-   public int subscriptionCount(boolean durable) throws Exception
-   {
-      try
-      {
-         if (!started)
-         {
-            log.warn("Topic is stopped.");
-            return 0;
+            return null;
          }
          
-         return ((ManagedTopic)destination).subscriptionCount(durable);
+         return ((ManagedTopic)destination).listAllSubscriptions();
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " subscriptionCount");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listAllSubscriptions");
       } 
    }
-
-   /**
-    * XXX Placeholder
-    * Get all subscription list.
-    * @return List of CoreSubscription. Never null. 
-    * @throws JMSException
-    * @see ManageableTopic#getSubscriptions()
-    */
-   /*
-   public List listSubscriptions() throws JMSException
+   
+   public List listDurableSubscriptions() throws Exception
    {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return null;
+         }
+         
+         return ((ManagedTopic)destination).listDurableSubscriptions();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listDurableSubscriptions");
+      } 
    }
-   */
-
-   /**
-    * Returns a human readable list containing the names of current subscriptions.
-    * @return String of subscription list. Never null.
-    */
-   public String listSubscriptionsAsText() throws Exception
+   
+   public List listNonDurableSubscriptions() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return null;
+         }
+         
+         return ((ManagedTopic)destination).listNonDurableSubscriptions();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listNonDurableSubscriptions");
+      } 
+   }
+   
+   public String listAllSubscriptionsAsHTML() throws Exception
    {
       try
       {
@@ -239,24 +376,15 @@ public class TopicService extends DestinationServiceSupport
             return "";
          }
    
-         return ((ManagedTopic)destination).listSubscriptionsAsText();
-
+         return ((ManagedTopic)destination).listAllSubscriptionsAsHTML();
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " listSubscriptionsAsText");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listAllSubscriptionsAsHTML");
       } 
    }
    
-   
-
-   /**
-    * Returns a human readable list containing the names of current subscriptions.
-    * @param durable If true, return durable subscription list.
-    *                If false, return non-durable subscription list.
-    * @return String of subscription list. Never null.
-    */
-   public String listSubscriptionsAsText(boolean durable) throws Exception
+   public String listDurableSubscriptionsAsHTML() throws Exception
    {
       try
       {
@@ -266,141 +394,154 @@ public class TopicService extends DestinationServiceSupport
             return "";
          }
    
-         return ((ManagedTopic)destination).listSubscriptionsAsText(durable);
+         return ((ManagedTopic)destination).listDurableSubscriptionsAsHTML();
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " listSubscriptionsAsText");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listDurableSubscriptionsAsHTML");
       } 
    }
-
-   /**
-    * XXX Placeholder
-    * Get durable/non-durable subscription list.
-    * @param durable If true, return durable subscription list.
-    *                If false, return non-durable subscription list.
-    * @return List of CoreDurableSubscription/CoreSubscription. Never null.
-    * @throws JMSException
-    * @see ManageableTopic#getSubscriptions(boolean)
-    */
-   /*
-   public List listSubscriptions(boolean durable) throws JMSException
-   {
-      JBossTopic jbt = new JBossTopic(name);
-      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
-      return t.getSubscriptions(durable);
-   }
-   */
    
-   /**
-    * XXX Placeholder
-    * Get messages from certain subscription.
-    * @param channelID @see #listSubscriptions()
-    * @param clientID @see #listSubscriptions()
-    * @param subName @see #listSubscriptions()
-    * @param selector Filter expression
-    * @return list of javax.jms.Message
-    * @throws JMSException
-    * @see ManageableTopic#getMessages(long, String, String, String)
-    */
-   /*
-   public List listMessages(long channelID, String clientID, String subName, String selector)
-      throws JMSException
-   {
-      JBossTopic jbt = new JBossTopic(name);
-      ManageableTopic t = (ManageableTopic)cm.getCoreDestination(jbt);
-      return t.getMessages(channelID, clientID, subName, trimSelector(selector));
-   }
-   */
-   
-   /**
-    * Get messages from a durable subscription.
-    * @param subName Subscription name.
-    * @param clientID Client ID.
-    * @param selector Filter expression.
-    * @return list of javax.jms.Message
-    * @throws JMSException
-    * @see ManageableTopic#getMessagesFromDurableSub(String, String, String)
-    */
-   public List listMessagesDurableSub(String subName, String clientID, String selector)
-      throws Exception
+   public String listNonDurableSubscriptionsAsHTML() throws Exception
    {
       try
       {
          if (!started)
          {
             log.warn("Topic is stopped.");
-            return new ArrayList();
+            return "";
          }
    
-         return ((ManagedTopic)destination).listMessagesDurableSub(subName, clientID, selector);
+         return ((ManagedTopic)destination).listNonDurableSubscriptionsAsHTML();
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " listMessagesDurableSub");
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listNonDurableSubscriptionsAsHTML");
       } 
    }
    
-   /**
-    * Get messages from a non-durable subscription.
-    * @param channelID
-    * @param selector Filter expression.
-    * @return list of javax.jms.Message
-    * @throws JMSException
-    * @see ManageableTopic#getMessagesFromNonDurableSub(Long, String)
-    */
-   public List listMessagesNonDurableSub(long channelID, String selector)
-      throws Exception
+   public List listAllMessages(String subscriptionId) throws Exception
    {
       try
       {
          if (!started)
          {
             log.warn("Topic is stopped.");
-            return new ArrayList();
+            return null;
          }
-         
-         return ((ManagedTopic)destination).listMessagesNonDurableSub(channelID, selector);
+   
+         return ((ManagedTopic)destination).listAllMessages(subscriptionId, null);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listMessages");
+      }
+   }
+   
+   public List listAllMessages(String subscriptionId, String selector) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return null;
+         }
+   
+         return ((ManagedTopic)destination).listAllMessages(subscriptionId, selector);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listMessages");
+      }
+   }
+   
+   
+   public List listDurableMessages(String subscriptionId) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return null;
+         }
+   
+         return ((ManagedTopic)destination).listDurableMessages(subscriptionId, null);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listDurableMessages");
+      }
+   }
+   
+   public List listDurableMessages(String subscriptionId, String selector) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return null;
+         }
+   
+         return ((ManagedTopic)destination).listDurableMessages(subscriptionId, selector);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listDurableMessages");
+      }
+   }
+   
+   public List listNonDurableMessages(String subscriptionId) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return null;
+         }
+   
+         return ((ManagedTopic)destination).listNonDurableMessages(subscriptionId, null);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listNonDurableMessages");
+      }
+   }
+   
+   public List listNonDurableMessages(String subscriptionId, String selector) throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Topic is stopped.");
+            return null;
+         }
+   
+         return ((ManagedTopic)destination).listNonDurableMessages(subscriptionId, selector);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " listNonDurableMessages");
+      }
+   }
+   
+   public List getMessageCounters()
+      throws Exception
+   {
+      try
+      {
+         return ((ManagedTopic)destination).getMessageCounters();       
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " listMessagesNonDurableSub");
       } 
    }
-
    
-   // TODO implement these:
-
-//   int getAllMessageCount();
-//
-//   int getDurableMessageCount();
-//
-//   int getNonDurableMessageCount();
-//
-//   int getAllSubscriptionsCount();
-//
-//   int getDurableSubscriptionsCount();
-//
-//   int getNonDurableSubscriptionsCount();
-//
-//   java.util.List listAllSubscriptions();
-//
-//   java.util.List listDurableSubscriptions();
-//
-//   java.util.List listNonDurableSubscriptions();
-//
-//   java.util.List listMessages(java.lang.String id) throws java.lang.Exception;
-//
-//   java.util.List listMessages(java.lang.String id, java.lang.String selector) throws java.lang.Exception;
-//
-//   List listNonDurableMessages(String id, String sub) throws Exception;
-//
-//   List listNonDurableMessages(String id, String sub, String selector) throws Exception;
-//
-//   List listDurableMessages(String id, String name) throws Exception;
-//
-//   List listDurableMessages(String id, String name, String selector) throws Exception;
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
@@ -410,79 +551,7 @@ public class TopicService extends DestinationServiceSupport
    protected boolean isQueue()
    {
       return false;
-   }
-   
- 
-   /**
-    * XXX Placeholder
-    * @see ManageableTopic#getSubscriptions()
-    */
-   /*
-   public List getSubscriptions()
-   {
-      ArrayList list = new ArrayList();
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         if (sub instanceof CoreDurableSubscription)
-            list.add(new String[]{ 
-                        Long.toString(sub.getChannelID()), 
-                        ((CoreDurableSubscription)sub).getClientID(),
-                        ((CoreDurableSubscription)sub).getName()});
-         else
-            list.add(new String[]{ 
-                  Long.toString(sub.getChannelID()), "", ""});
-      }
-      return list;
-   }
-   */
-   
-   
-   /**
-    * XXX Placeholder
-    * @see ManageableTopic#getSubscriptions(boolean)
-    */
-   /*
-   public List getSubscriptions(boolean durable)
-   {
-      ArrayList list = new ArrayList();
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         if (sub instanceof CoreDurableSubscription && durable)
-            list.add(new String[]{ 
-                        Long.toString(sub.getChannelID()), 
-                        ((CoreDurableSubscription)sub).getClientID(),
-                        ((CoreDurableSubscription)sub).getName()});
-         else if (!(sub instanceof CoreDurableSubscription) && !durable)
-            list.add(new String[]{ 
-                  Long.toString(sub.getChannelID()), "", ""});
-      }
-      return list;
-   }
-   */   
-   
-   /**
-    * XXX Placeholder
-    * @see ManageableTopic#getMessages(long, String, String, String)
-    */
-   /*
-   public List getMessages(long channelID, String clientID, String subName, String selector) throws InvalidSelectorException
-   {
-      Iterator iter = iterator();
-      while (iter.hasNext())
-      {
-         CoreSubscription sub = (CoreSubscription)iter.next();
-         // If subID matches, then get message list from the subscription
-         if (matchSubscription(channelID, clientID, subName, sub))
-            return sub.browse(null == selector ? null : new Selector(selector));
-      }   
-      // No match, return an empty list
-      return new ArrayList();
-   }
-   */
+   }   
 
    // Private -------------------------------------------------------
 

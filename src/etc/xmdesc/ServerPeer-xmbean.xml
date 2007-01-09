@@ -57,7 +57,7 @@
       <name>DefaultExpiryQueue</name>
       <type>javax.management.ObjectName</type>
    </attribute>    
-   
+     
    <!-- instance access -->
 
    <attribute access="read-only" getMethod="getInstance">
@@ -169,6 +169,24 @@
       <name>FailoverCompleteTimeout</name>
       <type>long</type>
    </attribute>      
+   
+   <attribute access="read-write" getMethod="getDefaultRedeliveryDelay" setMethod="setDefaultRedeliveryDelay">
+      <description>How long to wait before redelivery, can be overridden on the destination</description>
+      <name>DefaultRedeliveryDelay</name>
+      <type>long</type>
+   </attribute>  
+   
+   <attribute access="read-write" getMethod="getQueueStatsSamplePeriod" setMethod="setQueueStatsSamplePeriod">
+      <description>The period between which queue statistics are obtained</description>
+      <name>QueueStatsSamplePeriod</name>
+      <type>long</type>
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="getDefaultMessageCounterHistoryDayLimit" setMethod="setDefaultMessageCounterHistoryDayLimit">
+      <description>The default max number of messages per day in message counter history</description>
+      <name>DefaultMessageCounterHistoryDayLimit</name>
+      <type>int</type>
+   </attribute>   
 
    <!-- Managed operations -->
 
@@ -303,5 +321,60 @@
       </parameter>
       <return-type>boolean</return-type>
    </operation>
+   
+   <operation>
+      <description>
+         Get all message counters
+      </description>
+      <name>getMessageCounters</name>
+      <return-type>java.util.List</return-type>
+   </operation> 
+   
+   <operation>
+      <description>
+         Get all message statistics
+      </description>
+      <name>getMessageStatistics</name>
+      <return-type>java.util.List</return-type>
+   </operation>    
+   
+   <operation>
+      <description>
+         List all message counters in HTML
+      </description>
+      <name>listMessageCountersAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation>    
+   
+   <operation>
+      <description>
+         Reset all message counters
+      </description>
+      <name>resetAllMessageCounters</name>
+   </operation>  
+   
+   <operation>
+      <description>
+         Reset all message counter histories
+      </description>
+      <name>resetAllMessageCounterHistories</name>
+   </operation>    
+   
+   <operation>
+      <description>
+         Retrieve list of all prepared transaction ids
+      </description>
+      <name>retrievePreparedTransactions</name>
+      <return-type>java.util.List</return-type>
+   </operation>  
+   
+   <operation>
+      <description>
+         Show of all prepared transaction ids in HTML
+      </description>
+      <name>showPreparedTransactionsAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation>      
+   
 
 </mbean>

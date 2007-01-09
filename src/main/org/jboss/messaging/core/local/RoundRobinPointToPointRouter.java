@@ -202,7 +202,7 @@ public class RoundRobinPointToPointRouter implements Router
       }
    }
    
-   public int numberOfReceivers()
+   public int getNumberOfReceivers()
    {
       synchronized(receivers)
       {

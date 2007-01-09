@@ -142,11 +142,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          office2 = (DefaultClusteredPostOffice) createClusteredPostOffice(2, "testgroup");
 
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
@@ -182,7 +182,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          receiver2.setMaxRefs(1);
 
-         log.info("delivering");
+         log.trace("delivering");
          queue2.deliver(false);
 
          Thread.sleep(3000);
@@ -190,10 +190,10 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertTrue(office1.getHoldingTransactions().isEmpty());
          assertTrue(office2.getHoldingTransactions().isEmpty());
 
-         log.info("r2 " + receiver2.getMessages().size());
+         log.trace("r2 " + receiver2.getMessages().size());
 
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
 
          assertEquals(0, queue1.memoryRefCount());
          assertEquals(0, queue1.getDeliveringCount());
@@ -236,11 +236,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          office2 = (DefaultClusteredPostOffice) createClusteredPostOffice(2, "testgroup");
 
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
@@ -279,7 +279,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          //Force a failure before commit
          office2.setFail(true, false, false);
 
-         log.info("delivering");
+         log.trace("delivering");
          queue2.deliver(false);
 
          Thread.sleep(3000);
@@ -287,8 +287,8 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertEquals(1, office1.getHoldingTransactions().size());
          assertTrue(office2.getHoldingTransactions().isEmpty());
 
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
 
          assertEquals(0, queue1.memoryRefCount());
          assertEquals(1, queue1.getDeliveringCount());
@@ -336,11 +336,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          office2 = (DefaultClusteredPostOffice) createClusteredPostOffice(2, "testgroup");
 
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
@@ -379,7 +379,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          //Force a failure after commit the ack to storage
          office2.setFail(false, true, false);
 
-         log.info("delivering");
+         log.trace("delivering");
          queue2.deliver(false);
 
          Thread.sleep(3000);
@@ -387,8 +387,8 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertEquals(1, office1.getHoldingTransactions().size());
          assertTrue(office2.getHoldingTransactions().isEmpty());
 
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
 
          assertEquals(0, queue1.memoryRefCount());
          assertEquals(1, queue1.getDeliveringCount());
@@ -432,11 +432,11 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          office2 = (DefaultClusteredPostOffice) createClusteredPostOffice(2, "testgroup");
 
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding2 =
             office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
@@ -474,7 +474,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          office2.setFail(false, false, true);
 
-         log.info("delivering");
+         log.trace("delivering");
          queue2.deliver(false);
 
          Thread.sleep(3000);
@@ -484,8 +484,8 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertTrue(office2.getHoldingTransactions().isEmpty());
          assertTrue(office2.getHoldingTransactions().isEmpty());
 
-         log.info("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
 
          assertEquals(1, queue1.memoryRefCount());
          assertEquals(0, queue1.getDeliveringCount());
@@ -531,19 +531,19 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          office5 = (DefaultClusteredPostOffice) createClusteredPostOffice(5, "testgroup");
 
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding1 = office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding2 = office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding3 = office3.bindClusteredQueue(new SimpleCondition("queue1"), queue3);
 
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding4 = office4.bindClusteredQueue(new SimpleCondition("queue1"), queue4);
 
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding5 = office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
 
          final int NUM_MESSAGES = 100;
@@ -558,12 +558,12 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          //Check the sizes
 
-         log.info("Here are the sizes:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          assertEquals(NUM_MESSAGES, queue1.memoryRefCount());
          assertEquals(0, queue1.getDeliveringCount());
@@ -588,12 +588,12 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          Thread.sleep(7000);
 
-         log.info("Here are the sizes:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          assertEquals(0, queue1.memoryRefCount());
          assertEquals(NUM_MESSAGES * 5, queue1.getDeliveringCount());
@@ -694,19 +694,19 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          office5 = (DefaultClusteredPostOffice) createClusteredPostOffice(5, "testgroup");
 
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding1 = office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue2 = new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding2 = office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue3 = new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding3 = office3.bindClusteredQueue(new SimpleCondition("queue1"), queue3);
 
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue4 = new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding4 = office4.bindClusteredQueue(new SimpleCondition("queue1"), queue4);
 
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), null, tr);
+         LocalClusteredQueue queue5 = new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm, true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
          Binding binding5 = office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
 
          final int NUM_MESSAGES = 100;
@@ -721,12 +721,12 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          //Check the sizes
 
-         log.info("Here are the sizes 1:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes 1:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          assertEquals(NUM_MESSAGES, queue1.memoryRefCount());
          assertEquals(0, queue1.getDeliveringCount());
@@ -810,26 +810,26 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertTrue(office4.getHoldingTransactions().isEmpty());
          assertTrue(office5.getHoldingTransactions().isEmpty());
 
-         log.info("Here are the sizes 2:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes 2:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          //Consume the rest from queue 5
          receiver5.setMaxRefs(NUM_MESSAGES - 25);
          queue5.deliver(false);
          Thread.sleep(5000);
 
-         log.info("receiver5 msgs:" + receiver5.getMessages().size());
+         log.trace("receiver5 msgs:" + receiver5.getMessages().size());
 
-         log.info("Here are the sizes 3:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes 3:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          //This will result in an extra one being pulled from queue1 - we cannot avoid this
          //This is because the channel does not know that the receiver is full unless it tries
@@ -864,18 +864,18 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          //Now consume 5 more from queue5, they should come from queue1 which has the most messages
 
-         log.info("Consume 5 more from queue 5");
+         log.trace("Consume 5 more from queue 5");
 
          receiver5.setMaxRefs(5);
          queue5.deliver(false);
          Thread.sleep(5000);
 
-         log.info("Here are the sizes 4:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes 4:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          assertEquals(NUM_MESSAGES - 11, queue1.memoryRefCount());
 
@@ -911,12 +911,12 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue5.deliver(false);
          Thread.sleep(2000);
 
-         log.info("Here are the sizes 5:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes 5:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          assertEquals(NUM_MESSAGES - 11, queue1.memoryRefCount());
          assertEquals(0, queue1.getDeliveringCount());
@@ -951,12 +951,12 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue4.deliver(false);
          Thread.sleep(7000);
 
-         log.info("Here are the sizes 6:");
-         log.info("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.info("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-         log.info("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
-         log.info("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
-         log.info("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
+         log.trace("Here are the sizes 6:");
+         log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+         log.trace("queue2, refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+         log.trace("queue3, refs:" + queue3.memoryRefCount() + " dels:" + queue3.getDeliveringCount());
+         log.trace("queue4, refs:" + queue4.memoryRefCount() + " dels:" + queue4.getDeliveringCount());
+         log.trace("queue5, refs:" + queue5.memoryRefCount() + " dels:" + queue5.getDeliveringCount());
 
          assertEquals(0, queue1.memoryRefCount());
          assertEquals(0, queue1.getDeliveringCount());
@@ -1060,9 +1060,9 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
             return null;
          }
 
-         //log.info(this + " got ref");
+         //log.trace(this + " got ref");
 
-         //log.info("cnt:" + totalCount);
+         //log.trace("cnt:" + totalCount);
 
          SimpleDelivery del = new SimpleDelivery(observer, reference);
 

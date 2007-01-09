@@ -21,6 +21,9 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -37,6 +40,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -352,6 +356,10 @@ public class ExpiryQueueTest extends MessagingTestCase
          
          MessageConsumer sub3 = sess.createDurableSubscriber(topic, "sub3");
          
+         Map origIds = new HashMap();
+                           
+         long now = System.currentTimeMillis();
+         
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess.createTextMessage("Message:" + i);
@@ -359,8 +367,13 @@ public class ExpiryQueueTest extends MessagingTestCase
             //Send messages with time to live of 3000 enough time to get to client consumer - so 
             //they won't be expired on the server side
             prod.send(tm, DeliveryMode.PERSISTENT, 4, 3000);
+            
+            origIds.put(tm.getText(), tm.getJMSMessageID());
          }
          
+         long approxExpiry = now + 3000;
+         
+                  
          //Now sleep. This wil give them enough time to expire
          
          Thread.sleep(3500);
@@ -389,8 +402,35 @@ public class ExpiryQueueTest extends MessagingTestCase
                break;
             }
             
-            log.info("Got message: " + tm.getText());
+            //Check the headers
+            String origDest = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_DESTINATION);
+            
+            String origMessageId = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGEID);
+            
+            long actualExpiryTime = tm.getLongProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME);
+            
+            assertEquals(topic.toString(), origDest);
+            
+            String origId = (String)origIds.get(tm.getText());
+            
+            assertEquals(origId, origMessageId);
+            
+            assertTrue(actualExpiryTime >= approxExpiry);
          }
+         
+         cons2.close();
+         
+         sub1.close();
+         
+         sub2.close();
+         
+         sub3.close();
+         
+         sess.unsubscribe("sub1");
+         
+         sess.unsubscribe("sub2");
+         
+         sess.unsubscribe("sub3");
             
       }
       finally

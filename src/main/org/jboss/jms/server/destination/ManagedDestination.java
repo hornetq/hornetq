@@ -21,9 +21,16 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.Collection;
+import java.util.Iterator;
+
+import org.jboss.jms.server.JMSCondition;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.w3c.dom.Element;
 
 /**
@@ -37,11 +44,19 @@ import org.w3c.dom.Element;
  */
 public abstract class ManagedDestination implements MessagingComponent
 {
+   protected static final int ALL = 0;
+   
+   protected static final int DURABLE = 1;
+   
+   protected static final int NON_DURABLE = 2;
+   
+      
    private static final int DEFAULT_FULL_SIZE = 75000;
    
    private static final int DEFAULT_PAGE_SIZE = 2000;
    
    private static final int DEFAULT_DOWN_CACHE_SIZE = 2000;
+      
    
    protected String name;
    
@@ -62,12 +77,18 @@ public abstract class ManagedDestination implements MessagingComponent
    
    protected Element securityConfig;
    
-   protected PostOffice postOffice;
+   protected ServerPeer serverPeer;
    
    protected Queue dlq;
    
    protected Queue expiryQueue;
    
+   protected long redeliveryDelay;
+   
+   protected int maxSize = -1;
+   
+   protected int messageCounterHistoryDayLimit = -1;
+    
    public ManagedDestination()
    {      
    }
@@ -152,15 +173,15 @@ public abstract class ManagedDestination implements MessagingComponent
    {
       this.securityConfig = securityConfig;
    }
-
-   public PostOffice getPostOffice()
+   
+   public ServerPeer getServerPeer()
    {
-      return postOffice;
+      return serverPeer;
    }
 
-   public void setPostOffice(PostOffice postOffice)
+   public void setServerPeer(ServerPeer serverPeer)
    {
-      this.postOffice = postOffice;
+      this.serverPeer = serverPeer;
    }
 
    public boolean isTemporary()
@@ -193,6 +214,51 @@ public abstract class ManagedDestination implements MessagingComponent
       this.expiryQueue = expiryQueue;
    }
    
+   public long getRedeliveryDelay()
+   {
+      return redeliveryDelay;
+   }
+   
+   public void setRedeliveryDelay(long delay)
+   {
+      this.redeliveryDelay = delay;
+   }
+   
+   public int getMaxSize()
+   {
+      return maxSize;
+   }
+   
+   public void setMaxSize(int maxSize) throws Exception
+   {
+      Condition cond = new JMSCondition(isQueue(), name);
+      
+      PostOffice postOffice = serverPeer.getPostOfficeInstance();
+      
+      Collection subs = postOffice.getBindingsForCondition(cond);
+      
+      Iterator iter = subs.iterator();
+
+      while (iter.hasNext())
+      {
+         Binding binding = (Binding)iter.next();
+         
+         binding.getQueue().setMaxSize(maxSize);
+      }
+      
+      this.maxSize = maxSize;
+   }
+   
+   public int getMessageCounterHistoryDayLimit()
+   {
+      return this.messageCounterHistoryDayLimit;
+   }
+   
+   public void setMessageCounterHistoryDayLimit(int limit) throws Exception
+   {
+      this.messageCounterHistoryDayLimit = limit;
+   }
+     
    public abstract boolean isQueue();
 
    public void start() throws Exception

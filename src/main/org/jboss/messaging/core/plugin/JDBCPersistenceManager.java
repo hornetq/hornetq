@@ -367,9 +367,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }     
    }
          
-   // Related to paging functionality
-   // ===============================         
-        
    /*
     * Retrieve a List of messages corresponding to the specified List of message ids.
     * The implementation here for HSQLDB does this by using a PreparedStatment with an IN clause
@@ -446,11 +443,18 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                
                while (rs.next())
                {
+                  
+//                  "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, " +
+//                  "PRIORITY, COREHEADERS, PAYLOAD, CHANNELCOUNT, TYPE, JMSTYPE, CORRELATIONID, " +
+//                  "CORRELATIONID_BYTES, DESTINATION, REPLYTO, JMSPROPERTIES " +
+//                  "FROM JMS_MESSAGE"
+                  
+                  
                   long messageId = rs.getLong(1);
                   boolean reliable = rs.getString(2).equals("Y");
                   long expiration = rs.getLong(3);
                   long timestamp = rs.getLong(4);
-                  byte priority = rs.getByte(5);
+                  byte priority = rs.getByte(5);                  
                   byte[] bytes = getBytes(rs, 6);
                   HashMap coreHeaders = bytesToMap(bytes);
                   byte[] payload = getBytes(rs, 7);
@@ -461,20 +465,20 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   //JBossMessages - we should subclass JBDCPersistenceManager and the JBossMessage
                   //specific code in a subclass
                   
-                  byte type = rs.getByte(9);
+                  byte type = rs.getByte(8);
                   
                   Message m;
                   
                   if (type != CoreMessage.TYPE)
                   {
                      //JBossMessage
-                     String jmsType = rs.getString(10);
-                     String correlationID = rs.getString(11);
-                     byte[] correlationIDBytes = rs.getBytes(12);
-                     String destination = rs.getString(13);
-                     String replyTo = rs.getString(14);
+                     String jmsType = rs.getString(9);
+                     String correlationID = rs.getString(10);
+                     byte[] correlationIDBytes = rs.getBytes(11);
+                     String destination = rs.getString(12);
+                     String replyTo = rs.getString(13);
                      boolean replyToExists = !rs.wasNull();
-                     bytes = getBytes(rs, 15);
+                     bytes = getBytes(rs, 14);
                      HashMap jmsProperties = bytesToMap(bytes);
                      
                      JBossDestination dest;
@@ -504,14 +508,14 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                      m = MessageFactory.createMessage(messageId, reliable, expiration, timestamp, priority,
                                                       coreHeaders, payload,
                                                       type, jmsType, correlationID, correlationIDBytes,
-                                                      dest, replyToDest,
+                                                      dest, replyToDest, 0,
                                                       jmsProperties);
                   }
                   else
                   {
                      m = MessageFactory.createMessage(messageId, reliable, expiration, timestamp, priority,
                                                           coreHeaders, payload, type,
-                                                          null, null, null, null, null, null);
+                                                          null, null, null, null, null, 0, null);
                   }
                   
                   
@@ -572,6 +576,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    }  
    
        
+   // Related to paging functionality
+   // ===============================                 
+   
    public void pageReferences(long channelID, List references, boolean paged) throws Exception
    {  
       Connection conn = null;
@@ -1211,6 +1218,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             int deliveryCount = rs.getInt(2);
             int pageOrd = rs.getInt(3);
             boolean reliable = rs.getString(4).equals("Y");
+            long sched = rs.getLong(5);
             
             //Sanity check
             if (pageOrd != ord)
@@ -1218,7 +1226,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                throw new IllegalStateException("Unexpected pageOrd: " + pageOrd + " expected: " + ord);
             }
             
-            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, reliable);
+            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, reliable, sched);
             
             refs.add(ri);
             ord++;
@@ -1333,8 +1341,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             long msgId = rs.getLong(1);            
             int deliveryCount = rs.getInt(2);
             boolean reliable = rs.getString(3).equals("Y");
+            long sched = rs.getLong(4);
             
-            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, reliable);
+            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, reliable, sched);
             
             if (count < fullSize)
             {
@@ -2808,6 +2817,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       ps.setInt(7, ref.getDeliveryCount());
       ps.setString(8, ref.isReliable() ? "Y" : "N");
+      ps.setLong(9, ref.getScheduledDeliveryTime());
    }
    
    protected void removeReference(long channelID, MessageReference ref, PreparedStatement ps)
@@ -2832,6 +2842,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setNull(6, Types.BIGINT);      
       ps.setInt(7, ref.getDeliveryCount());
       ps.setString(8, ref.isReliable() ? "Y" : "N");
+      ps.setLong(9, ref.getScheduledDeliveryTime());
    }
    
    protected void prepareToRemoveReference(long channelID, MessageReference ref, Transaction tx, PreparedStatement ps)
@@ -2997,9 +3008,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       ps.setLong(1, m.getMessageID());
    }
-   
-   
-   
+         
    protected void decrementChannelCount(Message m, PreparedStatement ps) throws Exception
    {
       ps.setLong(1, m.getMessageID());
@@ -3018,6 +3027,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setLong(4, m.getTimestamp());
       ps.setByte(5, m.getPriority());
       
+      //Core headers
       byte[] bytes = mapToBytes(((MessageSupport) m).getHeaders());
       if (bytes != null)
       {
@@ -3093,6 +3103,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             ps.setString(14, (replyTo.isQueue() ? "Q" : "T") + replyTo);
          }
          
+         //jms properties
          bytes = mapToBytes(jbm.getJMSProperties());
          if (bytes != null)
          {
@@ -3255,12 +3266,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("CREATE_MESSAGE_REFERENCE",
               "CREATE TABLE JMS_MESSAGE_REFERENCE (CHANNELID BIGINT, " +
               "MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, " +
-              "DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))");
+              "DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNELID, MESSAGEID))"); //CHANGED
       map.put("CREATE_IDX_MESSAGE_REF_TX", "CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID)");
       map.put("CREATE_IDX_MESSAGE_REF_ORD", "CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)");
       map.put("CREATE_IDX_MESSAGE_REF_PAGE_ORD", "CREATE INDEX JMS_MESSAGE_REF__PAGE_ORD ON JMS_MESSAGE_REFERENCE (PAGE_ORD)");
       map.put("CREATE_IDX_MESSAGE_REF_MESSAGEID", "CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON JMS_MESSAGE_REFERENCE (MESSAGEID)");
       map.put("CREATE_IDX_MESSAGE_REF_RELIABLE", "CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON JMS_MESSAGE_REFERENCE (RELIABLE)");
+      map.put("CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY", "CREATE INDEX JMS_MESSAGE_REF_SCHED_DELIVERY ON JMS_MESSAGE_REFERENCE (SCHED_DELIVERY)");
       //Message
       map.put("CREATE_MESSAGE",
               "CREATE TABLE JMS_MESSAGE (MESSAGEID BIGINT, RELIABLE CHAR(1), " +
@@ -3285,8 +3297,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       Map map = new LinkedHashMap();
       //Message reference
       map.put("INSERT_MESSAGE_REF",
-              "INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, PAGE_ORD, DELIVERYCOUNT, RELIABLE) " +
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+              "INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, PAGE_ORD, DELIVERYCOUNT, RELIABLE, SCHED_DELIVERY) " +
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"); //CHANGED
       map.put("DELETE_MESSAGE_REF", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'");
       map.put("UPDATE_MESSAGE_REF",
               "UPDATE JMS_MESSAGE_REFERENCE SET TRANSACTIONID=?, STATE='-' " +
@@ -3297,11 +3309,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("ROLLBACK_MESSAGE_REF1", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='+'");
       map.put("ROLLBACK_MESSAGE_REF2", "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE TRANSACTIONID=? AND STATE='-'");
       map.put("LOAD_PAGED_REFS",
-              "SELECT MESSAGEID, DELIVERYCOUNT, PAGE_ORD, RELIABLE FROM JMS_MESSAGE_REFERENCE " +
-              "WHERE CHANNELID = ? AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD");
+              "SELECT MESSAGEID, DELIVERYCOUNT, PAGE_ORD, RELIABLE, SCHED_DELIVERY FROM JMS_MESSAGE_REFERENCE " +
+              "WHERE CHANNELID = ? AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD"); //CHANGED
       map.put("LOAD_UNPAGED_REFS",
-              "SELECT MESSAGEID, DELIVERYCOUNT, RELIABLE FROM JMS_MESSAGE_REFERENCE WHERE STATE = 'C' " +
-              "AND CHANNELID = ? AND PAGE_ORD IS NULL ORDER BY ORD");
+              "SELECT MESSAGEID, DELIVERYCOUNT, RELIABLE, SCHED_DELIVERY FROM JMS_MESSAGE_REFERENCE WHERE STATE = 'C' " +
+              "AND CHANNELID = ? AND PAGE_ORD IS NULL ORDER BY ORD"); //CHANGED
       map.put("UPDATE_RELIABLE_REFS_NOT_PAGED", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNELID=?");       
       map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ?");
       map.put("SELECT_EXISTS_REF", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ? AND MESSAGEID = ?");
@@ -3309,7 +3321,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       //Message
       map.put("LOAD_MESSAGES",
               "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, " +
-              "PRIORITY, COREHEADERS, PAYLOAD, CHANNELCOUNT, TYPE, JMSTYPE, CORRELATIONID, " +
+              "PRIORITY, COREHEADERS, PAYLOAD, TYPE, JMSTYPE, CORRELATIONID, " +
               "CORRELATIONID_BYTES, DESTINATION, REPLYTO, JMSPROPERTIES " +
               "FROM JMS_MESSAGE");
       map.put("INSERT_MESSAGE",

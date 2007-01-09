@@ -67,7 +67,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
       
       Message[] msgs = new Message[241];
       

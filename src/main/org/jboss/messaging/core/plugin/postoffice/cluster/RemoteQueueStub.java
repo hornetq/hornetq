@@ -135,7 +135,7 @@ public class RemoteQueueStub implements ClusteredQueue
       throw new UnsupportedOperationException();
    }
 
-   public int numberOfReceivers()
+   public int getNumberOfReceivers()
    {
       throw new UnsupportedOperationException();
    }
@@ -241,6 +241,32 @@ public class RemoteQueueStub implements ClusteredQueue
    {
       throw new UnsupportedOperationException();
    }
+   
+   public int getDeliveringCount()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public int getMaxSize()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public int getMessagesAdded()
+   {
+      throw new UnsupportedOperationException();
+   }
+   
+   public void setMaxSize(int newSize)
+   {
+      throw new UnsupportedOperationException();
+   }
+   
+   public int getScheduledCount()
+   {
+      throw new UnsupportedOperationException();
+   }
+
 
    // Queue implementation ------------------------------------------
 
@@ -286,11 +312,6 @@ public class RemoteQueueStub implements ClusteredQueue
    public String toString()
    {
       return "RemoteQueueStub[" + channelID + "/" + name + " -> " + nodeID + "]";
-   }
-
-   public int getDeliveringCount()
-   {
-      throw new UnsupportedOperationException();
    }
 
    // Package protected ---------------------------------------------

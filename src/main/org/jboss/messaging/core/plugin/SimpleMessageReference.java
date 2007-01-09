@@ -75,7 +75,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       this(holder.getMessage().getMessageID(), holder.getMessage().isReliable(),
            holder.getMessage().getExpiration(), holder.getMessage().getTimestamp(),
            holder.getMessage().getHeaders(), holder.getMessage().getDeliveryCount(),
-           holder.getMessage().getPriority(), ms);
+           holder.getMessage().getPriority(), holder.getMessage().getScheduledDeliveryTime(), ms);
 
       this.holder = holder;
    }
@@ -89,7 +89,7 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    {
       this(other.getMessageID(), other.isReliable(), other.getExpiration(),
            other.getTimestamp(), other.getHeaders(), other.getDeliveryCount(),
-           other.getPriority(), other.ms);
+           other.getPriority(), other.getScheduledDeliveryTime(), other.ms);
       
       this.headers = other.headers;
       this.holder = other.holder;
@@ -97,9 +97,9 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    protected SimpleMessageReference(long messageID, boolean reliable, long expiration,
                                     long timestamp, Map headers, int deliveryCount,
-                                    byte priority, MessageStore ms)
+                                    byte priority, long scheduledDeliveryTime, MessageStore ms)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, headers);
+      super(messageID, reliable, expiration, timestamp, priority, 0, scheduledDeliveryTime, headers);
       this.deliveryCount = deliveryCount;
       this.ms = ms;
    }

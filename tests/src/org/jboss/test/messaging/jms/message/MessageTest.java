@@ -596,8 +596,6 @@ public class MessageTest extends MessagingTestCase
       double myDouble = Double.MAX_VALUE - 72387633;
       String myString = "abcdef&^*&!^ghijkl";
 
-
-
       m1.setBooleanProperty("myBool", myBool);
       m1.setByteProperty("myByte", myByte);
       m1.setShortProperty("myShort", myShort);
@@ -698,8 +696,6 @@ public class MessageTest extends MessagingTestCase
       }
       catch (MessageNotWriteableException e) {}
 
-
-
       assertTrue(m2.propertyExists("myBool"));
       assertTrue(m2.propertyExists("myByte"));
       assertTrue(m2.propertyExists("myShort"));
@@ -708,7 +704,6 @@ public class MessageTest extends MessagingTestCase
       assertTrue(m2.propertyExists("myFloat"));
       assertTrue(m2.propertyExists("myDouble"));
       assertTrue(m2.propertyExists("myString"));
-
 
       assertFalse(m2.propertyExists("sausages"));
 

@@ -21,10 +21,15 @@
   */
 package org.jboss.test.messaging.jms.server.destination.base;
 
+import java.util.List;
 import java.util.Set;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.MessageConsumer;
 import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jms.Topic;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
@@ -34,8 +39,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.jms.server.destination.ManagedQueue;
-import org.jboss.jms.server.destination.ManagedTopic;
+import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -57,6 +61,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   protected InitialContext initialContext;
 
    // Constructors --------------------------------------------------
 
@@ -75,9 +81,9 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       }
 
       super.setUp();
-      ServerManagement.start("all");
+      ServerManagement.start("all");   
       
-      
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
    }
 
    public void tearDown() throws Exception
@@ -292,7 +298,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    }
 
 
-   public void testDeployDestinationProgramatically() throws Exception
+   public void testDeployDestinationProgrammatically() throws Exception
    {
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
 
@@ -360,7 +366,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
    }
    
-   public void testDeployDestinationProgramaticallyWithParams() throws Exception
+   public void testDeployDestinationProgrammaticallyWithParams() throws Exception
    {
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
 
@@ -541,6 +547,70 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals(9999, mDest.getDownCacheSize());
 
       undeployDestination("PageableAttributes");
+   }
+   
+   public void testGetSetMessageCounterHistoryDayLimit() throws Exception
+   {
+      int defaultLimit = 12;
+      
+      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit", String.valueOf(defaultLimit));
+      
+      ServerManagement.deployQueue("testQueue");
+      
+      ServerManagement.deployTopic("testTopic");
+      
+      Connection conn = null;
+      
+      try
+      {         
+         Queue testQueue = (Queue)initialContext.lookup("/queue/testQueue");
+         
+         Topic testTopic = (Topic)initialContext.lookup("/topic/testTopic");
+               
+         String queueON = "jboss.messaging.destination:service=Queue,name=testQueue";
+         
+         String topicON = "jboss.messaging.destination:service=Topic,name=testTopic";
+            
+         MessageCounter queueCounter = (MessageCounter)ServerManagement.getAttribute(new ObjectName(queueON), "MessageCounter");
+         
+         assertEquals(defaultLimit, queueCounter.getHistoryLimit());
+         
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         
+         conn = cf.createConnection();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer sub = sess.createConsumer(testTopic);
+         
+         List counters = (List)ServerManagement.getAttribute(new ObjectName(topicON), "MessageCounters");
+         
+         assertNotNull(counters);
+         
+         assertEquals(1, counters.size());
+         
+         MessageCounter subCounter = (MessageCounter)counters.get(0);
+         
+         assertEquals(defaultLimit, subCounter.getHistoryLimit());
+         
+         int overrideLimit = 777;
+         
+         ServerManagement.setAttribute(new ObjectName(queueON), "MessageCounterHistoryDayLimit", String.valueOf(overrideLimit));
+         
+         ServerManagement.setAttribute(new ObjectName(topicON), "MessageCounterHistoryDayLimit", String.valueOf(overrideLimit));
+         
+         assertEquals(overrideLimit, queueCounter.getHistoryLimit());
+         
+         assertEquals(overrideLimit, subCounter.getHistoryLimit());
+      }
+      finally
+      {
+         if (conn != null) conn.close();
+         
+         ServerManagement.undeployQueue("testQueue");
+         
+         ServerManagement.undeployTopic("testTopic");
+      }                    
    }
 
    // Package protected ---------------------------------------------

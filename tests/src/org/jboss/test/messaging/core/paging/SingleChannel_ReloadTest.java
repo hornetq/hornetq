@@ -68,7 +68,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testRecoverableQueueCrash() throws Throwable
    {
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
 
       Message[] msgs = new Message[200];
       
@@ -129,7 +129,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
 
       tr.start();
          
-      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
       queue2.deactivate();
       queue2.load();
       
@@ -164,7 +164,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
       
       Message[] msgs = new Message[200];
       
@@ -225,7 +225,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       tr = new TransactionRepository(pm, ms, idm);
       tr.start();
 
-      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
       queue2.deactivate();
       queue2.load();
       
@@ -254,7 +254,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), null, 100, 20, 10);
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
   
       Message[] msgs = new Message[200];
       

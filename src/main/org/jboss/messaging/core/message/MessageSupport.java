@@ -110,11 +110,12 @@ public abstract class MessageSupport extends RoutableSupport implements Message
                          long expiration,
                          long timestamp,
                          byte priority,
-                         int deliveryCount,                        
+                         int deliveryCount,  
+                         long scheduledDeliveryTime,
                          Map headers,
-                         byte[] payloadAsByteArray)
+                         byte[] payloadAsByteArray)                         
    {
-      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, headers);
+      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, scheduledDeliveryTime, headers);
       this.payloadAsByteArray = payloadAsByteArray;
    }
 
@@ -338,6 +339,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    {
       payload = payloadAsByteArray;
    }
+
 
    // Private -------------------------------------------------------
 

@@ -50,6 +50,8 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 {
    // Constants -----------------------------------------------------
 
+   private static final long serialVersionUID = -5661567664746852006L;
+   
    public static final byte TYPE = 5;
 
    // Attributes ----------------------------------------------------

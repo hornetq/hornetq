@@ -67,6 +67,6 @@ public interface Distributor
     * 
     * @return The number of receivers in the distributor
     */
-   int numberOfReceivers();
+   int getNumberOfReceivers();
 
 }

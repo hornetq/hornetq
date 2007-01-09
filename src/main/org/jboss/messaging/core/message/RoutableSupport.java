@@ -59,6 +59,7 @@ public abstract class RoutableSupport implements Routable
    protected Map headers;
    protected byte priority;
    protected int deliveryCount;   
+   protected long scheduledDeliveryTime;
 
    // Constructors --------------------------------------------------
 
@@ -93,6 +94,7 @@ public abstract class RoutableSupport implements Routable
            System.currentTimeMillis(),
            (byte)4,        
            0,
+           0,
            null);
    }
 
@@ -101,7 +103,8 @@ public abstract class RoutableSupport implements Routable
                           long expiration, 
                           long timestamp,
                           byte priority,
-                          int deliveryCount,                          
+                          int deliveryCount, 
+                          long scheduledDeliveryTime,
                           Map headers)
    {
       this.messageID = messageID;
@@ -110,6 +113,7 @@ public abstract class RoutableSupport implements Routable
       this.timestamp = timestamp;
       this.priority = priority;
       this.deliveryCount = deliveryCount;
+      this.scheduledDeliveryTime = scheduledDeliveryTime;
       if (headers == null)
       {
          this.headers = new HashMap();
@@ -129,6 +133,7 @@ public abstract class RoutableSupport implements Routable
       this.headers = new HashMap(other.headers);
       this.deliveryCount = other.deliveryCount;
       this.priority = other.priority;  
+      this.scheduledDeliveryTime = other.scheduledDeliveryTime;
    }
 
    // Routable implementation ---------------------------------------
@@ -223,6 +228,16 @@ public abstract class RoutableSupport implements Routable
       this.priority = priority;
    }
    
+   public long getScheduledDeliveryTime()
+   {
+      return scheduledDeliveryTime;
+   }
+
+   public void setScheduledDeliveryTime(long scheduledDeliveryTime)
+   {
+      this.scheduledDeliveryTime = scheduledDeliveryTime;
+   }
+   
    // Streamable implementation ---------------------------------
    
    public void write(DataOutputStream out) throws Exception
@@ -232,9 +247,9 @@ public abstract class RoutableSupport implements Routable
       out.writeLong(expiration);
       out.writeLong(timestamp);
       StreamUtils.writeMap(out, headers, true);
-    //  out.writeBoolean(redelivered);
       out.writeByte(priority);
       out.writeInt(deliveryCount);
+      out.writeLong(scheduledDeliveryTime);
    }
 
    public void read(DataInputStream in) throws Exception
@@ -252,9 +267,9 @@ public abstract class RoutableSupport implements Routable
       {
          headers = (HashMap)m;
       }
-     // redelivered = in.readBoolean();
       priority = in.readByte();
       deliveryCount = in.readInt();
+      scheduledDeliveryTime = in.readLong();
    }
    
    // Public --------------------------------------------------------

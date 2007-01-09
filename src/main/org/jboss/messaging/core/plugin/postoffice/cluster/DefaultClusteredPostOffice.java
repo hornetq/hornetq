@@ -1137,7 +1137,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   if (trace) { log.trace(this + " successfully routed message to " + (queue.isLocal() ? "LOCAL"  : "REMOTE") + " destination '" + queue.getName() + "' on node " + queue.getNodeId()); }
 
-                  if (router.numberOfReceivers() > 1)
+                  if (router.getNumberOfReceivers() > 1)
                   {
                      // We have now chosen which one will receive the message so we need to add this
                      // information to a map which will get sent when casting - so the the queue on
@@ -1592,6 +1592,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                            filter, durable, failed, failedNodeID);
    }
 
+   //FIXME - we should not create queues here
+   //Queues should only be created at destination deployment time since it is only then
+   //we know all the params
    protected Binding createBinding(int nodeID, Condition condition, String queueName,
                                    long channelId, Filter filter, boolean durable,
                                    boolean failed, Integer failedNodeID)
@@ -1605,7 +1608,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          if (failedNodeID == null)
          {
             queue = new LocalClusteredQueue(this, nodeID, queueName, channelId, ms, pm, true,
-                                            durable, executor, filter, tr);
+                                            durable, executor, -1, filter, tr);
          }
          else
          {

@@ -257,7 +257,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
    }   
    
-   public Collection getBindingForCondition(Condition condition) throws Exception
+   public Collection getBindingsForCondition(Condition condition) throws Exception
    {
       return listBindingsForConditionInternal(condition, true);
    }  
@@ -469,6 +469,12 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
    }
     
+   //FIXME - this is not quite right
+   //We should not load any bindings at startup - since then we do not have to create any queues internally
+   //Creating queues is problematic since there are params we do not know until destination deploy time
+   //e.g. paging params, maxsize etc.
+   //This means we have to load the queues disabled and then set the params and re-activate them
+   //which is not clean
    protected void loadBindings() throws Exception
    {
       lock.writeLock().acquire();
@@ -567,7 +573,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       {
          QueuedExecutor executor = (QueuedExecutor)pool.get();
          queue =
-            new PagingFilteredQueue(queueName, channelID, ms, pm, true, true, executor, filter);
+            new PagingFilteredQueue(queueName, channelID, ms, pm, true, true, executor, -1, filter);
       }
       else
       {

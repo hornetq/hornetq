@@ -68,6 +68,9 @@ public class ConsumerClosedTest extends MessagingTestCase
       cons.close();
 
       log.debug("consumer closed");
+      
+      //Need to sleep - cancelling back to queue is asynch and can take some time
+      Thread.sleep(500);
 
       // make sure that all messages are in queue
       ObjectName on =

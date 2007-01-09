@@ -43,10 +43,11 @@ import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.JMSWireFormat;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction;
+import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.ToString;
@@ -316,7 +317,16 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
                if (dest.isQueue())
                {     
-                  postOffice.unbindQueue(dest.getName());               
+                  postOffice.unbindQueue(dest.getName()); 
+                  
+                  String counterName = ServerSessionEndpoint.TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
+                  
+                  MessageCounter counter = serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);
+                  
+                  if (counter == null)
+                  {
+                     throw new IllegalStateException("Cannot find counter to unregister " + counterName);
+                  }
                }
                else
                {

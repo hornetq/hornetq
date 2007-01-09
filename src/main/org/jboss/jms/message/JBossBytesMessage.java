@@ -55,6 +55,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 {
    // Static -------------------------------------------------------
 
+   private static final long serialVersionUID = 5914561890366707664L;
+
    private static final Logger log = Logger.getLogger(JBossBytesMessage.class);
 
    public static final byte TYPE = 1;

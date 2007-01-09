@@ -124,6 +124,10 @@ public class TransactedSessionTest extends MessagingTestCase
       assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
 
       conn.close();
+      
+      //Need to pause a little while - cancelling back to the queue is async
+      
+      Thread.sleep(500);
 
       ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
       Integer i = (Integer)ServerManagement.getAttribute(on, "MessageCount");
@@ -574,8 +578,6 @@ public class TransactedSessionTest extends MessagingTestCase
 
          assertEquals("a message", tm.getText());
          
-         log.info("del count1:" + tm.getIntProperty("JMSXDeliveryCount"));
-
          assertFalse(tm.getJMSRedelivered());
          assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 

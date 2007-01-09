@@ -25,29 +25,36 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.transaction.xa.Xid;
 
 import org.jboss.aop.AspectXmlLoader;
+import org.jboss.jms.client.ClientAOPStackProvider;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ClientAOPStackProviderAdvised;
+import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.jms.server.messagecounter.MessageCounterManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
+import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
-import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.jms.client.ClientAOPStackProvider;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.memory.MemoryManager;
@@ -69,6 +76,7 @@ import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.util.JBossStringBuilder;
 import org.w3c.dom.Element;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
@@ -84,7 +92,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackProvider
+public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackProvider, ServerPeerMBean
 {
    // Constants -----------------------------------------------------
 
@@ -121,6 +129,12 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
    private long failoverCompleteTimeout = 12000;
    
    private Map sessions;
+   
+   private long defaultRedeliveryDelay;
+   
+   private long queueStatsSamplePeriod = 10000;
+   
+   private int defaultMessageCounterHistoryDayLimit;
       
    // wired components
 
@@ -136,6 +150,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
    private MemoryManager memoryManager;
    private QueuedExecutorPool queuedExecutorPool;
    private MessageStore messageStore;
+   private MessageCounterManager messageCounterManager;
 
    // plugins
 
@@ -236,6 +251,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
          memoryManager = new SimpleMemoryManager();
          messageStore = new SimpleMessageStore();
          txRepository = new TransactionRepository(persistenceManager, messageStore, transactionIDManager);
+         messageCounterManager = new MessageCounterManager(queueStatsSamplePeriod);
 
          // Start the wired components
 
@@ -250,6 +266,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
          messageStore.start();
          securityStore.start();
          txRepository.start();
+         messageCounterManager.start();
          txRepository.loadPreparedTransactions();
          
          initializeRemoting(mbeanServer);
@@ -306,12 +323,16 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
          securityStore = null;
          txRepository.stop();
          txRepository = null;
+         messageCounterManager.stop();
+         messageCounterManager = null;
 
          unloadServerAOPConfig();
 
          // TODO unloadClientAOPConfig();
 
          queuedExecutorPool.shutdown();
+         
+         MyTimeoutFactory.instance.reset();
 
          log.info("JMS " + this + " stopped");
       }
@@ -388,8 +409,8 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
    public synchronized void setDefaultExpiryQueue(ObjectName on)
    {
       this.defaultExpiryQueueObjectName = on;
-   }
-   
+   }     
+      
    // Instance access
 
    public Object getInstance()
@@ -523,6 +544,51 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
       this.defaultMaxDeliveryAttempts = attempts;
    }
    
+   public synchronized long getQueueStatsSamplePeriod()
+   {
+      return queueStatsSamplePeriod;
+   }
+
+   public synchronized void setQueueStatsSamplePeriod(long newPeriod)
+   {
+      if (newPeriod < 1000)
+      {
+         throw new IllegalArgumentException("Cannot set QueueStatsSamplePeriod < 1000 ms");
+      }
+      
+      if (messageCounterManager != null && newPeriod != queueStatsSamplePeriod)
+      {
+         messageCounterManager.reschedule(newPeriod);
+      }            
+      
+      this.queueStatsSamplePeriod = newPeriod;
+   }
+   
+   public synchronized long getDefaultRedeliveryDelay()
+   {
+      return defaultRedeliveryDelay;
+   }
+   
+   public synchronized void setDefaultRedeliveryDelay(long delay)
+   {
+      this.defaultRedeliveryDelay = delay;
+   }
+   
+   public synchronized int getDefaultMessageCounterHistoryDayLimit()
+   {
+      return defaultMessageCounterHistoryDayLimit;
+   }
+   
+   public void setDefaultMessageCounterHistoryDayLimit(int limit)
+   {
+      if (limit < -1)
+      {
+         limit = -1;
+      }
+      
+      this.defaultMessageCounterHistoryDayLimit = limit;
+   }
+   
    // JMX Operations ------------------------------------------------
 
    public String createQueue(String name, String jndiName) throws Exception
@@ -608,6 +674,219 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
          throw ExceptionUtil.handleJMXInvocation(t, this + " getDestinations");
       }
    }
+   
+   public List getMessageCounters() throws Exception
+   {
+      Collection counters = messageCounterManager.getMessageCounters();
+      
+      return new ArrayList(counters);
+   }
+
+   public List getMessageStatistics() throws Exception
+   {
+      return MessageCounter.getMessageStatistics(getMessageCounters());
+   }
+
+   public String listMessageCountersAsHTML() throws Exception
+   {
+      List counters = getMessageCounters();
+
+      String ret =
+         "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
+            + "<tr>"
+            + "<th>Type</th>"
+            + "<th>Name</th>"
+            + "<th>Subscription</th>"
+            + "<th>Durable</th>"
+            + "<th>Count</th>"
+            + "<th>CountDelta</th>"
+            + "<th>Depth</th>"
+            + "<th>DepthDelta</th>"
+            + "<th>Last Add</th>"
+            + "</tr>";
+
+      String strNameLast = null;
+      String strTypeLast = null;
+      String strDestLast = null;
+
+      String destData = "";
+      int destCount = 0;
+
+      int countTotal = 0;
+      int countDeltaTotal = 0;
+      int depthTotal = 0;
+      int depthDeltaTotal = 0;
+
+      int i = 0; // define outside of for statement, so variable
+      // still exists after for loop, because it is
+      // needed during output of last module data string
+
+      Iterator iter = counters.iterator();
+      
+      while (iter.hasNext())
+      {
+         MessageCounter counter = (MessageCounter)iter.next();
+         
+         // get counter data
+         StringTokenizer tokens = new StringTokenizer(counter.getCounterAsString(), ",");
+
+         String strType = tokens.nextToken();
+         String strName = tokens.nextToken();
+         String strSub = tokens.nextToken();
+         String strDurable = tokens.nextToken();
+
+         String strDest = strType + "-" + strName;
+
+         String strCount = tokens.nextToken();
+         String strCountDelta = tokens.nextToken();
+         String strDepth = tokens.nextToken();
+         String strDepthDelta = tokens.nextToken();
+         String strDate = tokens.nextToken();
+
+         // update total count / depth values
+         countTotal += Integer.parseInt(strCount);
+         depthTotal += Integer.parseInt(strDepth);
+
+         countDeltaTotal += Integer.parseInt(strCountDelta);
+         depthDeltaTotal += Integer.parseInt(strDepthDelta);
+
+         if (strCountDelta.equalsIgnoreCase("0"))
+            strCountDelta = "-"; // looks better
+
+         if (strDepthDelta.equalsIgnoreCase("0"))
+            strDepthDelta = "-"; // looks better
+
+         // output destination counter data as HTML table row
+         // ( for topics with multiple subscriptions output
+         //   type + name field as rowspans, looks better )
+         if (strDestLast != null && strDestLast.equals(strDest))
+         {
+            // still same destination -> append destination subscription data
+            destData += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0") + "\">";
+            destCount += 1;
+         }
+         else
+         {
+            // start new destination data
+            if (strDestLast != null)
+            {
+               // store last destination data string
+               ret += "<tr bgcolor=\"#"
+                  + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0")
+                  + "\"><td rowspan=\""
+                  + destCount
+                  + "\">"
+                  + strTypeLast
+                  + "</td><td rowspan=\""
+                  + destCount
+                  + "\">"
+                  + strNameLast
+                  + "</td>"
+                  + destData;
+
+               destData = "";
+            }
+
+            destCount = 1;
+         }
+
+         // counter data row
+         destData += "<td>"
+            + strSub
+            + "</td>"
+            + "<td>"
+            + strDurable
+            + "</td>"
+            + "<td>"
+            + strCount
+            + "</td>"
+            + "<td>"
+            + strCountDelta
+            + "</td>"
+            + "<td>"
+            + strDepth
+            + "</td>"
+            + "<td>"
+            + strDepthDelta
+            + "</td>"
+            + "<td>"
+            + strDate
+            + "</td>";
+
+         // store current destination data for change detection
+         strTypeLast = strType;
+         strNameLast = strName;
+         strDestLast = strDest;
+      }
+
+      if (strDestLast != null)
+      {
+         // store last module data string
+         ret += "<tr bgcolor=\"#"
+            + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0")
+            + "\"><td rowspan=\""
+            + destCount
+            + "\">"
+            + strTypeLast
+            + "</td><td rowspan=\""
+            + destCount
+            + "\">"
+            + strNameLast
+            + "</td>"
+            + destData;
+      }
+
+      // append summation info
+      ret += "<tr>"
+         + "<td><![CDATA[ ]]></td><td><![CDATA[ ]]></td>"
+         + "<td><![CDATA[ ]]></td><td><![CDATA[ ]]></td><td>"
+         + countTotal
+         + "</td><td>"
+         + (countDeltaTotal == 0 ? "-" : Integer.toString(countDeltaTotal))
+         + "</td><td>"
+         + depthTotal
+         + "</td><td>"
+         + (depthDeltaTotal == 0 ? "-" : Integer.toString(depthDeltaTotal))
+         + "</td><td>Total</td></tr></table>";
+
+      return ret;
+   }
+
+   public void resetAllMessageCounters()
+   {
+      messageCounterManager.resetAllCounters();
+   }
+   
+   public void resetAllMessageCounterHistories()
+   {
+      messageCounterManager.resetAllCounterHistories();
+   }
+   
+   public List retrievePreparedTransactions()
+   {
+      return txRepository.getPreparedTransactions();
+   }
+
+   public String showPreparedTransactionsAsHTML()
+   {
+      List txs = txRepository.getPreparedTransactions();
+      JBossStringBuilder buffer = new JBossStringBuilder();
+      buffer.append("<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">");
+      buffer.append("<tr><th>Xid</th></tr>");
+      for (Iterator i = txs.iterator(); i.hasNext();)
+      {
+         Xid xid = (Xid)i.next();
+         if (xid != null)
+         {
+            buffer.append("<tr><td>");
+            buffer.append(xid);
+            buffer.append("</td></tr>");
+         }
+      }
+      buffer.append("</table>");
+      return buffer.toString();
+   }
+   
 
    // ClientAOPStackProvider implementation -------------------------------
 
@@ -617,6 +896,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
    }
 
    // Public --------------------------------------------------------
+   
+   public MessageCounterManager getMessageCounterManager()
+   {
+      return messageCounterManager;
+   }
    
    public IDManager getMessageIDManager()
    {
@@ -1108,7 +1392,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
    private boolean destroyDestination(boolean isQueue, String name) throws Exception
    {
       String destType = isQueue ? "Queue" : "Topic";
-      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
+      String ons ="jboss.messaging.destination:service=" + destType + ",name=" + name;
       ObjectName on = new ObjectName(ons);
 
       MBeanServer mbeanServer = getServer();

@@ -242,6 +242,7 @@ public class MiscellaneousTest extends MessagingTestCase
             }
             catch(Exception e)
             {
+               e.printStackTrace();
                result.setFailure(e);
             }
          }

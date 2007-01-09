@@ -42,7 +42,7 @@ public class FailedOverQueue extends LocalClusteredQueue
                           int failedNodeID)
    {
       super(office, nodeID, name, id, ms, pm, acceptReliableMessages, recoverable,
-            executor, filter, tr, fullSize, pageSize, downCacheSize);
+            executor, -1, filter, tr, fullSize, pageSize, downCacheSize);
 
       this.failedNodeID = failedNodeID;
    }
@@ -53,7 +53,7 @@ public class FailedOverQueue extends LocalClusteredQueue
                           TransactionRepository tr, int failedNodeID)
    {
       super(office, nodeID, name, id, ms, pm, acceptReliableMessages, recoverable,
-            executor, filter, tr);
+            executor, -1, filter, tr);
 
       this.failedNodeID = failedNodeID;
    }

@@ -318,7 +318,7 @@ public class JMSExpirationHeaderTest extends MessageTest
       
       List list = (List)ServerManagement.invoke(
             destObjectName, 
-            "listMessages", 
+            "listAllMessages", 
             new Object[] {null}, 
             new String[] {"java.lang.String"});
       assertNotNull(list);
