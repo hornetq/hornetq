@@ -80,11 +80,15 @@ public class FailoverValveInterceptor implements Interceptor
 
          // maintain a reference to the FailoverCommandCenter instance.
          fcc = connectionState.getFailoverCommandCenter();
-         valve = fcc.getValve();
+         
+         if (fcc != null)
+         {
+            valve = fcc.getValve();
+         }
       }
 
       // non clustered.. noop
-      if (fcc==null)
+      if (fcc == null)
       {
          return invocation.invokeNext();
       }

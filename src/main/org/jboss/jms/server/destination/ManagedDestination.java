@@ -79,9 +79,9 @@ public abstract class ManagedDestination implements MessagingComponent
    
    protected ServerPeer serverPeer;
    
-   protected Queue dlq;
+   protected ManagedQueue dlq;
    
-   protected Queue expiryQueue;
+   protected ManagedQueue expiryQueue;
    
    protected long redeliveryDelay;
    
@@ -194,22 +194,48 @@ public abstract class ManagedDestination implements MessagingComponent
       this.temporary = temporary;
    }
    
-   public Queue getDLQ()
+   //Need to get lazily because of crappy dependencies
+   public Queue getDLQ() throws Exception
    {
-      return dlq;
+      Queue theQueue = null;
+      
+      if (dlq != null)
+      {            
+         Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(dlq.getName());
+         
+         if (binding != null && binding.getQueue().isActive())
+         {
+            theQueue =  binding.getQueue();
+         }
+      }
+      
+      return theQueue;
    }
    
-   public void setDLQ(Queue dlq)
+   public void setDLQ(ManagedQueue dlq)
    {
       this.dlq = dlq;
    }
    
-   public Queue getExpiryQueue()
+   //Need to get lazily because of crappy dependencies
+   public Queue getExpiryQueue() throws Exception
    {
-      return expiryQueue;
+      Queue theQueue = null;
+      
+      if (expiryQueue != null)
+      {            
+         Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(expiryQueue.getName());
+         
+         if (binding != null && binding.getQueue().isActive())
+         {
+            theQueue =  binding.getQueue();
+         }
+      }
+      
+      return theQueue;
    }
    
-   public void setExpiryQueue(Queue expiryQueue)
+   public void setExpiryQueue(ManagedQueue expiryQueue)
    {
       this.expiryQueue = expiryQueue;
    }

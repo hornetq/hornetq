@@ -213,6 +213,11 @@ public class ManagedTopic extends ManagedDestination
    { 
       List msgs = new ArrayList();
       
+      if (subId == null || "".equals(subId.trim()))
+      {
+         return msgs;
+      }
+      
       Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(subId);
       
       if (binding == null)

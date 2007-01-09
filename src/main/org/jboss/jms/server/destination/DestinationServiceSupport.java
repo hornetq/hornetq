@@ -17,14 +17,12 @@ import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -219,24 +217,12 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          {
             //Ok
          }
-         
-         Queue dlq = null;
-   
-         if (dest != null)
-         {            
-            Binding binding = postOffice.getBindingForQueueName(dest.getName());
-            
-            if (binding != null && binding.getQueue().isActive())
-            {
-               dlq =  binding.getQueue();
-            }
-         }
-         
-         destination.setDLQ(dlq);       
+
+         destination.setDLQ(dest);       
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " setDLQ");
+         throw ExceptionUtil.handleJMXInvocation(t, " setDLQ");
       }
    }
    
@@ -249,21 +235,21 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    {
       expiryQueueObjectName = on;
       
-      Queue expiryQueue = null;
+      ManagedQueue dest = null;
       
       try
-      {
-         
+      {         
          try
-         {
-            expiryQueue = (Queue)server.getAttribute(expiryQueueObjectName, "Instance");
+         {         
+            dest = (ManagedQueue)getServer().
+               getAttribute(expiryQueueObjectName, "Instance");
          }
-         catch (Exception e)
+         catch (InstanceNotFoundException e)
          {
             //Ok
          }
          
-         destination.setExpiryQueue(expiryQueue);
+         destination.setExpiryQueue(dest);
       }
       catch (Throwable t)
       {
