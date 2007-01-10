@@ -608,6 +608,18 @@ public class ServerManagement
       }
    }
 
+   /**
+    * Install dynamically an AOP advice that will do "bad things" on the server, simulating all
+    * sorts of failures. I expect the name of this method to be refactored as we learn more about
+    * this type of testing.
+    */
+   public static void poisonTheServer(int serverIndex) throws Exception
+   {
+      insureStarted(serverIndex);
+      servers[serverIndex].getServer().poisonTheServer();
+   }
+
+
    public static Set query(ObjectName pattern) throws Exception
    {
       insureStarted();
@@ -742,11 +754,11 @@ public class ServerManagement
       configureSecurityForDestination(0, destName, config);
    }
 
-   public static void configureSecurityForDestination(int serverId, String destName, String config)
+   public static void configureSecurityForDestination(int serverID, String destName, String config)
       throws Exception
    {
-      insureStarted(serverId);
-      servers[serverId].getServer().configureSecurityForDestination(destName, config);
+      insureStarted(serverID);
+      servers[serverID].getServer().configureSecurityForDestination(destName, config);
    }
 
    public static void setDefaultSecurityConfig(String config) throws Exception

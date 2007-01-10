@@ -97,13 +97,13 @@ import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
  */
 public class ServiceContainer
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServiceContainer.class);
 
    private static final String CONFIGURATION_FILE_NAME = "container.xml";
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
    public static ObjectName CLASS_LOADER_OBJECT_NAME;
@@ -169,7 +169,7 @@ public class ServiceContainer
       }
    }
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private ServiceContainerConfiguration config;
 
@@ -194,7 +194,7 @@ public class ServiceContainer
    // so we don't start up multiple servers with services running on the same port
    private int serverIndex;
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    public static Object type(MBeanInfo mbeanInfo, String attributeName, String valueAsString)
       throws Exception
@@ -250,7 +250,7 @@ public class ServiceContainer
 
    }
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ServiceContainer(String servicesToStart) throws Exception
    {
@@ -278,7 +278,8 @@ public class ServiceContainer
       this.serverIndex = 0;
    }
 
-   public ServiceContainer(String sevicesToStart, TransactionManager tm, int serverIndex) throws Exception
+   public ServiceContainer(String sevicesToStart, TransactionManager tm, int serverIndex)
+      throws Exception
    {
       this.tm = tm;
       parseConfig(sevicesToStart);
@@ -286,7 +287,7 @@ public class ServiceContainer
       this.serverIndex = serverIndex;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
 
    /**
@@ -296,7 +297,6 @@ public class ServiceContainer
    {
       start(true);
    }
-
 
    public void start(boolean cleanDatabase) throws Exception
    {
@@ -810,7 +810,7 @@ public class ServiceContainer
 
    // Protected -----------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    /**
     * Note that this method makes no assumption on whether the service was created or started, nor
@@ -995,7 +995,8 @@ public class ServiceContainer
 
       log.debug("bound " + TRANSACTION_MANAGER_JNDI_NAME);
 
-      initialContext.rebind(USER_TRANSACTION_JNDI_NAME, ServerVMClientUserTransaction.getSingleton());
+      initialContext.
+         rebind(USER_TRANSACTION_JNDI_NAME, ServerVMClientUserTransaction.getSingleton());
 
       log.debug("bound " + USER_TRANSACTION_JNDI_NAME);
    }
@@ -1432,5 +1433,5 @@ public class ServiceContainer
       }
    }
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

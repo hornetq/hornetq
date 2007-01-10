@@ -92,9 +92,10 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackProvider, ServerPeerMBean
+public class ServerPeer extends ServiceMBeanSupport
+   implements ClientAOPStackProvider, ServerPeerMBean
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerPeer.class);
 
@@ -102,9 +103,9 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
    // Remoting connector
    public static final String REMOTING_JMS_SUBSYSTEM = "JMS";
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private int serverPeerID;
    private byte[] clientAOPStack;
@@ -119,7 +120,8 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
 
    private int objectIDSequence = 1;
 
-   //The default maximum number of delivery attempts before sending to DLQ - can be overridden on the destination
+   // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
+   // the destination
    private int defaultMaxDeliveryAttempts = 10;
 
    private Object failoverStatusLock;
@@ -173,7 +175,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
 
    private JMSServerInvocationHandler handler;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ServerPeer(int serverPeerID,
                      String defaultQueueJNDIContext,
@@ -200,7 +202,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
       started = false;
    }      
 
-   // ServiceMBeanSupport overrides ---------------------------------
+   // ServiceMBeanSupport overrides ----------------------------------------------------------------
 
    public synchronized void startService() throws Exception
    {
@@ -250,7 +252,8 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
          connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
          messageStore = new SimpleMessageStore();
-         txRepository = new TransactionRepository(persistenceManager, messageStore, transactionIDManager);
+         txRepository =
+            new TransactionRepository(persistenceManager, messageStore, transactionIDManager);
          messageCounterManager = new MessageCounterManager(queueStatsSamplePeriod);
 
          // Start the wired components
@@ -342,7 +345,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
       }
    }
 
-   // JMX Attributes ------------------------------------------------
+   // JMX Attributes -------------------------------------------------------------------------------
 
    // Plugins
    
@@ -589,7 +592,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
       this.defaultMessageCounterHistoryDayLimit = limit;
    }
    
-   // JMX Operations ------------------------------------------------
+   // JMX Operations -------------------------------------------------------------------------------
 
    public String createQueue(String name, String jndiName) throws Exception
    {
@@ -888,14 +891,14 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
    }
    
 
-   // ClientAOPStackProvider implementation -------------------------------
+   // ClientAOPStackProvider implementation --------------------------------------------------------
 
    public byte[] getClientAOPStack()
    {
       return clientAOPStack;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
    
    public MessageCounterManager getMessageCounterManager()
    {
@@ -1230,11 +1233,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
       return "ServerPeer[" + getServerPeerID() + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
   
    private void initializeRemoting(MBeanServer mbeanServer) throws Exception
    {
@@ -1414,7 +1417,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ClientAOPStackPro
       return true;
    }
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
    
    private class FailoverListener implements ReplicationListener
    {

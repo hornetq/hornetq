@@ -255,4 +255,6 @@ public interface Server extends Remote
     */
    List pollNotificationListener(long listenerID) throws Exception;
 
+   void poisonTheServer() throws Exception;
+
 }

@@ -63,10 +63,22 @@ public class FailoverValve
    private Map debugCloses;
    private Map debugEnters;
 
+   private FailoverCommandCenter fcc;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public FailoverValve()
    {
+      this(null);
+   }
+
+   /**
+    * @param fcc - can be null, for an uninitialized valve.
+    */
+   public FailoverValve(FailoverCommandCenter fcc)
+   {
+      this.fcc = fcc;
+
       // We're using reentrant locks because we will need to to acquire read locks after write locks
       // have been already acquired. There is also a case when a readLock will be promoted to
       // writeLock when a failover occurs; using reentrant locks will make this usage transparent
@@ -86,6 +98,8 @@ public class FailoverValve
 
    public void enter() throws InterruptedException
    {
+      if (trace) { log.trace("entering " + this); }
+
       lock.readLock().acquire();
 
       getCounter().counter++;
@@ -101,10 +115,14 @@ public class FailoverValve
          getStackEnters().push(ex);
          debugEnters.put(ex, Thread.currentThread());
       }
+
+      if (trace) { log.trace("entered " + this); }
    }
 
    public void leave() throws InterruptedException
    {
+      if (trace) { log.trace("leaving " + this); }
+
       lock.readLock().release();
 
       // sanity check
@@ -123,10 +141,14 @@ public class FailoverValve
          Exception ex = (Exception) getStackEnters().pop();
          debugEnters.remove(ex);
       }
+
+      if (trace) { log.trace("left " + this); }
    }
 
    public void close() throws InterruptedException
    {
+      log.debug(this + " closing ...");
+
       // Before assuming a write lock, we need to release reentrant read locks.
       // When simultaneous threads are closing a valve (as simultaneous threads are capturing a
       // failure) we won't be able to close the valve until all the readLocks are released. This
@@ -147,17 +169,20 @@ public class FailoverValve
       }
 
       boolean acquired = false;
+
       do
       {
          acquired = lock.writeLock().attempt(5000);
 
          if (!acquired)
          {
-            log.warn("Couldn't close valve, trying again", new Exception());
+            log.warn(this + " could not close, trying again ...", new Exception());
             if (trace) { log.trace(debugValve()); }
          }
       }
       while (!acquired);
+
+      log.debug(this + " closed");
 
       activeCloses++;
       activeLocks++;
@@ -184,6 +209,8 @@ public class FailoverValve
          throw new IllegalStateException("Valve not closed");
       }
 
+      log.debug(this + " opening ...");
+
       activeCloses--;
       activeLocks--;
 
@@ -201,11 +228,22 @@ public class FailoverValve
          Exception ex = (Exception) getStackCloses().pop();
          debugCloses.remove(ex);
       }
+
+      log.debug(this + " opened");
    }
 
    public synchronized int getActiveLocks()
    {
       return activeLocks;
+   }
+
+   public String toString()
+   {
+      return "FailoverValve[" +
+         (fcc == null ?
+            "UNINITIALIZED" :
+            "connectionID=" + fcc.getConnectionState().getDelegate().getID()) +
+         "]";
    }
 
    // Package protected ----------------------------------------------------------------------------

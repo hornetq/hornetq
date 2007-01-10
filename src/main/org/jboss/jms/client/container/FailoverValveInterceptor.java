@@ -8,13 +8,16 @@ package org.jboss.jms.client.container;
 
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailoverValve;
+import org.jboss.jms.client.FailureDetector;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.remoting.CannotConnectException;
+import org.jboss.logging.Logger;
 
 import java.io.IOException;
 
@@ -36,11 +39,15 @@ import java.io.IOException;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class FailoverValveInterceptor implements Interceptor
+public class FailoverValveInterceptor implements Interceptor, FailureDetector
 {
    // Constants ------------------------------------------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(FailoverValveInterceptor.class);
+
    // Static ---------------------------------------------------------------------------------------
+
+   private static final boolean trace = log.isTraceEnabled();
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -94,6 +101,7 @@ public class FailoverValveInterceptor implements Interceptor
       }
 
       JMSRemotingConnection remotingConnection = null;
+      String methodName = ((MethodInvocation)invocation).getMethod().getName();
 
       try
       {
@@ -105,12 +113,20 @@ public class FailoverValveInterceptor implements Interceptor
       }
       catch (CannotConnectException e)
       {
-         fcc.failureDetected(e, remotingConnection);
+         log.debug(this + " putting " + methodName + "() on hold until failover completes");
+
+         fcc.failureDetected(e, this, remotingConnection);
+
+         log.debug(this + " resuming " + methodName + "()");
          return invocation.invokeNext();
       }
       catch (IOException e)
       {
-         fcc.failureDetected(e, remotingConnection);
+         log.debug(this + " putting " + methodName + "() on hold until failover completes");
+
+         fcc.failureDetected(e, this, remotingConnection);
+
+         log.debug(this + " resuming " + methodName + "()");
          return invocation.invokeNext();
       }
       catch (Throwable e)

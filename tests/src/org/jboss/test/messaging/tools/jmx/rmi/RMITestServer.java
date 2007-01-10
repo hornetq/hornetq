@@ -433,6 +433,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return pl.drain();
    }
 
+   public void poisonTheServer() throws Exception
+   {
+      server.poisonTheServer();
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

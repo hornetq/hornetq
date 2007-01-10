@@ -10,6 +10,7 @@ import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.Client;
 import org.jboss.logging.Logger;
 import org.jboss.jms.client.FailoverCommandCenter;
+import org.jboss.jms.client.FailureDetector;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 
 /**
@@ -21,7 +22,7 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
  *
  * $Id$
  */
-public class ConnectionFailureListener implements ConnectionListener
+public class ConnectionFailureListener implements ConnectionListener, FailureDetector
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -53,7 +54,7 @@ public class ConnectionFailureListener implements ConnectionListener
       {
          log.debug(this + " is being notified of connection failure: " + throwable);
 
-         fcc.failureDetected(throwable, remotingConnection);
+         fcc.failureDetected(throwable, this, remotingConnection);
 
       }
       catch (Throwable e)

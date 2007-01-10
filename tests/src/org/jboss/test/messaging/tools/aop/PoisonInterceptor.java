@@ -1,0 +1,72 @@
+/**
+ * JBoss, Home of Professional Open Source
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+package org.jboss.test.messaging.tools.aop;
+
+import org.jboss.logging.Logger;
+import org.jboss.aop.advice.Interceptor;
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
+
+/**
+ * Used to force a "poisoned" server to do all sorts of bad things. Used for testing.
+ *
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @version <tt>$Revision$</tt>
+ * $Id$
+ */
+public class PoisonInterceptor implements Interceptor
+{
+   // Constants ------------------------------------------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(PoisonInterceptor.class);
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   // Interceptor implementation -------------------------------------------------------------------
+
+   public String getName()
+   {
+      return "PoisonInterceptor";
+   }
+
+   public Object invoke(Invocation invocation) throws Throwable
+   {
+      MethodInvocation mi = (MethodInvocation)invocation;
+      String methodName = mi.getMethod().getName();
+
+      if ("createSessionDelegate".equals(methodName))
+      {
+         // Used by the failover tests to kill server in the middle of an invocation.
+
+         log.info("#####"); 
+         log.info("#####");
+         log.info("##### Halting the server!");
+         log.info("#####");
+         log.info("#####");
+
+         Runtime.getRuntime().halt(1);
+
+      }
+
+      return invocation.invokeNext();
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
+}

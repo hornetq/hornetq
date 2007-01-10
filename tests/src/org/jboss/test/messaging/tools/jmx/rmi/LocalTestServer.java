@@ -46,6 +46,7 @@ import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jndi.Constants;
+import org.jboss.aop.AspectXmlLoader;
 import org.w3c.dom.Element;
 
 /**
@@ -842,6 +843,17 @@ public class LocalTestServer implements Server
    {
       throw new IllegalStateException("Poll doesn't make sense on a local server. " +
                                       "Register listeners directly instead.");
+   }
+
+   public void poisonTheServer() throws Exception
+   {
+      URL url = this.getClass().getClassLoader().getResource("poison.xml");
+      AspectXmlLoader.deployXML(url);
+
+      log.debug(url + " deployed");
+
+//      URL url = this.getClass().getClassLoader().getResource("poison.xml");
+//      AspectXmlLoader.undeployXML(url);
    }
 
    // Public --------------------------------------------------------

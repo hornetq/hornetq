@@ -49,7 +49,7 @@ public class FailoverCommandCenter
    {
       this.state = state;
       failoverListeners = new ArrayList();
-      valve = new FailoverValve();
+      valve = new FailoverValve(this);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -58,9 +58,12 @@ public class FailoverCommandCenter
     * Method called by failure detection components (FailoverValveInterceptors and
     * ConnectionListeners) when they have reasons to belive that a server failure occured.
     */
-   public void failureDetected(Throwable reason, JMSRemotingConnection remotingConnection)
+   public void failureDetected(Throwable reason, FailureDetector source,
+                               JMSRemotingConnection remotingConnection)
       throws Exception
    {
+      log.debug("failure detected by " + source);
+
       // generate a FAILURE_DETECTED event
       broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILURE_DETECTED, this));
 
@@ -165,6 +168,11 @@ public class FailoverCommandCenter
    }
 
    // Package protected ----------------------------------------------------------------------------
+
+   ConnectionState getConnectionState()
+   {
+      return state;
+   }
 
    // Protected ------------------------------------------------------------------------------------
 

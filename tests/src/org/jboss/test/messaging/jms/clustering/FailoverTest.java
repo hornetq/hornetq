@@ -11,8 +11,10 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.FailoverEvent;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -1514,44 +1516,93 @@ public class FailoverTest extends ClusteringTestBase
       simpleFailover("john", "needle");
    }
 
+   public void testMethodSmackingIntoFailure() throws Exception
+   {
+      Connection conn = null;
 
-   // I need this, Clebert.
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
 
-//   public void testTemp() throws Exception
-//   {
-//      Connection conn = null;
-//
-//      try
-//      {
-//         conn = cf.createConnection();
-//         conn.close();
-//
-//         conn = cf.createConnection();
-//
-//         assertEquals(1, ((JBossConnection)conn).getServerID());
-//
-//         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
-//         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
-//         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
-//            getDelegate()).getRemotingConnection();
-//         rc.removeConnectionListener();
-//
-//         ServerManagement.killAndWait(1);
-//
-//         log.info("########");
-//         log.info("######## KILLED NODE 1");
-//         log.info("########");
-//
-//         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//      }
-//      finally
-//      {
-//         if (conn != null)
-//         {
-//            conn.close();
-//         }
-//      }
-//   }
+         conn = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         ServerManagement.killAndWait(1);
+
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   public void testFailureInTheMiddleOfAnInvocation() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(failoverListener);
+
+         // poison the server
+         ServerManagement.poisonTheServer(1);
+
+         // this invocation will halt the server ...
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         // ... and hopefully it be failed over
+
+         MessageConsumer cons = session.createConsumer(queue[0]);
+         MessageProducer prod = session.createProducer(queue[0]);
+
+         prod.send(session.createTextMessage("after-poison"));
+
+         conn.start();
+
+         TextMessage tm = (TextMessage)cons.receive(2000);
+
+         assertNotNull(tm);
+         assertEquals("after-poison", tm.getText());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
    // Package protected ----------------------------------------------------------------------------
 
@@ -1630,42 +1681,6 @@ public class FailoverTest extends ClusteringTestBase
          }
       }
    }
-
-//   public void testTemp() throws Exception
-//   {
-//      Connection conn = null;
-//
-//      try
-//      {
-//         conn = cf.createConnection();
-//         conn.close();
-//
-//         conn = cf.createConnection();
-//
-//         assertEquals(1, ((JBossConnection)conn).getServerID());
-//
-//         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
-//         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
-//         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
-//            getDelegate()).getRemotingConnection();
-//         rc.removeConnectionListener();
-//
-//         ServerManagement.killAndWait(1);
-//
-//         log.info("########");
-//         log.info("######## KILLED NODE 1");
-//         log.info("########");
-//
-//         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//      }
-//      finally
-//      {
-//         if (conn != null)
-//         {
-//            conn.close();
-//         }
-//      }
-//   }
 
    // Package protected ----------------------------------------------------------------------------
 
