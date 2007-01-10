@@ -412,7 +412,7 @@
                <exclude name="**/messaging/core/ha/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
-               <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/*LeakTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
@@ -458,48 +458,10 @@
                <include name="**/messaging/jms/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
-               <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/*LeakTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
-            </fileset>
-         </batchtest>
-      </junit>
-   </target>
-
-   <target name="memory-leak-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
-           description="Runs memory-leak tests using JBossProfiler in-VM configuration">
-
-      <property name="ostarget" value="windows"/>
-
-      <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
-             includeantruntime="${junit.includeantruntime}"
-             haltonerror="${junit.haltonerror}"
-             haltonfailure="${junit.haltonfailure}"
-             showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
-
-         <sysproperty key="remote" value="false"/>
-         <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
-         <sysproperty key="test.database" value="${functional.tests.database}"/>
-         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
-         <sysproperty key="build.lib" value="${build.lib}"/>
-         <jvmarg value="-Xmx512M"/>
-         <jvmarg value="-agentpath:${jboss.profiler.jvmti.lib}/bin/windows/jbossAgent.dll"/>
-         <!--
-         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
-         -->
-         <classpath refid="test.execution.classpath"/>
-         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <batchtest fork="${junit.batchtest.fork}"
-                    todir="${junit.batchtest.todir}"
-                    haltonfailure="${junit.batchtest.haltonfailure}"
-                    haltonerror="${junit.batchtest.haltonerror}">
-            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
-            <fileset dir="${build.tests.classes}">
-               <include name="**/jms/MemLeakTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -537,7 +499,7 @@
                <include name="**/messaging/jms/ReferenceableTest.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
-               <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/*LeakTest.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
             </fileset>
          </batchtest>
@@ -645,7 +607,7 @@
                <exclude name="**/jms/ReferencingTest.class"/>
                <exclude name="**/jms/PersistenceTest.class"/>
                <exclude name="**/jms/crash/*Test.class"/>
-               <exclude name="**/jms/MemLeakTest.class"/>
+               <exclude name="**/*LeakTest.class"/>
                <exclude name="**/jms/ManifestTest.class"/>
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
@@ -716,9 +678,8 @@
 
    </target>
 
-   <target name="clustering-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
-           description="Runs the clustering tests">
-
+   <!-- internal task for clustering-tests -->
+   <target name="start-clustering">
       <!-- Stop the rmi servers in case a previous run aborted -->
 
       <antcall target="stop-rmi-server-clustering">
@@ -758,6 +719,38 @@
       </antcall>
 
       <mkdir dir="${build.tests.reports}"/>
+
+
+   </target>
+
+   <!-- internal task for clustering-tests -->
+   <target name="stop-clustering">
+      <!--
+          Stop the servers in the reverse order, so the VM that runs the RMI registry dies last.
+      -->
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.server.index" value="3"/>
+      </antcall>
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.server.index" value="2"/>
+      </antcall>
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.server.index" value="1"/>
+      </antcall>
+
+      <antcall target="stop-rmi-server-clustering">
+         <param name="test.server.index" value="0"/>
+      </antcall>
+   </target>
+
+   <target name="clustering-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs the clustering tests">
+
+
+      <antcall target="start-clustering"/>
 
       <echo message=""/>
       <echo message="Running clustering tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
@@ -828,29 +821,96 @@
 
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/clustering/${test-mask}.class"/>
+               <exclude name="**/*LeakTest.class"/>
             </fileset>
          </batchtest>
       </junit>
 
+      <antcall target="stop-clustering"/>
+
+   </target>
+
+   <target name="memory-leak-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs MemoryLeakTests, but it starts the clustering for leak-clustering-tests">
+
+
+      <antcall target="start-clustering"/>
+
+      <echo message=""/>
+      <echo message="Running clustering tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
       <!--
-          Stop the servers in the reverse order, so the VM that runs the RMI registry dies last.
+
+           By default, clustered tests are run in a "remote" configuration (the clustered
+           nodes physically live in different VMs. If you want to test a co-located clustered
+           configuration, use bin/runtest -clustered
       -->
 
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="3"/>
-      </antcall>
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="yes"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
 
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="2"/>
-      </antcall>
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${clustering.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.clustered" value="true"/>
+         <sysproperty key="test.logfile.suffix" value="clustering-client"/>
+         <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
+         <jvmarg value="-agentlib:jbossAgent"/>
+         <!--
+         <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=antjunit"/>
+          -->
 
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="1"/>
-      </antcall>
+         <classpath>
+            <path refid="test.execution.classpath"/>
+            <!--
+                Add this when http://jira.jboss.org/jira/browse/JBAS-2554 is done
+            -->
+            <!--
+                 <path refid="jboss.test.classpath"/>
+            -->
+         </classpath>
 
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="0"/>
-      </antcall>
+         <!--
+              Use this when http://jira.jboss.org/jira/browse/JBAS-2554 is done
+         -->
+         <!--
+         <sysproperty key="jboss-junit-configuration" value="Remote"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+            usefile="${junit.formatter.usefile}" extension="-Remote.xml"/>
+         -->
+
+         <sysproperty key="messaging-test-configuration" value="Clustering"/>
+         <formatter classname="org.jboss.test.messaging.tools.ant.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-Clustering.xml"/>
+
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <!--
+                 I needed a way to intercept the end of a forked ant JUnit test run, in order to
+                 perform clean-up, and this is it: register a JUnitTestSuiteListener as a JUnit
+                 batchtest formatter, and it will get notified on a endTestSuite() event.
+            -->
+            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
+
+            <fileset dir="${build.tests.classes}">
+               <include name="**/*LeakTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-clustering"/>
 
    </target>
 
