@@ -98,8 +98,6 @@ public class FailoverValve
 
    public void enter() throws InterruptedException
    {
-      if (trace) { log.trace("entering " + this); }
-
       lock.readLock().acquire();
 
       getCounter().counter++;
@@ -115,14 +113,10 @@ public class FailoverValve
          getStackEnters().push(ex);
          debugEnters.put(ex, Thread.currentThread());
       }
-
-      if (trace) { log.trace("entered " + this); }
    }
 
    public void leave() throws InterruptedException
    {
-      if (trace) { log.trace("leaving " + this); }
-
       lock.readLock().release();
 
       // sanity check
@@ -141,8 +135,6 @@ public class FailoverValve
          Exception ex = (Exception) getStackEnters().pop();
          debugEnters.remove(ex);
       }
-
-      if (trace) { log.trace("left " + this); }
    }
 
    public void close() throws InterruptedException
