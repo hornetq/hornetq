@@ -245,6 +245,12 @@ public class ServiceContainer
       {
          return XMLUtil.stringToElement(valueAsString);
       }
+      else if (type.startsWith("org.jboss."))
+      {
+         Class interfazza = ServiceContainer.class.getClassLoader().loadClass(type);
+         Class implementation = ServiceContainer.class.getClassLoader().loadClass(valueAsString);
+         return implementation.newInstance();
+      }
 
       throw new Exception("Don't know to handle type " + type);
 

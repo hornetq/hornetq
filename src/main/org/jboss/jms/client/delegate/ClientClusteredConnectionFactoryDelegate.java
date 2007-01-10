@@ -26,6 +26,7 @@ import java.io.Serializable;
 
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.logging.Logger;
 
@@ -65,13 +66,17 @@ public class ClientClusteredConnectionFactoryDelegate
    // Map <Integer(nodeID)->Integer(failoverNodeID)>
    private Map failoverMap;
 
+   private LoadBalancingPolicy loadBalancingPolicy;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientClusteredConnectionFactoryDelegate(ClientConnectionFactoryDelegate[] delegates,
-                                                   Map failoverMap)
+                                                   Map failoverMap,
+                                                   LoadBalancingPolicy loadBalancingPolicy)
    {
       this.delegates = delegates;
       this.failoverMap = failoverMap;
+      this.loadBalancingPolicy = loadBalancingPolicy;
    }
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
@@ -137,6 +142,11 @@ public class ClientClusteredConnectionFactoryDelegate
    public void setFailoverMap(Map failoverMap)
    {
       this.failoverMap = failoverMap;
+   }
+
+   public LoadBalancingPolicy getLoadBalancingPolicy()
+   {
+      return loadBalancingPolicy;
    }
 
    public String toString()

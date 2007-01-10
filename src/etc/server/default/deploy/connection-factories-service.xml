@@ -25,6 +25,7 @@
       </attribute>
       
       <attribute name="Clustered">true</attribute>
+      <attribute name="LoadBalancingPolicy">org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy</attribute>
    </mbean>
 
 </server>

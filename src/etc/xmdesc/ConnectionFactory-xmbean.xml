@@ -86,7 +86,13 @@
       <description>Is this a clustered connection factory?</description>
       <name>Clustered</name>
       <type>boolean</type>
-   </attribute>    
+   </attribute>
+
+   <attribute access="read-write" getMethod="getLoadBalancingPolicy" setMethod="setLoadBalancingPolicy">
+      <description>The pluggable load balancing policy that is used to decide the next cluster node to create a clustered connection to</description>
+      <name>LoadBalancingPolicy</name>
+      <type>org.jboss.jms.client.plugin.LoadBalancingPolicy</type>
+   </attribute>
 
    <!-- Managed operations -->
 

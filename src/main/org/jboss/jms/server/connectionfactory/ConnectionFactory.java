@@ -12,6 +12,8 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -37,6 +39,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    protected JNDIBindings jndiBindings;
    protected int prefetchSize = 150;
    protected boolean clustered;
+   protected LoadBalancingPolicy loadBalancingPolicy;
    
    protected int defaultTempQueueFullSize = 75000;
    protected int defaultTempQueuePageSize = 2000;
@@ -62,6 +65,9 @@ public class ConnectionFactory extends ServiceMBeanSupport
    public ConnectionFactory(String clientID)
    {
       this.clientID = clientID;
+
+      // by default, a clustered connection uses a round-robin load balancing policy
+      this.loadBalancingPolicy = new RoundRobinLoadBalancingPolicy();
    }
 
    // ServiceMBeanSupport overrides ---------------------------------
@@ -116,7 +122,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
             registerConnectionFactory(getServiceName().toString(), clientID, jndiBindings,
                                       locatorURI, enablePing, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
-                                      defaultTempQueueDownCacheSize, clustered);
+                                      defaultTempQueueDownCacheSize, clustered,
+                                      loadBalancingPolicy);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
 
@@ -147,8 +154,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
       {
          started = false;
          
-         connectionFactoryManager.unregisterConnectionFactory(getServiceName().toString(), clustered);
-         
+         connectionFactoryManager.
+            unregisterConnectionFactory(getServiceName().toString(), clustered);
          connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
          
          log.info(this + " undeployed");
@@ -267,6 +274,21 @@ public class ConnectionFactory extends ServiceMBeanSupport
          return;
       }
       this.clustered = clustered;
+   }
+
+   public LoadBalancingPolicy getLoadBalancingPolicy()
+   {
+      return loadBalancingPolicy;
+   }
+
+   public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy)
+   {
+      if (started)
+      {
+         log.warn("Load balancing policy can only be changed when connection factory is stopped");
+         return;
+      }
+      this.loadBalancingPolicy = loadBalancingPolicy;
    }
 
    // JMX managed operations ----------------------------------------

@@ -15,10 +15,12 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.FailoverCommandCenter;
+import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 
 import javax.jms.JMSException;
 import java.util.Map;
+import java.util.Arrays;
 
 /**
  * This aspect is part of a clustered ConnectionFactory aspect stack.
@@ -53,15 +55,10 @@ public class ClusteringAspect
    // This is a PER_INSTANCE aspect, so it has a 1-to-1 relationship with its delegate
    private ClientClusteredConnectionFactoryDelegate clusteredDelegate;
 
-   // The index of the next non-clustered delegate to be used. Only access it from a synchronized
-   // block. Currently hardcoded round-robin, the algorithm must be made pluggable.
-   private int next;
-
    // Constructors ---------------------------------------------------------------------------------
 
    public ClusteringAspect()
    {
-      next = 0;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -74,9 +71,17 @@ public class ClusteringAspect
       if (clusteredDelegate == null)
       {
          clusteredDelegate = (ClientClusteredConnectionFactoryDelegate)invocation.getTargetObject();
+
+         // TODO JBMESSAGING-674 - for the time being we assume that the cluster view is static, so 
+         //      we only initialize the load balancing policy here. This is obviously not true,
+         //      we'll need to review this when working on
+         //      http://jira.jboss.org/jira/browse/JBMESSAGING-674
+
+         clusteredDelegate.getLoadBalancingPolicy().
+            updateView(Arrays.asList(clusteredDelegate.getDelegates()));
       }
 
-      // the method handles both the case of a first connection creation attempt and a re-try during
+      // the method handles both the case of a first connection creation attempt and a retry during
       // a client-side failover. The difference is given by the failedNodeID (-1 for first attempt)
 
       MethodInvocation mi = (MethodInvocation)invocation;
@@ -92,7 +97,6 @@ public class ClusteringAspect
 
       while (attemptCount < MAX_RECONNECT_HOP_COUNT)
       {
-
          int failedNodeIDToServer = -1;
 
          if (delegate == null)
@@ -104,7 +108,8 @@ public class ClusteringAspect
             }
             else
             {
-               delegate = getNextRoundRobinDelegate();
+               LoadBalancingPolicy loadBalancingPolicy = clusteredDelegate.getLoadBalancingPolicy();
+               delegate = (ClientConnectionFactoryDelegate)loadBalancingPolicy.getNext();
             }
          }
 
@@ -197,29 +202,6 @@ public class ClusteringAspect
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-
-   /**
-    * TODO This is currently hardcoded as round robin. The policy should be pluggable.
-    */
-   private synchronized ClientConnectionFactoryDelegate getNextRoundRobinDelegate()
-   {
-      ClientConnectionFactoryDelegate[] delegates = clusteredDelegate.getDelegates();
-
-      if (next >= delegates.length)
-      {
-         next = 0;
-      }
-
-      ClientConnectionFactoryDelegate delegate = delegates[next++];
-
-         if (next >= delegates.length)
-         {
-            next = 0;
-         }
-
-      return delegate;
-   }
 
    private synchronized ClientConnectionFactoryDelegate getFailoverDelegateForNode(Integer nodeID)
    {

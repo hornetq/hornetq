@@ -9,8 +9,6 @@ package org.jboss.test.messaging.jms.clustering;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.delegate.DelegateSupport;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -28,23 +26,25 @@ import javax.naming.InitialContext;
 public class LoadBalancingTest extends MessagingTestCase
 {
 
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public LoadBalancingTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   public void testLoadBalancingOneNode() throws Exception
+   public void testRoundRobinLoadBalancingOneNode() throws Exception
    {
+      // the round robin policy is default
+
       ServerManagement.start(0, "all", true);
 
       try
@@ -55,24 +55,15 @@ public class LoadBalancingTest extends MessagingTestCase
 
          Connection conn0 = cf.createConnection();
 
-         int serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn0).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(0, serverID);
+         assertEquals(0, ((JBossConnection)conn0).getServerID());
 
          Connection conn1 = cf.createConnection();
 
-         serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn1).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(0, serverID);
+         assertEquals(0, ((JBossConnection)conn1).getServerID());
 
          Connection conn2 = cf.createConnection();
 
-         serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn2).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(0, serverID);
+         assertEquals(0, ((JBossConnection)conn2).getServerID());
 
          conn0.close();
          conn1.close();
@@ -86,7 +77,7 @@ public class LoadBalancingTest extends MessagingTestCase
       }
    }
 
-   public void testLoadBalancingTwoNodes() throws Exception
+   public void testRoundRobinLoadBalancingTwoNodes() throws Exception
    {
       // Make sure all servers are created and started; make sure that database is zapped ONLY for
       // the first server, the others rely on values they expect to find in shared tables; don't
@@ -95,6 +86,7 @@ public class LoadBalancingTest extends MessagingTestCase
       ServerManagement.start(0, "all", true);
       ServerManagement.start(1, "all", false);
 
+      // the round robin policy is default
 
       try
       {
@@ -104,39 +96,23 @@ public class LoadBalancingTest extends MessagingTestCase
 
          Connection conn0 = cf.createConnection();
 
-         int serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn0).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(0, serverID);
+         assertEquals(0, ((JBossConnection)conn0).getServerID());
 
          Connection conn1 = cf.createConnection();
 
-         serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn1).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(1, serverID);
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
 
          Connection conn2 = cf.createConnection();
 
-         serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn2).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(0, serverID);
+         assertEquals(0, ((JBossConnection)conn2).getServerID());
 
          Connection conn3 = cf.createConnection();
 
-         serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn3).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(1, serverID);
+         assertEquals(1, ((JBossConnection)conn3).getServerID());
 
          Connection conn4 = cf.createConnection();
 
-         serverID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn4).getDelegate()).
-            getState()).getServerID();
-
-         assertEquals(0, serverID);
-
+         assertEquals(0, ((JBossConnection)conn4).getServerID());
 
          conn0.close();
          conn1.close();
@@ -153,9 +129,9 @@ public class LoadBalancingTest extends MessagingTestCase
       }
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
    protected void setUp() throws Exception
    {
@@ -168,8 +144,8 @@ public class LoadBalancingTest extends MessagingTestCase
       super.tearDown();
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }
