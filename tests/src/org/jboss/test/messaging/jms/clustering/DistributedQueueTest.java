@@ -56,9 +56,13 @@ public class DistributedQueueTest extends MessagingTestCase
       // start servers with redistribution policies that actually do something
       ServiceAttributeOverrides attrOverrides = new ServiceAttributeOverrides();
 
+      ObjectName postOfficeObjectName = new ObjectName("jboss.messaging:service=PostOffice");
+
       attrOverrides.
-         put(new ObjectName("jboss.messaging:service=PostOffice"), "MessagePullPolicy",
+         put(postOfficeObjectName, "MessagePullPolicy",
              "org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy");
+
+      attrOverrides.put(postOfficeObjectName, "StatsSendPeriod", new Long(1000));
 
       ServerManagement.start(0, "all", attrOverrides, true);
       ServerManagement.start(1, "all", attrOverrides, false);
@@ -81,6 +85,10 @@ public class DistributedQueueTest extends MessagingTestCase
 
          conn = cf.createConnection();
 
+         // make sure we're connecting to node 1
+
+         assertEquals(0, ((JBossConnection)conn).getServerID());
+
          // send a message
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -96,10 +104,7 @@ public class DistributedQueueTest extends MessagingTestCase
 
          // make sure we're connecting to node 1
 
-         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
-            getDelegate()).getState()).getServerID();
-
-         assertEquals(1, nodeID);
+         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer c = s.createConsumer(queue1);
@@ -107,7 +112,7 @@ public class DistributedQueueTest extends MessagingTestCase
 
          // we must receive the message
 
-         TextMessage tm = (TextMessage)c.receive(1000);
+         TextMessage tm = (TextMessage)c.receive(10000);
          assertNotNull(tm);
          assertEquals("blip", tm.getText());
 
