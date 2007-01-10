@@ -23,8 +23,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.naming.InitialContext;
 import javax.management.ObjectName;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Extending MessagingTestCase and not ClusteringTestBase because I want to start the messaging
