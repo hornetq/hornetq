@@ -88,5 +88,10 @@ CLASSPATH=`cat $CLASSPATH_FILE`
 # for stress testing
 JAVA_OPTS="$JAVA_OPTS -Xmx768M"
 
+if [ $cygwin = false ]; then
+   #IPV6 and Linux 
+   JAVA_OPTS="$JAVA_OPTS -Djava.net.preferIPv4Stack=true"
+fi
+
 java $JAVA_OPTS -cp $CLASSPATH -Dtest.bind.address=localhost \
 org.jboss.test.messaging.tools.jmx.rmi.RMITestServer $port &
