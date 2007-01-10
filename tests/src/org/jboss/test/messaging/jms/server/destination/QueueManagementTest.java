@@ -762,11 +762,11 @@ public class QueueManagementTest extends DestinationManagementTestBase
       
       ServerManagement.invoke(destObjectName, "resetMessageCounterHistory", null, null);
       
-      String html = (String)ServerManagement.invoke(destObjectName, "getMessageCounterHistoryAsHTML", null, null);
+      String html = (String)ServerManagement.invoke(destObjectName, "listMessageCounterHistoryAsHTML", null, null);
       
       assertNotNull(html);
       
-      html = (String)ServerManagement.invoke(destObjectName, "getMessageCounterAsHTML", null, null);
+      html = (String)ServerManagement.invoke(destObjectName, "listMessageCounterAsHTML", null, null);
       
       assertNotNull(html);
       

@@ -88,8 +88,7 @@ public interface ServerPeerMBean
    ObjectName getDefaultExpiryQueue();
 
    void setDefaultExpiryQueue(ObjectName on);
-      
-          
+
    int getQueuedExecutorPoolSize();
 
    void setQueuedExecutorPoolSize(int poolSize);
@@ -122,13 +121,15 @@ public interface ServerPeerMBean
    
    String createQueue(String name, String jndiName) throws Exception;
 
-   String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception;
+   String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize)
+      throws Exception;
 
    boolean destroyQueue(String name) throws Exception;
 
    String createTopic(String name, String jndiName) throws Exception;
 
-   String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception;  
+   String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize)
+      throws Exception;
 
    boolean destroyTopic(String name) throws Exception;
 

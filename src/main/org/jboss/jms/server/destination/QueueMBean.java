@@ -67,7 +67,7 @@ public interface QueueMBean
    
    List listNonDurableMessages(String selector) throws Exception;
    
-   String getMessageCounterAsHTML();
+   String listMessageCounterAsHTML();
    
-   String getMessageCounterHistoryAsHTML();
+   String listMessageCounterHistoryAsHTML();
 }

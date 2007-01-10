@@ -248,7 +248,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       return (MessageStatistics)stats.get(0);
    }
    
-   public String getMessageCounterAsHTML()
+   public String listMessageCounterAsHTML()
    {
       return super.listMessageCounterAsHTML(new MessageCounter[] { getMessageCounter() });
    }
@@ -391,7 +391,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       ((ManagedQueue)destination).getMessageCounter().resetCounter();
    }
    
-   public String getMessageCounterHistoryAsHTML()
+   public String listMessageCounterHistoryAsHTML()
    {
       return super.listMessageCounterHistoryAsHTML(new MessageCounter[] { getMessageCounter() });
    }

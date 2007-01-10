@@ -256,13 +256,13 @@
    
    <operation>
       <description>Get the message counter as HTML</description>
-      <name>getMessageCounterAsHTML</name>
+      <name>listMessageCounterAsHTML</name>
       <return-type>java.lang.String</return-type>
    </operation>
    
    <operation>
       <description>Get the message counter history as HTML</description>
-      <name>getMessageCounterHistoryAsHTML</name>
+      <name>listMessageCounterHistoryAsHTML</name>
       <return-type>java.lang.String</return-type>
    </operation>       
    

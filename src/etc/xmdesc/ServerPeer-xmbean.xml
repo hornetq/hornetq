@@ -186,7 +186,19 @@
       <description>The default max number of messages per day in message counter history</description>
       <name>DefaultMessageCounterHistoryDayLimit</name>
       <type>int</type>
-   </attribute>   
+   </attribute>
+
+   <attribute access="read-only" getMethod="getMessageCounters">
+      <description>The message counters</description>
+      <name>MessageCounters</name>
+      <type>java.util.List</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getMessageStatistics">
+      <description>The message statistics</description>
+      <name>MessageStatistics</name>
+      <type>java.util.List</type>
+   </attribute>
 
    <!-- Managed operations -->
 
@@ -321,22 +333,6 @@
       </parameter>
       <return-type>boolean</return-type>
    </operation>
-   
-   <operation>
-      <description>
-         Get all message counters
-      </description>
-      <name>getMessageCounters</name>
-      <return-type>java.util.List</return-type>
-   </operation> 
-   
-   <operation>
-      <description>
-         Get all message statistics
-      </description>
-      <name>getMessageStatistics</name>
-      <return-type>java.util.List</return-type>
-   </operation>    
    
    <operation>
       <description>
