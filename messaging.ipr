@@ -238,15 +238,6 @@
         <root url="file://C:/work/src/jboss-aop_1.5.0.GA/src/aspect-framework/main" />
       </SOURCES>
     </library>
-    <library name="jboss-remoting">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/remoting/lib/jboss-remoting.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/remoting/lib/jboss-remoting-src.zip!/" />
-      </SOURCES>
-    </library>
     <library name="jboss-serialization">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/serialization/lib/jboss-serialization.jar!/" />
@@ -359,6 +350,15 @@
       <SOURCES>
         <root url="file://C:/apache-ant-1.6.5/lib" />
         <root url="file://C:/work/src/apache-ant-1.6.5/src/main" />
+      </SOURCES>
+    </library>
+    <library name="jboss-remoting">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/jboss-remoting.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="file://C:/work/src/cvs/JBossRemoting-remoting_2_x/src/main" />
       </SOURCES>
     </library>
   </component>

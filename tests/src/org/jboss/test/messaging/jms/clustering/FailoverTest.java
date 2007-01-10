@@ -1514,6 +1514,9 @@ public class FailoverTest extends ClusteringTestBase
       simpleFailover("john", "needle");
    }
 
+
+   // I need this, Clebert.
+
 //   public void testTemp() throws Exception
 //   {
 //      Connection conn = null;
@@ -1627,6 +1630,46 @@ public class FailoverTest extends ClusteringTestBase
          }
       }
    }
+
+//   public void testTemp() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//         conn = cf.createConnection();
+//         conn.close();
+//
+//         conn = cf.createConnection();
+//
+//         assertEquals(1, ((JBossConnection)conn).getServerID());
+//
+//         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+//         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+//         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+//            getDelegate()).getRemotingConnection();
+//         rc.removeConnectionListener();
+//
+//         ServerManagement.killAndWait(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
 
    protected void setUp() throws Exception
    {
