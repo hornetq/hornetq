@@ -23,6 +23,7 @@ package org.jboss.test.messaging.jms.server;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -389,7 +390,7 @@ public class ServerPeerTest extends MessagingTestCase
          
          
          List counters = (List)
-            ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "getMessageCounters", null, null);
+            ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
          
          assertNotNull(counters);
          
@@ -408,7 +409,7 @@ public class ServerPeerTest extends MessagingTestCase
          
          
          counters = (List)
-         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "getMessageCounters", null, null);
+         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
       
          assertNotNull(counters);
       
@@ -435,7 +436,7 @@ public class ServerPeerTest extends MessagingTestCase
          TemporaryQueue tempQueue = sess.createTemporaryQueue();
          
          counters = (List)
-         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "getMessageCounters", null, null);
+         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
       
          assertNotNull(counters);
       
@@ -532,7 +533,7 @@ public class ServerPeerTest extends MessagingTestCase
             assertTrue(html.indexOf(counter.getDestinationName()) != -1);           
          }
          
-         List stats = (List)ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "getMessageStatistics", null, null);
+         List stats = (List)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageStatistics");
          
          assertNotNull(stats);
          
@@ -559,7 +560,7 @@ public class ServerPeerTest extends MessagingTestCase
          sess.unsubscribe("sub1");
          
          counters = (List)
-         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "getMessageCounters", null, null);
+         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
       
          assertNotNull(counters);
       
@@ -569,7 +570,7 @@ public class ServerPeerTest extends MessagingTestCase
          
          
          counters = (List)
-         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "getMessageCounters", null, null);
+         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
       
          assertNotNull(counters);
       
@@ -593,6 +594,48 @@ public class ServerPeerTest extends MessagingTestCase
          
          ServerManagement.undeployTopic("Topic2");
       }
+   }
+   
+   public void testGetDestinations() throws Exception
+   {
+      if (!ServerManagement.isServerPeerStarted())
+      {
+         ServerManagement.startServerPeer();
+      }
+              
+      ServerManagement.deployQueue("Queue1");
+      
+      ServerManagement.deployQueue("Queue2");
+      
+      ServerManagement.deployQueue("Queue3");
+      
+      ServerManagement.deployTopic("Topic1");
+      
+      ServerManagement.deployTopic("Topic2");
+      
+      try
+      {
+      
+         Set destinations =
+            (Set)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "Destinations");
+         
+         assertNotNull(destinations);
+         
+         assertEquals(5, destinations.size());
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("Queue1");
+         
+         ServerManagement.undeployQueue("Queue2");
+         
+         ServerManagement.undeployQueue("Queue3");
+         
+         ServerManagement.undeployTopic("Topic1");
+         
+         ServerManagement.undeployTopic("Topic2");
+      }
+         
    }
 
 

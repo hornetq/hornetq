@@ -117,6 +117,13 @@ public interface ServerPeerMBean
    
    void setDefaultMessageCounterHistoryDayLimit(int limit);
    
+   List getMessageCounters() throws Exception;
+   
+   List getMessageStatistics() throws Exception;
+   
+   Set getDestinations() throws Exception;
+   
+   
    // JMX operations
    
    String createQueue(String name, String jndiName) throws Exception;
@@ -132,12 +139,6 @@ public interface ServerPeerMBean
       throws Exception;
 
    boolean destroyTopic(String name) throws Exception;
-
-   Set getDestinations() throws Exception;
-   
-   List getMessageCounters() throws Exception;
-
-   List getMessageStatistics() throws Exception;
 
    String listMessageCountersAsHTML() throws Exception;
    

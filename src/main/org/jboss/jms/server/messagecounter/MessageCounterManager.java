@@ -21,11 +21,11 @@
  */
 package org.jboss.jms.server.messagecounter;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -125,11 +125,11 @@ public class MessageCounterManager implements MessagingComponent
       }
    }
    
-   public Collection getMessageCounters()
+   public Set getMessageCounters()
    {
       synchronized (messageCounters)
       {
-         return Collections.unmodifiableCollection(messageCounters.values());
+         return new HashSet(messageCounters.values());
       }
    }
    
