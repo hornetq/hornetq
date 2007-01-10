@@ -739,8 +739,14 @@ public class ServerManagement
    public static void configureSecurityForDestination(String destName, String config)
       throws Exception
    {
-      insureStarted();
-      servers[0].getServer().configureSecurityForDestination(destName, config);
+      configureSecurityForDestination(0, destName, config);
+   }
+
+   public static void configureSecurityForDestination(int serverId, String destName, String config)
+      throws Exception
+   {
+      insureStarted(serverId);
+      servers[serverId].getServer().configureSecurityForDestination(destName, config);
    }
 
    public static void setDefaultSecurityConfig(String config) throws Exception
