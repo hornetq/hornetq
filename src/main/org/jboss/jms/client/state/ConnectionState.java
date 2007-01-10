@@ -258,11 +258,9 @@ public class ConnectionState extends HierarchicalStateSupport
       return fcc;
    }
 
-
-   /** Creates the FailoverCommandCenter as this is a clustered Connection*/
-   public void configureFailoverCommandCenter()
+   public void initializeFailoverCommandCenter()
    {
-      this.fcc = new FailoverCommandCenter(this);
+      fcc = new FailoverCommandCenter(this);
    }
 
    public String toString()

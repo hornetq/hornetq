@@ -25,7 +25,6 @@ import javax.jms.*;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
@@ -47,8 +46,6 @@ public class CallbackFailureTest extends MessagingTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(CallbackFailureTest.class);
    
    // Attributes ----------------------------------------------------
    

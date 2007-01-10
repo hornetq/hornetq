@@ -27,7 +27,6 @@ import java.util.Set;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
@@ -563,7 +562,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       
       try
       {         
-         Queue testQueue = (Queue)initialContext.lookup("/queue/testQueue");
+         initialContext.lookup("/queue/testQueue");
          
          Topic testTopic = (Topic)initialContext.lookup("/topic/testTopic");
                
@@ -581,7 +580,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer sub = sess.createConsumer(testTopic);
+         sess.createConsumer(testTopic);
          
          List counters = (List)ServerManagement.getAttribute(new ObjectName(topicON), "MessageCounters");
          

@@ -50,7 +50,6 @@ import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.MessagingJMSException;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.util.Primitives;
@@ -99,9 +98,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    
    public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY";
    
-   private static final Logger log = Logger.getLogger(JBossMessage.class);
-
-
    // Static --------------------------------------------------------
 
    private static final HashSet reservedIdentifiers = new HashSet();

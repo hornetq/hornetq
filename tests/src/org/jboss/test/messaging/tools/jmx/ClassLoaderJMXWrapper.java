@@ -67,9 +67,7 @@ public class ClassLoaderJMXWrapper extends URLClassLoader implements ClassLoader
          
          Object arr = Array.newInstance(cl, 0);
          
-         Class arrayClass = arr.getClass();
-         
-         return arrayClass;
+         return arr.getClass();
       }
       else
       {      

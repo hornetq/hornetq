@@ -46,7 +46,8 @@ public class FailoverValveInterceptor implements Interceptor
 
    private DelegateSupport delegate;
 
-   // We need to cache connectionState here, as fcc could be null for nonClusteredConnections
+   // We need to cache connectionState here, as FailureCommandCenter instance could be null for
+   // non-clustered connections
    private ConnectionState connectionState;
    private FailoverCommandCenter fcc;
    private FailoverValve valve;
@@ -63,9 +64,8 @@ public class FailoverValveInterceptor implements Interceptor
    public Object invoke(Invocation invocation) throws Throwable
    {
 
-      // maintain a reference to connectionState, so we can ensure we have already
-      // tested for fcc.
-      // As fcc can be null on nonClusteredConnections we have to cache connectionState instead
+      // maintain a reference to connectionState, so we can ensure we have already tested for fcc.
+      // As fcc can be null on non-clustered connections we have to cache connectionState instead
       if (connectionState == null)
       {
          delegate = (DelegateSupport)invocation.getTargetObject();
@@ -87,7 +87,7 @@ public class FailoverValveInterceptor implements Interceptor
          }
       }
 
-      // non clustered.. noop
+      // non clustered, send the invocation forward
       if (fcc == null)
       {
          return invocation.invokeNext();

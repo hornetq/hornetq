@@ -699,8 +699,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    protected Serializable readPayload(DataInputStream in, int length)
       throws Exception
    {
-      ArrayList l = StreamUtils.readList(in);
-      return l;
+      return StreamUtils.readList(in);
    }
 
    // Private -------------------------------------------------------

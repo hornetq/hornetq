@@ -1107,7 +1107,9 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnJBossBytesMessage() throws JMSException
    {
-      JBossBytesMessage jbossBytesMessage = (JBossBytesMessage)(((MessageProxy)queueProducerSession.createBytesMessage()).getMessage());
+      JBossBytesMessage jbossBytesMessage = (JBossBytesMessage)(((MessageProxy)queueProducerSession.
+         createBytesMessage()).getMessage());
+
       for(int i = 0; i < 20; i++)
       {
          jbossBytesMessage.writeByte((byte)i);
@@ -1141,7 +1143,8 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnJBossMapMessage() throws JMSException
    {
-      JBossMapMessage jbossMapMessage = (JBossMapMessage)(((MessageProxy)queueProducerSession.createMapMessage()).getMessage());
+      JBossMapMessage jbossMapMessage = (JBossMapMessage)(((MessageProxy)queueProducerSession.
+         createMapMessage()).getMessage());
       
       jbossMapMessage.setInt("int", 1);
       jbossMapMessage.setString("string", "test");
@@ -1166,7 +1169,8 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnJBossObjectMessage() throws JMSException
    {
-      JBossObjectMessage jbossObjectMessage = (JBossObjectMessage)(((MessageProxy)queueProducerSession.createObjectMessage()).getMessage());
+      JBossObjectMessage jbossObjectMessage = (JBossObjectMessage)
+         (((MessageProxy)queueProducerSession.createObjectMessage()).getMessage());
       
       JBossObjectMessage copy = new JBossObjectMessage(jbossObjectMessage);
 
@@ -1186,7 +1190,8 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnJBossStreamMessage() throws JMSException
    {
-      JBossStreamMessage jbossStreamMessage = (JBossStreamMessage)(((MessageProxy)queueProducerSession.createStreamMessage()).getMessage());
+      JBossStreamMessage jbossStreamMessage = (JBossStreamMessage)
+         (((MessageProxy)queueProducerSession.createStreamMessage()).getMessage());
       
       jbossStreamMessage.writeByte((byte)1);
       jbossStreamMessage.writeByte((byte)2);
@@ -1213,7 +1218,8 @@ public class MessageTest extends MessagingTestCase
 
    public void testCopyOnJBossTextMessage() throws JMSException
    {
-      JBossTextMessage jbossTextMessage = (JBossTextMessage)(((MessageProxy)queueProducerSession.createTextMessage()).getMessage());
+      JBossTextMessage jbossTextMessage = (JBossTextMessage)
+         (((MessageProxy)queueProducerSession.createTextMessage()).getMessage());
       
       JBossTextMessage copy = new JBossTextMessage(jbossTextMessage);
 
@@ -1230,15 +1236,11 @@ public class MessageTest extends MessagingTestCase
       ensureEquivalent(foreignTextMessage, copy);
    }
 
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   
-
 
    // Inner classes -------------------------------------------------
 

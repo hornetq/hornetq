@@ -340,7 +340,6 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       payload = payloadAsByteArray;
    }
 
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

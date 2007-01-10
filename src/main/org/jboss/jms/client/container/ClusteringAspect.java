@@ -123,7 +123,7 @@ public class ClusteringAspect
 
             ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
 
-            state.configureFailoverCommandCenter();
+            state.initializeFailoverCommandCenter();
 
             FailoverCommandCenter fcc = state.getFailoverCommandCenter();
 

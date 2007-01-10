@@ -172,7 +172,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       try
       {
-         log.debug(this + " creating " + (transacted ? "transacted" : "non transacted") + " session, " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " + (isXA ? "XA": "non XA"));
+         log.debug(this + " creating " + (transacted ? "transacted" : "non transacted") +
+            " session, " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " +
+            (isXA ? "XA": "non XA"));
 
          if (closed)
          {
@@ -319,9 +321,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                {     
                   postOffice.unbindQueue(dest.getName()); 
                   
-                  String counterName = ServerSessionEndpoint.TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
+                  String counterName =
+                     ServerSessionEndpoint.TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
                   
-                  MessageCounter counter = serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);
+                  MessageCounter counter =
+                     serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);
                   
                   if (counter == null)
                   {
@@ -487,7 +491,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       
       this.jmsClientVMId = jmsClientVMId;
       
-      this.serverPeer.getConnectionManager().registerConnection(jmsClientVMId, remotingClientSessionId, this);
+      this.serverPeer.getConnectionManager().
+         registerConnection(jmsClientVMId, remotingClientSessionId, this);
    }
    
    public void setUsingVersion(byte version)

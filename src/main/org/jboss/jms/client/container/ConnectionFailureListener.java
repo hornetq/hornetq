@@ -9,11 +9,8 @@ package org.jboss.jms.client.container;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.Client;
 import org.jboss.logging.Logger;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.state.ConnectionState;
 
 /**
  * The listener that detects a connection failure and initiates the failover process. Each physical
@@ -36,11 +33,11 @@ public class ConnectionFailureListener implements ConnectionListener
 
    private FailoverCommandCenter fcc;
 
-   // The remotingConnection is needed here to validate that the failure wasn't captured after failover
-   // was already called
+   // The remoting connection is needed here to validate that the failure wasn't captured after
+   // failover was already called
    private JMSRemotingConnection remotingConnection;
 
-      // Constructors ---------------------------------------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    ConnectionFailureListener(FailoverCommandCenter fcc, JMSRemotingConnection remotingConnection)
    {

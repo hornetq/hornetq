@@ -37,7 +37,6 @@ import java.util.Set;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
@@ -468,11 +467,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             JMSCondition cond = (JMSCondition)binding.getCondition();                        
             
-            ManagedDestination dest = sp.getDestinationManager().getDestination(cond.getName(), cond.isQueue());
+            ManagedDestination dest =
+               sp.getDestinationManager().getDestination(cond.getName(), cond.isQueue());
             
             if (dest == null)
             {
-               throw new IllegalStateException("Cannot find managed destination with name " + cond.getName() + " isQueue" + cond.isQueue());
+               throw new IllegalStateException("Cannot find managed destination with name " +
+                  cond.getName() + " isQueue" + cond.isQueue());
             }
             
             Queue dlqToUse =
@@ -499,7 +500,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (trace) { log.trace(this + " Recovered delivery " + deliveryId + ", " + del); }
                
-               deliveries.put(new Long(deliveryId), new DeliveryRecord(del, -1, dlqToUse, expiryQueueToUse, dest.getRedeliveryDelay()));
+               deliveries.put(new Long(deliveryId),
+                              new DeliveryRecord(del, -1, dlqToUse,
+                                                 expiryQueueToUse, dest.getRedeliveryDelay()));
             }
          }
          
@@ -521,7 +524,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          if (!dest.isTemporary())
          {
-            throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
+            throw new InvalidDestinationException("Destination:" + dest +
+               " is not a temporary destination");
          }
          connectionEndpoint.addTemporaryDestination(dest);
          
@@ -554,7 +558,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
                         
             String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
             
-            MessageCounter counter = new MessageCounter(counterName, null, q, false, false, sp.getDefaultMessageCounterHistoryDayLimit());
+            MessageCounter counter =
+               new MessageCounter(counterName, null, q, false, false,
+                                  sp.getDefaultMessageCounterHistoryDayLimit());
             
             sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
                                  
@@ -579,7 +585,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
          if (!dest.isTemporary())
          {
-            throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
+            throw new InvalidDestinationException("Destination:" + dest +
+               " is not a temporary destination");
          }
          
          ManagedDestination mDest = dm.getDestination(dest.getName(), dest.isQueue());
@@ -598,7 +605,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             connectionEndpoint.removeTemporaryDestination(dest);
             
-            MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);  
+            MessageCounter counter =
+               sp.getMessageCounterManager().unregisterMessageCounter(counterName);
             
             if (counter == null)
             {
@@ -608,11 +616,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
          else
          {
             //Topic            
-            Collection bindings = postOffice.getBindingsForCondition(new JMSCondition(false, dest.getName()));
+            Collection bindings =
+               postOffice.getBindingsForCondition(new JMSCondition(false, dest.getName()));
             
             if (!bindings.isEmpty())
             {
-               throw new IllegalStateException("Cannot delete temporary destination, since it has active consumer(s)");
+               throw new IllegalStateException("Cannot delete temporary destination, " +
+                  "since it has active consumer(s)");
             }
          }
          
@@ -742,7 +752,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
       
-   void cancelDeliveriesForConsumerAfterDeliveryId(int consumerId, long lastDeliveryId) throws Throwable
+   void cancelDeliveriesForConsumerAfterDeliveryId(int consumerId, long lastDeliveryId)
+      throws Throwable
    {
       //Need to cancel in reverse
       
@@ -1069,7 +1080,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          else
          {
-            log.warn("Cannot move to destination since destination has not been deployed! The message will be removed");
+            log.warn("Cannot move to destination since destination has not been deployed! " +
+               "The message will be removed");
             
             del.acknowledge(tx);
          }             
@@ -1293,11 +1305,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
             }
             else
             {
-               q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(), idm.getID(), ms, pm, true, false,
-                        executor, mDest.getMaxSize(), selector, tr,
-                        mDest.getFullSize(),
-                        mDest.getPageSize(),
-                        mDest.getDownCacheSize());
+               q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(),
+                                           idm.getID(), ms, pm, true, false,
+                                           executor, mDest.getMaxSize(), selector, tr,
+                                           mDest.getFullSize(),
+                                           mDest.getPageSize(),
+                                           mDest.getDownCacheSize());
                
                ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
                

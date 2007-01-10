@@ -122,7 +122,6 @@ public interface Channel extends DeliveryObserver, Distributor, Receiver
    
    /**
     * Count scheduled for delivery
-    * @return
     */
    int getScheduledCount();
    

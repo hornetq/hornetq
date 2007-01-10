@@ -183,10 +183,8 @@ public class MessageConsumerTest extends MessagingTestCase
             assertEquals("message" + i, tm.getText());
          }
          
-         //Now close the session
- 
-         long now = System.currentTimeMillis();
-         
+         // Now close the session
+
          sess2.close();
          
       }
