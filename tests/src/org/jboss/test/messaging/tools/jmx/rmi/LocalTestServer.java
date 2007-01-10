@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
@@ -45,6 +46,7 @@ import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jndi.Constants;
 import org.jboss.aop.AspectXmlLoader;
 import org.w3c.dom.Element;
@@ -114,7 +116,15 @@ public class LocalTestServer implements Server
       return serverIndex;
    }
 
-   public synchronized void start(String containerConfig, boolean clearDatabase) throws Exception
+   public void start(String containerConfig,
+                     boolean clearDatabase) throws Exception
+   {
+      start(containerConfig, null, clearDatabase);
+   }
+
+   public synchronized void start(String containerConfig,
+                                  ServiceAttributeOverrides attrOverrides,
+                                  boolean clearDatabase) throws Exception
    {
       if (isStarted())
       {
@@ -140,7 +150,7 @@ public class LocalTestServer implements Server
             return;
          }
 
-         startServerPeer(serverIndex, null, null, sc.isClustered());
+         startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered());
 
          log.info("Server " + serverIndex + " started");
       }
@@ -280,6 +290,7 @@ public class LocalTestServer implements Server
    public void startServerPeer(int serverPeerID,
                                String defaultQueueJNDIContext,
                                String defaultTopicJNDIContext,
+                               ServiceAttributeOverrides attrOverrides,
                                boolean clustered) throws Exception
    {
       try
@@ -316,32 +327,41 @@ public class LocalTestServer implements Server
 
          log.info(" Persistence config file .. " + persistenceConfigFile);
 
-         URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
+         URL persistenceConfigFileURL =
+            getClass().getClassLoader().getResource(persistenceConfigFile);
+
          if (persistenceConfigFileURL == null)
          {
             throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
          }
 
          String connFactoryConfigFile = "server/default/deploy/connection-factories-service.xml";
-         URL connFactoryConfigFileURL = getClass().getClassLoader().getResource(connFactoryConfigFile);
+         URL connFactoryConfigFileURL =
+            getClass().getClassLoader().getResource(connFactoryConfigFile);
+
          if (connFactoryConfigFileURL == null)
          {
             throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
          }
 
-         ServiceDeploymentDescriptor mdd = new ServiceDeploymentDescriptor(mainConfigFileURL);
-         ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-         ServiceDeploymentDescriptor cfdd = new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
+         ServiceDeploymentDescriptor mdd =
+            new ServiceDeploymentDescriptor(mainConfigFileURL);
+         ServiceDeploymentDescriptor pdd =
+            new ServiceDeploymentDescriptor(persistenceConfigFileURL);
+         ServiceDeploymentDescriptor cfdd =
+            new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
 
          MBeanConfigurationElement persistenceManagerConfig =
             (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
          persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
+         overrideAttributes(persistenceManagerObjectName, attrOverrides);
          sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
          sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);
 
          MBeanConfigurationElement jmsUserManagerConfig =
             (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
          jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
+         overrideAttributes(jmsUserManagerObjectName, attrOverrides);
          sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
          sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);
 
@@ -363,6 +383,8 @@ public class LocalTestServer implements Server
 
          serverPeerObjectName = sc.registerAndConfigureService(serverPeerConfig);
 
+         overrideAttributes(serverPeerObjectName, attrOverrides);
+
          // overwrite the config file security domain
          sc.setAttribute(serverPeerObjectName, "SecurityDomain",
                          MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
@@ -374,7 +396,9 @@ public class LocalTestServer implements Server
 
          MBeanConfigurationElement postOfficeConfig =
             (MBeanConfigurationElement)pdd.query("service", "PostOffice").iterator().next();
+
          postOfficeObjectName = sc.registerAndConfigureService(postOfficeConfig);
+         overrideAttributes(postOfficeObjectName, attrOverrides);
          sc.invoke(postOfficeObjectName, "create", new Object[0], new String[0]);
          sc.invoke(postOfficeObjectName, "start", new Object[0], new String[0]);
 
@@ -386,6 +410,7 @@ public class LocalTestServer implements Server
          {
             MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement)i.next();
             ObjectName on = sc.registerAndConfigureService(connFactoryElement);
+            overrideAttributes(on, attrOverrides);
             // dependencies have been automatically injected already
             sc.invoke(on, "create", new Object[0], new String[0]);
             sc.invoke(on, "start", new Object[0], new String[0]);
@@ -868,6 +893,26 @@ public class LocalTestServer implements Server
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private void overrideAttributes(ObjectName on, ServiceAttributeOverrides attrOverrides)
+      throws Exception
+   {
+      if (attrOverrides == null)
+      {
+         return;
+      }
+
+      Map sao = attrOverrides.get(on);
+
+      for(Iterator i = sao.entrySet().iterator(); i.hasNext();)
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         String attrName = (String)entry.getKey();
+         Object attrValue = entry.getValue();
+         sc.setAttribute(on, attrName, attrValue.toString());
+
+      }
+   }
 
    // Inner classes -------------------------------------------------
 

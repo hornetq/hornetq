@@ -807,30 +807,28 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       {
          if (nodeId == this.currentNodeId)
          {
-            //Sanity check
-            throw new IllegalStateException("Received stats from node with id that matches this nodes id. You may have started two or more nodes with the same node id!");
+            // Sanity check
+            throw new IllegalStateException("Received stats from node with ID that matches this " +
+               "node's ID. You may have started two or more nodes with the same node ID!");
          }
 
          Map nameMap = (Map)nameMaps.get(new Integer(nodeId));
 
          if (nameMap == null)
          {
-            //This is ok, the node might have left
+            // This is ok, the node might have left
             if (trace) { log.trace(this + " cannot find node in name map, i guess the node might have left?"); }
          }
          else
          {
-            Iterator iter = statsList.iterator();
-
-            while (iter.hasNext())
+            for(Iterator i = statsList.iterator(); i.hasNext(); )
             {
-               QueueStats st = (QueueStats)iter.next();
-
+               QueueStats st = (QueueStats)i.next();
                Binding bb = (Binding)nameMap.get(st.getQueueName());
 
                if (bb == null)
                {
-                  //I guess this is possible if the queue was unbound
+                  // I guess this is possible if the queue was unbound
                   if (trace) { log.trace(this + " cannot find binding for queue " + st.getQueueName() + " it could have been unbound"); }
                }
                else
@@ -843,14 +841,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   ClusterRouter router = (ClusterRouter)routerMap.get(st.getQueueName());
 
-                  //Maybe the local queue now wants to pull message(s) from the remote queue given that the
-                  //stats for the remote queue have changed
+                  // Maybe the local queue now wants to pull message(s) from the remote queue given
+                  // that the stats for the remote queue have changed
                   LocalClusteredQueue localQueue = (LocalClusteredQueue)router.getLocalQueue();
 
-                  if (localQueue!=null)
+                  if (localQueue != null)
                   {
-                     //TODO - the call to getQueues is too slow since it creates a new list and adds the local queue!!!
-                     RemoteQueueStub toQueue = (RemoteQueueStub)messagePullPolicy.chooseQueue(router.getQueues());
+                     //TODO - the call to getQueues is too slow since it creates a new list and adds
+                     //       the local queue!!!
+                     RemoteQueueStub toQueue =
+                        (RemoteQueueStub)messagePullPolicy.chooseQueue(router.getQueues());
 
                      if (trace) { log.trace(this.currentNodeId + " recalculated pull queue for queue " + st.getQueueName() + " to be " + toQueue); }
 
@@ -858,8 +858,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                      if (toQueue != null && localQueue.getRefCount() == 0)
                      {
-                        //We now trigger delivery - this may cause a pull event
-                        //We only do this if there are no refs in the local queue
+                        // We now trigger delivery - this may cause a pull event
+                        // We only do this if there are no refs in the local queue
 
                         localQueue.deliver(false);
 

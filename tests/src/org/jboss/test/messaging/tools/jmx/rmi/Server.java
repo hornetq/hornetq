@@ -34,6 +34,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 
 /**
  * The remote interface exposed by TestServer.
@@ -48,6 +49,14 @@ public interface Server extends Remote
    int getServerID() throws Exception;
 
    void start(String containerConfig, boolean clearDatabase) throws Exception;
+
+   /**
+    * @param attrOverrides - service attribute overrides that will take precedence over values
+    *        read from configuration files.
+    */
+   void start(String containerConfig,
+              ServiceAttributeOverrides attrOverrides,
+              boolean clearDatabase) throws Exception;
 
    /**
     * @return true if the server was stopped indeed, or false if the server was stopped already
@@ -110,8 +119,11 @@ public interface Server extends Remote
    void startServerPeer(int serverPeerID,
                         String defaultQueueJNDIContext,
                         String defaultTopicJNDIContext,
+                        ServiceAttributeOverrides attrOverrides,
                         boolean clustered) throws Exception;
+
    void stopServerPeer() throws Exception;
+
    boolean isServerPeerStarted() throws Exception;
 
    ObjectName getServerPeerObjectName() throws Exception;
@@ -198,11 +210,11 @@ public interface Server extends Remote
    boolean destroyDestination(boolean isQueue, String name) throws Exception;
 
    void deployConnectionFactory(String objectName,
-            String[] jndiBindings,
-            int prefetchSize,
-            int defaultTempQueueFullSize,
-            int defaultTempQueuePageSize,
-            int defaultTempQueueDownCacheSize) throws Exception;
+                                String[] jndiBindings,
+                                int prefetchSize,
+                                int defaultTempQueueFullSize,
+                                int defaultTempQueuePageSize,
+                                int defaultTempQueueDownCacheSize) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 String[] jndiBindings,

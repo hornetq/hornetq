@@ -45,6 +45,7 @@ import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jmx.rmi.NotificationListenerID;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 
@@ -163,7 +164,7 @@ public class ServerManagement
    /**
     * Will clear the database at startup.
     */
-   public static synchronized void start(String config) throws Exception
+   public static void start(String config) throws Exception
    {
       start(0, config, true);
    }
@@ -171,18 +172,23 @@ public class ServerManagement
    /**
     * Will clear the database at startup.
     */
-   public static synchronized void start(int i, String config) throws Exception
+   public static void start(int i, String config) throws Exception
    {
       start(i, config, true);
    }
 
+   public static void start(int i, String config, boolean clearDatabase) throws Exception
+   {
+      start(i, config, null, clearDatabase);
+   }
 
    /**
     * When this method correctly completes, the server (local or remote) is started and fully
     * operational (the service container and the server peer are created and started)
     */
-   public static synchronized void start(int i, String config, boolean clearDatabase)
-      throws Exception
+   public static synchronized void start(int i, String config,
+                                         ServiceAttributeOverrides attrOverrides,
+                                         boolean clearDatabase) throws Exception
    {
       Server s = create(i);
 
@@ -190,7 +196,7 @@ public class ServerManagement
 
       log.info("starting server " + i);
 
-      s.start(config, clearDatabase);
+      s.start(config, attrOverrides, clearDatabase);
 
       log.info("server " + i + " started");
    }
@@ -673,9 +679,22 @@ public class ServerManagement
                                       String defaultQueueJNDIContext,
                                       String defaultTopicJNDIContext) throws Exception
    {
+      startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, null);
+   }
+
+   /**
+    * @param serverPeerID - if null, the jboss-service.xml value will be used.
+    * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
+    * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
+    */
+   public static void startServerPeer(int serverPeerID,
+                                      String defaultQueueJNDIContext,
+                                      String defaultTopicJNDIContext,
+                                      ServiceAttributeOverrides attrOverrids) throws Exception
+   {
       insureStarted();
-      servers[0].getServer().
-         startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, false);
+      servers[0].getServer().startServerPeer(serverPeerID, defaultQueueJNDIContext,
+                                             defaultTopicJNDIContext, attrOverrids, false);
    }
 
    public static void stopServerPeer() throws Exception

@@ -322,8 +322,8 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
          Class clazz = Class.forName(messagePullPolicy);
          MessagePullPolicy pullPolicy = (MessagePullPolicy)clazz.newInstance();
-         clazz = Class.forName(clusterRouterFactory);
 
+         clazz = Class.forName(clusterRouterFactory);
          ClusterRouterFactory rf = (ClusterRouterFactory)clazz.newInstance();
 
          ConditionFactory cf = new JMSConditionFactory();

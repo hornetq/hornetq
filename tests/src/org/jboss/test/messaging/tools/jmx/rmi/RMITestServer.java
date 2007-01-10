@@ -38,6 +38,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space.
@@ -141,7 +142,13 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public void start(String containerConfig, boolean clearDatabase) throws Exception
    {
-      server.start(containerConfig, clearDatabase);
+      start(containerConfig, null, clearDatabase);
+   }
+
+   public void start(String containerConfig, ServiceAttributeOverrides attrOverrides,
+                     boolean clearDatabase) throws Exception
+   {
+      server.start(containerConfig, attrOverrides, clearDatabase);
    }
 
    public boolean stop() throws Exception
@@ -156,7 +163,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       // Kills the server without doing any graceful shutdown. For graceful shutdown use stop().
       new Thread(new VMKiller(), "VM Killer").start();
    }
-
 
    public void ping() throws Exception
    {
@@ -248,8 +254,18 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
                                String defaultTopicJNDIContext, boolean clustered) throws Exception
    {
-      server.
-         startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, clustered);
+      startServerPeer(serverPeerID, defaultQueueJNDIContext,
+                      defaultTopicJNDIContext, null, clustered);
+   }
+
+
+   public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
+                               String defaultTopicJNDIContext,
+                               ServiceAttributeOverrides attrOverrides, boolean clustered)
+      throws Exception
+   {
+      server.startServerPeer(serverPeerID, defaultQueueJNDIContext,
+                             defaultTopicJNDIContext, attrOverrides, clustered);
    }
 
    public void stopServerPeer() throws Exception
@@ -378,7 +394,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
                                        int defaultTempQueueDownCacheSize) throws Exception
    {
       server.deployConnectionFactory(objectName, jndiBindings, prefetchSize,
-               defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
+                                     defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize);
    }
 
    public void undeployConnectionFactory(ObjectName objectName) throws Exception
