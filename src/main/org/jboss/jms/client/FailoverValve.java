@@ -107,16 +107,15 @@ public class FailoverValve
    {
       lock.readLock().release();
 
-      getCounter().counter--;
+      // sanity check
+      if (getCounter().counter-- < 0)
+      {
+         throw new IllegalStateException("leave() was called without a prior enter() call");
+      }
 
       synchronized (this)
       {
          activeLocks--;
-
-         if (activeLocks < 0)
-         {
-            throw new IllegalStateException("leave() was called without a prior enter() call");
-         }
       }
 
       if (trace)
@@ -260,7 +259,7 @@ public class FailoverValve
       writer.println("Close owners");
 
       // Close should never have more than 1 thread owning, but as this is a debug report we will
-      // consider that as a possibility just to show eventual bugs (just in case thie class is ever
+      // consider that as a possibility just to show eventual bugs (just in case this class is ever
       // changed)
       for (Iterator iter = debugCloses.entrySet().iterator(); iter.hasNext();)
       {
