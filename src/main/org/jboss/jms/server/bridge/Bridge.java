@@ -625,7 +625,7 @@ public class Bridge implements MessagingComponent
             
             if (messages.size() >= maxBatchSize)
             {
-               if (trace) { log.trace(this + " maxBatchSizew has been reached so sending batch"); }
+               if (trace) { log.trace(this + " maxBatchSize has been reached so sending batch"); }
                
                sendBatch();
                
