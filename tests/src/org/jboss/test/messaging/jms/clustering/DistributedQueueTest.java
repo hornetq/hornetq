@@ -67,8 +67,8 @@ public class DistributedQueueTest extends MessagingTestCase
       ServerManagement.start(0, "all", attrOverrides, true);
       ServerManagement.start(1, "all", attrOverrides, false);
 
-      ServerManagement.deployClusteredQueue("testDistributedQueue", 0);
-      ServerManagement.deployClusteredQueue("testDistributedQueue", 1);
+      ServerManagement.deployQueue("testDistributedQueue", 0);
+      ServerManagement.deployQueue("testDistributedQueue", 1);
 
       InitialContext ic0 = null;
       InitialContext ic1 = null;

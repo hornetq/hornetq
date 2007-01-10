@@ -795,7 +795,7 @@ public class ServerManagement
    /**
     * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
     */
-   public static void deployClusteredTopic(String name, int serverIndex) throws Exception
+   public static void deployTopic(String name, int serverIndex) throws Exception
    {
       insureStarted(serverIndex);
       servers[serverIndex].getServer().deployTopic(name, null, true);
@@ -873,7 +873,7 @@ public class ServerManagement
    /**
     * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
     */
-   public static void deployClusteredQueue(String name, int serverIndex) throws Exception
+   public static void deployQueue(String name, int serverIndex) throws Exception
    {
       insureStarted(serverIndex);
       servers[serverIndex].getServer().deployQueue(name, null, true);

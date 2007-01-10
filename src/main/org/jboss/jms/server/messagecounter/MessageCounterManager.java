@@ -173,7 +173,7 @@ public class MessageCounterManager implements MessagingComponent
    
    class PingMessageCountersTask extends TimerTask
    {
-      public void run()
+      public synchronized void run()
       {
          synchronized (messageCounters)
          {

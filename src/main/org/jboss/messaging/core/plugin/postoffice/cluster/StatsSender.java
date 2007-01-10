@@ -97,7 +97,7 @@ public class StatsSender implements MessagingComponent
    
    class SendStatsTimerTask extends TimerTask
    {
-      public void run()
+      public synchronized void run()
       {
          try
          {

@@ -96,8 +96,8 @@ public class ClusteringTestBase extends MessagingTestCase
          // tables; don't clear the database for those.
          ServerManagement.start(i, "all", i == 0);
 
-         ServerManagement.deployClusteredQueue("testDistributedQueue", i);
-         ServerManagement.deployClusteredTopic("testDistributedTopic", i);
+         ServerManagement.deployQueue("testDistributedQueue", i);
+         ServerManagement.deployTopic("testDistributedTopic", i);
 
          ic[i] = new InitialContext(ServerManagement.getJNDIEnvironment(i));
          queue[i] = (Queue)ic[i].lookup("queue/testDistributedQueue");
