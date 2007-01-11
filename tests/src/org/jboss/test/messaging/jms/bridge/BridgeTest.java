@@ -48,7 +48,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
  */
 public class BridgeTest extends MessagingTestCase
 {
-
    public BridgeTest(String name)
    {
       super(name);
@@ -64,25 +63,62 @@ public class BridgeTest extends MessagingTestCase
       super.tearDown();
    }
    
-   public void testMaxBatchSizeNoMaxBatchTimeTransacted() throws Exception
+   public void testMaxBatchSizeNoMaxBatchTime_AtMostOnce() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testMaxBatchSizeNoMaxBatchTime(true);
+      testMaxBatchSizeNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE);
    }
    
-   public void testMaxBatchSizeNoMaxBatchTimeNonTransacted() throws Exception
+   public void testMaxBatchSizeNoMaxBatchTime_DuplicatesOk() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testMaxBatchSizeNoMaxBatchTime(false);
+      testMaxBatchSizeNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK);
    }
    
-   private void testMaxBatchSizeNoMaxBatchTime(boolean transacted) throws Exception
+   public void testMaxBatchSizeNoMaxBatchTime_OnceAndOnlyOnce() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testMaxBatchSizeNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE);
+   }
+   
+   
+   public void testMaxBatchTimeNoMaxBatchSize_AtMostOnce() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      this.testMaxBatchTimeNoMaxBatchSize(Bridge.QOS_AT_MOST_ONCE);
+   }
+   
+   public void testMaxBatchTimeNoMaxBatchSize_DuplicatesOk() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      this.testMaxBatchTimeNoMaxBatchSize(Bridge.QOS_DUPLICATES_OK);
+   }
+   
+   public void testMaxBatchTimeNoMaxBatchSize_OnceAndOnlyOnce() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testMaxBatchTimeNoMaxBatchSize(Bridge.QOS_ONCE_AND_ONLY_ONCE);
+   }
+      
+   private void testMaxBatchSizeNoMaxBatchTime(int qosMode) throws Exception
    {
       Connection connSource = null;
       
@@ -118,12 +154,11 @@ public class BridgeTest extends MessagingTestCase
          
          final int BATCH_SIZE = 10;
          
-         bridge = new Bridge(props0, props1, "/ConnectionFactory", "/ConnectionFactory",
-                  "/queue/sourceQueue", "/queue/destQueue", null, null, null, null,
-                  null, 0, false,
-                  false, 10, -1,
-                  null, null,
-                  false, false);
+         bridge = new Bridge(cf0, cf1, sourceQueue, destQueue,
+                  null, null, null, null,
+                  null, 0, qosMode,
+                  10, -1,
+                  null, null);
          
          bridge.start();
             
@@ -176,6 +211,10 @@ public class BridgeTest extends MessagingTestCase
             assertEquals("message" + i, tm.getText());
          }
          
+         m = cons.receive(1000);
+         
+         assertNull(m);
+         
          //Send another batch with one more than batch size
          
          for (int i = 0; i < BATCH_SIZE + 1; i++)
@@ -224,6 +263,174 @@ public class BridgeTest extends MessagingTestCase
             assertEquals("message" + i, tm.getText());
          }
          
+         m = cons.receive(1000);
+         
+         assertNull(m);
+         
+         
+         //Make sure no messages are left in the source dest
+         
+         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
+         
+         connSource.start();
+         
+         m = cons2.receive(1000);
+         
+         assertNull(m);
+         
+         connSource.close();
+         
+         connDest.close();
+                  
+      }
+      finally
+      {      
+         if (connSource != null)
+         {
+            try
+            {
+               connSource.close();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to close connection", e);
+            }
+         }
+         
+         if (connDest != null)
+         {
+            try
+            {
+               connDest.close();
+            }
+            catch (Exception e)
+            {
+              log.error("Failed to close connection", e);
+            }
+         }
+         
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+         
+         try
+         {
+            ServerManagement.undeployQueue("sourceQueue", 0);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+         
+         try
+         {
+            ServerManagement.undeployQueue("destQueue", 1);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+         
+         ServerManagement.stop(0);
+         
+         ServerManagement.stop(1);
+      }                  
+   }
+   
+   private void testMaxBatchTimeNoMaxBatchSize(int qosMode) throws Exception
+   {
+      Connection connSource = null;
+      
+      Connection connDest = null;
+      
+      Bridge bridge = null;
+            
+      try
+      {
+         ServerManagement.start(0, "all", null, true);
+         
+         ServerManagement.start(1, "all", null, false);
+         
+         ServerManagement.deployQueue("sourceQueue", 0);
+         
+         ServerManagement.deployQueue("destQueue", 1);
+         
+         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
+         
+         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+               
+         InitialContext ic0 = new InitialContext(props0);
+         
+         InitialContext ic1 = new InitialContext(props1);
+         
+         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         
+         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+         
+         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
+         
+         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         
+         final long MAX_BATCH_TIME = 3000;
+         
+         bridge = new Bridge(cf0, cf1, sourceQueue, destQueue,
+                  null, null, null, null,
+                  null, 0, qosMode,
+                  -1, MAX_BATCH_TIME,
+                  null, null);
+         
+         bridge.start();
+            
+         connSource = cf0.createConnection();
+         
+         connDest = cf1.createConnection();
+         
+         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(sourceQueue);
+         
+         final int NUM_MESSAGES = 10;
+         
+         //Send some message
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sessSend.createTextMessage("message" + i);
+            
+            prod.send(tm);
+         }
+         
+         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sessRec.createConsumer(destQueue);
+         
+         connDest.start();
+         
+         //Verify none are received
+         
+         Message m = cons.receive(2000);
+         
+         assertNull(m);
+         
+         //Wait a bit longer
+         
+         Thread.sleep(1500);
+         
+         //Messages should now be receivable
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(1000);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         m = cons.receive(1000);
+         
+         assertNull(m);
          
          //Make sure no messages are left in the source dest
          
