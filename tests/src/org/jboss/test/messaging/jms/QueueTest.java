@@ -117,6 +117,63 @@ public class QueueTest extends MessagingTestCase
       }
    }
 
+   /**
+    * The simplest possible queue test.
+    */
+   public void testRedeployQueue() throws Exception
+   {
+      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
+
+      Connection conn = cf.createConnection();
+
+      try
+      {
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(queue);
+         MessageConsumer c = s.createConsumer(queue);
+         conn.start();
+
+         for (int i = 0; i < 500; i++)
+         {
+            p.send(s.createTextMessage("payload " + i));
+         }
+
+         //ServerManagement.undeployQueue("TestQueue");
+
+         log.info("Stopping server");
+         ServerManagement.stopServerPeer();
+
+         log.info("Starting server");
+         ServerManagement.startServerPeer();
+         ServerManagement.deployQueue("TestQueue");
+
+         ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+         cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+
+         conn = cf.createConnection();
+         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         p = s.createProducer(queue);
+         c = s.createConsumer(queue);
+         conn.start();
+
+         for (int i = 0; i < 500; i++)
+         {
+            TextMessage message = (TextMessage)c.receive(3000);
+            assertNotNull(message);
+            assertNotNull(message.getJMSDestination());
+         }
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+
    public void testQueueName() throws Exception
    {
       Queue queue = (Queue)ic.lookup("/queue/TestQueue");
