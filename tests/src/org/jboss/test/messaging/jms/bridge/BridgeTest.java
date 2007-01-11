@@ -25,6 +25,7 @@ import java.util.Hashtable;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -34,6 +35,9 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.bridge.Bridge;
+import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
+import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
+import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -48,6 +52,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
  */
 public class BridgeTest extends MessagingTestCase
 {
+   private static final Logger log = Logger.getLogger(BridgeTest.class);
+   
    public BridgeTest(String name)
    {
       super(name);
@@ -63,62 +69,370 @@ public class BridgeTest extends MessagingTestCase
       super.tearDown();
    }
    
-   public void testMaxBatchSizeNoMaxBatchTime_AtMostOnce() throws Exception
+   // MaxBatchSize but no MaxBatchTime
+   
+   public void testNoMaxBatchTime_AtMostOnce_P() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testMaxBatchSizeNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE);
+      testNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, true);
    }
    
-   public void testMaxBatchSizeNoMaxBatchTime_DuplicatesOk() throws Exception
+   public void testNoMaxBatchTime_DuplicatesOk_P() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testMaxBatchSizeNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK);
+      testNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK, true);
    }
    
-   public void testMaxBatchSizeNoMaxBatchTime_OnceAndOnlyOnce() throws Exception
+   public void testNoMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testMaxBatchSizeNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE);
+      testNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
    }
    
-   
-   public void testMaxBatchTimeNoMaxBatchSize_AtMostOnce() throws Exception
+   public void testNoMaxBatchTime_AtMostOnce_NP() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      this.testMaxBatchTimeNoMaxBatchSize(Bridge.QOS_AT_MOST_ONCE);
+      testNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, false);
    }
    
-   public void testMaxBatchTimeNoMaxBatchSize_DuplicatesOk() throws Exception
+   public void testNoMaxBatchTime_DuplicatesOk_NP() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      this.testMaxBatchTimeNoMaxBatchSize(Bridge.QOS_DUPLICATES_OK);
+      testNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK, false);
    }
    
-   public void testMaxBatchTimeNoMaxBatchSize_OnceAndOnlyOnce() throws Exception
+   public void testNoMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testMaxBatchTimeNoMaxBatchSize(Bridge.QOS_ONCE_AND_ONLY_ONCE);
+      testNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
+   
+   
+   // MaxBatchTime but no MaxBatchSize
+   
+   public void testMaxBatchTime_AtMostOnce_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      this.testMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, true);
+   }
+   
+   public void testMaxBatchTime_DuplicatesOk_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      this.testMaxBatchTime(Bridge.QOS_DUPLICATES_OK, true);
+   }
+   
+   public void testMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+   }
+   
+   public void testMaxBatchTime_AtMostOnce_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      this.testMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, false);
+   }
+   
+   public void testMaxBatchTime_DuplicatesOk_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      this.testMaxBatchTime(Bridge.QOS_DUPLICATES_OK, false);
+   }
+   
+   public void testMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+   }
+    
+   
+   // Stress 
+   
+   public void testStress_AtMostOnce_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testStress(Bridge.QOS_AT_MOST_ONCE, true);
+   }
+   
+   public void testStress_DuplicatesOk_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testStress(Bridge.QOS_DUPLICATES_OK, true);
+   }
+   
+   public void testStress_OnceAndOnlyOnce_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+   }
+   
+   public void testStress_AtMostOnce_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testStress(Bridge.QOS_AT_MOST_ONCE, false);
+   }
+   
+   public void testStress_DuplicatesOk_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testStress(Bridge.QOS_DUPLICATES_OK, false);
+   }
+   
+   public void testStress_OnceAndOnlyOnce_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+   }
+   
+   
+   
+   private static class Sender implements Runnable
+   {
+      int numMessages;
       
-   private void testMaxBatchSizeNoMaxBatchTime(int qosMode) throws Exception
+      Session sess;
+      
+      MessageProducer prod;
+      
+      Exception ex;
+      
+      public void run()
+      {
+         try
+         {
+            for (int i = 0; i < numMessages; i++)
+            {
+               TextMessage tm = sess.createTextMessage("message" + i);
+                                            
+               prod.send(tm);
+               
+               log.trace("Sent message " + i);
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to send", e);
+            ex = e;
+         }         
+      }
+      
+   }   
+   
+   private void testStress(int qosMode, boolean persistent) throws Exception
+   {
+      Connection connSource = null;
+      
+      Connection connDest = null;
+      
+      Bridge bridge = null;
+      
+      Thread t = null;
+            
+      try
+      {
+         ServerManagement.start(0, "all", null, true);
+         
+         ServerManagement.start(1, "all", null, false);
+         
+         ServerManagement.deployQueue("sourceQueue", 0);
+         
+         ServerManagement.deployQueue("destQueue", 1);
+         
+         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
+         
+         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+         
+         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
+         
+         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
+                      
+         InitialContext ic0 = new InitialContext(props0);
+         
+         InitialContext ic1 = new InitialContext(props1);
+         
+         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         
+         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+         
+         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
+         
+         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         
+         final int BATCH_SIZE = 50;
+         
+         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+                  null, null, null, null,
+                  null, 5000, 10, qosMode,
+                  BATCH_SIZE, -1,
+                  null, null);
+         
+         bridge.start();
+            
+         connSource = cf0.createConnection();
+         
+         connDest = cf1.createConnection();
+         
+         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(sourceQueue);
+         
+         final int NUM_MESSAGES = 2000;
+         
+         Sender sender = new Sender();
+         sender.sess = sessSend;
+         sender.prod = prod;
+         sender.numMessages = NUM_MESSAGES;
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+                          
+         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sessRec.createConsumer(destQueue);
+         
+         connDest.start();
+         
+         t = new Thread(sender);
+         
+         t.start();
+                 
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(5000);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         Message m = cons.receive(1000);
+         
+         assertNull(m);
+         
+         t.join();
+         
+         if (sender.ex != null)
+         {
+            //An error occurred during the send
+            throw sender.ex;
+         }
+           
+      }
+      finally
+      {    
+         if (t != null)
+         {
+            t.join(10000);
+         }
+         
+         if (connSource != null)
+         {
+            try
+            {
+               connSource.close();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to close connection", e);
+            }
+         }
+         
+         if (connDest != null)
+         {
+            try
+            {
+               connDest.close();
+            }
+            catch (Exception e)
+            {
+              log.error("Failed to close connection", e);
+            }
+         }
+         
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+         
+         try
+         {
+            ServerManagement.undeployQueue("sourceQueue", 0);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+         
+         try
+         {
+            ServerManagement.undeployQueue("destQueue", 1);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+         
+         ServerManagement.stop(0);
+         
+         ServerManagement.stop(1);
+      }      
+   }
+   
+      
+   private void testNoMaxBatchTime(int qosMode, boolean persistent) throws Exception
    {
       Connection connSource = null;
       
@@ -139,7 +453,11 @@ public class BridgeTest extends MessagingTestCase
          Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
          
          Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-               
+         
+         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
+         
+         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
+                      
          InitialContext ic0 = new InitialContext(props0);
          
          InitialContext ic1 = new InitialContext(props1);
@@ -154,10 +472,10 @@ public class BridgeTest extends MessagingTestCase
          
          final int BATCH_SIZE = 10;
          
-         bridge = new Bridge(cf0, cf1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
-                  null, 0, qosMode,
-                  10, -1,
+                  null, 5000, 10, qosMode,
+                  BATCH_SIZE, -1,
                   null, null);
          
          bridge.start();
@@ -169,6 +487,8 @@ public class BridgeTest extends MessagingTestCase
          Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sessSend.createProducer(sourceQueue);
+         
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);        
          
          //Send half the messges
 
@@ -276,12 +596,7 @@ public class BridgeTest extends MessagingTestCase
          
          m = cons2.receive(1000);
          
-         assertNull(m);
-         
-         connSource.close();
-         
-         connDest.close();
-                  
+         assertNull(m);          
       }
       finally
       {      
@@ -338,7 +653,7 @@ public class BridgeTest extends MessagingTestCase
       }                  
    }
    
-   private void testMaxBatchTimeNoMaxBatchSize(int qosMode) throws Exception
+   private void testMaxBatchTime(int qosMode, boolean persistent) throws Exception
    {
       Connection connSource = null;
       
@@ -359,6 +674,10 @@ public class BridgeTest extends MessagingTestCase
          Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
          
          Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+         
+         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
+         
+         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
                
          InitialContext ic0 = new InitialContext(props0);
          
@@ -374,10 +693,12 @@ public class BridgeTest extends MessagingTestCase
          
          final long MAX_BATCH_TIME = 3000;
          
-         bridge = new Bridge(cf0, cf1, sourceQueue, destQueue,
+         final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
+         
+         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
-                  null, 0, qosMode,
-                  -1, MAX_BATCH_TIME,
+                  null, 5000, 10, qosMode,
+                  MAX_BATCH_SIZE, MAX_BATCH_TIME,
                   null, null);
          
          bridge.start();
@@ -389,6 +710,8 @@ public class BridgeTest extends MessagingTestCase
          Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sessSend.createProducer(sourceQueue);
+         
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);                          
          
          final int NUM_MESSAGES = 10;
          
@@ -442,10 +765,6 @@ public class BridgeTest extends MessagingTestCase
          
          assertNull(m);
          
-         connSource.close();
-         
-         connDest.close();
-                  
       }
       finally
       {      
