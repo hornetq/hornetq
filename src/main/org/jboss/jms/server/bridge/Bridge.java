@@ -941,8 +941,6 @@ public class Bridge implements MessagingComponent
             
             if (trace) { log.trace(this + " rescheduled batchExpiryTime to " + batchExpiryTime); }
             
-            if (trace) { log.trace("max Batch Size is " + maxBatchSize); }
-            
             if (maxBatchSize != -1 && messages.size() >= maxBatchSize)
             {
                if (trace) { log.trace(this + " maxBatchSize has been reached so sending batch"); }
