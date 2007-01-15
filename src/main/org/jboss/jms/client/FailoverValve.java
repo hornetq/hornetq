@@ -39,7 +39,7 @@ public class FailoverValve
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(Valve.class);
+   private static final Logger log = Logger.getLogger(FailoverValve.class);
 
    // Static ---------------------------------------------------------------------------------------
 
