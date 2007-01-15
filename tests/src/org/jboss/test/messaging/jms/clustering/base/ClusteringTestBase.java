@@ -41,8 +41,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision:$</tt>
- * $Id:$
+ * @version <tt>$Revision$</tt>
+ * $Id$
  */
 public class ClusteringTestBase extends MessagingTestCase
 {
