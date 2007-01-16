@@ -354,11 +354,11 @@
     </library>
     <library name="jboss-remoting">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/jboss-remoting.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/remoting/lib/jboss-remoting.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://C:/work/src/cvs/JBossRemoting-remoting_2_x/src/main" />
+        <root url="file://C:/work/src/cvs/JBossRemoting-2.2.0.Alpha5/src/main" />
       </SOURCES>
     </library>
   </component>

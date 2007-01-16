@@ -9,8 +9,6 @@ package org.jboss.test.messaging.jms.clustering;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.JBossConnection;
 
 import javax.jms.Connection;
