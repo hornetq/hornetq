@@ -56,7 +56,14 @@ public class JNDIConnectionFactoryFactory implements ConnectionFactoryFactory
       
       try
       {
-         ic = new InitialContext(jndiProperties);
+         if (jndiProperties == null)
+         {
+            ic = new InitialContext();
+         }
+         else
+         {
+            ic = new InitialContext(jndiProperties);
+         }
          
          cf = (ConnectionFactory)ic.lookup(lookup);         
       }

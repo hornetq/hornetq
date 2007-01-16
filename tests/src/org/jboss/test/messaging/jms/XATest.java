@@ -41,8 +41,8 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.util.TransactionManagerLocator;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.tm.TxUtils;
 
 /**
@@ -84,15 +84,15 @@ public class XATest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.start("all");
+      ServerManagement.start("all,-transaction,jbossjta");
       initialContext = new InitialContext();
       
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
             
       if (!ServerManagement.isRemote())
-      {
-         tm = TransactionManagerLocator.getInstance().locate();
+      {        
+         tm = (TransactionManager)initialContext.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
       }
 
       ServerManagement.undeployQueue("Queue");

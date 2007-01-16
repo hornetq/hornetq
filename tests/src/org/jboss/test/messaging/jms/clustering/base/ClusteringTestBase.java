@@ -89,7 +89,7 @@ public class ClusteringTestBase extends MessagingTestCase
       queue = new Queue[nodeCount];
       topic = new Topic[nodeCount];
 
-      for(int i = 0; i < nodeCount; i++)
+      for (int i = 0; i < nodeCount; i++)
       {
          // make sure all servers are created and started; make sure that database is zapped
          // ONLY for the first server, the others rely on values they expect to find in shared

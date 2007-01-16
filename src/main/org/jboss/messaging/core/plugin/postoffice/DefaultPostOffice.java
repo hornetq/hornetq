@@ -48,6 +48,7 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.JDBCSupport;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.plugin.contract.ConditionFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -519,13 +520,22 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
 
             Condition condition = conditionFactory.createCondition(conditionText);
 
-            Binding binding = createBinding(nodeID, condition, queueName, channelID,
-                                            selector, true, failed, failedNodeID);
-
-            log.debug(this + " loaded from database " + binding);
-            
-            binding.getQueue().deactivate();
-            addBinding(binding);
+            //Temp hack
+            //For non clustered po don't want to load other nodes bindings!
+            if (!(this instanceof ClusteredPostOffice) && (nodeID != this.currentNodeId))
+            {
+               //Don't load other nodes binding
+            }
+            else
+            {               
+               Binding binding = createBinding(nodeID, condition, queueName, channelID,
+                                               selector, true, failed, failedNodeID);
+      
+               log.debug(this + " loaded from database " + binding);
+               
+               binding.getQueue().deactivate();
+               addBinding(binding);
+            }
          }
       }
       finally

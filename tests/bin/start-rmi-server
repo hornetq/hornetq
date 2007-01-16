@@ -58,8 +58,9 @@ if [ "$TEST_SERIALIZATION" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.serialization=$TEST_SERIALIZATION"
 fi
 
+# We need to append the index even if non clustered since we may have many non clustered servers
 if [ "$TEST_REMOTING" != "" ]; then
-   JAVA_OPTS="$JAVA_OPTS -Dtest.remoting=$TEST_REMOTING -Dtest.logfile.suffix=remote-server"
+   JAVA_OPTS="$JAVA_OPTS -Dtest.remoting=$TEST_REMOTING -Dtest.logfile.suffix=remote-server$index"
 fi
 
 if [ "$TEST_CLUSTERED" != "" ]; then

@@ -37,6 +37,7 @@ import javax.transaction.TransactionManager;
 
 import junit.framework.TestCase;
 
+import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerService;
@@ -93,6 +94,8 @@ public class MessagingTestCase extends TestCase
          // log the test start in the remote log, this will make hunting through logs so much easier
          ServerManagement.log(ServerManagement.INFO, banner);
       }
+      
+      MessageIdGeneratorFactory.instance.clear();
    }
 
    protected void tearDown() throws Exception

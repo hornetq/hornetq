@@ -192,8 +192,6 @@ public class ServerManagement
    {
       Server s = create(i);
 
-      MessageIdGeneratorFactory.instance.clear();
-
       log.info("starting server " + i);
 
       s.start(config, attrOverrides, clearDatabase);
@@ -265,6 +263,12 @@ public class ServerManagement
          servers[i] = null;
       }
    }
+   
+   //Need to do this after a poison otherwise this will think the server is still alive
+   public static synchronized void nullServer(int i)
+   {
+      servers[i] = null;
+   }
 
    /** 
     * Kills the server and waits keep trying any dumb communication until the server is effectively
@@ -334,11 +338,11 @@ public class ServerManagement
     */
    private static synchronized Server spawn(final int i) throws Exception
    {
-      if(isLocal())
+      if (isLocal())
       {
          return null;
       }
-
+      
       StringBuffer sb = new StringBuffer();
 
       sb.append("java").append(' ');
@@ -399,12 +403,12 @@ public class ServerManagement
             testLogfileSuffix = testLogfileSuffix.substring(0, pos) + "server";
          }
 
-         if (clustered != null)
-         {
-            testLogfileSuffix += i;
-         }
+         //We need to add the i even in the non clustered case since we can have multiple
+         //non clustered servers
+         testLogfileSuffix += i;
+         
       }
-
+      
       sb.append("-Dtest.logfile.suffix=").append(testLogfileSuffix).append(' ');
 
       String classPath = System.getProperty("java.class.path");
@@ -1027,11 +1031,11 @@ public class ServerManagement
       String name =
          "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
          RMITestServer.RMI_SERVER_PREFIX + index;
-
+      
       Server s = null;
       int retries = initialRetries;
 
-      while(s == null && retries > 0)
+      while (s == null && retries > 0)
       {
          int attempt = initialRetries - retries + 1;
          try

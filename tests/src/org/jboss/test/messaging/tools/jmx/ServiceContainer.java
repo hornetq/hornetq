@@ -38,14 +38,15 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -53,6 +54,7 @@ import javax.naming.spi.NamingManager;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
+
 import org.hsqldb.Server;
 import org.hsqldb.persist.HsqlProperties;
 import org.jboss.jms.jndi.JNDIProviderAdapter;
@@ -81,8 +83,8 @@ import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jndi.Constants;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
-import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TransactionManagerService;
+import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 
 
@@ -182,6 +184,7 @@ public class ServiceContainer
    private Server hsqldbServer;
 
    private boolean transaction;
+   private boolean jbossjta; //To use the ex-Arjuna tx mgr
    private boolean database;
    private boolean jca;
    private boolean remoting;
@@ -361,8 +364,8 @@ public class ServiceContainer
          startServiceController();
 
          registerClassLoader();
-
-         if (transaction)
+         
+         if (transaction || jbossjta)
          {
             startTransactionManager();
          }
@@ -385,6 +388,12 @@ public class ServiceContainer
                                    DEFAULTDS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
             startWrapperDataSourceService();
          }
+         if (database && (transaction || jbossjta) && jca && cleanDatabase)
+         {
+            // We make sure the database is clean (only if we have all dependencies the database,
+            // othewise we'll get an access error)
+            deleteAllData();
+         }
 
          if (remoting)
          {
@@ -394,13 +403,6 @@ public class ServiceContainer
          if (security)
          {
             startSecurityManager();
-         }
-
-         if (database && transaction && jca && cleanDatabase)
-         {
-            // We make sure the database is clean (only if we have all dependencies the database,
-            // othewise we'll get an access error)
-            deleteAllData();
          }
 
          loadJNDIContexts();
@@ -988,7 +990,16 @@ public class ServiceContainer
    {
       if (tm == null)
       {
-         tm = TransactionManagerLocator.getInstance().locate();
+         if (jbossjta)
+         {
+            log.info("Starting arjuna tx mgr");
+            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
+         }
+         else
+         {
+            log.info("Starting non arjuna tx mgr");
+            tm = TxManager.getInstance();
+         }
       }
 
       TransactionManagerJMXWrapper mbean = new TransactionManagerJMXWrapper(tm);
@@ -1179,7 +1190,8 @@ public class ServiceContainer
                       "clientLeasePeriod=" + clientLeasePeriod + "&" +
                       "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
                       "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
-                      "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper";
+                      "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
+                      "NumberOfRetries=1&NumberOfCallRetries=1";
 
       // specific parameters per transport
 
@@ -1389,6 +1401,20 @@ public class ServiceContainer
             if (minus)
             {
                transaction = false;
+            }
+         }
+         else if ("jbossjta".equals(tok))
+         {
+            if (transaction)
+            {
+               throw new IllegalArgumentException("Cannot have the old JBoss transaction manager AND the JBoss Transactions transaction manager");
+            }
+            
+            //Use the JBoss Transactions (ex Arjuna) JTA
+            jbossjta = true;
+            if (minus)
+            {
+               jbossjta = false;
             }
          }
          else if ("database".equals(tok))

@@ -90,7 +90,6 @@ public class MessageIdGeneratorFactory
       log.debug("checked out MessageIdGenerator for " + serverId +
                 ", reference count is " + h.refCount);
 
-
       return h.generator;
    }
 

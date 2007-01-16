@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Example Message Bridge configurations
+
+     $Id: destinations-service.xml 1930 2007-01-09 18:16:04Z timfox $
+ -->
+
+<server>
+
+   <mbean code="org.jboss.jms.server.bridge.BridgeService"
+      name="jboss.messaging:service=Bridge,name=exampleBridge"
+      xmbean-dd="xmdesc/Bridge-xmbean.xml">
+      
+      <attribute name="SourceConnectionFactoryLookup">/ConnectionFactory</attribute>
+      
+      <attribute name="TargetConnectionFactoryLookup">/ConnectionFactory</attribute>
+      
+      <attribute name="SourceDestinationLookup">/topic/sourceTopic</attribute>
+      
+      <attribute name="TargetDestinationLookup">/queue/targetQueue</attribute>
+      
+      <attribute name="SourceUsername">bob</attribute>
+      
+      <attribute name="SourcePassword">pwd1</attribute>
+      
+      <attribute name="TargetUsername">jane</attribute>
+      
+      <attribute name="TargetPassword">pwd2</attribute>
+      
+      <attribute name="QualityOfServiceMode">2</attribute>
+      
+      <attribute name="Selector">vegetable='marrow'</attribute>
+      
+      <attribute name="MaxBatchSize">100</attribute>      
+      
+      <attribute name="MaxBatchTime">5000</attribute>
+      
+      <attribute name="SubName">mySubscription</attribute>
+      
+      <attribute name="ClientID">clientid-123</attribute>
+      
+      <attribute name="FailureRetryInterval">5000</attribute>
+      
+      <attribute name="MaxRetries">-1</attribute>
+      
+      <attribute name="SourceJNDIProperties"><![CDATA[
+java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
+java.naming.provider.url=jnp://server1:1099
+java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
+      ]]>
+      </attribute>
+      
+      <attribute name="TargetJNDIProperties"><![CDATA[
+java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
+java.naming.provider.url=jnp://server2:1099
+java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces            
+      ]]>
+      </attribute>
+   </mbean>   
+
+
+</server>

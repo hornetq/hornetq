@@ -158,25 +158,7 @@ if [ "$remote_debug" = "true" ]; then
    fi
 fi
 
-if [ "$isRemote" = "true" ]; then
 
-  export TEST_DATABASE TEST_SERIALIZATION TEST_CLUSTERED TEST_REMOTING
-
-  $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_0 -use-existent-test-classpath-file -index 0
-
-  if [ "$TEST_CLUSTERED" = "true" ]; then
-
-     # start the second remote server
-     $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_1 -use-existent-test-classpath-file -index 1
-
-     # start the third remote server
-     $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_2 -use-existent-test-classpath-file -index 2
-
-     # start the fourth remote server
-     $reldir/start-rmi-server $REMOTE_DEBUG_FLAG_3 -use-existent-test-classpath-file -index 3
-
-  fi
-fi
 
 
 $JAVA_HOME/bin/java $JAVA_OPTS -cp "$CLASSPATH" \

@@ -29,6 +29,10 @@ import com.arjuna.ats.jta.recovery.XAResourceRecovery;
 
 /**
  * JMS Provider Adapter based recovery.
+ * 
+ * This should be done when recovery is being driven from a transaction manager deployed with JBoss AS
+ * since it relies on JMSProviderLoader instances being deployed that correspond to the JMS providers
+ * to recover for.
  *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="juha@jboss.com">Juha Lindfors</a>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mbean PUBLIC
+      "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+      "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+
+<mbean>
+   <description>A JMS Message Bridge</description>
+   <class>org.jboss.server.bridge.BridgeService</class>
+
+   <!-- Managed constructors -->
+
+   <!-- Managed attributes -->
+
+   <attribute access="read-only" getMethod="getInstance">
+      <description>Gets the underlying instance</description>
+      <name>Instance</name>
+      <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
+   </attribute>
+
+	<attribute access="read-write" getMethod="getSourceConnectionFactoryLookup"
+	   setMethod="setSourceConnectionFactoryLookup">
+	   <description>The source connection factory lookup</description>
+	   <name>SourceConnectionFactoryLookup</name>
+	   <type>java.lang.String</type>
+	</attribute>
+	
+	<attribute access="read-write" getMethod="getDestConnectionFactoryLookup"
+	   setMethod="setDestConnectionFactoryLookup">
+	   <description>The destination connection factory lookup</description>
+	   <name>DestConnectionFactoryLookup</name>
+	   <type>java.lang.String</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getSourceUsername"
+	   setMethod="setSourceUsername">
+	   <description>The source username</description>
+	   <name>SourceUsername</name>
+	   <type>java.lang.String</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getSourcePassword"
+	   setMethod="setSourcePassword">
+	   <description>The source username</description>
+	   <name>SourcePassword</name>
+	   <type>java.lang.String</type>
+	</attribute>		
+	
+	<attribute access="read-write" getMethod="getDestUsername"
+	   setMethod="setDestUsername">
+	   <description>The destination username</description>
+	   <name>DestUsername</name>
+	   <type>java.lang.String</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getQualityOfServiceMode"
+	   setMethod="setQualityOfServiceMode">
+	   <description>The quality of service mode. 0 = at most once. 1 = duplicates ok, 2 = once and only once</description>
+	   <name>QualitOfServiceMode</name>
+	   <type>int</type>
+	</attribute>	
+	 
+	<attribute access="read-write" getMethod="getSelector"
+	   setMethod="setSelector">
+	   <description>The JMS selector to use when consuming messages from the source destination</description>
+	   <name>Selector</name>
+	   <type>java.lang.String</type>
+	</attribute>
+	
+	<attribute access="read-write" getMethod="getMaxBatchSize"
+	   setMethod="setMaxBatchSize">
+	   <description>The maximum number of messages to forward at a time, must be >= 1</description>
+	   <name>MaxBatchSize</name>
+	   <type>int</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getMaxBatchTime"
+	   setMethod="setMaxBatchTime">
+	   <description>Number of milliseconds to wait after no messages arrive to forward batch of messages</description>
+	   <name>MaxBatchTime</name>
+	   <type>int</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getSubName"
+	   setMethod="setSubName">
+	   <description>If consuming from a durable subscription, this is the name of the durable subscrition</description>
+	   <name>SubName</name>
+	   <type>java.lang.String</type>
+	</attribute>
+	
+	<attribute access="read-write" getMethod="getClientID"
+	   setMethod="setClientID">
+	   <description>If consuming from a durable subscription, this is the client id to use</description>
+	   <name>ClientID</name>
+	   <type>java.lang.String</type>
+	</attribute>		
+	
+	<attribute access="read-write" getMethod="getFailureRetryInterval"
+	   setMethod="setFailureRetryInterval">
+	   <description>The amount of time to wait in milliseconds before retrying connection creation, after connection failure is detected, or -1 if no retries will be attempted</description>
+	   <name>FailureRetryInterval</name>
+	   <type>long</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getMaxRetries"
+	   setMethod="setMaxRetries">
+	   <description>The maximum number of attempts to retry connection creation after connection failure is detected</description>
+	   <name>MaxRetries</name>
+	   <type>int</type>
+	</attribute>		
+	
+	<attribute access="read-only" getMethod="isFailed">
+	   <description>Has the bridge failed?</description>
+	   <name>Failed</name>
+	   <type>boolean</type>
+	</attribute>
+	
+	<attribute access="read-only" getMethod="isPaused">
+	   <description>Is the bridge paused?</description>
+	   <name>Paused</name>
+	   <type>boolean</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getSourceJNDIProperties" setMethod="setSourceJNDIProperties>
+	   <description>The JNDI properties to use to lookup the source destination, or null if a local JNDI initial context should be used</description>
+	   <name>SourceJNDIProperties</name>
+	   <type>java.lang.String</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getDestNDIProperties" setMethod="setDestJNDIProperties>
+	   <description>The JNDI properties to use to lookup the destination destination, or null if a local JNDI initial context should be used</description>
+	   <name>DestJNDIProperties</name>
+	   <type>java.lang.String</type>
+	</attribute>			
+
+   <!-- Managed operations -->
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>start</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>stop</name>
+   </operation>
+
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>destroy</name>
+   </operation>   
+
+</mbean>

@@ -500,8 +500,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.usingVersion = version;
    }
    
-   
-           
+   public ServerPeer getServerPeer()
+   {
+      return serverPeer;
+   }
+        
    public String toString()
    {
       return "ConnectionEndpoint[" + id + "]";
@@ -582,11 +585,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       {
          return temporaryDestinations.contains(dest);
       }
-   }
-   
-   ServerPeer getServerPeer()
-   {
-      return serverPeer;
    }
    
    String getRemotingClientSessionId()

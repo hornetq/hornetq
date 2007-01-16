@@ -295,8 +295,6 @@ public class LocalTestServer implements Server
    {
       try
       {
-         log.info(" Server peer ID ........... " + serverPeerID);
-
          log.debug("creating ServerPeer instance");
 
          // we are using the "default" service deployment descriptors available in

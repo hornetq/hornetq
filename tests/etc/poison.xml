@@ -6,7 +6,7 @@
 
    <interceptor class="org.jboss.test.messaging.tools.aop.PoisonInterceptor" scope="PER_VM"/>
 
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->createSessionDelegate(..))">
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->*(..))">
       <interceptor-ref name="org.jboss.test.messaging.tools.aop.PoisonInterceptor"/>
    </bind>
 

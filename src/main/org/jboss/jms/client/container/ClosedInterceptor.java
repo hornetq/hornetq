@@ -298,7 +298,7 @@ public class ClosedInterceptor implements Interceptor
          catch (Throwable ignored)
          {
             // Add a log interceptor to the child if you want the error
-            ignored.printStackTrace();
+         //   ignored.printStackTrace();
          }
       }
       
