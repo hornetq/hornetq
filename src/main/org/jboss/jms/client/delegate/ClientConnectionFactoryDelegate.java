@@ -173,21 +173,10 @@ public class ClientConnectionFactoryDelegate
 
       SimpleMetaData md = mi.getMetaData();
 
-      if ("getClientAOPStack".equals(methodName))
-      {
-         // the ClientAOPStackProvider on the server-side is the ServerPeer itself
-         md.addMetaData(Dispatcher.DISPATCHER,
-                        Dispatcher.OID,
-                        new Integer(serverID),
-                        PayloadKey.AS_IS);
-      }
-      else
-      {
-         md.addMetaData(Dispatcher.DISPATCHER,
+      md.addMetaData(Dispatcher.DISPATCHER,
                         Dispatcher.OID,
                         new Integer(id),
-                        PayloadKey.AS_IS);
-      }
+                        PayloadKey.AS_IS);      
 
       // If the method being invoked is createConnectionDelegate() then we must invoke it on the
       // same remoting client subsequently used by the connection. This is because we need to pass

@@ -46,6 +46,8 @@ public class ExceptionInterceptor implements Interceptor
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ExceptionInterceptor.class);
+   
+   private boolean trace = log.isTraceEnabled();
       
    // Static ---------------------------------------------------------------------------------------
 
@@ -71,7 +73,7 @@ public class ExceptionInterceptor implements Interceptor
       catch(JMSException e)
       {
          // JMSException should not be logged unless trace is on
-        // if (trace) { log.trace("Caught JMSException", e); }
+         if (trace) { log.trace("Caught JMSException", e); }
          throw e;
       }
       catch (Throwable t)

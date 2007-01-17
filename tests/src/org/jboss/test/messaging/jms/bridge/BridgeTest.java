@@ -32,6 +32,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.bridge.Bridge;
@@ -900,13 +901,13 @@ public class BridgeTest extends BridgeTestBase
          
          ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
          
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
+         Topic sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
          
          Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
          
          final int BATCH_SIZE = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -920,7 +921,7 @@ public class BridgeTest extends BridgeTestBase
          
          Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sessSend.createProducer(sourceQueue);         
+         MessageProducer prod = sessSend.createProducer(sourceTopic);         
 
          for (int i = 0; i < BATCH_SIZE; i++)
          {
@@ -1030,13 +1031,13 @@ public class BridgeTest extends BridgeTestBase
          
          ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
          
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
+         Topic sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
          
          Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
          
          final int BATCH_SIZE = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -1050,7 +1051,7 @@ public class BridgeTest extends BridgeTestBase
          
          Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sessSend.createProducer(sourceQueue);         
+         MessageProducer prod = sessSend.createProducer(sourceTopic);         
 
          for (int i = 0; i < BATCH_SIZE; i++)
          {

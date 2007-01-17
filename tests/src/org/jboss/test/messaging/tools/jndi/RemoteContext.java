@@ -72,6 +72,8 @@ public class RemoteContext implements Context
    {
       try
       {
+         log.info(this + " lookup: " + name);
+         
          return namingDelegate.lookup(name);
       }
       catch(Exception e)

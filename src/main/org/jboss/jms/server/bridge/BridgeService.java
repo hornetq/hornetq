@@ -57,7 +57,6 @@ public class BridgeService extends ServiceMBeanSupport
    
    private String targetDestinationLookup;
       
-   
    public BridgeService()
    {
       bridge = new Bridge();
@@ -77,22 +76,22 @@ public class BridgeService extends ServiceMBeanSupport
    
    public synchronized void setSourceConnectionFactoryLookup(String lookup)
    {
-      if (getState() != STOPPED)
+      if (bridge.isStarted())
       {
          log.warn("Cannot set SourceConnectionFactoryLookup when bridge is started");
          return;
       }
-      this.sourceConnectionFactoryLookup = lookup;
-   }
+      this.sourceConnectionFactoryLookup = checkAndTrim(lookup);
+   }      
    
    public synchronized void setTargetConnectionFactoryLookup(String lookup)
    {
-      if (getState() != STOPPED)
+      if (bridge.isStarted())
       {
          log.warn("Cannot set DestConnectionFactoryLookup when bridge is started");
          return;
       }
-      this.targetConnectionFactoryLookup = lookup;
+      this.targetConnectionFactoryLookup = checkAndTrim(lookup);
    }
    
    public String getSourceDestinationLookup()
@@ -107,22 +106,22 @@ public class BridgeService extends ServiceMBeanSupport
 
    public void setSourceDestinationLookup(String lookup)
    {
-      if (getState() != STOPPED)
+      if (bridge.isStarted())
       {
          log.warn("Cannot set SourceDestinationLookup when bridge is started");
          return;
       }
-      this.sourceDestinationLookup = lookup;
+      this.sourceDestinationLookup = checkAndTrim(lookup);
    }
 
    public void setTargetDestinationLookup(String lookup)
    {
-      if (getState() != STOPPED)
+      if (bridge.isStarted())
       {
          log.warn("Cannot set TargetDestinationLookup when bridge is started");
          return;
       }
-      this.targetDestinationLookup = lookup;
+      this.targetDestinationLookup = checkAndTrim(lookup);
    }
     
    public String getSourceUsername()
@@ -135,9 +134,9 @@ public class BridgeService extends ServiceMBeanSupport
       return bridge.getSourcePassword();
    }
    
-   public void setSourceUserName(String name)
+   public void setSourceUsername(String name)
    {
-      bridge.setSourceUserName(name);
+      bridge.setSourceUsername(name);
    }
    
    public void setSourcePassword(String pwd)
@@ -254,6 +253,11 @@ public class BridgeService extends ServiceMBeanSupport
    {
       return bridge.isPaused();
    }
+   
+   public boolean isStarted()
+   {
+      return bridge.isStarted();
+   }
 
    public synchronized String getSourceJNDIProperties()
    {
@@ -262,15 +266,12 @@ public class BridgeService extends ServiceMBeanSupport
    
    public synchronized void setSourceJNDIProperties(String props)
    {
-      if (props != null)
+      if (bridge.isStarted())
       {
-         props = props.trim();
-         if ("".equals(props))
-         {
-            props = null;
-         }
+         log.warn("Cannot set SourceJNDIProperties when bridge is started");
+         return;
       }
-      this.sourceJNDIProperties = props;
+      this.sourceJNDIProperties = checkAndTrim(props);
    }
    
    public synchronized String getTargetJNDIProperties()
@@ -280,15 +281,12 @@ public class BridgeService extends ServiceMBeanSupport
    
    public synchronized void setTargetJNDIProperties(String props)
    {
-      if (props != null)
+      if (bridge.isStarted())
       {
-         props = props.trim();
-         if ("".equals(props))
-         {
-            props = null;
-         }
+         log.warn("Cannot set TargetJNDIProperties when bridge is started");
+         return;
       }
-      this.targetJNDIProperties = props;
+      this.targetJNDIProperties = checkAndTrim(props);
    }
 
    public MessagingComponent getInstance()
@@ -339,6 +337,10 @@ public class BridgeService extends ServiceMBeanSupport
          icSource = new InitialContext(sourceProps);
       }
       
+      if (sourceDestinationLookup == null)
+      {
+         throw new IllegalArgumentException("Source destination lookup cannot be null");
+      }
       Destination sourceDest = (Destination)icSource.lookup(sourceDestinationLookup);
       
       InitialContext icDest = null;
@@ -349,11 +351,20 @@ public class BridgeService extends ServiceMBeanSupport
       }
       else
       {
-         icDest = new InitialContext(sourceProps);
+         icDest = new InitialContext(targetProps);
       }
       
+      if (targetDestinationLookup == null)
+      {
+         throw new IllegalArgumentException("Target destination lookup cannot be null");
+      }
       Destination targetDest = (Destination)icDest.lookup(targetDestinationLookup);
-                     
+            
+      if (sourceConnectionFactoryLookup == null)
+      {
+         throw new IllegalArgumentException("Source connection factory lookup cannot be null");
+      }
+      
       ConnectionFactoryFactory sourceCff =
          new JNDIConnectionFactoryFactory(sourceProps, sourceConnectionFactoryLookup);
       
@@ -378,6 +389,19 @@ public class BridgeService extends ServiceMBeanSupport
    }
    
    // Private ---------------------------------------------------------------------------------
+   
+   private String checkAndTrim(String s)
+   {
+      if (s != null)
+      {
+         s = s.trim();
+         if ("".equals(s))
+         {
+            s = null;
+         }
+      }
+      return s;
+   }
    
    private Properties createProps(String propsString) throws Exception
    {

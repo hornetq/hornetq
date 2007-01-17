@@ -196,6 +196,18 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          throw ExceptionUtil.handleJMSInvocation(t, this + " getIdBlock");
       }
    }
+   
+   public byte[] getClientAOPStack() throws JMSException
+   {
+      try
+      {
+         return serverPeer.getClientAOPStack();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " getClientAOPStack");
+      }
+   }
 
 
    // Public ---------------------------------------------------------------------------------------

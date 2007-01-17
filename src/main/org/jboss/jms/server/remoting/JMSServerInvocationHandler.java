@@ -21,6 +21,14 @@
   */
 package org.jboss.jms.server.remoting;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.management.MBeanServer;
+
+import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.InvocationResponse;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.util.PayloadKey;
@@ -31,12 +39,6 @@ import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-
-import javax.management.MBeanServer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -127,7 +129,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
                                                       "for session id " + s);
          }
       }
-
+      
       InvocationResponse resp = JMSDispatcher.instance.invoke(i);
       
       byte version = mm.getVersion();

@@ -22,7 +22,6 @@
 package org.jboss.jms.delegate;
 
 import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
-import org.jboss.jms.client.ClientAOPStackProvider;
 
 /**
  * Represents the minimal set of operations to provide connection factory
@@ -34,6 +33,6 @@ import org.jboss.jms.client.ClientAOPStackProvider;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public interface ConnectionFactoryDelegate extends ClientAOPStackProvider, ConnectionFactoryEndpoint
+public interface ConnectionFactoryDelegate extends ConnectionFactoryEndpoint
 {
 }

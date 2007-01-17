@@ -197,6 +197,9 @@ public class Bridge implements MessagingComponent
     */
    public Bridge()
    {      
+      this.messages = new LinkedList();      
+      
+      this.lock = new Object();      
    }
    
    
@@ -213,6 +216,8 @@ public class Bridge implements MessagingComponent
                  int maxBatchSize, long maxBatchTime,
                  String subName, String clientID)
    {            
+      this();
+      
       this.sourceCff = sourceCff;
       
       this.targetCff = destCff;
@@ -245,12 +250,6 @@ public class Bridge implements MessagingComponent
       
       this.clientID = clientID;
             
-      checkParams();
-      
-      this.messages = new LinkedList();      
-      
-      this.lock = new Object();
-      
       if (trace)
       {
          log.trace("Created " + this);
@@ -269,6 +268,8 @@ public class Bridge implements MessagingComponent
       }
       
       if (trace) { log.trace("Starting " + this); }         
+      
+      checkParams();
       
       boolean ok = setupJMSObjectsWithRetry();
       
@@ -395,7 +396,6 @@ public class Bridge implements MessagingComponent
          return;
       }
       this.sourceDestination = dest;
-      checkParams();
    }
    
    public Destination getTargetDestination()
@@ -411,7 +411,6 @@ public class Bridge implements MessagingComponent
          return;
       }
       this.targetDestination = dest;
-      checkParams();
    }
    
    public String getSourceUsername()
@@ -419,7 +418,7 @@ public class Bridge implements MessagingComponent
       return sourceUsername;
    }
    
-   public synchronized void setSourceUserName(String name)
+   public synchronized void setSourceUsername(String name)
    {
       if (started)
       {
@@ -427,7 +426,6 @@ public class Bridge implements MessagingComponent
          return;
       }
       sourceUsername = name;
-      checkParams();
    }
    
    public synchronized String getSourcePassword()
@@ -443,7 +441,6 @@ public class Bridge implements MessagingComponent
          return;
       }
       sourcePassword = pwd;
-      checkParams();
    }
       
    public synchronized String getDestUsername()
@@ -459,7 +456,6 @@ public class Bridge implements MessagingComponent
          return;
       }
       this.targetUsername = name;
-      checkParams();
    }
    
    public synchronized String getDestPassword()
@@ -475,7 +471,6 @@ public class Bridge implements MessagingComponent
          return;
       }
       this.targetPassword = pwd;
-      checkParams();
    }
       
    public synchronized String getSelector()
@@ -491,7 +486,6 @@ public class Bridge implements MessagingComponent
          return;
       }
       this.selector = selector;
-      checkParams();
    }
    
    public synchronized long getFailureRetryInterval()
@@ -508,7 +502,6 @@ public class Bridge implements MessagingComponent
       }
       
       this.failureRetryInterval = interval;
-      checkParams();
    }    
    
    public synchronized int getMaxRetries()
@@ -525,7 +518,6 @@ public class Bridge implements MessagingComponent
       }
       
       this.maxRetries = retries;
-      checkParams();
    }
       
    public synchronized int getQualityOfServiceMode()
@@ -542,7 +534,6 @@ public class Bridge implements MessagingComponent
       }
       
       qualityOfServiceMode = mode;
-      checkParams();
    }   
    
    public synchronized int getMaxBatchSize()
@@ -559,7 +550,6 @@ public class Bridge implements MessagingComponent
       }
       
       maxBatchSize = size;
-      checkParams();
    }
    
    public synchronized long getMaxBatchTime()
@@ -576,7 +566,6 @@ public class Bridge implements MessagingComponent
       }
       
       maxBatchTime = time;
-      checkParams();
    }
       
    public synchronized String getSubName()
@@ -593,7 +582,6 @@ public class Bridge implements MessagingComponent
       }
       
       this.subName = subname; 
-      checkParams();
    }
       
    public synchronized String getClientID()
@@ -610,7 +598,6 @@ public class Bridge implements MessagingComponent
       }
       
       this.clientID = clientID; 
-      checkParams();
    }
       
    public synchronized boolean isPaused()
@@ -621,6 +608,11 @@ public class Bridge implements MessagingComponent
    public synchronized boolean isFailed()
    {
       return failed;
+   }
+   
+   public synchronized boolean isStarted()
+   {
+      return started;
    }
    
    public synchronized void setSourceConnectionFactoryFactory(ConnectionFactoryFactory cff)
@@ -683,7 +675,7 @@ public class Bridge implements MessagingComponent
       {
          throw new IllegalArgumentException("maxBatchTime must be >= 1 or -1 to represent unlimited batch time");
       }
-      if (this.qualityOfServiceMode != QOS_AT_MOST_ONCE && qualityOfServiceMode != QOS_DUPLICATES_OK && qualityOfServiceMode != QOS_ONCE_AND_ONLY_ONCE)
+      if (qualityOfServiceMode != QOS_AT_MOST_ONCE && qualityOfServiceMode != QOS_DUPLICATES_OK && qualityOfServiceMode != QOS_ONCE_AND_ONLY_ONCE)
       {
          throw new IllegalArgumentException("Invalid quality of service mode " + qualityOfServiceMode);
       }

@@ -81,7 +81,7 @@ public class ClientClusteredConnectionFactoryDelegate
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
 
-   public byte[] getClientAOPStack()
+   public byte[] getClientAOPStack() throws JMSException
    {
       // Use one of the non-clustered ConnectionFactory delegates to retrieve the client AOP stack
       // from one of the nodes.
@@ -89,7 +89,7 @@ public class ClientClusteredConnectionFactoryDelegate
       ConnectionFactoryDelegate aopStackProvider = delegates[0];
 
       log.debug("getting AOP stack from " + aopStackProvider);
-
+      
       return aopStackProvider.getClientAOPStack();
    }
 

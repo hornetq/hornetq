@@ -24,10 +24,24 @@
 	   <type>java.lang.String</type>
 	</attribute>
 	
-	<attribute access="read-write" getMethod="getDestConnectionFactoryLookup"
-	   setMethod="setDestConnectionFactoryLookup">
-	   <description>The destination connection factory lookup</description>
-	   <name>DestConnectionFactoryLookup</name>
+	<attribute access="read-write" getMethod="getTargetConnectionFactoryLookup"
+	   setMethod="setTargetConnectionFactoryLookup">
+	   <description>The target connection factory lookup</description>
+	   <name>TargetConnectionFactoryLookup</name>
+	   <type>java.lang.String</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getSourceDestinationLookup"
+	   setMethod="setSourceDestinationLookup">
+	   <description>The source destination lookup</description>
+	   <name>SourceDestinationLookup</name>
+	   <type>java.lang.String</type>
+	</attribute>
+	
+	<attribute access="read-write" getMethod="getTargetDestinationLookup"
+	   setMethod="setTargetDestinationLookup">
+	   <description>The target destination lookup</description>
+	   <name>TargetDestinationLookup</name>
 	   <type>java.lang.String</type>
 	</attribute>	
 	
@@ -45,17 +59,24 @@
 	   <type>java.lang.String</type>
 	</attribute>		
 	
-	<attribute access="read-write" getMethod="getDestUsername"
-	   setMethod="setDestUsername">
-	   <description>The destination username</description>
-	   <name>DestUsername</name>
+	<attribute access="read-write" getMethod="getTargetUsername"
+	   setMethod="setTargetUsername">
+	   <description>The target username</description>
+	   <name>TargetUsername</name>
+	   <type>java.lang.String</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getTargetPassword"
+	   setMethod="setTargetPassword">
+	   <description>The target password</description>
+	   <name>TargetPassword</name>
 	   <type>java.lang.String</type>
 	</attribute>	
 	
 	<attribute access="read-write" getMethod="getQualityOfServiceMode"
 	   setMethod="setQualityOfServiceMode">
 	   <description>The quality of service mode. 0 = at most once. 1 = duplicates ok, 2 = once and only once</description>
-	   <name>QualitOfServiceMode</name>
+	   <name>QualityOfServiceMode</name>
 	   <type>int</type>
 	</attribute>	
 	 
@@ -77,7 +98,7 @@
 	   setMethod="setMaxBatchTime">
 	   <description>Number of milliseconds to wait after no messages arrive to forward batch of messages</description>
 	   <name>MaxBatchTime</name>
-	   <type>int</type>
+	   <type>long</type>
 	</attribute>	
 	
 	<attribute access="read-write" getMethod="getSubName"
@@ -120,15 +141,21 @@
 	   <type>boolean</type>
 	</attribute>	
 	
-	<attribute access="read-write" getMethod="getSourceJNDIProperties" setMethod="setSourceJNDIProperties>
+	<attribute access="read-only" getMethod="isStarted">
+	   <description>Is the bridge started?</description>
+	   <name>Started</name>
+	   <type>boolean</type>
+	</attribute>	
+	
+	<attribute access="read-write" getMethod="getSourceJNDIProperties" setMethod="setSourceJNDIProperties">
 	   <description>The JNDI properties to use to lookup the source destination, or null if a local JNDI initial context should be used</description>
 	   <name>SourceJNDIProperties</name>
 	   <type>java.lang.String</type>
 	</attribute>	
 	
-	<attribute access="read-write" getMethod="getDestNDIProperties" setMethod="setDestJNDIProperties>
-	   <description>The JNDI properties to use to lookup the destination destination, or null if a local JNDI initial context should be used</description>
-	   <name>DestJNDIProperties</name>
+	<attribute access="read-write" getMethod="getTargetJNDIProperties" setMethod="setTargetJNDIProperties">
+	   <description>The JNDI properties to use to lookup the target destination, or null if a local JNDI initial context should be used</description>
+	   <name>TargetJNDIProperties</name>
 	   <type>java.lang.String</type>
 	</attribute>			
 
@@ -153,5 +180,15 @@
       <description>JBoss Service lifecycle operation</description>
       <name>destroy</name>
    </operation>   
+   
+   <operation>
+      <description>Pause the bridge</description>
+      <name>pause</name>
+   </operation> 
+   
+   <operation>
+      <description>Resume the bridge</description>
+      <name>resume</name>
+   </operation> 
 
 </mbean>

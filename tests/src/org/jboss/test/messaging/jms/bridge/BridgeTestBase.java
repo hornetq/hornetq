@@ -39,7 +39,7 @@ public class BridgeTestBase extends MessagingTestCase
 {
    private static final Logger log = Logger.getLogger(BridgeTest.class);
    
-   private static final int NODE_COUNT = 2;
+   protected int nodeCount = 2;
    
    public BridgeTestBase(String name)
    {
@@ -50,9 +50,11 @@ public class BridgeTestBase extends MessagingTestCase
    {
       super.setUp();
       
+      log.info("Starting " + nodeCount + " servers");
+      
       if (ServerManagement.isRemote())
       {                 
-         for (int i = 0; i < NODE_COUNT; i++)
+         for (int i = 0; i < nodeCount; i++)
          {
             // make sure all servers are created and started; make sure that database is zapped
             // ONLY for the first server, the others rely on values they expect to find in shared
@@ -67,7 +69,7 @@ public class BridgeTestBase extends MessagingTestCase
    { 
       if (ServerManagement.isRemote())
       {         
-         for (int i = 0; i < NODE_COUNT; i++)
+         for (int i = 0; i < nodeCount; i++)
          {
             try
             {
@@ -84,7 +86,7 @@ public class BridgeTestBase extends MessagingTestCase
             }
          }
          
-         for (int i = 1; i < NODE_COUNT; i++)
+         for (int i = 1; i < nodeCount; i++)
          {
             try
             {

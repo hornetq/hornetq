@@ -33,75 +33,85 @@ package org.jboss.jms.server.bridge;
  */
 public interface BridgeMBean
 {
+   String getSourceConnectionFactoryLookup();
+   
+   String getTargetConnectionFactoryLookup();
+   
+   void setSourceConnectionFactoryLookup(String lookup);
+   
+   void setTargetConnectionFactoryLookup(String lookup);
+   
    String getSourceDestinationLookup();
-   
-   void setSourceDestinationLookup(String lookup);
-   
+
    String getTargetDestinationLookup();
-   
+
+   void setSourceDestinationLookup(String lookup);
+
    void setTargetDestinationLookup(String lookup);
-      
+    
    String getSourceUsername();
-   
-   void setSourceUserName(String name);
    
    String getSourcePassword();
    
+   void setSourceUsername(String name);
+   
    void setSourcePassword(String pwd);
-      
+
    String getTargetUsername();
+
+   String getTargetPassword();
    
    void setTargetUsername(String name);
    
-   String getTargetPassword();
-   
    void setTargetPassword(String pwd);
-      
-   String getSelector();
    
+   int getQualityOfServiceMode();
+   
+   void setQualityOfServiceMode(int mode);
+   
+   String getSelector();
+
    void setSelector(String selector);
+
+   int getMaxBatchSize();
+   
+   void setMaxBatchSize(int size);
+
+   long getMaxBatchTime();
+   
+   void setMaxBatchTime(long time);
+
+   String getSubName();
+   
+   void setSubName(String subname);
+
+   String getClientID();
+     
+   void setClientID(String clientID);
    
    long getFailureRetryInterval();
    
-   void setFailureRetryInterval(long interval);     
+   void setFailureRetryInterval(long interval);
    
    int getMaxRetries();
    
    void setMaxRetries(int retries);
-      
-   int getQualityOfServiceMode();
-   
-   void setQualityOfServiceMode(int mode);   
-   
-   int getMaxBatchSize();
-   
-   void setMaxBatchSize(int size);
-   
-   long getMaxBatchTime();
-   
-   void setMaxBatchTime(long time);
-      
-   String getSubName();
-   
-   void setSubName(String subname);
-      
-   String getClientID();
-   
-   void setClientID(String id);
-      
-   boolean isPaused();
    
    boolean isFailed();
-      
-   void setSourceJNDIProperties(String props);
-   
-   void setTargetJNDIProperties(String props);
-   
+
+   boolean isPaused();
+
    String getSourceJNDIProperties();
+   
+   void setSourceJNDIProperties(String props);
    
    String getTargetJNDIProperties();
    
+   void setTargetJNDIProperties(String props);
+   
+   // JMX attributes
+   
    void pause() throws Exception;
    
-   void resume() throws Exception;  
+   void resume() throws Exception;
 }

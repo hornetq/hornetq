@@ -21,7 +21,9 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -38,7 +40,6 @@ import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
 import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -54,8 +55,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 public class ReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(ReconnectTest.class);
-   
-   private static final int NODE_COUNT = 2;
    
    public ReconnectTest(String name)
    {
@@ -73,6 +72,8 @@ public class ReconnectTest extends BridgeTestBase
    }
       
    // Crash and reconnect
+   
+   //Once and only once
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
@@ -92,43 +93,85 @@ public class ReconnectTest extends BridgeTestBase
       testCrashAndReconnectDestBasic(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
    
+   //dups ok
    
-   public void testCrashAndReconnectDestCrashBeforePrepare_OnceAndOnlyOnce_P() throws Exception
+   public void testCrashAndReconnectDestBasic_DuplicatesOk_P() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testCrashAndReconnectDestCrashBeforePrepare(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+      testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, true);
    }
    
-   public void testCrashAndReconnectDestCrashBeforePrepare_OnceAndOnlyOnce_NP() throws Exception
+   public void testCrashAndReconnectDestBasic_DuplicatesOk_NP() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testCrashAndReconnectDestCrashBeforePrepare(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+      testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, false);
+   }
+   
+   //At most once
+   
+   public void testCrashAndReconnectDestBasic_AtMostOnce_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, true);
+   }
+   
+   public void testCrashAndReconnectDestBasic_AtMostOnce_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, false);
+   }
+   
+
+   // Crash tests specific to XA transactions
+   
+   public void testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testCrashAndReconnectDestCrashBeforePrepare(true);
+   }
+   
+   public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      testCrashAndReconnectDestCrashBeforePrepare(false);
    }
    
    
    
-   public void testCrashAndReconnectDestCrashOnCommit_OnceAndOnlyOnce_P() throws Exception
+   public void testCrashAndReconnectDestCrashOnCommit_P() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testCrashAndReconnectDestCrashOnCommit(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
+      testCrashAndReconnectDestCrashOnCommit(true);
    }
    
-   public void testCrashAndReconnectDestCrashOnCommit_OnceAndOnlyOnce_NP() throws Exception
+   public void testCrashAndReconnectDestCrashOnCommit_NP() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
          return;
       }
-      testCrashAndReconnectDestCrashOnCommit(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
+      testCrashAndReconnectDestCrashOnCommit(false);
    }
 
 
@@ -146,7 +189,7 @@ public class ReconnectTest extends BridgeTestBase
       Connection connDest = null;
       
       Bridge bridge = null;
-            
+         
       try
       {
          ServerManagement.deployQueue("sourceQueue", 0);
@@ -258,21 +301,12 @@ public class ReconnectTest extends BridgeTestBase
             prod.send(tm);
          }
                   
-         //Messages should now be receivable
+         //If Qos=once and only once then all messages should be received
+         //If Qos=at most then only the second half will be received
+         //If Qos=dups ok then the the first half will be received twice followed by the second half
          
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(10000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         m = cons.receive(1000);
-         
-         assertNull(m);
-         
+         checkMessagesReceived(qosMode, cons, NUM_MESSAGES);
+                    
          //Make sure no messages are left in the source dest
          
          MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
@@ -281,10 +315,7 @@ public class ReconnectTest extends BridgeTestBase
          
          m = cons2.receive(1000);
          
-         assertNull(m);
-         
-         log.info("Got here");
-         
+         assertNull(m);                 
       }
       finally
       {      
@@ -346,6 +377,8 @@ public class ReconnectTest extends BridgeTestBase
    }
    
    
+   
+   
    /*
     * Send some messages
     * Crash the destination server
@@ -354,7 +387,7 @@ public class ReconnectTest extends BridgeTestBase
     * Send some more messages
     * Verify all messages are received
     */
-   private void testCrashAndReconnectDestCrashBeforePrepare(int qosMode, boolean persistent) throws Exception
+   private void testCrashAndReconnectDestCrashBeforePrepare(boolean persistent) throws Exception
    {
       Connection connSource = null;
       
@@ -390,7 +423,7 @@ public class ReconnectTest extends BridgeTestBase
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
-                  null, 1000, -1, qosMode,
+                  null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
                   10, 5000,
                   null, null);
          
@@ -473,20 +506,7 @@ public class ReconnectTest extends BridgeTestBase
             prod.send(tm);
          }
                   
-         //Messages should now be receivable
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(10000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         m = cons.receive(1000);
-         
-         assertNull(m);
+         checkMessagesReceived(Bridge.QOS_ONCE_AND_ONLY_ONCE, cons, NUM_MESSAGES);
          
          //Make sure no messages are left in the source dest
          
@@ -567,7 +587,7 @@ public class ReconnectTest extends BridgeTestBase
     * Send some more messages
     * Verify all messages are received
     */
-   private void testCrashAndReconnectDestCrashOnCommit(int qosMode, boolean persistent) throws Exception
+   private void testCrashAndReconnectDestCrashOnCommit(boolean persistent) throws Exception
    {
       Connection connSource = null;
       
@@ -605,7 +625,7 @@ public class ReconnectTest extends BridgeTestBase
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
-                  null, 1000, -1, qosMode,
+                  null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
                   NUM_MESSAGES, 5000,
                   null, null);
          
@@ -654,9 +674,15 @@ public class ReconnectTest extends BridgeTestBase
          
          ServerManagement.nullServer(1);
          
+         log.info("Poisoned server");
+         
                      
          //Wait for maxBatchTime to kick in so a batch is sent
          //This should cause the server to crash after prepare but before commit
+         
+         //Also the wait must be enough to allow transaction recovery to kick in
+         //Since there will be a heuristically prepared branch on the consumer that needs to be rolled
+         //back
          
          Thread.sleep(20000);
                
@@ -671,11 +697,6 @@ public class ReconnectTest extends BridgeTestBase
          ServerManagement.deployQueue("destQueue", 1);
          
          log.info("Deployed queue");
-         
-         
-         log.info("Now sleeping");
-         
-         Thread.sleep(120000);
          
          log.info("Slept");
                            
@@ -704,20 +725,7 @@ public class ReconnectTest extends BridgeTestBase
             prod.send(tm);
          }
                   
-         //Messages should now be receivable
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(10000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         m = cons.receive(1000);
-         
-         assertNull(m);
+         checkMessagesReceived(Bridge.QOS_ONCE_AND_ONLY_ONCE, cons, NUM_MESSAGES);
          
          //Make sure no messages are left in the source dest
          
@@ -791,6 +799,47 @@ public class ReconnectTest extends BridgeTestBase
             log.error("Failed to undeploy", e);
          }
       }                  
+   }
+   
+   private void checkMessagesReceived(int qosMode, MessageConsumer cons, int numMessages) throws Exception
+   {
+      //Consume the messages
+      
+      Set msgs = new HashSet();
+      
+      while (true)
+      {
+         TextMessage tm = (TextMessage)cons.receive(2000);
+         
+         if (tm == null)
+         {
+            break;
+         }
+         
+         msgs.add(tm.getText());
+       
+      }
+      
+      if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE || qosMode == Bridge.QOS_DUPLICATES_OK)
+      {            
+         //All the messages should be received
+         
+         for (int i = 0; i < numMessages; i++)
+         {
+            assertTrue(msgs.contains("message" + i));
+         }
+         
+         //Should be no more
+         if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE)
+         {
+            assertEquals(numMessages, msgs.size());
+         }         
+      }
+      else if (qosMode == Bridge.QOS_AT_MOST_ONCE)
+      {
+         //No *guarantee* that any messages will be received
+         //but you still might get some depending on how/where the crash occurred                 
+      }            
    }
    
    // Inner classes -------------------------------------------------------------------

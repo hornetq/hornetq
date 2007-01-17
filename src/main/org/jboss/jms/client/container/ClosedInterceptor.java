@@ -295,10 +295,12 @@ public class ClosedInterceptor implements Interceptor
             del.closing();
             del.close();
          }
-         catch (Throwable ignored)
+         catch (Throwable t)
          {
-            // Add a log interceptor to the child if you want the error
-         //   ignored.printStackTrace();
+            if (trace)
+            {
+               log.trace("Failed to close", t);
+            }
          }
       }
       

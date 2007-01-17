@@ -22,6 +22,7 @@
 package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
+
 import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.messaging.core.plugin.IDBlock;
@@ -68,6 +69,11 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
    public IDBlock getIdBlock(int size) throws JMSException
    {
       return endpoint.getIdBlock(size);
+   }
+   
+   public byte[] getClientAOPStack() throws JMSException
+   {
+      return endpoint.getClientAOPStack();
    }
 
    // AdvisedSupport override ---------------------------------------

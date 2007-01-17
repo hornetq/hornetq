@@ -7,6 +7,7 @@
 package org.jboss.jms.client;
 
 import org.jboss.jms.client.container.JmsClientAspectXMLLoader;
+import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 
 /**
  * A static singleton that insures the client-side AOP stack is loaded.
@@ -56,7 +57,7 @@ public class ClientAOPStackLoader
     * @throws Exception - if something goes wrong with downloading the AOP configuration from the
     *         server and installing it.
     */
-   public synchronized void load(ClientAOPStackProvider delegate) throws Exception
+   public synchronized void load(ConnectionFactoryEndpoint delegate) throws Exception
    {
       if (loaded)
       {

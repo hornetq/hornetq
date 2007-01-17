@@ -40,17 +40,14 @@ import javax.management.ObjectName;
 import javax.transaction.xa.Xid;
 
 import org.jboss.aop.AspectXmlLoader;
-import org.jboss.jms.client.ClientAOPStackProvider;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.advised.ClientAOPStackProviderAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageCounterManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.server.security.SecurityMetadataStore;
@@ -93,7 +90,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * $Id$
  */
 public class ServerPeer extends ServiceMBeanSupport
-   implements ClientAOPStackProvider, ServerPeerMBean
+   implements ServerPeerMBean
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -275,10 +272,6 @@ public class ServerPeer extends ServiceMBeanSupport
          txRepository.loadPreparedTransactions();
          
          initializeRemoting(mbeanServer);
-
-         // Register myself as ClientAOPStackProvider with the JMSDispatcher
-         ClientAOPStackProviderAdvised advised = new ClientAOPStackProviderAdvised(this);
-         JMSDispatcher.instance.registerTarget(new Integer(serverPeerID), advised);
 
          started = true;
 
@@ -892,15 +885,12 @@ public class ServerPeer extends ServiceMBeanSupport
       return buffer.toString();
    }
    
-
-   // ClientAOPStackProvider implementation --------------------------------------------------------
-
+   // Public ---------------------------------------------------------------------------------------
+   
    public byte[] getClientAOPStack()
    {
       return clientAOPStack;
    }
-
-   // Public ---------------------------------------------------------------------------------------
    
    public MessageCounterManager getMessageCounterManager()
    {
