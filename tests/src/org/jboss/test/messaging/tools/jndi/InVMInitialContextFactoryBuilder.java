@@ -21,6 +21,8 @@
 */
 package org.jboss.test.messaging.tools.jndi;
 
+import org.jboss.logging.Logger;
+
 import javax.naming.spi.InitialContextFactoryBuilder;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.NamingException;
@@ -35,34 +37,80 @@ import java.util.Hashtable;
  */
 public class InVMInitialContextFactoryBuilder implements InitialContextFactoryBuilder
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   private static final Logger log = Logger.getLogger(InVMInitialContextFactoryBuilder.class);
 
-   // Attributes ----------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
+
+   // Constructors ---------------------------------------------------------------------------------
 
    public InVMInitialContextFactoryBuilder()
    {
    }
 
-   // InitialContextFactoryBuilder implementation -------------------
+   // InitialContextFactoryBuilder implementation --------------------------------------------------
 
    public InitialContextFactory createInitialContextFactory(Hashtable environment)
          throws NamingException
    {
-      return new InVMInitialContextFactory();
+
+      InitialContextFactory icf = null;
+
+      if (environment != null)
+      {
+         String icfName = (String)environment.get("java.naming.factory.initial");
+
+         if (icfName != null)
+         {
+            Class c = null;
+
+            try
+            {
+               c = Class.forName(icfName);
+            }
+            catch(ClassNotFoundException e)
+            {
+               log.error("\"" + icfName + "\" cannot be loaded", e);
+               throw new NamingException("\"" + icfName + "\" cannot be loaded");
+            }
+
+            try
+            {
+               icf = (InitialContextFactory)c.newInstance();
+            }
+            catch(InstantiationException e)
+            {
+               log.error(c.getName() + " cannot be instantiated", e);
+               throw new NamingException(c.getName() + " cannot be instantiated");
+            }
+            catch(IllegalAccessException e)
+            {
+               log.error(c.getName() + " instantiation generated an IllegalAccessException", e);
+               throw new NamingException(c.getName() +
+                  " instantiation generated an IllegalAccessException");
+            }
+         }
+      }
+
+      if (icf == null)
+      {
+         icf = new InVMInitialContextFactory();
+      }
+
+      return icf;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

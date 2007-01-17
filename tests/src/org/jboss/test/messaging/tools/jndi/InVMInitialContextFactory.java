@@ -62,7 +62,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
    {
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
-              "org.jboss.messaging.tools.jndi.InVMInitialContextFactory");
+              "org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory");
       env.put("java.naming.provider.url", "");
       env.put("java.naming.factory.url.pkgs", "");
       env.put(Constants.SERVER_INDEX_PROPERTY_NAME, Integer.toString(serverIndex));

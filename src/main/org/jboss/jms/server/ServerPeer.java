@@ -186,7 +186,7 @@ public class ServerPeer extends ServiceMBeanSupport
          throw new IllegalArgumentException("ID cannot be negative");
       }
       
-      log.info(this + " creating serverpeer with id " + serverPeerID);
+      log.info(this + " creating server peer with ID " + serverPeerID);
 
       this.serverPeerID = serverPeerID;
       this.defaultQueueJNDIContext = defaultQueueJNDIContext;

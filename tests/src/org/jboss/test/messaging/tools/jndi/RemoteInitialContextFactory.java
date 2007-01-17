@@ -26,7 +26,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

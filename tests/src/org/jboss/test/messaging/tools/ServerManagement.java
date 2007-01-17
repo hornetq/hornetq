@@ -35,7 +35,6 @@ import javax.management.ObjectName;
 import javax.management.NotificationListener;
 import javax.management.Notification;
 import javax.transaction.UserTransaction;
-import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -263,14 +262,14 @@ public class ServerManagement
          servers[i] = null;
       }
    }
-   
+
    //Need to do this after a poison otherwise this will think the server is still alive
    public static synchronized void nullServer(int i)
    {
       servers[i] = null;
    }
 
-   /** 
+   /**
     * Kills the server and waits keep trying any dumb communication until the server is effectively
     * killed. We had to implement this method as kill will actually schedule a thread that will
     * perform System.exit after few milliseconds. We will use this method in places where we need
@@ -342,7 +341,7 @@ public class ServerManagement
       {
          return null;
       }
-      
+
       StringBuffer sb = new StringBuffer();
 
       sb.append("java").append(' ');
@@ -354,7 +353,7 @@ public class ServerManagement
       {
          moduleOutput = "./output";
       }
-      
+
       sb.append("-Dmodule.output=").append(moduleOutput).append(' ');
 
       sb.append("-Dtest.bind.address=localhost").append(' ');
@@ -403,12 +402,11 @@ public class ServerManagement
             testLogfileSuffix = testLogfileSuffix.substring(0, pos) + "server";
          }
 
-         //We need to add the i even in the non clustered case since we can have multiple
-         //non clustered servers
+         // We need to add the i even in the non clustered case since we can have multiple
+         // non clustered servers
          testLogfileSuffix += i;
-         
       }
-      
+
       sb.append("-Dtest.logfile.suffix=").append(testLogfileSuffix).append(' ');
 
       String classPath = System.getProperty("java.class.path");
@@ -641,7 +639,7 @@ public class ServerManagement
       insureStarted();
       return servers[0].getServer().getUserTransaction();
    }
-   
+
    public static void log(int level, String text)
    {
       log(level, text, 0);
@@ -795,7 +793,7 @@ public class ServerManagement
       insureStarted();
       return servers[0].getServer().getDefaultSecurityConfig();
    }
-   
+
    /**
     * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
     */
@@ -848,7 +846,7 @@ public class ServerManagement
    {
       undeployDestination(false, name);
    }
-   
+
    /**
     * Simulates a topic un-deployment (deleting the topic descriptor from the deploy directory).
     */
@@ -873,7 +871,7 @@ public class ServerManagement
    {
       return servers[0].getServer().destroyDestination(false, name);
    }
-   
+
    /**
     * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
     */
@@ -926,7 +924,7 @@ public class ServerManagement
    {
       undeployDestination(true, name);
    }
-   
+
    /**
     * Simulates a queue un-deployment (deleting the queue descriptor from the deploy directory).
     */
@@ -961,7 +959,7 @@ public class ServerManagement
       insureStarted();
       servers[0].getServer().undeployDestination(isQueue, name);
    }
-   
+
    /**
     * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
     * directory).
@@ -972,7 +970,7 @@ public class ServerManagement
       insureStarted(serverIndex);
       servers[serverIndex].getServer().undeployDestination(isQueue, name);
    }
-                                                                                                                
+
    public static void deployConnectionFactory(String objectName,
                                               String[] jndiBindings,
                                               int prefetchSize,
@@ -996,7 +994,7 @@ public class ServerManagement
    {
       servers[0].getServer().deployConnectionFactory(objectName, jndiBindings, prefetchSize);
    }
-   
+
    public static void deployConnectionFactory(String objectName,
                                               String[] jndiBindings)
       throws Exception
@@ -1013,7 +1011,7 @@ public class ServerManagement
    {
       return getJNDIEnvironment(0);
    }
-   
+
    public static Hashtable getJNDIEnvironment(int serverIndex)
    {
       if (isLocal())
@@ -1031,7 +1029,7 @@ public class ServerManagement
       String name =
          "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
          RMITestServer.RMI_SERVER_PREFIX + index;
-      
+
       Server s = null;
       int retries = initialRetries;
 
