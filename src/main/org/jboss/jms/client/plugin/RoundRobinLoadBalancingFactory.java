@@ -30,7 +30,7 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
  *          <p/>
  *          $Id$
  */
-public class RoundRobbinLoadBalancingFactory extends LoadBalancingFactory
+public class RoundRobinLoadBalancingFactory extends LoadBalancingFactory
 {
 
    // Constants ------------------------------------------------------------------------------------

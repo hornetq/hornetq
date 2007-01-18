@@ -41,7 +41,7 @@ public abstract class LoadBalancingFactory implements Serializable
 
    // Static ---------------------------------------------------------------------------------------
 
-   static LoadBalancingFactory theInstance = new RoundRobbinLoadBalancingFactory();
+   static LoadBalancingFactory theInstance = new RoundRobinLoadBalancingFactory();
 
    // Constructors ---------------------------------------------------------------------------------
 
