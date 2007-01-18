@@ -183,7 +183,11 @@ public class MessagingXAResource implements XAResource
    {
       if (trace) { log.trace(this + " recovering, flags: " + flags); }
 
-      return rm.recover(flags, connection);
+      Xid[] xids = rm.recover(flags, connection);
+      
+      if (trace) { log.trace("Recovered txs: " + xids); }
+      
+      return xids;
    }
 
    public void rollback(Xid xid) throws XAException

@@ -24,7 +24,7 @@
       <param name="Append" value="true"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d %-5r %-5p [%c] @%t %m%n"/>
+         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p @%t [%c{1}] %m%n"/>
       </layout>
    </appender>
 
@@ -32,8 +32,9 @@
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="Target" value="System.out"/>
       <param name="Threshold" value="INFO"/>
+      <!-- <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/> -->
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%t %d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
+         <param name="ConversionPattern" value="@%t %d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
       </layout>
    </appender>
 
@@ -45,12 +46,12 @@
       <priority value="WARN"/>
    </category>
 
-   <category name="org.jboss">
+   <category name="org.jboss.remoting">
       <priority value="INFO"/>
    </category>
 
-   <category name="org.jboss.remoting">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   <category name="org.jboss">
+      <priority value="INFO"/>
    </category>
 
    <category name="org.jboss.messaging">
@@ -68,7 +69,11 @@
    <!-- Ignoring trace from these: -->
 
    <category name="org.jboss.jms.server.remoting.JMSServerInvocationHandler">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <priority value="DEBUG"/>
+   </category>
+
+   <category name="org.jboss.messaging.core.plugin.JDBCSupport">
+      <priority value="INFO"/>
    </category>
 
    <category name="org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager">
@@ -76,7 +81,7 @@
    </category>
 
    <category name="org.jboss.jms.server.remoting.JMSWireFormat">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <priority value="DEBUG"/>
    </category>
 
    <root>

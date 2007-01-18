@@ -35,6 +35,7 @@ import java.util.Arrays;
  * It's a PER_INSTANCE aspect (one of these per each clustered ConnectionFactory instance)
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * @version <tt>$Revision$</tt>
  *

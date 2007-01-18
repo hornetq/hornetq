@@ -41,6 +41,7 @@ import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
 import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
  * 
@@ -644,8 +645,11 @@ public class ReconnectTest extends BridgeTestBase
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
             TextMessage tm = sessSend.createTextMessage("message" + i);
-            
+             
             prod.send(tm);
+            
+            log.info("sent message:" + tm.getJMSMessageID());
+            
          }
          
          Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -670,7 +674,7 @@ public class ReconnectTest extends BridgeTestBase
          //but the branch on dest won't be - it will remain prepared
          //This corresponds to a HeuristicMixedException
          
-         ServerManagement.poisonTheServer(1);
+         ServerManagement.poisonTheServer(1, PoisonInterceptor.TYPE_2PC_COMMIT);
          
          ServerManagement.nullServer(1);
          
@@ -684,7 +688,7 @@ public class ReconnectTest extends BridgeTestBase
          //Since there will be a heuristically prepared branch on the consumer that needs to be rolled
          //back
          
-         Thread.sleep(20000);
+         Thread.sleep(10000);
                
          //Restart the server
          
@@ -695,6 +699,9 @@ public class ReconnectTest extends BridgeTestBase
          log.info("Restarted server");
          
          ServerManagement.deployQueue("destQueue", 1);
+         
+         //Give enough time for transaction recovery to happen
+         Thread.sleep(20000);
          
          log.info("Deployed queue");
          
@@ -721,8 +728,11 @@ public class ReconnectTest extends BridgeTestBase
          for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sessSend.createTextMessage("message" + i);
-            
+              
             prod.send(tm);
+            
+            log.info("sent message: " + tm.getJMSMessageID());
+            
          }
                   
          checkMessagesReceived(Bridge.QOS_ONCE_AND_ONLY_ONCE, cons, NUM_MESSAGES);
@@ -801,6 +811,7 @@ public class ReconnectTest extends BridgeTestBase
       }                  
    }
    
+   
    private void checkMessagesReceived(int qosMode, MessageConsumer cons, int numMessages) throws Exception
    {
       //Consume the messages
@@ -815,6 +826,8 @@ public class ReconnectTest extends BridgeTestBase
          {
             break;
          }
+         
+         log.info("received message:" + tm.getJMSMessageID());         
          
          msgs.add(tm.getText());
        

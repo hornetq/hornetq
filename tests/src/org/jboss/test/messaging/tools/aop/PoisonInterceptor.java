@@ -30,8 +30,20 @@ public class PoisonInterceptor implements Interceptor
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PoisonInterceptor.class);
+   
+   public static final int TYPE_CREATE_SESSION = 0;
+   
+   public static final int TYPE_2PC_COMMIT = 1;
+   
 
    // Static ---------------------------------------------------------------------------------------
+   
+   private static int type;
+   
+   public static void setType(int type)
+   {
+      PoisonInterceptor.type = type;
+   }
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -49,17 +61,20 @@ public class PoisonInterceptor implements Interceptor
       MethodInvocation mi = (MethodInvocation)invocation;
       String methodName = mi.getMethod().getName();
 
-      if ("createSessionDelegate".equals(methodName))
+      if ("createSessionDelegate".equals(methodName) && type == TYPE_CREATE_SESSION)
       {
          // Used by the failover tests to kill server in the middle of an invocation.
 
+         log.info("##### Crashing on createSessionDelegate!!");
+         
          crash(invocation.getTargetObject());
       }
       else if ("sendTransaction".equals(methodName))
       {
          TransactionRequest request = (TransactionRequest)mi.getArguments()[0];
          
-         if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
+         if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST
+             && type == TYPE_2PC_COMMIT)
          {
             //Crash on 2pc commit - used in message bridge tests
             

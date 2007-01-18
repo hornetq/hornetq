@@ -87,6 +87,8 @@ import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 
+import com.arjuna.ats.arjuna.recovery.RecoveryManager;
+
 
 /**
  * An MBeanServer and a configurable set of services (TransactionManager, Remoting, etc) available
@@ -182,6 +184,7 @@ public class ServiceContainer
    private InitialContext initialContext;
    private String jndiNamingFactory;
    private Server hsqldbServer;
+   private RecoveryManager recoveryManager;
 
    private boolean transaction;
    private boolean jbossjta; //To use the ex-Arjuna tx mgr
@@ -394,6 +397,10 @@ public class ServiceContainer
             // othewise we'll get an access error)
             deleteAllData();
          }
+         if (jbossjta)
+         {
+            startRecoveryManager();
+         }
 
          if (remoting)
          {
@@ -435,6 +442,14 @@ public class ServiceContainer
       unloadJNDIContexts();
 
       stopService(REMOTING_OBJECT_NAME);
+      
+      if (jbossjta)
+      {
+         if (recoveryManager != null)
+         {
+            recoveryManager.stop();
+         }
+      }
 
       if (jca)
       {
@@ -993,7 +1008,7 @@ public class ServiceContainer
          if (jbossjta)
          {
             log.info("Starting arjuna tx mgr");
-            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
+            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();                       
          }
          else
          {
@@ -1016,6 +1031,19 @@ public class ServiceContainer
          rebind(USER_TRANSACTION_JNDI_NAME, ServerVMClientUserTransaction.getSingleton());
 
       log.debug("bound " + USER_TRANSACTION_JNDI_NAME);
+   }
+   
+   private void startRecoveryManager()
+   {
+      log.info("Starting arjuna recovery manager");
+      
+      //Need to start the recovery manager manually - if deploying
+      //inside JBoss this wouldn't be necessary - since you would use
+      //the TransactionManagerService MBean which would start the recovery manager
+      //for you
+      recoveryManager = RecoveryManager.manager(RecoveryManager.INDIRECT_MANAGEMENT);
+      
+      log.info("Started recovery manager");
    }
 
    private void startCachedConnectionManager(ObjectName on) throws Exception

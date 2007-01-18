@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms.bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 /**
  * 
@@ -41,6 +42,8 @@ public class BridgeTestBase extends MessagingTestCase
    
    protected int nodeCount = 2;
    
+   protected ServiceContainer sc;
+   
    public BridgeTestBase(String name)
    {
       super(name);
@@ -49,7 +52,7 @@ public class BridgeTestBase extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+       
       log.info("Starting " + nodeCount + " servers");
       
       if (ServerManagement.isRemote())
@@ -62,6 +65,12 @@ public class BridgeTestBase extends MessagingTestCase
             ServerManagement.start(i, "all,-transaction,jbossjta", i == 0);
          }
       }
+      
+      //We need a local transaction and recovery manager
+      //We must start this after the remote servers have been created or it won't
+      //have deleted the database and the recovery manager may attempt to recover transactions
+      sc = new ServiceContainer("jbossjta");
+      sc.start(false);           
 
    }
 
@@ -98,6 +107,8 @@ public class BridgeTestBase extends MessagingTestCase
             }
          }
       }
+      
+      sc.stop();
       
       super.tearDown();
       

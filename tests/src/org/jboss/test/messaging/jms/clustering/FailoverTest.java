@@ -8,6 +8,7 @@ package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.FailoverEvent;
@@ -1575,7 +1576,7 @@ public class FailoverTest extends ClusteringTestBase
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
          // poison the server
-         ServerManagement.poisonTheServer(1);
+         ServerManagement.poisonTheServer(1, PoisonInterceptor.TYPE_CREATE_SESSION);
 
          // this invocation will halt the server ...
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);

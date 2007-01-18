@@ -8,6 +8,12 @@ probably have in a real production config, this is so the tests don't take aeons
 
     <properties depends="common" name="arjuna">
         <!--
+            (Must be unique across all Arjuna instances.)
+          -->
+        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
+        <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
+
+        <!--
         Transaction Reaper Timeout (default is 120000 microseconds).
       -->
         <property
@@ -58,10 +64,7 @@ probably have in a real production config, this is so the tests don't take aeons
       -->
         <property
             name="com.arjuna.ats.arjuna.objectstore.transactionSync" value="ON"/>
-        <!--
-        (Must be unique across all Arjuna instances.)
-      -->
-        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="node0"/>
+
         <!-- property
         name="com.arjuna.ats.arjuna.coordinator.actionStore"
       value="HashedActionStore"
@@ -113,6 +116,13 @@ probably have in a real production config, this is so the tests don't take aeons
       -->
     </properties>
     <properties depends="arjuna" name="recoverymanager">
+
+        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
+        <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
+
+        <!--
+            (Must be unique across all Arjuna instances.)
+          -->
         <!--
         Properties used only by the RecoveryManager.
       -->
@@ -171,8 +181,13 @@ probably have in a real production config, this is so the tests don't take aeons
         <!--
         Periodic recovery modules to use.  Invoked in sort-order of names.
       -->
-        <property
-            name="com.arjuna.ats.arjuna.recovery.recoveryExtension1" value="com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule"/>
+      <!--
+        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension1" value="com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule"/>
+        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension2" value="com.arjuna.ats.internal.txoj.recovery.TORecoveryModule"/>
+        -->
+        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension3" value="com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule"/>
+
+
     </properties>
     <properties name="common">
         <!-- CLF 2.0 properties -->
@@ -212,6 +227,8 @@ probably have in a real production config, this is so the tests don't take aeons
             name="com.arjuna.ats.txoj.lockstore.allowNestedLocking" value="YES"/>
     </properties>
     <properties depends="arjuna" name="jta">
+        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
+        <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
 
 
         <!-- This used when deployed in the app server and we want to do a recovery of a JMS provider, the string after the semi colon
@@ -232,9 +249,12 @@ probably have in a real production config, this is so the tests don't take aeons
         provider2.jndi.prop3=zzzz
         provider2.xaconnectionfactorylookup=xyz
         -->
+        <!--
         <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER0" value="org.jboss.jms.recovery.BridgeXAResourceRecovery;server0,bridge-recovery.properties"/>
         <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER1" value="org.jboss.jms.recovery.BridgeXAResourceRecovery;server1,bridge-recovery.properties"/>
+-->
 
+<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBM_TEST" value="org.jboss.test.messaging.jms.bridge.RecoveryTest.NullXAResourceRecovery"/>
         <!--
         Support subtransactions in the JTA layer?
         Default is NO.
@@ -248,6 +268,7 @@ probably have in a real production config, this is so the tests don't take aeons
         <!--
          com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple
          -->
+
     </properties>
     <properties depends="jta" name="jdbc">
         <!--

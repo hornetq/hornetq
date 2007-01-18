@@ -410,7 +410,7 @@
 
       <mkdir dir="${build.lib}"/>
       <jar jarfile="${build.lib}/jboss-${module.name}.jar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}" includes="**" excludes="org/jboss/jms/recovery/*.class"/>
+         <fileset dir="${build.classes}" includes="**"/>
          <fileset dir="${build.jar}">
             <exclude name="*-service.xml"/>
             <exclude name="*-ds.xml"/>

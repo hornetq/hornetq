@@ -25,14 +25,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
+
 import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
-import javax.management.ObjectName;
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
+
+import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.XMLUtil;
@@ -41,14 +44,14 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jndi.Constants;
-import org.jboss.aop.AspectXmlLoader;
 import org.w3c.dom.Element;
 
 /**
@@ -868,7 +871,7 @@ public class LocalTestServer implements Server
                                       "Register listeners directly instead.");
    }
 
-   public void poisonTheServer() throws Exception
+   public void poisonTheServer(int type) throws Exception
    {
       URL url = this.getClass().getClassLoader().getResource("poison.xml");
       AspectXmlLoader.deployXML(url);
@@ -877,6 +880,8 @@ public class LocalTestServer implements Server
 
 //      URL url = this.getClass().getClassLoader().getResource("poison.xml");
 //      AspectXmlLoader.undeployXML(url);
+      
+      PoisonInterceptor.setType(type);
    }
 
    // Public --------------------------------------------------------

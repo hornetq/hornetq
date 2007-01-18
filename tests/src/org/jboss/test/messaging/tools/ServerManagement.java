@@ -621,10 +621,10 @@ public class ServerManagement
     * sorts of failures. I expect the name of this method to be refactored as we learn more about
     * this type of testing.
     */
-   public static void poisonTheServer(int serverIndex) throws Exception
+   public static void poisonTheServer(int serverIndex, int type) throws Exception
    {
       insureStarted(serverIndex);
-      servers[serverIndex].getServer().poisonTheServer();
+      servers[serverIndex].getServer().poisonTheServer(type);
    }
 
 
