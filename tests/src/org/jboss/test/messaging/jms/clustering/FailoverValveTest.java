@@ -24,7 +24,7 @@ package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.jms.client.FailoverValve;
 import org.jboss.logging.Logger;
-import junit.framework.TestCase;
+import org.jboss.test.messaging.MessagingTestCase;
 
 
 /**
@@ -34,7 +34,7 @@ import junit.framework.TestCase;
  *
  * $Id$
  */
-public class FailoverValveTest extends TestCase
+public class FailoverValveTest extends MessagingTestCase
 {
 
 
@@ -49,6 +49,11 @@ public class FailoverValveTest extends TestCase
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
+
+   public FailoverValveTest(String name)
+   {
+      super(name);
+   }
 
    // Public ---------------------------------------------------------------------------------------
 
@@ -125,6 +130,16 @@ public class FailoverValveTest extends TestCase
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
+   }
 
    // Private --------------------------------------------------------------------------------------
 
