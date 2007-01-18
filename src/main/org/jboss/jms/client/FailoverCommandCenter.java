@@ -116,7 +116,8 @@ public class FailoverCommandCenter
       }
       finally
       {
-         // I have this secondary try..finally block, just because if broadcastFailoverEvent throws any exceptions
+         // I have this secondary try..finally block,
+         //   just because if broadcastFailoverEvent throws any exceptions
          // I don't want a dead lock on everybody waiting the valve to be opened.
          try
          {
