@@ -133,12 +133,12 @@ public class FailoverValveTest extends MessagingTestCase
 
    protected void setUp() throws Exception
    {
-      super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
+      super.setUp();
    }
 
    protected void tearDown() throws Exception
    {
-      super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
+      super.tearDown();
    }
 
    // Private --------------------------------------------------------------------------------------
