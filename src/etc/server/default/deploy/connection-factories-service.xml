@@ -25,7 +25,7 @@
       </attribute>
       
       <attribute name="Clustered">true</attribute>
-      <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobbinLoadBalancingFactory</attribute>
+      <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</attribute>
    </mbean>
 
 </server>
