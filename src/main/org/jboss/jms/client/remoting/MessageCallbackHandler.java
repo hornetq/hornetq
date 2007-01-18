@@ -51,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id$
  */
-public class MessageCallbackHandler
+public class MessageCallbackHandler implements CallbackHandler
 {
    // Constants -----------------------------------------------------
    
@@ -250,10 +250,12 @@ public class MessageCallbackHandler
 
    /**
     * Handles a message sent from the server
-    * @param msg The message
+    * @param message The message
     */
-   public void handleMessage(MessageProxy msg)
-   {                      
+   public void handleMessage(Object message)
+   {
+      MessageProxy msg = (MessageProxy) message;
+
       if (trace) { log.trace("Receiving message " + msg + " from the remoting layer"); }
 
       synchronized (mainLock)

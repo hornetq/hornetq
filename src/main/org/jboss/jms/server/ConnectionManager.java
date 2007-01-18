@@ -23,6 +23,7 @@ package org.jboss.jms.server;
 
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import java.util.List;
 
 
 /**
@@ -44,4 +45,11 @@ public interface ConnectionManager extends MessagingComponent
    void handleClientFailure(String remotingSessionID);
    
    boolean containsSession(String remotingClientSessionID);
+
+   /**
+    * Returns a list of active connections on this Manager.
+    * The implementation should make a copy of the list to avoid ConcurrentModificationException
+    * @return
+    */
+   List getActiveConnectionsList();
 }

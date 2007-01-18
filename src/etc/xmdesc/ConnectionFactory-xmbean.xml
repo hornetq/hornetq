@@ -88,10 +88,10 @@
       <type>boolean</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getLoadBalancingPolicy" setMethod="setLoadBalancingPolicy">
-      <description>The pluggable load balancing policy that is used to decide the next cluster node to create a clustered connection to</description>
-      <name>LoadBalancingPolicy</name>
-      <type>org.jboss.jms.client.plugin.LoadBalancingPolicy</type>
+   <attribute access="read-write" getMethod="getLoadBalancingFactory" setMethod="setLoadBalancingFactory">
+      <description>The pluggable load balancing policy factory that is used to decide the next cluster node to create a clustered connection to</description>
+      <name>LoadBalancingFactory</name>
+      <type>org.jboss.jms.client.plugin.LoadBalancingFactory</type>
    </attribute>
 
    <!-- Managed operations -->

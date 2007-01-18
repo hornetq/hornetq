@@ -71,14 +71,6 @@ public class ClusteringAspect
       if (clusteredDelegate == null)
       {
          clusteredDelegate = (ClientClusteredConnectionFactoryDelegate)invocation.getTargetObject();
-
-         // TODO JBMESSAGING-674 - for the time being we assume that the cluster view is static, so 
-         //      we only initialize the load balancing policy here. This is obviously not true,
-         //      we'll need to review this when working on
-         //      http://jira.jboss.org/jira/browse/JBMESSAGING-674
-
-         clusteredDelegate.getLoadBalancingPolicy().
-            updateView(Arrays.asList(clusteredDelegate.getDelegates()));
       }
 
       // the method handles both the case of a first connection creation attempt and a retry during
@@ -215,6 +207,15 @@ public class ClusteringAspect
       Map failoverMap = clusteredDelegate.getFailoverMap();
       Integer failoverNodeID = (Integer)failoverMap.get(nodeID);
 
+      // FailoverNodeID is not on the map, that means the ConnectionFactory was updated
+      // by another connection in another server.. So we will have to guess the failoverID
+      // by numeric order. Case we guessed the new server wrongly we will have to rely on
+      // redirect from failover
+      if (failoverNodeID == null)
+      {
+         failoverNodeID = guessFailoverID(failoverMap, nodeID);
+      }
+
       for (int i = 0; i < delegates.length; i++)
       {
          if (delegates[i].getServerID() == failoverNodeID.intValue())
@@ -224,6 +225,37 @@ public class ClusteringAspect
       }
 
       return null;
+   }
+
+   /** FailoverNodeID is not on the map, that means the ConnectionFactory was updated
+     * by another connection in another server.. So we will have to guess the failoverID
+     * by numeric order. Case we guessed the new server wrongly we will have to rely on
+     * redirect from failover.
+     * (NOTE:
+     *  There is a testcase that uses reflection to validate this method at
+     *  org.jboss.test.messaging.jms.clustering.ClusteringAspectInternalTest
+     *  Modify that testcase case you decide to refactor this method)
+     */
+   private static Integer guessFailoverID(Map failoverMap, Integer nodeID)
+   {
+      Integer failoverNodeID = null;
+      Integer[] nodes = (Integer[]) failoverMap.keySet().toArray(new Integer[failoverMap.size()]);
+      // We need to sort the array first
+      Arrays.sort(nodes);
+      for (int i = 0; i < nodes.length; i++)
+      {
+         if (nodeID.intValue() < nodes[i].intValue())
+         {
+            failoverNodeID = nodes[i];
+            break;
+         }
+      }
+      // if still null use the first node...
+      if (failoverNodeID == null)
+      {
+         failoverNodeID = nodes[0];
+      }
+      return failoverNodeID;
    }
 
    private synchronized ClientConnectionFactoryDelegate getDelegateForNode(int nodeID)

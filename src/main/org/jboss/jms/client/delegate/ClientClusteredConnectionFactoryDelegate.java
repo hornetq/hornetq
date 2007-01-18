@@ -132,6 +132,7 @@ public class ClientClusteredConnectionFactoryDelegate
    public void setDelegates(ClientConnectionFactoryDelegate[] dels)
    {
       this.delegates = dels;
+      getLoadBalancingPolicy().updateView(dels);
    }
 
    public Map getFailoverMap()
@@ -148,6 +149,20 @@ public class ClientClusteredConnectionFactoryDelegate
    {
       return loadBalancingPolicy;
    }
+
+   /** Method used to update the delegate and failoverMap during viewChange */
+   public synchronized void updateFailoverInfo(ClientConnectionFactoryDelegate[] delegates,
+                                               Map failoverMap)
+   {
+      for (int i = 0; i < delegates.length; i++)
+      {
+         delegates[i].init();
+      }
+      this.delegates = delegates;
+      this.failoverMap = failoverMap;
+      getLoadBalancingPolicy().updateView(delegates);
+   }
+
 
    public String toString()
    {

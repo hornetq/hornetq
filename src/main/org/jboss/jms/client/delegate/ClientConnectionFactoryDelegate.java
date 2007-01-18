@@ -69,7 +69,7 @@ public class ClientConnectionFactoryDelegate
 
    //This data is needed in order to create a connection
    private String serverLocatorURI;
- 
+
    private Version serverVersion;
  
    private int serverID;
@@ -284,6 +284,8 @@ public class ClientConnectionFactoryDelegate
             connectionDelegate.setRemotingConnection(remotingConnection);
             
             connectionDelegate.setVersionToUse(version);
+
+            remotingConnection.getCallbackManager().setConnectionDelegate(connectionDelegate);
          }
          else
          {
@@ -326,7 +328,7 @@ public class ClientConnectionFactoryDelegate
    {
       return serverVersion;
    }
-   
+
    public void synchronizeWith(DelegateSupport newDelegate) throws Exception
    {
       super.synchronizeWith(newDelegate);

@@ -162,7 +162,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       handleVersion(obj, dos);
 
       try
-      {         
+      {
          if (obj instanceof InvocationRequest)
          {
             if (trace) { log.trace("writing InvocationRequest"); }
@@ -180,8 +180,15 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                if (params != null && params.length > 0 && params[0] instanceof Callback)
                {
                   Callback callback = (Callback) params[0];
-                  MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
-                  param = mm.getLoad();
+                  if (callback.getParameter() instanceof MessagingMarshallable)
+                  {
+                     MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
+                     param = mm.getLoad();
+                  }
+                  else
+                  {
+                     param = callback.getParameter();
+                  }
                }
                else
                {

@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jms.JMSException;
 
@@ -58,7 +60,9 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    protected Map jmsClients;
    
    protected Map sessions;
-   
+
+   protected Set activeConnections; 
+
    // Constructors --------------------------------------------------
 
    public SimpleConnectionManager()
@@ -66,6 +70,8 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       jmsClients = new HashMap();
       
       sessions = new HashMap();
+
+      activeConnections = new HashSet();
    }
 
    // ConnectionManager ---------------------------------------------
@@ -83,6 +89,8 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       endpoints.put(remotingClientSessionID, endpoint);
       
       sessions.put(remotingClientSessionID, jmsClientVMId);
+
+      activeConnections.add(endpoint);
       
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
@@ -95,7 +103,12 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       if (endpoints != null)
       {
          ConnectionEndpoint e = (ConnectionEndpoint)endpoints.remove(remotingClientSessionID);
-         
+
+         if (e != null)
+         {
+            endpoints.remove(e);
+         }
+
          log.debug("unregistered connection " + e + " with remoting session ID " +
                Util.guidToString(remotingClientSessionID));
          
@@ -174,7 +187,15 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    {
       return sessions.containsKey(remotingClientSessionID);
    }
-   
+
+   public synchronized List getActiveConnectionsList()
+   {
+      // I will make a copy to avoid ConcurrentModification
+      ArrayList list = new ArrayList();
+      list.addAll(activeConnections);
+      return list;
+   }
+
    /*
     * Used in testing only
     */

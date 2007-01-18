@@ -23,6 +23,7 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
@@ -31,6 +32,12 @@ import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.remoting.callback.Callback;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -151,7 +158,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                                                int failedNodeID)
       throws Exception
    {
-      log.debug("creating a new connection for user " + username);        
+      log.debug("creating a new connection for user " + username);
 
       // authenticate the user
       serverPeer.getSecurityManager().authenticate(username, password);
@@ -173,7 +180,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       ServerConnectionEndpoint endpoint =
          new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
-                                      defaultTempQueueDownCacheSize, failedNodeID);
+                                      defaultTempQueueDownCacheSize, failedNodeID, this);
 
       int connectionID = endpoint.getConnectionID();
 
@@ -209,7 +216,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       }
    }
 
-
    // Public ---------------------------------------------------------------------------------------
    
    public int getID()
@@ -220,6 +226,42 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public JNDIBindings getJNDIBindings()
    {
       return jndiBindings;
+   }
+
+
+   /** Sends an update message on ClusteredConnectionFactories.
+    * Observation: I have placed here, because if we decide to lock the ServerEndpoint
+    * while we send updates, we would need the method here to perform WriteLocks on objects */
+   public void updateClusteredClients(ClientConnectionFactoryDelegate[] delegates, Map failoverMap)
+      throws Exception
+   {
+
+      // Should we lock the CFEndpoint now allowing new connections to come while doing this?
+
+      List connectionList = serverPeer.getConnectionManager().getActiveConnectionsList();
+
+
+      log.info("Sending update list to active connections. It got " +
+                 connectionList.size() + " elements");
+
+      ConnectionFactoryUpdateMessage message = new ConnectionFactoryUpdateMessage(delegates,
+                                                          failoverMap);
+      Callback callback = new Callback(message);
+
+      for (Iterator iter = connectionList.iterator(); iter.hasNext();)
+      {
+         ServerConnectionEndpoint connEndpoint = (ServerConnectionEndpoint) iter.next();
+         log.trace("Updating connection " + connEndpoint);
+         try
+         {
+            connEndpoint.getCallbackHandler().handleCallback(callback);
+         }
+         catch (Exception e)
+         {
+            log.error("Callback failed on connection " + connEndpoint, e);
+         }
+      }
+
    }
 
    public String toString()

@@ -114,6 +114,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private int defaultTempQueueFullSize;
    private int defaultTempQueuePageSize;
    private int defaultTempQueueDownCacheSize;
+   private ServerConnectionFactoryEndpoint cfendpoint;
 
    private byte usingVersion;
 
@@ -126,14 +127,17 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     * @param failedNodeID - zero or positive values mean connection creation attempt is result of
     *        failover. Negative values are ignored (mean regular connection creation attempt).
     */
-   protected ServerConnectionEndpoint(ServerPeer serverPeer, String clientID,
+   public ServerConnectionEndpoint(ServerPeer serverPeer, String clientID,
                                       String username, String password, int prefetchSize,
                                       int defaultTempQueueFullSize,
                                       int defaultTempQueuePageSize,
                                       int defaultTempQueueDownCacheSize,
-                                      int failedNodeID) throws Exception
+                                      int failedNodeID,
+                                      ServerConnectionFactoryEndpoint cfendpoint) throws Exception
    {
       this.serverPeer = serverPeer;
+
+      this.cfendpoint = cfendpoint;
       
       sm = serverPeer.getSecurityManager();
       tr = serverPeer.getTxRepository();
@@ -162,7 +166,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          this.failedNodeID = new Integer(failedNodeID);
       }
    }
-   
+
    // ConnectionDelegate implementation ------------------------------------------------------------
    
    public SessionDelegate createSessionDelegate(boolean transacted,
@@ -203,7 +207,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          log.debug("created and registered " + ep);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
-                 
+
          log.debug("created " + d);
 
          return d;
@@ -346,7 +350,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          cm.unregisterConnection(jmsClientVMId, remotingClientSessionId);
    
          JMSDispatcher.instance.unregisterTarget(new Integer(id));
-         
+
          closed = true;
       }
       catch (Throwable t)
@@ -483,7 +487,12 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                    "must be using pull callbacks");
       }
    }
-   
+
+   public ServerInvokerCallbackHandler getCallbackHandler()
+   {
+      return callbackHandler;
+   }
+
    // IOC
    public void setRemotingInformation(String jmsClientVMId, String remotingClientSessionId)
    {
@@ -504,7 +513,12 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return serverPeer;
    }
-        
+
+   public ServerConnectionFactoryEndpoint getConnectionFactoryEndpoint()
+   {
+      return cfendpoint;
+   }
+
    public String toString()
    {
       return "ConnectionEndpoint[" + id + "]";
@@ -536,11 +550,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return defaultTempQueueDownCacheSize;
    }
-   
-   ServerInvokerCallbackHandler getCallbackHandler()
-   {
-      return callbackHandler;
-   }   
    
    int getConnectionID()
    {

@@ -12,8 +12,7 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.jms.client.plugin.LoadBalancingPolicy;
-import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
+import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -39,7 +38,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    protected JNDIBindings jndiBindings;
    protected int prefetchSize = 150;
    protected boolean clustered;
-   protected LoadBalancingPolicy loadBalancingPolicy;
+   protected LoadBalancingFactory loadBalancingFactory;
    
    protected int defaultTempQueueFullSize = 75000;
    protected int defaultTempQueuePageSize = 2000;
@@ -67,7 +66,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
       this.clientID = clientID;
 
       // by default, a clustered connection uses a round-robin load balancing policy
-      this.loadBalancingPolicy = new RoundRobinLoadBalancingPolicy();
+      this.loadBalancingFactory = LoadBalancingFactory.getDefaultFactory();
    }
 
    // ServiceMBeanSupport overrides ---------------------------------
@@ -123,7 +122,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
                                       locatorURI, enablePing, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
                                       defaultTempQueueDownCacheSize, clustered,
-                                      loadBalancingPolicy);
+                                      loadBalancingFactory);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
 
@@ -276,19 +275,19 @@ public class ConnectionFactory extends ServiceMBeanSupport
       this.clustered = clustered;
    }
 
-   public LoadBalancingPolicy getLoadBalancingPolicy()
+   public LoadBalancingFactory getLoadBalancingFactory()
    {
-      return loadBalancingPolicy;
+      return loadBalancingFactory;
    }
 
-   public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy)
+   public void setLoadBalancingFactory(LoadBalancingFactory loadBalancingFactory)
    {
       if (started)
       {
          log.warn("Load balancing policy can only be changed when connection factory is stopped");
          return;
       }
-      this.loadBalancingPolicy = loadBalancingPolicy;
+      this.loadBalancingFactory = loadBalancingFactory;
    }
 
    // JMX managed operations ----------------------------------------

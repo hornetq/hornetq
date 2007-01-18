@@ -22,7 +22,7 @@
 package org.jboss.jms.server;
 
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
-import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 /**
@@ -45,7 +45,7 @@ public interface ConnectionFactoryManager extends MessagingComponent
                                  int defaultTempQueuePageSize,
                                  int defaultTempQueueDownCacheSize,
                                  boolean clustered,
-                                 LoadBalancingPolicy loadBalancingPolicy) throws Exception;
+                                 LoadBalancingFactory loadBalancingPolicy) throws Exception;
 
    void unregisterConnectionFactory(String uniqueName, boolean clustered) throws Exception;
 }

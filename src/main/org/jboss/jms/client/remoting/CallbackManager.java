@@ -26,6 +26,7 @@ import java.util.Map;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.ClientDelivery;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
@@ -73,6 +74,7 @@ public class CallbackManager implements InvokerCallbackHandler
 
    // Map<Long(lookup)-MessageCallbackHandler>
    protected Map callbackHandlers;
+   protected ConnectionFactoryCallbackHandler connectionfactoryCallbackHandler;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -85,23 +87,33 @@ public class CallbackManager implements InvokerCallbackHandler
 
    public void handleCallback(Callback callback) throws HandleCallbackException
    {
-      MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
-      ClientDelivery dr = (ClientDelivery)mm.getLoad();
-      MessageProxy msg = dr.getMessage();
-
-      MessageCallbackHandler handler =
-         (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
-
-      if (handler == null)
+      if (callback.getParameter() instanceof MessagingMarshallable)
       {
-         //This is OK and can happen if the callback handler is deregistered on consumer close,
-         //but there are messages still in transit which arrive later.
-         //In this case it is just safe to ignore the message
-         if (trace) { log.trace(this + " callback handler not found, message arrived after consumer is closed"); }
-         return;
-      }
+         MessagingMarshallable mm = (MessagingMarshallable)callback.getParameter();
+         ClientDelivery dr = (ClientDelivery)mm.getLoad();
+         MessageProxy msg = dr.getMessage();
 
-      handler.handleMessage(msg);
+         MessageCallbackHandler handler =
+            (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
+
+         if (handler == null)
+         {
+            //This is OK and can happen if the callback handler is deregistered on consumer close,
+            //but there are messages still in transit which arrive later.
+            //In this case it is just safe to ignore the message
+            if (trace) { log.trace(this + " callback handler not found, message arrived after consumer is closed"); }
+            return;
+         }
+
+         handler.handleMessage(msg);
+      } else
+      {
+         log.trace("Receiving connectionFactoryUpdateMessage - " + callback.getParameter());
+         if (connectionfactoryCallbackHandler != null)
+         {
+            connectionfactoryCallbackHandler.handleMessage(callback.getParameter());
+         }
+      }
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -109,6 +121,12 @@ public class CallbackManager implements InvokerCallbackHandler
    public void registerHandler(int consumerID, MessageCallbackHandler handler)
    {
       callbackHandlers.put(new Integer(consumerID), handler);
+   }
+
+   public void setConnectionDelegate (ClientConnectionDelegate connectionDelegate)
+   {
+      this.connectionfactoryCallbackHandler =
+         new ConnectionFactoryCallbackHandler(connectionDelegate);
    }
 
    public MessageCallbackHandler unregisterHandler(int consumerID)

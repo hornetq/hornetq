@@ -21,6 +21,8 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
 {
    // Constants ------------------------------------------------------------------------------------
 
+   private static final long serialVersionUID = 5215940403016586462L;
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
@@ -28,27 +30,31 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
    // The index of the next delegate to be used
    private int next;
 
-   // List<ConnectionFactoryDelegate>
-   private List view;
+   private ConnectionFactoryDelegate[] delegates;
 
    // Constructors ---------------------------------------------------------------------------------
+
+   public RoundRobinLoadBalancingPolicy(ConnectionFactoryDelegate[] delegates)
+   {
+      this.delegates = delegates;
+   }
 
    // LoadBalancingPolicy implementation -----------------------------------------------------------
 
    public synchronized ConnectionFactoryDelegate getNext()
    {
-      if (next >= view.size())
+      if (next >= delegates.length)
       {
          next = 0;
       }
 
-      return (ConnectionFactoryDelegate)view.get(next++);
+      return delegates[next++];
    }
 
-   public synchronized void updateView(List delegates)
+   public synchronized void updateView(ConnectionFactoryDelegate[] delegates)
    {
-      view = new ArrayList(delegates);
       next = 0;
+      this.delegates = delegates;
    }
 
    // Public ---------------------------------------------------------------------------------------

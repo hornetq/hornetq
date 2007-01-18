@@ -1635,6 +1635,9 @@ public class FailoverTest extends ClusteringTestBase
          }
          conn.start();
 
+         // Disable Lease for this test.. as the ValveAspect should capture this
+         getConnectionState(conn).getRemotingConnection().removeConnectionListener();
+
          // make sure we're connecting to node 1
 
          int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).

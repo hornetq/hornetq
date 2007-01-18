@@ -38,12 +38,15 @@ import javax.naming.NamingException;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ConnectionFactoryUpdateMessage;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JNDIUtil;
@@ -53,6 +56,7 @@ import org.jboss.messaging.core.plugin.contract.ReplicationListener;
 import org.jboss.messaging.core.plugin.contract.Replicator;
 import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
+import org.jboss.remoting.callback.Callback;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -103,7 +107,7 @@ public class ConnectionFactoryJNDIMapper
    // ConnectionFactoryManager implementation -----------------------
 
    /**
-    * @param loadBalancingPolicy - ignored for non-clustered connection factories.
+    * @param loadBalancingFactory - ignored for non-clustered connection factories.
     */
    public synchronized void registerConnectionFactory(String uniqueName,
                                                       String clientID,
@@ -115,7 +119,7 @@ public class ConnectionFactoryJNDIMapper
                                                       int defaultTempQueuePageSize,
                                                       int defaultTempQueueDownCacheSize,
                                                       boolean clustered,
-                                                      LoadBalancingPolicy loadBalancingPolicy)
+                                                      LoadBalancingFactory loadBalancingFactory)
       throws Exception
    {
       log.debug(this + " registering connection factory '" + uniqueName +
@@ -170,7 +174,7 @@ public class ConnectionFactoryJNDIMapper
          // Create a clustered delegate
 
          Map localDelegates = replicator.get(CF_PREFIX + uniqueName);
-         delegate = createClusteredDelegate(localDelegates.values(), loadBalancingPolicy);
+         delegate = createClusteredDelegate(localDelegates.values(), loadBalancingFactory);
 
          log.debug(this + " created clustered delegate " + delegate);
       }
@@ -324,7 +328,8 @@ public class ConnectionFactoryJNDIMapper
 
             String uniqueName = sKey.substring(CF_PREFIX.length());
 
-            log.debug(this + " received '" + uniqueName + "' connection factory update " + updatedReplicantMap);
+            log.debug(this + " received '" + uniqueName +
+                                "' connection factory update " + updatedReplicantMap);
 
             ClientClusteredConnectionFactoryDelegate del =
                (ClientClusteredConnectionFactoryDelegate)delegates.get(uniqueName);
@@ -351,6 +356,8 @@ public class ConnectionFactoryJNDIMapper
             }
 
             rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
+
+            endpoint.updateClusteredClients(delArr, failoverMap);
          }
       }
       catch (Exception e)
@@ -397,7 +404,7 @@ public class ConnectionFactoryJNDIMapper
     * @param localDelegates - Collection<ClientConnectionFactoryDelegate>
     */
    private ClientClusteredConnectionFactoryDelegate
-      createClusteredDelegate(Collection localDelegates, LoadBalancingPolicy loadBalancingPolicy)
+      createClusteredDelegate(Collection localDelegates, LoadBalancingFactory loadBalancingFactory)
       throws Exception
    {
       log.trace(this + " creating a clustered ConnectionFactoryDelegate based on " + localDelegates);
@@ -425,7 +432,8 @@ public class ConnectionFactoryJNDIMapper
 
       return new ClientClusteredConnectionFactoryDelegate(delegates,
                                                           failoverMap,
-                                                          loadBalancingPolicy);
+                                                          loadBalancingFactory.
+                                                             createLoadBalancingPolicy(delegates));
    }
 
    private void rebindConnectionFactory(Context ic, JNDIBindings jndiBindings,
