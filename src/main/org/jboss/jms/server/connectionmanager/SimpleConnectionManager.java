@@ -191,7 +191,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       return sessions.containsKey(remotingClientSessionID);
    }
 
-   public synchronized List getActiveConnectionsList()
+   public synchronized List getActiveConnections()
    {
       // I will make a copy to avoid ConcurrentModification
       ArrayList list = new ArrayList();

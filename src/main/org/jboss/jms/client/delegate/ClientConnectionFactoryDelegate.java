@@ -174,9 +174,9 @@ public class ClientConnectionFactoryDelegate
       SimpleMetaData md = mi.getMetaData();
 
       md.addMetaData(Dispatcher.DISPATCHER,
-                        Dispatcher.OID,
-                        new Integer(id),
-                        PayloadKey.AS_IS);      
+                     Dispatcher.OID,
+                     new Integer(id),
+                     PayloadKey.AS_IS);
 
       // If the method being invoked is createConnectionDelegate() then we must invoke it on the
       // same remoting client subsequently used by the connection. This is because we need to pass

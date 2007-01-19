@@ -28,12 +28,12 @@ import java.util.Map;
 import java.lang.reflect.Method;
 
 /**
- * This class tests internal methods of ClusteringAspect
+ * This class tests internal methods of ClusteringAspect.
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
- *          $Id$
+ * $Id$
  */
 public class ClusteringAspectInternalTest extends MessagingTestCase
 {
@@ -67,20 +67,18 @@ public class ClusteringAspectInternalTest extends MessagingTestCase
 
    }
 
-
-
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
    protected void setUp() throws Exception
    {
-      super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
+      super.setUp();
    }
 
    protected void tearDown() throws Exception
    {
-      super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
+      super.tearDown();
    }
 
    // Private --------------------------------------------------------------------------------------
@@ -100,6 +98,7 @@ public class ClusteringAspectInternalTest extends MessagingTestCase
 
       return (Integer) method.invoke(null, new Object[]{map, value});
    }
+
    // Inner classes --------------------------------------------------------------------------------
 
 }

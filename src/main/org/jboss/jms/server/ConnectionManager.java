@@ -49,8 +49,9 @@ public interface ConnectionManager extends MessagingComponent
    boolean containsSession(String remotingClientSessionID);
 
    /**
-    * Returns a list of active connections on this Manager.
+    * Returns a list of active connections currently maintained by an instance of this manager.
     * The implementation should make a copy of the list to avoid ConcurrentModificationException.
+    * The list could be empty, but never null.
     */
-   List getActiveConnectionsList();
+   List getActiveConnections();
 }

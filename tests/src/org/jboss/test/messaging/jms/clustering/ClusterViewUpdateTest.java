@@ -34,9 +34,9 @@ import javax.jms.Session;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
- *          $Id$
+ * $Id$
  */
-public class ConnectionFactoryUpdateTest extends ClusteringTestBase
+public class ClusterViewUpdateTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -47,22 +47,23 @@ public class ConnectionFactoryUpdateTest extends ClusteringTestBase
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConnectionFactoryUpdateTest(String name)
+   public ClusterViewUpdateTest(String name)
    {
       super(name);
    }
 
    // Public ---------------------------------------------------------------------------------------
-   /**
-    */
+
    public void testUpdateConnectionFactory() throws Exception
    {
       Connection conn = cf.createConnection();
-      JBossConnectionFactory jbcf = (JBossConnectionFactory) cf;
-      ClientClusteredConnectionFactoryDelegate cfDelegate =
-         (ClientClusteredConnectionFactoryDelegate) jbcf.getDelegate();
-      assertEquals(3, cfDelegate.getDelegates().length);
 
+      JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
+
+      ClientClusteredConnectionFactoryDelegate cfDelegate =
+         (ClientClusteredConnectionFactoryDelegate)jbcf.getDelegate();
+
+      assertEquals(3, cfDelegate.getDelegates().length);
 
       Connection conn1 = cf.createConnection();
 
@@ -70,12 +71,14 @@ public class ConnectionFactoryUpdateTest extends ClusteringTestBase
 
       ServerManagement.killAndWait(1);
 
+      log.info("sleeping 5 secs ...");
       Thread.sleep(5000);
 
       // first part of the test, verifies if the CF was updated
       assertEquals(2, cfDelegate.getDelegates().length);
       conn.close();
 
+      log.info("sleeping 25 secs ...");
       Thread.sleep(25000);
 
       // Second part, verifies a possible racing condition on failoverMap and handleFilover
@@ -119,7 +122,7 @@ public class ConnectionFactoryUpdateTest extends ClusteringTestBase
       Thread.sleep(15000);
 
       // This will force Failover from Valve to kick in
-      Session sess = conn1.createSession(true, Session.SESSION_TRANSACTED);
+      conn1.createSession(true, Session.SESSION_TRANSACTED);
 
       // first part of the test, verifies if the CF was updated
       assertEquals(2, cfDelegate.getDelegates().length);
@@ -132,7 +135,6 @@ public class ConnectionFactoryUpdateTest extends ClusteringTestBase
       conn2.close();
 
    }
-
 
    // Package protected ----------------------------------------------------------------------------
 

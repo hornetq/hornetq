@@ -32,22 +32,22 @@ import org.jboss.logging.Logger;
  * This class will manage ConnectionFactory messages updates
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
+ *
+ * $Id$
  */
 public class ConnectionFactoryCallbackHandler implements CallbackHandler
 {
-
    // Constants ------------------------------------------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(ConnectionFactoryCallbackHandler.class);
 
    // Attributes -----------------------------------------------------------------------------------
 
-   ClientConnectionDelegate connectionDelegate;
-   ConnectionState state;
+   private ClientConnectionDelegate connectionDelegate;
+   private ConnectionState state;
 
    // Static ---------------------------------------------------------------------------------------
 
-   protected static final Logger log = Logger.getLogger(ConnectionFactoryCallbackHandler.class);
    private static boolean trace = log.isTraceEnabled();
 
    // Constructors ---------------------------------------------------------------------------------
@@ -58,40 +58,36 @@ public class ConnectionFactoryCallbackHandler implements CallbackHandler
       this.state = (ConnectionState)connectionDelegate.getState();
    }
 
+   // CallbackHandler implementation ---------------------------------------------------------------
 
-   // Implementation of CallbackHandler ------------------------------------------------------------
    public void handleMessage(Object message)
    {
-      ConnectionFactoryUpdateMessage updateMessage = (ConnectionFactoryUpdateMessage) message;
+      if (trace) { log.trace(this + " handling " + message); }
 
+      ConnectionFactoryUpdateMessage viewChange = (ConnectionFactoryUpdateMessage)message;
 
-      if (getState().getClusteredConnectionFactoryDelegate() != null &&
-          getState().getClusteredConnectionFactoryDelegate()
-             instanceof ClientClusteredConnectionFactoryDelegate)
+      Object d = state.getClusteredConnectionFactoryDelegate();
+
+      if (d instanceof ClientClusteredConnectionFactoryDelegate)
       {
-         ClientClusteredConnectionFactoryDelegate delegate =
-            (ClientClusteredConnectionFactoryDelegate) getState().
-               getClusteredConnectionFactoryDelegate();
+         ClientClusteredConnectionFactoryDelegate clusteredDelegate =
+            (ClientClusteredConnectionFactoryDelegate)d;
 
-         delegate.updateFailoverInfo(updateMessage.getDelegates(), updateMessage.getFailoverMap());
+         clusteredDelegate.updateFailoverInfo(viewChange.getDelegates(),
+                                              viewChange.getFailoverMap());
       }
-
    }
 
    // Public ---------------------------------------------------------------------------------------
 
+   public String toString()
+   {
+      return "ConnectionFactoryCallbackHandler[" + connectionDelegate + "]";
+   }
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected ConnectionState getState()
-   {
-      if (state==null)
-      {
-         this.state = (ConnectionState)connectionDelegate.getState();
-      }
-      return this.state;
-   }
 
    // Private --------------------------------------------------------------------------------------
 

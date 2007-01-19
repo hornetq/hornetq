@@ -27,15 +27,16 @@ import java.util.Map;
 import java.io.Serializable;
 
 /**
- * This class holds the updated information about the server to ConnectionFactories
+ * This class holds the update cluster view sent by the server to client-side clustered connection
+ * factories.
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *          
- *          $Id$
+ * $Id$
  */
 public class ConnectionFactoryUpdateMessage implements Serializable
 {
-   
 
    // Constants ------------------------------------------------------------------------------------
 
@@ -77,6 +78,24 @@ public class ConnectionFactoryUpdateMessage implements Serializable
    public void setFailoverMap(Map failoverMap)
    {
       this.failoverMap = failoverMap;
+   }
+
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("ConnectionFactoryUpdateMessage[");
+
+      for(int i = 0; i < delegates.length; i++)
+      {
+         sb.append(delegates[i]);
+         if (i < delegates.length - 1)
+         {
+            sb.append(',');
+         }
+      }
+
+      sb.append("]");
+
+      return sb.toString();
    }
 
    // Package protected ----------------------------------------------------------------------------

@@ -226,30 +226,33 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return jndiBindings;
    }
 
-
-   /** Sends an update message on ClusteredConnectionFactories.
-    * Observation: I have placed here, because if we decide to lock the ServerEndpoint
-    * while we send updates, we would need the method here to perform WriteLocks on objects */
+   /**
+    * Sends a cluster view update message to its associated ClusteredConnectionFactories.
+    *
+    * Observation: It is placed here, because if we decide to lock the ServerEndpoint while we send
+    *              updates, we would need the method here to perform WriteLocks on objects.
+    */
    public void updateClusteredClients(ClientConnectionFactoryDelegate[] delegates, Map failoverMap)
       throws Exception
    {
+      // TODO Should we lock the CFEndpoint now allowing new connections to come while doing this?
 
-      // Should we lock the CFEndpoint now allowing new connections to come while doing this?
+      List activeConnections = serverPeer.getConnectionManager().getActiveConnections();
 
-      List connectionList = serverPeer.getConnectionManager().getActiveConnectionsList();
+      log.info(this + " sending updated cluster view to " +
+         activeConnections.size() + " active connections.");
 
+      ConnectionFactoryUpdateMessage message =
+         new ConnectionFactoryUpdateMessage(delegates, failoverMap);
 
-      log.info("Sending update list to active connections. It got " +
-                 connectionList.size() + " elements");
-
-      ConnectionFactoryUpdateMessage message = new ConnectionFactoryUpdateMessage(delegates,
-                                                          failoverMap);
       Callback callback = new Callback(message);
 
-      for (Iterator iter = connectionList.iterator(); iter.hasNext();)
+      for (Iterator i = activeConnections.iterator(); i.hasNext();)
       {
-         ServerConnectionEndpoint connEndpoint = (ServerConnectionEndpoint) iter.next();
-         log.trace("Updating connection " + connEndpoint);
+         ServerConnectionEndpoint connEndpoint = (ServerConnectionEndpoint)i.next();
+
+         log.debug(this + " sending cluster view update to " + connEndpoint);
+
          try
          {
             connEndpoint.getCallbackHandler().handleCallback(callback);
@@ -259,7 +262,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
             log.error("Callback failed on connection " + connEndpoint, e);
          }
       }
-
    }
 
    public String toString()

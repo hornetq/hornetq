@@ -63,8 +63,6 @@ public class RemoteInitialContextFactory implements InitialContextFactory
 
    public Context getInitialContext(Hashtable environment) throws NamingException
    {
-      log.info(this + " getting intial context for " + environment);
-      
       String s = (String)environment.get(Constants.SERVER_INDEX_PROPERTY_NAME);
       
       if (s == null)

@@ -32,5 +32,5 @@ public interface CallbackHandler
 {
 
    void handleMessage(Object message);
-   
+
 }

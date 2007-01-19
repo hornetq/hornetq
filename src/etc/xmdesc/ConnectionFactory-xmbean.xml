@@ -45,7 +45,7 @@
    <attribute access="read-write" getMethod="getPrefetchSize" setMethod="setPrefetchSize">
       <description>The maximum number of messages that will be prefetched by the client side consumer</description>
       <name>PrefetchSize</name>
-      <type>int</type>
+      <type>int</type>                                                    
    </attribute>
    
    <attribute access="read-write" getMethod="getDefaultTempQueueFullSize" setMethod="setDefaultTempQueueFullSize">

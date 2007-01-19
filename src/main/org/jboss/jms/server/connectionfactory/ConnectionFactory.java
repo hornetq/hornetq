@@ -28,11 +28,11 @@ import org.w3c.dom.Element;
  */
 public class ConnectionFactory extends ServiceMBeanSupport
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected String clientID;
    protected JNDIBindings jndiBindings;
@@ -54,7 +54,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
    protected boolean started;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionFactory()
    {
@@ -69,7 +69,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
       this.loadBalancingFactory = LoadBalancingFactory.getDefaultFactory();
    }
 
-   // ServiceMBeanSupport overrides ---------------------------------
+   // ServiceMBeanSupport overrides ----------------------------------------------------------------
 
    public synchronized void startService() throws Exception
    {
@@ -165,7 +165,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
       } 
    }
 
-   // JMX managed attributes ----------------------------------------
+   // JMX managed attributes -----------------------------------------------------------------------
    
    public int getDefaultTempQueueFullSize()
    {
@@ -290,20 +290,20 @@ public class ConnectionFactory extends ServiceMBeanSupport
       this.loadBalancingFactory = loadBalancingFactory;
    }
 
-   // JMX managed operations ----------------------------------------
+   // JMX managed operations -----------------------------------------------------------------------
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "[" + jndiBindings.toString() + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }
