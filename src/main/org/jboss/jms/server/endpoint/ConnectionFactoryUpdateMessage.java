@@ -93,7 +93,7 @@ public class ConnectionFactoryUpdateMessage implements Serializable
          }
       }
 
-      sb.append("]");
+      sb.append("] size = " + delegates.length);
 
       return sb.toString();
    }

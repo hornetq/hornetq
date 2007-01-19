@@ -55,18 +55,17 @@ public class ConnectionFactoryCallbackHandler implements CallbackHandler
    public ConnectionFactoryCallbackHandler(ClientConnectionDelegate connectionDelegate)
    {
       this.connectionDelegate = connectionDelegate;
-      this.state = (ConnectionState)connectionDelegate.getState();
    }
 
    // CallbackHandler implementation ---------------------------------------------------------------
 
    public void handleMessage(Object message)
    {
-      if (trace) { log.trace(this + " handling " + message); }
+      log.info(this + " handling " + message);
 
       ConnectionFactoryUpdateMessage viewChange = (ConnectionFactoryUpdateMessage)message;
 
-      Object d = state.getClusteredConnectionFactoryDelegate();
+      Object d = getState().getClusteredConnectionFactoryDelegate();
 
       if (d instanceof ClientClusteredConnectionFactoryDelegate)
       {
@@ -88,6 +87,17 @@ public class ConnectionFactoryCallbackHandler implements CallbackHandler
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
+
+   // When ConnectionFactoryCallbackHandler is created, is not guaranteed that state is set
+   // as this could be later initialized by the aop stack
+   protected ConnectionState getState()
+   {
+      if (state==null)
+      {
+         this.state = (ConnectionState)connectionDelegate.getState();
+      }
+      return this.state;
+   }
 
    // Private --------------------------------------------------------------------------------------
 

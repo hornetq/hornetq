@@ -239,9 +239,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       List activeConnections = serverPeer.getConnectionManager().getActiveConnections();
 
-      log.info(this + " sending updated cluster view to " +
-         activeConnections.size() + " active connections.");
-
       ConnectionFactoryUpdateMessage message =
          new ConnectionFactoryUpdateMessage(delegates, failoverMap);
 
@@ -251,15 +248,18 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       {
          ServerConnectionEndpoint connEndpoint = (ServerConnectionEndpoint)i.next();
 
-         log.debug(this + " sending cluster view update to " + connEndpoint);
+         if (connEndpoint.getConnectionFactoryEndpoint() == this)
+         {
+            log.debug(this + " sending cluster view update to " + connEndpoint);
 
-         try
-         {
-            connEndpoint.getCallbackHandler().handleCallback(callback);
-         }
-         catch (Exception e)
-         {
-            log.error("Callback failed on connection " + connEndpoint, e);
+            try
+            {
+               connEndpoint.getCallbackHandler().handleCallback(callback);
+            }
+            catch (Exception e)
+            {
+               log.error("Callback failed on connection " + connEndpoint, e);
+            }
          }
       }
    }
