@@ -42,7 +42,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.jms.bridge.RecoveryTest.DummyXAResource;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
 
