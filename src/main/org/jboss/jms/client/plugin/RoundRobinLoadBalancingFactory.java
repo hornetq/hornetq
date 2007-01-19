@@ -27,8 +27,7 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
+ * $Id$
  */
 public class RoundRobinLoadBalancingFactory extends LoadBalancingFactory
 {

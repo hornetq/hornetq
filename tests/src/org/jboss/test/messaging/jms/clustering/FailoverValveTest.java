@@ -23,7 +23,6 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.jms.client.FailoverValve;
-import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 
 
@@ -36,10 +35,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  */
 public class FailoverValveTest extends MessagingTestCase
 {
-
-
    // Constants ------------------------------------------------------------------------------------
-   private static final Logger log = Logger.getLogger(FailoverValveTest.class);
 
    // Attributes -----------------------------------------------------------------------------------
 

@@ -52,11 +52,11 @@ import org.jboss.messaging.core.tx.XidImpl;
  */
 public class MessagingXAResource implements XAResource
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MessagingXAResource.class);
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
 
@@ -69,9 +69,9 @@ public class MessagingXAResource implements XAResource
    //For testing only
    private boolean preventJoining;
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public MessagingXAResource(ResourceManager rm, SessionState sessionState)
    { 
@@ -82,7 +82,7 @@ public class MessagingXAResource implements XAResource
       this.connection = (ConnectionDelegate)(sessionState.getParent()).getDelegate();
    }
    
-   // XAResource implementation -------------------------------------
+   // XAResource implementation --------------------------------------------------------------------
 
    public boolean setTransactionTimeout(int timeout) throws XAException
    {
@@ -251,7 +251,7 @@ public class MessagingXAResource implements XAResource
       }
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
@@ -269,11 +269,11 @@ public class MessagingXAResource implements XAResource
       this.preventJoining = preventJoining;
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private void setCurrentTransactionId(final Xid xid)
    {
@@ -299,5 +299,5 @@ public class MessagingXAResource implements XAResource
       }
    }
    
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

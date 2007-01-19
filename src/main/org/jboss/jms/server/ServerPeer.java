@@ -89,8 +89,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-public class ServerPeer extends ServiceMBeanSupport
-   implements ServerPeerMBean
+public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
 {
    // Constants ------------------------------------------------------------------------------------
 

@@ -37,16 +37,14 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
+import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.jms.server.endpoint.ConnectionFactoryUpdateMessage;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JNDIUtil;
@@ -56,7 +54,6 @@ import org.jboss.messaging.core.plugin.contract.ReplicationListener;
 import org.jboss.messaging.core.plugin.contract.Replicator;
 import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
-import org.jboss.remoting.callback.Callback;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -69,15 +66,17 @@ import org.jboss.remoting.callback.Callback;
 public class ConnectionFactoryJNDIMapper
    implements ConnectionFactoryManager, ReplicationListener
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ConnectionFactoryJNDIMapper.class);
 
-   // Static --------------------------------------------------------
-
    private static final String CF_PREFIX = "CF_";
 
-   // Attributes ----------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
+
+   private static boolean trace = log.isTraceEnabled();
+
+   // Attributes -----------------------------------------------------------------------------------
 
    protected Context initialContext;
    protected ServerPeer serverPeer;
@@ -95,7 +94,7 @@ public class ConnectionFactoryJNDIMapper
    // a new ConnectionFactories are deployed we use the cached map.
    protected Map failoverMap;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionFactoryJNDIMapper(ServerPeer serverPeer) throws Exception
    {
@@ -104,7 +103,7 @@ public class ConnectionFactoryJNDIMapper
       delegates = new HashMap();
    }
 
-   // ConnectionFactoryManager implementation -----------------------
+   // ConnectionFactoryManager implementation ------------------------------------------------------
 
    /**
     * @param loadBalancingFactory - ignored for non-clustered connection factories.
@@ -221,8 +220,7 @@ public class ConnectionFactoryJNDIMapper
          }
       }
 
-      log.trace("Removing delegate from delegates list with key=" + uniqueName + " at serverPeerID=" +
-                  this.serverPeer.getServerPeerID());
+      if (trace) { log.trace("Removing delegate from delegates list with key=" + uniqueName + " at serverPeerID=" + this.serverPeer.getServerPeerID()); }
 
       ConnectionFactoryDelegate delegate = (ConnectionFactoryDelegate)delegates.remove(uniqueName);
 
@@ -241,7 +239,8 @@ public class ConnectionFactoryJNDIMapper
             //There may be no clustered post office deployed
             if (!replicator.remove(CF_PREFIX + uniqueName))
             {
-               throw new IllegalStateException("Cannot find replicant to remove: " + CF_PREFIX + uniqueName);
+               throw new IllegalStateException("Cannot find replicant to remove: " +
+                  CF_PREFIX + uniqueName);
             }
          }
 
@@ -250,7 +249,7 @@ public class ConnectionFactoryJNDIMapper
       JMSDispatcher.instance.unregisterTarget(new Integer(endpoint.getID()));
    }
 
-   // MessagingComponent implementation -----------------------------
+   // MessagingComponent implementation ------------------------------------------------------------
 
    public void start() throws Exception
    {
@@ -271,7 +270,7 @@ public class ConnectionFactoryJNDIMapper
       log.debug("stopped");
    }
 
-   // ReplicationListener interface ----------------------------------
+   // ReplicationListener interface ----------------------------------------------------------------
 
    /**
     * @param updatedReplicantMap Map<Integer(nodeID)-Map<>>
@@ -366,7 +365,7 @@ public class ConnectionFactoryJNDIMapper
       }
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void injectReplicator(Replicator replicator)
    {
@@ -379,11 +378,11 @@ public class ConnectionFactoryJNDIMapper
       return "Server[" + serverPeer.getServerPeerID() + "].ConnFactoryJNDIMapper";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private void setupReplicator() throws Exception
    {
@@ -430,10 +429,8 @@ public class ConnectionFactoryJNDIMapper
          failoverMap = recalculateFailoverMap(nodeAddressMap.keySet());
       }
 
-      return new ClientClusteredConnectionFactoryDelegate(delegates,
-                                                          failoverMap,
-                                                          loadBalancingFactory.
-                                                             createLoadBalancingPolicy(delegates));
+      LoadBalancingPolicy lbp = loadBalancingFactory.createLoadBalancingPolicy(delegates);
+      return new ClientClusteredConnectionFactoryDelegate(delegates, failoverMap, lbp);
    }
 
    private void rebindConnectionFactory(Context ic, JNDIBindings jndiBindings,
@@ -472,5 +469,5 @@ public class ConnectionFactoryJNDIMapper
       return localDels;
    }
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

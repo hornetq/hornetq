@@ -22,13 +22,11 @@
 
 package org.jboss.jms.client.remoting;
 
-import org.jboss.jms.message.MessageProxy;
-
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
- *          $Id$
+ * $Id$
  */
 public interface CallbackHandler
 {

@@ -49,13 +49,13 @@ import org.jboss.remoting.ConnectionListener;
  */
 public class SimpleConnectionManager implements ConnectionManager, ConnectionListener
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(SimpleConnectionManager.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected Map jmsClients;
    
@@ -63,7 +63,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    protected Set activeConnections; 
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public SimpleConnectionManager()
    {
@@ -74,9 +74,11 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       activeConnections = new HashSet();
    }
 
-   // ConnectionManager ---------------------------------------------
+   // ConnectionManager ----------------------------------------------------------------------------
 
-   public synchronized void registerConnection(String jmsClientVMId, String remotingClientSessionID, ConnectionEndpoint endpoint)
+   public synchronized void registerConnection(String jmsClientVMId,
+                                               String remotingClientSessionID,
+                                               ConnectionEndpoint endpoint)
    {    
       Map endpoints = (Map)jmsClients.get(jmsClientVMId);
       
@@ -96,7 +98,8 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
                 Util.guidToString(remotingClientSessionID));
    }
 
-   public synchronized ConnectionEndpoint unregisterConnection(String jmsClientVMId, String remotingClientSessionID)
+   public synchronized ConnectionEndpoint unregisterConnection(String jmsClientVMId,
+                                                               String remotingClientSessionID)
    {
       Map endpoints = (Map)jmsClients.get(jmsClientVMId);
       
@@ -204,7 +207,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       return Collections.unmodifiableMap(jmsClients);
    }
 
-   // ConnectionListener --------------------------------------------
+   // ConnectionListener ---------------------------------------------------------------------------
 
    /**
     * Be aware that ConnectionNotifier uses to call this method with null Throwables.
@@ -230,7 +233,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       }
    }
    
-   // MessagingComponent implementation --------------------------------
+   // MessagingComponent implementation ------------------------------------------------------------
    
    public void start() throws Exception
    {
@@ -242,19 +245,19 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       //NOOP
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "ConnectionManager[" + Integer.toHexString(hashCode()) + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

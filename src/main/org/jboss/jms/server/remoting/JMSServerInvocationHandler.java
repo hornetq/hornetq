@@ -28,7 +28,6 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
-import org.jboss.aop.Dispatcher;
 import org.jboss.aop.joinpoint.InvocationResponse;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.aop.util.PayloadKey;

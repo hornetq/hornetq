@@ -35,7 +35,9 @@ import java.util.List;
  */
 public interface ConnectionManager extends MessagingComponent
 {
-   void registerConnection(String jmsClientVMId, String remotingClientSessionID, ConnectionEndpoint endpoint);
+   void registerConnection(String jmsClientVMId,
+                           String remotingClientSessionID,
+                           ConnectionEndpoint endpoint);
 
    /**
     * @return null if there is no such connection.
@@ -48,8 +50,7 @@ public interface ConnectionManager extends MessagingComponent
 
    /**
     * Returns a list of active connections on this Manager.
-    * The implementation should make a copy of the list to avoid ConcurrentModificationException
-    * @return
+    * The implementation should make a copy of the list to avoid ConcurrentModificationException.
     */
    List getActiveConnectionsList();
 }

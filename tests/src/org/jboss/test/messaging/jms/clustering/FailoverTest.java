@@ -1605,12 +1605,86 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
+   public void testSimpleFailoverWithRemotingListenerEnabled() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+         conn.start();
+
+         // make sure we're connecting to node 1
+
+         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
+            getDelegate()).getState()).getServerID();
+
+         assertEquals(1, nodeID);
+
+         Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer c1 = s1.createConsumer(queue[1]);
+         MessageProducer p1 = s1.createProducer(queue[1]);
+         p1.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         // send a message
+
+         p1.send(s1.createTextMessage("blip"));
+
+         // kill node 1
+
+         ServerManagement.killAndWait(1);
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         try
+         {
+            ic[1].lookup("queue"); // looking up anything
+            fail("The server still alive, kill didn't work yet");
+         }
+         catch (Exception e)
+         {
+         }
+
+         // we must receive the message
+
+         TextMessage tm = (TextMessage)c1.receive(1000);
+         assertEquals("blip", tm.getText());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected void simpleFailover(String userName, String password)
-      throws Exception
+   protected void setUp() throws Exception
+   {
+      nodeCount = 2;
+
+      super.setUp();
+
+      log.debug("setup done");
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
+   // Private --------------------------------------------------------------------------------------
+
+   private void simpleFailover(String userName, String password) throws Exception
    {
       Connection conn = null;
 
@@ -1685,26 +1759,6 @@ public class FailoverTest extends ClusteringTestBase
          }
       }
    }
-
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      nodeCount = 2;
-
-      super.setUp();
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-   // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
 

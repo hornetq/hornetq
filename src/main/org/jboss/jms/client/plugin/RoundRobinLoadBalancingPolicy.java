@@ -8,9 +8,6 @@ package org.jboss.jms.client.plugin;
 
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>

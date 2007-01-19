@@ -33,8 +33,6 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.callback.Callback;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;

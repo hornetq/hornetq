@@ -28,7 +28,7 @@ import java.io.Serializable;
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
- *          $Id$
+ * $Id$
  */
 public abstract class LoadBalancingFactory implements Serializable
 {
@@ -48,7 +48,7 @@ public abstract class LoadBalancingFactory implements Serializable
    // Public ---------------------------------------------------------------------------------------
 
    /**
-    * A LoadBalancingPolicy will work on top of ConnectionFactoryDelegate
+    * A LoadBalancingPolicy will work on top of ConnectionFactoryDelegate.
     */
    public abstract LoadBalancingPolicy createLoadBalancingPolicy(ConnectionFactoryDelegate[] view);
 
@@ -56,7 +56,6 @@ public abstract class LoadBalancingFactory implements Serializable
    {
       return theInstance;
    }
-
 
    // Package protected ----------------------------------------------------------------------------
 
