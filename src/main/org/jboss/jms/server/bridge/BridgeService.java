@@ -310,6 +310,8 @@ public class BridgeService extends ServiceMBeanSupport
 
    protected void startService() throws Exception
    {
+      if (log.isTraceEnabled()) { log.trace("Starting bridge"); }
+      
       super.startService();
       
       Properties sourceProps = null;
@@ -380,12 +382,18 @@ public class BridgeService extends ServiceMBeanSupport
       bridge.setDestConnectionFactoryFactory(destCff);
       
       bridge.start();      
+      
+      if (log.isTraceEnabled()) { log.trace("Started bridge"); }
    }
    
 
    protected void stopService() throws Exception
    {
+      if (log.isTraceEnabled()) { log.trace("Stopping bridge"); }
+      
       bridge.stop();
+      
+      if (log.isTraceEnabled()) { log.trace("Stopped bridge"); }
    }
    
    // Private ---------------------------------------------------------------------------------

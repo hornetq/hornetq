@@ -31,6 +31,6 @@ package org.jboss.jms.client.remoting;
 public interface CallbackHandler
 {
 
-   void handleMessage(Object message);
+   void handleMessage(Object message) throws Exception;
 
 }

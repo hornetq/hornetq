@@ -23,7 +23,6 @@ package org.jboss.jms.client.remoting;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.jms.IllegalStateException;
@@ -40,6 +39,8 @@ import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.util.Future;
+import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
+import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -198,7 +199,14 @@ public class MessageCallbackHandler implements CallbackHandler
    
    // Attributes ----------------------------------------------------
       
-   private LinkedList buffer;
+   /*
+    * The buffer is now a priority linked list
+    * This resolves problems whereby messages are delivered from the server side queue in
+    * correct priority order, but because the old consumer list was not a priority list
+    * then if messages were sitting waiting to be consumed on the client side, then higher
+    * priority messages might be behind lower priority messages and thus get consumed out of order
+    */
+   private PriorityLinkedList buffer;
    private SessionDelegate sessionDelegate;
    private ConsumerDelegate consumerDelegate;
    private int consumerID;
@@ -232,7 +240,7 @@ public class MessageCallbackHandler implements CallbackHandler
               
       this.maxBufferSize = bufferSize;
       this.minBufferSize = bufferSize / 2;
-      buffer = new LinkedList();
+      buffer = new BasicPriorityLinkedList(10);
       isConnectionConsumer = isCC;
       this.ackMode = ackMode;
       this.sessionDelegate = sess;
@@ -252,7 +260,7 @@ public class MessageCallbackHandler implements CallbackHandler
     * Handles a message sent from the server
     * @param message The message
     */
-   public void handleMessage(Object message)
+   public void handleMessage(Object message) throws Exception
    {
       MessageProxy msg = (MessageProxy) message;
 
@@ -272,7 +280,7 @@ public class MessageCallbackHandler implements CallbackHandler
          msg.setReceived();                  
                    
          //Add it to the buffer
-         buffer.add(msg);         
+         buffer.addLast(msg, msg.getJMSPriority());         
          
          lastDeliveryId = msg.getDeliveryId();
          
@@ -530,11 +538,11 @@ public class MessageCallbackHandler implements CallbackHandler
        this.consumerID = consumerId;
    }
    
-   public void addToFrontOfBuffer(MessageProxy proxy)
+   public void addToFrontOfBuffer(MessageProxy proxy) throws Exception
    {
       synchronized (mainLock)
       {
-         buffer.addFirst(proxy);
+         buffer.addFirst(proxy, proxy.getJMSPriority());
          
          messageAdded();
       }

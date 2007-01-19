@@ -64,14 +64,13 @@ public class BridgeTestBase extends MessagingTestCase
             // tables; don't clear the database for those.
             ServerManagement.start(i, "all,-transaction,jbossjta", i == 0);
          }
-      }
-      
-      //We need a local transaction and recovery manager
-      //We must start this after the remote servers have been created or it won't
-      //have deleted the database and the recovery manager may attempt to recover transactions
-      sc = new ServiceContainer("jbossjta");
-      sc.start(false);           
-
+         
+         //We need a local transaction and recovery manager
+         //We must start this after the remote servers have been created or it won't
+         //have deleted the database and the recovery manager may attempt to recover transactions
+         sc = new ServiceContainer("jbossjta");
+         sc.start(false);     
+      }                  
    }
 
    protected void tearDown() throws Exception
@@ -106,9 +105,11 @@ public class BridgeTestBase extends MessagingTestCase
                log.error("Failed to kill server", e);
             }
          }
+         
+         sc.stop();
       }
       
-      sc.stop();
+      
       
       super.tearDown();
       

@@ -21,16 +21,22 @@
   */
 package org.jboss.test.messaging.jms.server.connectionfactory;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.Session;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.XAConnectionFactory;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
-import javax.jms.ConnectionFactory;
-import javax.jms.XAConnectionFactory;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnectionFactory;
-import javax.management.ObjectName;
+
+import org.jboss.jms.client.JBossMessageConsumer;
+import org.jboss.jms.client.delegate.ClientConsumerDelegate;
+import org.jboss.jms.client.state.ConsumerState;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * Tests a deployed ConnectionFactory service.
@@ -113,6 +119,55 @@ public class ConnectionFactoryTest extends MessagingTestCase
       assertTrue(cf instanceof TopicConnectionFactory);
 
       ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+
+      try
+      {
+         initialContext.lookup("/SomeConnectionFactory");
+         fail("should throw exception");
+      }
+      catch(NameNotFoundException e)
+      {
+         // OK
+      }
+   }
+   
+   public void testDeploymentWithPrefetch() throws Exception
+   {
+      ServerManagement.deployQueue("testQueue");
+      
+      Queue queue = (Queue)initialContext.lookup("/queue/testQueue");
+            
+      String objectName = "somedomain:service=SomeConnectionFactory";
+      String[] jndiBindings = new String[] { "/SomeConnectionFactory" };
+
+      final int prefetchSize = 777777;
+      
+      ServerManagement.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+
+      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/SomeConnectionFactory");
+
+      assertNotNull(cf);
+      assertTrue(cf instanceof QueueConnectionFactory);
+      assertTrue(cf instanceof TopicConnectionFactory);
+      
+      
+      Connection conn = cf.createConnection();
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      JBossMessageConsumer cons = (JBossMessageConsumer)sess.createConsumer(queue);
+      
+      ClientConsumerDelegate del = (ClientConsumerDelegate)cons.getDelegate();
+      
+      ConsumerState state = (ConsumerState)del.getState();
+      
+      int size = state.getBufferSize();
+      
+      assertEquals(prefetchSize, size);
+
+      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+      
+      ServerManagement.undeployQueue("testQueue");
 
       try
       {

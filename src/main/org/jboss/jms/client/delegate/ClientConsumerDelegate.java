@@ -51,6 +51,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    private int bufferSize;
    private int maxDeliveries;
    private long channelID;
+   private boolean usePriorityConsumerQueue;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -212,7 +213,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       return channelID;
    }
-   
+
    // Protected ------------------------------------------------------------------------------------
 
    protected Client getClient()

@@ -30,11 +30,21 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
 import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.bridge.RecoveryTest.DummyXAResource;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * 
@@ -83,6 +93,8 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       ServerManagement.deployTopic("Topic");
       
       queue = (Queue)initialContext.lookup("/queue/Queue");
+      
+      this.drainDestination(cf, queue);
       
       topic = (Topic)initialContext.lookup("/topic/Topic");
       
@@ -222,6 +234,355 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       conn.close();
    }
    
+   public void testDeliveryCountUpdatedOnCloseTransacted() throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {         
+         conn = cf.createConnection();
+   
+         Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = producerSess.createProducer(queue);
+   
+         Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         conn.start();
+   
+         TextMessage tm = producerSess.createTextMessage("message1");
+         
+         producer.send(tm);
+         
+         TextMessage rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(1, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertFalse(rm.getJMSRedelivered());
+         
+         consumerSess.rollback();
+         
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(2, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+         consumerSess.rollback();
+         
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(3, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+         //Now close the session without committing
+         
+         log.info("Closing session");
+         
+         consumerSess.close();
+         
+         consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
+         
+         consumer = consumerSess.createConsumer(queue);
+         
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(4, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   public void testDeliveryCountUpdatedOnCloseClientAck() throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {         
+         conn = cf.createConnection();
+   
+         Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = producerSess.createProducer(queue);
+   
+         Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         conn.start();
+   
+         TextMessage tm = producerSess.createTextMessage("message1");
+         
+         producer.send(tm);
+         
+         TextMessage rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(1, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertFalse(rm.getJMSRedelivered());
+         
+         consumerSess.recover();
+         
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(2, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+         consumerSess.recover();
+         
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(3, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+         //Now close the session without committing
+         
+         consumerSess.close();
+         
+         consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         
+         consumer = consumerSess.createConsumer(queue);
+         
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(4, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   public void testDeliveryCountUpdatedOnCloseXA() throws Exception
+   {
+      XAConnection xaConn = null;
+      
+      Connection conn = null;
+      
+      TransactionManager mgr = TransactionManagerLocator.getInstance().locate();
+      
+      Transaction toResume = null;
+      
+      Transaction tx = null;
+      
+      try
+      {         
+         toResume = mgr.suspend();
+         
+         conn = cf.createConnection();
+         
+         //Send a message
+         
+         Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = producerSess.createProducer(queue);
+         
+         TextMessage tm = producerSess.createTextMessage("message1");
+         
+         producer.send(tm);
+         
+         
+         
+         xaConn = ((XAConnectionFactory)cf).createXAConnection();
+         
+         XASession consumerSess = xaConn.createXASession();
+         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         xaConn.start();
+         
+         DummyXAResource res = new DummyXAResource();
+         
+         mgr.begin();
+         
+         tx = mgr.getTransaction();
+         
+         tx.enlistResource(res);
+         
+         tx.enlistResource(consumerSess.getXAResource());
+         
+         TextMessage rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(1, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertFalse(rm.getJMSRedelivered());
+         
+         tx.delistResource(res, XAResource.TMSUCCESS);
+         
+         tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
+         
+         tx.rollback();
+         
+         mgr.begin();
+         
+         tx = mgr.getTransaction();
+         
+         tx.enlistResource(res);
+         
+         tx.enlistResource(consumerSess.getXAResource());
+         
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(2, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+         tx.delistResource(res, XAResource.TMSUCCESS);
+         
+         tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
+         
+         tx.rollback();
+         
+         mgr.begin();
+         
+         tx = mgr.getTransaction();
+         
+         tx.enlistResource(res);
+         
+         tx.enlistResource(consumerSess.getXAResource());
+            
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(3, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+                  
+         tx.delistResource(res, XAResource.TMSUCCESS);
+         
+         tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
+         
+         tx.rollback();
+         
+         log.info("Closing the consumer");
+         
+         //Must close consumer first
+         
+         consumer.close();
+         
+         consumerSess.close();
+         
+         consumerSess = xaConn.createXASession();
+         
+         consumer = consumerSess.createConsumer(queue);
+         
+         mgr.begin();
+         
+         tx = mgr.getTransaction();
+         
+         tx.enlistResource(res);
+         
+         tx.enlistResource(consumerSess.getXAResource());
+                           
+         rm = (TextMessage)consumer.receive(1000);
+         
+         assertNotNull(rm);
+         
+         assertEquals(tm.getText(), rm.getText());
+         
+         assertEquals(4, rm.getIntProperty("JMSXDeliveryCount"));
+         
+         assertTrue(rm.getJMSRedelivered());
+         
+         tx.delistResource(res, XAResource.TMSUCCESS);
+         
+         tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
+         
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Exception ignore)
+            {              
+            }             
+         }
+         
+         if (tx != null)
+         {
+            try
+            {
+               tx.commit();
+            }
+            catch (Exception ignore)
+            {              
+            }
+         }
+         
+         if (toResume != null)
+         {
+            try
+            {
+               mgr.resume(toResume);
+            }
+            catch (Exception ignore)
+            {              
+            }
+         }
+      }
+   }
+   
+   
+   
+   
+   
    class Receiver implements Runnable
    {
       MessageConsumer cons;
@@ -303,6 +664,61 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+   
+   static class DummyXAResource implements XAResource
+   {
+      DummyXAResource()
+      {         
+      }
+      
+
+      public void commit(Xid arg0, boolean arg1) throws XAException
+      {         
+      }
+
+      public void end(Xid arg0, int arg1) throws XAException
+      {
+      }
+
+      public void forget(Xid arg0) throws XAException
+      {
+      }
+
+      public int getTransactionTimeout() throws XAException
+      {
+          return 0;
+      }
+
+      public boolean isSameRM(XAResource arg0) throws XAException
+      {
+         return false;
+      }
+
+      public int prepare(Xid arg0) throws XAException
+      {
+         return XAResource.XA_OK;
+      }
+
+      public Xid[] recover(int arg0) throws XAException
+      {
+         return null;
+      }
+
+      public void rollback(Xid arg0) throws XAException
+      {
+      }
+
+      public boolean setTransactionTimeout(int arg0) throws XAException
+      {
+         return false;
+      }
+
+      public void start(Xid arg0, int arg1) throws XAException
+      {
+
+      }
+      
+   }
 
 }
 

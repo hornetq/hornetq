@@ -28,6 +28,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
+import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.logging.Logger;
@@ -35,11 +39,14 @@ import org.jboss.logging.Logger;
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
 
 /**
- * @author <a href="adrian@jboss.com">Adrian Brock</a>
- * @author <a href="juha@jboss.com">Juha Lindfors</a>
- * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * A BridgeXAResourceRecovery
  *
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision: 1.1 $</tt>
+ *
+ * $Id$
+ *
  */
 public class BridgeXAResourceRecovery implements XAResourceRecovery
 {
@@ -47,13 +54,19 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
 
    private static final Logger log = Logger.getLogger(BridgeXAResourceRecovery.class);
 
-   private BridgeXAResourceWrapper wrapper;
-
-   private boolean working = false;
-   
    private Hashtable jndiProperties;
    
    private String connectionFactoryLookup;
+   
+   private boolean hasMore;
+   
+   private String username;
+   
+   private String password;
+   
+   private XAConnection conn;
+   
+   private XAResource res;
 
    public BridgeXAResourceRecovery()
    {
@@ -91,12 +104,16 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
           * provider1.jndi.prop3=zzzz
           * 
           * provider1.xaconnectionfactorylookup=xyz
+          * provider1.username=bob
+          * provider1.password=blah
           * 
           * provider2.jndi.prop1=xxxx
           * provider2.jndi.prop2=yyyy
           * provider2.jndi.prop3=zzzz
           * 
           * provider2.xaconnectionfactorylookup=xyz
+          * provider2.username=xyz
+          * provider2.password=blah
           *           
           */
          
@@ -105,6 +122,10 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
          String jndiPrefix = provider + ".jndi.";
          
          String cfKey = provider + ".xaconnectionfactorylookup";
+         
+         String usernameKey = provider + ".username";
+         
+         String passwordKey = provider + ".password";
          
          jndiProperties = new Hashtable();
          
@@ -125,6 +146,14 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
             {
                connectionFactoryLookup = value;
             }
+            else if (key.equals(usernameKey))
+            {
+               username = value;
+            }
+            else if (key.equals(passwordKey))
+            {
+               password = value;
+            }
          }
          
          if (connectionFactoryLookup == null)
@@ -134,6 +163,8 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
          }
          
          if (log.isTraceEnabled()) { log.trace(this + " initialised"); }
+         
+         hasMore = true;
          
          return true;
       }
@@ -149,40 +180,114 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
    {
       if (log.isTraceEnabled()) { log.trace(this + " hasMoreResources"); }
             
-      // If the XAResource is already working
-      if (working)
+      /*
+       * The way hasMoreResources is supposed to work is as follows:
+       * For each "sweep" the recovery manager will call hasMoreResources, then if it returns
+       * true it will call getXAResource.
+       * It will repeat that until hasMoreResources returns false.
+       * Then the sweep is over.
+       * For the next sweep hasMoreResources should return true, etc.
+       * 
+       * In our case where we only need to return one XAResource per sweep,
+       * hasMoreResources should basically alternate between true and false.
+       * 
+       * And we return a new XAResource every time it is called.
+       * This makes this resilient to failure, since if the network fails
+       * between the XAResource and it's server, on the next pass a new one will
+       * be create and if the server is back up it will work.
+       * This means there is no need for an XAResourceWrapper which is a technique used in the 
+       * JMSProviderXAResourceRecovery
+       * The recovery manager will throw away the XAResource anyway after every sweep.
+       * 
+       */
+        
+      if (hasMore)
       {
-         log.info("Returning false");
-         return false;
-      }
-
-      // Have we initialized yet?
-      if (wrapper == null)
-      {
-         wrapper = new BridgeXAResourceWrapper(jndiProperties, connectionFactoryLookup);
-      }
-
-      // Test the connection
-      try
-      {
-         wrapper.getTransactionTimeout();
-         working = true;
-      }
-      catch (Exception ignored)
-      {
+         //Get a new XAResource
+         
+         try
+         {
+            if (conn != null)
+            {
+               conn.close();
+            }
+         }
+         catch (Exception ignore)
+         {         
+         }
+         
+         InitialContext ic = null;
+         
+         try
+         {
+            ic = new InitialContext(jndiProperties);
+            
+            XAConnectionFactory connectionFactory = (XAConnectionFactory)ic.lookup(connectionFactoryLookup);
+            
+            if (username == null)
+            {
+               conn = connectionFactory.createXAConnection();
+            }
+            else
+            {
+               conn = connectionFactory.createXAConnection(username, password);
+            }
+            
+            XASession session = conn.createXASession();
+            
+            res = session.getXAResource();
+            
+            //Note the connection is closed the next time the xaresource is created or by the finalizer
+            
+         }
+         catch (Exception e)
+         {
+            log.warn("Cannot create XAResource", e);
+            
+            hasMore = false;
+         }
+         finally
+         {
+            if (ic != null)
+            {
+               try
+               {
+                  ic.close();
+               }
+               catch (Exception ignore)
+               {               
+               }
+            }
+         }
+         
       }
       
-      log.info("Returning: " + working);
-
-      // This will return false until we get a successful connection
-      return working;
+      boolean ret = hasMore;
+            
+      hasMore = !hasMore;
+      
+      return ret;      
    }
 
    public XAResource getXAResource()
    {
       if (log.isTraceEnabled()) { log.trace(this + " getXAResource"); }
       
-      return wrapper;
+      return res;
+   }
+   
+   protected void finalize()
+   {
+      try
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+      catch (Exception ignore)
+      {         
+      }  
    }
 }
 

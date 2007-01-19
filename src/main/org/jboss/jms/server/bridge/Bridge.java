@@ -42,6 +42,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxManager;
 
 /**
@@ -271,7 +272,26 @@ public class Bridge implements MessagingComponent
       
       checkParams();
       
-      boolean ok = setupJMSObjectsWithRetry();
+      TransactionManager tm = getTm();
+      
+      //There may already be a JTA transaction associated to the thread
+      
+      boolean ok;
+      
+      Transaction toResume = null;
+      try
+      {
+         toResume = tm.suspend();
+         
+         ok = setupJMSObjects();
+      }
+      finally
+      {
+         if (toResume != null)
+         {
+            tm.resume(toResume);
+         }
+      }
       
       if (ok)
       {         
@@ -735,9 +755,7 @@ public class Bridge implements MessagingComponent
    {
       if (tm == null)
       {
-         //tm = TransactionManagerLocator.getInstance().locate();
-         
-         tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
+         tm = TransactionManagerLocator.getInstance().locate();
          
          if (tm == null)
          {

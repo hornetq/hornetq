@@ -562,9 +562,6 @@ public class ResourceManager
    /*
     * Rollback has occurred so we need to redeliver any unacked messages corresponding to the acks
     * is in the transaction.
-    * NOTE! We only do this for 1PC rollback - for 2PC rollback we MUST rollback on the server
-    * but if we do this we cannot redeliver locally since then we might get the same message
-    * delievered twice. Therefore we must not redeliver locally.
     * 
     */
    private void redeliverMessages(ClientTransaction ts) throws JMSException
@@ -606,14 +603,21 @@ public class ResourceManager
       {
          connection.sendTransaction(request);
       }
-      catch (TransactionRolledBackException e)
-      {
-         throw new MessagingXAException(XAException.XA_RBROLLBACK, "An error occurred in sending transaction and the transaction was rolled back", e);
-      }
       catch (Throwable t)
       {
          //Catch anything else
-         throw new MessagingXAException(XAException.XAER_RMERR, "A Throwable was caught in sending the transaction", t);
+         
+         //We assume that any error is recoverable - and the recovery manager should retry again
+         //either after the network connection has been repaired (if that was the problem), or
+         //the server has been fixed.
+         
+         //(In some cases it will not be possible to fix so the user will have to manually resolve the tx)
+         
+         //Therefore we throw XA_RETRY
+         //Note we DO NOT throw XAER_RMFAIL or XAER_RMERR since both if these will cause the Arjuna
+         //tx mgr NOT to retry and the transaction will have to be resolve manually.
+         
+         throw new MessagingXAException(XAException.XA_RETRY, "A Throwable was caught in sending the transaction", t);
       }
    }
    

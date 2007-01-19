@@ -32,12 +32,12 @@ import org.jboss.jms.server.MyTimeoutFactory;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
-import org.jboss.messaging.core.refqueue.PrioritizedDeque;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.messaging.util.Future;
+import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
+import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 import org.jboss.util.timeout.Timeout;
 import org.jboss.util.timeout.TimeoutTarget;
 
@@ -83,7 +83,7 @@ public abstract class ChannelSupport implements Channel
 
    protected volatile boolean receiversReady;
 
-   protected PrioritizedDeque messageRefs;
+   protected PriorityLinkedList messageRefs;
 
    protected boolean acceptReliableMessages;
 
@@ -141,7 +141,7 @@ public abstract class ChannelSupport implements Channel
 
       this.recoverable = recoverable;
 
-      messageRefs = new BasicPrioritizedDeque(10);
+      messageRefs = new BasicPriorityLinkedList(10);
 
       refLock = new Object();
       

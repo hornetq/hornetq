@@ -181,10 +181,7 @@ probably have in a real production config, this is so the tests don't take aeons
         <!--
         Periodic recovery modules to use.  Invoked in sort-order of names.
       -->
-      <!--
-        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension1" value="com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule"/>
-        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension2" value="com.arjuna.ats.internal.txoj.recovery.TORecoveryModule"/>
-        -->
+
         <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension3" value="com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule"/>
 
 
@@ -226,6 +223,7 @@ probably have in a real production config, this is so the tests don't take aeons
         <property
             name="com.arjuna.ats.txoj.lockstore.allowNestedLocking" value="YES"/>
     </properties>
+
     <properties depends="arjuna" name="jta">
         <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
         <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
@@ -249,12 +247,13 @@ probably have in a real production config, this is so the tests don't take aeons
         provider2.jndi.prop3=zzzz
         provider2.xaconnectionfactorylookup=xyz
         -->
-        <!--
+
         <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER0" value="org.jboss.jms.recovery.BridgeXAResourceRecovery;server0,bridge-recovery.properties"/>
         <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER1" value="org.jboss.jms.recovery.BridgeXAResourceRecovery;server1,bridge-recovery.properties"/>
--->
 
-<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBM_TEST" value="org.jboss.test.messaging.jms.bridge.RecoveryTest.NullXAResourceRecovery"/>
+        <!--
+        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBM_BRIDGE_TEST" value="org.jboss.test.messaging.jms.bridge.NullXAResourceRecovery"/>
+        -->
         <!--
         Support subtransactions in the JTA layer?
         Default is NO.

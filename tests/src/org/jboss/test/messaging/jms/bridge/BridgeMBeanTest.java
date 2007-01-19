@@ -42,7 +42,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 /**
  * A BridgeMBeanTest
  * 
- * 
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -299,7 +298,11 @@ public class BridgeMBeanTest extends BridgeTestBase
                                       -1, null, null, 5000, -1,
                                       sprops1, sprops2);
          
+         log.trace("Constructed bridge");
+         
          ServerManagement.getServer(0).invoke(on, "create", new Object[0], new String[0]);
+         
+         log.trace("Created bridge");
             
          {
             String cfLookup = (String)ServerManagement.getAttribute(on, "SourceConnectionFactoryLookup");
@@ -309,7 +312,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals("/Wibble", cfLookup);
             ServerManagement.setAttribute(on, "SourceConnectionFactoryLookup", "/XAConnectionFactory");
          }
-         
+              
          {
             String cfLookup = (String)ServerManagement.getAttribute(on, "TargetConnectionFactoryLookup");
             assertEquals("/XAConnectionFactory", cfLookup);
@@ -580,8 +583,12 @@ public class BridgeMBeanTest extends BridgeTestBase
          InitialContext icSource = new InitialContext(props1);
          InitialContext icTarget = new InitialContext(props2);
          
+         log.trace("Checking bridged bridge");
+         
          checkBridged(icSource, icTarget, "/ConnectionFactory", "/ConnectionFactory",
                       "/queue/sourceQueue", "/queue/targetQueue");
+         
+         log.trace("Checked bridge");
          
          
       }

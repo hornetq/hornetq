@@ -267,8 +267,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public long reserveIDBlock(String counterName, int size) throws Exception
    {
-      // TODO This will need locking (e.g. SELECT ... FOR UPDATE...) in the clustered case
-       
       if (trace) { log.trace("Getting ID block for counter " + counterName + ", size " + size); }
       
       if (size <= 0)
@@ -285,6 +283,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
 
+         //For the clustered case - this MUST use SELECT .. FOR UPDATE or a similar
+         //construct the locks the row
          String selectCounterSQL = getSQLStatement("SELECT_COUNTER");
          
          ps = conn.prepareStatement(selectCounterSQL);
@@ -301,6 +301,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             rs = null;
             
             ps.close();
+            
+            //There is a very small possibility that two threads will attempt to insert the same counter
+            //at the same time, if so, then the second one will fail eventually after a few retries by throwing
+            //a primary key violation.
             
             String insertCounterSQL = getSQLStatement("INSERT_COUNTER");
             

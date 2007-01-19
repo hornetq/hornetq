@@ -103,7 +103,15 @@ public class CallbackManager implements InvokerCallbackHandler
             return;
          }
 
-         handler.handleMessage(msg);
+         try
+         {
+            handler.handleMessage(msg);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to handle message", e);
+            throw new HandleCallbackException(e.getMessage(), e);
+         }
       }
       else if (parameter instanceof ConnectionFactoryUpdateMessage)
       {

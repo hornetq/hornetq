@@ -34,12 +34,15 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
 import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * A BridgeTest
@@ -528,6 +531,11 @@ public class BridgeTest extends BridgeTestBase
    
    public void testParams() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      
       try
       {               
          ServerManagement.deployQueue("sourceQueue", 0);
@@ -730,6 +738,11 @@ public class BridgeTest extends BridgeTestBase
    
    public void testSelector() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      
       Connection connSource = null;
       
       Connection connDest = null;
@@ -871,8 +884,185 @@ public class BridgeTest extends BridgeTestBase
       }                  
    }
    
+   public void testStartBridgeWithJTATransactionAlreadyRunning() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      
+      Connection connSource = null;
+      
+      Connection connDest = null;
+      
+      Bridge bridge = null;
+      
+      Transaction toResume = null;
+      
+      Transaction started = null;
+      
+      TransactionManager mgr = TransactionManagerLocator.getInstance().locate();
+                  
+      try
+      {
+         
+         toResume = mgr.suspend();
+         
+         mgr.begin();
+         
+         started = mgr.getTransaction();         
+         
+         ServerManagement.deployTopic("sourceTopic", 0);
+         
+         ServerManagement.deployQueue("destQueue", 1);
+         
+         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
+         
+         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+         
+         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
+         
+         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
+                      
+         InitialContext ic0 = new InitialContext(props0);
+         
+         InitialContext ic1 = new InitialContext(props1);
+         
+         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         
+         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+         
+         Topic sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
+         
+         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         
+         final int BATCH_SIZE = 10;
+         
+         bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
+                  null, null, null, null,
+                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  1, -1,
+                  null, null);
+         
+         bridge.start();
+            
+         connSource = cf0.createConnection();
+         
+         connDest = cf1.createConnection();
+         
+         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(sourceTopic);         
+
+         for (int i = 0; i < BATCH_SIZE; i++)
+         {
+            TextMessage tm = sessSend.createTextMessage("message" + i);
+                        
+            prod.send(tm);
+         }
+         
+         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sessRec.createConsumer(destQueue);
+         
+         connDest.start();
+                                 
+         for (int i = 0 ; i < BATCH_SIZE; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(1000);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         Message m = cons.receive(1000);
+         
+         assertNull(m);
+                       
+      }
+      finally
+      {      
+         if (started != null)
+         {
+            try
+            {
+               started.rollback();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to rollback", e);
+            }
+         }
+         
+         if (toResume != null)
+         {
+            try
+            {
+               mgr.resume(toResume);
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to resume", e);
+            }
+         }
+         
+         if (connSource != null)
+         {
+            try
+            {
+               connSource.close();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to close connection", e);
+            }
+         }
+         
+         if (connDest != null)
+         {
+            try
+            {
+               connDest.close();
+            }
+            catch (Exception e)
+            {
+              log.error("Failed to close connection", e);
+            }
+         }
+         
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+         
+         try
+         {
+            ServerManagement.undeployTopic("sourceTopic", 0);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+         
+         try
+         {
+            ServerManagement.undeployQueue("destQueue", 1);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+      }                  
+   }   
+   
    public void testNonDurableSubscriber() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      
       Connection connSource = null;
       
       Connection connDest = null;
@@ -1003,6 +1193,11 @@ public class BridgeTest extends BridgeTestBase
    
    public void testDurableSubscriber() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      
       Connection connSource = null;
       
       Connection connDest = null;

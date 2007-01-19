@@ -28,6 +28,7 @@ import java.util.Set;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -57,6 +58,13 @@ public class ReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(ReconnectTest.class);
    
+   protected ConnectionFactoryFactory cff0, cff1;
+   
+   protected ConnectionFactory cf0, cf1;
+   
+   protected Destination sourceQueue, destQueue;
+
+   
    public ReconnectTest(String name)
    {
       super(name);
@@ -65,11 +73,40 @@ public class ReconnectTest extends BridgeTestBase
    protected void setUp() throws Exception
    {
       super.setUp();      
+      
+      if (ServerManagement.isRemote())
+      {      
+         ServerManagement.deployQueue("sourceQueue", 0);
+         
+         ServerManagement.deployQueue("destQueue", 1);
+      }
+     
    }
 
    protected void tearDown() throws Exception
    {      
       super.tearDown();      
+      
+      if (ServerManagement.isRemote())
+      {       
+         try
+         {
+            ServerManagement.undeployQueue("sourceQueue", 0);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+         
+         try
+         {
+            ServerManagement.undeployQueue("destQueue", 1);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to undeploy", e);
+         }
+      }
    }
       
    // Crash and reconnect
@@ -157,7 +194,8 @@ public class ReconnectTest extends BridgeTestBase
    
    
    
-   public void testCrashAndReconnectDestCrashOnCommit_P() throws Exception
+   // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
+   public void x_testCrashAndReconnectDestCrashOnCommit_P() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
@@ -166,7 +204,8 @@ public class ReconnectTest extends BridgeTestBase
       testCrashAndReconnectDestCrashOnCommit(true);
    }
    
-   public void testCrashAndReconnectDestCrashOnCommit_NP() throws Exception
+   // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
+   public void x_testCrashAndReconnectDestCrashOnCommit_NP() throws Exception
    {
       if (!ServerManagement.isRemote())
       {
@@ -174,8 +213,45 @@ public class ReconnectTest extends BridgeTestBase
       }
       testCrashAndReconnectDestCrashOnCommit(false);
    }
-
-
+   
+   private void setUpAdministeredObjects() throws Exception
+   {
+      InitialContext ic0 = null, ic1 = null;
+      try
+      {
+         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
+         
+         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+         
+         cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
+         
+         cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
+               
+         ic0 = new InitialContext(props0);
+         
+         ic1 = new InitialContext(props1);
+         
+         cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         
+         cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+         
+         sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
+         
+         destQueue = (Queue)ic1.lookup("/queue/destQueue");
+      }
+      finally
+      {
+         if (ic0 != null)
+         {
+            ic0.close();
+         }
+         if (ic1 != null)
+         {
+            ic1.close();
+         }
+      }    
+   }
+   
    /*
     * Send some messages
     * Crash the destination server
@@ -185,37 +261,11 @@ public class ReconnectTest extends BridgeTestBase
     */
    private void testCrashAndReconnectDestBasic(int qosMode, boolean persistent) throws Exception
    {
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
       Bridge bridge = null;
          
       try
-      {
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+      { 
+         setUpAdministeredObjects();
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
@@ -225,40 +275,15 @@ public class ReconnectTest extends BridgeTestBase
          
          bridge.start();
             
-         connSource = cf0.createConnection();
-         
-         connDest = cf1.createConnection();
-         
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceQueue);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);                          
-         
          final int NUM_MESSAGES = 10;
          
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
+         //Send some messages
          
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
+         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES /2 , persistent);
          
          //Verify none are received
          
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
-         
-         connDest.close();
-         
-         ic1.close();
+         checkNoneReceived(cf1, destQueue);
          
          //Now crash the dest server
          
@@ -273,78 +298,31 @@ public class ReconnectTest extends BridgeTestBase
          
          //Restart the server
          
+         log.info("Restarting server");
+         
          ServerManagement.start(1, "all", false);
          
          ServerManagement.deployQueue("destQueue", 1);
-                           
-         cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         ic1 = new InitialContext(props1);
+                                    
+         setUpAdministeredObjects();
          
-         cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-                  
-         destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         connDest = cf1.createConnection();
-         
-         sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-           
          //Send some more messages
          
-         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-                  
-         //If Qos=once and only once then all messages should be received
-         //If Qos=at most then only the second half will be received
-         //If Qos=dups ok then the the first half will be received twice followed by the second half
+         log.info("Sending more messages");
          
-         checkMessagesReceived(qosMode, cons, NUM_MESSAGES);
+         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
+         
+         Thread.sleep(3000);
+                  
+         checkMessagesReceived(cf1, destQueue, qosMode, NUM_MESSAGES);
                     
          //Make sure no messages are left in the source dest
          
-         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
-         
-         connSource.start();
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);                 
+         this.checkNoneReceived(cf0, sourceQueue);                
       }
       finally
       {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
-         
+
          if (bridge != null)
          {
             try
@@ -355,25 +333,7 @@ public class ReconnectTest extends BridgeTestBase
             {
                log.error("Failed to stop bridge", e);
             }
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         }         
       }                  
    }
    
@@ -389,38 +349,12 @@ public class ReconnectTest extends BridgeTestBase
     * Verify all messages are received
     */
    private void testCrashAndReconnectDestCrashBeforePrepare(boolean persistent) throws Exception
-   {
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
+   {   
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         setUpAdministeredObjects();
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
@@ -429,41 +363,18 @@ public class ReconnectTest extends BridgeTestBase
                   null, null);
          
          bridge.start();
-            
-         connSource = cf0.createConnection();
-         
-         connDest = cf1.createConnection();
-         
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceQueue);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);                          
          
          final int NUM_MESSAGES = 10;
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
             
-            prod.send(tm);
-         }
+         //Send some messages
          
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
          
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
          
-         connDest.start();
+         //verify none are received
          
-         //Verify none are received
+         this.checkNoneReceived(cf1, destQueue);
          
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
-         
-         connDest.close();
-         
-         ic1.close();
          
          //Now crash the dest server
          
@@ -482,73 +393,22 @@ public class ReconnectTest extends BridgeTestBase
          
          ServerManagement.deployQueue("destQueue", 1);
                            
-         cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         ic1 = new InitialContext(props1);
+         setUpAdministeredObjects();
          
-         cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-                  
-         destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         connDest = cf1.createConnection();
-         
-         sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-           
-         //Send some more messages
-         
-         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-                  
-         checkMessagesReceived(Bridge.QOS_ONCE_AND_ONLY_ONCE, cons, NUM_MESSAGES);
+         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
+                           
+         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES);
          
          //Make sure no messages are left in the source dest
          
-         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
-         
-         connSource.start();
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);
+         checkNoneReceived(cf0, sourceQueue);
          
          log.info("Got here");
          
       }
       finally
       {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
-         
+                 
          if (bridge != null)
          {
             try
@@ -561,23 +421,6 @@ public class ReconnectTest extends BridgeTestBase
             }
          }
          
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
       }                  
    }
    
@@ -590,37 +433,11 @@ public class ReconnectTest extends BridgeTestBase
     */
    private void testCrashAndReconnectDestCrashOnCommit(boolean persistent) throws Exception
    {
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         setUpAdministeredObjects();
          
          final int NUM_MESSAGES = 10;         
          
@@ -632,42 +449,16 @@ public class ReconnectTest extends BridgeTestBase
          
          bridge.start();
          
-         connSource = cf0.createConnection();
+         //Send some messages
          
-         connDest = cf1.createConnection();
+         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
          
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceQueue);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);                          
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-             
-            prod.send(tm);
-            
-            log.info("sent message:" + tm.getJMSMessageID());
-            
-         }
-         
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-         
+
          //Verify none are received
          
-         Message m = cons.receive(1000);
-          
-         assertNull(m);
+         checkNoneReceived(cf1, destQueue);
          
-         connDest.close();
-         
-         ic1.close();
-         
+
          //Poison server 1 so it crashes on commit of dest but after prepare
          
          //This means the transaction branch on source will get commmitted
@@ -707,77 +498,25 @@ public class ReconnectTest extends BridgeTestBase
          
          log.info("Slept");
                            
-         cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         ic1 = new InitialContext(props1);
+         setUpAdministeredObjects();
          
-         cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-                  
-         destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         connDest = cf1.createConnection();
-         
-         sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
            
          //Send some more messages
          
-         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-              
-            prod.send(tm);
-            
-            log.info("sent message: " + tm.getJMSMessageID());
-            
-         }
+         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
                   
-         checkMessagesReceived(Bridge.QOS_ONCE_AND_ONLY_ONCE, cons, NUM_MESSAGES);
+         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES);
          
          //Make sure no messages are left in the source dest
          
-         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
-         
-         connSource.start();
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf0, sourceQueue);
          
          log.info("Got here");
          
       }
       finally
       {      
-         log.info("In finally");
-         
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
+         log.info("In finally");         
          
          if (bridge != null)
          {
@@ -790,69 +529,138 @@ public class ReconnectTest extends BridgeTestBase
                log.error("Failed to stop bridge", e);
             }
          }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
       }                  
    }
    
-   
-   private void checkMessagesReceived(int qosMode, MessageConsumer cons, int numMessages) throws Exception
+   private void sendMessages(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean persistent)
+      throws Exception
    {
-      //Consume the messages
+      Connection conn = null;
       
-      Set msgs = new HashSet();
-      
-      while (true)
+      try
       {
-         TextMessage tm = (TextMessage)cons.receive(2000);
+         conn = cf.createConnection();
          
-         if (tm == null)
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess.createProducer(dest);
+         
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+         
+         for (int i = start; i < start + numMessages; i++)
          {
-            break;
+            TextMessage tm = sess.createTextMessage("message" + i);
+            
+            prod.send(tm);
+         }
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   private void checkNoneReceived(ConnectionFactory cf, Destination dest) throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         conn.start();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sess.createConsumer(dest);
+         
+         Message m = cons.receive(2000);
+         
+         assertNull(m);
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   private void checkMessagesReceived(ConnectionFactory cf, Destination dest, int qosMode, int numMessages) throws Exception
+   {
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         conn.start();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sess.createConsumer(dest);
+         
+         // Consume the messages
+         
+         Set msgs = new HashSet();
+         
+         log.info("checkMessagesReceived");
+         
+         int count = 0;
+         
+         while (true)
+         {
+            TextMessage tm = (TextMessage)cons.receive(2000);
+            
+            if (tm == null)
+            {
+               break;
+            }
+            
+            log.info("got message:" + tm.getJMSMessageID());         
+            
+            msgs.add(tm.getText());
+            
+            count++;
+          
          }
          
-         log.info("received message:" + tm.getJMSMessageID());         
+         log.info("message received " + count);
          
-         msgs.add(tm.getText());
-       
-      }
-      
-      if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE || qosMode == Bridge.QOS_DUPLICATES_OK)
-      {            
-         //All the messages should be received
-         
-         for (int i = 0; i < numMessages; i++)
-         {
-            assertTrue(msgs.contains("message" + i));
+         if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE || qosMode == Bridge.QOS_DUPLICATES_OK)
+         {            
+            //All the messages should be received
+            
+            for (int i = 0; i < numMessages; i++)
+            {
+               assertTrue(msgs.contains("message" + i));
+            }
+            
+            //Should be no more
+            if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE)
+            {
+               assertEquals(numMessages, msgs.size());
+            }         
          }
-         
-         //Should be no more
-         if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE)
+         else if (qosMode == Bridge.QOS_AT_MOST_ONCE)
          {
-            assertEquals(numMessages, msgs.size());
-         }         
+            //No *guarantee* that any messages will be received
+            //but you still might get some depending on how/where the crash occurred                 
+         }      
+         
       }
-      else if (qosMode == Bridge.QOS_AT_MOST_ONCE)
+      finally
       {
-         //No *guarantee* that any messages will be received
-         //but you still might get some depending on how/where the crash occurred                 
-      }            
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }  
    }
    
    // Inner classes -------------------------------------------------------------------

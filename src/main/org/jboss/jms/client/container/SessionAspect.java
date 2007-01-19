@@ -138,35 +138,30 @@ public class SessionAspect
          // delivery count information from client to server. We could just do this on the server but
          // we would lose delivery count info.
                   
-         // CLIENT_ACKNOWLEDGE cannot be used with MDBs so is always safe to cancel on this session                  
+         // CLIENT_ACKNOWLEDGE cannot be used with MDBs (i.e. no connection consumer)
+         // so is always safe to cancel on this session                  
          
-         List cancels = new ArrayList();
-         
-         for(Iterator i = state.getClientAckList().iterator(); i.hasNext(); )
-         {
-            DeliveryInfo ack = (DeliveryInfo)i.next();            
-            
-            DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(),
-                                                     ack.getMessageProxy().getDeliveryCount(),
-                                                     false, false);
-            
-            cancels.add(cancel);
-         }         
-         
-         if (!cancels.isEmpty())
-         {
-            del.cancelDeliveries(cancels);
-         }
+         cancelDeliveries(del, state.getClientAckList());
          
          state.getClientAckList().clear();
       }
+      else if (state.isTransacted() && !state.isXA())
+      {
+         //We need to explicitly cancel any deliveries back to the server
+         //from the resource manager, otherwise delivery count won't be updated
+         
+         ConnectionState connState = (ConnectionState)state.getParent();
+         
+         ResourceManager rm = connState.getResourceManager();
+         
+         List dels = rm.getDeliveriesForSession(state.getSessionID());
+         
+         cancelDeliveries(del, dels);        
+      }
             
-      //TODO - we should also cancel any deliveries remaining in any transaction for the session
-      //so the delivery count gets updated to the server, and not rely on the server side close
-      //cancelling them
       
       return invocation.invokeNext();
-   }
+   }      
    
    public Object handleClose(Invocation invocation) throws Throwable
    {      
@@ -598,6 +593,27 @@ public class SessionAspect
       
       sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryID(),
                                   delivery.getMessageProxy().getDeliveryCount(), false, false));      
+   }
+   
+   private void cancelDeliveries(SessionDelegate del, List deliveryInfos) throws Exception
+   {
+      List cancels = new ArrayList();
+      
+      for (Iterator i = deliveryInfos.iterator(); i.hasNext(); )
+      {
+         DeliveryInfo ack = (DeliveryInfo)i.next();            
+         
+         DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(),
+                                                  ack.getMessageProxy().getDeliveryCount(),
+                                                  false, false);
+         
+         cancels.add(cancel);
+      }  
+      
+      if (!cancels.isEmpty())
+      {
+         del.cancelDeliveries(cancels);
+      }
    }
 
    // Inner Classes -------------------------------------------------

@@ -2614,7 +2614,7 @@ public class XATest extends MessagingTestCase
       {
          if (failOnPrepare)
          {
-            throw new XAException(XAException.XAER_RMERR);
+            throw new XAException(XAException.XAER_RMFAIL);
          }
          return XAResource.XA_OK;
       }

@@ -19,12 +19,12 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.core.refqueue;
+package org.jboss.test.messaging.util.prioritylinkedlist;
 
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import org.jboss.messaging.core.refqueue.BasicPrioritizedDeque;
+import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
 import org.jboss.test.messaging.MessagingTestCase;
 
 /**
@@ -32,9 +32,9 @@ import org.jboss.test.messaging.MessagingTestCase;
  *
  * $Id$
  */
-public class PrioritizedReferenceQueueTest extends MessagingTestCase
+public class PriorityLinkedListTest extends MessagingTestCase
 {
-   protected BasicPrioritizedDeque deque;
+   protected BasicPriorityLinkedList list;
    
    protected Wibble a;
    protected Wibble b;
@@ -63,7 +63,7 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
    protected Wibble y;   
    protected Wibble z;
    
-   public PrioritizedReferenceQueueTest(String name)
+   public PriorityLinkedListTest(String name)
    {
       super(name);
    }
@@ -72,7 +72,7 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
    {
       super.setUp();
       
-      deque = new BasicPrioritizedDeque(10);
+      list = new BasicPriorityLinkedList(10);
       
       a = new Wibble("a");
       b = new Wibble("b");
@@ -107,205 +107,227 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
    {
       super.tearDown();
    }
+   
+   public void testSpeed() throws Exception
+   {
+      final int NUM_MESSAGES = 1000000;
+      
+      long start = System.currentTimeMillis();
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         list.addLast(new Object(), i % 10);
+      }
+      
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         Object obj = list.removeFirst();
+      }
+      
+      long end = System.currentTimeMillis();
+      
+      log.info("That took " + (end -start) + " ms");
+      
+   }
     
    public void testAddFirst() throws Exception
    {
-      deque.addFirst(a, 0);
-      deque.addFirst(b, 0);
-      deque.addFirst(c, 0);
-      deque.addFirst(d, 0);
-      deque.addFirst(e, 0);
+      list.addFirst(a, 0);
+      list.addFirst(b, 0);
+      list.addFirst(c, 0);
+      list.addFirst(d, 0);
+      list.addFirst(e, 0);
 
 
-      assertEquals(e, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
-      assertEquals(a, deque.removeFirst());
-      assertNull(deque.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(b, list.removeFirst());
+      assertEquals(a, list.removeFirst());
+      assertNull(list.removeFirst());
    }
    
    public void testAddLast() throws Exception
    {
-      deque.addLast(a, 0);
-      deque.addLast(b, 0);
-      deque.addLast(c, 0);
-      deque.addLast(d, 0);
-      deque.addLast(e, 0);
+      list.addLast(a, 0);
+      list.addLast(b, 0);
+      list.addLast(c, 0);
+      list.addLast(d, 0);
+      list.addLast(e, 0);
       
-      assertEquals(a, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertNull(deque.removeFirst());
+      assertEquals(a, list.removeFirst());
+      assertEquals(b, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertNull(list.removeFirst());
 
    }
    
    
    public void testRemoveFirst() throws Exception
    {
-      deque.addLast(a, 0);
-      deque.addLast(b, 1);
-      deque.addLast(c, 2);
-      deque.addLast(d, 3);
-      deque.addLast(e, 4);
-      deque.addLast(f, 5);
-      deque.addLast(g, 6);
-      deque.addLast(h, 7);
-      deque.addLast(i, 8);
-      deque.addLast(j, 9);
+      list.addLast(a, 0);
+      list.addLast(b, 1);
+      list.addLast(c, 2);
+      list.addLast(d, 3);
+      list.addLast(e, 4);
+      list.addLast(f, 5);
+      list.addLast(g, 6);
+      list.addLast(h, 7);
+      list.addLast(i, 8);
+      list.addLast(j, 9);
       
-      assertEquals(j, deque.removeFirst());
-      assertEquals(i, deque.removeFirst());
-      assertEquals(h, deque.removeFirst());
-      assertEquals(g, deque.removeFirst());
-      assertEquals(f, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
-      assertEquals(a, deque.removeFirst());
+      assertEquals(j, list.removeFirst());
+      assertEquals(i, list.removeFirst());
+      assertEquals(h, list.removeFirst());
+      assertEquals(g, list.removeFirst());
+      assertEquals(f, list.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(b, list.removeFirst());
+      assertEquals(a, list.removeFirst());
     
-      assertNull(deque.removeFirst());
+      assertNull(list.removeFirst());
       
-      deque.addLast(a, 9);
-      deque.addLast(b, 8);
-      deque.addLast(c, 7);
-      deque.addLast(d, 6);
-      deque.addLast(e, 5);
-      deque.addLast(f, 4);
-      deque.addLast(g, 3);
-      deque.addLast(h, 2);
-      deque.addLast(i, 1);
-      deque.addLast(j, 0);
+      list.addLast(a, 9);
+      list.addLast(b, 8);
+      list.addLast(c, 7);
+      list.addLast(d, 6);
+      list.addLast(e, 5);
+      list.addLast(f, 4);
+      list.addLast(g, 3);
+      list.addLast(h, 2);
+      list.addLast(i, 1);
+      list.addLast(j, 0);
       
-      assertEquals(a, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertEquals(f, deque.removeFirst());
-      assertEquals(g, deque.removeFirst());
-      assertEquals(h, deque.removeFirst());
-      assertEquals(i, deque.removeFirst());
-      assertEquals(j, deque.removeFirst());
+      assertEquals(a, list.removeFirst());
+      assertEquals(b, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertEquals(f, list.removeFirst());
+      assertEquals(g, list.removeFirst());
+      assertEquals(h, list.removeFirst());
+      assertEquals(i, list.removeFirst());
+      assertEquals(j, list.removeFirst());
     
-      assertNull(deque.removeFirst());
+      assertNull(list.removeFirst());
       
-      deque.addLast(a, 9);
-      deque.addLast(b, 0);
-      deque.addLast(c, 8);
-      deque.addLast(d, 1);
-      deque.addLast(e, 7);
-      deque.addLast(f, 2);
-      deque.addLast(g, 6);
-      deque.addLast(h, 3);
-      deque.addLast(i, 5);
-      deque.addLast(j, 4);
+      list.addLast(a, 9);
+      list.addLast(b, 0);
+      list.addLast(c, 8);
+      list.addLast(d, 1);
+      list.addLast(e, 7);
+      list.addLast(f, 2);
+      list.addLast(g, 6);
+      list.addLast(h, 3);
+      list.addLast(i, 5);
+      list.addLast(j, 4);
       
-      assertEquals(a, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertEquals(g, deque.removeFirst());
-      assertEquals(i, deque.removeFirst());
-      assertEquals(j, deque.removeFirst());
-      assertEquals(h, deque.removeFirst());
-      assertEquals(f, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
+      assertEquals(a, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertEquals(g, list.removeFirst());
+      assertEquals(i, list.removeFirst());
+      assertEquals(j, list.removeFirst());
+      assertEquals(h, list.removeFirst());
+      assertEquals(f, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(b, list.removeFirst());
       
-      assertNull(deque.removeFirst());
+      assertNull(list.removeFirst());
       
-      deque.addLast(a, 0);
-      deque.addLast(b, 3);
-      deque.addLast(c, 3);
-      deque.addLast(d, 3);
-      deque.addLast(e, 6);
-      deque.addLast(f, 6);
-      deque.addLast(g, 6);
-      deque.addLast(h, 9);
-      deque.addLast(i, 9);
-      deque.addLast(j, 9);
+      list.addLast(a, 0);
+      list.addLast(b, 3);
+      list.addLast(c, 3);
+      list.addLast(d, 3);
+      list.addLast(e, 6);
+      list.addLast(f, 6);
+      list.addLast(g, 6);
+      list.addLast(h, 9);
+      list.addLast(i, 9);
+      list.addLast(j, 9);
       
-      assertEquals(h, deque.removeFirst());
-      assertEquals(i, deque.removeFirst());
-      assertEquals(j, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertEquals(f, deque.removeFirst());
-      assertEquals(g, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(a, deque.removeFirst());
+      assertEquals(h, list.removeFirst());
+      assertEquals(i, list.removeFirst());
+      assertEquals(j, list.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertEquals(f, list.removeFirst());
+      assertEquals(g, list.removeFirst());
+      assertEquals(b, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(a, list.removeFirst());
       
-      assertNull(deque.removeFirst());
+      assertNull(list.removeFirst());
       
-      deque.addLast(a, 5);
-      deque.addLast(b, 5);
-      deque.addLast(c, 5);
-      deque.addLast(d, 5);
-      deque.addLast(e, 5);
-      deque.addLast(f, 5);
-      deque.addLast(g, 5);
-      deque.addLast(h, 5);
-      deque.addLast(i, 5);
-      deque.addLast(j, 5);
+      list.addLast(a, 5);
+      list.addLast(b, 5);
+      list.addLast(c, 5);
+      list.addLast(d, 5);
+      list.addLast(e, 5);
+      list.addLast(f, 5);
+      list.addLast(g, 5);
+      list.addLast(h, 5);
+      list.addLast(i, 5);
+      list.addLast(j, 5);
       
-      assertEquals(a, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertEquals(f, deque.removeFirst());
-      assertEquals(g, deque.removeFirst());
-      assertEquals(h, deque.removeFirst());
-      assertEquals(i, deque.removeFirst());
-      assertEquals(j, deque.removeFirst());
+      assertEquals(a, list.removeFirst());
+      assertEquals(b, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertEquals(f, list.removeFirst());
+      assertEquals(g, list.removeFirst());
+      assertEquals(h, list.removeFirst());
+      assertEquals(i, list.removeFirst());
+      assertEquals(j, list.removeFirst());
       
-      assertNull(deque.removeFirst());
+      assertNull(list.removeFirst());
       
-      deque.addLast(j, 5);
-      deque.addLast(i, 5);
-      deque.addLast(h, 5);
-      deque.addLast(g, 5);
-      deque.addLast(f, 5);
-      deque.addLast(e, 5);
-      deque.addLast(d, 5);
-      deque.addLast(c, 5);
-      deque.addLast(b, 5);
-      deque.addLast(a, 5);
+      list.addLast(j, 5);
+      list.addLast(i, 5);
+      list.addLast(h, 5);
+      list.addLast(g, 5);
+      list.addLast(f, 5);
+      list.addLast(e, 5);
+      list.addLast(d, 5);
+      list.addLast(c, 5);
+      list.addLast(b, 5);
+      list.addLast(a, 5);
       
-      assertEquals(j, deque.removeFirst());
-      assertEquals(i, deque.removeFirst());
-      assertEquals(h, deque.removeFirst());
-      assertEquals(g, deque.removeFirst());
-      assertEquals(f, deque.removeFirst());
-      assertEquals(e, deque.removeFirst());
-      assertEquals(d, deque.removeFirst());
-      assertEquals(c, deque.removeFirst());
-      assertEquals(b, deque.removeFirst());
-      assertEquals(a, deque.removeFirst());
+      assertEquals(j, list.removeFirst());
+      assertEquals(i, list.removeFirst());
+      assertEquals(h, list.removeFirst());
+      assertEquals(g, list.removeFirst());
+      assertEquals(f, list.removeFirst());
+      assertEquals(e, list.removeFirst());
+      assertEquals(d, list.removeFirst());
+      assertEquals(c, list.removeFirst());
+      assertEquals(b, list.removeFirst());
+      assertEquals(a, list.removeFirst());
       
-      assertNull(deque.removeFirst());
+      assertNull(list.removeFirst());
       
    }
    
    public void testGetAll() throws Exception
    {
-      deque.addLast(a, 0);
-      deque.addLast(b, 3);
-      deque.addLast(c, 3);
-      deque.addLast(d, 3);
-      deque.addLast(e, 6);
-      deque.addLast(f, 6);
-      deque.addLast(g, 6);
-      deque.addLast(h, 9);
-      deque.addLast(i, 9);
-      deque.addLast(j, 9);
+      list.addLast(a, 0);
+      list.addLast(b, 3);
+      list.addLast(c, 3);
+      list.addLast(d, 3);
+      list.addLast(e, 6);
+      list.addLast(f, 6);
+      list.addLast(g, 6);
+      list.addLast(h, 9);
+      list.addLast(i, 9);
+      list.addLast(j, 9);
       
       
-      Iterator iter = deque.getAll().iterator();
+      Iterator iter = list.getAll().iterator();
       int count = 0;
       while (iter.hasNext())
       {
@@ -357,34 +379,34 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
    
    public void testIterator()
    {
-      deque.addLast(a, 9);
-      deque.addLast(b, 9);
-      deque.addLast(c, 8);
-      deque.addLast(d, 8);
-      deque.addLast(e, 7);
-      deque.addLast(f, 7);
-      deque.addLast(g, 7);
-      deque.addLast(h, 6);
-      deque.addLast(i, 6);
-      deque.addLast(j, 6);
-      deque.addLast(k, 5);
-      deque.addLast(l, 5);
-      deque.addLast(m, 4);
-      deque.addLast(n, 4);
-      deque.addLast(o, 4);
-      deque.addLast(p, 3);
-      deque.addLast(q, 3);
-      deque.addLast(r, 3);
-      deque.addLast(s, 2);
-      deque.addLast(t, 2);
-      deque.addLast(u, 2);
-      deque.addLast(v, 1);
-      deque.addLast(w, 1);
-      deque.addLast(x, 1);
-      deque.addLast(y, 0);
-      deque.addLast(z, 0);
+      list.addLast(a, 9);
+      list.addLast(b, 9);
+      list.addLast(c, 8);
+      list.addLast(d, 8);
+      list.addLast(e, 7);
+      list.addLast(f, 7);
+      list.addLast(g, 7);
+      list.addLast(h, 6);
+      list.addLast(i, 6);
+      list.addLast(j, 6);
+      list.addLast(k, 5);
+      list.addLast(l, 5);
+      list.addLast(m, 4);
+      list.addLast(n, 4);
+      list.addLast(o, 4);
+      list.addLast(p, 3);
+      list.addLast(q, 3);
+      list.addLast(r, 3);
+      list.addLast(s, 2);
+      list.addLast(t, 2);
+      list.addLast(u, 2);
+      list.addLast(v, 1);
+      list.addLast(w, 1);
+      list.addLast(x, 1);
+      list.addLast(y, 0);
+      list.addLast(z, 0);
       
-      ListIterator iter = deque.iterator();
+      ListIterator iter = list.iterator();
       
       int c = 0;
       while (iter.hasNext())
@@ -394,7 +416,7 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
       }      
       assertEquals(c, 26);
       
-      iter = deque.iterator();
+      iter = list.iterator();
       assertTrue(iter.hasNext());
       Wibble w = (Wibble)iter.next();
       assertEquals("a", w.s);      
@@ -450,7 +472,7 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
       assertEquals("z", w.s);
       assertFalse(iter.hasNext());
       
-      iter = deque.iterator();
+      iter = list.iterator();
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       assertEquals("a", w.s);   
@@ -516,7 +538,7 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
       iter.remove();
       assertFalse(iter.hasNext());
       
-      iter = deque.iterator();
+      iter = list.iterator();
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       assertEquals("b", w.s);   
@@ -569,22 +591,22 @@ public class PrioritizedReferenceQueueTest extends MessagingTestCase
      
    public void testClear()
    {
-      deque.addLast(a, 0);
-      deque.addLast(b, 3);
-      deque.addLast(c, 3);
-      deque.addLast(d, 3);
-      deque.addLast(e, 6);
-      deque.addLast(f, 6);
-      deque.addLast(g, 6);
-      deque.addLast(h, 9);
-      deque.addLast(i, 9);
-      deque.addLast(j, 9);
+      list.addLast(a, 0);
+      list.addLast(b, 3);
+      list.addLast(c, 3);
+      list.addLast(d, 3);
+      list.addLast(e, 6);
+      list.addLast(f, 6);
+      list.addLast(g, 6);
+      list.addLast(h, 9);
+      list.addLast(i, 9);
+      list.addLast(j, 9);
       
-      deque.clear();
+      list.clear();
       
-      assertNull(deque.removeFirst());
+      assertNull(list.removeFirst());
       
-      assertTrue(deque.getAll().isEmpty());
+      assertTrue(list.getAll().isEmpty());
    }
    
    class Wibble

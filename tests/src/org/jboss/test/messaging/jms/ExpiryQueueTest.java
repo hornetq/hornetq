@@ -287,16 +287,16 @@ public class ExpiryQueueTest extends MessagingTestCase
 
             assertNull(m);
 
-            //Message should all be in the default expiry queue - let's check
+            //Message should all be in the override expiry queue - let's check
                         
-            MessageConsumer cons3 = sess.createConsumer(defaultExpiry);
+            MessageConsumer cons3 = sess.createConsumer(overrideExpiry);
             
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
                TextMessage tm = (TextMessage)cons3.receive(1000);
    
                assertNotNull(tm);
-   
+               
                assertEquals("Message:" + i, tm.getText());
             }
          }
