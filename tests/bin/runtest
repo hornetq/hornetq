@@ -24,6 +24,9 @@ ENV_TEST_SERIALIZATION=$TEST_SERIALIZATION
 ENV_TEST_CLUSTERED=$TEST_CLUSTERED
 ENV_TEST_REMOTING=$TEST_REMOTING
 
+#verbose output on spawned servers?
+TEST_SPAWN_VERBOSE=true
+
 if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
    . $reldir/.testrc
 fi
@@ -136,6 +139,7 @@ $REMOTE_TEST \
 -Dtest.serialization=$TEST_SERIALIZATION \
 -Dtest.clustered=$TEST_CLUSTERED \
 -Dtest.remoting=$TEST_REMOTING \
+-Dtest.spawn.verbose=$TEST_SPAWN_VERBOSE \
 -Dtest.logfile.suffix=$TEST_LOGFILE_SUFFIX \
 -Dbuild.lib=../../output/lib"
 

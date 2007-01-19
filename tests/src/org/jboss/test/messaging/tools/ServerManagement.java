@@ -461,7 +461,8 @@ public class ServerManagement
 
       // if you ever need to debug the spawing process, turn this flag to true:
 
-      final boolean verbose = false;
+      String parameterVerbose = System.getProperty("test.spawn.verbose");
+      final boolean verbose = parameterVerbose!=null && parameterVerbose.equals("true");
 
       final BufferedReader rs = new BufferedReader(new InputStreamReader(process.getInputStream()));
       final BufferedReader re = new BufferedReader(new InputStreamReader(process.getErrorStream()));
