@@ -61,7 +61,7 @@ public class ConnectionFactoryCallbackHandler implements CallbackHandler
 
    public void handleMessage(Object message)
    {
-      log.info(this + " handling " + message);
+      if (trace) { log.trace(this + " handling " + message); }
 
       ConnectionFactoryUpdateMessage viewChange = (ConnectionFactoryUpdateMessage)message;
 

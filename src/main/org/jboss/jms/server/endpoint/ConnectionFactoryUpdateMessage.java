@@ -32,7 +32,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
- *          
+ *
  * $Id$
  */
 public class ConnectionFactoryUpdateMessage implements Serializable
@@ -93,7 +93,7 @@ public class ConnectionFactoryUpdateMessage implements Serializable
          }
       }
 
-      sb.append("] size = " + delegates.length);
+      sb.append("]");
 
       return sb.toString();
    }
