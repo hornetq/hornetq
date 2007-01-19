@@ -56,7 +56,8 @@ public interface Server extends Remote
     */
    void start(String containerConfig,
               ServiceAttributeOverrides attrOverrides,
-              boolean clearDatabase) throws Exception;
+              boolean clearDatabase,
+              boolean startMessgingServer) throws Exception;
 
    /**
     * @return true if the server was stopped indeed, or false if the server was stopped already

@@ -63,11 +63,11 @@ import org.w3c.dom.Element;
  */
 public class LocalTestServer implements Server
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(LocalTestServer.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    public static void setEnvironmentServerIndex(int serverIndex)
    {
@@ -79,7 +79,7 @@ public class LocalTestServer implements Server
       System.getProperty(Constants.SERVER_INDEX_PROPERTY_NAME, null);
    }
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private ServiceContainer sc;
 
@@ -96,7 +96,7 @@ public class LocalTestServer implements Server
 
    private int serverIndex;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public LocalTestServer()
    {
@@ -112,7 +112,7 @@ public class LocalTestServer implements Server
       this.serverIndex = serverIndex;
    }
 
-   // Server implementation -----------------------------------------
+   // Server implementation ------------------------------------------------------------------------
 
    public int getServerID()
    {
@@ -122,12 +122,13 @@ public class LocalTestServer implements Server
    public void start(String containerConfig,
                      boolean clearDatabase) throws Exception
    {
-      start(containerConfig, null, clearDatabase);
+      start(containerConfig, null, clearDatabase, true);
    }
 
    public synchronized void start(String containerConfig,
                                   ServiceAttributeOverrides attrOverrides,
-                                  boolean clearDatabase) throws Exception
+                                  boolean clearDatabase,
+                                  boolean startMessagingServer) throws Exception
    {
       if (isStarted())
       {
@@ -153,7 +154,10 @@ public class LocalTestServer implements Server
             return;
          }
 
-         startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered());
+         if (startMessagingServer)
+         {
+            startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered());
+         }
 
          log.info("Server " + serverIndex + " started");
       }
@@ -432,6 +436,12 @@ public class LocalTestServer implements Server
 
    public void stopServerPeer() throws Exception
    {
+      if (!isServerPeerStarted())
+      {
+         log.debug("messaging server was no started, so there is no stopping");
+         return;
+      }
+
       try
       {
          // if we don't find a ServerPeer instance registered under the serverPeerObjectName
@@ -884,18 +894,18 @@ public class LocalTestServer implements Server
       PoisonInterceptor.setType(type);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
    ServiceContainer getServiceContainer()
    {
       return sc;
    }
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private void overrideAttributes(ObjectName on, ServiceAttributeOverrides attrOverrides)
       throws Exception
@@ -917,6 +927,6 @@ public class LocalTestServer implements Server
       }
    }
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

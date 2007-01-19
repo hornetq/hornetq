@@ -74,7 +74,6 @@ public class RemoteTestServer extends LocalTestServer
    {
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
    }
-   
 
    // Public ---------------------------------------------------------------------------------------
     
@@ -84,8 +83,6 @@ public class RemoteTestServer extends LocalTestServer
 
    // Private --------------------------------------------------------------------------------------
 
-
    // Inner classes --------------------------------------------------------------------------------
-
    
 }

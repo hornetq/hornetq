@@ -146,24 +146,24 @@ fi
 if [ "$remote_debug" = "true" ]; then
    if [ "$remote_debug_index" = "" ]; then
       REMOTE_DEBUG_FLAG_0="-debug"
+      JAVA_OPTS="$JAVA_OPTS -Dtest.remote.debug.index=0"
    elif [ "$remote_debug_index" = "1" ]; then
       REMOTE_DEBUG_FLAG_1="-debug"
+      JAVA_OPTS="$JAVA_OPTS -Dtest.remote.debug.index=1"
    elif [ "$remote_debug_index" = "2" ]; then
       REMOTE_DEBUG_FLAG_2="-debug"
+      JAVA_OPTS="$JAVA_OPTS -Dtest.remote.debug.index=2"
    elif [ "$remote_debug_index" = "3" ]; then
       REMOTE_DEBUG_FLAG_3="-debug"
+      JAVA_OPTS="$JAVA_OPTS -Dtest.remote.debug.index=3"
    else
       echo "Invalid argument: $remote_debug_index"
       exit 1
    fi
 fi
 
-
-
-
 $JAVA_HOME/bin/java $JAVA_OPTS -cp "$CLASSPATH" \
 org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
-
 
 #
 # stop the servers in the reverse order

@@ -57,25 +57,25 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
  */
 public class RemotingTest extends MessagingTestCase
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingTest.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    InitialContext ic;
    private boolean connListenerCalled;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public RemotingTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void testInvokerThreadSafety() throws Exception
    {
@@ -250,9 +250,9 @@ public class RemotingTest extends MessagingTestCase
 
 
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
    protected void setUp() throws Exception
    {
@@ -277,9 +277,9 @@ public class RemotingTest extends MessagingTestCase
       super.tearDown();
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 
    class Invoker implements Runnable

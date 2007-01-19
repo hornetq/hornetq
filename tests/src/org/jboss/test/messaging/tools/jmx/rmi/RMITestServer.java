@@ -142,13 +142,13 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public void start(String containerConfig, boolean clearDatabase) throws Exception
    {
-      start(containerConfig, null, clearDatabase);
+      start(containerConfig, null, clearDatabase, true);
    }
 
    public void start(String containerConfig, ServiceAttributeOverrides attrOverrides,
-                     boolean clearDatabase) throws Exception
+                     boolean clearDatabase, boolean startMessagingServer) throws Exception
    {
-      server.start(containerConfig, attrOverrides, clearDatabase);
+      server.start(containerConfig, attrOverrides, clearDatabase, startMessagingServer);
    }
 
    public boolean stop() throws Exception

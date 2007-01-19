@@ -414,11 +414,11 @@ public class ServiceContainer
 
          loadJNDIContexts();
 
+         log.debug("loaded JNDI context");
+
          // aways install multiplexer as this is a cheap operation. The actual JChannels are started
          // only on demand
          startMultiplexer();
-
-         log.debug("loaded JNDI context");
 
          String transport = config.getRemotingTransport();
 

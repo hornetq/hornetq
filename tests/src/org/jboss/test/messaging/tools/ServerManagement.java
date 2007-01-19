@@ -181,22 +181,31 @@ public class ServerManagement
       start(i, config, null, clearDatabase);
    }
 
+   public static void start(int i, String config,
+                            ServiceAttributeOverrides attrOverrides,
+                            boolean clearDatabase) throws Exception
+   {
+      start(i, config, attrOverrides, clearDatabase, true);
+   }
+
    /**
     * When this method correctly completes, the server (local or remote) is started and fully
-    * operational (the service container and the server peer are created and started)
+    * operational (the service container and the server peer are created and started).
     */
    public static synchronized void start(int i, String config,
                                          ServiceAttributeOverrides attrOverrides,
-                                         boolean clearDatabase) throws Exception
+                                         boolean clearDatabase,
+                                         boolean startMessagingServer) throws Exception
    {
       Server s = create(i);
 
       log.info("starting server " + i);
 
-      s.start(config, attrOverrides, clearDatabase);
+      s.start(config, attrOverrides, clearDatabase, startMessagingServer);
 
       log.info("server " + i + " started");
    }
+
 
    public static synchronized boolean isStarted(int i)
    {
@@ -347,6 +356,17 @@ public class ServerManagement
       sb.append("java").append(' ');
 
       sb.append("-Xmx512M").append(' ');
+
+
+      String remoteDebugIndex = System.getProperty("test.remote.debug.index");
+      if (remoteDebugIndex != null)
+      {
+         int index = Integer.parseInt(remoteDebugIndex);
+
+         sb.append("-Xdebug -Xnoagent -Djava.compiler=NONE ").
+            append("-Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=rmiserver_").
+            append(index).append(' ');
+      }
 
       String moduleOutput = System.getProperty("module.output");
       if (moduleOutput == null)
