@@ -91,7 +91,7 @@
    <attribute access="read-write" getMethod="getLoadBalancingFactory" setMethod="setLoadBalancingFactory">
       <description>The pluggable load balancing policy factory that is used to decide the next cluster node to create a clustered connection to</description>
       <name>LoadBalancingFactory</name>
-      <type>org.jboss.jms.client.plugin.LoadBalancingFactory</type>
+      <type>java.lang.String</type>
    </attribute>
 
    <!-- Managed operations -->
