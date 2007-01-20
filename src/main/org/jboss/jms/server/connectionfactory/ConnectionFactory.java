@@ -275,19 +275,22 @@ public class ConnectionFactory extends ServiceMBeanSupport
       this.clustered = clustered;
    }
 
-   public LoadBalancingFactory getLoadBalancingFactory()
+   public String getLoadBalancingFactory()
    {
-      return loadBalancingFactory;
+      return loadBalancingFactory.getClass().getName();
    }
 
-   public void setLoadBalancingFactory(LoadBalancingFactory loadBalancingFactory)
+   public void setLoadBalancingFactory(String factoryName) throws Exception
    {
       if (started)
       {
          log.warn("Load balancing policy can only be changed when connection factory is stopped");
          return;
       }
-      this.loadBalancingFactory = loadBalancingFactory;
+      
+      Class clz = Class.forName(factoryName);
+      
+      loadBalancingFactory = (LoadBalancingFactory)clz.newInstance();
    }
 
    // JMX managed operations -----------------------------------------------------------------------
