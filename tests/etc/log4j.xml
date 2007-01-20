@@ -84,6 +84,10 @@
       <priority value="DEBUG"/>
    </category>
 
+   <category name="org.jboss.remoting">
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+   </category>
+
    <root>
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>
