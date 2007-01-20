@@ -82,21 +82,33 @@ public class YetAnotherRemotingBugTest extends MessagingTestCase
    
    public void testFuckUp() throws Exception
    {
+      log.info("Creating conn1");
       Connection conn1 = cf.createConnection();              
-
-      Connection conn2 = cf.createConnection();  
+      log.info("Created conn2");                     
       
-      Thread.sleep(2000);
+      log.info("Creating conn2");
+      Connection conn2 = cf.createConnection();
+      log.info("Created conn2");   
       
+      Thread.sleep(4000);
+      
+      log.info("Closing conn2");
       conn2.close();      
-
+      log.info("Closed conn2");
+                               
+      log.info("Creating conn3");
       Connection conn3 = cf.createConnection();
+      log.info("Created conn3");
       
-      Thread.sleep(2000);
-
+      Thread.sleep(4000);
+      
+      log.info("Closing conn3");
       conn3.close();      
+      log.info("Closed conn3");
             
+      log.info("Closing conn1");
       conn1.close();            
+      log.info("Closed conn1");
    }
 
 }
