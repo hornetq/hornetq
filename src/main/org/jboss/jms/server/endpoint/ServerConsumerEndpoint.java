@@ -218,21 +218,22 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return delivery;
          }
                  
-         long deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
+         long deliveryId =
+            sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
    
          // We don't send the message as-is, instead we create a MessageProxy instance. This allows
          // local fields such as deliveryCount to be handled by the proxy but global data to be
          // fielded by the same underlying Message instance. This allows us to avoid expensive
          // copying of messages
    
-         MessageProxy mp = JBossMessage.createThinDelegate(deliveryId, message, ref.getDeliveryCount());
+         MessageProxy mp = JBossMessage.
+            createThinDelegate(deliveryId, message, ref.getDeliveryCount());
     
-         //We send the message to the client on the current thread.
-         //The message is written onto the transport and then the thread returns immediately
-         //without waiting for a response
+         // We send the message to the client on the current thread. The message is written onto the
+         // transport and then the thread returns immediately without waiting for a response.
          
-         //FIXME - how can we ensure that a later send doesn't overtake an earlier send - this might
-         //happen if they are using different underlying TCP connections (e.g. from pool)
+         // FIXME - how can we ensure that a later send doesn't overtake an earlier send - this
+         // might happen if they are using different underlying TCP connections (e.g. from pool)
          
          ClientDelivery del = new ClientDelivery(mp, id);
          
@@ -242,10 +243,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
            
          try
          {
-            //FIXME - when the latest remoting changes make it into a release, we need
-            //to use server side one way callbacks here.
-            //I.e. we want to sent the invocation to the transport on the this thread and 
-            //return immediately without waiting for a response.
+            // FIXME - when the latest remoting changes make it into a release, we need to use
+            // server side one way callbacks here. I.e. we want to sent the invocation to the
+            // transport on the this thread and return immediately without waiting for a response.
             callbackHandler.handleCallback(callback);  
          }
          catch (HandleCallbackException e)
