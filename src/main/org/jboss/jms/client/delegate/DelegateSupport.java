@@ -104,7 +104,7 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
     */
    public Object invoke(Invocation invocation) throws Throwable
    {
-      if (trace) { log.trace(this + " invoking " + ((MethodInvocation)invocation).getMethod().getName() + " on server"); }
+      String methodName = ((MethodInvocation)invocation).getMethod().getName();
 
       invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
                                            Dispatcher.OID,
@@ -115,11 +115,27 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
       byte version = getState().getVersionToUse().getProviderIncrementingVersion();
       MessagingMarshallable request = new MessagingMarshallable(version, invocation);
 
-      MessagingMarshallable response = (MessagingMarshallable)client.invoke(request, null);
+      // select invocations ought to be sent "one way" for increased performance
+      if ("changeRate".equals(methodName))
+      {
+         if (trace) { log.trace(this + " invoking " + methodName + " asynchronously on server"); }
 
-      if (trace) { log.trace(this + " got server response for " + ((MethodInvocation)invocation).getMethod().getName()); }
+         client.invokeOneway(request);
 
-      return response.getLoad();
+         if (trace) { log.trace(this + " asynchronously invoked " + methodName + " on server, no response expected"); }
+
+         return null;
+      }
+      else
+      {
+         if (trace) { log.trace(this + " invoking " + methodName + " synchronously on server"); }
+
+         MessagingMarshallable response = (MessagingMarshallable)client.invoke(request, null);
+
+         if (trace) { log.trace(this + " got server response for " + methodName); }
+
+         return response.getLoad();
+      }
    }
 
    // Initializable implemenation ------------------------------------------------------------------

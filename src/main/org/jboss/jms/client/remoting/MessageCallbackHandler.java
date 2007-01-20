@@ -508,7 +508,7 @@ public class MessageCallbackHandler implements CallbackHandler
          //if we've already sent it - hence the check
          startSendingMessageSent = true;
             
-         if (trace) { log.trace("Telling server to start resume sending messages, buffer size is " + buffer.size()); }
+         if (trace) { log.trace("telling server to start resume sending messages, buffer size is " + buffer.size()); }
          
          sendChangeRateMessage(1);                    
       }
@@ -610,12 +610,10 @@ public class MessageCallbackHandler implements CallbackHandler
    
    private void sendChangeRateMessage(float newRate) 
    {
-      // FIXME - when the latest remoting changes make it into a release, we need
-      //to use server side one way invocations here.
-      //I.e. we want to sent the invocation to the transport on the this thread and 
-      //return immediately without waiting for a response.
       try
       {
+         // this invocation will be sent asynchronously to the server; it's DelegateSupport.invoke()
+         // job to detect it and turn it into a remoting one way invocation.
          consumerDelegate.changeRate(newRate);
       }
       catch (JMSException e)
@@ -821,8 +819,8 @@ public class MessageCallbackHandler implements CallbackHandler
          }
          
          
-         //Tell the server we need more messages - but we don't want to keep sending the message
-         //if we've already sent it - hence the check
+         // Tell the server we need more messages - but we don't want to keep sending the message
+         // if we've already sent it - hence the check
          if (!startSendingMessageSent && buffer.size() <= minBufferSize)
          {                    
             startSendingMessageSent = true;

@@ -819,6 +819,11 @@ public class ServiceContainer
       return config.getDatabaseType();
    }
 
+   public String getRemotingTransport()
+   {
+      return config.getRemotingTransport();
+   }
+
    public boolean isClustered()
    {
       return config.isClustered();

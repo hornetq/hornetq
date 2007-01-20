@@ -1096,6 +1096,12 @@ public class ServerManagement
       return s;
    }
 
+   public static String getRemotingTransport(int serverIndex) throws Exception
+   {
+      insureStarted(serverIndex);
+      return servers[serverIndex].getServer().getRemotingTransport();
+   }
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------

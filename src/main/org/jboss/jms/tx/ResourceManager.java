@@ -29,7 +29,6 @@ import java.util.Map;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.TransactionRolledBackException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;

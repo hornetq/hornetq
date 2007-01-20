@@ -113,6 +113,11 @@ public class ClientDelivery implements Streamable
       return consumerId;
    }
 
+   public String toString()
+   {
+      return "ClientDelivery[" + msg + "]";
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

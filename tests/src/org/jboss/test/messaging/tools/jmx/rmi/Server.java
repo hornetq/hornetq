@@ -108,6 +108,11 @@ public interface Server extends Remote
    String getDatabaseType() throws Exception;
 
    /**
+    * @return one of "socket", "http", ...
+    */
+   String getRemotingTransport() throws Exception;
+
+   /**
     * Only for remote use!
     */
    void log(int level, String text) throws Exception;

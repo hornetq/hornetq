@@ -243,10 +243,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
            
          try
          {
-            // FIXME - when the latest remoting changes make it into a release, we need to use
-            // server side one way callbacks here. I.e. we want to sent the invocation to the
-            // transport on the this thread and return immediately without waiting for a response.
-            callbackHandler.handleCallback(callback);  
+            // one way invocation, no acknowledgment sent back by the client
+            if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }
+            callbackHandler.handleCallbackOneway(callback);
          }
          catch (HandleCallbackException e)
          {

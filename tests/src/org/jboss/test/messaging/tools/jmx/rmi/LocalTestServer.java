@@ -256,6 +256,11 @@ public class LocalTestServer implements Server
       return sc.getDatabaseType();
    }
 
+   public String getRemotingTransport()
+   {
+      return sc.getRemotingTransport();
+   }
+
    public void log(int level, String text)
    {
       if (ServerManagement.FATAL == level)

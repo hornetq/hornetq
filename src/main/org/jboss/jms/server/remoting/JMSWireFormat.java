@@ -55,6 +55,7 @@ import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.invocation.InternalInvocation;
+import org.jboss.remoting.invocation.OnewayInvocation;
 import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.serial.io.JBossObjectInputStream;
@@ -101,9 +102,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    protected static final byte GET_ID_BLOCK = 8;
    protected static final byte RECOVER_DELIVERIES = 9;
    protected static final byte CANCEL_INFLIGHT_MESSAGES = 10;
-   
-
- 
 
    // The response codes - start from 100
 
@@ -145,14 +143,14 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       }
       else
       {
-         //Further sanity check
+         // Further sanity check
          if (out instanceof ObjectOutputStream)
          {
-            throw new IllegalArgumentException("Invalid stream - are you sure you have configured socket wrappers?");
+            throw new IllegalArgumentException("Invalid stream - are you sure you have " +
+                                               "configured socket wrappers?");
          }
          
-         //This would be the case for the HTTP transport for example
-         //Wrap the stream
+         // This would be the case for the HTTP transport for example. Wrap the stream.
          
          //TODO Ideally remoting would let us wrap this before invoking the marshaller
          //but this does not appear to be possible
@@ -169,12 +167,20 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
             InvocationRequest req = (InvocationRequest)obj;
    
-            Object param;
+            Object param = req.getParameter();
             
-            // Unwrap Callback.
-            if (req.getParameter() instanceof InternalInvocation)
+            if (param instanceof OnewayInvocation)
             {
-               InternalInvocation ii = (InternalInvocation) req.getParameter();
+               // an oneway invocation is only using the first slot in its parameter array so we're
+               // taking some shortcuts here.
+               param = ((OnewayInvocation)param).getParameters()[0];
+            }
+
+            if (param instanceof InternalInvocation)
+            {
+               // unwrap callback
+
+               InternalInvocation ii = (InternalInvocation)param;
                Object[] params = ii.getParameters();
                
                if (params != null && params.length > 0 && params[0] instanceof Callback)
@@ -190,20 +196,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                      param = callback.getParameter();
                   }
                }
-               else
-               {
-                  param = req.getParameter();
-               }
             }
-            else if (req.getParameter() instanceof MessagingMarshallable)
+            else if (param instanceof MessagingMarshallable)
             {
-               param = ((MessagingMarshallable)req.getParameter()).getLoad();
+               param = ((MessagingMarshallable)param).getLoad();
             }
-            else
-            {
-               param = req.getParameter();
-            }
-   
+
             if (trace) { log.trace("param is " + param); }
    
             if (param instanceof MethodInvocation)
@@ -242,7 +240,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    
                   dos.flush();
    
-                  if (trace) { log.trace("wrote activate()"); }
+                  if (trace) { log.trace("wrote changeRate()"); }
                }           
                else if ("acknowledgeDelivery".equals(methodName))
                {
@@ -403,7 +401,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }
             else if (param instanceof ClientDelivery)
             {
-               //Message delivery callback
+               // Message delivery callback
    
                if (trace) { log.trace("DeliveryRunnable"); }
    
@@ -518,10 +516,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                dos.writeUTF(resp.getSessionId());
                dos.writeInt(callbackList.size());
                
-               Iterator it = callbackList.iterator();
-               while (it.hasNext())
+               for(Iterator i = callbackList.iterator(); i.hasNext(); )
                {
-                  Callback callback = (Callback)it.next();
+                  Callback callback = (Callback)i.next();
 
                   // We don't use acknowledgeable push callbacks
 
@@ -529,6 +526,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                   ClientDelivery delivery = (ClientDelivery)mm.getLoad();
                   delivery.write(dos);
                   dos.flush();
+
+                  if (trace) { log.trace("wrote delivery " + delivery); }
                }
             }
             else
@@ -571,14 +570,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
       }
       else
       {        
-         //Further sanity check
+         // Further sanity check
          if (in instanceof ObjectInputStream)
          {
             throw new IllegalArgumentException("Invalid stream - are you sure you have configured socket wrappers?");
          }
          
-         //This would be the case for the HTTP transport for example
-         //Wrap the stream
+         // This would be the case for the HTTP transport for example. Wrap the stream
          
          //TODO Ideally remoting would let us wrap this before invoking the marshaller
          //but this does not appear to be possible
@@ -631,6 +629,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }
             case CHANGE_RATE:
             {
+               // asynchronous invocation
+
                MethodInvocation mi = readHeader(dis);
                
                float f = dis.readFloat();
@@ -638,12 +638,14 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                Object[] args = new Object[] {new Float(f)};
                
                mi.setArguments(args);
+
+               OnewayInvocation oi = new OnewayInvocation(new MessagingMarshallable(version, mi));
                   
                InvocationRequest request =
                   new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                        new MessagingMarshallable(version, mi), null, null, null);
+                                        oi, null, null, null);
    
-               if (trace) { log.trace("read activate()"); }
+               if (trace) { log.trace("read changeRate()"); }
    
                return request;
             }         
@@ -898,19 +900,24 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }
             case MESSAGE_DELIVERY:
             {
+               // asynchronous invocation
+
                String sessionId = dis.readUTF();
                ClientDelivery dr = new ClientDelivery();
                
                dr.read(dis);
 
-               // Recreate Callback.
+               // recreate callback
                MessagingMarshallable mm = new MessagingMarshallable(version, dr);
                Callback callback = new Callback(mm);
                InternalInvocation ii
                   = new InternalInvocation(InternalInvocation.HANDLECALLBACK, new Object[]{callback});
+
+               OnewayInvocation oi = new OnewayInvocation(ii);
+
                InvocationRequest request
                   = new InvocationRequest(sessionId, CallbackManager.JMS_CALLBACK_SUBSYSTEM,
-                                          ii, null, null, null);
+                                          oi, null, null, null);
    
                if (trace) { log.trace("read callback()"); }
    
@@ -928,6 +935,9 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
                   ClientDelivery delivery = new ClientDelivery();
                   delivery.read(dis);
+
+                  if (trace) { log.trace("read delivery " + delivery); }
+
                   MessagingMarshallable mm = new MessagingMarshallable(version, delivery);
                   Callback callback = new Callback(mm);
 

@@ -246,6 +246,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getDatabaseType();
    }
 
+   public String getRemotingTransport()
+   {
+      return server.getRemotingTransport();
+   }
+
    public void log(int level, String text) throws Exception
    {
       server.log(level, text);
