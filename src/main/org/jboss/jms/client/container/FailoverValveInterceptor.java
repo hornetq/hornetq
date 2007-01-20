@@ -47,8 +47,6 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static final boolean trace = log.isTraceEnabled();
-
    // Attributes -----------------------------------------------------------------------------------
 
    private DelegateSupport delegate;
