@@ -68,9 +68,6 @@ public class MessageCallbackHandler implements CallbackHandler
       trace = log.isTraceEnabled();
    }
    
-   //FIXME temporary - until remoting provides true asynch invocations
-   static Executor exec = new QueuedExecutor();
-   
    private static boolean checkExpiredOrReachedMaxdeliveries(MessageProxy proxy,
                                                              SessionDelegate del,
                                                              int maxDeliveries)
@@ -95,33 +92,17 @@ public class MessageCallbackHandler implements CallbackHandler
             }
          }
          final Cancel cancel = new DefaultCancel(proxy.getDeliveryId(), proxy.getDeliveryCount(),
-                                           expired, reachedMaxDeliveries);
-         
-         //FIXME - this cancel should be sent using remoting true asynch invocations
-         //for now we just send on a different thread to prevent deadlocks
-         
-         final SessionDelegate sess = del;
+                                                 expired, reachedMaxDeliveries);
          
          try
          {
-            
-            exec.execute(new Runnable() { public void run()
-            {
-               try
-               {
-                  sess.cancelDelivery(cancel);
-               }
-               catch (JMSException e)
-               {
-                  log.error("Failed to cancel delivery", e);
-               }
-            }});
+            del.cancelDelivery(cancel);
          }
-         catch (InterruptedException e)
+         catch (JMSException e)
          {
-            log.error("Thread interrupted", e);
-         }
-                  
+            log.error("Failed to cancel delivery", e);
+         }   
+               
          return true;
       }
       else
