@@ -85,7 +85,8 @@ public class FailoverCommandCenter
                "already performed on this connection");
             return;
          }
-         remotingConnection.setFailed(true);
+
+         remotingConnection.setFailed();
 
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,
          // to insure the client-side stack is in a deterministic state

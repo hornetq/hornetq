@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.thirdparty.remoting;
+package org.jboss.test.thirdparty.remoting.util;
 
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
@@ -37,7 +37,7 @@ public class RemotingTestSubsystemService
    public static ObjectName deployService() throws Exception
    {
       String testSubsystemConfig =
-         "<mbean code=\"org.jboss.test.thirdparty.remoting.RemotingTestSubsystemService\"\n" +
+         "<mbean code=\"org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService\"\n" +
             " name=\"test:service=RemotingTestSubsystem\">\n" +
          "</mbean>";
 

@@ -9,16 +9,16 @@ package org.jboss.test.thirdparty.remoting;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.thirdparty.remoting.util.SimpleConnectionListener;
+import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.CannotConnectException;
-import org.jboss.remoting.ConnectionListener;
 
 import javax.management.ObjectName;
 import java.io.IOException;
-
-import EDU.oswego.cs.dl.util.concurrent.Channel;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -149,6 +149,95 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
       }
    }
 
+   public void testDeadClientWithLeasingButNoConnectionValidator() throws Throwable
+   {
+      if (!isRemote())
+      {
+         fail("This test should be run in a remote configuration!");
+      }
+
+      // add a dummy server-side ConnectionListener, to enable leasing on server
+
+      ServerManagement.invoke(ServiceContainer.REMOTING_OBJECT_NAME, "addConnectionListener",
+                              new Object[] { new SimpleConnectionListener() },
+                              new String[] {"org.jboss.remoting.ConnectionListener"});
+
+
+      // enable leasing on client
+      Map conf = new HashMap();
+      conf.put(Client.ENABLE_LEASE, Boolean.TRUE);
+      conf.put(InvokerLocator.CLIENT_LEASE_PERIOD, "999");
+
+      Client client = new Client(serverLocator, RemotingTestSubsystemService.SUBSYSTEM_LABEL, conf);
+
+      client.connect();
+
+      long leasePeriod = client.getLeasePeriod();
+
+      assertEquals(999, leasePeriod);
+
+      ServerManagement.kill(0);
+
+      // wait long enough so we get into lease pinging trouble, send around 5 pings; the lease
+      // pinger will still be pinging, thinking that the server is up. In my opinion, this is a
+      // Remoting design flaw, but we can work around from Messaging, so it's ok. I am using this
+      // test to detect a change in behavior of future remoting releases.
+
+      int i = 0;
+      long upperLimit = System.currentTimeMillis() + 5 * leasePeriod;
+      while(System.currentTimeMillis() < upperLimit)
+      {
+         i++;
+         assertEquals("attempt " + i, 999, client.getLeasePeriod());
+         Thread.sleep(1000);
+      }
+   }
+
+   public void testDeadClientWithLeasingAndConnectionValidator() throws Throwable
+   {
+      if (!isRemote())
+      {
+         fail("This test should be run in a remote configuration!");
+      }
+
+      // add a dummy server-side ConnectionListener, to enable leasing on server
+
+      ServerManagement.invoke(ServiceContainer.REMOTING_OBJECT_NAME, "addConnectionListener",
+                              new Object[] { new SimpleConnectionListener() },
+                              new String[] {"org.jboss.remoting.ConnectionListener"});
+
+
+      // enable leasing on client
+      Map conf = new HashMap();
+      conf.put(Client.ENABLE_LEASE, Boolean.TRUE);
+      conf.put(InvokerLocator.CLIENT_LEASE_PERIOD, "999");
+
+      Client client = new Client(serverLocator, RemotingTestSubsystemService.SUBSYSTEM_LABEL, conf);
+
+      client.connect();
+
+      SimpleConnectionListener connListener = new SimpleConnectionListener();
+      client.addConnectionListener(connListener);
+
+      ServerManagement.kill(0);
+
+      // wait until failure is detected
+
+      Throwable failure = connListener.getNextFailure(3000);
+      assertNotNull(failure);
+
+      // we simulate what Messaging is doing and we
+
+      client.disconnectLocal();
+
+      // the client should be "dead", in that both the connection validator and the lease pinger
+      // are silenced
+
+      assertEquals(-1, client.getPingPeriod());
+      assertEquals(-1, client.getLeasePeriod());
+   }
+
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -187,30 +276,4 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
 
    // Inner classes --------------------------------------------------------------------------------
 
-   private class SimpleConnectionListener implements ConnectionListener
-   {
-      private Channel failures;
-
-      public SimpleConnectionListener()
-      {
-         failures = new LinkedQueue();
-      }
-
-      public void handleConnectionException(Throwable throwable, Client client)
-      {
-         try
-         {
-            failures.put(throwable);
-         }
-         catch(InterruptedException e)
-         {
-            throw new RuntimeException("Failed to record failure", e);
-         }
-      }
-
-      public Throwable getNextFailure(long timeout) throws InterruptedException
-      {
-         return (Throwable)failures.poll(timeout);
-      }
-   }
 }

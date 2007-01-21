@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.thirdparty.remoting;
+package org.jboss.test.thirdparty.remoting.util;
 
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
@@ -13,6 +13,7 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import org.jboss.logging.Logger;
+import org.jboss.test.thirdparty.remoting.util.CallbackTrigger;
 
 import javax.management.MBeanServer;
 import java.io.Serializable;

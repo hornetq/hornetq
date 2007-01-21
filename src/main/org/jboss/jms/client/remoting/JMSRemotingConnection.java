@@ -200,9 +200,32 @@ public class JMSRemotingConnection
       return failed;
    }
 
-   public void setFailed(boolean failed)
+   /**
+    * Used by the FailoverCommandCenter to mark this remoting connection as "condemned", following
+    * a failure detected by either a failed invocation, or the ConnectionListener.
+    */
+   public void setFailed()
    {
-      this.failed = failed;
+      failed = true;
+
+      // Remoting has the bad habit of letting the job of cleaning after a failed connection up to
+      // the application. Here, we take care of that, by disconnecting the remoting client, and
+      // thus silencing both the connection validator and the lease pinger, and also locally
+      // cleaning up the callback listener
+
+      try
+      {
+         client.removeListenerLocal(callbackManager);
+      }
+      catch(Throwable t)
+      {
+         // very unlikely to get an exception on a local remove (I suspect badly designed API),
+         // but we're failed anyway, so we don't care too much
+         log.debug(this + " failed to cleanly remove callback manager from the client", t);
+      }
+
+      client.disconnectLocal();
+
    }
 
    /**
