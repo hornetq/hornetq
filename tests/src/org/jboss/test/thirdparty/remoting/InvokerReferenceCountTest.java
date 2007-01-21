@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.thirdparty.remoting;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -30,26 +30,20 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
- * 
- * A YetAnotherRemotingBugTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
  *
  */
-public class YetAnotherRemotingBugTest extends MessagingTestCase
+public class InvokerReferenceCountTest extends MessagingTestCase
 {
-
-   public YetAnotherRemotingBugTest(String name)
+   public InvokerReferenceCountTest(String name)
    {
       super(name);
    }
 
    private ConnectionFactory cf;
-   
-   private Queue queue;
    
    protected void setUp() throws Exception
    {
@@ -63,7 +57,7 @@ public class YetAnotherRemotingBugTest extends MessagingTestCase
       
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
-      queue = (Queue)ic.lookup("/queue/testQueue");
+      Queue queue = (Queue)ic.lookup("/queue/testQueue");
       
       this.drainDestination(cf, queue);
       
@@ -80,8 +74,13 @@ public class YetAnotherRemotingBugTest extends MessagingTestCase
       ServerManagement.stop();
    }
    
-   public void testFuckUp() throws Exception
+   public void testReferenceCount() throws Exception
    {
+//      if (!ServerManagement.isRemote())
+//      {
+//         fail("This test should be run in a remote configuration!");
+//      }
+      
       log.info("Creating conn1");
       Connection conn1 = cf.createConnection();              
       log.info("Created conn2");                     
