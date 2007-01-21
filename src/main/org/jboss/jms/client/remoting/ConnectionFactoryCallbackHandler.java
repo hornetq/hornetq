@@ -35,7 +35,7 @@ import org.jboss.logging.Logger;
  *
  * $Id$
  */
-public class ConnectionFactoryCallbackHandler implements CallbackHandler
+public class ConnectionFactoryCallbackHandler
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -56,8 +56,6 @@ public class ConnectionFactoryCallbackHandler implements CallbackHandler
    {
       this.connectionDelegate = connectionDelegate;
    }
-
-   // CallbackHandler implementation ---------------------------------------------------------------
 
    public void handleMessage(Object message)
    {
