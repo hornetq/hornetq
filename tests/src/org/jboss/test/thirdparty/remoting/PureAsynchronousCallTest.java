@@ -74,7 +74,8 @@ public class PureAsynchronousCallTest extends MessagingTestCase
 
          // make sure invocation reached the target subsystem
 
-         InvocationRequest i = getNextInvocationFromServer(subsystemService, 2000);
+         InvocationRequest i =
+            RemotingTestSubsystemService.getNextInvocationFromServer(subsystemService, 2000);
 
          assertNotNull(i);
          assertEquals("blip", i.getParameter());
@@ -162,16 +163,6 @@ public class PureAsynchronousCallTest extends MessagingTestCase
    }
 
    // Private --------------------------------------------------------------------------------------
-
-   private InvocationRequest getNextInvocationFromServer(ObjectName on, long timeout)
-      throws Exception
-   {
-      return (InvocationRequest)ServerManagement.
-         invoke(on, "nextInvocation",
-                new Object[] { new Long(timeout) },
-                new String[] { "java.lang.Long" });
-   }
-
 
    // Inner classes --------------------------------------------------------------------------------
 

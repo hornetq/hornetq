@@ -53,6 +53,15 @@ public class RemotingTestSubsystemService
       ServerManagement.undeploy(on);
    }
 
+   public static InvocationRequest getNextInvocationFromServer(ObjectName on, long timeout)
+      throws Exception
+   {
+      return (InvocationRequest)ServerManagement.
+         invoke(on, "nextInvocation",
+                new Object[] { new Long(timeout) },
+                new String[] { "java.lang.Long" });
+   }
+
    // Attributes -----------------------------------------------------------------------------------
 
    private MBeanServer mbeanServer;
