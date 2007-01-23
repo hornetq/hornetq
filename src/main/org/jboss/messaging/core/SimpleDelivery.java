@@ -35,13 +35,13 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public class SimpleDelivery implements Delivery
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(SimpleDelivery.class);
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected volatile boolean done;
    protected boolean selectorAccepted;
@@ -50,7 +50,7 @@ public class SimpleDelivery implements Delivery
 
    private boolean trace = log.isTraceEnabled();
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public SimpleDelivery()
    {
@@ -88,9 +88,8 @@ public class SimpleDelivery implements Delivery
       this.observer = observer;
       this.selectorAccepted = selectorAccepted;
    }
-   
 
-   // Delivery implementation ---------------------------------
+   // Delivery implementation ----------------------------------------------------------------------
 
    public MessageReference getReference()
    {
@@ -119,7 +118,7 @@ public class SimpleDelivery implements Delivery
 
    public void acknowledge(Transaction tx) throws Throwable
    {        
-      if (trace) { log.trace(this + " acknowledging delivery in " + tx); }
+      if (trace) { log.trace(this + " acknowledging delivery " + ( tx == null ? "non-transactionally" : "in " + tx)); }
       
       observer.acknowledge(this, tx);
 
@@ -135,7 +134,7 @@ public class SimpleDelivery implements Delivery
       done = true;
    }
    
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
@@ -143,11 +142,11 @@ public class SimpleDelivery implements Delivery
          "(" + ( done ? "done" : "active") + ")";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

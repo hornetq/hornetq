@@ -48,13 +48,13 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
  */
 public class JMSServerInvocationHandler implements ServerInvocationHandler
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JMSServerInvocationHandler.class);
    
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private ServerInvoker invoker;
    private MBeanServer server;
@@ -63,7 +63,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    
    private boolean trace;
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public JMSServerInvocationHandler()
    {
@@ -71,7 +71,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       trace = log.isTraceEnabled();
    }
 
-   // ServerInvocationHandler ---------------------------------------
+   // ServerInvocationHandler ----------------------------------------------------------------------
 
    public void setMBeanServer(MBeanServer server)
    {
@@ -130,7 +130,6 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       }
       
       InvocationResponse resp = JMSDispatcher.instance.invoke(i);
-      
       byte version = mm.getVersion();
       
       return new MessagingMarshallable(version, resp.getResponse());
@@ -191,18 +190,18 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       }
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "JMSServerInvocationHandler[" + invoker + ", " + server + "]";
    }
    
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

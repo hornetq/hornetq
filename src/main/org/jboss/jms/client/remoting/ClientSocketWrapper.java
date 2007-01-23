@@ -33,8 +33,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Map;
 
-import org.jboss.jms.server.remoting.ServerSocketWrapper;
-import org.jboss.logging.Logger;
 import org.jboss.remoting.transport.socket.SocketWrapper;
 
 /**
@@ -45,19 +43,16 @@ import org.jboss.remoting.transport.socket.SocketWrapper;
  */
 public class ClientSocketWrapper extends SocketWrapper
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
-   final static private Logger log = Logger.getLogger(ClientSocketWrapper.class);
+   // Static ---------------------------------------------------------------------------------------
 
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private DataInputStream in;
    private DataOutputStream out;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ClientSocketWrapper(Socket socket) throws IOException
    {
@@ -71,7 +66,7 @@ public class ClientSocketWrapper extends SocketWrapper
       createStreams(socket, metadata);
    }
 
-   // Public --------------------------------------------------------
+   // SocketWrapper overrides ----------------------------------------------------------------------
 
    public OutputStream getOutputStream()
    {
@@ -93,9 +88,16 @@ public class ClientSocketWrapper extends SocketWrapper
       in.readByte();
    }
 
-   // Package protected ---------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   public String toString()
+   {
+      return "ClientSocketWrapper[" + getSocket() + "]";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
 
    protected void createStreams(Socket socket, Map metadata) throws IOException
    {
@@ -119,8 +121,8 @@ public class ClientSocketWrapper extends SocketWrapper
       return new DataOutputStream(bout);
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

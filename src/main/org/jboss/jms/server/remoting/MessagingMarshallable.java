@@ -27,9 +27,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- * 
- * A MessagingMarshallableSupport.
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
  *
@@ -37,30 +34,50 @@ import java.io.ObjectOutput;
  */
 public class MessagingMarshallable implements Externalizable
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 4715063783844562048L;
    
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
-   protected byte version;
-   protected Object load;
+   private byte version;
+   private Object load;
 
-   // Constructors --------------------------------------------------
+   // it only works as long this class is immutable
+   private String toString;
+
+   // Constructors ---------------------------------------------------------------------------------
 
    public MessagingMarshallable()
    {     
    }
-   
+
+   /**
+    * @param load - can be null (for example, in case of "void" invocation response).
+    */
    public MessagingMarshallable(byte version, Object load)
    {
       this.version = version;
       this.load = load;
    }
 
-   // Public --------------------------------------------------------
+   // Externalizable implemenation -----------------------------------------------------------------
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      version = in.readByte();
+      load = in.readObject();
+   }
+
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      out.writeByte(version);
+      out.writeObject(load);
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public Object getLoad()
    {
@@ -74,29 +91,33 @@ public class MessagingMarshallable implements Externalizable
 
    public String toString()
    {
-      return "MessagingMarshallable[" + version + ", " + load + "]";
+      if (toString == null)
+      {
+         // this only works as long as this class is immutable
+         StringBuffer sb = new StringBuffer("MessagingMarshallable[");
+         //sb.append(Integer.toHexString(hashCode())).append(", ");
+         sb.append("v").append(version).append(", ");
+         if (load == null)
+         {
+            sb.append("EMPTY");
+         }
+         else
+         {
+            sb.append(load);
+         }
+         sb.append(']');
+         toString = sb.toString();
+      }
+
+      return toString;
    }
 
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-   {
-      version = in.readByte();
-      
-      load = in.readObject();
-   }
+   // Package protected ----------------------------------------------------------------------------
 
-   public void writeExternal(ObjectOutput out) throws IOException
-   {
-      out.writeByte(version);
-      
-      out.writeObject(load);
-   }
+   // Protected ------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

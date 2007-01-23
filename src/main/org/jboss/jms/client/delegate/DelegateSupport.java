@@ -118,22 +118,23 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
       // select invocations ought to be sent "one way" for increased performance
       if ("changeRate".equals(methodName))
       {
-         if (trace) { log.trace(this + " invoking " + methodName + " asynchronously on server"); }
+         if (trace) { log.trace(this + " invoking " + methodName + "(..) asynchronously on server"); }
 
          client.invokeOneway(request);
 
-         if (trace) { log.trace(this + " asynchronously invoked " + methodName + " on server, no response expected"); }
+         if (trace) { log.trace(this + " asynchronously invoked " + methodName + "(..) on server, no response expected"); }
 
          return null;
       }
       else
       {
-         if (trace) { log.trace(this + " invoking " + methodName + " synchronously on server"); }
+         if (trace) { log.trace(this + " invoking " + methodName + "(..) synchronously on server"); }
 
-         MessagingMarshallable response = (MessagingMarshallable)client.invoke(request, null);
+         Object o = client.invoke(request, null);
 
-         if (trace) { log.trace(this + " got server response for " + methodName); }
+         if (trace) { log.trace(this + " got server response for " + methodName + "(..): " + o); }
 
+         MessagingMarshallable response = (MessagingMarshallable)o;
          return response.getLoad();
       }
    }
