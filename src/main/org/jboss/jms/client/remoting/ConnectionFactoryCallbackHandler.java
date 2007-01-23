@@ -57,6 +57,8 @@ public class ConnectionFactoryCallbackHandler
       this.connectionDelegate = connectionDelegate;
    }
 
+   // Public ---------------------------------------------------------------------------------------
+
    public void handleMessage(Object message)
    {
       if (trace) { log.trace(this + " handling " + message); }
@@ -74,8 +76,6 @@ public class ConnectionFactoryCallbackHandler
                                               viewChange.getFailoverMap());
       }
    }
-
-   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {

@@ -53,11 +53,11 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  */
 public class MessageCallbackHandler
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
    private static final Logger log;
    
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
    private static boolean trace;      
    
@@ -128,7 +128,8 @@ public class MessageCallbackHandler
          return;
       }
       
-      DeliveryInfo deliveryInfo = new DeliveryInfo(m, consumerID, channelID, connectionConsumerSession);
+      DeliveryInfo deliveryInfo =
+         new DeliveryInfo(m, consumerID, channelID, connectionConsumerSession);
             
       m.incDeliveryCount();
       
@@ -168,8 +169,8 @@ public class MessageCallbackHandler
       {
          // postDeliver only if the session is not closed
                
-         // If this is the callback-handler for a connection consumer we don't want to acknowledge or
-         // add anything to the tx for this session
+         // If this is the callback-handler for a connection consumer we don't want to acknowledge
+         // or add anything to the tx for this session
          if (!isConnectionConsumer)
          {
             sess.postDeliver();
@@ -177,7 +178,7 @@ public class MessageCallbackHandler
       }
    }
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
       
    /*
     * The buffer is now a priority linked list
@@ -205,7 +206,7 @@ public class MessageCallbackHandler
    private boolean startSendingMessageSent;
    private long lastDeliveryId = -1;
         
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public MessageCallbackHandler(boolean isCC, int ackMode,                                
                                  SessionDelegate sess, ConsumerDelegate cons, int consumerID,
@@ -233,7 +234,7 @@ public class MessageCallbackHandler
       this.startSendingMessageSent = true;
    }
         
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
       
 
    /**
@@ -288,7 +289,8 @@ public class MessageCallbackHandler
          if (receiverThread != null)
          {
             // Should never happen
-            throw new IllegalStateException("Consumer is currently in receive(..) Cannot set MessageListener");
+            throw new IllegalStateException("Consumer is currently in receive(..). " +
+               "Cannot set MessageListener");
          }
          
          this.listener = listener;
@@ -306,17 +308,17 @@ public class MessageCallbackHandler
    {
       synchronized (mainLock)
       {      
-         // Now we cancel anything left in the buffer. The reason we do this now is that otherwise the
-         // deliveries wouldn't get cancelled until session close (since we don't cancel consumer's
-         // deliveries until then), which is too late - since we need to preserve the order of messages
-         // delivered in a session.
+         // Now we cancel anything left in the buffer. The reason we do this now is that otherwise
+         // the deliveries wouldn't get cancelled until session close (since we don't cancel
+         // consumer's deliveries until then), which is too late - since we need to preserve the
+         // order of messages delivered in a session.
          
          if (!buffer.isEmpty())
          {                        
             // Now we cancel any deliveries that might be waiting in our buffer. This is because
             // otherwise the messages wouldn't get cancelled until the corresponding session died.
-            // So if another consumer in another session tried to consume from the channel before that
-            // session died it wouldn't receive those messages.
+            // So if another consumer in another session tried to consume from the channel before
+            // that session died it wouldn't receive those messages.
             // We can't just cancel all the messages in the SCE since some of those messages might
             // have actually been delivered (unlike these) and we may want to acknowledge them
             // later, after this consumer has been closed
@@ -327,7 +329,8 @@ public class MessageCallbackHandler
             {
                MessageProxy mp = (MessageProxy)i.next();
                
-               DefaultCancel ack = new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
+               DefaultCancel ack =
+                  new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
                
                cancels.add(ack);
             }
@@ -391,7 +394,8 @@ public class MessageCallbackHandler
          
          if (listener != null)
          {
-            throw new JMSException("The consumer has a MessageListener set, cannot call receive(..)");         
+            throw new JMSException("The consumer has a MessageListener set, " +
+               "cannot call receive(..)");
          }
                        
          receiverThread = Thread.currentThread();
@@ -443,7 +447,8 @@ public class MessageCallbackHandler
                               
                if (trace) { log.trace(this + " received " + m + " after being blocked on buffer"); }
                        
-               boolean ignore = checkExpiredOrReachedMaxdeliveries(m, sessionDelegate, maxDeliveries);
+               boolean ignore =
+                  checkExpiredOrReachedMaxdeliveries(m, sessionDelegate, maxDeliveries);
                
                if (!isConnectionConsumer && !ignore)
                {
@@ -554,11 +559,11 @@ public class MessageCallbackHandler
       }
    }
      
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
             
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private void waitForOnMessageToComplete()
    {
@@ -712,7 +717,7 @@ public class MessageCallbackHandler
       return m;
    }
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes --------------------------------------------------------------------------------
          
    /*
     * This class is used to put on the listener executor to wait for onMessage
@@ -790,7 +795,8 @@ public class MessageCallbackHandler
          {
             try
             {
-               callOnMessage(sessionDelegate, listener, consumerID, channelID, false, mp, ackMode, maxDeliveries, null);
+               callOnMessage(sessionDelegate, listener, consumerID, channelID,
+                             false, mp, ackMode, maxDeliveries, null);
             }
             catch (JMSException e)
             {

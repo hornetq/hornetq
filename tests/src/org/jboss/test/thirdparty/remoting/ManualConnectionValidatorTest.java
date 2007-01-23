@@ -9,16 +9,9 @@ package org.jboss.test.thirdparty.remoting;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 import org.jboss.test.thirdparty.remoting.util.SimpleConnectionListener;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.CannotConnectException;
-
-import javax.management.ObjectName;
-import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * This test sets the connection validator ping period to a very small value, and then let the
