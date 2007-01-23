@@ -671,12 +671,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                mi.setArguments(args);
 
-               // the remoting server requires us to "mark" an one-way invocation redundantly once
+               // http://jira.jboss.org/jira/browse/JBMESSAGING-773
+               // The remoting server requires us to "mark" an one-way invocation redundantly once
                // by wrapping an OnewayInvocation within an InvocationRequest, and then placing
                // a Client.ONEWAY_FLAG in the same InvocationRequest's metadata. Why?
 
                OnewayInvocation oi = new OnewayInvocation(new MessagingMarshallable(version, mi));
-
 
                InvocationRequest request =
                   new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
@@ -946,14 +946,20 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                // recreate callback
                MessagingMarshallable mm = new MessagingMarshallable(version, dr);
                Callback callback = new Callback(mm);
-               InternalInvocation ii
-                  = new InternalInvocation(InternalInvocation.HANDLECALLBACK, new Object[]{callback});
+
+               InternalInvocation ii = new InternalInvocation(InternalInvocation.HANDLECALLBACK,
+                                                              new Object[]{callback});
+
+               // http://jira.jboss.org/jira/browse/JBMESSAGING-773
+               // The remoting server requires us to "mark" an one-way invocation redundantly once
+               // by wrapping an OnewayInvocation within an InvocationRequest, and then placing
+               // a Client.ONEWAY_FLAG in the same InvocationRequest's metadata. Why?
 
                OnewayInvocation oi = new OnewayInvocation(ii);
 
                InvocationRequest request
                   = new InvocationRequest(sessionId, CallbackManager.JMS_CALLBACK_SUBSYSTEM,
-                                          oi, null, null, null);
+                                          oi, ONE_WAY_METADATA, null, null);
    
                if (trace) { log.trace("read callback()"); }
    
