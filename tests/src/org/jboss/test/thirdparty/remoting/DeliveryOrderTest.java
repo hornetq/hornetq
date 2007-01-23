@@ -40,7 +40,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * 
- * A RemotingEOFIssueTest
+ * A DeliveryOrderTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -48,10 +48,10 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  * $Id$
  *
  */
-public class RemotingEOFIssueTest extends MessagingTestCase
+public class DeliveryOrderTest extends MessagingTestCase
 {
 
-   public RemotingEOFIssueTest(String name)
+   public DeliveryOrderTest(String name)
    {
       super(name);
    }
@@ -125,12 +125,15 @@ public class RemotingEOFIssueTest extends MessagingTestCase
                sess.commit();
             }
          }
-         
+
+         // need extra commit for cases in which the last message index is not a multiple of 10
+         sess.commit();
+
          latch.acquire();
          
          if (listener.failed)
          {
-            fail();
+            fail("listener failed: " + listener.getError());
          }
                   
       }
@@ -145,34 +148,38 @@ public class RemotingEOFIssueTest extends MessagingTestCase
    
    class MyListener implements MessageListener
    {
-      int c;
-      
-      Latch latch;
-      
-      int num;
-      
-      volatile boolean failed;
-      
+      private int c;
+      private int num;
+      private Latch latch;
+      private volatile boolean failed;
+      private String error;
+
       MyListener(Latch latch, int num)
       {
          this.latch = latch;
-         
          this.num = num;
       }
 
       public void onMessage(Message msg)
       {
+         // preserve the first error
+         if (failed)
+         {
+            return;
+         }
+
          try
          {
             TextMessage tm = (TextMessage)msg;
             
-            log.info("Got message " + tm.getText());
+            log.debug("got " + tm.getText());
             
             if (!("message" + c).equals(tm.getText()))
             {
-               //Failed
+               // Failed
                failed = true;
-
+               setError("Listener was supposed to get " + ("message" + c) +
+                        " but got " + tm.getText());
                latch.release();
             }
             
@@ -187,12 +194,23 @@ public class RemotingEOFIssueTest extends MessagingTestCase
          {
             e.printStackTrace();
             
-            //Failed
+            // Failed
             failed = true;
-            
-            latch.release();              
+            setError("Listener got exception " + e.toString());
+            latch.release();
          }
       }
+
+      public synchronized String getError()
+      {
+         return error;
+      }
+
+      private synchronized void setError(String s)
+      {
+         error = s;
+      }
+
       
    }
 
