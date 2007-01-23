@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import javax.jms.Message;
 
@@ -53,6 +54,7 @@ import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
+import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.invocation.InternalInvocation;
 import org.jboss.remoting.invocation.OnewayInvocation;
@@ -114,6 +116,8 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
 
 
    // Static ---------------------------------------------------------------------------------------
+
+   private static Map ONE_WAY_METADATA;
    
    public static void setUsingJBossSerialization(boolean b)
    {
@@ -141,6 +145,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          formatType == BROWSE_MESSAGES_RESPONSE ? "BROWSE_MESSAGES_RESPONSE" :
          formatType == CALLBACK_LIST ? "CALLBACK_LIST" :
             "UNKNOWN";
+   }
+
+   static
+   {
+      ONE_WAY_METADATA = new HashMap();
+      ONE_WAY_METADATA.put(Client.ONEWAY_FLAG, "true");
    }
 
    // Attributes -----------------------------------------------------------------------------------
@@ -479,7 +489,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }         
             else if (res instanceof IDBlock)
             {
-               //Return value from getMessageNow
+               // Return value from getMessageNow
                dos.write(ID_BLOCK_RESPONSE);
    
                IDBlock block = (IDBlock)res;
@@ -492,7 +502,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }
             else if (res instanceof JBossMessage)
             {
-               //Return value from browsing message
+               // Return value from browsing message
                dos.write(BROWSE_MESSAGE_RESPONSE);
                
                JBossMessage msg = (JBossMessage)res;
@@ -507,7 +517,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             }            
             else if (res instanceof Message[])
             {
-               //Return value from browsing messages
+               // Return value from browsing messages
                dos.write(BROWSE_MESSAGES_RESPONSE);
                
                Message[] msgs = (Message[])res;
@@ -661,11 +671,16 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                mi.setArguments(args);
 
+               // the remoting server requires us to "mark" an one-way invocation redundantly once
+               // by wrapping an OnewayInvocation within an InvocationRequest, and then placing
+               // a Client.ONEWAY_FLAG in the same InvocationRequest's metadata. Why?
+
                OnewayInvocation oi = new OnewayInvocation(new MessagingMarshallable(version, mi));
-                  
+
+
                InvocationRequest request =
                   new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                                        oi, null, null, null);
+                                        oi, ONE_WAY_METADATA, null, null);
    
                if (trace) { log.trace("read changeRate()"); }
    
