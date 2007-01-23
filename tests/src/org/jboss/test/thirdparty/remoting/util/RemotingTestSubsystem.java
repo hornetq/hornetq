@@ -67,9 +67,17 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
    {
       log.debug(this + " received " + invocation);
 
-      invocationHistory.put(invocation);
-
       Object parameter = invocation.getParameter();
+
+      if ("ignore".equals(parameter))
+      {
+         // used in stress tests, do not accumulate record the invocation in history, since the
+         // client is goint to send a lot of them ....
+         log.debug(this + " ignoring invocation");
+         return null;
+      }
+
+      invocationHistory.put(invocation);
 
       if (parameter instanceof CallbackTrigger)
       {
