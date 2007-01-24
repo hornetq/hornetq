@@ -284,10 +284,7 @@ public abstract class RoutableSupport implements Routable
       if (overtime >= 0)
       {
          // discard it
-         if (trace)
-         {
-            log.trace("Message " + messageID + " expired by " + overtime + " ms");
-         }
+         if (trace) { log.trace(this + " expired by " + overtime + " ms"); }
          
          return true;
       }

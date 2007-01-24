@@ -736,11 +736,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    void expireDelivery(Delivery del, Queue expiryQueue) throws Throwable
    {
-      if (trace) { log.trace("Reference has expired: " + del.getReference()); }
+      if (trace) { log.trace(this + " detected expired message " + del.getReference()); }
       
       if (expiryQueue != null)
       {
-         if (trace) { log.trace("Sending to expiry queue"); }
+         if (trace) { log.trace(this + " sending expired message to expiry queue " + expiryQueue); }
          
          JBossMessage copy = makeCopyForDLQOrExpiry(true, del);
          
@@ -748,7 +748,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       else
       {
-         log.warn("No expiry queue has been configured so removing the reference");
+         log.warn("No expiry queue has been configured so removing expired " +  del.getReference());
       }
    }
       
