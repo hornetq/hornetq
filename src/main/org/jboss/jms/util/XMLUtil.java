@@ -31,11 +31,11 @@ import java.util.ArrayList;
  */
 public class XMLUtil
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(XMLUtil.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    public static Element stringToElement(String s) throws Exception
    {
@@ -64,8 +64,7 @@ public class XMLUtil
 
       if (Node.CDATA_SECTION_NODE == type)
       {
-         //return "<![CDATA[" + n.getNodeValue() + "]]>";
-         return n.getNodeValue();
+         return "<![CDATA[" + n.getNodeValue() + "]]>";
       }
 
       if (name.startsWith("#"))
@@ -125,13 +124,9 @@ public class XMLUtil
 
          sb.append("</").append(name).append('>');
       }
+
       return sb.toString();
-
-
-
-
    }
-
 
    private static final Object[] EMPTY_ARRAY = new Object[0];
 
@@ -318,17 +313,34 @@ public class XMLUtil
       }
    }
 
-   // Attributes ----------------------------------------------------
+   public static String stripCDATA(String s)
+   {
+      s = s.trim();
+      if (s.startsWith("<![CDATA["))
+      {
+         s = s.substring(9);
+         int i = s.indexOf("]]>");
+         if (i == -1)
+         {
+            throw new IllegalStateException(
+               "argument starts with <![CDATA[ but cannot find pairing ]]>");
+         }
+         s = s.substring(0, i);
+      }
+      return s;
+   }
 
-   // Constructors --------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   // Public --------------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
+
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private static List filter(NodeList nl, short[] typesToFilter)
    {
@@ -350,5 +362,5 @@ public class XMLUtil
       return nodes;
    }
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

@@ -31,18 +31,18 @@ import org.w3c.dom.NodeList;
  */
 public class ServiceDeploymentDescriptor
  {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServiceDeploymentDescriptor.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    // List<Element> contains the top level elements from under <server>
    private List elements;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ServiceDeploymentDescriptor(String config) throws Exception
    {
@@ -64,7 +64,7 @@ public class ServiceDeploymentDescriptor
       }
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    /**
     * Scans the list of ObjectNames present in this service configuration and returns a list
@@ -110,11 +110,11 @@ public class ServiceDeploymentDescriptor
       return result;
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

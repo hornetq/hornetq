@@ -58,11 +58,11 @@ import org.jboss.tm.TransactionManagerLocator;
  */
 public class JMSXDeliveryCountTest extends MessagingTestCase
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    protected JBossConnectionFactory cf;
    protected Queue queue;
@@ -70,14 +70,14 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
    
    protected ServiceContainer sc;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public JMSXDeliveryCountTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void setUp() throws Exception
    {
@@ -102,8 +102,8 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       
       if (ServerManagement.isRemote())
       {
-         //We need to start a service container otherwise transaction manager jndi lookup
-         //will fail
+         // We need to start a service container otherwise transaction manager jndi lookup
+         // will fail
          sc = new ServiceContainer("transaction");
          
          sc.start(false);
@@ -672,13 +672,13 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
    //So this won't work
 
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
    
    static class DummyXAResource implements XAResource
    {

@@ -37,10 +37,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 /**
- * 
- * A JDBCSupport
- * 
- * Common functionality for messaging components that need to access a database
+ * Common functionality for messaging components that need to access a database.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>

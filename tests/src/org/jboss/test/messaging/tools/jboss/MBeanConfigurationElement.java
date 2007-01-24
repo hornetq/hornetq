@@ -12,7 +12,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 
 import javax.management.ObjectName;
 import java.util.Map;
@@ -31,12 +30,12 @@ import java.util.ArrayList;
  */
 public class MBeanConfigurationElement
  {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(MBeanConfigurationElement.class);
 
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    public static Class stringToClass(String type) throws Exception
    {
@@ -59,7 +58,7 @@ public class MBeanConfigurationElement
       }
    }
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected Element delegate;
    protected ObjectName on;
@@ -69,9 +68,7 @@ public class MBeanConfigurationElement
    protected Map mbeanOptionalAttributeNames;
    protected List constructors;
 
-
-
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public MBeanConfigurationElement(Node delegate) throws Exception
    {
@@ -124,6 +121,8 @@ public class MBeanConfigurationElement
                {
                   configAttribValue = XMLUtil.getTextContent(mbeanConfigNode);
                }
+               configAttribValue = XMLUtil.stripCDATA(configAttribValue);
+
                mbeanConfigAttributes.put(configAttribName, configAttribValue);
             }
             else if ("depends".equals(mbeanConfigNodeName))
@@ -165,7 +164,7 @@ public class MBeanConfigurationElement
       }
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public Element getDelegate()
    {
@@ -239,13 +238,13 @@ public class MBeanConfigurationElement
       return getMBeanClassName() + "[" + getObjectName() + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
    private class ConstructorElement
    {

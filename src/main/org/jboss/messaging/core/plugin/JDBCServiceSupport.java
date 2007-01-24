@@ -38,9 +38,6 @@ import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.tm.TransactionManagerServiceMBean;
 
 /**
- * 
- * A JDBCServiceSupport
- * 
  * MBean wrapper for any service that needs database attributes
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -50,22 +47,25 @@ import org.jboss.tm.TransactionManagerServiceMBean;
  *
  */
 public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements ServerPlugin
-{   
+{
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
    protected DataSource ds;
-   
    protected Properties sqlProperties;
-         
-   private String dataSourceJNDIName;
-   
    protected boolean createTablesOnStartup = true;
-   
+
+   private String dataSourceJNDIName;
    private ObjectName tmObjectName;
-   
    private TransactionManager tm;
-      
-   
-   // ServiceMBeanSupport overrides ---------------------------------
-   
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   // ServiceMBeanSupport overrides ----------------------------------------------------------------
+
    protected void startService() throws Exception
    {
       try
@@ -76,27 +76,27 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements 
             ds = (DataSource)ic.lookup(dataSourceJNDIName);
             ic.close();
          }
-         
+
          if (ds == null)
          {
             throw new IllegalStateException("No DataSource found. This service dependencies must " +
-            "have not been enforced correctly!");
+                                            "have not been enforced correctly!");
          }
-         
+
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
-      } 
+      }
    }
-   
+
    protected void stopService() throws Exception
    {
       log.debug(this + " stopped");
    }
-  
-   // MBean attributes --------------------------------------------------------
-      
+
+   // MBean attributes -----------------------------------------------------------------------------
+
    public String getSqlProperties()
    {
       try
@@ -110,36 +110,36 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements 
          return "";
       }
    }
-   
+
    public void setSqlProperties(String value)
    {
       try
-      {         
+      {
          ByteArrayInputStream is = new ByteArrayInputStream(value.getBytes());
          sqlProperties = new Properties();
-         sqlProperties.load(is);         
+         sqlProperties.load(is);
       }
       catch (IOException shouldnothappen)
       {
          log.error("Caught IOException", shouldnothappen);
       }
    }
-      
+
    public void setDataSource(String dataSourceJNDIName) throws Exception
    {
       this.dataSourceJNDIName = dataSourceJNDIName;
    }
-   
+
    public String getDataSource()
    {
       return dataSourceJNDIName;
    }
-   
+
    public void setTransactionManager(ObjectName tmObjectName) throws Exception
    {
       this.tmObjectName = tmObjectName;
    }
-   
+
    public ObjectName getTransactionManager()
    {
       return tmObjectName;
@@ -154,9 +154,13 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements 
    {
       createTablesOnStartup = b;
    }
-   
-   // Protected ----------------------------------------------------------     
-      
+
+   // Public ---------------------------------------------------------------------------------------
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
    protected TransactionManager getTransactionManagerReference()
    {
       // lazy initialization
@@ -171,10 +175,10 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport implements 
 
       return tm;
    }
-   
-   // Private ----------------------------------------------------------------
-   
-                 
-   // Innner classes ---------------------------------------------------------   
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }
 
