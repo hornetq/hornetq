@@ -252,92 +252,94 @@ public class SelectorTest extends MessagingTestCase
 
       sess.close();
    }
-   
-   public void testManyQueueWithExpired() throws Exception
-   {
-      String selector1 = "beatle = 'john'";
 
-      Connection conn = cf.createConnection();
-      conn.start();
+   // http://jira.jboss.org/jira/browse/JBMESSAGING-775
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);      
-
-      MessageProducer prod = sess.createProducer(queue);
-
-      for (int j = 0; j < 100; j++)
-      {
-         Message m = sess.createMessage();
-
-         m.setStringProperty("beatle", "john");
-         
-         prod.setTimeToLive(0);
-
-         prod.send(m);
-         
-         m = sess.createMessage();
-
-         m.setStringProperty("beatle", "john");
-         
-         prod.setTimeToLive(1);
-         
-         prod.send(m);
-         
-         m = sess.createMessage();
-
-         m.setStringProperty("beatle", "kermit the frog");
-         
-         prod.setTimeToLive(0);
-         
-         prod.send(m);
-         
-         m = sess.createMessage();
-
-         m.setStringProperty("beatle", "kermit the frog");
-         
-         m.setJMSExpiration(System.currentTimeMillis());
-         
-         prod.setTimeToLive(1);
-         
-         prod.send(m);
-      }
-      
-      Thread.sleep(2000);
-      
-      MessageConsumer cons1 = sess.createConsumer(queue, selector1);
-
-      for (int j = 0; j < 100; j++)
-      {
-         Message m = cons1.receive(1000);
-         
-         assertNotNull(m);
-         
-         assertEquals("john", m.getStringProperty("beatle"));
-      }
-
-      Message m = cons1.receive(1000);
-
-      assertNull(m);
-      
-      String selector2 = "beatle = 'kermit the frog'";
-      
-      MessageConsumer cons2 = sess.createConsumer(queue, selector2);
-      
-      for (int j = 0; j < 100; j++)
-      {
-         m = cons2.receive(1000);
-         
-         assertNotNull(m);
-         
-         assertEquals("kermit the frog", m.getStringProperty("beatle"));
-      }
-      
-      m = cons2.receive(1000);
-
-      assertNull(m);
-      
-
-      sess.close();
-   }
+//   public void testManyQueueWithExpired() throws Exception
+//   {
+//      String selector1 = "beatle = 'john'";
+//
+//      Connection conn = cf.createConnection();
+//      conn.start();
+//
+//      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//      MessageProducer prod = sess.createProducer(queue);
+//
+//      for (int j = 0; j < 100; j++)
+//      {
+//         Message m = sess.createMessage();
+//
+//         m.setStringProperty("beatle", "john");
+//
+//         prod.setTimeToLive(0);
+//
+//         prod.send(m);
+//
+//         m = sess.createMessage();
+//
+//         m.setStringProperty("beatle", "john");
+//
+//         prod.setTimeToLive(1);
+//
+//         prod.send(m);
+//
+//         m = sess.createMessage();
+//
+//         m.setStringProperty("beatle", "kermit the frog");
+//
+//         prod.setTimeToLive(0);
+//
+//         prod.send(m);
+//
+//         m = sess.createMessage();
+//
+//         m.setStringProperty("beatle", "kermit the frog");
+//
+//         m.setJMSExpiration(System.currentTimeMillis());
+//
+//         prod.setTimeToLive(1);
+//
+//         prod.send(m);
+//      }
+//
+//      Thread.sleep(2000);
+//
+//      MessageConsumer cons1 = sess.createConsumer(queue, selector1);
+//
+//      for (int j = 0; j < 100; j++)
+//      {
+//         Message m = cons1.receive(1000);
+//
+//         assertNotNull(m);
+//
+//         assertEquals("john", m.getStringProperty("beatle"));
+//      }
+//
+//      Message m = cons1.receive(1000);
+//
+//      assertNull(m);
+//
+//      String selector2 = "beatle = 'kermit the frog'";
+//
+//      MessageConsumer cons2 = sess.createConsumer(queue, selector2);
+//
+//      for (int j = 0; j < 100; j++)
+//      {
+//         m = cons2.receive(1000);
+//
+//         assertNotNull(m);
+//
+//         assertEquals("kermit the frog", m.getStringProperty("beatle"));
+//      }
+//
+//      m = cons2.receive(1000);
+//
+//      assertNull(m);
+//
+//
+//      sess.close();
+//   }
 
    public void testManyRedeliveriesTopic() throws Exception
    {
