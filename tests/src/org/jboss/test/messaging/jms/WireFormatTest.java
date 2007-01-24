@@ -61,6 +61,7 @@ import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.invocation.InternalInvocation;
+import org.jboss.remoting.invocation.OnewayInvocation;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.message.MessageTest;
 import org.jboss.util.id.GUID;
@@ -1312,8 +1313,10 @@ public class WireFormatTest extends MessagingTestCase
          InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
+
+         OnewayInvocation oneWay = (OnewayInvocation)ir2.getParameter();
          
-         mm = (MessagingMarshallable)ir2.getParameter();
+         mm = (MessagingMarshallable)oneWay.getParameters()[0];
          
          assertEquals(77, mm.getVersion());
          
@@ -1403,8 +1406,10 @@ public class WireFormatTest extends MessagingTestCase
          InputStream ois = new DataInputStream(bis);
          
          InvocationRequest ir2 = (InvocationRequest)wf.read(ois, null);
-         
-         InternalInvocation ii = (InternalInvocation) ir2.getParameter();
+
+         OnewayInvocation oneway = (OnewayInvocation) ir2.getParameter();
+
+         InternalInvocation ii = (InternalInvocation) oneway.getParameters()[0];
          
          Object[] parameters = ii.getParameters();
          
