@@ -175,12 +175,13 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       if (!clientAccepting)
       {
          if (trace) { log.trace(this + "'s client is NOT accepting messages!"); }
+         
          return null;
       }
       
       if (ref.isExpired())
       {
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref);
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, true);
          
          try
          {
@@ -190,6 +191,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {
             log.error("Failed to expire delivery: " + delivery, t);
          }
+         
+         return delivery;
       }
         
       synchronized (startStopLock)
