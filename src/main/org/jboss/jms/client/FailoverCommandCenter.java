@@ -117,22 +117,14 @@ public class FailoverCommandCenter
       }
       finally
       {
-         // I have this secondary try/finally block, just because if broadcastFailoverEvent throws
-         // any exceptions I don't want a dead lock on everybody waiting the valve to be opened.
-         try
+         valve.open();
+         if (failoverSuccessful)
          {
-            if (failoverSuccessful)
-            {
-               broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_COMPLETED, this));
-            }
-            else
-            {
-               broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));
-            }
+            broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_COMPLETED, this));
          }
-         finally
+         else
          {
-            valve.open();
+            broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));
          }
       }
    }
