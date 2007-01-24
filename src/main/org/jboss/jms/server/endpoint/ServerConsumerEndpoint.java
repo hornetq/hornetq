@@ -53,10 +53,8 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 /**
  * Concrete implementation of ConsumerEndpoint.
  * 
- * Lives on the boundary between Messaging Core and the
- * JMS Facade.
- * 
- * Handles delivery of messages from the server to the client side consumer.
+ * Lives on the boundary between Messaging Core and the JMS Facade. Handles delivery of messages
+ * from the server to the client side consumer.
  * 
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -67,13 +65,13 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
  */
 public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerConsumerEndpoint.class);
 
-   // Static --------------------------------------------------------  
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
 
@@ -109,7 +107,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    // Must be volatile
    private volatile boolean clientAccepting;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
                           ServerSessionEndpoint sessionEndpoint,
@@ -164,7 +162,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       log.debug(this + " constructed");
    }
 
-   // Receiver implementation ---------------------------------------
+   // Receiver implementation ----------------------------------------------------------------------
 
    /*
     * The queue ensures that handle is never called concurrently by more than one thread.
@@ -205,7 +203,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return null;
          }
    
-         if (trace) { log.trace(this + " has the main lock, preparing the message for delivery"); }
+         if (trace) { log.trace(this + " has startStopLock lock, preparing the message for delivery"); }
    
          JBossMessage message = (JBossMessage)ref.getMessage();
          
@@ -260,7 +258,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    
 
-   // Filter implementation -----------------------------------------
+   // Filter implementation ------------------------------------------------------------------------
 
    public boolean accept(Routable r)
    {
@@ -295,7 +293,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    }
 
 
-   // Closeable implementation --------------------------------------
+   // Closeable implementation ---------------------------------------------------------------------
 
    public void closing() throws JMSException
    {
@@ -327,7 +325,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       }
    }
            
-   // ConsumerEndpoint implementation -------------------------------
+   // ConsumerEndpoint implementation --------------------------------------------------------------
    
    
    public void changeRate(float newRate) throws JMSException
@@ -392,7 +390,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       throw new IllegalStateException("isClosed should never be handled on the server side");
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
    
    public String toString()
    {
@@ -409,7 +407,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       return sessionEndpoint;
    }
    
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
    Queue getDLQ()
    {
@@ -524,15 +522,15 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       }
    }
          
-   // Protected -----------------------------------------------------         
+   // Protected ------------------------------------------------------------------------------------
       
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private void promptDelivery()
    {
       messageQueue.deliver(Channel.ASYNCRHONOUS);
    }
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes --------------------------------------------------------------------------------
      
 }

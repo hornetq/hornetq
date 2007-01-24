@@ -83,11 +83,11 @@ public class MessageCallbackHandler
          {
             if (expired)
             {
-               log.trace("Message " + proxy.getMessage() + " has expired - cancelling to server");
+               log.trace(proxy.getMessage() + " has expired, cancelling to server");
             }
             else
             {
-               log.trace("Message " + proxy.getMessage() + " has reached max deliveries - cancelling to server");
+               log.trace(proxy.getMessage() + " has reached maximum delivery number, cancelling to server");
             }
          }
          final Cancel cancel = new DefaultCancel(proxy.getDeliveryId(), proxy.getDeliveryCount(),
@@ -245,7 +245,7 @@ public class MessageCallbackHandler
    {
       MessageProxy msg = (MessageProxy) message;
 
-      if (trace) { log.trace("Receiving message " + msg + " from the remoting layer"); }
+      if (trace) { log.trace(this + " receiving message " + msg + " from the remoting layer"); }
 
       synchronized (mainLock)
       {

@@ -1075,8 +1075,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          if (queue != null)
          {                                                       
             queue.handle(null, ref, tx);
-            
-            del.acknowledge(tx);           
+            del.acknowledge(tx);
          }
          else
          {
@@ -1091,7 +1090,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       catch (Throwable t)
       {
          tx.rollback();
-         
          throw t;
       } 
       finally

@@ -602,15 +602,16 @@ public abstract class ChannelSupport implements Channel
       if (trace) { log.trace(this + " added " + ref + " back into state"); }
    }
    
-   /*
-    * This methods delivers as many messages as possible to the router until no
-    * more deliveries are returned. This method should never be called at the
-    * same time as handle.
+   /**
+    * This methods delivers as many messages as possible to the router until no more deliveries are
+    * returned. This method should never be called at the same time as handle.
     *
     * @see org.jboss.messaging.core.Channel#deliver()
     */
    protected void deliverInternal()
    {
+      if (trace) { log.trace(this + " was prompted delivery"); }
+
       try
       {
          // The iterator is used to iterate through the refs in the channel in the case that they
@@ -1066,6 +1067,7 @@ public abstract class ChannelSupport implements Channel
          }
          catch (Throwable t)
          {
+            log.debug(this + "'s execution generated exception", t);
             result.setException(t);
          }
       }
@@ -1086,11 +1088,9 @@ public abstract class ChannelSupport implements Channel
          }
          else
          {            
-            // We don't execute the commit directly, we add it to the event queue
-            // of the channel
+            // We don't execute the commit directly, we add it to the event queue of the channel
             // so it is executed in turn
             committing = true;
-   
             executeAndWaitForResult();
          }
       }
@@ -1124,6 +1124,7 @@ public abstract class ChannelSupport implements Channel
 
          try
          {
+            if (trace) { log.trace("adding " + this + " to " + ChannelSupport.this + "'s executor"); }
             executor.execute(this);
          }
          catch (InterruptedException e)
@@ -1133,7 +1134,9 @@ public abstract class ChannelSupport implements Channel
 
          // Wait for it to complete
 
-         Throwable t = (Throwable) result.getResult();
+         if (trace) { log.trace("waiting for " + this + " to complete"); }
+         Throwable t = (Throwable)result.getResult();
+         if (trace) { log.trace(InMemoryCallback.this + " completed"); }
 
          if (t != null)
          {
@@ -1157,11 +1160,9 @@ public abstract class ChannelSupport implements Channel
       {
          // We add the references to the state
          
-         Iterator iter = refsToAdd.iterator();
-
-         while (iter.hasNext())
+         for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
          {
-            MessageReference ref = (MessageReference) iter.next();
+            MessageReference ref = (MessageReference)i.next();
 
             if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
 
@@ -1180,11 +1181,9 @@ public abstract class ChannelSupport implements Channel
 
          // Remove deliveries
          
-         iter = this.deliveriesToRemove.iterator();
-
-         while (iter.hasNext())
+         for(Iterator i = deliveriesToRemove.iterator(); i.hasNext(); )
          {
-            Delivery del = (Delivery) iter.next();
+            Delivery del = (Delivery)i.next();
 
             if (trace) { log.trace(this + " removing " + del + " after commit"); }
 
@@ -1193,7 +1192,7 @@ public abstract class ChannelSupport implements Channel
             deliveringCount.decrement();
          }
          
-         //prompt delivery
+         // prompt delivery
          if (receiversReady)
          {
             deliverInternal();
@@ -1202,21 +1201,18 @@ public abstract class ChannelSupport implements Channel
 
       private void doAfterRollback()
       {
-         Iterator iter = refsToAdd.iterator();
-
-         while (iter.hasNext())
+         for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
          {
-            MessageReference ref = (MessageReference) iter.next();
+            MessageReference ref = (MessageReference)i.next();
 
+            if (trace) { log.trace(this + " releasing memory " + ref + " after rollback"); }
             ref.releaseMemoryReference();
          }
       }
-
    }
 
    /**
-    * Give subclass a chance to process the message before storing it
-    * internally.
+    * Give subclass a chance to process the message before storing it internally.
     * TODO - Do we really need this?
     */
    protected void processMessageBeforeStorage(MessageReference reference)
