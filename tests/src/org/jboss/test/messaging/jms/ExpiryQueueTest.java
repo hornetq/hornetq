@@ -82,34 +82,36 @@ public class ExpiryQueueTest extends MessagingTestCase
       {
          return;
       }
-      ServerManagement.deployQueue("ExpiryQueue");
       
-      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-      
-      ObjectName expiryQueueObjectName = (ObjectName)ServerManagement.getAttribute(serverPeerObjectName, "DefaultExpiryQueue");
-      
-      assertNotNull(expiryQueueObjectName);
-            
-      String name = (String)ServerManagement.getAttribute(expiryQueueObjectName, "Name");
-      
-      assertNotNull(name);
-      
-      assertEquals("ExpiryQueue", name);
-
-      String jndiName = (String)ServerManagement.getAttribute(expiryQueueObjectName, "JNDIName");
-      
-      assertNotNull(jndiName);
-      
-      assertEquals("/queue/ExpiryQueue", jndiName);
-      
-      org.jboss.messaging.core.Queue expiryQueue = ServerManagement.getServer().getServerPeer().getDefaultExpiryQueueInstance();
-
-      assertNotNull(expiryQueue);
-
-      InitialContext ic = null;
-
       try
       {
+      
+         ServerManagement.deployQueue("ExpiryQueue");
+         
+         ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+         
+         ObjectName expiryQueueObjectName = (ObjectName)ServerManagement.getAttribute(serverPeerObjectName, "DefaultExpiryQueue");
+         
+         assertNotNull(expiryQueueObjectName);
+               
+         String name = (String)ServerManagement.getAttribute(expiryQueueObjectName, "Name");
+         
+         assertNotNull(name);
+         
+         assertEquals("ExpiryQueue", name);
+   
+         String jndiName = (String)ServerManagement.getAttribute(expiryQueueObjectName, "JNDIName");
+         
+         assertNotNull(jndiName);
+         
+         assertEquals("/queue/ExpiryQueue", jndiName);
+         
+         org.jboss.messaging.core.Queue expiryQueue = ServerManagement.getServer().getServerPeer().getDefaultExpiryQueueInstance();
+   
+         assertNotNull(expiryQueue);
+   
+         InitialContext ic = null;
+ 
          ic = new InitialContext(ServerManagement.getJNDIEnvironment());
 
          JBossQueue q = (JBossQueue)ic.lookup("/queue/ExpiryQueue");
@@ -165,40 +167,41 @@ public class ExpiryQueueTest extends MessagingTestCase
    {
       final int NUM_MESSAGES = 5;
       
-      ServerManagement.deployQueue("DefaultExpiry");
-      
-      ServerManagement.deployQueue("OverrideExpiry");
-      
-      ServerManagement.deployQueue("TestQueue");
-      
-      String defaultExpiryObjectName = "jboss.messaging.destination:service=Queue,name=DefaultExpiry";
-      
-      String overrideExpiryObjectName = "jboss.messaging.destination:service=Queue,name=OverrideExpiry";
-      
-      String testQueueObjectName = "jboss.messaging.destination:service=Queue,name=TestQueue";
-      
-      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-          
-      ServerManagement.setAttribute(serverPeerObjectName, "DefaultExpiryQueue", defaultExpiryObjectName);
-      
-      ServerManagement.setAttribute(new ObjectName(testQueueObjectName), "ExpiryQueue", "");
-      
-      Queue testQueue = (Queue)ic.lookup("/queue/TestQueue");
-      
-      Queue defaultExpiry = (Queue)ic.lookup("/queue/DefaultExpiry");
-      
-      Queue overrideExpiry = (Queue)ic.lookup("/queue/OverrideExpiry");
-      
-      drainDestination(cf, testQueue);
-            
-      drainDestination(cf, defaultExpiry);
-            
-      drainDestination(cf, overrideExpiry);
-            
       Connection conn = null;
       
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+      
       try
-      {      
+      { 
+      
+         ServerManagement.deployQueue("DefaultExpiry");
+         
+         ServerManagement.deployQueue("OverrideExpiry");
+         
+         ServerManagement.deployQueue("TestQueue");
+         
+         String defaultExpiryObjectName = "jboss.messaging.destination:service=Queue,name=DefaultExpiry";
+         
+         String overrideExpiryObjectName = "jboss.messaging.destination:service=Queue,name=OverrideExpiry";
+         
+         String testQueueObjectName = "jboss.messaging.destination:service=Queue,name=TestQueue";         
+         
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultExpiryQueue", defaultExpiryObjectName);
+         
+         ServerManagement.setAttribute(new ObjectName(testQueueObjectName), "ExpiryQueue", "");
+         
+         Queue testQueue = (Queue)ic.lookup("/queue/TestQueue");
+         
+         Queue defaultExpiry = (Queue)ic.lookup("/queue/DefaultExpiry");
+         
+         Queue overrideExpiry = (Queue)ic.lookup("/queue/OverrideExpiry");
+         
+         drainDestination(cf, testQueue);
+               
+         drainDestination(cf, defaultExpiry);
+               
+         drainDestination(cf, overrideExpiry);
+                     
          conn = cf.createConnection();
          
          {         
@@ -322,22 +325,23 @@ public class ExpiryQueueTest extends MessagingTestCase
    {
       final int NUM_MESSAGES = 5;
       
-      ServerManagement.deployQueue("ExpiryQueue");
-      
-      String defaultExpiryObjectName = "jboss.messaging.destination:service=Queue,name=ExpiryQueue";
-         
-      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-          
-      ServerManagement.setAttribute(serverPeerObjectName, "DefaultExpiryQueue", defaultExpiryObjectName);
-       
-      Queue defaultExpiry = (Queue)ic.lookup("/queue/ExpiryQueue");
-      
-      drainDestination(cf, defaultExpiry);
-                  
       Connection conn = null;
       
       try
-      {      
+      {    
+      
+         ServerManagement.deployQueue("ExpiryQueue");
+         
+         String defaultExpiryObjectName = "jboss.messaging.destination:service=Queue,name=ExpiryQueue";
+            
+         ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+             
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultExpiryQueue", defaultExpiryObjectName);
+          
+         Queue defaultExpiry = (Queue)ic.lookup("/queue/ExpiryQueue");
+         
+         drainDestination(cf, defaultExpiry);                   
+        
          conn = cf.createConnection();
          
          conn.setClientID("wib1");
@@ -465,19 +469,19 @@ public class ExpiryQueueTest extends MessagingTestCase
    }   
 
    public void testWithMessageListener(boolean persistent) throws Exception
-   {
+   {            
       Connection conn = null;
-
-      ServerManagement.deployQueue("ExpiryQueue");
-
-      Queue expiryQueue = (Queue)ic.lookup("/queue/ExpiryQueue");
       
-      drainDestination(cf, expiryQueue);
-       
-      final int NUM_MESSAGES = 5;
-
       try
       {
+         ServerManagement.deployQueue("ExpiryQueue");
+   
+         Queue expiryQueue = (Queue)ic.lookup("/queue/ExpiryQueue");
+         
+         drainDestination(cf, expiryQueue);
+          
+         final int NUM_MESSAGES = 5;
+
          conn = cf.createConnection();
          
          conn.start();
@@ -549,17 +553,18 @@ public class ExpiryQueueTest extends MessagingTestCase
    public void testWithReceive(boolean persistent) throws Exception
    {
       Connection conn = null;
-
-      ServerManagement.deployQueue("ExpiryQueue");
-
-      Queue expiryQueue = (Queue)ic.lookup("/queue/ExpiryQueue");
       
-      drainDestination(cf, expiryQueue);
-       
-      final int NUM_MESSAGES = 5;
-
       try
       {
+
+         ServerManagement.deployQueue("ExpiryQueue");
+   
+         Queue expiryQueue = (Queue)ic.lookup("/queue/ExpiryQueue");
+         
+         drainDestination(cf, expiryQueue);
+          
+         final int NUM_MESSAGES = 5;
+
          conn = cf.createConnection();
          
          conn.start();
@@ -630,6 +635,10 @@ public class ExpiryQueueTest extends MessagingTestCase
 
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
+      ServerManagement.undeployQueue("Queue");
+      
+      ServerManagement.undeployTopic("Topic");
+      
       ServerManagement.deployQueue("Queue");
       
       ServerManagement.deployTopic("Topic");

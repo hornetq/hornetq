@@ -540,6 +540,10 @@ public class ScheduledDeliveryTest extends MessagingTestCase
 
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
+      ServerManagement.undeployQueue("Queue");
+      
+      ServerManagement.undeployTopic("Topic");
+      
       ServerManagement.deployQueue("Queue");
       
       ServerManagement.deployTopic("Topic");

@@ -15,7 +15,6 @@
 # $Id$
 #
 
-
 reldir=`dirname $0`
 
 
@@ -25,7 +24,7 @@ ENV_TEST_CLUSTERED=$TEST_CLUSTERED
 ENV_TEST_REMOTING=$TEST_REMOTING
 
 #verbose output on spawned servers?
-TEST_SPAWN_VERBOSE=true
+TEST_SPAWN_VERBOSE=false
 
 if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
    . $reldir/.testrc
