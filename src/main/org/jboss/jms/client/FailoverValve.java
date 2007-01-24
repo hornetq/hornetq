@@ -249,12 +249,15 @@ public class FailoverValve
     */
    private Counter getCounter()
    {
-      if (counterLocal.get() == null)
+      Counter localCounter = (Counter) counterLocal.get();
+
+      if (localCounter == null)
       {
-         counterLocal.set(new Counter());
+         localCounter = new Counter();
+         counterLocal.set(localCounter);
       }
 
-      return (Counter)counterLocal.get();
+      return localCounter;
    }
 
 
