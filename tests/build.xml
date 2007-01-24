@@ -350,13 +350,13 @@
    <!-- ======================================================================================== -->
 
    <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-    <antcall target="crash-tests"/>
+      <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
-      <antcall target="remote-tests"/>  <!-- default remoting configuration (socket) -->        <!--
+      <antcall target="remote-tests"/>  <!-- default remoting configuration (socket) -->
+      <antcall target="clustering-tests"/>
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
-      </antcall>                                                                                 -->
-      <antcall target="clustering-tests"/>
+      </antcall>
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
@@ -415,6 +415,9 @@
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
+               <exclude name="**/thirdparty/remoting/ManualConnectionValidatorTest.class"/>
+               <exclude name="**/thirdparty/remoting/PureAsynchronousCallTest.class"/>
+               <exclude name="**/thirdparty/remoting/RemotingConnectionFailureTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -598,6 +601,13 @@
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <!--
+                 I needed a way to intercept the end of a forked ant JUnit test run, in order to
+                 perform clean-up, and this is it: register a JUnitTestSuiteListener as a JUnit
+                 batchtest formatter, and it will get notified on a endTestSuite() event.
+            -->
+            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
+
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/*Test.class"/>
                <include name="**/thirdparty/**/*Test.class"/>
