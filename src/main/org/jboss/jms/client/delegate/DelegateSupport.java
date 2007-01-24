@@ -116,6 +116,8 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
       MessagingMarshallable request = new MessagingMarshallable(version, invocation);
 
       // select invocations ought to be sent "one way" for increased performance
+      
+      //TODO polymorphism: shouldn't this be ClientSessionDelegate::invoke rather than the super class?? 
       if ("changeRate".equals(methodName))
       {
          if (trace) { log.trace(this + " invoking " + methodName + "(..) asynchronously on server"); }

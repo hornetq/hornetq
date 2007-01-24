@@ -390,7 +390,7 @@ public class ResourceManager
    void endTx(Xid xid, boolean success) throws XAException
    {
       if (trace) { log.trace("ending " + xid + ", success=" + success); }
-      
+        
       ClientTransaction state = getTxInternal(xid);
       
       if (state == null)
@@ -494,7 +494,7 @@ public class ResourceManager
    Xid startTx(Xid xid) throws XAException
    {
       if (trace) { log.trace("starting " + xid); }
-
+      
       ClientTransaction state = getTxInternal(xid);
       
       if (state != null)

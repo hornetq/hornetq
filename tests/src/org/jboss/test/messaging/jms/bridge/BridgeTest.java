@@ -57,8 +57,6 @@ public class BridgeTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeTest.class);
    
-   private static final int NODE_COUNT = 2;
-   
    public BridgeTest(String name)
    {
       super(name);
@@ -73,6 +71,7 @@ public class BridgeTest extends BridgeTestBase
    {            
       super.tearDown();      
    }
+      
    
    // MaxBatchSize but no MaxBatchTime
    
@@ -536,30 +535,12 @@ public class BridgeTest extends BridgeTestBase
          return;
       }
       
+      Bridge bridge = null;
+      
       try
       {               
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
-           
-         Bridge bridge;
-         
+         setUpAdministeredObjects();
+                            
          int qosMode = Bridge.QOS_AT_MOST_ONCE;
          
          int batchSize = 10;
@@ -716,22 +697,9 @@ public class BridgeTest extends BridgeTestBase
       }
       finally
       {                      
-         try
+         if (bridge != null)
          {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
+            bridge.stop();
          }
       }         
    }
@@ -743,39 +711,17 @@ public class BridgeTest extends BridgeTestBase
          return;
       }
       
+      Bridge bridge = null;
+      
       Connection connSource = null;
       
-      Connection connDest = null;
-      
-      Bridge bridge = null;
+      Connection connTarget = null;
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
+         setUpAdministeredObjects();
          
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         final int BATCH_SIZE = 10;
+         final int NUM_MESSAGES = 10;
          
          String selector = "vegetable='radish'";
          
@@ -789,19 +735,15 @@ public class BridgeTest extends BridgeTestBase
             
          connSource = cf0.createConnection();
          
-         connDest = cf1.createConnection();
-         
          Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sessSend.createProducer(sourceQueue);
          
-         //Send half the messges
-
-         for (int i = 0; i < BATCH_SIZE; i++)
+         for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sessSend.createTextMessage("message" + i);
             
-            if (i >= BATCH_SIZE / 2)
+            if (i >= NUM_MESSAGES / 2)
             {
                tm.setStringProperty("vegetable", "radish");
             }
@@ -813,13 +755,15 @@ public class BridgeTest extends BridgeTestBase
             prod.send(tm);
          }
          
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         connTarget = cf1.createConnection();
+         
+         Session sessRec = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageConsumer cons = sessRec.createConsumer(destQueue);
          
-         connDest.start();
+         connTarget.start();
                                  
-         for (int i = BATCH_SIZE / 2 ; i < BATCH_SIZE; i++)
+         for (int i = NUM_MESSAGES / 2 ; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons.receive(1000);
             
@@ -847,11 +791,11 @@ public class BridgeTest extends BridgeTestBase
             }
          }
          
-         if (connDest != null)
+         if (connTarget != null)
          {
             try
             {
-               connDest.close();
+               connTarget.close();
             }
             catch (Exception e)
             {
@@ -891,10 +835,6 @@ public class BridgeTest extends BridgeTestBase
          return;
       }
       
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
       Bridge bridge = null;
       
       Transaction toResume = null;
@@ -912,31 +852,9 @@ public class BridgeTest extends BridgeTestBase
          
          started = mgr.getTransaction();         
          
-         ServerManagement.deployTopic("sourceTopic", 0);
+         setUpAdministeredObjects();
          
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Topic sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         final int BATCH_SIZE = 10;
+         final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
                   null, null, null, null,
@@ -945,41 +863,13 @@ public class BridgeTest extends BridgeTestBase
                   null, null);
          
          bridge.start();
+         
+         this.sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
             
-         connSource = cf0.createConnection();
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         connDest = cf1.createConnection();
-         
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceTopic);         
-
-         for (int i = 0; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-                        
-            prod.send(tm);
-         }
-         
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-                                 
-         for (int i = 0 ; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
-                       
+         this.checkNoneReceived(cf1, destQueue);
+                                
       }
       finally
       {      
@@ -1005,54 +895,11 @@ public class BridgeTest extends BridgeTestBase
             {
                log.error("Failed to resume", e);
             }
-         }
-         
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
+         }         
          if (bridge != null)
          {
             bridge.stop();
-         }
-         
-         try
-         {
-            ServerManagement.undeployTopic("sourceTopic", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         }     
       }                  
    }   
    
@@ -1063,39 +910,13 @@ public class BridgeTest extends BridgeTestBase
          return;
       }
       
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployTopic("sourceTopic", 0);
+         this.setUpAdministeredObjects();
          
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Topic sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         final int BATCH_SIZE = 10;
+         final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
                   null, null, null, null,
@@ -1105,88 +926,18 @@ public class BridgeTest extends BridgeTestBase
          
          bridge.start();
             
-         connSource = cf0.createConnection();
+         sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
          
-         connDest = cf1.createConnection();
+         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceTopic);         
-
-         for (int i = 0; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-                        
-            prod.send(tm);
-         }
-         
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-                                 
-         for (int i = 0 ; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf1, destQueue);
                        
       }
       finally
-      {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
+      {                        
          if (bridge != null)
          {
             bridge.stop();
-         }
-         
-         try
-         {
-            ServerManagement.undeployTopic("sourceTopic", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
          }
       }                  
    }
@@ -1198,39 +949,13 @@ public class BridgeTest extends BridgeTestBase
          return;
       }
       
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployTopic("sourceTopic", 0);
+         this.setUpAdministeredObjects();
          
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Topic sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         final int BATCH_SIZE = 10;
+         final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
                   null, null, null, null,
@@ -1240,102 +965,82 @@ public class BridgeTest extends BridgeTestBase
          
          bridge.start();
             
-         connSource = cf0.createConnection();
+         sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, true);
          
-         connDest = cf1.createConnection();
+         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceTopic);         
-
-         for (int i = 0; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-                        
-            prod.send(tm);
-         }
-         
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-                                 
-         for (int i = 0 ; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf1, destQueue);
                        
       }
       finally
-      {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
+      {                      
          if (bridge != null)
          {
             bridge.stop();
          }
+      }                  
+   }
+   
+   public void testTimeout() throws Exception
+   {
+      Bridge bridge = null;
+            
+      try
+      {
+         this.setUpAdministeredObjects();
          
-         try
-         {
-            ServerManagement.undeployTopic("sourceTopic", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         final int NUM_MESSAGES = 10;
          
-         try
+         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+                  null, null, null, null,
+                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  NUM_MESSAGES, -1,
+                  null, null);
+         
+         bridge.start();
+         
+         boolean persistent = true;
+            
+         //Send half the messges
+
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
+                         
+         //Verify none are received
+         
+         this.checkNoneReceived(cf1, destQueue);
+         
+         log.info("Waiting");
+         Thread.sleep(120000);
+         
+         //Send the other half
+         
+         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
+         
+         //This should now be receivable
+         
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
+                  
+         
+         this.checkNoneReceived(cf1, destQueue);         
+         
+         this.checkNoneReceived(cf0, sourceQueue);
+      }
+      finally
+      {      
+         if (bridge != null)
          {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+            log.info("Stopping bridge");
+            bridge.stop();
+         }         
       }                  
    }
    
    
    // Private -------------------------------------------------------------------------------
-       
-   
-   
+             
    private void testStress(int qosMode, boolean persistent, int batchSize) throws Exception
    {
       Connection connSource = null;
-      
-      Connection connDest = null;
       
       Bridge bridge = null;
       
@@ -1343,29 +1048,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         this.setUpAdministeredObjects();
            
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
@@ -1376,8 +1059,6 @@ public class BridgeTest extends BridgeTestBase
          bridge.start();
             
          connSource = cf0.createConnection();
-         
-         connDest = cf1.createConnection();
          
          Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
@@ -1391,29 +1072,16 @@ public class BridgeTest extends BridgeTestBase
          sender.numMessages = NUM_MESSAGES;
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
                           
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-         
          t = new Thread(sender);
          
          t.start();
-                 
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(5000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
          
-         Message m = cons.receive(1000);
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         assertNull(m);
+         this.checkNoneReceived(cf1, destQueue);
          
+         this.checkNoneReceived(cf0, sourceQueue);
+                                      
          t.join();
          
          if (sender.ex != null)
@@ -1440,42 +1108,12 @@ public class BridgeTest extends BridgeTestBase
             {
                log.error("Failed to close connection", e);
             }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
+         }                
          
          if (bridge != null)
          {
             bridge.stop();
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         }                  
       }      
    }
    
@@ -1490,23 +1128,9 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 0);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic0.lookup("/queue/destQueue");
+         this.setUpAdministeredObjects();
            
-         bridge = new Bridge(cff0, cff0, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
@@ -1528,29 +1152,16 @@ public class BridgeTest extends BridgeTestBase
          sender.numMessages = NUM_MESSAGES;
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
                           
-         Session sessRec = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connSource.start();
-         
          t = new Thread(sender);
          
          t.start();
-                 
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(5000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
          
-         Message m = cons.receive(1000);
+         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
-         assertNull(m);
+         this.checkNoneReceived(cf0, localDestQueue);
          
+         this.checkNoneReceived(cf0, sourceQueue);
+                          
          t.join();
          
          if (sender.ex != null)
@@ -1583,463 +1194,152 @@ public class BridgeTest extends BridgeTestBase
          {
             bridge.stop();
          }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
       }      
    }
    
       
    private void testNoMaxBatchTime(int qosMode, boolean persistent) throws Exception
    {
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
+         this.setUpAdministeredObjects();
          
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-                      
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
-         
-         final int BATCH_SIZE = 10;
+         final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
-                  BATCH_SIZE, -1,
+                  NUM_MESSAGES, -1,
                   null, null);
          
          bridge.start();
             
-         connSource = cf0.createConnection();
-         
-         connDest = cf1.createConnection();
-         
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceQueue);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);        
-         
          //Send half the messges
 
-         for (int i = 0; i < BATCH_SIZE / 2; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-         
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
-         
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
+                         
          //Verify none are received
          
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf1, destQueue);
          
          //Send the other half
          
-         for (int i = BATCH_SIZE / 2; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
+         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
          
          //This should now be receivable
          
-         for (int i = 0; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         m = cons.receive(1000);
-         
-         assertNull(m);
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
          //Send another batch with one more than batch size
          
-         for (int i = 0; i < BATCH_SIZE + 1; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-         
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES + 1, persistent);
+                  
          //Make sure only batch size are received
          
-         for (int i = 0; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         m = cons.receive(2000);
-         
-         assertNull(m);
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
          //Final batch
          
-         for (int i = 0; i < BATCH_SIZE - 1; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent);
          
-         TextMessage tm = (TextMessage)cons.receive(1000);
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, NUM_MESSAGES, 1);
          
-         assertNotNull(tm);
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES - 1);
          
-         assertEquals("message" + BATCH_SIZE, tm.getText());
+         //Make sure no messages are left
          
-         for (int i = 0; i < BATCH_SIZE - 1; i++)
-         {
-            tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
+         this.checkNoneReceived(cf1, destQueue);         
          
-         m = cons.receive(1000);
-         
-         assertNull(m);
-         
-         
-         //Make sure no messages are left in the source dest
-         
-         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
-         
-         connSource.start();
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);          
+         this.checkNoneReceived(cf0, sourceQueue);
       }
       finally
       {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
          if (bridge != null)
          {
+            log.info("Stopping bridge");
             bridge.stop();
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         }         
       }                  
    }
    
+   
+   
+   
    private void testNoMaxBatchTimeSameServer(int qosMode, boolean persistent) throws Exception
    {
-      Connection connSource = null;
-   
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
+         this.setUpAdministeredObjects();
          
-         ServerManagement.deployQueue("destQueue", 0);
+         final int NUM_MESSAGES = 10;
          
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-                 
-         InitialContext ic0 = new InitialContext(props0);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-           
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic0.lookup("/queue/destQueue");
-         
-         final int BATCH_SIZE = 10;
-         
-         bridge = new Bridge(cff0, cff0, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
-                  BATCH_SIZE, -1,
+                  NUM_MESSAGES, -1,
                   null, null);
          
          bridge.start();
             
-         connSource = cf0.createConnection();
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
          
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceQueue);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);        
-         
-         //Send half the messges
-
-         for (int i = 0; i < BATCH_SIZE / 2; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-         
-         Session sessRec = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connSource.start();
-         
-         //Verify none are received
-         
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf1, destQueue);                
          
          //Send the other half
          
-         for (int i = BATCH_SIZE / 2; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
+         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES /2, persistent);
+         
          
          //This should now be receivable
          
-         for (int i = 0; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
+         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
-         m = cons.receive(1000);
+         this.checkNoneReceived(cf0, localDestQueue);
          
-         assertNull(m);
+         this.checkNoneReceived(cf0, sourceQueue);
          
          //Send another batch with one more than batch size
          
-         for (int i = 0; i < BATCH_SIZE + 1; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES + 1, persistent);
          
          //Make sure only batch size are received
          
-         for (int i = 0; i < BATCH_SIZE; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         m = cons.receive(2000);
-         
-         assertNull(m);
+         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
          //Final batch
          
-         for (int i = 0; i < BATCH_SIZE - 1; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent);
          
-         TextMessage tm = (TextMessage)cons.receive(1000);
+         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, NUM_MESSAGES, 1);
          
-         assertNotNull(tm);
+         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES - 1);
          
-         assertEquals("message" + BATCH_SIZE, tm.getText());
+         //Make sure no messages are left
          
-         for (int i = 0; i < BATCH_SIZE - 1; i++)
-         {
-            tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
+         this.checkNoneReceived(cf0, localDestQueue);         
          
-         m = cons.receive(1000);
-         
-         assertNull(m);
-         
-         
-         //Make sure no messages are left in the source dest
-         
-         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
-         
-         connSource.start();
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);          
+         this.checkNoneReceived(cf0, sourceQueue);        
       }
       finally
-      {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
+      {               
          if (bridge != null)
          {
             bridge.stop();
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         }                  
       }                  
    }
    
    private void testMaxBatchTime(int qosMode, boolean persistent) throws Exception
    {
-      Connection connSource = null;
-      
-      Connection connDest = null;
-      
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         ConnectionFactoryFactory cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         InitialContext ic0 = new InitialContext(props0);
-         
-         InitialContext ic1 = new InitialContext(props1);
-         
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         this.setUpAdministeredObjects();
          
          final long MAX_BATCH_TIME = 3000;
          
@@ -2053,38 +1353,15 @@ public class BridgeTest extends BridgeTestBase
          
          bridge.start();
             
-         connSource = cf0.createConnection();
-         
-         connDest = cf1.createConnection();
-         
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceQueue);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);                          
-         
          final int NUM_MESSAGES = 10;
          
          //Send some message
 
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-         
-         Session sessRec = connDest.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connDest.start();
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES, persistent);                 
          
          //Verify none are received
          
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf1, destQueue);
          
          //Wait a bit longer
          
@@ -2092,149 +1369,55 @@ public class BridgeTest extends BridgeTestBase
          
          //Messages should now be receivable
          
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         m = cons.receive(1000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf1, destQueue);
          
          //Make sure no messages are left in the source dest
          
-         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
-         
-         connSource.start();
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf0, sourceQueue);
          
       }
       finally
       {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-         
-         if (connDest != null)
-         {
-            try
-            {
-               connDest.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
-         }
-         
          if (bridge != null)
          {
             bridge.stop();
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         }         
       }                  
    }
    
    private void testMaxBatchTimeSameServer(int qosMode, boolean persistent) throws Exception
    {
-      Connection connSource = null;
-      
       Bridge bridge = null;
             
       try
       {
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 0);
-         
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         ConnectionFactoryFactory cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-           
-         InitialContext ic0 = new InitialContext(props0);
-           
-         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         Queue sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         Queue destQueue = (Queue)ic0.lookup("/queue/destQueue");
+         this.setUpAdministeredObjects();
          
          final long MAX_BATCH_TIME = 3000;
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
-         bridge = new Bridge(cff0, cff0, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
                   null, null);
          
          bridge.start();
-            
-         connSource = cf0.createConnection();
-
-         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sessSend.createProducer(sourceQueue);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);                          
          
          final int NUM_MESSAGES = 10;
          
          //Send some message
 
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-         
-         Session sessRec = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
-         
-         connSource.start();
+         //Send some message
+
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES, persistent);                 
          
          //Verify none are received
          
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf0, localDestQueue);
          
          //Wait a bit longer
          
@@ -2242,66 +1425,21 @@ public class BridgeTest extends BridgeTestBase
          
          //Messages should now be receivable
          
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(1000);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
+         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
-         m = cons.receive(1000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf0, localDestQueue);
          
          //Make sure no messages are left in the source dest
          
-         MessageConsumer cons2 = sessSend.createConsumer(sourceQueue);
-         
-         connSource.start();
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);
+         this.checkNoneReceived(cf0, sourceQueue);
          
       }
       finally
-      {      
-         if (connSource != null)
-         {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
-         }
-          
+      {              
          if (bridge != null)
          {
             bridge.stop();
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         }        
       }                  
    }
    

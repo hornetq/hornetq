@@ -38,6 +38,7 @@ import javax.naming.InitialContext;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 /**
  * A BridgeMBeanTest
@@ -53,7 +54,6 @@ public class BridgeMBeanTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeMBeanTest.class);
    
-   
    public BridgeMBeanTest(String name)
    {
       super(name);
@@ -63,12 +63,15 @@ public class BridgeMBeanTest extends BridgeTestBase
    {
       nodeCount = 3;
       
+      useArjuna = true;
+
       super.setUp();
    }
    
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
    }
    
    public void testStopStartPauseResume() throws Exception

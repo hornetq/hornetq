@@ -1101,6 +1101,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       //Need to prompt delivery on the dlq/expiry queue
+      
+      //TODO - are we sure this is the right place to prompt delivery?
       if (queue != null)
       {
          queue.deliver(false);

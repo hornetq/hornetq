@@ -353,23 +353,44 @@ public class Bridge implements MessagingComponent
          if (trace) { log.trace("Checker thread has finished"); }
       }
       
-      sourceConn.close();
-      
-      if (targetConn != null)
-      {
-         targetConn.close();
-      }
-
       if (tx != null)
       {
          //Terminate any transaction
          if (trace) { log.trace("Rolling back remaining tx"); }
          
-         tx.rollback();
+         try
+         {
+            tx.rollback();
+         }
+         catch (Exception ignore)
+         {
+            if (trace) { log.trace("Failed to rollback", ignore); }
+         }
          
          if (trace) { log.trace("Rolled back remaining tx"); }
       }
       
+      try
+      {
+         sourceConn.close();
+      }
+      catch (Exception ignore)
+      {
+         if (trace) { log.trace("Failed to close source conn", ignore); }
+      }
+      
+      if (targetConn != null)
+      {
+         try
+         {
+            targetConn.close();
+         }
+         catch (Exception ignore)
+         {
+            if (trace) { log.trace("Failed to close target conn", ignore); }
+         }
+      }
+            
       if (trace) { log.trace("Stopped " + this); }
    }
    
@@ -737,8 +758,12 @@ public class Bridge implements MessagingComponent
       
       TransactionManager tm = getTm();
       
-      tm.begin();
+      //Set timeout to a large value since we do not want to time out while waiting for messages
+      //to arrive - 10 years should be enough
+      tm.setTransactionTimeout(60 * 60 * 24 * 365 * 10);
       
+      tm.begin();
+         
       Transaction tx = tm.getTransaction();
       
       //Remove the association between current thread - we don't want it
@@ -1185,7 +1210,7 @@ public class Bridge implements MessagingComponent
             if (trace) { log.trace("Committing JTA transaction"); }
             
             tx.commit();
-            
+
             if (trace) { log.trace("Committed JTA transaction"); }
             
             tx = startTx();  

@@ -21,25 +21,7 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Set;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
 import org.jboss.jms.server.bridge.Bridge;
-import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
-import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
@@ -57,13 +39,7 @@ import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 public class ReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(ReconnectTest.class);
-   
-   protected ConnectionFactoryFactory cff0, cff1;
-   
-   protected ConnectionFactory cf0, cf1;
-   
-   protected Destination sourceQueue, destQueue;
-
+ 
    
    public ReconnectTest(String name)
    {
@@ -71,42 +47,15 @@ public class ReconnectTest extends BridgeTestBase
    }
 
    protected void setUp() throws Exception
-   {
-      super.setUp();      
+   {      
+      useArjuna = true;
       
-      if (ServerManagement.isRemote())
-      {      
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployQueue("destQueue", 1);
-      }
-     
+      super.setUp();                
    }
 
    protected void tearDown() throws Exception
    {      
       super.tearDown();      
-      
-      if (ServerManagement.isRemote())
-      {       
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-      }
    }
       
    // Crash and reconnect
@@ -214,43 +163,7 @@ public class ReconnectTest extends BridgeTestBase
       testCrashAndReconnectDestCrashOnCommit(false);
    }
    
-   private void setUpAdministeredObjects() throws Exception
-   {
-      InitialContext ic0 = null, ic1 = null;
-      try
-      {
-         Hashtable props0 = ServerManagement.getJNDIEnvironment(0);
-         
-         Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
-         
-         cff0 = new JNDIConnectionFactoryFactory(props0, "/ConnectionFactory");
-         
-         cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
-               
-         ic0 = new InitialContext(props0);
-         
-         ic1 = new InitialContext(props1);
-         
-         cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-         
-         cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
-         
-         sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
-         
-         destQueue = (Queue)ic1.lookup("/queue/destQueue");
-      }
-      finally
-      {
-         if (ic0 != null)
-         {
-            ic0.close();
-         }
-         if (ic1 != null)
-         {
-            ic1.close();
-         }
-      }    
-   }
+   
    
    /*
     * Send some messages
@@ -532,136 +445,7 @@ public class ReconnectTest extends BridgeTestBase
       }                  
    }
    
-   private void sendMessages(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean persistent)
-      throws Exception
-   {
-      Connection conn = null;
-      
-      try
-      {
-         conn = cf.createConnection();
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(dest);
-         
-         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
-         for (int i = start; i < start + numMessages; i++)
-         {
-            TextMessage tm = sess.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
    
-   private void checkNoneReceived(ConnectionFactory cf, Destination dest) throws Exception
-   {
-      Connection conn = null;
-      
-      try
-      {
-         conn = cf.createConnection();
-         
-         conn.start();
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sess.createConsumer(dest);
-         
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
-         
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-   
-   private void checkMessagesReceived(ConnectionFactory cf, Destination dest, int qosMode, int numMessages) throws Exception
-   {
-      Connection conn = null;
-      
-      try
-      {
-         conn = cf.createConnection();
-         
-         conn.start();
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sess.createConsumer(dest);
-         
-         // Consume the messages
-         
-         Set msgs = new HashSet();
-         
-         log.info("checkMessagesReceived");
-         
-         int count = 0;
-         
-         while (true)
-         {
-            TextMessage tm = (TextMessage)cons.receive(2000);
-            
-            if (tm == null)
-            {
-               break;
-            }
-            
-            log.info("got message:" + tm.getJMSMessageID());         
-            
-            msgs.add(tm.getText());
-            
-            count++;
-          
-         }
-         
-         log.info("message received " + count);
-         
-         if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE || qosMode == Bridge.QOS_DUPLICATES_OK)
-         {            
-            //All the messages should be received
-            
-            for (int i = 0; i < numMessages; i++)
-            {
-               assertTrue(msgs.contains("message" + i));
-            }
-            
-            //Should be no more
-            if (qosMode == Bridge.QOS_ONCE_AND_ONLY_ONCE)
-            {
-               assertEquals(numMessages, msgs.size());
-            }         
-         }
-         else if (qosMode == Bridge.QOS_AT_MOST_ONCE)
-         {
-            //No *guarantee* that any messages will be received
-            //but you still might get some depending on how/where the crash occurred                 
-         }      
-         
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }  
-   }
    
    // Inner classes -------------------------------------------------------------------
    

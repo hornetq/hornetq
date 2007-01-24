@@ -47,7 +47,7 @@
    </category>
 
    <category name="org.jboss.remoting">
-      <priority value="INFO"/>
+      <priority value="DEBUG"/>
    </category>
 
    <category name="org.jboss">

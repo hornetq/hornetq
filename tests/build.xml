@@ -353,10 +353,13 @@
       <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
       <antcall target="remote-tests"/>  <!-- default remoting configuration (socket) -->
+
+      <!--
       <antcall target="clustering-tests"/>
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
+      -->
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">

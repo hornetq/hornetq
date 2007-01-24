@@ -43,6 +43,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**
@@ -66,6 +67,8 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
    protected JBossConnectionFactory cf;
    protected Queue queue;
    protected Topic topic;
+   
+   protected ServiceContainer sc;
 
    // Constructors --------------------------------------------------
 
@@ -97,11 +100,24 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       
       topic = (Topic)initialContext.lookup("/topic/Topic");
       
+      if (ServerManagement.isRemote())
+      {
+         //We need to start a service container otherwise transaction manager jndi lookup
+         //will fail
+         sc = new ServiceContainer("transaction");
+         
+         sc.start(false);
+      }
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
+      
+      if (ServerManagement.isRemote())
+      {
+         sc.stop();
+      }
    }
 
    public void testSimpleJMSXDeliveryCount() throws Exception
