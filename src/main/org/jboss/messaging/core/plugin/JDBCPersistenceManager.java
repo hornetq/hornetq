@@ -125,7 +125,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       super.start();
 
       Connection conn = null;
-      
+
+      TransactionWrapper wrap = new TransactionWrapper();
+
       try
       {
          conn = ds.getConnection();      
@@ -143,12 +145,18 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             log.warn(warn);
          }
       }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
       finally
       {
          if (conn != null)
          {
             conn.close();
          }
+         wrap.end();
       }
         
       //We can't remnove unreliable data since it might introduce holes into the paging order
