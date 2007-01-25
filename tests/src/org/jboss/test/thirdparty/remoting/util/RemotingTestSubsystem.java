@@ -81,7 +81,7 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
    {
       log.debug(this + " received " + invocation);
 
-      Object parameter = invocation.getParameter();
+      final Object parameter = invocation.getParameter();
 
       if ("ignore".equals(parameter))
       {
@@ -93,25 +93,60 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
 
       invocationHistory.put(dirtyCopy(invocation));
 
-      if (parameter instanceof CallbackTrigger)
+      if (parameter instanceof OnewayCallbackTrigger)
       {
-         Callback callback = new Callback(((CallbackTrigger)parameter).getPayload());
+         // send all oneway invocations from a different thread to avoid blocking the worker thread
+         // that has to return and write a response on the wire
 
-         // seding a callback asynchronously
-         pushToClient(callback, false);
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               OnewayCallbackTrigger t = (OnewayCallbackTrigger)parameter;
+               String payload = t.getPayload();
+               long[] triggerTimes = t.getTriggerTimes();
+
+               for(int i = 0; i < triggerTimes.length; i++)
+               {
+                  Callback callback = new Callback(payload + (i != 0 ? Integer.toString(i) : ""));
+
+                  try
+                  {
+                     Thread.sleep(triggerTimes[i]);
+                  }
+                  catch(InterruptedException e)
+                  {
+                     log.error("interrupted", e);
+                     return;
+                  }
+
+                  // seding a callback asynchronously
+                  pushToClient(callback, false);
+               }
+            }
+         }, "Oneway Invoker Thread").start();
+
+         log.debug(this + " started a new oneway invoker thread");
+
       }
 
       return null;
    }
 
-   public synchronized void addListener(InvokerCallbackHandler callbackHandler)
+   public void addListener(InvokerCallbackHandler callbackHandler)
    {
-      callbackListeners.add(callbackHandler);
+      synchronized(callbackListeners)
+      {
+         callbackListeners.add(callbackHandler);
+      }
    }
 
-   public synchronized void removeListener(InvokerCallbackHandler callbackHandler)
+   public void removeListener(InvokerCallbackHandler callbackHandler)
    {
-      callbackListeners.remove(callbackHandler);
+      synchronized(callbackListeners)
+      {
+         callbackListeners.remove(callbackHandler);
+      }
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -129,20 +164,26 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
 
    private synchronized void pushToClient(Callback callback, boolean sendSynchronously)
    {
-      for(Iterator i = callbackListeners.iterator(); i.hasNext(); )
+      // make a copy to avoid ConcurrentModificationException
+      List callbackListenersCopy;
+      synchronized(callbackListeners)
+      {
+         callbackListenersCopy = new ArrayList(callbackListeners);
+      }
+
+      for(Iterator i = callbackListenersCopy.iterator(); i.hasNext(); )
       {
          ServerInvokerCallbackHandler h = (ServerInvokerCallbackHandler)i.next();
          try
          {
             if (sendSynchronously)
             {
-               log.debug("pushing synchronous callback to " + h);
+               log.debug("pushing synchronous callback " + callback + " to " + h);
                h.handleCallback(callback);
-
             }
             else
             {
-               log.debug("pushing asynchronous callback to " + h);
+               log.debug("pushing asynchronous callback " + callback + " to " + h);
                h.handleCallbackOneway(callback);
             }
          }

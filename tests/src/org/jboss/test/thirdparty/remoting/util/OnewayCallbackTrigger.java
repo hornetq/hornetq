@@ -14,7 +14,7 @@ import java.io.Serializable;
  *
  * $Id$
  */
-public class CallbackTrigger implements Serializable
+public class OnewayCallbackTrigger implements Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -25,12 +25,19 @@ public class CallbackTrigger implements Serializable
    // Attributes -----------------------------------------------------------------------------------
 
    private String payload;
+   private long[] triggerTimes;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public CallbackTrigger(String payload)
+   public OnewayCallbackTrigger(String payload)
+   {
+      this(payload, new long[] {0});
+   }
+
+   public OnewayCallbackTrigger(String payload, long[] triggerTimes)
    {
       this.payload = payload;
+      this.triggerTimes = triggerTimes;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -40,9 +47,14 @@ public class CallbackTrigger implements Serializable
       return payload;
    }
 
+   public long[] getTriggerTimes()
+   {
+      return triggerTimes;
+   }
+
    public String toString()
    {
-      return "CallbackTrigger[" + payload + "]";
+      return "OnewayCallbackTrigger[" + payload + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------

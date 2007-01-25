@@ -9,14 +9,14 @@ package org.jboss.test.thirdparty.remoting;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
 import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
+import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.Client;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.Callback;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.HandleCallbackException;
 
 import javax.management.ObjectName;
@@ -25,7 +25,9 @@ import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 /**
- * A test case in which we play with "pure" remoting asynchronous calls.
+ * An extra test for the same root problem that causes
+ * http://jira.jboss.org/jira/browse/JBMESSAGING-371. The callback server seems to timeout never
+ * to be heard from it again.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *
@@ -33,11 +35,11 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  *
  * $Id$
  */
-public class PureAsynchronousCallTest extends MessagingTestCase
+public class CallbackServerTimeoutTest extends MessagingTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PureAsynchronousCallTest.class);
+   private static final Logger log = Logger.getLogger(CallbackServerTimeoutTest.class);
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -47,14 +49,14 @@ public class PureAsynchronousCallTest extends MessagingTestCase
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public PureAsynchronousCallTest(String name)
+   public CallbackServerTimeoutTest(String name)
    {
       super(name);
    }
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void testAsynchronousDirectCall() throws Throwable
+   public void testTimeoutOnewayCallback() throws Throwable
    {
       if (!isRemote())
       {
@@ -63,90 +65,7 @@ public class PureAsynchronousCallTest extends MessagingTestCase
 
       Client client = null;
       ObjectName subsystemService = null;
-
-      try
-      {
-         subsystemService = RemotingTestSubsystemService.deployService();
-
-         client = new Client(serverLocator, RemotingTestSubsystemService.SUBSYSTEM_LABEL);
-
-         client.connect();
-
-         client.invokeOneway("blip");
-
-         // make sure invocation reached the target subsystem
-
-         InvocationRequest i =
-            RemotingTestSubsystemService.getNextInvocationFromServer(subsystemService, 2000);
-
-         assertNotNull(i);
-         assertEquals("blip", i.getParameter());
-      }
-      finally
-      {
-         if (client != null)
-         {
-            client.disconnect();
-         }
-
-         RemotingTestSubsystemService.undeployService(subsystemService);
-      }
-   }
-
-   /**
-    * Send a lot of oneway calls to make sure remoting returns sockets back to pool.
-    */
-   public void testManyOnewayCalls() throws Throwable
-   {
-      if (!isRemote())
-      {
-         fail("This test should be run in a remote configuration!");
-      }
-
-      Client client = null;
-      ObjectName subsystemService = null;
-
-      try
-      {
-         subsystemService = RemotingTestSubsystemService.deployService();
-
-         client = new Client(serverLocator, RemotingTestSubsystemService.SUBSYSTEM_LABEL);
-
-         client.connect();
-
-         // send a ton of invocations
-         int COUNT = 200;
-
-         for(int i = 0; i < COUNT; i++)
-         {
-            client.invokeOneway("ignore");
-         }
-
-         // wait a bit until all invocations are flushed from the server-side pool
-         Thread.sleep(5000);
-      }
-      finally
-      {
-         if (client != null)
-         {
-            client.disconnect();
-         }
-
-         RemotingTestSubsystemService.undeployService(subsystemService);
-      }
-   }
-
-
-   public void testAsynchronousCallback() throws Throwable
-   {
-      if (!isRemote())
-      {
-         fail("This test should be run in a remote configuration!");
-      }
-
-      Client client = null;
-      ObjectName subsystemService = null;
-      SimpleCallbackHandler callbackHandler = null;
+      CallbackServerTimeoutTest.SimpleCallbackHandler callbackHandler = null;
 
       try
       {
@@ -160,14 +79,32 @@ public class PureAsynchronousCallTest extends MessagingTestCase
 
          client.addListener(callbackHandler, null, null, true);
 
-         client.invoke(new OnewayCallbackTrigger("blop"));
+         client.invoke(new OnewayCallbackTrigger("blip"));
 
          // make sure we get the callback
 
          Callback c = callbackHandler.getNextCallback(3000);
 
          assertNotNull(c);
+         assertEquals("blip", c.getParameter());
+
+         // sleep for twice the timeout, to be sure
+         long sleepTime = ServerInvoker.DEFAULT_TIMEOUT_PERIOD + 60000;
+         log.info("sleeping for " + (sleepTime / 60000) + " minutes ...");
+
+         Thread.sleep(sleepTime);
+
+         log.debug("woke up");
+
+         client.invoke(new OnewayCallbackTrigger("blop"));
+
+         // make sure we get the callback
+
+         c = callbackHandler.getNextCallback(3000);
+
+         assertNotNull(c);
          assertEquals("blop", c.getParameter());
+
       }
       finally
       {
@@ -179,6 +116,72 @@ public class PureAsynchronousCallTest extends MessagingTestCase
          RemotingTestSubsystemService.undeployService(subsystemService);
       }
    }
+
+   public void testTimeoutOnewayCallback2() throws Throwable
+   {
+      if (!isRemote())
+      {
+         fail("This test should be run in a remote configuration!");
+      }
+
+      Client client = null;
+      ObjectName subsystemService = null;
+      CallbackServerTimeoutTest.SimpleCallbackHandler callbackHandler = null;
+
+      try
+      {
+         subsystemService = RemotingTestSubsystemService.deployService();
+
+         client = new Client(serverLocator, RemotingTestSubsystemService.SUBSYSTEM_LABEL);
+
+         callbackHandler = new SimpleCallbackHandler();
+
+         client.connect();
+
+         client.addListener(callbackHandler, null, null, true);
+
+         log.info("added listener");
+
+         // sleep for twice the timeout, to be sure
+         long sleepTime = ServerInvoker.DEFAULT_TIMEOUT_PERIOD + 60000;
+
+         client.invoke(new OnewayCallbackTrigger("blip", new long[] { 0, sleepTime + 10000 }));
+
+         log.info("sent invocation");
+
+         // make sure we get the callback
+
+         Callback c = callbackHandler.getNextCallback(3000);
+
+         assertNotNull(c);
+         assertEquals("blip", c.getParameter());
+
+         log.info("sleeping for " + (sleepTime / 60000) + " minutes ...");
+
+         Thread.sleep(sleepTime);
+
+         log.debug("woke up");
+
+         // make sure we get the second callback
+
+         c = callbackHandler.getNextCallback(20000);
+
+         assertNotNull(c);
+         assertEquals("blip1", c.getParameter());
+
+      }
+      finally
+      {
+         if (client != null)
+         {
+            client.disconnect();
+         }
+
+         RemotingTestSubsystemService.undeployService(subsystemService);
+      }
+   }
+
+
 
 
    // Package protected ----------------------------------------------------------------------------
