@@ -96,7 +96,7 @@ public class MessageBodyTest extends MessagingTestCase
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
       queue = (Destination) ic.lookup("/queue/Queue");
-
+      
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
 

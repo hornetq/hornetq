@@ -47,7 +47,12 @@ public class ReconnectTest extends BridgeTestBase
    }
 
    protected void setUp() throws Exception
-   {      
+   {   
+      if (!ServerManagement.isRemote())
+      {
+         fail("Test should only be run in a remote configuration");
+      }
+      
       useArjuna = true;
       
       super.setUp();                
@@ -64,19 +69,11 @@ public class ReconnectTest extends BridgeTestBase
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestBasic(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestBasic(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
    
@@ -84,19 +81,11 @@ public class ReconnectTest extends BridgeTestBase
    
    public void testCrashAndReconnectDestBasic_DuplicatesOk_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, true);
    }
    
    public void testCrashAndReconnectDestBasic_DuplicatesOk_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, false);
    }
    
@@ -104,19 +93,11 @@ public class ReconnectTest extends BridgeTestBase
    
    public void testCrashAndReconnectDestBasic_AtMostOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, true);
    }
    
    public void testCrashAndReconnectDestBasic_AtMostOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, false);
    }
    
@@ -125,19 +106,11 @@ public class ReconnectTest extends BridgeTestBase
    
    public void testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestCrashBeforePrepare(true);
    }
    
    public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestCrashBeforePrepare(false);
    }
    
@@ -146,20 +119,12 @@ public class ReconnectTest extends BridgeTestBase
    // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
    public void x_testCrashAndReconnectDestCrashOnCommit_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestCrashOnCommit(true);
    }
    
    // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
    public void x_testCrashAndReconnectDestCrashOnCommit_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testCrashAndReconnectDestCrashOnCommit(false);
    }
    

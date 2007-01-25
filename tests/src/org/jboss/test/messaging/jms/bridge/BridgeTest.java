@@ -21,25 +21,17 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
-import java.util.Hashtable;
-
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.bridge.Bridge;
-import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
-import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
@@ -64,6 +56,11 @@ public class BridgeTest extends BridgeTestBase
 
    protected void setUp() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         fail("Test should only be run in a remote configuration");
+      }
+      
       super.setUp();     
    }
 
@@ -77,55 +74,31 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNoMaxBatchTime_AtMostOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, true);
    }
    
    public void testNoMaxBatchTime_DuplicatesOk_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK, true);
    }
    
    public void testNoMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testNoMaxBatchTime_AtMostOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, false);
    }
    
    public void testNoMaxBatchTime_DuplicatesOk_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTime(Bridge.QOS_DUPLICATES_OK, false);
    }
    
    public void testNoMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
    
@@ -135,55 +108,31 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNoMaxBatchTimeSameServer_AtMostOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, true);
    }
    
    public void testNoMaxBatchTimeSameServer_DuplicatesOk_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, true);
    }
    
    public void testNoMaxBatchTimeSameServer_OnceAndOnlyOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testNoMaxBatchTimeSameServer_AtMostOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, false);
    }
    
    public void testNoMaxBatchTimeSameServer_DuplicatesOk_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, false);
    }
    
    public void testNoMaxBatchTimeSameServer_OnceAndOnlyOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testNoMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
    
@@ -192,55 +141,31 @@ public class BridgeTest extends BridgeTestBase
    
    public void testMaxBatchTime_AtMostOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, true);
    }
    
    public void testMaxBatchTime_DuplicatesOk_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTime(Bridge.QOS_DUPLICATES_OK, true);
    }
    
    public void testMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testMaxBatchTime_AtMostOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTime(Bridge.QOS_AT_MOST_ONCE, false);
    }
    
    public void testMaxBatchTime_DuplicatesOk_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTime(Bridge.QOS_DUPLICATES_OK, false);
    }
    
    public void testMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testMaxBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
     
@@ -250,55 +175,31 @@ public class BridgeTest extends BridgeTestBase
    
    public void testMaxBatchTimeSameServer_AtMostOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, true);
    }
    
    public void testMaxBatchTimeSameServer_DuplicatesOk_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, true);
    }
    
    public void testMaxBatchTimeSameServer_OnceAndOnlyOnce_P() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testMaxBatchTimeSameServer_AtMostOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTimeSameServer(Bridge.QOS_AT_MOST_ONCE, false);
    }
    
    public void testMaxBatchTimeSameServer_DuplicatesOk_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       this.testMaxBatchTimeSameServer(Bridge.QOS_DUPLICATES_OK, false);
    }
    
    public void testMaxBatchTimeSameServer_OnceAndOnlyOnce_NP() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testMaxBatchTimeSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
    
@@ -306,55 +207,31 @@ public class BridgeTest extends BridgeTestBase
    
    public void testStress_AtMostOnce_P_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_AT_MOST_ONCE, true, 50);
    }
    
    public void testStress_DuplicatesOk_P_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_DUPLICATES_OK, true, 50);
    }
    
    public void testStress_OnceAndOnlyOnce_P_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 50);
    }
    
    public void testStress_AtMostOnce_NP_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_AT_MOST_ONCE, false, 50);
    }
    
    public void testStress_DuplicatesOk_NP_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_DUPLICATES_OK, false, 50);
    }
    
    public void testStress_OnceAndOnlyOnce_NP_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 50);
    }
    
@@ -362,55 +239,31 @@ public class BridgeTest extends BridgeTestBase
    
    public void testStress_AtMostOnce_P_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_AT_MOST_ONCE, true, 1);
    }
    
    public void testStress_DuplicatesOk_P_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_DUPLICATES_OK, true, 1);
    }
    
    public void testStress_OnceAndOnlyOnce_P_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 1);
    }
    
    public void testStress_AtMostOnce_NP_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_AT_MOST_ONCE, false, 1);
    }
    
    public void testStress_DuplicatesOk_NP_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_DUPLICATES_OK, false, 1);
    }
    
    public void testStress_OnceAndOnlyOnce_NP_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 1);
    }
    
@@ -420,55 +273,31 @@ public class BridgeTest extends BridgeTestBase
    
    public void testStressSameServer_AtMostOnce_P_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_AT_MOST_ONCE, true, 50);
    }
    
    public void testStressSameServer_DuplicatesOk_P_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_DUPLICATES_OK, true, 50);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_P_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 50);
    }
    
    public void testStressSameServer_AtMostOnce_NP_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_AT_MOST_ONCE, false, 50);
    }
    
    public void testStressSameServer_DuplicatesOk_NP_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_DUPLICATES_OK, false, 50);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_NP_50() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 50);
    }
    
@@ -476,65 +305,36 @@ public class BridgeTest extends BridgeTestBase
    
    public void testStressSameServer_AtMostOnce_P_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_AT_MOST_ONCE, true, 1);
    }
    
    public void testStressSameServer_DuplicatesOk_P_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_DUPLICATES_OK, true, 1);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_P_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 1);
    }
    
    public void testStressSameServer_AtMostOnce_NP_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_AT_MOST_ONCE, false, 1);
    }
    
    public void testStressSameServer_DuplicatesOk_NP_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_DUPLICATES_OK, false, 1);
    }
    
    public void testStressSameServer_OnceAndOnlyOnce_NP_1() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
       testStressSameServer(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 1);
    }
    
    public void testParams() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
-      
       Bridge bridge = null;
       
       try
@@ -705,12 +505,7 @@ public class BridgeTest extends BridgeTestBase
    }
    
    public void testSelector() throws Exception
-   {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
-      
+   {      
       Bridge bridge = null;
       
       Connection connSource = null;
@@ -829,12 +624,7 @@ public class BridgeTest extends BridgeTestBase
    }
    
    public void testStartBridgeWithJTATransactionAlreadyRunning() throws Exception
-   {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
-      
+   {  
       Bridge bridge = null;
       
       Transaction toResume = null;
@@ -904,12 +694,7 @@ public class BridgeTest extends BridgeTestBase
    }   
    
    public void testNonDurableSubscriber() throws Exception
-   {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
-      
+   { 
       Bridge bridge = null;
             
       try
@@ -944,11 +729,6 @@ public class BridgeTest extends BridgeTestBase
    
    public void testDurableSubscriber() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
-      
       Bridge bridge = null;
             
       try
@@ -982,7 +762,7 @@ public class BridgeTest extends BridgeTestBase
    }
    
    public void testTimeout() throws Exception
-   {
+   { 
       Bridge bridge = null;
             
       try

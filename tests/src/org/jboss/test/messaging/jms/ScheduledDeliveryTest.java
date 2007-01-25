@@ -365,18 +365,18 @@ public class ScheduledDeliveryTest extends MessagingTestCase
    {   
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
       
-      String queueObjectName = "jboss.messaging.destination:service=Queue,name=Queue";
+      String queueObjectName = "jboss.messaging.destination:service=Queue,name=Queue";            
       
-      ServerManagement.setAttribute(new ObjectName(queueObjectName), "RedeliveryDelay", String.valueOf(0));
-      
-      final long delay = 3000;
-      
-      ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay));
-      
-      Connection conn = null;
+      Connection conn = null;      
       
       try
       {
+         ServerManagement.setAttribute(new ObjectName(queueObjectName), "RedeliveryDelay", String.valueOf(0));
+         
+         final long delay = 3000;
+         
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay));
+                  
          conn = cf.createConnection();
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -440,6 +440,9 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          {
             conn.close();
          }
+         
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");
+         
       }
    }
    
@@ -449,16 +452,17 @@ public class ScheduledDeliveryTest extends MessagingTestCase
       
       String queueObjectName = "jboss.messaging.destination:service=Queue,name=Queue";
       
-      final long delay = 3000;
-            
-      ServerManagement.setAttribute(new ObjectName(queueObjectName), "RedeliveryDelay", String.valueOf(delay));
-        
-      ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay * 3));
-      
+
       Connection conn = null;
       
       try
       {
+         final long delay = 3000;
+         
+         ServerManagement.setAttribute(new ObjectName(queueObjectName), "RedeliveryDelay", String.valueOf(delay));
+           
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay * 3));
+                  
          conn = cf.createConnection();
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -522,6 +526,9 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          {
             conn.close();
          }
+         
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");
+         
       }
    }
 

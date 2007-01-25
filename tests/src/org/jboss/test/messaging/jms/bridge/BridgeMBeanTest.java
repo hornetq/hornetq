@@ -61,6 +61,11 @@ public class BridgeMBeanTest extends BridgeTestBase
    
    protected void setUp() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         fail("Test should only be run in a remote configuration");
+      }
+      
       nodeCount = 3;
       
       useArjuna = true;
@@ -76,11 +81,6 @@ public class BridgeMBeanTest extends BridgeTestBase
    
    public void testStopStartPauseResume() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
-      
       ServerManagement.deployQueue("sourceQueue", 1);
       ServerManagement.deployQueue("targetQueue", 2);
       
@@ -272,11 +272,6 @@ public class BridgeMBeanTest extends BridgeTestBase
          
    public void testDeploy() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         return;
-      }
-      
       ServerManagement.deployQueue("sourceQueue", 1);
       ServerManagement.deployQueue("targetQueue", 2);
       

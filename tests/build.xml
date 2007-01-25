@@ -350,16 +350,19 @@
    <!-- ======================================================================================== -->
 
    <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-      <antcall target="crash-tests"/>                                                           
+      <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
       <!--
            default remoting configuration (socket)
       -->
       <antcall target="remote-tests"/>
+
+      <!--
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
       <antcall target="clustering-tests"/>
+      -->
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
@@ -415,6 +418,7 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/*LeakTest.class"/>
+               <exclude name="**/jms/bridge/**/*Test.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
@@ -465,6 +469,7 @@
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/*LeakTest.class"/>
+               <exclude name="**/jms/bridge/**/*Test.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
