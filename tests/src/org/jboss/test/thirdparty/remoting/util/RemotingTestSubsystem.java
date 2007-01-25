@@ -77,6 +77,10 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
          return null;
       }
 
+      // before putting invocation in history, clear the request and response payloads, for they
+      // are non-serializable for HTTP invocations, and they are useless for our tests anyway
+      invocation.setRequestPayload(null);
+      invocation.setReturnPayload(null);
       invocationHistory.put(invocation);
 
       if (parameter instanceof CallbackTrigger)

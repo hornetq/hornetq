@@ -118,6 +118,7 @@ public class FailoverCommandCenter
       finally
       {
          valve.open();
+
          if (failoverSuccessful)
          {
             broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_COMPLETED, this));

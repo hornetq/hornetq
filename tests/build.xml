@@ -350,13 +350,16 @@
    <!-- ======================================================================================== -->
 
    <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-      <antcall target="crash-tests"/>
+      <antcall target="crash-tests"/>                                                           
       <antcall target="invm-tests"/>
-      <antcall target="remote-tests"/>  <!-- default remoting configuration (socket) -->
-      <antcall target="clustering-tests"/>
+      <!--
+           default remoting configuration (socket)
+      -->
+      <antcall target="remote-tests"/>
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
+      <antcall target="clustering-tests"/>
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
@@ -610,12 +613,8 @@
 
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/*Test.class"/>
-               <exclude name="**/jms/bridge/**"/>
-
-<!--
+               <exclude name="**/jms/bridge/**"/> <!-- TODO do we really want that? -->
                <include name="**/thirdparty/**/*Test.class"/>
--->
-
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/server/**"/>
                <exclude name="**/jms/persistence/**"/>
@@ -627,8 +626,6 @@
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
-
-
             </fileset>
          </batchtest>
       </junit>
