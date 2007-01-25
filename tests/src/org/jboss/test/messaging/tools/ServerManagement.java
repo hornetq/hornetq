@@ -273,12 +273,6 @@ public class ServerManagement
       }
    }
 
-   //Need to do this after a poison otherwise this will think the server is still alive
-   public static synchronized void nullServer(int i)
-   {
-      servers[i] = null;
-   }
-
    /**
     * Kills the server and waits keep trying any dumb communication until the server is effectively
     * killed. We had to implement this method as kill will actually schedule a thread that will

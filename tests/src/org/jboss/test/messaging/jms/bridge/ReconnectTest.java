@@ -345,8 +345,6 @@ public class ReconnectTest extends BridgeTestBase
          
          ServerManagement.poisonTheServer(1, PoisonInterceptor.TYPE_2PC_COMMIT);
          
-         ServerManagement.nullServer(1);
-         
          log.info("Poisoned server");
          
                      
