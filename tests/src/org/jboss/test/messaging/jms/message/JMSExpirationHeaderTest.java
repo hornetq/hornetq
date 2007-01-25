@@ -88,6 +88,10 @@ public class JMSExpirationHeaderTest extends MessageTest
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 5000);
+      
+      //Delivery is asynch - need to give enough time to get to the consumer
+      Thread.sleep(2000);
+      
       Message result = queueConsumer.receive(10);
       assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
    }
@@ -96,7 +100,10 @@ public class JMSExpirationHeaderTest extends MessageTest
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
+      
+      // Delivery is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
+      
       assertNull(queueConsumer.receive(100));
    }
 
@@ -104,7 +111,10 @@ public class JMSExpirationHeaderTest extends MessageTest
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
+      
+      // Delivery is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
+      
       assertNull(queueConsumer.receiveNoWait());
    }
 
@@ -112,6 +122,8 @@ public class JMSExpirationHeaderTest extends MessageTest
    {
       Message m = queueProducerSession.createMessage();
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
+      
+      // Delivery is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
 
       // start the receiver thread
@@ -307,6 +319,7 @@ public class JMSExpirationHeaderTest extends MessageTest
       
       queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, 1000);
       
+      //Delivery is asynch - need to give enough time to get to the consumer
       Thread.sleep(2000);
       
       assertNull(queueConsumer.receive(100));
@@ -325,9 +338,6 @@ public class JMSExpirationHeaderTest extends MessageTest
             
       assertEquals(0, list.size());            
    }
-
-
-
 
 
    // Package protected ---------------------------------------------
