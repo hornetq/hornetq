@@ -23,9 +23,6 @@ ENV_TEST_SERIALIZATION=$TEST_SERIALIZATION
 ENV_TEST_CLUSTERED=$TEST_CLUSTERED
 ENV_TEST_REMOTING=$TEST_REMOTING
 
-#verbose output on spawned servers?
-TEST_SPAWN_VERBOSE=false
-
 if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
    . $reldir/.testrc
 fi

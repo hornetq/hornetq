@@ -21,6 +21,9 @@ TEST_DATABASE=hsqldb
 
 TEST_REMOTING=socket
 
+#verbose output on spawned servers?
+TEST_SPAWN_VERBOSE=false
+
 #
 # Each test can be run in clustered or non-clustered mode. However, setting CLUSTERED to "true"
 # doesn't guarantee that the test will be actually run in clustered mode, the test database must
