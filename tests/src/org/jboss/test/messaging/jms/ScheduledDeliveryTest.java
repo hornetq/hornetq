@@ -562,6 +562,11 @@ public class ScheduledDeliveryTest extends MessagingTestCase
       
       ServerManagement.undeployTopic("Topic");
 
+      // Some tests here are changing this attribute.. what would affect tests later
+      // Instead of restart the ServerPeer I'm just restoring the default
+      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(),
+         "DefaultRedeliveryDelay", "0");
+
       if (ic != null) ic.close();
    }
 
