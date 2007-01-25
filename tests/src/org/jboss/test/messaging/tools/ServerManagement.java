@@ -220,6 +220,7 @@ public class ServerManagement
       }
       catch(Exception e)
       {
+         log.warn("Exception on isStarted", e);
          return false;
       }
    }
@@ -646,6 +647,7 @@ public class ServerManagement
    {
       insureStarted(serverIndex);
       servers[serverIndex].getServer().poisonTheServer(type);
+      servers[serverIndex] = null;
    }
 
 
