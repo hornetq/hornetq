@@ -613,7 +613,6 @@
 
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/*Test.class"/>
-               <exclude name="**/jms/bridge/**"/> <!-- TODO do we really want that? -->
                <include name="**/thirdparty/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/server/**"/>
