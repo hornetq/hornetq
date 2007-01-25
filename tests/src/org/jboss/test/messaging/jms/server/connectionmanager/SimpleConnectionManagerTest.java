@@ -133,7 +133,7 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       
       //Simulate failure of connection
       
-      cm.handleClientFailure(sessId1);
+      cm.handleClientFailure(sessId1, true);
       
       //both connections should be shut
       
@@ -222,7 +222,7 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
 
       assertFalse(cm.containsRemotingSession("sessionid5"));
 
-      cm.handleClientFailure("sessionid4");
+      cm.handleClientFailure("sessionid4", true);
 
       assertNull(cm.unregisterConnection("jvm2", "sessionid4"));
       assertNull(cm.unregisterConnection("jvm2", "sessionid3"));

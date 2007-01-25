@@ -119,7 +119,7 @@ public class CallbackFailureTest extends MessagingTestCase
       // we have removed the exception listener so the server side resouces shouldn't be cleared up
 
       log.info("sleeping for 1 min ...");
-      Thread.sleep(10);
+      Thread.sleep(60000);
                  
       assertTrue(cm.containsRemotingSession(remotingSessionId));
       
@@ -136,16 +136,18 @@ public class CallbackFailureTest extends MessagingTestCase
       prod.send(sess.createMessage());
 
       log.info("sleeping for 45 secs ...");
-      Thread.sleep(10);
+      Thread.sleep(45000);
       
       assertFalse(cm.containsRemotingSession(remotingSessionId));
 
       // make sure the message is still in queue
 
+      conn = cf.createConnection();
+      conn.start();
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer cons = sess.createConsumer(queue);
       Message m = cons.receive(1000);
       assertNotNull(m);
-
 
       cons.close();
                

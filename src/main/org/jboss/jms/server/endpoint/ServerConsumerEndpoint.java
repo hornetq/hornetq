@@ -33,6 +33,7 @@ import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
+import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -250,8 +251,20 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          }
          catch (HandleCallbackException e)
          {
-            log.error(this + " failed to handle callback", e);
-            
+            // it's an oneway callback, so exception could only have happened on the server, while
+            // trying to send the callback. This is a good reason to smack the whole connection.
+            // I trust remoting to have already done its own cleanup via a CallbackErrorHandler,
+            // I need to do my own cleanup at ConnectionManager level.
+
+            log.debug(this + " failed to handle callback", e);
+
+            ServerConnectionEndpoint sce = sessionEndpoint.getConnectionEndpoint();
+            ConnectionManager cm = sce.getServerPeer().getConnectionManager();
+
+            cm.handleClientFailure(sce.getRemotingClientSessionID(), false);
+
+            // we're practically cut, from connection down
+
             return null;
          }
               

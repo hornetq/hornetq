@@ -57,4 +57,11 @@ public interface ConnectionManager extends MessagingComponent
     * @return List<ConnectionEndpoint>
     */
    List getActiveConnections();
+
+   /**
+    * @param clientToServer - true if the failure has been detected on a direct connection from
+    *        client to this server, false if the failure has been detected while trying to send a
+    *        callback from this server to the client.
+    */
+   void handleClientFailure(String remotingSessionID, boolean clientToServer);
 }

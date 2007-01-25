@@ -29,6 +29,7 @@
                <attribute name="serverSocketClass">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>
                <attribute name="NumberOfRetries">1</attribute>
                <attribute name="NumberOfCallRetries">1</attribute>
+               <attribute name="callbackErrorsAllowed">1</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
