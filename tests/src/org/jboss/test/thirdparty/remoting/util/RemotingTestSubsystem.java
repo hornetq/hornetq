@@ -13,7 +13,6 @@ import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import org.jboss.logging.Logger;
-import org.jboss.test.thirdparty.remoting.util.CallbackTrigger;
 
 import javax.management.MBeanServer;
 import java.io.Serializable;
@@ -39,6 +38,21 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
    private static final Logger log = Logger.getLogger(RemotingTestSubsystem.class);
 
    // Static ---------------------------------------------------------------------------------------
+
+   /**
+    * Very quick and dirty method. Don't try it at home. Needed it because some InvocationRequests
+    * (even if the class is declared Serializable) contain request and response payloads which are
+    * not, so I am having trouble sending them over wire back to the client.
+    */
+   private static InvocationRequest dirtyCopy(InvocationRequest source)
+   {
+      return new InvocationRequest(source.getSessionId(),
+                                   source.getSubsystem(),
+                                   source.getParameter(),
+                                   null,
+                                   null,
+                                   source.getLocator());
+   }
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -77,11 +91,7 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
          return null;
       }
 
-      // before putting invocation in history, clear the request and response payloads, for they
-      // are non-serializable for HTTP invocations, and they are useless for our tests anyway
-      invocation.setRequestPayload(null);
-      invocation.setReturnPayload(null);
-      invocationHistory.put(invocation);
+      invocationHistory.put(dirtyCopy(invocation));
 
       if (parameter instanceof CallbackTrigger)
       {
