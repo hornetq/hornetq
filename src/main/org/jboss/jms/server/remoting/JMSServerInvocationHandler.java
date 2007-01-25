@@ -163,7 +163,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public void removeListener(InvokerCallbackHandler callbackHandler)
    {
-      log.debug("removing callback handler: " + callbackHandler);
+      log.debug("removing callback handler " + callbackHandler);
 
       synchronized(callbackHandlers)
       {

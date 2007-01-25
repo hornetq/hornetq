@@ -220,7 +220,7 @@ public class JBossConnection implements
 
    // Public ---------------------------------------------------------------------------------------
 
-   public String getRemotingClientSessionId()
+   public String getRemotingClientSessionID()
    {
       ConnectionState state = (ConnectionState)((ClientConnectionDelegate)delegate).getState();
       

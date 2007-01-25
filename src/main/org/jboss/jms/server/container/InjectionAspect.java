@@ -40,17 +40,15 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
  */
 public class InjectionAspect
 {
-    // Constants -----------------------------------------------------
+    // Constants -----------------------------------------------------------------------------------
    
-    // Static --------------------------------------------------------
+    // Static --------------------------------------------------------------------------------------
 
-    // Attributes ----------------------------------------------------
+    // Attributes ----------------------------------------------------------------------------------
 
-    // Constructors --------------------------------------------------
+    // Constructors --------------------------------------------------------------------------------
 
-    // Public --------------------------------------------------------
-
-    // Interceptor implementation ------------------------------------
+    // Public --------------------------------------------------------------------------------------
 
     public Object handleCreateConnectionDelegate(Invocation invocation) throws Throwable
     {
@@ -80,33 +78,28 @@ public class InjectionAspect
           endpoint.setCallbackHandler(handler);
           
           // Then we inject the remoting session id of the client
-          String sessionId =
-             (String)mi.getMetaData(MetaDataConstants.JMS,
-                                    MetaDataConstants.REMOTING_SESSION_ID);
-          
+          String sessionId = (String)mi.getMetaData(MetaDataConstants.JMS,
+                                                    MetaDataConstants.REMOTING_SESSION_ID);
           if (sessionId == null)
           {
-             throw new IllegalStateException("Can't find session id");
+             throw new IllegalStateException("Can't find remoting session ID");
           }
           
-          // Then we inject the unique id of the client VM
-          String jmsClientVMID =
-             (String)mi.getMetaData(MetaDataConstants.JMS,
-                                    MetaDataConstants.JMS_CLIENT_VM_ID);
+          // Then we inject the unique ID of the client VM
+          String jmsClientVMID = (String)mi.getMetaData(MetaDataConstants.JMS,
+                                                        MetaDataConstants.JMS_CLIENT_VM_ID);
           
           if (jmsClientVMID == null)
           {
-             throw new IllegalStateException("Can't find jms client id");
+             throw new IllegalStateException("Can't find jms client ID");
           }
           
           endpoint.setRemotingInformation(jmsClientVMID, sessionId);       
           
           // Then we inject the version number from to be used
           
-          Byte ver =
-             (Byte)mi.getMetaData(MetaDataConstants.JMS,
-                                  MetaDataConstants.VERSION_NUMBER);
-          
+          Byte ver = (Byte)mi.getMetaData(MetaDataConstants.JMS,
+                                          MetaDataConstants.VERSION_NUMBER);
           if (ver == null)
           {
              throw new IllegalStateException("Can't find version");

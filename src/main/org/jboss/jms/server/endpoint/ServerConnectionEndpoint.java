@@ -91,8 +91,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private String username;
    private String password;
 
-   private String remotingClientSessionId;
-   private String jmsClientVMId;
+   private String remotingClientSessionID;
+   private String jmsClientVMID;
 
    // the server itself
    private ServerPeer serverPeer;
@@ -347,7 +347,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             temporaryDestinations.clear();
          }
    
-         cm.unregisterConnection(jmsClientVMId, remotingClientSessionId);
+         cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
    
          JMSDispatcher.instance.unregisterTarget(new Integer(id));
 
@@ -459,8 +459,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       return sm;
    }
-   
-   //IOC
+
+   /**
+    * IOC
+    */
    public void setCallbackHandler(ServerInvokerCallbackHandler handler)
    {
       callbackHandler = handler;
@@ -493,15 +495,16 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return callbackHandler;
    }
 
-   // IOC
-   public void setRemotingInformation(String jmsClientVMId, String remotingClientSessionId)
+   /**
+    * IOC
+    */
+   public void setRemotingInformation(String jmsClientVMID, String remotingClientSessionID)
    {
-      this.remotingClientSessionId = remotingClientSessionId;
-      
-      this.jmsClientVMId = jmsClientVMId;
+      this.remotingClientSessionID = remotingClientSessionID;
+      this.jmsClientVMID = jmsClientVMID;
       
       this.serverPeer.getConnectionManager().
-         registerConnection(jmsClientVMId, remotingClientSessionId, this);
+         registerConnection(jmsClientVMID, remotingClientSessionID, this);
    }
    
    public void setUsingVersion(byte version)
@@ -596,9 +599,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }
    
-   String getRemotingClientSessionId()
+   String getRemotingClientSessionID()
    {
-      return remotingClientSessionId;
+      return remotingClientSessionID;
    }
    
    void sendMessage(JBossMessage msg, Transaction tx) throws Exception

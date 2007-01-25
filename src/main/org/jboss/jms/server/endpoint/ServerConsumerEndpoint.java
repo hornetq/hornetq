@@ -250,7 +250,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          }
          catch (HandleCallbackException e)
          {
-            log.error("Failed to handle callback", e);
+            log.error(this + " failed to handle callback", e);
             
             return null;
          }

@@ -111,7 +111,7 @@ public class ClientCrashLargeLeaseTest extends MessagingTestCase
       
       ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
             
-      assertTrue(cm.containsSession(remotingSessionId));
+      assertTrue(cm.containsRemotingSession(remotingSessionId));
       
       // Now we should have a client connection from the remote server to the local server
       
@@ -124,7 +124,7 @@ public class ClientCrashLargeLeaseTest extends MessagingTestCase
       // See if we still have a connection with this id
       
       //Connection state shouldn't have been cleared up by now
-      assertTrue(cm.containsSession(remotingSessionId));            
+      assertTrue(cm.containsRemotingSession(remotingSessionId));
    }
    
    

@@ -91,7 +91,7 @@ public class CreateClientOnServerCommand implements Command
       //Leave the connection unclosed
       
       //Return the remoting client session id for the connection
-      return ((JBossConnection)conn).getRemotingClientSessionId();      
+      return ((JBossConnection)conn).getRemotingClientSessionID();
    }
 
 }

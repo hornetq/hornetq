@@ -120,8 +120,8 @@ public class ClientCrashTwoConnectionsTest extends MessagingTestCase
       log.info("server(1) = " + remotingSessionId[1]);
       log.info("we have = " + ((SimpleConnectionManager)cm).getClients().size() + " clients registered on SimpleconnectionManager");
       
-      assertFalse(cm.containsSession(remotingSessionId[0]));            
-      assertTrue(cm.containsSession(remotingSessionId[1]));          
+      assertFalse(cm.containsRemotingSession(remotingSessionId[0]));
+      assertTrue(cm.containsRemotingSession(remotingSessionId[1]));
       
       // Now we should have a client connection from the remote server to the local server
       remoteServer.kill();
@@ -133,8 +133,8 @@ public class ClientCrashTwoConnectionsTest extends MessagingTestCase
       // See if we still have a connection with this id
       
       //Connection state should have been cleared up by now
-      assertFalse(cm.containsSession(remotingSessionId[0]));            
-      assertFalse(cm.containsSession(remotingSessionId[1]));            
+      assertFalse(cm.containsRemotingSession(remotingSessionId[0]));
+      assertFalse(cm.containsRemotingSession(remotingSessionId[1]));
       
       log.info("Servers = " + ((SimpleConnectionManager)cm).getClients().size());
       

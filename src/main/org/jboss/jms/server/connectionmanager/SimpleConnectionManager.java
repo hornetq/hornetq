@@ -55,44 +55,47 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    // Static ---------------------------------------------------------------------------------------
 
+   private static boolean trace = log.isTraceEnabled();
+
    // Attributes -----------------------------------------------------------------------------------
 
+   // Map<jmsClientVMID<String> - Map<remotingClientSessionID<String> - ConnectionEndpoint>>
    protected Map jmsClients;
-   
-   protected Map sessions;
 
-   protected Set activeConnections; 
+   // Map<remotingClientSessionID<String> - jmsClientVMID<String>
+   protected Map remotingSessions;
+
+   // Set<ConnectionEndpoint>
+   protected Set activeConnectionEndpoints;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public SimpleConnectionManager()
    {
       jmsClients = new HashMap();
-      
-      sessions = new HashMap();
-
-      activeConnections = new HashSet();
+      remotingSessions = new HashMap();
+      activeConnectionEndpoints = new HashSet();
    }
 
-   // ConnectionManager ----------------------------------------------------------------------------
+   // ConnectionManager implementation -------------------------------------------------------------
 
-   public synchronized void registerConnection(String jmsClientVMId,
+   public synchronized void registerConnection(String jmsClientVMID,
                                                String remotingClientSessionID,
                                                ConnectionEndpoint endpoint)
    {    
-      Map endpoints = (Map)jmsClients.get(jmsClientVMId);
+      Map endpoints = (Map)jmsClients.get(jmsClientVMID);
       
       if (endpoints == null)
       {
          endpoints = new HashMap();
-         jmsClients.put(jmsClientVMId, endpoints);                  
+         jmsClients.put(jmsClientVMID, endpoints);
       }
       
       endpoints.put(remotingClientSessionID, endpoint);
       
-      sessions.put(remotingClientSessionID, jmsClientVMId);
+      remotingSessions.put(remotingClientSessionID, jmsClientVMID);
 
-      activeConnections.add(endpoint);
+      activeConnectionEndpoints.add(endpoint);
       
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
@@ -120,83 +123,27 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
             jmsClients.remove(jmsClientVMId);
          }
          
-         sessions.remove(remotingClientSessionID);
+         remotingSessions.remove(remotingClientSessionID);
          
          return e;
       }
       return null;
    }
    
-   public synchronized void handleClientFailure(String remotingSessionID)
-   {
-      String jmsClientId = (String)sessions.get(remotingSessionID);
-      
-      if (jmsClientId != null)
-      {
-         log.warn("A problem has been detected with the connection to remote client " +
-                  remotingSessionID + ". It is possible the client has exited without closing " +
-                  "its connection(s) or there is a network problem. All connection resources " +
-                  "corresponding to that client process will now be removed.");
-
-         // Remoting only provides one pinger per invoker, not per connection therefore when the
-         // pinger dies we must close ALL the connections corresponding to that jms client id
-         
-         Map endpoints = (Map)jmsClients.get(jmsClientId);                  
-         
-         if (endpoints != null)
-         {
-            List sces = new ArrayList();
-            
-            Iterator iter = endpoints.entrySet().iterator();
-            
-            while (iter.hasNext())
-            {
-               Map.Entry entry = (Map.Entry)iter.next();
-               
-               ConnectionEndpoint sce = (ConnectionEndpoint)entry.getValue();
-               
-               sces.add(sce);                             
-            }
-            
-            //Now close the end points - this will result in a callback into unregisterConnection
-            //to remove the data from the jmsClients and sessions maps.
-            //Note we do this outside the loop to prevent ConcurrentModificationException
-            
-            iter = sces.iterator();
-            
-            while (iter.hasNext())
-            {
-               ConnectionEndpoint sce = (ConnectionEndpoint)iter.next();
-               
-               try
-               {
-                  sce.closing();
-                  sce.close();
-                  log.debug("cleared up state for connection " + sce);
-               }
-               catch (JMSException e)
-               {
-                  log.error("Failed to close connection", e);
-               }
-            }
-         }
-      } 
-   }
-   
-   /*
-    * Used in testing only
-    */
-   public synchronized boolean containsSession(String remotingClientSessionID)
-   {
-      return sessions.containsKey(remotingClientSessionID);
-   }
-
    public synchronized List getActiveConnections()
    {
       // I will make a copy to avoid ConcurrentModification
       ArrayList list = new ArrayList();
-      list.addAll(activeConnections);
+      list.addAll(activeConnectionEndpoints);
       return list;
+   }
+
+   /*
+    * Used in testing only
+    */
+   public synchronized boolean containsRemotingSession(String remotingClientSessionID)
+   {
+      return remotingSessions.containsKey(remotingClientSessionID);
    }
 
    /*
@@ -207,24 +154,26 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       return Collections.unmodifiableMap(jmsClients);
    }
 
-   // ConnectionListener ---------------------------------------------------------------------------
+   // ConnectionListener implementation ------------------------------------------------------------
 
    /**
     * Be aware that ConnectionNotifier uses to call this method with null Throwables.
-    * @param t - expect it to be null!
+    *
+    * @param t - plan for it to be null!
     */
    public void handleConnectionException(Throwable t, Client client)
    {  
       if (t instanceof ClientDisconnectedException)
       {
          // This is OK
-         if (log.isTraceEnabled()) { log.trace(this + " Notified that client " + client + " has disconnected"); }
+         if (trace) { log.trace(this + " notified that client " + client + " has disconnected"); }
          return;
       }
       else
       {
-         if (log.isTraceEnabled()) { log.trace(this + " Failure on client " + client, t); }
+         if (trace) { log.trace(this + " detected failure on client " + client, t); }
       }
+
       String remotingSessionID = client.getSessionId();
       
       if (remotingSessionID != null)
@@ -246,6 +195,65 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    }
 
    // Public ---------------------------------------------------------------------------------------
+
+   /**
+    * TODO - this method shouldn't be part of the public interace
+    */
+   public synchronized void handleClientFailure(String remotingSessionID)
+   {
+      String jmsClientID = (String)remotingSessions.get(remotingSessionID);
+
+      if (jmsClientID != null)
+      {
+         log.warn("A problem has been detected with the connection to remote client " +
+                  remotingSessionID + ". It is possible the client has exited without closing " +
+                  "its connection(s) or there is a network problem. All connection resources " +
+                  "corresponding to that client process will now be removed.");
+
+         // Remoting only provides one pinger per invoker, not per connection therefore when the
+         // pinger dies we must close ALL the connections corresponding to that jms client id
+
+         Map endpoints = (Map)jmsClients.get(jmsClientID);
+
+         if (endpoints != null)
+         {
+            List sces = new ArrayList();
+
+            Iterator iter = endpoints.entrySet().iterator();
+
+            while (iter.hasNext())
+            {
+               Map.Entry entry = (Map.Entry)iter.next();
+
+               ConnectionEndpoint sce = (ConnectionEndpoint)entry.getValue();
+
+               sces.add(sce);
+            }
+
+            // Now close the end points - this will result in a callback into unregisterConnection
+            // to remove the data from the jmsClients and sessions maps.
+            // Note we do this outside the loop to prevent ConcurrentModificationException
+
+            iter = sces.iterator();
+
+            while (iter.hasNext())
+            {
+               ConnectionEndpoint sce = (ConnectionEndpoint)iter.next();
+
+               try
+               {
+                  sce.closing();
+                  sce.close();
+                  log.debug("cleared up state for connection " + sce);
+               }
+               catch (JMSException e)
+               {
+                  log.error("Failed to close connection", e);
+               }
+            }
+         }
+      }
+   }
 
    public String toString()
    {

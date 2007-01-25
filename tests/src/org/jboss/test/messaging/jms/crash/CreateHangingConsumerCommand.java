@@ -33,9 +33,6 @@ import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.tools.jmx.rmi.Command;
 
 /**
- * 
- * A CreateHangingConsumerCommand.
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -46,15 +43,11 @@ public class CreateHangingConsumerCommand implements Command
    private static final long serialVersionUID = -997724797145152821L;
    
    private ConnectionFactory cf;
-   
    private Queue queue;
-   
-   private static MessageConsumer consumer;
-   
+
    public CreateHangingConsumerCommand(ConnectionFactory cf, Queue queue)
    {
       this.cf = cf;
-      
       this.queue = queue;
    }
    
@@ -66,21 +59,20 @@ public class CreateHangingConsumerCommand implements Command
        
       conn.start();
       
-      consumer = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue);
+
+      cons.setMessageListener(new Listener());
       
-      consumer.setMessageListener(new Listener());
+      // leave the connection unclosed
       
-      //Leave the connection unclosed
-      
-      //Return the remoting client session id for the connection
-      return ((JBossConnection)conn).getRemotingClientSessionId();      
+      // return the remoting client session id for the connection
+      return ((JBossConnection)conn).getRemotingClientSessionID();      
    }
    
    class Listener implements MessageListener
    {
       public void onMessage(Message m)
       {
-         
       }
    }
 

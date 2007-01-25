@@ -85,8 +85,8 @@ public class CreateTwoClientOnServerCommand implements Command
       conn2.start();
 
       String arrays[] = new String[2];
-      arrays[0] = ((JBossConnection)conn1).getRemotingClientSessionId();
-      arrays[1] = ((JBossConnection)conn2).getRemotingClientSessionId();
+      arrays[0] = ((JBossConnection)conn1).getRemotingClientSessionID();
+      arrays[1] = ((JBossConnection)conn2).getRemotingClientSessionID();
       
       conn1.close();
       

@@ -33,9 +33,6 @@ import org.jboss.test.messaging.tools.jmx.rmi.Server;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 
 /**
- * 
- * A CallbackFailureTest.
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -43,39 +40,38 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
  */
 public class CallbackFailureTest extends MessagingTestCase
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    protected Server localServer;
-   
    protected Server remoteServer;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public CallbackFailureTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void setUp() throws Exception
    {
       super.setUp();
       
-      //Start the local server
+      // Start the local server
       localServer = new LocalTestServer();
       
-      //Start all the services locally
+      // Start all the services locally
       localServer.start("all", true);
             
       localServer.deployQueue("Queue", null, false);
            
-      //Connect to the remote server, but don't start a servicecontainer on it
-      //We are only using the remote server to open a client connection to the local server
+      // Connect to the remote server, but don't start a servicecontainer on it. We are only using
+      // the remote server to open a client connection to the local server.
       ServerManagement.create();
           
       remoteServer = ServerManagement.getServer();
@@ -87,21 +83,26 @@ public class CallbackFailureTest extends MessagingTestCase
    }
         
    /*
-    * Test that when a client callback fails, server side resources for connections are cleaned-up
+    * Test that when a client callback fails, server side resources for connections are cleaned-up.
     */
    public void testCallbackFailure() throws Exception
    {
-      if (!ServerManagement.isRemote()) return;
+      if (!ServerManagement.isRemote())
+      {
+         fail("this test should be run in a remote configuration");
+      }
+
+      // we need to disable exception listener otherwise it will clear up the connection itself
       
-      //We need to disable exception listener otherwise it will clear up the connection itself
-      
-      ObjectName connectorName = ServiceContainer.REMOTING_OBJECT_NAME;
+      ObjectName remoteConnectorName = ServiceContainer.REMOTING_OBJECT_NAME;
       
       ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
       
-      localServer.getServerPeer().getServer().invoke(connectorName, "removeConnectionListener",
-                                                     new Object[] {cm},
-                                                     new String[] {"org.jboss.remoting.ConnectionListener"}); 
+      localServer.getServerPeer().getServer().
+         invoke(remoteConnectorName,
+                "removeConnectionListener",
+                new Object[] {cm},
+                new String[] {"org.jboss.remoting.ConnectionListener"});
        
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
       
@@ -115,46 +116,47 @@ public class CallbackFailureTest extends MessagingTestCase
       
       remoteServer.kill();
         
-      //we have removed the exception listener so the server side resouces shouldn't be cleared up
-      
-      Thread.sleep(20000);
+      // we have removed the exception listener so the server side resouces shouldn't be cleared up
+
+      log.info("sleeping for 1 min ...");
+      Thread.sleep(10);
                  
-      assertTrue(cm.containsSession(remotingSessionId));
+      assertTrue(cm.containsRemotingSession(remotingSessionId));
       
-      //Now we send a message which should prompt delivery to the dead consumer causing
-      //an exception which should cause connection cleanup
+      // Now we send a message which should prompt delivery to the dead consumer causing
+      // an exception which should cause connection cleanup
                   
       Connection conn = cf.createConnection();
       
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
         
       MessageProducer prod = sess.createProducer(queue);
+
+      // sending just one message should be enough to trigger the failure and client smacking
+      prod.send(sess.createMessage());
+
+      log.info("sleeping for 45 secs ...");
+      Thread.sleep(10);
       
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      prod.send(sess.createMessage());
-      
-      Thread.sleep(45000);
-      
-      assertFalse(cm.containsSession(remotingSessionId));   
+      assertFalse(cm.containsRemotingSession(remotingSessionId));
+
+      // make sure the message is still in queue
+
+      MessageConsumer cons = sess.createConsumer(queue);
+      Message m = cons.receive(1000);
+      assertNotNull(m);
+
+
+      cons.close();
                
    }
    
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-  
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

@@ -737,38 +737,37 @@ public abstract class ChannelSupport implements Channel
       {
          //Have reached maximum size - will drop message
          
-         log.warn("Queue " + this + " has reached maximum size, ref " + ref + " will be dropped");
+         log.warn(this + " has reached maximum size, " + ref + " will be dropped");
          
          return null;
       }
    
-      //Each channel has its own copy of the reference
+      // Each channel has its own copy of the reference
       ref = ref.copy();
 
       try
       {
          if (ref.isReliable() && !recoverable)
          {
-            //Reliable reference in a non recoverable channel-
-            //We handle it as a non reliable reference
-            //It's important that we set it to non reliable otherwise if the channel
-            //pages and is non recoverable a reliable ref will be paged in the database as reliable
-            //which makes them hard to remove on server restart.
-            //If we always page them as unreliable then it is easy to remove them.
+            // Reliable reference in a non recoverable channel. We handle it as a non reliable
+            // reference. It's important that we set it to non reliable otherwise if the channel
+            // pages and is non recoverable a reliable ref will be paged in the database as reliable
+            // which makes them hard to remove on server restart. If we always page them as
+            // unreliable then it is easy to remove them.
             ref.setReliable(false);               
          }
          
          if (tx == null)
          {
-            // Don't even attempt synchronous delivery for a reliable message
-            // when we have an non-recoverable state that doesn't accept reliable messages. If
-            // we do, we may get into the situation where we need to reliably store an active
-            // delivery of a reliable message, which in these conditions cannot be done.
+            // Don't even attempt synchronous delivery for a reliable message when we have an
+            // non-recoverable state that doesn't accept reliable messages. If we do, we may get
+            // into the situation where we need to reliably store an active delivery of a reliable
+            // message, which in these conditions cannot be done.
 
             if (ref.isReliable() && !acceptReliableMessages)
             {
-               log.error("Cannot handle reliable message " + ref
-                        + " because the channel has a non-recoverable state!");
+               log.error("Cannot handle reliable message " + ref +
+                  " because the channel has a non-recoverable state!");
                return null;
             }
         
@@ -777,12 +776,12 @@ public abstract class ChannelSupport implements Channel
                // Reliable message in a recoverable state - also add to db
                if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
 
-               //TODO - this db access could safely be done outside the event loop
+               // TODO - this db access could safely be done outside the event loop
                pm.addReference(channelID, ref, null);        
             }
             
-            //If the ref has a scheduled delivery time then we don't add to the in memory queue
-            //instead we create a timeout, so when that time comes delivery will attempted directly
+            // If the ref has a scheduled delivery time then we don't add to the in memory queue
+            // instead we create a timeout, so when that time comes delivery will attempted directly
             
             if (!checkAndSchedule(ref))
             {               
@@ -791,8 +790,8 @@ public abstract class ChannelSupport implements Channel
                   addReferenceInMemory(ref);
                }
                
-               // We only do delivery if there are receivers that haven't said they don't want
-               // any more references.
+               // We only do delivery if there are receivers that haven't said they don't want any
+               // more references.
                if (receiversReady)
                {
                   // Prompt delivery

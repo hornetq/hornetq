@@ -27,6 +27,9 @@ import java.util.List;
 
 
 /**
+ * An interface that allows management of ConnectionEnpoints and their association with remoting
+ * clients.
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -42,16 +45,16 @@ public interface ConnectionManager extends MessagingComponent
    /**
     * @return null if there is no such connection.
     */
-   ConnectionEndpoint unregisterConnection(String jmsClientVMId, String remotingClientSessionID);
+   ConnectionEndpoint unregisterConnection(String jmsClientVMID, String remotingClientSessionID);
    
-   void handleClientFailure(String remotingSessionID);
-   
-   boolean containsSession(String remotingClientSessionID);
+   boolean containsRemotingSession(String remotingClientSessionID);
 
    /**
-    * Returns a list of active connections currently maintained by an instance of this manager.
-    * The implementation should make a copy of the list to avoid ConcurrentModificationException.
-    * The list could be empty, but never null.
+    * Returns a list of active connection endpoints currently maintained by an instance of this
+    * manager. The implementation should make a copy of the list to avoid
+    * ConcurrentModificationException. The list could be empty, but never null.
+    *
+    * @return List<ConnectionEndpoint>
     */
    List getActiveConnections();
 }

@@ -113,7 +113,7 @@ public class ClientCrashZeroLeaseTest extends MessagingTestCase
       
       ConnectionManager cm = localServer.getServerPeer().getConnectionManager();
             
-      assertTrue(cm.containsSession(remotingSessionId));
+      assertTrue(cm.containsRemotingSession(remotingSessionId));
       
       // Now we should have a client connection from the remote server to the local server
       
@@ -124,7 +124,7 @@ public class ClientCrashZeroLeaseTest extends MessagingTestCase
       Thread.sleep(15000);
            
       // See if we still have a connection with this id
-      assertTrue(cm.containsSession(remotingSessionId));            
+      assertTrue(cm.containsRemotingSession(remotingSessionId));
    }
    
    

@@ -201,12 +201,12 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       cm.registerConnection("jvm3", "sessionid5", e5);
       cm.registerConnection("jvm3", "sessionid6", e6);
 
-      assertTrue(cm.containsSession("sessionid1"));
-      assertTrue(cm.containsSession("sessionid2"));
-      assertTrue(cm.containsSession("sessionid3"));
-      assertTrue(cm.containsSession("sessionid4"));
-      assertTrue(cm.containsSession("sessionid5"));
-      assertTrue(cm.containsSession("sessionid6"));
+      assertTrue(cm.containsRemotingSession("sessionid1"));
+      assertTrue(cm.containsRemotingSession("sessionid2"));
+      assertTrue(cm.containsRemotingSession("sessionid3"));
+      assertTrue(cm.containsRemotingSession("sessionid4"));
+      assertTrue(cm.containsRemotingSession("sessionid5"));
+      assertTrue(cm.containsRemotingSession("sessionid6"));
 
       ConnectionEndpoint r1 = cm.unregisterConnection("jvm3", "sessionid6");
       assertEquals(e6, r1);
@@ -214,21 +214,21 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
 
       assertNull(cm.unregisterConnection("blah", "blah"));
 
-      assertFalse(cm.containsSession("sessionid6"));
+      assertFalse(cm.containsRemotingSession("sessionid6"));
 
       ConnectionEndpoint r2 = cm.unregisterConnection("jvm3", "sessionid5");
       assertEquals(e5, r2);
       assertFalse(e5.isClosed());
 
-      assertFalse(cm.containsSession("sessionid5"));
+      assertFalse(cm.containsRemotingSession("sessionid5"));
 
       cm.handleClientFailure("sessionid4");
 
       assertNull(cm.unregisterConnection("jvm2", "sessionid4"));
       assertNull(cm.unregisterConnection("jvm2", "sessionid3"));
 
-      assertFalse(cm.containsSession("sessionid4"));
-      assertFalse(cm.containsSession("sessionid3"));
+      assertFalse(cm.containsRemotingSession("sessionid4"));
+      assertFalse(cm.containsRemotingSession("sessionid3"));
 
       assertTrue(e3.isClosed());
       assertTrue(e4.isClosed());
@@ -241,8 +241,8 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       assertEquals(e2, r4);
       assertFalse(e2.isClosed());
 
-      assertFalse(cm.containsSession("sessionid2"));
-      assertFalse(cm.containsSession("sessionid1"));
+      assertFalse(cm.containsRemotingSession("sessionid2"));
+      assertFalse(cm.containsRemotingSession("sessionid1"));
 
    }
 

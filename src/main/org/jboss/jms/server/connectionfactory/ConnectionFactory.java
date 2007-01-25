@@ -109,10 +109,14 @@ public class ConnectionFactory extends ServiceMBeanSupport
          
          if (refCount == 1 && enablePing)
          {
+            // TODO Something is not quite right here, we can detect failure even if pinging is not
+            // enabled, for example if we try to send a callback to the client and sending the
+            // calback fails
+
             // install the connection listener that listens for failed connections            
             server.invoke(connectorObjectName, "addConnectionListener",
                   new Object[] {connectionManager},
-                  new String[] {"org.jboss.remoting.ConnectionListener"});                     
+                  new String[] {"org.jboss.remoting.ConnectionListener"});
          }
          
          // We use the MBean service name to uniquely identify the connection factory

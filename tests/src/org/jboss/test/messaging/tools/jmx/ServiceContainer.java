@@ -1224,7 +1224,8 @@ public class ServiceContainer
                       "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
                       "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
                       "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
-                      "NumberOfRetries=1&NumberOfCallRetries=1";
+                      "NumberOfRetries=1&" +
+                      "NumberOfCallRetries=1;"
 
       // specific parameters per transport
 
