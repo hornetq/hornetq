@@ -485,7 +485,7 @@ public class SessionTest extends MessagingTestCase
 
       // Do NOT ACK
 
-      s.close(); // this shouldn cancel the delivery
+      s.close(); // this should cancel the delivery
 
       // get the message again
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);

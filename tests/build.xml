@@ -610,7 +610,12 @@
 
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/*Test.class"/>
+               <exclude name="**/jms/bridge/**"/>
+
+<!--
                <include name="**/thirdparty/**/*Test.class"/>
+-->
+
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/server/**"/>
                <exclude name="**/jms/persistence/**"/>
@@ -622,6 +627,8 @@
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
+
+
             </fileset>
          </batchtest>
       </junit>

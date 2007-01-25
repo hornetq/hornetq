@@ -73,6 +73,8 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       
       ServerManagement.deployQueue("Queue");
       queue = (Queue)initialContext.lookup("/queue/Queue");
+      
+      drainDestination(cf, queue);
           
    }
 

@@ -386,6 +386,10 @@ public class DurableSubscriberTest extends MessagingTestCase
 
       prod.send(s.createTextMessage("one"));
       prod.send(s.createTextMessage("two"));
+      
+      TextMessage tm = (TextMessage)ds.receive();
+      assertEquals("one", tm.getText());
+      conn.close();
 
       ServerManagement.undeployTopic("TopicToBeRedeployed");
       log.debug("topic undeployed");
@@ -399,10 +403,6 @@ public class DurableSubscriberTest extends MessagingTestCase
       {
          // OK
       }
-
-      TextMessage tm = (TextMessage)ds.receive();
-      assertEquals("one", tm.getText());
-      conn.close();
 
       conn = cf.createConnection();
       conn.setClientID("brookeburke");

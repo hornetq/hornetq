@@ -127,7 +127,7 @@ public class JMSRemotingConnection
          // use our own direct thread pool that basically does nothing
          metadata.put(ServerInvoker.ONEWAY_THREAD_POOL_CLASS_KEY,
                       "org.jboss.jms.server.remoting.DirectThreadPool");
-
+         
          String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
          if (bindAddress != null)
          {
