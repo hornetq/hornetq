@@ -433,13 +433,24 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          sb.append("Topic");
       }
       sb.append('[');
-      if (destination.getName().equals(nameFromJNDI))
+      if (destination == null)
       {
-         sb.append(destination.getJndiName());
+         sb.append("(NULL Destination)");
+      }
+      else if (destination.getName() == null)
+      {
+         sb.append("(destination.getName() == NULL)");
       }
       else
       {
-         sb.append(destination.getJndiName()).append(", name=").append(destination.getName());
+         if (destination.getName().equals(nameFromJNDI))
+         {
+            sb.append(destination.getJndiName());
+         }
+         else
+         {
+            sb.append(destination.getJndiName()).append(", name=").append(destination.getName());
+         }
       }
       sb.append(']');
       return sb.toString();
