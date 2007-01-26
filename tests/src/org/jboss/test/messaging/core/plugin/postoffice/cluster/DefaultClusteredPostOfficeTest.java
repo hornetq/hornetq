@@ -156,19 +156,27 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          office1 = createClusteredPostOffice(1, "testgroup");
          
+         log.info("Created office1");
+         
          //Add a couple of bindings
          
          LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
          
+         log.info("Added binding1");
+         
          LocalClusteredQueue queue2 = new LocalClusteredQueue(office1, 1, "sub2", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
          Binding binding2 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
          
+         log.info("Added binding2");
+         
          //Start another office - make sure it picks up the bindings from the first node
          
          office2 = createClusteredPostOffice(2, "testgroup");
+         
+         log.info("Created office 2");
          
          Collection bindings = office2.listAllBindingsForCondition(new SimpleCondition("topic1"));
          assertNotNull(bindings);

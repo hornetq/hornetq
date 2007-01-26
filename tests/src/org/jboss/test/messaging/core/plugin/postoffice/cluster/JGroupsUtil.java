@@ -102,7 +102,7 @@ public class JGroupsUtil
 //      }
      
       return "UDP(mcast_recv_buf_size=500000;down_thread=false;ip_mcast=true;mcast_send_buf_size=32000;"+
-      "mcast_port=45567;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
+      "mcast_port=45568;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
       "mcast_addr=228.8.8.8;use_outgoing_packet_handler=true;loopback=true;ucast_send_buf_size=32000;ip_ttl=32;"+
       "bind_addr=127.0.0.1):"+
       "AUTOCONF(down_thread=false;up_thread=false):"+
