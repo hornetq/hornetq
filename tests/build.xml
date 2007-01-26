@@ -356,13 +356,10 @@
            default remoting configuration (socket)
       -->
       <antcall target="remote-tests"/>
-
-      <!--
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
       <antcall target="clustering-tests"/>
-      -->
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
