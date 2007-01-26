@@ -296,6 +296,10 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       prod.send(m7, DeliveryMode.NON_PERSISTENT, 7, 0);
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 8, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 9, 0);
+      
+      //Let them all get there
+      
+      Thread.sleep(2000);
 
 
       {
@@ -451,6 +455,10 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
          assertEquals("a", t.getText());
          assertEquals(7, t.getJMSPriority());
       }
+      
+      //Give the message enough time to reach the consumer
+      
+      Thread.sleep(2000);
       
       {
          TextMessage t = (TextMessage)cons.receiveNoWait();
