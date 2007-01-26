@@ -39,21 +39,44 @@ public class JGroupsUtil
    
    public static String getDataStackProperties()
    {
-      String host = System.getProperty("test.bind.address");
-      if (host == null)
-      {
-         host = "localhost";
-      }
+//      String host = System.getProperty("test.bind.address");
+//      if (host == null)
+//      {
+//         host = "localhost";
+//      }
 
-      return
-      "UDP(mcast_recv_buf_size=500000;down_thread=false;ip_mcast=true;mcast_send_buf_size=32000;"+
-          "mcast_port=45566;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
-          "mcast_addr=228.8.8.8;use_outgoing_packet_handler=true;ucast_send_buf_size=32000;ip_ttl=32;"+
-          "bind_addr=127.0.0.1;loopback=true):"+
+      /*
+      
+      <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+         mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+         mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/>
+          <AUTOCONF down_thread="false" up_thread="false"/>
+          <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
+          <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
+          <FD_SOCK down_thread="false" up_thread="false"/>
+          <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>            
+          <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
+          <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+                       retransmit_timeout="100,200,600,1200,2400,4800"/>
+          <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
+          <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
+          <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
+          <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
+          <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
+       </config>
+       
+       */
+      
+      
+      return "UDP(mcast_recv_buf_size=500000;down_thread=false;ip_mcast=true;mcast_send_buf_size=32000;"+
+           "mcast_port=45567;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
+         "mcast_addr=228.8.8.8;use_outgoing_packet_handler=true;loopback=true;ucast_send_buf_size=32000;ip_ttl=32;"+
+         "bind_addr=127.0.0.1):"+
       "AUTOCONF(down_thread=false;up_thread=false):"+
       "PING(timeout=2000;down_thread=false;num_initial_members=3;up_thread=false):"+
       "MERGE2(max_interval=10000;down_thread=false;min_interval=5000;up_thread=false):"+
-      "FD(timeout=2000;max_tries=3;down_thread=false;up_thread=false;shun=true):"+
+      "FD_SOCK(down_thread=false;up_thread=false):"+
+      "FD(timeout=20000;max_tries=3;down_thread=false;up_thread=false;shun=true):"+
       "VERIFY_SUSPECT(timeout=1500;down_thread=false;up_thread=false):"+
       "pbcast.NAKACK(max_xmit_size=8192;down_thread=false;use_mcast_xmit=true;gc_lag=50;up_thread=false;"+
                     "retransmit_timeout=100,200,600,1200,2400,4800):"+
@@ -72,29 +95,30 @@ public class JGroupsUtil
     */
    public static String getControlStackProperties()
    {
-      String host = System.getProperty("test.bind.address");
-      if (host == null)
-      {
-         host = "localhost";
-      }
-
-      return
-      "UDP(mcast_recv_buf_size=500000;down_thread=false;ip_mcast=true;mcast_send_buf_size=32000;"+
-      "mcast_port=45568;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
-      "mcast_addr=228.8.8.8;use_outgoing_packet_handler=true;loopback=true;ucast_send_buf_size=32000;ip_ttl=32;bind_addr=127.0.0.1):"+
-     "AUTOCONF(down_thread=false;up_thread=false):"+
-     "PING(timeout=2000;down_thread=false;num_initial_members=3;up_thread=false):"+
-     "MERGE2(max_interval=10000;down_thread=false;min_interval=5000;up_thread=false):"+
-     "FD(timeout=2000;max_tries=3;down_thread=false;up_thread=false;shun=true):"+
-     "VERIFY_SUSPECT(timeout=1500;down_thread=false;up_thread=false):"+
-     "pbcast.NAKACK(max_xmit_size=8192;down_thread=false;use_mcast_xmit=true;gc_lag=50;up_thread=false;"+
-                   "retransmit_timeout=100,200,600,1200,2400,4800):"+
-     "UNICAST(timeout=1200,2400,3600;down_thread=false;up_thread=false):"+
-     "pbcast.STABLE(stability_delay=1000;desired_avg_gossip=20000;down_thread=false;max_bytes=0;up_thread=false):"+
-     "FRAG(frag_size=8192;down_thread=false;up_thread=false):"+
-     "VIEW_SYNC(avg_send_interval=60000;down_thread=false;up_thread=false):"+
-     "pbcast.GMS(print_local_addr=true;join_timeout=3000;down_thread=false;join_retry_timeout=2000;up_thread=false;shun=true):"+
-     "pbcast.STATE_TRANSFER(down_thread=false;up_thread=false)";   
+//      String host = System.getProperty("test.bind.address");
+//      if (host == null)
+//      {
+//         host = "localhost";
+//      }
+     
+      return "UDP(mcast_recv_buf_size=500000;down_thread=false;ip_mcast=true;mcast_send_buf_size=32000;"+
+      "mcast_port=45567;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
+      "mcast_addr=228.8.8.8;use_outgoing_packet_handler=true;loopback=true;ucast_send_buf_size=32000;ip_ttl=32;"+
+      "bind_addr=127.0.0.1):"+
+      "AUTOCONF(down_thread=false;up_thread=false):"+
+      "PING(timeout=2000;down_thread=false;num_initial_members=3;up_thread=false):"+
+      "MERGE2(max_interval=10000;down_thread=false;min_interval=5000;up_thread=false):"+
+      "FD_SOCK(down_thread=false;up_thread=false):"+
+      "FD(timeout=20000;max_tries=3;down_thread=false;up_thread=false;shun=true):"+
+      "VERIFY_SUSPECT(timeout=1500;down_thread=false;up_thread=false):"+
+      "pbcast.NAKACK(max_xmit_size=8192;down_thread=false;use_mcast_xmit=true;gc_lag=50;up_thread=false;"+
+      "retransmit_timeout=100,200,600,1200,2400,4800):"+
+      "UNICAST(timeout=1200,2400,3600;down_thread=false;up_thread=false):"+
+      "pbcast.STABLE(stability_delay=1000;desired_avg_gossip=20000;down_thread=false;max_bytes=0;up_thread=false):"+
+      "FRAG(frag_size=8192;down_thread=false;up_thread=false):"+
+      "VIEW_SYNC(avg_send_interval=60000;down_thread=false;up_thread=false):"+
+      "pbcast.GMS(print_local_addr=true;join_timeout=3000;down_thread=false;join_retry_timeout=2000;up_thread=false;shun=true):"+
+      "pbcast.STATE_TRANSFER(down_thread=false;up_thread=false)";
    }
 
    // Attributes ----------------------------------------------------
