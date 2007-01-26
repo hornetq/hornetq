@@ -38,8 +38,12 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.MessagingXAResource;
+import org.jboss.jms.tx.ResourceManager;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
@@ -140,6 +144,131 @@ public class XATest extends MessagingTestCase
 
    // Public --------------------------------------------------------
    
+   //See http://jira.jboss.com/jira/browse/JBMESSAGING-638
+   public void testResourceManagerMemoryLeakOnCommit() throws Exception
+   {
+
+      XAConnection xaConn = null;
+      
+      try
+      {
+         xaConn = cf.createXAConnection();
+         
+         JBossConnection jbConn = (JBossConnection)xaConn;
+         
+         ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
+         
+         ConnectionState state = (ConnectionState)del.getState();
+         
+         ResourceManager rm = state.getResourceManager();
+         
+         XASession xaSession = xaConn.createXASession();
+         
+         xaConn.start();
+         
+         XAResource res = xaSession.getXAResource();
+         
+         XAResource dummy = new DummyXAResource();
+         
+         for (int i = 0; i < 100; i++)
+         {
+            
+            tm.begin();
+                     
+            Transaction tx = tm.getTransaction();
+            
+            tx.enlistResource(res);
+            
+            tx.enlistResource(dummy);
+            
+            assertEquals(1, rm.size());
+            
+            tx.delistResource(res, XAResource.TMSUCCESS);
+            
+            tx.delistResource(dummy, XAResource.TMSUCCESS);
+            
+            tm.commit();
+         }                  
+         
+         assertEquals(1, rm.size());
+         
+         xaConn.close();
+         
+         xaConn = null;
+         
+         assertEquals(0, rm.size());
+
+      }
+      finally
+      {
+         if (xaConn != null)
+         {
+            xaConn.close();
+         }
+      }
+   }
+   
+   //See http://jira.jboss.com/jira/browse/JBMESSAGING-638
+   public void testResourceManagerMemoryLeakOnRollback() throws Exception
+   { 
+      XAConnection xaConn = null;
+      
+      try
+      {
+         xaConn = cf.createXAConnection();
+         
+         JBossConnection jbConn = (JBossConnection)xaConn;
+         
+         ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
+         
+         ConnectionState state = (ConnectionState)del.getState();
+         
+         ResourceManager rm = state.getResourceManager();
+         
+         XASession xaSession = xaConn.createXASession();
+         
+         xaConn.start();
+         
+         XAResource res = xaSession.getXAResource();
+         
+         XAResource dummy = new DummyXAResource();
+         
+         for (int i = 0; i < 100; i++)
+         {            
+            tm.begin();
+                     
+            Transaction tx = tm.getTransaction();
+            
+            tx.enlistResource(res);
+            
+            tx.enlistResource(dummy);
+            
+            assertEquals(1, rm.size());
+            
+            tx.delistResource(res, XAResource.TMSUCCESS);
+            
+            tx.delistResource(dummy, XAResource.TMSUCCESS);
+            
+            tm.rollback();
+         }                  
+         
+         assertEquals(1, rm.size());
+         
+         xaConn.close();
+         
+         xaConn = null;
+         
+         assertEquals(0, rm.size());
+
+      }
+      finally
+      {
+         if (xaConn != null)
+         {
+            xaConn.close();
+         }
+      }
+   }
    
 
    //http://jira.jboss.com/jira/browse/JBMESSAGING-721

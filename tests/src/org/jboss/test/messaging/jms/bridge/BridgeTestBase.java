@@ -113,6 +113,14 @@ public class BridgeTestBase extends MessagingTestCase
          }
          sc.start(false);
          
+         ServerManagement.undeployQueue("sourceQueue", 0);
+         
+         ServerManagement.undeployTopic("sourceTopic", 0);  
+         
+         ServerManagement.undeployQueue("localDestQueue", 0);
+            
+         ServerManagement.undeployQueue("destQueue", 1); 
+         
          ServerManagement.deployQueue("sourceQueue", 0);
          
          ServerManagement.deployTopic("sourceTopic", 0);  

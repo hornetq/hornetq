@@ -28,11 +28,20 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.XAConnection;
+import javax.jms.XASession;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.tx.ResourceManager;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.XATest.DummyXAResource;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -95,6 +104,100 @@ public class TransactedSessionTest extends MessagingTestCase
    
    // Public --------------------------------------------------------
 
+   public void testResourceManagerMemoryLeakOnCommit() throws Exception
+   {
+
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         JBossConnection jbConn = (JBossConnection)conn;
+         
+         ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
+         
+         ConnectionState state = (ConnectionState)del.getState();
+         
+         ResourceManager rm = state.getResourceManager();
+         
+         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+         
+         
+         for (int i = 0; i < 100; i++)
+         {
+            assertEquals(1, rm.size());
+            
+            session.commit();
+            
+            assertEquals(1, rm.size());
+         }                  
+         
+         assertEquals(1, rm.size());
+         
+         conn.close();
+         
+         conn = null;
+         
+         assertEquals(0, rm.size());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   public void testResourceManagerMemoryLeakOnRollback() throws Exception
+   {
+
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         JBossConnection jbConn = (JBossConnection)conn;
+         
+         ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
+         
+         ConnectionState state = (ConnectionState)del.getState();
+         
+         ResourceManager rm = state.getResourceManager();
+         
+         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+         
+         
+         for (int i = 0; i < 100; i++)
+         {
+            assertEquals(1, rm.size());
+            
+            session.commit();
+            
+            assertEquals(1, rm.size());
+         }                  
+         
+         assertEquals(1, rm.size());
+         
+         conn.close();
+         
+         conn = null;
+         
+         assertEquals(0, rm.size());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
 
    public void testSimpleRollback() throws Exception
    {
