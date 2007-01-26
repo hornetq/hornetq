@@ -334,7 +334,10 @@
    <target name="stop-rmi-server" depends="init"
            description="Stops the RMI server used by remote tests">
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
-            classpathref="test.execution.classpath"/>
+            classpathref="test.execution.classpath">
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.logfile.suffix" value="stop-rmi-server"/>
+     </java>
    </target>
 
    <target name="stop-rmi-server-clustering" depends="init"
@@ -342,6 +345,8 @@
       <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
             classpathref="test.execution.classpath">
          <sysproperty key="test.server.index" value="${test.server.index}"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.logfile.suffix" value="stop-rmi-server-clustering"/>
       </java>
    </target>
 
