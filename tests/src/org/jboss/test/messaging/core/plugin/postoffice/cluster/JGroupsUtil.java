@@ -23,7 +23,7 @@
 
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
-import java.net.InetAddress;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -35,6 +35,9 @@ import java.net.InetAddress;
 public class JGroupsUtil
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(JGroupsUtil.class);
+
 
    // Static --------------------------------------------------------
 
@@ -42,6 +45,9 @@ public class JGroupsUtil
    public static String getDataStackProperties()
    {
       String host = System.getProperty("test.bind.address");
+      
+      log.info("test.bind.address is " + host);
+      
       if (host == null)
       {
          host = "localhost";                  
@@ -75,10 +81,15 @@ public class JGroupsUtil
    public static String getControlStackProperties()
    {
       String host = System.getProperty("test.bind.address");
+      
+      log.info("test.bind.address is " + host);
+      
       if (host == null)
       {
          host = "localhost";
       }
+      
+      
      
       return "UDP(mcast_recv_buf_size=500000;down_thread=false;ip_mcast=true;mcast_send_buf_size=32000;"+
       "mcast_port=45568;ucast_recv_buf_size=500000;use_incoming_packet_handler=false;"+
