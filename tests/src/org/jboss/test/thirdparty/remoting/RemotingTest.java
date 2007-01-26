@@ -242,6 +242,7 @@ public class RemotingTest extends MessagingTestCase
 
       TextMessage rm2 = (TextMessage)slot.poll(5000);
 
+      assertNotNull(rm2);
       assertEquals("blah2", rm2.getText());
 
       conn.close();
