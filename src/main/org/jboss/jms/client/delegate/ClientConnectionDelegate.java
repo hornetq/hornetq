@@ -109,10 +109,10 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       // There is one RM per server, so we need to merge the rms if necessary
       ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
 
-      // start the new connection if necessary
+      // start the connection again on the serverEndpoint if necessary
       if (thisState.isStarted())
       {
-         newDelegate.start();
+         this.start();
       }
    }
 

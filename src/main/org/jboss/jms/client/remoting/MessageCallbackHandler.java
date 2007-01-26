@@ -539,8 +539,6 @@ public class MessageCallbackHandler
    public void synchronizeWith(MessageCallbackHandler newHandler)
    {
       consumerID = newHandler.consumerID;
-      consumerDelegate = newHandler.consumerDelegate;
-      sessionDelegate = newHandler.sessionDelegate;
 
       // Clear the buffer. This way the non persistent messages that managed to arive are
       // irremendiably lost, while the peristent ones are failed-over on the server and will be
