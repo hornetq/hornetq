@@ -1225,7 +1225,7 @@ public class ServiceContainer
                       "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
                       "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
                       "NumberOfRetries=1&" +
-                      "NumberOfCallRetries=1&" +
+                      "NumberOfCallRetries=2&" +
                       "callbackErrorsAllowed=1";
 
       // specific parameters per transport
