@@ -9,7 +9,7 @@
    <!--
         The value of "test.database" system property, if set, takes precedence.
    -->
-   <database>hsqldb</database>
+   <database>mysql</database>
 
    <database-configurations>
 

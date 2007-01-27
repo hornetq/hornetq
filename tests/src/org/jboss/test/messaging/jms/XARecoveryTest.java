@@ -83,7 +83,7 @@ public class XARecoveryTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.start("all,-transaction, jbossjta");     
+      ServerManagement.start("all");     
       
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");

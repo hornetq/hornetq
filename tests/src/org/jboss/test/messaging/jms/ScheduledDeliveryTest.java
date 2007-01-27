@@ -391,12 +391,16 @@ public class ScheduledDeliveryTest extends MessagingTestCase
             
             prod.send(tm);
          }
+
+         log.info("Sent messages");
          
          Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          
          MessageConsumer cons = sess2.createConsumer(queue);
          
          conn.start();
+
+         log.info("Started connection");
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -404,6 +408,8 @@ public class ScheduledDeliveryTest extends MessagingTestCase
             
             assertNotNull(tm);
             
+	    log.info("Got message:" + tm.getText());
+
             assertEquals("message" + i, tm.getText());
          }
          
@@ -413,6 +419,8 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          long now = System.currentTimeMillis();
          
          sess2.close();
+
+         log.info("Closed session");
          
          Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
@@ -420,17 +428,19 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(delay + 500);
+            TextMessage tm = (TextMessage)cons2.receive(delay + 1000);
             
+            assertNotNull(tm);
+
+            log.info("Got message 2nd time: " + tm.getText());
+
             long time = System.currentTimeMillis();
             
             assertTrue(time - now >= delay);
-            assertTrue(time - now < delay + 250);
-            
-            assertNotNull(tm);
+            assertTrue(time - now < delay + 1000);
          }
          
-         TextMessage tm = (TextMessage)cons2.receive(500);
+         TextMessage tm = (TextMessage)cons2.receive(1000);
          
          assertNull(tm);
       }
@@ -506,17 +516,17 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(delay + 500);
+            TextMessage tm = (TextMessage)cons2.receive(delay + 1000);
             
             long time = System.currentTimeMillis();
             
             assertTrue(time - now >= delay);
-            assertTrue(time - now < delay + 250);
+            assertTrue(time - now < delay + 1000);
             
             assertNotNull(tm);
          }
          
-         TextMessage tm = (TextMessage)cons2.receive(500);
+         TextMessage tm = (TextMessage)cons2.receive(1000);
          
          assertNull(tm);
       }

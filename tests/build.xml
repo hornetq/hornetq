@@ -57,7 +57,7 @@
         Functional tests.
    -->
 
-   <property name="functional.tests.database" value="hsqldb"/>
+   <property name="functional.tests.database" value="mysql"/>
    <property name="functional.tests.serialization" value="jms"/>
 
    <!--
