@@ -558,6 +558,8 @@ public class ScheduledDeliveryTest extends MessagingTestCase
       queue = (Queue)ic.lookup("/queue/Queue");
       
       topic = (Topic)ic.lookup("/topic/Topic");
+      
+      this.drainDestination(cf, queue);
 
    }
 

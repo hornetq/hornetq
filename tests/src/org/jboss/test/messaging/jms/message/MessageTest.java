@@ -475,6 +475,8 @@ public class MessageTest extends MessagingTestCase
       queue = (Destination)ic.lookup("/queue/Queue");
       topic = (Destination)ic.lookup("/topic/Topic");
       
+      drainDestination(cf, queue);
+      
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
 
