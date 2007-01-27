@@ -106,6 +106,14 @@ public class JMSRemotingConnection
 
       client.setMarshaller(new JMSWireFormat());
       client.setUnMarshaller(new JMSWireFormat());
+      
+      HashMap metadata = new HashMap();
+      
+      // use our own direct thread pool that basically does nothing
+      // Note! This needs to be done irrespective of the transport and is used
+      // even for INVM invocations
+      metadata.put(ServerInvoker.ONEWAY_THREAD_POOL_CLASS_KEY,
+                   "org.jboss.jms.server.remoting.DirectThreadPool");
 
       // For socket transport allow true push callbacks, with callback Connector.
       // For http transport, simulate push callbacks.
@@ -115,18 +123,13 @@ public class JMSRemotingConnection
       {
          if (log.isTraceEnabled()) log.trace("doing push callbacks");
 
-         HashMap metadata = new HashMap();
-
          metadata.put(InvokerLocator.DATATYPE, "jms");
          // Not actually used at present - but it does no harm
          metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms");
          metadata.put(MicroSocketClientInvoker.CLIENT_SOCKET_CLASS_FLAG,
                       "org.jboss.jms.client.remoting.ClientSocketWrapper");
          metadata.put(SocketServerInvoker.SERVER_SOCKET_CLASS_FLAG,
-                      "org.jboss.jms.server.remoting.ServerSocketWrapper");
-         // use our own direct thread pool that basically does nothing
-         metadata.put(ServerInvoker.ONEWAY_THREAD_POOL_CLASS_KEY,
-                      "org.jboss.jms.server.remoting.DirectThreadPool");
+                      "org.jboss.jms.server.remoting.ServerSocketWrapper");         
          
          String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
          if (bindAddress != null)
@@ -145,8 +148,6 @@ public class JMSRemotingConnection
       else
       {
          if (log.isTraceEnabled()) log.trace("simulating push callbacks");
-
-         HashMap metadata = new HashMap();
 
          // "jboss.messaging.callback.pollPeriod" system property, if set, has the
          // highest priority ...
