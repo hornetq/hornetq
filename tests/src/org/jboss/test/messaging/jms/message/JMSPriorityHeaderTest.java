@@ -372,6 +372,8 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 6, 0);
       
+      Thread.sleep(2000);
+
       {
          TextMessage t = (TextMessage)cons.receive(1000);
          assertNotNull(t);
@@ -444,7 +446,9 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       TextMessage m0 = sessSend.createTextMessage("a");
          
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 7, 0);
-      
+
+      Thread.sleep(2000);
+
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       MessageConsumer cons = sessReceive.createConsumer(queue);
