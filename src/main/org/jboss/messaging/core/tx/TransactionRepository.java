@@ -22,7 +22,9 @@
 package org.jboss.messaging.core.tx;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,8 +42,6 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * This class maintains JMS Server local transactions.
@@ -86,7 +86,10 @@ public class TransactionRepository implements MessagingComponent
       
       this.idManager = idManager;
       
-      globalToLocalMap = new ConcurrentReaderHashMap();           
+      //TODO the map should must be in order for recovery hence the LinkedHashMap
+      //but it would be nice for it to support better concurrency than just 
+      //synchronizing everything
+      globalToLocalMap = Collections.synchronizedMap(new LinkedHashMap());        
    }
    
    // Injection ----------------------------------------
