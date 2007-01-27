@@ -23,6 +23,7 @@ package org.jboss.test.messaging.tools.jmx;
 
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
@@ -398,7 +399,7 @@ public class ServiceContainer
             deleteAllData();
          }
          if (jbossjta)
-         {
+         {                       
             startRecoveryManager();
          }
 
@@ -1038,8 +1039,43 @@ public class ServiceContainer
       log.debug("bound " + USER_TRANSACTION_JNDI_NAME);
    }
    
+   private boolean deleteDirectory(File directory)
+   {
+      if (directory.isDirectory())
+      {
+         String[] files = directory.list();
+         
+         for (int j = 0; j < files.length; j++)
+         {
+            if (!deleteDirectory(new File(directory, files[j])))
+            {
+               return false;
+            } 
+         }
+      }
+      
+      return directory.delete();
+   }
+   
    private void startRecoveryManager()
    {
+      //First delete the object store - might have been left over from a previous run
+      
+      String objectStoreDir = System.getProperty("objectstore.dir");
+      
+      if (objectStoreDir == null)
+      {
+         log.warn("Cannot find objectstore.dir parameter");
+      }
+      else
+      {
+         File f = new File(objectStoreDir);
+         
+         deleteDirectory(f);
+      }
+      
+      log.info("Deleting object store: " + objectStoreDir);
+      
       log.info("Starting arjuna recovery manager");
       
       //Need to start the recovery manager manually - if deploying
@@ -1050,7 +1086,7 @@ public class ServiceContainer
       
       log.info("Started recovery manager");
    }
-
+   
    private void startCachedConnectionManager(ObjectName on) throws Exception
    {
       CachedConnectionManager ccm = new CachedConnectionManager();

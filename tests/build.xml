@@ -97,6 +97,7 @@
    <property name="build.tests.stylesheets" value="${tests.output}/stylesheets"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
+   <property name="objectstore.dir" value="${tests.root}/bin/ObjectStore"/>
 
    <!--
         JUnit configuration (values specified in ./build.properties have priority)
@@ -289,6 +290,7 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
          <sysproperty key="java.net.preferIPv4Stack" value="true"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -308,6 +310,7 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
          <sysproperty key="java.net.preferIPv4Stack" value="true"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
          -->
@@ -326,8 +329,10 @@
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/> -->
          <classpath refid="stress.test.execution.classpath"/>
+
       </java>
    </target>
 
@@ -403,6 +408,7 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
          <sysproperty key="build.lib" value="${build.lib}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -455,6 +461,7 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
          <sysproperty key="build.lib" value="${build.lib}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -536,6 +543,7 @@
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -583,6 +591,7 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
          <sysproperty key="test.logfile.suffix" value="remote-client"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
          <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
@@ -663,6 +672,7 @@
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
          <sysproperty key="test.logfile.suffix" value="remote-client"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=unittest"/> -->
          <classpath>
@@ -799,6 +809,7 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
          <sysproperty key="test.logfile.suffix" value="clustering-client"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
          <!--
@@ -883,6 +894,7 @@
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
          <sysproperty key="test.logfile.suffix" value="clustering-client"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
          <jvmarg value="-agentlib:jbossAgent"/>
@@ -1163,6 +1175,7 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath refid="test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
@@ -1199,6 +1212,7 @@
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <classpath refid="test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
