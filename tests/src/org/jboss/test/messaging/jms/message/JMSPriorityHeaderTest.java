@@ -447,8 +447,6 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
          
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 7, 0);
 
-      Thread.sleep(2000);
-
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       MessageConsumer cons = sessReceive.createConsumer(queue);
