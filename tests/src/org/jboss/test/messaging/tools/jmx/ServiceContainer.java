@@ -189,6 +189,7 @@ public class ServiceContainer
 
    private boolean transaction;
    private boolean jbossjta; //To use the ex-Arjuna tx mgr
+   private boolean xarecovery; //To use the ex-Arjuna recovery manager
    private boolean database;
    private boolean jca;
    private boolean remoting;
@@ -369,6 +370,11 @@ public class ServiceContainer
 
          registerClassLoader();
          
+         if (jbossjta || xarecovery)
+         {
+            deleteObjectStore();
+         }
+         
          if (transaction || jbossjta)
          {
             startTransactionManager();
@@ -398,7 +404,7 @@ public class ServiceContainer
             // othewise we'll get an access error)
             deleteAllData();
          }
-         if (jbossjta)
+         if (xarecovery)
          {                       
             startRecoveryManager();
          }
@@ -1057,12 +1063,14 @@ public class ServiceContainer
       return directory.delete();
    }
    
-   private void startRecoveryManager()
+   private void deleteObjectStore()
    {
-      //First delete the object store - might have been left over from a previous run
+      // First delete the object store - might have been left over from a previous run
       
       String objectStoreDir = System.getProperty("objectstore.dir");
       
+      log.info("Deleting object store: " + objectStoreDir);
+            
       if (objectStoreDir == null)
       {
          log.warn("Cannot find objectstore.dir parameter");
@@ -1073,9 +1081,10 @@ public class ServiceContainer
          
          deleteDirectory(f);
       }
-      
-      log.info("Deleting object store: " + objectStoreDir);
-      
+   }
+   
+   private void startRecoveryManager()
+   {
       log.info("Starting arjuna recovery manager");
       
       //Need to start the recovery manager manually - if deploying
@@ -1486,6 +1495,14 @@ public class ServiceContainer
             if (minus)
             {
                jbossjta = false;
+            }
+         }
+         else if ("xarecovery".equals(tok))
+         {           
+            xarecovery = true;
+            if (minus)
+            {
+               xarecovery = false;
             }
          }
          else if ("database".equals(tok))

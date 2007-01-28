@@ -92,7 +92,7 @@ public class BridgeTestBase extends MessagingTestCase
             // tables; don't clear the database for those.
             if (useArjuna)
             {
-               ServerManagement.start(i, "all,-transaction, jbossjta", i == 0);
+               ServerManagement.start(i, "all,-transaction,jbossjta,xarecovery", i == 0);
             }
             else
             {

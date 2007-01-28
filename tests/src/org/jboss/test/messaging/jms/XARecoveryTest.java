@@ -32,7 +32,6 @@ import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.naming.InitialContext;
-import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -40,7 +39,6 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.core.tx.XidImpl;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TransactionManagerLocator;
 
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
@@ -67,10 +65,9 @@ public class XARecoveryTest extends MessagingTestCase
    protected InitialContext initialContext;
    
    protected JBossConnectionFactory cf;
+   
    protected Destination queue, queueA, queueB, queueTX, topicTX;
-
-   TransactionManager tm;
-
+   
    // Constructors --------------------------------------------------
 
    public XARecoveryTest(String name)
@@ -87,10 +84,7 @@ public class XARecoveryTest extends MessagingTestCase
       
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
       cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      
-      if (!ServerManagement.isRemote()) tm = TransactionManagerLocator.getInstance().locate();
-      
+            
       ServerManagement.undeployQueue("Queue");
       ServerManagement.deployQueue("Queue");
 

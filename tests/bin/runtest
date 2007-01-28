@@ -23,6 +23,7 @@ ENV_TEST_SERIALIZATION=$TEST_SERIALIZATION
 ENV_TEST_CLUSTERED=$TEST_CLUSTERED
 ENV_TEST_REMOTING=$TEST_REMOTING
 ENV_TEST_BIND_ADDRESS=$TEST_BIND_ADDRESS
+ENV_TEST_OBJECTSTORE=$ENV_TEST_OBJECTSTORE
 
 if [ -z "$TARGET_CLASS" -a -f $reldir/.testrc ]; then
    . $reldir/.testrc
@@ -46,6 +47,12 @@ fi
 
 if [ "$ENV_TEST_REMOTING" != "" ]; then
    TEST_REMOTING=$ENV_TEST_REMOTING
+fi
+
+if [ "$ENV_TEST_OBJECTSTORE" != "" ]; then
+   TEST_OBJECTSTORE=$ENV_TEST_OBJECTSTORE
+else
+   TEST_OBJECTSTORE=ObjectStore
 fi
 
 #
@@ -144,6 +151,10 @@ if [ "$TEST_BIND_ADDRESS" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.bind.address=$TEST_BIND_ADDRESS"
 fi
 
+if [ "$TEST_OBJECTSTORE" != "" ]; then
+   JAVA_OPTS="$JAVA_OPTS -Dobjectstore.dir=$TEST_OBJECTSTORE"
+fi
+
 if [ "$TARGET_TEST" != "" ]; then
    TARGET_TEST="-t $TARGET_TEST"
 fi
@@ -166,8 +177,6 @@ if [ "$remote_debug" = "true" ]; then
       exit 1
    fi
 fi
-
-
 
 $JAVA_HOME/bin/java $JAVA_OPTS -cp "$CLASSPATH" \
 org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
