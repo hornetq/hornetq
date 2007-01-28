@@ -109,9 +109,9 @@ public class JMSRemotingConnection
       
       HashMap metadata = new HashMap();
       
-      // use our own direct thread pool that basically does nothing
-      // Note! This needs to be done irrespective of the transport and is used
-      // even for INVM invocations
+      // Use our own direct thread pool that basically does nothing.
+      // Note! This needs to be done irrespective of the transport and is used even for INVM
+      //       invocations.
       metadata.put(ServerInvoker.ONEWAY_THREAD_POOL_CLASS_KEY,
                    "org.jboss.jms.server.remoting.DirectThreadPool");
 
