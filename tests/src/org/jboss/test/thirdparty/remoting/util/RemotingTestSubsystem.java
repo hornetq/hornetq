@@ -106,16 +106,14 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
             
             int lastCount = this.counters[clientNum];
             
+            log.trace("Received client " + clientNum + " num " + inv.num);
+            
             if (inv.num != lastCount + 1)
             {
                //Failed - out of sequence
                failed = true;
                
-               log.info("Failed!!!! out of sequence");
-            }
-            else
-            {
-               log.info("Ok");
+               log.trace("Failed!!!! out of sequence");
             }
             
             counters[clientNum] = inv.num;

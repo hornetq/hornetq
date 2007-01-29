@@ -99,6 +99,9 @@ public class SocketTransportCausalityTest extends MessagingTestCase
             }
          }
          
+         //Let invocations finish
+         Thread.sleep(5000);
+         
          boolean failed = 
             RemotingTestSubsystemService.isFailed(subsystemService);
          
@@ -153,6 +156,8 @@ public class SocketTransportCausalityTest extends MessagingTestCase
                inv.num = ++num;
                
                client.invokeOneway(inv);
+               
+               log.trace("client " + clientNumber + " sent " + num);
             }
          }
          catch (Throwable t)
@@ -194,11 +199,7 @@ public class SocketTransportCausalityTest extends MessagingTestCase
       String s = (String)ServerManagement.
          getAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "InvokerLocator");
       
-      //Hmmm adding this doesn't seem to make any difference to what thread pool
-      //is used on the server side......
-      s += "&onewayThreadPool=org.jboss.jms.server.remoting.DirectThreadPool";
-
-      log.info("Locator is " + s);
+      log.trace("Locator is " + s);
       
       serverLocator = new InvokerLocator(s);
       
