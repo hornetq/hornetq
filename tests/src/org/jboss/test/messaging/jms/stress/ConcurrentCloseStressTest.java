@@ -35,8 +35,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.ConnectionTest;
@@ -45,8 +43,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 /**
  * This test was added to test regression on http://jira.jboss.com/jira/browse/JBMESSAGING-660
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * $Id:$
+ * @version <tt>$Revision$</tt>
+ * $Id$
  */
 public class ConcurrentCloseStressTest extends MessagingTestCase
 {
