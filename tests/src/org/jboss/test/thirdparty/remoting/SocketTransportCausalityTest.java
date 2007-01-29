@@ -194,6 +194,8 @@ public class SocketTransportCausalityTest extends MessagingTestCase
       String s = (String)ServerManagement.
          getAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "InvokerLocator");
       
+      //Hmmm adding this doesn't seem to make any difference to what thread pool
+      //is used on the server side......
       s += "&onewayThreadPool=org.jboss.jms.server.remoting.DirectThreadPool";
 
       log.info("Locator is " + s);
