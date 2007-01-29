@@ -19,4 +19,6 @@ public interface RemotingTestSubsystemServiceMBean
    void stop();
 
    InvocationRequest nextInvocation(Long timeout) throws Exception;
+   
+   boolean isFailed() throws Exception;
 }

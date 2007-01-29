@@ -61,6 +61,13 @@ public class RemotingTestSubsystemService
                 new Object[] { new Long(timeout) },
                 new String[] { "java.lang.Long" });
    }
+   
+   public static boolean isFailed(ObjectName on)
+      throws Exception
+   {
+      return ((Boolean)ServerManagement.
+         invoke(on, "isFailed", null, null)).booleanValue();
+   }
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -142,6 +149,11 @@ public class RemotingTestSubsystemService
 
       return delegate.getNextInvocation(timeout.longValue());
 
+   }
+   
+   public boolean isFailed() throws Exception
+   {
+      return delegate.isFailed();
    }
 
    // Public ---------------------------------------------------------------------------------------

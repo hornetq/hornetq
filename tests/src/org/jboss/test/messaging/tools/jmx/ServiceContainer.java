@@ -1271,7 +1271,8 @@ public class ServiceContainer
                       "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
                       "NumberOfRetries=1&" +
                       "NumberOfCallRetries=2&" +
-                      "callbackErrorsAllowed=1";
+                      "callbackErrorsAllowed=1&" +
+                      "onewayThreadPool=org.jboss.jms.server.remoting.DirectThreadPool";
 
       // specific parameters per transport
 

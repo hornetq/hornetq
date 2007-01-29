@@ -12,6 +12,7 @@ import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+import org.jboss.test.thirdparty.remoting.SocketTransportCausalityTest;
 import org.jboss.logging.Logger;
 
 import javax.management.MBeanServer;
@@ -58,6 +59,10 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
 
    private Channel invocationHistory;
    private List callbackListeners;
+   
+   private int[] counters = new int[10];
+   
+   private boolean failed;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -89,6 +94,35 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
          // client is goint to send a lot of them ....
          log.debug(this + " ignoring invocation");
          return null;
+      }
+      
+      if (parameter instanceof SocketTransportCausalityTest.SimpleInvocation)
+      {
+         SocketTransportCausalityTest.SimpleInvocation inv = (SocketTransportCausalityTest.SimpleInvocation)parameter;
+         
+         synchronized (this)
+         {            
+            int clientNum = inv.clientNumber;
+            
+            int lastCount = this.counters[clientNum];
+            
+            if (inv.num != lastCount + 1)
+            {
+               //Failed - out of sequence
+               failed = true;
+               
+               log.info("Failed!!!! out of sequence");
+            }
+            else
+            {
+               log.info("Ok");
+            }
+            
+            counters[clientNum] = inv.num;
+            
+            return null;
+         }
+         
       }
 
       invocationHistory.put(dirtyCopy(invocation));
@@ -154,6 +188,14 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
    public InvocationRequest getNextInvocation(long timeout) throws InterruptedException
    {
       return (InvocationRequest)invocationHistory.poll(timeout);
+   }
+   
+   public boolean isFailed()
+   {
+      synchronized (this)
+      {
+         return failed;
+      }
    }
 
    // Package protected ----------------------------------------------------------------------------
