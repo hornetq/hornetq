@@ -39,18 +39,18 @@ import java.util.Iterator;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision:$</tt>
+ * @version <tt>$Revision$</tt>
  *
  * 
- * $Id:$
+ * $Id$
  */
-public class HAStressTest extends ClusteringTestBase
+public class MultiThreadFailoverTest extends ClusteringTestBase
 {
 
    int NUMBER_OF_PRODUCER_THREADS=1;
    int NUMBER_OF_CONSUMER_THREADS=1;
 
-   public HAStressTest(String name)
+   public MultiThreadFailoverTest(String name)
    {
       super(name);
    }
