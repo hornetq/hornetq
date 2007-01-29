@@ -29,11 +29,11 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.MessagingMarshallable;
-import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -47,6 +47,7 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.remoting.Invoker;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
@@ -248,15 +249,18 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             // one way invocation, no acknowledgment sent back by the client
             if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }
             
-            //FIXME - due a design flaw in the socket based transports, they use a pool of TCP
+            //FIXME - due a design (flaw??) in the socket based transports, they use a pool of TCP
             //connections, so subsequent invocations can end up using different underlying connections
             //meaning that later invocations can overtake earlier invocations, if there are more than
             //one user concurrently invoking on the same transport            
             //We need someway of pinning the client object to the underlying invocation            
             //For now we just serialize all access so that only the first connection in the pool
-            //is ever used - bit this is far from ideal!!!
+            //is ever used - bit this is far from ideal!!!            
+            //See http://jira.jboss.com/jira/browse/JBMESSAGING-789
             
-            synchronized (Object.class)
+            Invoker invoker = callbackHandler.getCallbackClient().getInvoker();
+            
+            synchronized (invoker)
             {            
                callbackHandler.handleCallbackOneway(callback);
             }
