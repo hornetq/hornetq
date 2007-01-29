@@ -75,10 +75,10 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
          client.invoke("bloh");
          fail("This should have failed!");
       }
-      catch(IOException e)
+      catch(CannotConnectException e)
       {
-         // if the client throws IOException, we're fine, this is our FailoverValveInteceptor is
-         // looking after
+         // if the client throws CannotConnectException, we're fine, this is our
+         // FailoverValveInteceptor is looking after
       }
    }
 
@@ -256,6 +256,8 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
       // remote a server invocation handler
 
       subsystemService = RemotingTestSubsystemService.deployService();
+
+      log.debug("setup done");
 
    }
 
