@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.tx;
 
+import org.jboss.util.id.GUID;
+
 /**
  * 
  * A LocalTx
@@ -32,8 +34,27 @@ package org.jboss.jms.tx;
  */
 public class LocalTx
 {
+   private String id = new GUID().toString();
+   
    public String toString()
    {
-      return "LocalTx[" + Integer.toHexString(hashCode()) + "]";
+      return "LocalTx[" + id + "]";
+   }
+   
+   public boolean equals(Object other)
+   {
+      if (!(other instanceof LocalTx))
+      {
+         return false;
+      }
+      
+      LocalTx tother = (LocalTx)other;
+      
+      return this.id.equals(tother.id);
+   }
+   
+   public int hashCode()
+   {
+      return id.hashCode();
    }
 }  

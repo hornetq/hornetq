@@ -457,7 +457,7 @@ public class SessionAspect
 
       ConnectionState connState = (ConnectionState)state.getParent();
       ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
-
+  
       try
       {
          connState.getResourceManager().commitLocal((LocalTx)state.getCurrentTxId(), conn);

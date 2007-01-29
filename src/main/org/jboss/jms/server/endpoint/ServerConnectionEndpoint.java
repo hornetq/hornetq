@@ -179,7 +179,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          log.debug(this + " creating " + (transacted ? "transacted" : "non transacted") +
             " session, " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " +
             (isXA ? "XA": "non XA"));
-
+         
          if (closed)
          {
             throw new IllegalStateException("Connection is closed");
@@ -209,7 +209,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
 
          log.debug("created " + d);
-
+         
          return d;
       }
       catch (Throwable t)
@@ -695,7 +695,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private void processTransaction(ClientTransaction txState, Transaction tx) throws Throwable
    {
       if (trace) { log.trace(this + " processing transaction " + tx); }
-      
+         
       synchronized (sessions)
       {         
          for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
@@ -718,6 +718,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             
             ServerSessionEndpoint session =
                serverPeer.getSession(new Integer(sessionState.getSessionId()));
+            
+            if (session == null)
+            {               
+               throw new IllegalStateException("Cannot find session with id " + sessionState.getSessionId());
+            }
 
             session.acknowledgeTransactionally(sessionState.getAcks(), tx);
          }

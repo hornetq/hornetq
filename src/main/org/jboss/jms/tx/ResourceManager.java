@@ -189,7 +189,7 @@ public class ResourceManager
       {
          throw new IllegalStateException("Cannot find transaction " + xid);
       }
-      
+                  
       TransactionRequest request =
          new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
       
@@ -199,7 +199,10 @@ public class ResourceManager
          
          // If we get this far we can remove the transaction
          
-         this.removeTxInternal(xid);
+         if (this.removeTxInternal(xid) == null)
+         {
+            throw new IllegalStateException("Cannot find xid to remove " + xid);
+         }
       }
       catch (Throwable t)
       {
@@ -332,6 +335,11 @@ public class ResourceManager
       if (trace) { log.trace("rolling back xid " + xid); }
       
       ClientTransaction tx = removeTxInternal(xid);
+      
+      if (tx == null)
+      {
+         throw new java.lang.IllegalStateException("Cannot find xid to remove " + xid);
+      }
       
       //It's possible we don't actually have the prepared tx here locally - this
       //may happen if we have recovered from failure and the transaction manager
@@ -485,6 +493,11 @@ public class ResourceManager
       }
 
       ClientTransaction s = removeTxInternal(anonXid);
+      
+      if (s == null)
+      {
+         throw new java.lang.IllegalStateException("Cannot find xid to remove " + anonXid);
+      }
       
       transactions.put(xid, s);
       

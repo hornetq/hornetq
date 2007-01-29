@@ -263,6 +263,41 @@ public class MiscellaneousTest extends MessagingTestCase
                       "MessageCount");
       assertEquals(0, count.intValue());
    }
+   
+   // Test case for http://jira.jboss.com/jira/browse/JBMESSAGING-788
+   public void testGetDeliveriesForSession() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      Queue queue = (Queue)ic.lookup("/queue/MiscellaneousQueue");
+
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         Session session1 = conn.createSession(true, Session.SESSION_TRANSACTED);
+         
+         Session session2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+         
+         MessageProducer prod = session2.createProducer(queue);
+         
+         Message msg = session2.createMessage();
+         
+         prod.send(msg);
+         
+         session1.close();
+         
+         session2.commit();
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
    // Package protected ---------------------------------------------
 

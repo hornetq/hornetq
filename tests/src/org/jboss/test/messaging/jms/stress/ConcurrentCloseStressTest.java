@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms.stress;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.MessageConsumer;
@@ -32,7 +33,10 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.ConnectionTest;
@@ -286,6 +290,7 @@ public class ConcurrentCloseStressTest extends MessagingTestCase
                      log.debug("commit");
                      messagesProduced += (messageCount - lastMessage);
                      lastMessage = messageCount;
+                     
                      sess.commit();
                   }
                   else

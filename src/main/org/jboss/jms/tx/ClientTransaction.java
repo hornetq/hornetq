@@ -195,16 +195,23 @@ public class ClientTransaction
          throw new IllegalStateException("Cannot call this method on the server side");
       }
 
-      SessionTxState state = getSessionTxState(sessionID);
-
-      if (state != null)
-      {
-         return state.getAcks();
-      }
-      else
+      if (sessionStatesMap == null)
       {
          return Collections.EMPTY_LIST;
       }
+      else
+      {         
+         SessionTxState state = (SessionTxState)sessionStatesMap.get(new Integer(sessionID));
+   
+         if (state != null)
+         {
+            return state.getAcks();
+         }
+         else
+         {
+            return Collections.EMPTY_LIST;
+         }
+      }            
    }
 
    // Streamable implementation ---------------------------------
