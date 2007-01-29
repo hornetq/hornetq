@@ -77,8 +77,13 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
       }
       catch(CannotConnectException e)
       {
-         // if the client throws CannotConnectException, we're fine, this is our
-         // FailoverValveInteceptor is looking after
+         // This happens for HTTP clients - if the client throws CannotConnectException, we're fine,
+         // this is what our FailoverValveInteceptor is looking after
+      }
+      catch(IOException e)
+      {
+         // This happens for socket clients - if the client throws IOException subclass, we're fine,
+         // this is what our FailoverValveInteceptor is looking after
       }
    }
 
