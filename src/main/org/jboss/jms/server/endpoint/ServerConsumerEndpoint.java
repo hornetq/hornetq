@@ -48,6 +48,7 @@ import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.remoting.Invoker;
+import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
@@ -254,9 +255,22 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             // all access so that only the first connection in the pool is ever used - bit this is
             // far from ideal!!!
             // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
-            
-            Invoker invoker = callbackHandler.getCallbackClient().getInvoker();
-            
+
+            Client clientInvoker = callbackHandler.getCallbackClient();
+            Object invoker = null;
+
+            if (clientInvoker != null)
+            {
+               invoker = clientInvoker.getInvoker();
+            }
+            else
+            {
+               // TODO: dummy synchronization object, in case there's no clientInvoker. This will
+               // happen during the first invocation anyway. It's a kludge, I know, but this whole
+               // synchronization thing is a huge kludge. Needs to be reviewed.
+               invoker = new Object();
+            }
+
             synchronized (invoker)
             {
                // one way invocation, no acknowledgment sent back by the client
