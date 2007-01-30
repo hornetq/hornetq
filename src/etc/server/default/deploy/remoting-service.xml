@@ -60,6 +60,7 @@
                <attribute name="leasePeriod">20000</attribute>
                <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
                <attribute name="callbackPollPeriod" isParam="true">100</attribute>
+               <attribute name="onewayThreadPool">org.jboss.jms.server.remoting.DirectThreadPool</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
