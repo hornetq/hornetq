@@ -241,16 +241,25 @@
       <file leaf-file-name="SessionAspect.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/org/jboss/jms/client/container/SessionAspect.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="74" column="129" selection-start="2862" selection-end="2862" vertical-scroll-proportion="0.42510122">
+            <state line="74" column="3" selection-start="2881" selection-end="2881" vertical-scroll-proportion="0.42510122">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="remoting-service.xml" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="remoting-service.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/etc/server/default/deploy/remoting-service.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="62" column="96" selection-start="3477" selection-end="3493" vertical-scroll-proportion="0.6929212">
+            <state line="28" column="112" selection-start="1635" selection-end="1635" vertical-scroll-proportion="0.21834497">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ClientInvokerTimeoutTest.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/thirdparty/remoting/ClientInvokerTimeoutTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="21" column="18" selection-start="785" selection-end="828" vertical-scroll-proportion="0.09770688">
               <folding />
             </state>
           </provider>
@@ -1540,13 +1549,6 @@
     </buildFile>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/messaging/jms/stress/ConcurrentCloseStressTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="75" column="105" selection-start="2646" selection-end="2646" vertical-scroll-proportion="0.5554425">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests/build.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="37" column="50" selection-start="3028" selection-end="3028" vertical-scroll-proportion="0.5269583">
@@ -1558,9 +1560,8 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="146" column="42" selection-start="6156" selection-end="6156" vertical-scroll-proportion="0.12753037">
           <folding>
-            <element signature="imports" expanded="true" />
-            <marker date="1170140967781" expanded="true" signature="3877:4094" placeholder="/**...*/" />
-            <marker date="1170140967781" expanded="true" signature="42403:44925" placeholder="{...}" />
+            <marker date="1170142393406" expanded="true" signature="3877:4092" placeholder="/**...*/" />
+            <marker date="1170142393406" expanded="true" signature="42422:44944" placeholder="{...}" />
           </folding>
         </state>
       </provider>
@@ -1647,14 +1648,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/org/jboss/jms/client/container/SessionAspect.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="74" column="129" selection-start="2862" selection-end="2862" vertical-scroll-proportion="0.42510122">
+        <state line="74" column="3" selection-start="2881" selection-end="2881" vertical-scroll-proportion="0.42510122">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/etc/server/default/deploy/remoting-service.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="96" selection-start="3477" selection-end="3493" vertical-scroll-proportion="0.6929212">
+        <state line="28" column="112" selection-start="1635" selection-end="1635" vertical-scroll-proportion="0.21834497">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/thirdparty/remoting/ClientInvokerTimeoutTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="21" column="18" selection-start="785" selection-end="828" vertical-scroll-proportion="0.09770688">
           <folding />
         </state>
       </provider>
