@@ -90,19 +90,19 @@ public class SessionAspect
          
          ResourceManager rm = connState.getResourceManager();
          
-         //An XASession should never be closed if there is prepared ack work that has not yet
-         //been committed or rolled back.
-         //Imagine if messages had been consumed in the session, and prepared but not committed.
-         //Then the connection was explicitly closed causing the session to close.
-         //Closing the session causes any outstanding delivered but unacked messages to be cancelled to
-         //the server which means they would be available for other consumers to consume.
-         //If another consumer then consumes them, then recover() is called and the original
-         //transaction is committed, then this means the same message has been delivered twice
-         //which breaks the once and only once delivery guarantee
+         // An XASession should never be closed if there is prepared ack work that has not yet been
+         // committed or rolled back. Imagine if messages had been consumed in the session, and
+         // prepared but not committed. Then the connection was explicitly closed causing the
+         // session to close. Closing the session causes any outstanding delivered but unacked
+         // messages to be cancelled to the server which means they would be available for other
+         // consumers to consume. If another consumer then consumes them, then recover() is called
+         // and the original transaction is committed, then this means the same message has been
+         // delivered twice which breaks the once and only once delivery guarantee.
          
          if (rm.checkForAcksInSession(state.getSessionID()))
          {
-            throw new java.lang.IllegalStateException("Attempt to close an XASession when there are still uncommitted acknowledgements!");
+            throw new IllegalStateException(
+               "Attempt to close an XASession when there are still uncommitted acknowledgements!");
          }        
       }
             
@@ -134,9 +134,9 @@ public class SessionAspect
       else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
       {
          // Cancel any oustanding deliveries
-         // We cancel any client ack or transactional, we do this explicitly so we can pass the updated
-         // delivery count information from client to server. We could just do this on the server but
-         // we would lose delivery count info.
+         // We cancel any client ack or transactional, we do this explicitly so we can pass the
+         // updated delivery count information from client to server. We could just do this on the
+         // server but we would lose delivery count info.
                   
          // CLIENT_ACKNOWLEDGE cannot be used with MDBs (i.e. no connection consumer)
          // so is always safe to cancel on this session                  
@@ -205,7 +205,8 @@ public class SessionAspect
          // Sanity check
          if (info.getConnectionConsumerSession() != null)
          {
-            throw new IllegalStateException("CLIENT_ACKNOWLEDGE cannot be used with a connection consumer");
+            throw new IllegalStateException(
+               "CLIENT_ACKNOWLEDGE cannot be used with a connection consumer");
          }
                   
          state.getClientAckList().add(info);
