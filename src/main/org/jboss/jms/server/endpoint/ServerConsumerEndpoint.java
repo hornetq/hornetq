@@ -47,7 +47,6 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.remoting.Invoker;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
