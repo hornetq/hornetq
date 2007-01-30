@@ -246,22 +246,21 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
            
          try
          {
-            // one way invocation, no acknowledgment sent back by the client
-            if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }
-            
             //FIXME - due a design (flaw??) in the socket based transports, they use a pool of TCP
-            //connections, so subsequent invocations can end up using different underlying connections
-            //meaning that later invocations can overtake earlier invocations, if there are more than
-            //one user concurrently invoking on the same transport            
-            //We need someway of pinning the client object to the underlying invocation            
-            //For now we just serialize all access so that only the first connection in the pool
-            //is ever used - bit this is far from ideal!!!            
-            //See http://jira.jboss.com/jira/browse/JBMESSAGING-789
+            // connections, so subsequent invocations can end up using different underlying
+            // connections meaning that later invocations can overtake earlier invocations, if there
+            // are more than one user concurrently invoking on the same transport. We need someway
+            // of pinning the client object to the underlying invocation. For now we just serialize
+            // all access so that only the first connection in the pool is ever used - bit this is
+            // far from ideal!!!
+            // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
             
             Invoker invoker = callbackHandler.getCallbackClient().getInvoker();
             
             synchronized (invoker)
-            {            
+            {
+               // one way invocation, no acknowledgment sent back by the client
+               if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }
                callbackHandler.handleCallbackOneway(callback);
             }
          }

@@ -46,7 +46,6 @@ import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 
 /**
@@ -66,9 +65,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    private static final long serialVersionUID = -8096852898620279131L;
    
-   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
-   
-
    // Attributes -----------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
@@ -484,7 +480,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       //Use the Client in the Connection's state
       return ((ConnectionState)state.getParent()).getRemotingConnection().getRemotingClient();
    }
-
 
    // Package Private ------------------------------------------------------------------------------
 

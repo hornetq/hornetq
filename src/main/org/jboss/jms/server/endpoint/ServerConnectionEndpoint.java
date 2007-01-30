@@ -333,7 +333,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                   
                   if (counter == null)
                   {
-                     throw new IllegalStateException("Cannot find counter to unregister " + counterName);
+                     throw new IllegalStateException(
+                        "Cannot find counter to unregister " + counterName);
                   }
                }
                else
@@ -570,7 +571,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       {
          if (sessions.remove(new Integer(sessionId)) == null)
          {
-            throw new IllegalStateException("Cannot find session with id " + sessionId + " to remove");
+            throw new IllegalStateException("Cannot find session with id " +
+               sessionId + " to remove");
          }
       }
    }
@@ -721,7 +723,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             
             if (session == null)
             {               
-               throw new IllegalStateException("Cannot find session with id " + sessionState.getSessionId());
+               throw new IllegalStateException("Cannot find session with id " +
+                  sessionState.getSessionId());
             }
 
             session.acknowledgeTransactionally(sessionState.getAcks(), tx);
