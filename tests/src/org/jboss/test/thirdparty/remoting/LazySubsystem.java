@@ -75,6 +75,11 @@ public class LazySubsystem implements ServerInvocationHandler, TestableSubsystem
       return null;
    }
 
+   public boolean isFailed()
+   {
+      return false;
+   }
+
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

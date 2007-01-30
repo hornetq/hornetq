@@ -220,46 +220,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="ServerConsumerEndpoint.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/org/jboss/jms/server/endpoint/ServerConsumerEndpoint.java">
+      <file leaf-file-name=".testrc" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/bin/.testrc">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="262" column="127" selection-start="9829" selection-end="9829" vertical-scroll-proportion="0.4888664">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ServerConnectionEndpoint.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/org/jboss/jms/server/endpoint/ServerConnectionEndpoint.java">
+      <file leaf-file-name="LazySubsystem.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/thirdparty/remoting/LazySubsystem.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="89" column="27" selection-start="3651" selection-end="3651" vertical-scroll-proportion="0.4327019">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SessionAspect.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/org/jboss/jms/client/container/SessionAspect.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="74" column="3" selection-start="2881" selection-end="2881" vertical-scroll-proportion="0.42510122">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="remoting-service.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/etc/server/default/deploy/remoting-service.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="28" column="112" selection-start="1635" selection-end="1635" vertical-scroll-proportion="0.21834497">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ClientInvokerTimeoutTest.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/thirdparty/remoting/ClientInvokerTimeoutTest.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="18" selection-start="785" selection-end="828" vertical-scroll-proportion="0.09770688">
+            <state line="79" column="19" selection-start="2271" selection-end="2271" vertical-scroll-proportion="0.8325025">
               <folding />
             </state>
           </provider>
@@ -1549,23 +1522,6 @@
     </buildFile>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/tests/build.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="50" selection-start="3028" selection-end="3028" vertical-scroll-proportion="0.5269583">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/messaging/tools/jmx/ServiceContainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="146" column="42" selection-start="6156" selection-end="6156" vertical-scroll-proportion="0.12753037">
-          <folding>
-            <marker date="1170142393406" expanded="true" signature="3877:4092" placeholder="/**...*/" />
-            <marker date="1170142393406" expanded="true" signature="42422:44944" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/thirdparty/remoting/util/RemotingTestSubsystemServiceMBean.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="15" column="17" selection-start="434" selection-end="434" vertical-scroll-proportion="0.13958126">
@@ -1663,6 +1619,20 @@
     <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/thirdparty/remoting/ClientInvokerTimeoutTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="21" column="18" selection-start="785" selection-end="828" vertical-scroll-proportion="0.09770688">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/bin/.testrc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/src/org/jboss/test/thirdparty/remoting/LazySubsystem.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="79" column="19" selection-start="2271" selection-end="2271" vertical-scroll-proportion="0.8325025">
           <folding />
         </state>
       </provider>
