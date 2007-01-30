@@ -86,6 +86,51 @@ public class DuplicateClientIDTest extends MessagingTestCase
 
    }
 
+   public void testPreconfiguredDuplicateClientID() throws Exception
+   {
+      Connection c1 = null;
+      Connection c2 = null;
+      try
+      {
+
+         c1 = cf.createConnection("john", "needle");
+         c1.setClientID("Duplicated");
+
+         try
+         {
+            c2 = cf.createConnection("john", "needle");
+            c2.setClientID("Duplicated");
+            fail ("JBossMessaging is allowing duplicate clients!");
+         }
+         catch (InvalidClientIDException e)
+         {
+         }
+      }
+      finally
+      {
+         if (c1 != null) c1.close();
+         if (c2 != null) c2.close();
+      }
+   }
+
+   public void testNotDuplicateClientID() throws Exception
+   {
+      Connection c1 = null;
+      Connection c2 = null;
+      try
+      {
+
+         c1 = cf.createConnection();
+
+         c2 = cf.createConnection();
+      }
+      finally
+      {
+         if (c1 != null) c1.close();
+         if (c2 != null) c2.close();
+      }
+   }
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
