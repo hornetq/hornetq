@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Map;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
@@ -174,6 +175,17 @@ public class ServiceContainer
       }
    }
 
+   public static String getCurrentAddress() throws Exception
+   {
+      String currentAddress = System.getProperty("test.bind.address");
+
+      if (currentAddress == null)
+      {
+         currentAddress = "localhost";
+      }
+      return currentAddress;
+   }
+
    // Attributes -----------------------------------------------------------------------------------
 
    private ServiceContainerConfiguration config;
@@ -303,7 +315,6 @@ public class ServiceContainer
 
    // Public ---------------------------------------------------------------------------------------
 
-
    /**
     * By default, starting the container DELETES ALL DATA previously existing in the database.
     */
@@ -314,11 +325,18 @@ public class ServiceContainer
 
    public void start(boolean cleanDatabase) throws Exception
    {
+      start(cleanDatabase, null);
+   }
+
+   public void start(boolean cleanDatabase, ServiceAttributeOverrides attrOverrides)
+      throws Exception
+   {
       try
       {
          readConfigurationFile();
 
-         configureAddress();
+         ipAddressOrHostName = getCurrentAddress();
+         log.debug("all server sockets will be open on address " + ipAddressOrHostName);
 
          toUnbindAtExit.clear();
 
@@ -369,12 +387,12 @@ public class ServiceContainer
          startServiceController();
 
          registerClassLoader();
-         
+
          if (jbossjta || xarecovery)
          {
             deleteObjectStore();
          }
-         
+
          if (transaction || jbossjta)
          {
             startTransactionManager();
@@ -405,13 +423,13 @@ public class ServiceContainer
             deleteAllData();
          }
          if (xarecovery)
-         {                       
+         {
             startRecoveryManager();
          }
 
          if (remoting)
          {
-            startRemoting();
+            startRemoting(attrOverrides);
          }
 
          if (security)
@@ -449,7 +467,7 @@ public class ServiceContainer
       unloadJNDIContexts();
 
       stopService(REMOTING_OBJECT_NAME);
-      
+
       if (jbossjta)
       {
          if (recoveryManager != null)
@@ -878,22 +896,6 @@ public class ServiceContainer
       }
    }
 
-   private void configureAddress() throws Exception
-   {
-
-      String s = System.getProperty("test.bind.address");
-      if (s == null)
-      {
-         ipAddressOrHostName = "localhost";
-      }
-      else
-      {
-         ipAddressOrHostName = s;
-      }
-
-      log.debug("all server sockets will be open on address: " + ipAddressOrHostName);
-   }
-
    private void loadJNDIContexts() throws Exception
    {
       String[] names = {ServerManagement.DEFAULT_QUEUE_CONTEXT,
@@ -1020,7 +1022,7 @@ public class ServiceContainer
          if (jbossjta)
          {
             log.info("Starting arjuna tx mgr");
-            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();                       
+            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
          }
          else
          {
@@ -1044,33 +1046,33 @@ public class ServiceContainer
 
       log.debug("bound " + USER_TRANSACTION_JNDI_NAME);
    }
-   
+
    private boolean deleteDirectory(File directory)
    {
       if (directory.isDirectory())
       {
          String[] files = directory.list();
-         
+
          for (int j = 0; j < files.length; j++)
          {
             if (!deleteDirectory(new File(directory, files[j])))
             {
                return false;
-            } 
+            }
          }
       }
-      
+
       return directory.delete();
    }
-   
+
    private void deleteObjectStore()
    {
       // First delete the object store - might have been left over from a previous run
-      
+
       String objectStoreDir = System.getProperty("objectstore.dir");
-      
+
       log.info("Deleting object store: " + objectStoreDir);
-            
+
       if (objectStoreDir == null)
       {
          log.warn("Cannot find objectstore.dir parameter");
@@ -1078,24 +1080,24 @@ public class ServiceContainer
       else
       {
          File f = new File(objectStoreDir);
-         
+
          deleteDirectory(f);
       }
    }
-   
+
    private void startRecoveryManager()
    {
       log.info("Starting arjuna recovery manager");
-      
+
       //Need to start the recovery manager manually - if deploying
       //inside JBoss this wouldn't be necessary - since you would use
       //the TransactionManagerService MBean which would start the recovery manager
       //for you
       recoveryManager = RecoveryManager.manager(RecoveryManager.INDIRECT_MANAGEMENT);
-      
+
       log.info("Started recovery manager");
    }
-   
+
    private void startCachedConnectionManager(ObjectName on) throws Exception
    {
       CachedConnectionManager ccm = new CachedConnectionManager();
@@ -1243,50 +1245,68 @@ public class ServiceContainer
       stopService(managedConnFactoryObjectName);
    }
 
-   private void startRemoting() throws Exception
+   private void startRemoting(ServiceAttributeOverrides attrOverrides) throws Exception
    {
       RemotingJMXWrapper mbean;
+      String locatorURI = null;
 
-      // TODO - use remoting-service.xml parameters, not these ...
+      // some tests may want specific locator URI overrides to simulate special conditions; use
+      // that with priority, if available
 
-      String serializationType = config.getSerializationType();
-
-      //TODO - Actually serializationType is irrelevant since we pass a
-      //DataOutput/InputStream into the marshaller and don't use serialization apart
-      //from one specific case with a JMS ObjectMessage in which case Java serialization
-      //is always currently used - (we could make this configurable)
-
-      String transport = config.getRemotingTransport();
-
-      long clientLeasePeriod = 20000;
-      
-      String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-                      "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-                      "serializationtype=" + serializationType + "&" +
-                      "dataType=jms&" +
-                      "socket.check_connection=false&" +
-                      "clientLeasePeriod=" + clientLeasePeriod + "&" +
-                      "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
-                      "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
-                      "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
-                      "NumberOfRetries=1&" +
-                      "NumberOfCallRetries=2&" +
-                      "callbackErrorsAllowed=1&" +
-                      "onewayThreadPool=org.jboss.jms.server.remoting.DirectThreadPool";
-
-      // specific parameters per transport
-
-      if ("http".equals(transport))
+      if (attrOverrides != null)
       {
-         params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD;
-      }
-      else
-      {
-         params += "&timeout=0";
+         Map m = attrOverrides.get(REMOTING_OBJECT_NAME);
+
+         if (m != null)
+         {
+            locatorURI = (String)m.get("LocatorURI");
+         }
       }
 
-      int freePort = PortUtil.findFreePort(ipAddressOrHostName);
-      String locatorURI = transport + "://" + ipAddressOrHostName + ":" + freePort + params;
+      if (locatorURI == null)
+      {
+         // TODO - use remoting-service.xml parameters, not these ...
+
+         String serializationType = config.getSerializationType();
+
+         //TODO - Actually serializationType is irrelevant since we pass a DataOutput/InputStream
+         //       into the marshaller and don't use serialization apart from one specific case with
+         //       a JMS ObjectMessage in which case Java serialization is always currently used -
+         //       (we could make this configurable)
+
+         String transport = config.getRemotingTransport();
+
+         long clientLeasePeriod = 20000;
+
+         String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+            "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+            "serializationtype=" + serializationType + "&" +
+            "dataType=jms&" +
+            "socket.check_connection=false&" +
+            "clientLeasePeriod=" + clientLeasePeriod + "&" +
+            "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
+            "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
+            "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
+            "NumberOfRetries=1&" +
+            "NumberOfCallRetries=2&" +
+            "callbackErrorsAllowed=1&" +
+            "onewayThreadPool=org.jboss.jms.server.remoting.DirectThreadPool";
+
+         // specific parameters per transport
+
+         if ("http".equals(transport))
+         {
+            params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD;
+         }
+         else
+         {
+            params += "&timeout=0";
+         }
+
+         int freePort = PortUtil.findFreePort(ipAddressOrHostName);
+         locatorURI = transport + "://" + ipAddressOrHostName + ":" + freePort + params;
+      }
+
 
       log.debug("Using locator uri: " + locatorURI);
 

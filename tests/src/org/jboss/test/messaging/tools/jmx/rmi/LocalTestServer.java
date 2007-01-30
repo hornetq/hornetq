@@ -142,7 +142,7 @@ public class LocalTestServer implements Server
          setEnvironmentServerIndex(serverIndex);
 
          sc = new ServiceContainer(containerConfig, null, serverIndex);
-         sc.start(clearDatabase);
+         sc.start(clearDatabase, attrOverrides);
 
          if (this.getDatabaseType().equals("hsqldb") && sc.isClustered())
          {
@@ -443,7 +443,7 @@ public class LocalTestServer implements Server
    {
       if (!isServerPeerStarted())
       {
-         log.debug("messaging server was no started, so there is no stopping");
+         log.debug("messaging server was not started, so there is no stopping");
          return;
       }
 
