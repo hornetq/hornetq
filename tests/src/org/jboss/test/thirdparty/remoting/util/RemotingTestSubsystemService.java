@@ -14,6 +14,7 @@ import org.jboss.remoting.InvocationRequest;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.MBeanRegistration;
+import java.lang.reflect.Constructor;
 
 /**
  * A standard MBean service to be used when testing remoting.
@@ -36,9 +37,15 @@ public class RemotingTestSubsystemService
 
    public static ObjectName deployService() throws Exception
    {
+      return deployService("org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystem");
+   }
+
+   public static ObjectName deployService(String subsystemClassName) throws Exception
+   {
       String testSubsystemConfig =
          "<mbean code=\"org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService\"\n" +
             " name=\"test:service=RemotingTestSubsystem\">\n" +
+            "<attribute name=\"SubsystemClassName\">" + subsystemClassName + "</attribute>" +
          "</mbean>";
 
       ObjectName on = ServerManagement.deploy(testSubsystemConfig);
@@ -61,7 +68,7 @@ public class RemotingTestSubsystemService
                 new Object[] { new Long(timeout) },
                 new String[] { "java.lang.Long" });
    }
-   
+
    public static boolean isFailed(ObjectName on)
       throws Exception
    {
@@ -74,7 +81,8 @@ public class RemotingTestSubsystemService
    private MBeanServer mbeanServer;
    private ObjectName myObjectName;
 
-   private RemotingTestSubsystem delegate;
+   private String subsystemClassName;
+   private TestableSubsystem delegate;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -104,11 +112,24 @@ public class RemotingTestSubsystemService
 
    // RemotingTestSubsystemServiceMBean implementation ---------------------------------------------
 
+   public String getSubsystemClassName()
+   {
+      return subsystemClassName;
+   }
+
+   public void setSubsystemClassName(String className)
+   {
+      this.subsystemClassName = className;
+   }
+
    public void start() throws Exception
    {
-      // register to the remoting connector
+      Class c = Class.forName(subsystemClassName);
+      Constructor cons = c.getConstructor(new Class[0]);
 
-      delegate = new RemotingTestSubsystem();
+      delegate = (TestableSubsystem)cons.newInstance(new Object[0]);
+
+      // register to the remoting connector
 
       mbeanServer.invoke(ServiceContainer.REMOTING_OBJECT_NAME,
                          "addInvocationHandler",
@@ -150,7 +171,7 @@ public class RemotingTestSubsystemService
       return delegate.getNextInvocation(timeout.longValue());
 
    }
-   
+
    public boolean isFailed() throws Exception
    {
       return delegate.isFailed();

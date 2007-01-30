@@ -30,7 +30,8 @@ import EDU.oswego.cs.dl.util.concurrent.Channel;
  *
  * $Id$
  */
-public class RemotingTestSubsystem implements ServerInvocationHandler, Serializable
+public class RemotingTestSubsystem
+   implements TestableSubsystem, ServerInvocationHandler, Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -59,9 +60,9 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
 
    private Channel invocationHistory;
    private List callbackListeners;
-   
+
    private int[] counters = new int[10];
-   
+
    private boolean failed;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -95,32 +96,32 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
          log.debug(this + " ignoring invocation");
          return null;
       }
-      
+
       if (parameter instanceof SocketTransportCausalityTest.SimpleInvocation)
       {
          SocketTransportCausalityTest.SimpleInvocation inv = (SocketTransportCausalityTest.SimpleInvocation)parameter;
-         
+
          synchronized (this)
-         {            
+         {
             int clientNum = inv.clientNumber;
-            
+
             int lastCount = this.counters[clientNum];
-            
+
             log.trace("Received client " + clientNum + " num " + inv.num);
-            
+
             if (inv.num != lastCount + 1)
             {
                //Failed - out of sequence
                failed = true;
-               
+
                log.trace("Failed!!!! out of sequence");
             }
-            
+
             counters[clientNum] = inv.num;
-            
+
             return null;
          }
-         
+
       }
 
       invocationHistory.put(dirtyCopy(invocation));
@@ -181,19 +182,26 @@ public class RemotingTestSubsystem implements ServerInvocationHandler, Serializa
       }
    }
 
-   // Public ---------------------------------------------------------------------------------------
+   // TestableSubsystem implementation ----------------------------------------------------------
 
    public InvocationRequest getNextInvocation(long timeout) throws InterruptedException
    {
       return (InvocationRequest)invocationHistory.poll(timeout);
    }
-   
+
    public boolean isFailed()
    {
       synchronized (this)
       {
          return failed;
       }
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String toString()
+   {
+      return "RemotingTestSubsystem[" + Integer.toHexString(hashCode()) + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------

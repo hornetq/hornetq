@@ -13,15 +13,9 @@ import org.jboss.remoting.InvocationRequest;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public interface RemotingTestSubsystemServiceMBean
+public interface TestableSubsystem
 {
-   String getSubsystemClassName();
-   void setSubsystemClassName(String className);
-   
-   void start() throws Exception;
-   void stop();
+   InvocationRequest getNextInvocation(long timeout) throws InterruptedException;
 
-   InvocationRequest nextInvocation(Long timeout) throws Exception;
-   
-   boolean isFailed() throws Exception;
+   boolean isFailed();
 }
