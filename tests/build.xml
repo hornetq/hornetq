@@ -938,7 +938,7 @@
             <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
-               <include name="**/*LeakTest.class"/>
+               <include name="**/ClusterLeakTest.class"/>
             </fileset>
          </batchtest>
       </junit>

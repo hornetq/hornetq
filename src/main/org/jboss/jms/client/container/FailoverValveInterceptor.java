@@ -10,6 +10,7 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.FailoverCommandCenter;
@@ -100,6 +101,14 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
 
       JMSRemotingConnection remotingConnection = null;
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
+
+      // consumer.receive should be ignored as it doesn't perform any server IO:
+      // http://jira.jboss.org/jira/browse/JBMESSAGING-790
+      if (invocation.getTargetObject() instanceof ClientConsumerDelegate &&
+         methodName.equals("receive"))
+      {
+         return invocation.invokeNext();
+      }
 
       try
       {
