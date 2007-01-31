@@ -434,6 +434,8 @@
                <exclude name="**/thirdparty/remoting/PureAsynchronousCallTest.class"/>
                <exclude name="**/thirdparty/remoting/RemotingConnectionFailureTest.class"/>
                <exclude name="**/thirdparty/remoting/CallbackServerTimeoutTest.class"/>
+               <exclude name="**/thirdparty/remoting/ClientInvokerTimeoutTest.class"/>
+               <exclude name="**/thirdparty/remoting/SocketTransportCausalityTest.class"/>
             </fileset>
          </batchtest>
       </junit>
