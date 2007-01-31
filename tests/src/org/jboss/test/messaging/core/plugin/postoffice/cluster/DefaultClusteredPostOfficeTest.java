@@ -145,34 +145,38 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
    public final void testClusteredBindUnbind() throws Throwable
    {
       ClusteredPostOffice office1 = null;
-      
       ClusteredPostOffice office2 = null;
-      
       ClusteredPostOffice office3 = null;
       
       try
       {         
-         //Start one office
+         // Start one office
          
          office1 = createClusteredPostOffice(1, "testgroup");
          
          log.info("Created office1");
          
-         //Add a couple of bindings
+         // Add a couple of bindings
          
-         LocalClusteredQueue queue1 = new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         LocalClusteredQueue queue1 =
+            new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm,
+                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
          
          log.info("Added binding1");
          
-         LocalClusteredQueue queue2 = new LocalClusteredQueue(office1, 1, "sub2", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         LocalClusteredQueue queue2 =
+            new LocalClusteredQueue(office1, 1, "sub2", channelIDManager.getID(), ms, pm,
+                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+
          Binding binding2 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
          
          log.info("Added binding2");
          
-         //Start another office - make sure it picks up the bindings from the first node
+         // Start another office - make sure it picks up the bindings from the first node
          
          office2 = createClusteredPostOffice(2, "testgroup");
          
@@ -186,14 +190,16 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding1, (Binding)iter.next());
          assertEquivalent(binding2, (Binding)iter.next());         
          
-         //Add another binding on node 2
+         // Add another binding on node 2
          
-         LocalClusteredQueue queue3 = new LocalClusteredQueue(office2, 2, "sub3", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         LocalClusteredQueue queue3 =
+            new LocalClusteredQueue(office2, 2, "sub3", channelIDManager.getID(), ms, pm,
+                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
 
          Binding binding3 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue3);
   
-         //Make sure both nodes pick it up
+         // Make sure both nodes pick it up
          
          bindings = office1.listAllBindingsForCondition(new SimpleCondition("topic1"));
          assertNotNull(bindings);
@@ -213,9 +219,12 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding2, (Binding)iter.next());
          assertEquivalent(binding3, (Binding)iter.next());
 
-         //Add another binding on node 1
+         // Add another binding on node 1
          
-         LocalClusteredQueue queue4 = new LocalClusteredQueue(office2, 2, "sub4", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         LocalClusteredQueue queue4 =
+            new LocalClusteredQueue(office2, 2, "sub4", channelIDManager.getID(), ms, pm,
+                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+
          Binding binding4 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue4);
          
@@ -241,11 +250,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding3, (Binding)iter.next());
          assertEquivalent(binding4, (Binding)iter.next());
          
-         //Unbind binding 1 and binding 2
+         // Unbind binding 1 and binding 2
          office1.unbindClusteredQueue("sub1");
          office1.unbindClusteredQueue("sub2");
          
-         //Make sure bindings are not longer available on either node
+         // Make sure bindings are not longer available on either node
          
          bindings = office1.listAllBindingsForCondition(new SimpleCondition("topic1"));
          assertNotNull(bindings);
@@ -262,12 +271,12 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          iter = bindings.iterator();
          assertEquivalent(binding3, (Binding)iter.next());
          assertEquivalent(binding4, (Binding)iter.next());
-         
-         //Add a third office
+
+         // Add a third office
                   
          office3 = createClusteredPostOffice(3, "testgroup");
          
-         //Maks sure it picks up the bindings
+         // Maks sure it picks up the bindings
          
          bindings = office3.listAllBindingsForCondition(new SimpleCondition("topic1"));
          assertNotNull(bindings);
@@ -277,9 +286,11 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding3, (Binding)iter.next());
          assertEquivalent(binding4, (Binding)iter.next());
          
-         //Add another binding on node 3
+         // Add another binding on node 3
                   
-         LocalClusteredQueue queue5 = new LocalClusteredQueue(office3, 3, "sub5", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         LocalClusteredQueue queue5 =
+            new LocalClusteredQueue(office3, 3, "sub5", channelIDManager.getID(), ms, pm,
+                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
          
          Binding binding5 =
             office3.bindClusteredQueue(new SimpleCondition("topic1"), queue5);
@@ -313,14 +324,18 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding4, (Binding)iter.next());
          assertEquivalent(binding5, (Binding)iter.next());
          
-         //Add a durable and a non durable binding on node 1
+         // Add a durable and a non durable binding on node 1
          
-         LocalClusteredQueue queue6 = new LocalClusteredQueue(office1, 1, "sub6", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+         LocalClusteredQueue queue6 =
+            new LocalClusteredQueue(office1, 1, "sub6", channelIDManager.getID(), ms, pm,
+                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
          
          Binding binding6 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue6);
          
-         LocalClusteredQueue queue7 = new LocalClusteredQueue(office1, 1, "sub7", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         LocalClusteredQueue queue7 =
+            new LocalClusteredQueue(office1, 1, "sub7", channelIDManager.getID(), ms, pm,
+                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
          
          Binding binding7 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue7);
@@ -360,16 +375,16 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding6, (Binding)iter.next());
          assertEquivalent(binding7, (Binding)iter.next());
                
-         //Stop office 1
+         // Stop office 1
          office1.stop();
   
-         //Need to sleep since it may take some time for the view changed request to reach the
-         //members which causes the bindings to be removed
+         // Need to sleep since it may take some time for the view changed request to reach the
+         // members which causes the bindings to be removed.
          
          Thread.sleep(1000);
          
-         //All it's non durable bindings should be removed from the other nodes
-         //Durable bindings should remain
+         // All it's non durable bindings should be removed from the other nodes.
+         // Durable bindings should remain.
          
          bindings = office2.listAllBindingsForCondition(new SimpleCondition("topic1"));
          assertNotNull(bindings);
@@ -391,7 +406,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding5, (Binding)iter.next());
          assertEquivalent(binding6, (Binding)iter.next());
          
-         //Stop office 2
+         // Stop office 2
          office2.stop();
          
          bindings = office3.listAllBindingsForCondition(new SimpleCondition("topic1"));
@@ -402,7 +417,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding5, (Binding)iter.next());
          assertEquivalent(binding6, (Binding)iter.next());
          
-         //Restart office 1 and office 2
+         // Restart office 1 and office 2
          office1 = createClusteredPostOffice(1, "testgroup");
          
          office2 = createClusteredPostOffice(2, "testgroup");
@@ -431,18 +446,18 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding5, (Binding)iter.next());
          assertEquivalent(binding6, (Binding)iter.next());
          
-         //Stop all offices
+         // Stop all offices
          
          office1.stop();
          office2.stop();
          office3.stop();
          
-         //Start them all
+         // Start them all
          office1 = createClusteredPostOffice(1, "testgroup");
          office2 = createClusteredPostOffice(2, "testgroup");
          office3 = createClusteredPostOffice(3, "testgroup");
          
-         //Only the durable queue should survive
+         // Only the durable queue should survive
          
          bindings = office1.listAllBindingsForCondition(new SimpleCondition("topic1"));
          assertNotNull(bindings);
@@ -496,7 +511,6 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
             fail("data still in database");
          }
       }
-      
    }
    
    public final void testClusteredRoutePersistent() throws Throwable
