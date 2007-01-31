@@ -28,35 +28,20 @@ import java.util.List;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.contract.ConditionFactory;
-import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouter;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.ClusteredQueue;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouter;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.QueueStats;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.test.messaging.core.SimpleConditionFactory;
-import org.jboss.test.messaging.core.SimpleFilterFactory;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.plugin.base.PostOfficeTestBase;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
- * 
- * A DefaultRouterTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -345,32 +330,6 @@ public class DefaultRouterTest extends PostOfficeTestBase
 //
 //      queue.removeAllReferences();
 //   }
-
-   protected ClusteredPostOffice createClusteredPostOffice(int nodeId, String groupName) throws Exception
-   {
-      MessagePullPolicy redistPolicy = new NullMessagePullPolicy();
-      
-      FilterFactory ff = new SimpleFilterFactory();
-      
-      ClusterRouterFactory rf = new DefaultRouterFactory();
-      
-      FailoverMapper mapper = new DefaultFailoverMapper();
-      
-      ConditionFactory cf = new SimpleConditionFactory();
-
-      DefaultClusteredPostOffice postOffice =
-         new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-            sc.getClusteredPostOfficeSQLProperties(), true, nodeId,
-            "Clustered", ms, pm, tr, ff, cf, pool,
-            groupName,
-            new NamedJChannelFactory(JGroupsUtil.getControlStackProperties(),
-               JGroupsUtil.getDataStackProperties()),
-            5000, 5000, redistPolicy, rf, mapper, 1000);
-
-      postOffice.start();      
-      
-      return postOffice;
-   }
 
    // Private -------------------------------------------------------
    

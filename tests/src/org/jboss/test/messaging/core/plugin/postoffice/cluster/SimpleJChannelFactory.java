@@ -26,33 +26,45 @@ import org.jgroups.JChannel;
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.JChannelFactory;
 
 /**
- * A JChannelFactory that will use config names (from jchannelfactory)
+ * A JChannelFactory that will use String JChannel configurations to create JChannel instances.
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
+ *
+ * $Id$
  */
-public class NamedJChannelFactory implements JChannelFactory
+public class SimpleJChannelFactory implements JChannelFactory
 {
+   // Constants ------------------------------------------------------------------------------------
 
-   // Constants
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes
+   // Attributes -----------------------------------------------------------------------------------
 
    String asyncConfig;
    String syncConfig;
 
-   // Static
+   // Constructors ---------------------------------------------------------------------------------
 
-   // Constructors
-
-   public NamedJChannelFactory(String syncConfig, String asyncConfig)
+   public SimpleJChannelFactory(String syncConfig, String asyncConfig)
    {
       this.syncConfig = syncConfig;
       this.asyncConfig = asyncConfig;
    }
 
-   // Public
+   // JChannelFactory ------------------------------------------------------------------------------
+
+   public JChannel createSyncChannel() throws Exception
+   {
+      return new JChannel(syncConfig);
+   }
+
+   public JChannel createASyncChannel() throws Exception
+   {
+      return new JChannel(asyncConfig);
+   }
+
+   // Public ---------------------------------------------------------------------------------------
 
    public String getAsyncConfig()
    {
@@ -74,24 +86,12 @@ public class NamedJChannelFactory implements JChannelFactory
       this.syncConfig = syncConfig;
    }
 
-   // JChannelFactory implementation
+   // Package protected ----------------------------------------------------------------------------
 
-   public JChannel createSyncChannel() throws Exception
-   {
-      return new JChannel(syncConfig);
-   }
+   // Protected ------------------------------------------------------------------------------------
 
-   public JChannel createASyncChannel() throws Exception
-   {
-      return new JChannel(asyncConfig);
-   }
+   // Private --------------------------------------------------------------------------------------
 
-   // Package protected
-
-   // Protected
-
-   // Private
-
-   // Inner classes
+   // Inner classes --------------------------------------------------------------------------------
 
 }

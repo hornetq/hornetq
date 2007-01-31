@@ -206,6 +206,7 @@ public class ServiceContainer
    private boolean jca;
    private boolean remoting;
    private boolean security;
+   private boolean multiplexer; // the JGroups channels multiplexer
 
    private List toUnbindAtExit;
    private String ipAddressOrHostName;
@@ -397,10 +398,12 @@ public class ServiceContainer
          {
             startTransactionManager();
          }
+
          if (database)
          {
             startInVMDatabase();
          }
+
          if (jca)
          {
             startCachedConnectionManager(CACHED_CONNECTION_MANAGER_OBJECT_NAME);
@@ -416,12 +419,14 @@ public class ServiceContainer
                                    DEFAULTDS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
             startWrapperDataSourceService();
          }
+
          if (database && (transaction || jbossjta) && jca && cleanDatabase)
          {
             // We make sure the database is clean (only if we have all dependencies the database,
             // othewise we'll get an access error)
             deleteAllData();
          }
+
          if (xarecovery)
          {
             startRecoveryManager();
@@ -437,20 +442,22 @@ public class ServiceContainer
             startSecurityManager();
          }
 
+         if (multiplexer)
+         {
+            startMultiplexer();
+         }
+
          loadJNDIContexts();
 
          log.debug("loaded JNDI context");
 
-         // aways install multiplexer as this is a cheap operation. The actual JChannels are started
-         // only on demand
-         startMultiplexer();
 
          String transport = config.getRemotingTransport();
 
-         log.info("Remoting type: ........... " + (remoting ? transport : "DISABLED"));
-         log.info("Serialization type: ...... " + config.getSerializationType());
-         log.info("Database: ................ " + config.getDatabaseType());
-         log.info("Clustering mode: ......... " +
+         log.info("Remoting type: .............. " + (remoting ? transport : "DISABLED"));
+         log.info("Serialization type: ......... " + config.getSerializationType());
+         log.info("Database: ................... " + config.getDatabaseType());
+         log.info("Clustering mode: ............ " +
             (this.isClustered() ? "CLUSTERED" : "NON-CLUSTERED"));
 
          log.debug(this + " started");
@@ -464,6 +471,7 @@ public class ServiceContainer
 
    public void stop() throws Exception
    {
+
       unloadJNDIContexts();
 
       stopService(REMOTING_OBJECT_NAME);
@@ -562,7 +570,7 @@ public class ServiceContainer
       String persistenceConfigFile =
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
 
-      log.info("Peristence config file: .. " + persistenceConfigFile);
+      log.info("Persistence config file: .... " + persistenceConfigFile);
 
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
@@ -647,7 +655,7 @@ public class ServiceContainer
             "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
       }
 
-      log.info("Peristence config file: .. " + persistenceConfigFile);
+      log.info("Persistence config file: .... " + persistenceConfigFile);
 
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
@@ -771,6 +779,11 @@ public class ServiceContainer
       throws Exception
    {
       mbeanServer.removeNotificationListener(on, listener);
+   }
+
+   public MBeanServer getMBeanServer()
+   {
+      return mbeanServer;
    }
 
    public void bindDefaultJMSProvider() throws Exception
@@ -1443,22 +1456,27 @@ public class ServiceContainer
       }
       catch (SQLException e)
       {
-         //Ignore - tables might not exist
+         // Ignore - tables might not exist
       }
    }
 
-   private void startMultiplexer()
-      throws Exception
+   private void startMultiplexer() throws Exception
    {
-      log.info("Starting multiplexer");
+      log.debug("Starting multiplexer");
+
       String multiplexerConfigFile = "server/default/deploy/multiplexer-service.xml";
       URL multiplexerCofigURL = getClass().getClassLoader().getResource(multiplexerConfigFile);
+
       if (multiplexerCofigURL == null)
       {
          throw new Exception("Cannot find " + multiplexerCofigURL + " in the classpath");
       }
-      ServiceDeploymentDescriptor multiplexerDD = new ServiceDeploymentDescriptor(multiplexerCofigURL);
-      List services = multiplexerDD.query("name","Multiplexer");
+
+      ServiceDeploymentDescriptor multiplexerDD =
+         new ServiceDeploymentDescriptor(multiplexerCofigURL);
+
+      List services = multiplexerDD.query("name", "Multiplexer");
+
       if (services.isEmpty())
       {
          log.info("Couldn't find multiplexer config");
@@ -1468,7 +1486,8 @@ public class ServiceContainer
          log.info("Could find multiplexer config");
       }
 
-      MBeanConfigurationElement multiplexerConfig = (MBeanConfigurationElement)services.iterator().next();
+      MBeanConfigurationElement multiplexerConfig =
+         (MBeanConfigurationElement)services.iterator().next();
       ObjectName nameMultiplexer = registerAndConfigureService(multiplexerConfig);
       invoke(nameMultiplexer,"create", new Object[0], new String[0]);
       invoke(nameMultiplexer,"start", new Object[0], new String[0]);
@@ -1495,6 +1514,7 @@ public class ServiceContainer
             jca = true;
             remoting = true;
             security = true;
+            multiplexer = true;
          }
          else if ("transaction".equals(tok))
          {
@@ -1549,7 +1569,6 @@ public class ServiceContainer
             {
                remoting = false;
             }
-
          }
          else if ("security".equals(tok))
          {
@@ -1559,6 +1578,14 @@ public class ServiceContainer
                security = false;
             }
          }
+         else if ("multiplexer".equals(tok))
+         {
+            multiplexer = true;
+            if (minus)
+            {
+               multiplexer = false;
+            }
+         }
          else if ("none".equals(tok))
          {
             transaction = false;
@@ -1566,6 +1593,7 @@ public class ServiceContainer
             jca = false;
             remoting = false;
             security = false;
+            multiplexer = false;
          }
          else
          {
