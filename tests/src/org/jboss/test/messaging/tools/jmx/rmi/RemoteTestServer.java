@@ -26,8 +26,6 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 
 /**
- *
- *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>1.1</tt>
@@ -43,7 +41,7 @@ public class RemoteTestServer extends LocalTestServer
    // Attributes -----------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
-   
+
    public RemoteTestServer(int serverIndex)
    {
       super(serverIndex);
@@ -55,16 +53,16 @@ public class RemoteTestServer extends LocalTestServer
     * Only for in-VM use!
     */
    public MessageStore getMessageStore() throws Exception
-   {      
-      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
+   {
+      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
    }
 
    /**
     * Only for in-VM use!
     */
    public DestinationManager getDestinationManager() throws Exception
-   {      
-      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");     
+   {
+      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
    }
 
    /**
@@ -72,11 +70,11 @@ public class RemoteTestServer extends LocalTestServer
     */
    public PersistenceManager getPersistenceManager() throws Exception
    {
-      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");      
+      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
    }
 
    // Public ---------------------------------------------------------------------------------------
-    
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -84,5 +82,5 @@ public class RemoteTestServer extends LocalTestServer
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
-   
+
 }

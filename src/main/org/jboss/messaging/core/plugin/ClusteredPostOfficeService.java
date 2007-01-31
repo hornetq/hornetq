@@ -168,7 +168,6 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
       this.officeName = name;
    }
 
-
    public ObjectName getChannelFactoryName()
    {
       return channelFactoryName;
@@ -343,11 +342,14 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
             catch (Exception e)
             {
                // log.error("Error", e);
-               // noop... means we couldn't find the channel hence we should use regular XMLChannelFactories
+               // noop... means we couldn't find the channel hence we should use regular
+               // XMLChannelFactories
             }
-            if (info!=null)
+
+            if (info != null)
             {
                log.debug(this + " uses MultiplexerJChannelFactory");
+
                jChannelFactory =
                   new MultiplexerJChannelFactory(server, channelFactoryName, channelPartitionName,
                                                  syncChannelName, asyncChannelName);

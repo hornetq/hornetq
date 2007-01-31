@@ -324,7 +324,7 @@ public class LocalTestServer implements Server
 
          if (clustered && !databaseType.equals("hsqldb"))
          {
-            //HSQL can't be used for clustered server peer - since it's not a shared database
+            // HSQL can't be used for clustered server peer - since it's not a shared database
 
             persistenceConfigFile =
                "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
@@ -386,6 +386,7 @@ public class LocalTestServer implements Server
          {
             serverPeerConfig.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
          }
+         
          if (defaultTopicJNDIContext != null)
          {
             serverPeerConfig.setConstructorArgumentValue(0, 2, defaultTopicJNDIContext);
@@ -581,7 +582,6 @@ public class LocalTestServer implements Server
       sp.getVersion();
       return true;
    }
-
 
    public ObjectName getServerPeerObjectName()
    {

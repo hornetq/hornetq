@@ -1122,11 +1122,12 @@ public class ServerManagement
    {
       if (servers[i] == null)
       {
-         throw new Exception("The server " + i + " has not been created!");
+         throw new Exception("Server " + i + " has not been created!");
       }
+
       if (!servers[i].getServer().isStarted())
       {
-         throw new Exception("The server " + i + " has not been started!");
+         throw new Exception("Server " + i + " has not been started!");
       }
    }
 

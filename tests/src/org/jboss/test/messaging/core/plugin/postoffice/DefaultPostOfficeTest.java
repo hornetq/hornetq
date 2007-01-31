@@ -66,20 +66,6 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-     
-   }
-
-   public void tearDown() throws Exception
-   {            
-      super.tearDown();
-   }
-   
-   // Public --------------------------------------------------------
-   
-   
    public final void testBind() throws Throwable
    {
       PostOffice office1 = null;
@@ -1093,9 +1079,18 @@ public class DefaultPostOfficeTest extends PostOfficeTestBase
       assertEquals(binding1.getQueue().getChannelID(), binding2.getQueue().getChannelID());
       assertEquals(binding1.getQueue().isRecoverable(), binding2.getQueue().isRecoverable());
    }
-   
-   
-   
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

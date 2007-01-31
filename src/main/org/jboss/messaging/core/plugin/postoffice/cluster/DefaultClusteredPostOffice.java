@@ -86,9 +86,6 @@ import org.jgroups.blocks.RequestHandler;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
- *
- * A DefaultClusteredPostOffice
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
