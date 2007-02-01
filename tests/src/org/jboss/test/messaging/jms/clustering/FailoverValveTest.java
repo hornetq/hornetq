@@ -88,8 +88,6 @@ public class FailoverValveTest extends MessagingTestCase
             fail("One of threads had a failure, look at logs");
          }
       }
-
-      assertEquals (0, valve.getActiveLocks());
    }
 
    // Validate weird usages that are supposed to throw exceptions

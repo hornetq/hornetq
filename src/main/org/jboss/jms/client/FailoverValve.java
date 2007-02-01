@@ -53,7 +53,6 @@ public class FailoverValve
 
    private ReadWriteLock lock;
 
-   private int activeLocks = 0;
    private int activeCloses = 0;
 
    // these are only initialized if tracing is enabled
@@ -102,11 +101,6 @@ public class FailoverValve
 
       getCounter().counter++;
 
-      synchronized (this)
-      {
-         activeLocks++;
-      }
-
       if (trace)
       {
          Exception ex = new Exception();
@@ -123,11 +117,6 @@ public class FailoverValve
       if (getCounter().counter-- < 0)
       {
          throw new IllegalStateException("leave() was called without a prior enter() call");
-      }
-
-      synchronized (this)
-      {
-         activeLocks--;
       }
 
       if (trace)
@@ -177,7 +166,6 @@ public class FailoverValve
       log.debug(this + " closed");
 
       activeCloses++;
-      activeLocks++;
 
       // Sanity check only...
       if (activeCloses > 1)
@@ -196,7 +184,7 @@ public class FailoverValve
 
    public void open() throws InterruptedException
    {
-      if (activeCloses <= 0 || activeLocks <= 0)
+      if (activeCloses <= 0)
       {
          throw new IllegalStateException("Valve not closed");
       }
@@ -204,7 +192,6 @@ public class FailoverValve
       log.debug(this + " opening ...");
 
       activeCloses--;
-      activeLocks--;
 
       lock.writeLock().release();
 
@@ -222,11 +209,6 @@ public class FailoverValve
       }
 
       log.debug(this + " opened");
-   }
-
-   public synchronized int getActiveLocks()
-   {
-      return activeLocks;
    }
 
    public String toString()
