@@ -284,7 +284,7 @@ public class BridgeTestBase extends MessagingTestCase
       }
    }
    
-   protected void checkNoneReceived(ConnectionFactory cf, Destination dest) throws Exception
+   protected void checkNoneReceived(ConnectionFactory cf, Destination dest, long timeout) throws Exception
    {
       Connection conn = null;
       
@@ -298,7 +298,7 @@ public class BridgeTestBase extends MessagingTestCase
          
          MessageConsumer cons = sess.createConsumer(dest);
          
-         Message m = cons.receive(5000);
+         Message m = cons.receive(timeout);
          
          assertNull(m);
          

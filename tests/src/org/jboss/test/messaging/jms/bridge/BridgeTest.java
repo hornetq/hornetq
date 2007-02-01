@@ -658,7 +658,7 @@ public class BridgeTest extends BridgeTestBase
             
          this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 5000);
                                 
       }
       finally
@@ -715,7 +715,7 @@ public class BridgeTest extends BridgeTestBase
          
          checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 5000);
                        
       }
       finally
@@ -749,7 +749,7 @@ public class BridgeTest extends BridgeTestBase
          
          checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 5000);
                        
       }
       finally
@@ -787,7 +787,7 @@ public class BridgeTest extends BridgeTestBase
                          
          //Verify none are received
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 5000);
          
          log.info("Waiting");
          Thread.sleep(120000);
@@ -801,9 +801,9 @@ public class BridgeTest extends BridgeTestBase
          this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
                   
          
-         this.checkNoneReceived(cf1, destQueue);         
+         this.checkNoneReceived(cf1, destQueue, 5000);         
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
       }
       finally
       {      
@@ -858,9 +858,9 @@ public class BridgeTest extends BridgeTestBase
          
          this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 5000);
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
                                       
          t.join();
          
@@ -938,9 +938,9 @@ public class BridgeTest extends BridgeTestBase
          
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf0, localDestQueue);
+         this.checkNoneReceived(cf0, localDestQueue, 5000);
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
                           
          t.join();
          
@@ -1002,7 +1002,7 @@ public class BridgeTest extends BridgeTestBase
                          
          //Verify none are received
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 5000);
          
          //Send the other half
          
@@ -1030,9 +1030,9 @@ public class BridgeTest extends BridgeTestBase
          
          //Make sure no messages are left
          
-         this.checkNoneReceived(cf1, destQueue);         
+         this.checkNoneReceived(cf1, destQueue, 5000);         
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
       }
       finally
       {      
@@ -1067,7 +1067,7 @@ public class BridgeTest extends BridgeTestBase
             
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
          
-         this.checkNoneReceived(cf1, destQueue);                
+         this.checkNoneReceived(cf1, destQueue, 5000);                
          
          //Send the other half
          
@@ -1078,9 +1078,9 @@ public class BridgeTest extends BridgeTestBase
          
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf0, localDestQueue);
+         this.checkNoneReceived(cf0, localDestQueue, 5000);
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
          
          //Send another batch with one more than batch size
          
@@ -1100,9 +1100,9 @@ public class BridgeTest extends BridgeTestBase
          
          //Make sure no messages are left
          
-         this.checkNoneReceived(cf0, localDestQueue);         
+         this.checkNoneReceived(cf0, localDestQueue, 5000);         
          
-         this.checkNoneReceived(cf0, sourceQueue);        
+         this.checkNoneReceived(cf0, sourceQueue, 5000);        
       }
       finally
       {               
@@ -1141,7 +1141,7 @@ public class BridgeTest extends BridgeTestBase
          
          //Verify none are received
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 2000);
          
          //Wait a bit longer
          
@@ -1151,11 +1151,11 @@ public class BridgeTest extends BridgeTestBase
          
          this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 5000);
          
          //Make sure no messages are left in the source dest
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
          
       }
       finally
@@ -1197,7 +1197,7 @@ public class BridgeTest extends BridgeTestBase
          
          //Verify none are received
          
-         this.checkNoneReceived(cf0, localDestQueue);
+         this.checkNoneReceived(cf0, localDestQueue, 2000);
          
          //Wait a bit longer
          
@@ -1207,11 +1207,11 @@ public class BridgeTest extends BridgeTestBase
          
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf0, localDestQueue);
+         this.checkNoneReceived(cf0, localDestQueue, 5000);
          
          //Make sure no messages are left in the source dest
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
          
       }
       finally

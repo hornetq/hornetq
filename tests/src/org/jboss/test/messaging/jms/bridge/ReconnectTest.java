@@ -161,7 +161,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Verify none are received
          
-         checkNoneReceived(cf1, destQueue);
+         checkNoneReceived(cf1, destQueue, 5000);
          
          //Now crash the dest server
          
@@ -196,7 +196,7 @@ public class ReconnectTest extends BridgeTestBase
                     
          //Make sure no messages are left in the source dest
          
-         this.checkNoneReceived(cf0, sourceQueue);                
+         this.checkNoneReceived(cf0, sourceQueue, 5000);                
       }
       finally
       {      
@@ -251,7 +251,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //verify none are received
          
-         this.checkNoneReceived(cf1, destQueue);
+         this.checkNoneReceived(cf1, destQueue, 2000);
          
          
          //Now crash the dest server
@@ -279,7 +279,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Make sure no messages are left in the source dest
          
-         checkNoneReceived(cf0, sourceQueue);
+         checkNoneReceived(cf0, sourceQueue, 5000);
          
          log.info("Got here");
          
@@ -334,7 +334,7 @@ public class ReconnectTest extends BridgeTestBase
 
          //Verify none are received
          
-         checkNoneReceived(cf1, destQueue);
+         checkNoneReceived(cf1, destQueue, 2000);
          
 
          //Poison server 1 so it crashes on commit of dest but after prepare
@@ -385,7 +385,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Make sure no messages are left in the source dest
          
-         this.checkNoneReceived(cf0, sourceQueue);
+         this.checkNoneReceived(cf0, sourceQueue, 5000);
          
          log.info("Got here");
          
