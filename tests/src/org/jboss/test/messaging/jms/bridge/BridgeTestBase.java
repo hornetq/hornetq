@@ -257,7 +257,7 @@ public class BridgeTestBase extends MessagingTestCase
       throws Exception
    {
       Connection conn = null;
-     
+      
       log.trace("Sending " + numMessages + " messages");
  
       try

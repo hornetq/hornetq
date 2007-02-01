@@ -190,6 +190,8 @@ public class ReconnectTest extends BridgeTestBase
          
          sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
          
+         log.info("Sent messages");
+         
          Thread.sleep(3000);
                   
          checkMessagesReceived(cf1, destQueue, qosMode, NUM_MESSAGES);
