@@ -113,10 +113,10 @@ public class SessionState extends HierarchicalStateSupport
          xaResource = new MessagingXAResource(parent.getResourceManager(), this);
       }
 
-      // If session is transacted and XA, the currentTxId will be updated when the XAResource will
-      // be enrolled with a global transaction.
+      // Note we create the transaction even if XA - XA transactions must behave like
+      // local tx when not enlisted in a global tx
 
-      if (transacted & !xa)
+      if (transacted)
       {
          // Create a local tx
          currentTxId = parent.getResourceManager().createLocalTx();

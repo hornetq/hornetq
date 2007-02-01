@@ -54,7 +54,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 
 /**
  * 
- * A XAJBossTxMgrTestBase
+ * A XATestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -62,7 +62,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
  * $Id$
  *
  */
-public abstract class XAJBossTxMgrTestBase extends MessagingTestCase
+public abstract class XATestBase extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -87,7 +87,7 @@ public abstract class XAJBossTxMgrTestBase extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public XAJBossTxMgrTestBase(String name)
+   public XATestBase(String name)
    {
       super(name);
    }
@@ -162,7 +162,14 @@ public abstract class XAJBossTxMgrTestBase extends MessagingTestCase
       if (TxUtils.isUncommitted(tm))
       {
          //roll it back
-         tm.rollback();
+         try
+         {
+            tm.rollback();
+         }
+         catch (Throwable ignore)
+         {
+            //The connection will probably be closed so this may well throw an exception
+         }
       }
       if (tm.getTransaction() != null)
       {
@@ -476,20 +483,8 @@ public abstract class XAJBossTxMgrTestBase extends MessagingTestCase
          
          //Then we do a commit
          tm.commit();
-         
-         //And enlist again
-         
-         tx = tm.getTransaction();
-         
-
-         tm.begin();
-         
-         tx = tm.getTransaction();
-         tx.enlistResource(res);
-         
-         tx.delistResource(res, XAResource.TMSUCCESS);
-                  
-         //Then we receive the messages
+                              
+         //Then we receive the messages outside the tx
          
          TextMessage rm1 = (TextMessage)cons.receive(1000);
          
@@ -506,6 +501,18 @@ public abstract class XAJBossTxMgrTestBase extends MessagingTestCase
          Message rm3 = cons.receive(1000);
          
          assertNull(rm3);
+         
+         //And enlist again - this should convert the work done in the local tx
+         //into the global branch
+         
+         tx = tm.getTransaction();
+         
+         tm.begin();
+         
+         tx = tm.getTransaction();
+         tx.enlistResource(res);
+         
+         tx.delistResource(res, XAResource.TMSUCCESS);         
                
          //Now rollback the tx - this should cause redelivery of the two messages
          tx.rollback();
@@ -587,17 +594,9 @@ public abstract class XAJBossTxMgrTestBase extends MessagingTestCase
          tx.delistResource(res, XAResource.TMSUCCESS);
          
          //Then we do a rollback
-         tm.rollback();
+         tm.rollback();                 
          
-         tm.begin();
-                  
-         //And enlist again
-         
-         tx = tm.getTransaction();
-         tx.enlistResource(res);
-         tx.delistResource(res, XAResource.TMSUCCESS);
-
-         //Then we receive the messages
+         //Then we receive the messages outside the global tx
          
          TextMessage rm1 = (TextMessage)cons.receive(1000);
          
@@ -614,6 +613,16 @@ public abstract class XAJBossTxMgrTestBase extends MessagingTestCase
          Message rm3 = cons.receive(1000);
          
          assertNull(rm3);
+         
+         tm.begin();
+         
+         //And enlist again - the work should then be converted into the global tx branch
+         
+         tx = tm.getTransaction();
+         
+         tx.enlistResource(res);
+         
+         tx.delistResource(res, XAResource.TMSUCCESS);
                
          //Now rollback the tx - this should cause redelivery of the two messages
          tx.rollback();

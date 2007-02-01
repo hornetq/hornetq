@@ -27,9 +27,9 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.util.MessagingXAException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
-import org.jboss.tm.XidImpl;
 
 /**
  * An XAResource implementation.
@@ -112,97 +112,6 @@ public class MessagingXAResource implements XAResource
       return ((MessagingXAResource)xaResource).rm == this.rm;
    }
    
-   public void commit(Xid xid, boolean onePhase) throws XAException
-   {
-      if (trace) { log.trace(this + " committing " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
-
-      // Recreate Xid. See JBMESSAGING-661 [JPL]
-
-      if (!(xid instanceof MessagingXid))
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
-
-      rm.commit(xid, onePhase, connection);
-
-      // leave the session in a 'clean' state, the currentTxId will be set when the XAResource will
-      // be enrolled with a new transaction.
-
-      setCurrentTransactionId(null);
-   }
-
-   public void end(Xid xid, int flags) throws XAException
-   {
-      if (trace) { log.trace(this + " ending " + xid + ", flags: " + flags); }
-
-      // Recreate Xid. See JBMESSAGING-661 [JPL]
-
-      if (!(xid instanceof MessagingXid))
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
-
-      synchronized (this)
-      {
-         switch (flags)
-         {
-            case TMSUSPEND :
-               unsetCurrentTransactionId(xid);                             
-               rm.suspendTx(xid);
-               break;
-            case TMFAIL :
-               unsetCurrentTransactionId(xid);
-               rm.endTx(xid, false);
-               break;
-            case TMSUCCESS :
-               unsetCurrentTransactionId(xid);
-               rm.endTx(xid, true);
-               break;
-         }
-      }
-   }
-   
-   public void forget(Xid xid) throws XAException
-   {
-      if (trace) { log.trace(this + " forgetting " + xid + " (currently an NOOP)"); }
-
-      // Recreate Xid. See JBMESSAGING-661 [JPL]
-
-      if (!(xid instanceof MessagingXid))
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
-   }
-
-   public int prepare(Xid xid) throws XAException
-   {
-      if (trace) { log.trace(this + " preparing " + xid); }
-
-      // Recreate Xid. See JBMESSAGING-661 [JPL]
-
-      if (!(xid instanceof MessagingXid))
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
-
-      return rm.prepare(xid, connection);
-   }
-
-   public Xid[] recover(int flags) throws XAException
-   {
-      if (trace) { log.trace(this + " recovering, flags: " + flags); }
-
-      Xid[] xids = rm.recover(flags, connection);
-      
-      if (trace) { log.trace("Recovered txs: " + xids); }
-      
-      return xids;
-   }
-
-   public void rollback(Xid xid) throws XAException
-   {
-      if (trace) { log.trace(this + " rolling back " + xid); }
-
-      // Recreate Xid. See JBMESSAGING-661 [JPL]
-
-      if (!(xid instanceof MessagingXid))
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
-
-      rm.rollback(xid, connection);
-   }
-
    public void start(Xid xid, int flags) throws XAException
    {
       if (trace) { log.trace(this + " starting " + xid + ", flags: " + flags); }
@@ -210,21 +119,29 @@ public class MessagingXAResource implements XAResource
       // Recreate Xid. See JBMESSAGING-661 [JPL]
 
       if (!(xid instanceof MessagingXid))
+      {
          xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      }
 
       boolean convertTx = false;
       
-      if (sessionState.getCurrentTxId() != null)
+      Object currentXid = sessionState.getCurrentTxId();
+      
+      // Sanity check
+      if (currentXid == null)
       {
-         if (flags == TMNOFLAGS && sessionState.getCurrentTxId() instanceof LocalTx)
-         {
-            convertTx = true;
-         }
+         throw new MessagingXAException(XAException.XAER_RMFAIL, "Current xid is not set");
       }
+      
+      if (flags == TMNOFLAGS && sessionState.getCurrentTxId() instanceof LocalTx)
+      {
+         convertTx = true;
+         
+         if (trace) { log.trace("Converting local tx into global tx branch"); }
+      }      
 
       synchronized (this)
       {
-
          switch (flags)
          {
             case TMNOFLAGS :
@@ -235,6 +152,8 @@ public class MessagingXAResource implements XAResource
                   // session in a new tx. If the session has any listeners then in that period,
                   // messages can be received asychronously but we want them to be received in the
                   // context of a tx, so we convert.
+                  // Also for an transacted delivery in a MDB we need to do this as discussed
+                  // in fallbackToLocalTx()
                   setCurrentTransactionId(rm.convertTx((LocalTx)sessionState.getCurrentTxId(), xid));
                }
                else
@@ -248,10 +167,99 @@ public class MessagingXAResource implements XAResource
             case TMRESUME :
                setCurrentTransactionId(rm.resumeTx(xid));
                break;
+            default:
+               throw new MessagingXAException(XAException.XAER_PROTO, "Invalid flags: " + flags);
          }
       }
    }
+   
+   public void end(Xid xid, int flags) throws XAException
+   {
+      if (trace) { log.trace(this + " ending " + xid + ", flags: " + flags); }
 
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof MessagingXid))
+      {
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      }
+
+      unsetCurrentTransactionId(xid);    
+      
+      switch (flags)
+      {
+         case TMSUSPEND :                                    
+            rm.suspendTx(xid);
+            break;
+         case TMFAIL :
+            rm.endTx(xid, false);
+            break;
+         case TMSUCCESS :
+            rm.endTx(xid, true);
+            break;
+         default :
+            throw new MessagingXAException(XAException.XAER_PROTO, "Invalid flags: " + flags);         
+      }      
+   }
+   
+   public int prepare(Xid xid) throws XAException
+   {
+      if (trace) { log.trace(this + " preparing " + xid); }
+
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof MessagingXid))
+      {
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      }
+
+      return rm.prepare(xid, connection);
+   }
+   
+   public void commit(Xid xid, boolean onePhase) throws XAException
+   {
+      if (trace) { log.trace(this + " committing " + xid + (onePhase ? " (one phase)" : " (two phase)")); }
+
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof MessagingXid))
+      {
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      }
+
+      rm.commit(xid, onePhase, connection);
+   }
+   
+   public void rollback(Xid xid) throws XAException
+   {
+      if (trace) { log.trace(this + " rolling back " + xid); }
+
+      // Recreate Xid. See JBMESSAGING-661 [JPL]
+
+      if (!(xid instanceof MessagingXid))
+      {
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      }
+
+      rm.rollback(xid, connection);
+   }
+   
+   public void forget(Xid xid) throws XAException
+   {
+      if (trace) { log.trace(this + " forgetting " + xid + " (currently an NOOP)"); }
+   }
+
+   public Xid[] recover(int flags) throws XAException
+   {
+      if (trace) { log.trace(this + " recovering, flags: " + flags); }
+
+      Xid[] xids = rm.recover(flags, connection);
+      
+      if (trace) { log.trace("Recovered txs: " + xids); }
+      
+      return xids;
+   }
+   
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
@@ -276,14 +284,14 @@ public class MessagingXAResource implements XAResource
    
    // Private --------------------------------------------------------------------------------------
    
-   private void setCurrentTransactionId(final Xid xid)
+   private void setCurrentTransactionId(Object xid)
    {
       if (trace) { log.trace(this + " setting current xid to " + xid + ",  previous " + sessionState.getCurrentTxId()); }
 
       sessionState.setCurrentTxId(xid);
    }
    
-   private void unsetCurrentTransactionId(final Xid xid)
+   private void unsetCurrentTransactionId(Object xid)
    {
       if (xid == null)
       {
@@ -296,6 +304,15 @@ public class MessagingXAResource implements XAResource
       // recycled
       if (xid.equals(sessionState.getCurrentTxId()))
       {
+         // When a transaction association ends we fall back to acting as if in a local tx
+         // This is because for MDBs, the message is received before the global tx
+         // has started. Therefore we receive it in a local tx, then convert the work
+         // done into the global tx branch when the resource is enlisted.
+         // See Mark Little's book "Java Transaction Processing" Chapter 5 for
+         // a full explanation
+         // So in other words - when the session is not enlisted in a global tx
+         // it will always have a local xid set
+         
          sessionState.setCurrentTxId(rm.createLocalTx());
       }
    }

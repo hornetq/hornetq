@@ -31,7 +31,7 @@ package org.jboss.test.messaging.jms;
  * $Id$
  *
  */
-public class XAOldJBossTxMgrTest extends XAJBossTxMgrTestBase
+public class XAOldJBossTxMgrTest extends XATestBase
 {
 
    public XAOldJBossTxMgrTest(String name)

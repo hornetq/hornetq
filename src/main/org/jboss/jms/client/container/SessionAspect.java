@@ -113,8 +113,7 @@ public class SessionAspect
       //before on message had finished executing
       
       if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-          ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
-          (state.isXA() && state.getCurrentTxId() == null))
+          ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
          //Acknowledge or cancel any outstanding auto ack
          
@@ -212,12 +211,10 @@ public class SessionAspect
          state.getClientAckList().add(info);
       }
       else if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-               ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
-               (state.isXA() && state.getCurrentTxId() == null))
+               ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
          // We collect the single acknowledgement in the state. Currently DUPS_OK is treated the
-         // same as AUTO_ACKNOWLDGE. Also XA sessions not enlisted in a global tx are treated as
-         // AUTO_ACKNOWLEDGE.
+         // same as AUTO_ACKNOWLDGE.
                            
          if (trace) { log.trace(this + " added " + info + " to session state"); }
          
@@ -231,7 +228,7 @@ public class SessionAspect
          {
             // the session is non-XA and transacted, or XA and enrolled in a global transaction. An
             // XA session that has not been enrolled in a global transaction behaves as a
-            // non-transacted session.
+            // transacted session.
             
             ConnectionState connState = (ConnectionState)state.getParent();
    
@@ -262,13 +259,11 @@ public class SessionAspect
       int ackMode = state.getAcknowledgeMode();
       
       if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-          ackMode == Session.DUPS_OK_ACKNOWLEDGE ||
-          (state.isXA() && state.getCurrentTxId() == null))
+          ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
          //We auto acknowledge
          //Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE
-         //Also XA sessions not enlisted in a global tx are treated as AUTO_ACKNOWLEDGE
-         
+
          SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
 
          //It is possible that session.recover() is called inside a message listener onMessage

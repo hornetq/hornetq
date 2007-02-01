@@ -26,9 +26,19 @@ import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
@@ -38,6 +48,7 @@ import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * 
@@ -65,6 +76,8 @@ public class GraveyardTest extends MessagingTestCase
    protected ConnectionFactory cf;
    
    protected Destination topic;
+   
+   protected Destination queue;
 
 
    protected void setUp() throws Exception
@@ -171,6 +184,212 @@ public class GraveyardTest extends MessagingTestCase
       public void removeListener(InvokerCallbackHandler callbackHandler)
       {
          fail("This ServerInvocationHandler is not supposed to remove listeners");
+      }
+   }
+   
+   
+   
+   
+   /**
+    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-410.
+    */
+   public void testSendNoGlobalTransaction() throws Exception
+   {
+      Transaction suspended = null;
+
+      try
+      {
+         ServerManagement.deployQueue("MyQueue");
+
+         // make sure there's no active JTA transaction
+
+         suspended = TransactionManagerLocator.getInstance().locate().suspend();
+
+         // send a message to the queue, using a JCA wrapper
+
+         Queue queue = (Queue)initialContext.lookup("queue/MyQueue");
+
+         ConnectionFactory mcf = (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
+
+         Connection conn = mcf.createConnection();
+
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(queue);
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         Message m = s.createTextMessage("one");
+
+         p.send(m);
+
+         log.debug("message sent");
+
+         conn.close();
+
+         // receive the message
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         conn = cf.createConnection();
+         conn.start();
+         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer c = s.createConsumer(queue);
+         TextMessage rm = (TextMessage)c.receive(1000);
+
+         assertEquals("one", rm.getText());
+
+         conn.close();
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("MyQueue");
+
+         if (suspended != null)
+         {
+            TransactionManagerLocator.getInstance().locate().resume(suspended);
+         }
+      }
+   }
+
+   /**
+    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-410. Use a cached connection that
+    * was initally enroled in a global transaction.
+    */
+   public void testSendNoGlobalTransaction2() throws Exception
+   {
+
+      Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
+
+      try
+      {
+
+         ConnectionFactory mcf = (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
+         Connection conn = mcf.createConnection();
+         conn.start();
+
+         UserTransaction ut = ServerManagement.getUserTransaction();
+
+         ut.begin();
+
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(queue);
+         Message m = s.createTextMessage("one");
+
+         p.send(m);
+
+         ut.commit();
+
+         conn.close();
+
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("ConnectionFactory");
+         conn = cf.createConnection();
+         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn.start();
+
+         TextMessage rm = (TextMessage)s.createConsumer(queue).receive(500);
+
+         assertEquals("one", rm.getText());
+
+         conn.close();
+
+         // make sure there's no active JTA transaction
+
+         assertNull(TransactionManagerLocator.getInstance().locate().getTransaction());
+
+         // send a message to the queue, using a JCA wrapper
+
+         mcf = (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
+
+         conn = mcf.createConnection();
+
+         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         p = s.createProducer(queue);
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         m = s.createTextMessage("one");
+
+         p.send(m);
+
+         conn.close();
+
+         // receive the message
+         cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         conn = cf.createConnection();
+         conn.start();
+         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer c = s.createConsumer(queue);
+         rm = (TextMessage)c.receive(1000);
+
+         assertEquals("one", rm.getText());
+
+         conn.close();
+      }
+      finally
+      {
+         if (suspended != null)
+         {
+            TransactionManagerLocator.getInstance().locate().resume(suspended);
+         }
+      }
+   }
+
+   /**
+    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-520.
+    */
+   public void testReceiveNoGlobalTransaction() throws Exception
+   {
+      try
+      {
+         ServerManagement.deployQueue("MyQueue2");
+
+         // send a message to the queue
+
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         Queue queue = (Queue)initialContext.lookup("queue/MyQueue2");
+         Connection conn = cf.createConnection();
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(queue);
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         Message m = s.createTextMessage("one");
+         p.send(m);
+         conn.close();
+
+         // make sure there's no active JTA transaction
+
+         Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
+
+         try
+         {
+            // using a JCA wrapper
+
+            ConnectionFactory mcf = (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
+            conn = mcf.createConnection();
+            conn.start();
+
+            // no active JTA transaction here
+
+            s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageConsumer c = s.createConsumer(queue);
+
+            // this method should send an untransacted acknowledgment that should clear the delivery
+            TextMessage rm = (TextMessage)c.receive(1000);
+
+            assertEquals("one", rm.getText());
+
+            conn.close();
+
+            // now the queue should be empty
+            ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
+            Integer count = (Integer)ServerManagement.getAttribute(on, "MessageCount");
+            assertEquals(0, count.intValue());
+         }
+         finally
+         {
+
+            if (suspended != null)
+            {
+               TransactionManagerLocator.getInstance().locate().resume(suspended);
+            }
+         }
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("MyQueue2");
       }
    }
 }

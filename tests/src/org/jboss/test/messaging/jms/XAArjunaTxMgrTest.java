@@ -30,7 +30,7 @@ package org.jboss.test.messaging.jms;
  * $Id$
  *
  */
-public class XAArjunaTxMgrTest extends XAJBossTxMgrTestBase
+public class XAArjunaTxMgrTest extends XATestBase
 {
 
    public XAArjunaTxMgrTest(String name)

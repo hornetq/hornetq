@@ -277,6 +277,59 @@ public class ResourceManager
    
    // Package Private ------------------------------------------------------------------------------
    
+   Xid startTx(Xid xid) throws XAException
+   {
+      if (trace) { log.trace("starting " + xid); }
+      
+      ClientTransaction state = getTxInternal(xid);
+      
+      if (state != null)
+      {
+         throw new MessagingXAException(XAException.XAER_DUPID, "Transaction already exists with xid " + xid);
+      }
+            
+      transactions.put(xid, new ClientTransaction());
+      
+      return xid;
+   }
+   
+   void endTx(Xid xid, boolean success) throws XAException
+   {
+      if (trace) { log.trace("ending " + xid + ", success=" + success); }
+        
+      ClientTransaction state = getTxInternal(xid);
+      
+      if (state == null)
+      {  
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
+      }        
+      
+      state.setState(ClientTransaction.TX_ENDED);
+   }
+   
+   int prepare(Xid xid, ConnectionDelegate connection) throws XAException
+   {
+      if (trace) { log.trace("preparing " + xid); }
+      
+      ClientTransaction state = getTxInternal(xid);
+      
+      if (state == null)
+      { 
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
+      } 
+      
+      TransactionRequest request =
+         new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
+      
+      sendTransactionXA(request, connection);      
+      
+      state.setState(ClientTransaction.TX_PREPARED);
+      
+      if (trace) { log.trace("State is now: " + state.getState()); }
+      
+      return XAResource.XA_OK;
+   }
+   
    void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("commiting xid " + xid + ", onePhase=" + onePhase); }
@@ -394,20 +447,7 @@ public class ResourceManager
          log.error("Failed to redeliver", e);
       }                               
    }
-   
-   void endTx(Xid xid, boolean success) throws XAException
-   {
-      if (trace) { log.trace("ending " + xid + ", success=" + success); }
-        
-      ClientTransaction state = getTxInternal(xid);
-      
-      if (state == null)
-      {  
-         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
-      }        
-      
-      state.setState(ClientTransaction.TX_ENDED);
-   }
+  
    
    Xid joinTx(Xid xid) throws XAException
    {
@@ -423,28 +463,7 @@ public class ResourceManager
       return xid;
    }
    
-   int prepare(Xid xid, ConnectionDelegate connection) throws XAException
-   {
-      if (trace) { log.trace("preparing " + xid); }
-      
-      ClientTransaction state = getTxInternal(xid);
-      
-      if (state == null)
-      { 
-         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
-      } 
-      
-      TransactionRequest request =
-         new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
-      
-      sendTransactionXA(request, connection);      
-      
-      state.setState(ClientTransaction.TX_PREPARED);
-      
-      if (trace) { log.trace("State is now: " + state.getState()); }
-      
-      return XAResource.XA_OK;
-   }
+   
    
    Xid resumeTx(Xid xid) throws XAException
    {
@@ -474,51 +493,35 @@ public class ResourceManager
       return xid;
    }
 
-   Xid convertTx(LocalTx anonXid, Xid xid) throws XAException
+   Xid convertTx(LocalTx localTx, Xid xid) throws XAException
    {
-      if (trace) { log.trace("converting " + anonXid + " to " + xid); }
+      if (trace) { log.trace("converting " + localTx + " to " + xid); }
+      
+      //Sanity check
+      
+      ClientTransaction newTx = getTxInternal(xid);
 
-      ClientTransaction state = getTxInternal(anonXid);
-
-      if (state == null)
-      {        
-         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + anonXid);
-      }
-
-      state = getTxInternal(xid);
-
-      if (state != null)
+      if (newTx != null)
       {        
          throw new MessagingXAException(XAException.XAER_DUPID, "Transaction already exists:" + xid);
       }
 
-      ClientTransaction s = removeTxInternal(anonXid);
+      //Remove the local tx
       
-      if (s == null)
-      {
-         throw new java.lang.IllegalStateException("Cannot find xid to remove " + anonXid);
+      ClientTransaction local = removeTxInternal(localTx);
+
+      if (local == null)
+      {        
+         throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + localTx);
       }
       
-      transactions.put(xid, s);
+      // Add the local back in with the new xid
+      
+      transactions.put(xid, local);
       
       return xid;
    }
-   
-   Xid startTx(Xid xid) throws XAException
-   {
-      if (trace) { log.trace("starting " + xid); }
-      
-      ClientTransaction state = getTxInternal(xid);
-      
-      if (state != null)
-      {
-         throw new MessagingXAException(XAException.XAER_DUPID, "Transaction already exists with xid " + xid);
-      }
-            
-      transactions.put(xid, new ClientTransaction());
-      
-      return xid;
-   }
+ 
    
    Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
    {
