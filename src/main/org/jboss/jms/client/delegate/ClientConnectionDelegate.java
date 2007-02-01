@@ -21,23 +21,36 @@
   */
 package org.jboss.jms.client.delegate;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
-import javax.transaction.xa.Xid;
 
-import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.FailoverListener;
+import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.remoting.Client;
+import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.wireformat.CloseRequest;
+import org.jboss.jms.wireformat.ClosingRequest;
+import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateRequest;
+import org.jboss.jms.wireformat.ConnectionGetClientIDRequest;
+import org.jboss.jms.wireformat.ConnectionGetPreparedTransactionsRequest;
+import org.jboss.jms.wireformat.ConnectionSendTransactionRequest;
+import org.jboss.jms.wireformat.ConnectionSetClientIDRequest;
+import org.jboss.jms.wireformat.ConnectionStartRequest;
+import org.jboss.jms.wireformat.ConnectionStopRequest;
+import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * The client-side Connection delegate class.
@@ -54,13 +67,13 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final long serialVersionUID = 6680015509555859038L;
-
    // Attributes -----------------------------------------------------------------------------------
 
    private int serverID;
+   
    private transient JMSRemotingConnection remotingConnection;
-   private Version versionToUse;
+   
+   private transient Version versionToUse;
    
    // Static ---------------------------------------------------------------------------------------
 
@@ -69,6 +82,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public ClientConnectionDelegate(int objectID, int serverID)
    {
       super(objectID);
+      
       this.serverID = serverID;
    }
 
@@ -115,35 +129,31 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
          this.start();
       }
    }
+   
+   public void setState(HierarchicalState state)
+   {
+      super.setState(state);
+      
+      client = ((ConnectionState)state).getRemotingConnection(). getRemotingClient();
+   }
 
-   // ConnectionDelegate implementation ------------------------------------------------------------
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+   // Closeable implementation ---------------------------------------------------------------------
+   
    public void close() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new CloseRequest(id, version);
+      
+      doInvoke(client, req);
    }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+   
    public void closing() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ClosingRequest(id, version);
+      
+      doInvoke(client, req);
    }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean isClosed()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
+   
+   // ConnectionDelegate implementation ------------------------------------------------------------
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -159,25 +169,21 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    * @see org.jboss.jms.server.endpoint.advised.ConnectionAdvised#createSessionDelegate(boolean, int, boolean)
-    */
    public SessionDelegate createSessionDelegate(boolean transacted,
                                                 int acknowledgmentMode,
                                                 boolean isXA) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConnectionCreateSessionDelegateRequest(id, version,
+                                                                      transacted, acknowledgmentMode, isXA);      
+      return (SessionDelegate)doInvoke(client, req);     
    }
+  
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public String getClientID() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConnectionGetClientIDRequest(id, version);
+                     
+      return (String)doInvoke(client, req);      
    }
 
    /**
@@ -198,22 +204,18 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void sendTransaction(TransactionRequest request) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConnectionSendTransactionRequest(id, version, request);
+      
+      doInvoke(client, req);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void setClientID(String id) throws JMSException
+   public void setClientID(String clientID) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConnectionSetClientIDRequest(id, version, clientID);
+      
+      doInvoke(client, req);
    }
 
    /**
@@ -225,31 +227,25 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void start() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConnectionStartRequest(id, version);
+      
+      doInvoke(client, req);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void stop() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConnectionStopRequest(id, version);
+      
+      doInvoke(client, req);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public Xid[] getPreparedTransactions()
+   public MessagingXid[] getPreparedTransactions() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConnectionGetPreparedTransactionsRequest(id, version);
+      
+      return (MessagingXid[])doInvoke(client, req);    
    }
 
    /**
@@ -269,11 +265,6 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    }
 
    // Public ---------------------------------------------------------------------------------------
-
-   public void init()
-   {
-      super.init();
-   }
 
    public void setRemotingConnection(JMSRemotingConnection conn)
    {
@@ -307,9 +298,20 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected Client getClient()
+   // Streamable implementation -------------------------------------------------------------------
+   
+   public void read(DataInputStream in) throws Exception
    {
-      return ((ConnectionState)state).getRemotingConnection().getRemotingClient();
+      super.read(in);
+      
+      serverID = in.readInt();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      super.write(out);
+      
+      out.writeInt(serverID);
    }
 
    // Package Private ------------------------------------------------------------------------------

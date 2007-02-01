@@ -21,12 +21,21 @@
   */
 package org.jboss.jms.client.delegate;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.remoting.Client;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.wireformat.BrowserHasNextMessageRequest;
+import org.jboss.jms.wireformat.BrowserNextMessageBlockRequest;
+import org.jboss.jms.wireformat.BrowserNextMessageRequest;
+import org.jboss.jms.wireformat.CloseRequest;
+import org.jboss.jms.wireformat.ClosingRequest;
+import org.jboss.jms.wireformat.RequestSupport;
 
 /**
  * The client-side Browser delegate class.
@@ -41,8 +50,6 @@ import org.jboss.remoting.Client;
 public class ClientBrowserDelegate extends DelegateSupport implements BrowserDelegate
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final long serialVersionUID = 8293543769773757409L;
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -75,65 +82,69 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
-
-      // synchronize the delegates
-
+   }
+   
+   public void setState(HierarchicalState state)
+   {
+      super.setState(state);
+      
+      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
+                  getRemotingClient();
+   }
+   
+   // Closeable implementation ---------------------------------------------------------------------
+   
+   public void close() throws JMSException
+   {
+      RequestSupport req = new CloseRequest(id, version);
+      
+      doInvoke(client, req);
+   }
+   
+   public void closing() throws JMSException
+   {
+      RequestSupport req = new ClosingRequest(id, version);
+      
+      doInvoke(client, req);
    }
 
    // BrowserDelegate implementation ---------------------------------------------------------------
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void close() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void closing() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean isClosed()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public boolean hasNextMessage() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new BrowserHasNextMessageRequest(id, version);
+      
+      return ((Boolean)doInvoke(client, req)).booleanValue();      
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public Message nextMessage() throws JMSException
+   public JBossMessage nextMessage() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new BrowserNextMessageRequest(id, version);
+      
+      return (JBossMessage)doInvoke(client, req);      
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public Message[] nextMessageBlock(int maxMessages) throws JMSException
+   public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new BrowserNextMessageBlockRequest(id, version, maxMessages);
+      
+      return (JBossMessage[])doInvoke(client, req);
+   }
+   
+   // Streamable implementation ----------------------------------------------------------
+   
+   public void read(DataInputStream in) throws Exception
+   {
+      super.read(in);
+      
+      channelID = in.readLong();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      super.write(out);
+      
+      out.writeLong(channelID);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -154,13 +165,6 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    }
 
    // Protected ------------------------------------------------------------------------------------
-   
-   protected Client getClient()
-   {
-      // Use the Client in the Connection's state
-      return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();
-   }
 
    // Package Private ------------------------------------------------------------------------------
 

@@ -46,7 +46,7 @@ public class ResourceManagerFactory
    // Static ---------------------------------------------------------------------------------------
 
    public static ResourceManagerFactory instance = new ResourceManagerFactory();
-
+   
    // Attributes -----------------------------------------------------------------------------------
 
    private Map holders;
@@ -60,6 +60,11 @@ public class ResourceManagerFactory
 
    // Public ---------------------------------------------------------------------------------------
 
+   public synchronized void clear()
+   {
+      holders.clear();
+   }
+      
    public synchronized int size()
    {
       return holders.size();
@@ -75,6 +80,7 @@ public class ResourceManagerFactory
     */
    public synchronized ResourceManager checkOutResourceManager(int serverID)
    {
+      
       Integer i = new Integer(serverID);
 
       Holder h = (Holder)holders.get(i);
@@ -88,7 +94,7 @@ public class ResourceManagerFactory
       {
          h.refCount++;
       }
-
+      
       return h.rm;
    }
 
@@ -103,7 +109,7 @@ public class ResourceManagerFactory
       }
 
       h.refCount--;
-
+      
       if (h.refCount == 0)
       {
          holders.remove(i);

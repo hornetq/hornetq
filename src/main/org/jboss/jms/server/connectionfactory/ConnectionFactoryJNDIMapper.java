@@ -37,22 +37,22 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
-import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.JNDIUtil;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.contract.ReplicationListener;
 import org.jboss.messaging.core.plugin.contract.Replicator;
-import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 
 /**
@@ -191,8 +191,8 @@ public class ConnectionFactoryJNDIMapper
 
       // Registering with the dispatcher should always be the last thing otherwise a client could
       // use a partially initialised object
-      JMSDispatcher.instance.
-         registerTarget(new Integer(id), new ConnectionFactoryAdvised(endpoint));
+      Dispatcher.instance.
+         registerTarget(id, new ConnectionFactoryAdvised(endpoint));
    }
 
    public synchronized void unregisterConnectionFactory(String uniqueName, boolean clustered)
@@ -246,7 +246,7 @@ public class ConnectionFactoryJNDIMapper
 
       }
 
-      JMSDispatcher.instance.unregisterTarget(new Integer(endpoint.getID()));
+      Dispatcher.instance.unregisterTarget(endpoint.getID());
    }
 
    // MessagingComponent implementation ------------------------------------------------------------

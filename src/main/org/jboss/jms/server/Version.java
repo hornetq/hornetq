@@ -6,11 +6,14 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.logging.Logger;
-
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -19,13 +22,13 @@ import java.util.Properties;
  *
  * $Id$
  */
-public class Version implements Serializable
+public class Version implements Streamable, Serializable
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(Version.class);
+   private static final long serialVersionUID = 3605477218138273630L;
 
-   private static final long serialVersionUID = 549375395739573409L;
+   private static final Logger log = Logger.getLogger(Version.class);
 
    // Static --------------------------------------------------------
    
@@ -55,6 +58,10 @@ public class Version implements Serializable
    }
 
    // Public -------------------------------------------------------
+   
+   public Version()
+   {      
+   }
    
    public static synchronized Version instance()
    {
@@ -226,6 +233,44 @@ public class Version implements Serializable
             }
          }
       }
+   }
+   
+   public void read(DataInputStream in) throws Exception
+   {
+      jmsVersion = in.readUTF();
+      
+      jmsMajorVersion = in.readInt();
+      
+      jmsMinorVersion = in.readInt();
+      
+      jmsProviderName = in.readUTF();
+      
+      providerVersion = in.readUTF();
+      
+      providerMajorVersion = in.readInt();
+      
+      providerMinorVersion = in.readInt();
+      
+      providerIncrementingVersion = in.readByte();      
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(jmsVersion);
+      
+      out.writeInt(jmsMajorVersion);
+      
+      out.writeInt(jmsMinorVersion);
+      
+      out.writeUTF(jmsProviderName);
+      
+      out.writeUTF(providerVersion);
+      
+      out.writeInt(providerMajorVersion);
+      
+      out.writeInt(providerMinorVersion);
+      
+      out.writeByte(providerIncrementingVersion);
    }
 
    // Inner classes -------------------------------------------------

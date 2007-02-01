@@ -402,7 +402,7 @@ public class ServerManagement
       {
          sb.append("-Dtest.remoting=").append(remoting).append(' ');
       }
-
+      
       String testLogfileSuffix = System.getProperty("test.logfile.suffix");
 
       if (testLogfileSuffix == null)

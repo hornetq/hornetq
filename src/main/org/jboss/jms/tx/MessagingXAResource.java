@@ -28,7 +28,8 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.tm.XidImpl;
 
 /**
  * An XAResource implementation.
@@ -117,8 +118,8 @@ public class MessagingXAResource implements XAResource
 
       // Recreate Xid. See JBMESSAGING-661 [JPL]
 
-      if (!(xid instanceof XidImpl))
-         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      if (!(xid instanceof MessagingXid))
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
 
       rm.commit(xid, onePhase, connection);
 
@@ -134,8 +135,8 @@ public class MessagingXAResource implements XAResource
 
       // Recreate Xid. See JBMESSAGING-661 [JPL]
 
-      if (!(xid instanceof XidImpl))
-         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      if (!(xid instanceof MessagingXid))
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
 
       synchronized (this)
       {
@@ -163,8 +164,8 @@ public class MessagingXAResource implements XAResource
 
       // Recreate Xid. See JBMESSAGING-661 [JPL]
 
-      if (!(xid instanceof XidImpl))
-         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      if (!(xid instanceof MessagingXid))
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
    }
 
    public int prepare(Xid xid) throws XAException
@@ -173,8 +174,8 @@ public class MessagingXAResource implements XAResource
 
       // Recreate Xid. See JBMESSAGING-661 [JPL]
 
-      if (!(xid instanceof XidImpl))
-         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      if (!(xid instanceof MessagingXid))
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
 
       return rm.prepare(xid, connection);
    }
@@ -196,8 +197,8 @@ public class MessagingXAResource implements XAResource
 
       // Recreate Xid. See JBMESSAGING-661 [JPL]
 
-      if (!(xid instanceof XidImpl))
-         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      if (!(xid instanceof MessagingXid))
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
 
       rm.rollback(xid, connection);
    }
@@ -208,8 +209,8 @@ public class MessagingXAResource implements XAResource
       
       // Recreate Xid. See JBMESSAGING-661 [JPL]
 
-      if (!(xid instanceof XidImpl))
-         xid = new XidImpl(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+      if (!(xid instanceof MessagingXid))
+         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
 
       boolean convertTx = false;
       

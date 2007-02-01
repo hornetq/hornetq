@@ -47,7 +47,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageStatistics;
 import org.jboss.jms.util.MessagingJMSException;
-import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -241,7 +241,7 @@ public class ServerPeerTest extends MessagingTestCase
             
             MessageProducer prod = sess.createProducer(queue);
             
-            xid1 = new XidImpl("blah1".getBytes(), 42, "blahblah1".getBytes());
+            xid1 = new MessagingXid("blah1".getBytes(), 42, "blahblah1".getBytes());
                      
             TextMessage tm = sess.createTextMessage("message1");
             
@@ -263,7 +263,7 @@ public class ServerPeerTest extends MessagingTestCase
             
             MessageProducer prod = sess.createProducer(queue);
             
-            xid2 = new XidImpl("blah2".getBytes(), 42, "blahblah2".getBytes());
+            xid2 = new MessagingXid("blah2".getBytes(), 42, "blahblah2".getBytes());
                      
             TextMessage tm = sess.createTextMessage("message1");
             

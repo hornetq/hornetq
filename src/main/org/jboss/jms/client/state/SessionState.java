@@ -89,9 +89,6 @@ public class SessionState extends HierarchicalStateSupport
    // List<DeliveryInfo>
    private List clientAckList;
 
-   // List<DeliveryInfo>
-   //private List clientCancelList;
-   
    private DeliveryInfo autoAckInfo;
    private Map callbackHandlers;
 
@@ -129,8 +126,6 @@ public class SessionState extends HierarchicalStateSupport
 
       clientAckList = new ArrayList();
 
-     // clientCancelList = new ArrayList();
-      
       // TODO could optimise this to use the same map of callbackmanagers (which holds refs
       // to callbackhandlers) in the connection, instead of maintaining another map
       callbackHandlers = new HashMap();
@@ -190,7 +185,7 @@ public class SessionState extends HierarchicalStateSupport
                                       consState.isNoLocal(),
                                       consState.getSubscriptionName(),
                                       consState.isConnectionConsumer(),
-                                      new Long(consState.getChannelID()));
+                                      consState.getChannelID());
             log.debug(this + " created new consumer " + newConsDelegate);
 
             consDelegate.synchronizeWith(newConsDelegate);
@@ -219,7 +214,7 @@ public class SessionState extends HierarchicalStateSupport
             ClientBrowserDelegate newBrowserDelegate = (ClientBrowserDelegate)newDelegate.
                createBrowserDelegate(browserState.getJmsDestination(),
                                      browserState.getMessageSelector(),
-                                     new Long(browserState.getChannelID()));
+                                     browserState.getChannelID());
             log.debug(this + " created new browser " + newBrowserDelegate);
 
             browserDelegate.synchronizeWith(newBrowserDelegate);

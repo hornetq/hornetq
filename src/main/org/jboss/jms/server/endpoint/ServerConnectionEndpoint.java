@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.CallbackManager;
@@ -44,18 +43,19 @@ import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.ToString;
+import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.remoting.Client;
@@ -128,12 +128,16 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     *        failover. Negative values are ignored (mean regular connection creation attempt).
     */
    public ServerConnectionEndpoint(ServerPeer serverPeer, String clientID,
-                                      String username, String password, int prefetchSize,
-                                      int defaultTempQueueFullSize,
-                                      int defaultTempQueuePageSize,
-                                      int defaultTempQueueDownCacheSize,
-                                      int failedNodeID,
-                                      ServerConnectionFactoryEndpoint cfendpoint) throws Exception
+                                   String username, String password, int prefetchSize,
+                                   int defaultTempQueueFullSize,
+                                   int defaultTempQueuePageSize,
+                                   int defaultTempQueueDownCacheSize,
+                                   int failedNodeID,
+                                   ServerConnectionFactoryEndpoint cfendpoint,
+                                   String remotingSessionID,
+                                   String clientVMID,
+                                   byte versionToUse,
+                                   ServerInvokerCallbackHandler callbackHandler) throws Exception
    {
       this.serverPeer = serverPeer;
 
@@ -164,6 +168,38 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       if (failedNodeID > 0)
       {
          this.failedNodeID = new Integer(failedNodeID);
+      }
+      
+      this.remotingClientSessionID = remotingSessionID;
+      
+      this.jmsClientVMID = clientVMID;
+      
+      this.serverPeer.getConnectionManager().
+         registerConnection(jmsClientVMID, remotingClientSessionID, this);
+      
+      this.callbackHandler = callbackHandler;
+      
+      Client callbackClient = callbackHandler.getCallbackClient();
+      
+      if (callbackClient != null)
+      {
+         // TODO not sure if this is the best way to do this, but the callbackClient needs to have
+         //      its "subsystem" set, otherwise remoting cannot find the associated
+         //      ServerInvocationHandler on the callback server
+         callbackClient.setSubsystem(CallbackManager.JMS_CALLBACK_SUBSYSTEM);
+         
+         // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
+         // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
+         // This can make a massive difference on performance. We also do this in
+         // JMSRemotingConnection.setupConnection
+         
+         callbackClient.setMarshaller(new JMSWireFormat());
+         callbackClient.setUnMarshaller(new JMSWireFormat());
+      }
+      else
+      {
+         log.debug("ServerInvokerCallbackHandler callback Client is not available: " +
+                   "must be using pull callbacks");
       }
    }
 
@@ -202,7 +238,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          serverPeer.addSession(iSessionID, ep);
 
-         JMSDispatcher.instance.registerTarget(iSessionID, sessionAdvised);
+         Dispatcher.instance.registerTarget(iSessionID, sessionAdvised);
 
          log.debug("created and registered " + ep);
 
@@ -350,7 +386,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
          cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
    
-         JMSDispatcher.instance.unregisterTarget(new Integer(id));
+         Dispatcher.instance.unregisterTarget(id);
 
          closed = true;
       }
@@ -425,13 +461,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     * This would be used by the transaction manager in recovery or by a tool to apply
     * heuristic decisions to commit or rollback particular transactions
     */
-   public Xid[] getPreparedTransactions() throws JMSException
+   public MessagingXid[] getPreparedTransactions() throws JMSException
    {
       try
       {
          List xids = tr.recoverPreparedTransactions();
          
-         return (Xid[])xids.toArray(new Xid[xids.size()]);
+         return (MessagingXid[])xids.toArray(new MessagingXid[xids.size()]);
       }
       catch (Throwable t)
       {
@@ -439,11 +475,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }
    
-   public boolean isClosed() throws JMSException
-   {
-      throw new IllegalStateException("isClosed should never be handled on the server side");
-   }
-  
    // Public ---------------------------------------------------------------------------------------
    
    public String getUsername()
@@ -461,58 +492,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return sm;
    }
 
-   /**
-    * IOC
-    */
-   public void setCallbackHandler(ServerInvokerCallbackHandler handler)
-   {
-      callbackHandler = handler;
-      Client callbackClient = callbackHandler.getCallbackClient();
-      
-      if (callbackClient != null)
-      {
-         // TODO not sure if this is the best way to do this, but the callbackClient needs to have
-         //      its "subsystem" set, otherwise remoting cannot find the associated
-         //      ServerInvocationHandler on the callback server
-         callbackClient.setSubsystem(CallbackManager.JMS_CALLBACK_SUBSYSTEM);
-         
-         // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
-         // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
-         // This can make a massive difference on performance. We also do this in
-         // JMSRemotingConnection.setupConnection
-         
-         callbackClient.setMarshaller(new JMSWireFormat());
-         callbackClient.setUnMarshaller(new JMSWireFormat());
-      }
-      else
-      {
-         log.debug("ServerInvokerCallbackHandler callback Client is not available: " +
-                   "must be using pull callbacks");
-      }
-   }
-
    public ServerInvokerCallbackHandler getCallbackHandler()
    {
       return callbackHandler;
    }
 
-   /**
-    * IOC
-    */
-   public void setRemotingInformation(String jmsClientVMID, String remotingClientSessionID)
-   {
-      this.remotingClientSessionID = remotingClientSessionID;
-      this.jmsClientVMID = jmsClientVMID;
-      
-      this.serverPeer.getConnectionManager().
-         registerConnection(jmsClientVMID, remotingClientSessionID, this);
-   }
-   
-   public void setUsingVersion(byte version)
-   {
-      this.usingVersion = version;
-   }
-   
    public ServerPeer getServerPeer()
    {
       return serverPeer;

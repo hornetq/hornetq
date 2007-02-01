@@ -21,6 +21,9 @@
   */
 package org.jboss.jms.destination;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 
 import javax.jms.Destination;
@@ -41,8 +44,94 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    // Constants -----------------------------------------------------
 
    private final static long serialVersionUID = -3483274922186827576L;
+   
+   private static final byte NULL = 0;
+   
+   private static final byte QUEUE = 1;
+   
+   private static final byte TOPIC = 2;
+   
+   private static final byte TEMP_QUEUE = 3;
+   
+   private static final byte TEMP_TOPIC = 4;
 
    // Static --------------------------------------------------------
+   
+   public static void writeDestination(DataOutputStream out, Destination dest) throws IOException
+   {
+      JBossDestination jb = (JBossDestination)dest;
+            
+      if (dest == null)
+      {
+         out.writeByte(NULL);
+      }
+      else
+      {
+         if (!jb.isTemporary())
+         {
+            if (jb.isQueue())
+            {
+               out.writeByte(QUEUE);
+            }
+            else 
+            {
+               out.writeByte(TOPIC);
+            }
+         }
+         else
+         {
+            if (jb.isQueue())
+            {
+               out.writeByte(TEMP_QUEUE);
+            }
+            else 
+            {
+               out.writeByte(TEMP_TOPIC);
+            }
+         }
+         out.writeUTF(jb.getName());
+      }
+   }
+   
+   public static JBossDestination readDestination(DataInputStream in) throws IOException
+   {
+      byte b = in.readByte();
+      
+      if (b == NULL)
+      {
+         return null;
+      }
+      else
+      {
+         String name = in.readUTF();
+
+         JBossDestination dest;
+         
+         if (b == QUEUE)
+         {
+            dest = new JBossQueue(name);
+         }
+         else if (b == TOPIC)
+         {
+            dest = new JBossTopic(name);
+         }
+         else if (b == TEMP_QUEUE)
+         {
+            dest = new JBossTemporaryQueue(name);
+         }
+         else if (b == TEMP_TOPIC)
+         {
+            dest = new JBossTemporaryTopic(name);
+         }
+         else
+         {
+            throw new IllegalStateException("Invalid value:" + b);
+         }
+         
+         return dest;
+      }
+   }
+
    
    // Attributes ----------------------------------------------------
 

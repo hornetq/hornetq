@@ -29,6 +29,7 @@ import javax.jms.MessageListener;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.ProducerDelegate;
@@ -46,7 +47,23 @@ import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.remoting.Client;
+import org.jboss.jms.wireformat.CloseRequest;
+import org.jboss.jms.wireformat.ClosingRequest;
+import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.jms.wireformat.SessionAcknowledgeDeliveriesRequest;
+import org.jboss.jms.wireformat.SessionAcknowledgeDeliveryRequest;
+import org.jboss.jms.wireformat.SessionAddTemporaryDestinationRequest;
+import org.jboss.jms.wireformat.SessionCancelDeliveriesRequest;
+import org.jboss.jms.wireformat.SessionCancelDeliveryRequest;
+import org.jboss.jms.wireformat.SessionCreateBrowserDelegateRequest;
+import org.jboss.jms.wireformat.SessionCreateConsumerDelegateRequest;
+import org.jboss.jms.wireformat.SessionCreateQueueRequest;
+import org.jboss.jms.wireformat.SessionCreateTopicRequest;
+import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
+import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
+import org.jboss.jms.wireformat.SessionSendRequest;
+import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Session delegate class.
@@ -64,7 +81,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -8096852898620279131L;
-   
+
+   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
+
    // Attributes -----------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
@@ -75,9 +94,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       super(objectID);
    }
-   
+
    public ClientSessionDelegate()
-   {      
+   {
    }
 
    // DelegateSupport overrides --------------------------------------------------------------------
@@ -93,57 +112,48 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
+   }
 
-      // synchronize the delegates
+   public void setState(HierarchicalState state)
+   {
+      super.setState(state);
+
+      client = ((ConnectionState)state.getParent()).getRemotingConnection().
+                  getRemotingClient();
+   }
+   
+   // Closeable implementation ---------------------------------------------------------------------
+   
+   public void close() throws JMSException
+   {
+      RequestSupport req = new CloseRequest(id, version);
+      
+      doInvoke(client, req);
+   }
+   
+   public void closing() throws JMSException
+   {
+      RequestSupport req = new ClosingRequest(id, version);
+      
+      doInvoke(client, req);
    }
 
    // SessionDelegate implementation ---------------------------------------------------------------
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void close() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void closing() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean isClosed()
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void acknowledgeDelivery(Ack ack) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionAcknowledgeDeliveryRequest(id, version, ack);
+
+      doInvoke(client, req);
    }
-   
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+
    public void acknowledgeDeliveries(List acks) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionAcknowledgeDeliveriesRequest(id, version, acks);
+
+      doInvoke(client, req);
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -153,13 +163,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void addTemporaryDestination(JBossDestination destination) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionAddTemporaryDestinationRequest(id, version, destination);
+
+      doInvoke(client, req);
    }
 
    /**
@@ -180,14 +188,15 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
-                                                Long failoverChannelID) throws JMSException
+                                                long failoverChannelID) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionCreateBrowserDelegateRequest(id, version, queue,
+                                                  messageSelector, failoverChannelID);
+
+      Object res = doInvoke(client, req);
+      
+      return (BrowserDelegate)res;
    }
 
    /**
@@ -199,17 +208,16 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    * @see org.jboss.jms.client.container.ConsumerAspect#handleCreateConsumerDelegate(org.jboss.aop.joinpoint.Invocation)
-    */
+
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
-                                                  boolean noLocal, String subscriptionName,
-                                                  boolean connectionConsumer,
-                                                  Long failoverChannelID) throws JMSException
+            boolean noLocal, String subscriptionName,
+            boolean connectionConsumer,
+            long failoverChannelID) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionCreateConsumerDelegateRequest(id, version, destination,
+               selector, noLocal, subscriptionName, connectionConsumer, failoverChannelID);
+
+      return (ConsumerDelegate)doInvoke(client, req);
    }
 
    /**
@@ -257,13 +265,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public JBossQueue createQueue(String queueName) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionCreateQueueRequest(id, version, queueName);
+
+      return (JBossQueue)doInvoke(client, req);
    }
 
    /**
@@ -293,22 +299,18 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public JBossTopic createTopic(String topicName) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionCreateTopicRequest(id, version, topicName);
+
+      return (JBossTopic)doInvoke(client, req);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void deleteTemporaryDestination(JBossDestination destination) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionDeleteTemporaryDestinationRequest(id, version, destination);
+
+      doInvoke(client, req);
    }
 
    /**
@@ -346,7 +348,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -355,7 +357,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -377,22 +379,20 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
-    * @see org.jboss.jms.client.container.AsfAspect#handleSetMessageListener(org.jboss.aop.joinpoint.Invocation) 
+    * @see org.jboss.jms.client.container.AsfAspect#handleSetMessageListener(org.jboss.aop.joinpoint.Invocation)
     */
    public void setMessageListener(MessageListener listener) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void unsubscribe(String subscriptionName) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionUnsubscribeRequest(id, version, subscriptionName);
+
+      doInvoke(client, req);
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -401,7 +401,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -410,7 +410,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-      
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -419,7 +419,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -429,41 +429,33 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void send(JBossMessage m)
+
+   public void send(JBossMessage m) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionSendRequest(id, version, m);
+
+      doInvoke(client, req);
    }
-   
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void cancelDeliveries(List cancels)
+
+   public void cancelDeliveries(List cancels) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionCancelDeliveriesRequest(id, version, cancels);
+
+      doInvoke(client, req);
    }
-   
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void cancelDelivery(Cancel cancel)
+
+   public void cancelDelivery(Cancel cancel) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionCancelDeliveryRequest(id, version, cancel);
+
+      doInvoke(client, req);
    }
-   
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void recoverDeliveries(List ackInfos) throws JMSException
+
+   public void recoverDeliveries(List acks) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new SessionRecoverDeliveriesRequest(id, version, acks);
+
+      doInvoke(client, req);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -474,12 +466,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    }
 
    // Protected ------------------------------------------------------------------------------------
-   
-   protected Client getClient()
-   {
-      //Use the Client in the Connection's state
-      return ((ConnectionState)state.getParent()).getRemotingConnection().getRemotingClient();
-   }
 
    // Package Private ------------------------------------------------------------------------------
 

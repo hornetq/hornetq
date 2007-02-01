@@ -22,11 +22,12 @@
 package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
-import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.tx.MessagingXid;
+
 
 /**
  * 
@@ -54,6 +55,6 @@ public interface ConnectionEndpoint extends Closeable
 
    void sendTransaction(TransactionRequest request) throws JMSException;
 
-   Xid[] getPreparedTransactions() throws JMSException; 
+   MessagingXid[] getPreparedTransactions() throws JMSException; 
 }
 

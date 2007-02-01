@@ -121,7 +121,7 @@ public class BrowserTest extends MessagingTestCase
       }
    }
 
-   public void testCreateBrowserOnInexistentQueue() throws Exception
+   public void testCreateBrowserOnNonExistentQueue() throws Exception
    {
       Connection pconn = cf.createConnection();
 

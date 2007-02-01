@@ -26,7 +26,7 @@ import java.io.DataOutputStream;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.Streamable;
 
 /**
@@ -138,7 +138,7 @@ public class TransactionRequest implements Streamable
         l = in.readInt();
         byte[] globalTxId = new byte[l];
         in.readFully(globalTxId);
-        xid = new XidImpl(branchQual, formatId, globalTxId);
+        xid = new MessagingXid(branchQual, formatId, globalTxId);
      }
      else
      {

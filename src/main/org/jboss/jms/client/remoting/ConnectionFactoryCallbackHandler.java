@@ -25,7 +25,7 @@ package org.jboss.jms.client.remoting;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.server.endpoint.ConnectionFactoryUpdateMessage;
+import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.logging.Logger;
 
 /**
@@ -63,7 +63,7 @@ public class ConnectionFactoryCallbackHandler
    {
       if (trace) { log.trace(this + " handling " + message); }
 
-      ConnectionFactoryUpdateMessage viewChange = (ConnectionFactoryUpdateMessage)message;
+      ConnectionFactoryUpdate viewChange = (ConnectionFactoryUpdate)message;
 
       Object d = getState().getClusteredConnectionFactoryDelegate();
 

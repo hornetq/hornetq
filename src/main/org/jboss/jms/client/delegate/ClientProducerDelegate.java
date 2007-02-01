@@ -69,9 +69,6 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
-
-      // synchronize the delegates
-
    }
 
    // ProducerDelegate implementation --------------------------------------------------------------
@@ -90,15 +87,6 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * server-side endpoint.
     */
    public void closing() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean isClosed()
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -239,11 +227,6 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    // Protected ------------------------------------------------------------------------------------
    
-   protected Client getClient()
-   {
-      throw new UnsupportedOperationException("Producers only exist on the client");
-   }
-
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

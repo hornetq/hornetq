@@ -36,10 +36,10 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Map;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
@@ -571,7 +571,7 @@ public class ServiceContainer
          "server/default/deploy/" + databaseType + "-persistence-service.xml";
 
       log.info("Persistence config file: .... " + persistenceConfigFile);
-
+      
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
       if (persistenceConfigFileURL == null)
       {

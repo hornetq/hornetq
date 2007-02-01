@@ -28,7 +28,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.naming.InitialContext;
-import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -38,6 +37,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -290,7 +290,7 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
          return null;
       }
 
-      public Xid[] getPreparedTransactions()
+      public MessagingXid[] getPreparedTransactions()
       {
          return null;
       }

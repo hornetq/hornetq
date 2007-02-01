@@ -44,7 +44,7 @@ import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.tm.TransactionManagerService;
@@ -123,7 +123,7 @@ public class PagingStateTestBase extends MessagingTestCase
    
    protected Transaction createXATx() throws Exception
    {
-      XidImpl xid = new XidImpl(new GUID().toString().getBytes(), 345, new GUID().toString().getBytes());
+      MessagingXid xid = new MessagingXid(new GUID().toString().getBytes(), 345, new GUID().toString().getBytes());
       
       return tr.createTransaction(xid);
    }

@@ -7,12 +7,6 @@
    <interceptor class="org.jboss.jms.server.container.ServerLogInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.server.container.CachingInterceptor" scope="PER_VM"/>      
    <aspect class="org.jboss.jms.server.container.SecurityAspect" scope="PER_INSTANCE"/>
-   <aspect class="org.jboss.jms.server.container.InjectionAspect" scope="PER_VM"/>
-
-   <!-- ConnectionFactory -->
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised->createConnectionDelegate(..))">
-      <advice name="handleCreateConnectionDelegate" aspect="org.jboss.jms.server.container.InjectionAspect"/>
-   </bind>
    
    <!-- Connection -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))">

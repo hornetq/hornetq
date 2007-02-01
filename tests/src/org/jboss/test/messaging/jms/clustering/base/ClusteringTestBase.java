@@ -233,10 +233,14 @@ public class ClusteringTestBase extends MessagingTestCase
          // TODO This is a dangerous hack, relying on an arbitrary distribution algorithm
          // (round-robin in this case). If we want a connection to a specific node, we should be
          // able to look up something like "/ConnectionFactory0"
+         
+         log.info("cf is " + cf);
 
          for(int i = 0; i < nodeCount; i++)
          {
             conn[i] = cf.createConnection();
+            
+            log.info("************ connection is " + conn[i].getClass().getName() + ":" + conn[i]);
          }
 
          // Safety check, making sure we get connections to distinct nodes

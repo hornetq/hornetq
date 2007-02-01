@@ -165,17 +165,12 @@ public class MessageCallbackHandler
          }
       }   
 
-      if (!sess.isClosed())
+      // If this is the callback-handler for a connection consumer we don't want to acknowledge
+      // or add anything to the tx for this session
+      if (!isConnectionConsumer)
       {
-         // postDeliver only if the session is not closed
-               
-         // If this is the callback-handler for a connection consumer we don't want to acknowledge
-         // or add anything to the tx for this session
-         if (!isConnectionConsumer)
-         {
-            sess.postDeliver();
-         }   
-      }
+         sess.postDeliver();
+      }   
    }
    
    // Attributes -----------------------------------------------------------------------------------

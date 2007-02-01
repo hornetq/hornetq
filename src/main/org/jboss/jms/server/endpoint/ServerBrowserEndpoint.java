@@ -28,9 +28,10 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
-import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Filter;
@@ -68,6 +69,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       throws JMSException
    {     
       this.session = session;
+      
       this.id = id;
       
 		Filter filter = null;
@@ -101,7 +103,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       }
    }
    
-   public Message nextMessage() throws JMSException
+   public JBossMessage nextMessage() throws JMSException
    {
       try
       {
@@ -114,7 +116,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    
          if (trace) { log.trace(this + " returning " + r); }
          
-         return (Message)r.getMessage();
+         return (JBossMessage)r.getMessage();
       }   
       catch (Throwable t)
       {
@@ -122,7 +124,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       }
    }
 
-   public Message[] nextMessageBlock(int maxMessages) throws JMSException
+   public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
    {
 
       if (trace) { log.trace(this + " returning next message block of " + maxMessages); }
@@ -151,7 +153,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
             }
             else break;
          }		
-   		return (Message[])messages.toArray(new Message[messages.size()]);	
+   		return (JBossMessage[])messages.toArray(new JBossMessage[messages.size()]);	
       }   
       catch (Throwable t)
       {
@@ -178,11 +180,6 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       // Do nothing
    }
    
-   public boolean isClosed() throws JMSException
-   {
-      throw new IllegalStateException("isClosed should never be handled on the server side");
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
@@ -201,7 +198,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       
       iterator = null;
       
-      JMSDispatcher.instance.unregisterTarget(new Integer(id));
+      Dispatcher.instance.unregisterTarget(id);
       
       closed = true;
    }

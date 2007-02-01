@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.graveyard;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -44,6 +44,11 @@ import java.util.Set;
 import java.io.Serializable;
 
 /**
+ * 
+ * This test was excluded on 31/01/07 since we do not pass a session id in every invocation therefore
+ * it's not possible to guarantee the "correct" one is used.
+ * This is ok, since our remoting connector is exclusively ours, no one else will use it
+ * 
  * Tests the situation when there is more than one ServerInvokerHandler registered with the
  * Remoting connector. Goes through a combination of most common use cases.
  *

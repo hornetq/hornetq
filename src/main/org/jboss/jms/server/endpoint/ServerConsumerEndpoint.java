@@ -32,9 +32,9 @@ import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.jms.server.remoting.JMSDispatcher;
-import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.wireformat.ClientDelivery;
+import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
@@ -87,8 +87,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private ServerInvokerCallbackHandler callbackHandler;
    
-   private byte versionToUse;
-
    private boolean noLocal;
 
    private Selector messageSelector;
@@ -129,8 +127,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       
       this.callbackHandler = sessionEndpoint.getConnectionEndpoint().getCallbackHandler();
       
-      this.versionToUse = sessionEndpoint.getConnectionEndpoint().getUsingVersion();
-            
       this.noLocal = noLocal;
       
       this.destination = dest;
@@ -235,14 +231,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // We send the message to the client on the current thread. The message is written onto the
          // transport and then the thread returns immediately without waiting for a response.
          
-         // FIXME - how can we ensure that a later send doesn't overtake an earlier send - this
-         // might happen if they are using different underlying TCP connections (e.g. from pool)
+         Client callbackClient = callbackHandler.getCallbackClient();
          
          ClientDelivery del = new ClientDelivery(mp, id);
          
-         MessagingMarshallable mm = new MessagingMarshallable(versionToUse, del);
-         
-         Callback callback = new Callback(mm);
+         Callback callback = new Callback(del);
            
          try
          {
@@ -254,13 +247,12 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             // all access so that only the first connection in the pool is ever used - bit this is
             // far from ideal!!!
             // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
-
-            Client clientInvoker = callbackHandler.getCallbackClient();
+            
             Object invoker = null;
 
-            if (clientInvoker != null)
+            if (callbackClient != null)
             {
-               invoker = clientInvoker.getInvoker();
+               invoker = callbackClient.getInvoker();
             }
             else
             {
@@ -428,12 +420,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       }            
    }
    
-   
-   public boolean isClosed() throws JMSException
-   {
-      throw new IllegalStateException("isClosed should never be handled on the server side");
-   }
-
    // Public ---------------------------------------------------------------------------------------
    
    public String toString()
@@ -474,7 +460,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       messageQueue.remove(this); 
       
-      JMSDispatcher.instance.unregisterTarget(new Integer(id));
+      Dispatcher.instance.unregisterTarget(id);
       
       // If this is a consumer of a non durable subscription then we want to unbind the
       // subscription and delete all its data.

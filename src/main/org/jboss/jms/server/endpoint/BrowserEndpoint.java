@@ -22,9 +22,9 @@
 package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.message.JBossMessage;
 
 /**
  * Represents the set of methods from the BrowserDelegate that are handled on the server. The rest
@@ -37,9 +37,9 @@ import org.jboss.jms.client.Closeable;
  */
 public interface BrowserEndpoint extends Closeable
 {   
-   Message nextMessage() throws JMSException;
+   JBossMessage nextMessage() throws JMSException;
    
    boolean hasNextMessage() throws JMSException;
       
-   Message[] nextMessageBlock(int maxMessages) throws JMSException;
+   JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException;
 }

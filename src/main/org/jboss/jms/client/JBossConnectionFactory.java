@@ -43,7 +43,6 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
-import org.jboss.jms.client.delegate.Initializable;
 import org.jboss.logging.Logger;
 
 /**
@@ -206,9 +205,7 @@ public class JBossConnectionFactory implements
             log.error(msg, e);
             throw new RuntimeException(msg, e);
          }
-
-         ((Initializable)delegate).init();
-
+   
          // The version used by the connection is the minimum of the server version for the
          // connection factory and the client code version
          

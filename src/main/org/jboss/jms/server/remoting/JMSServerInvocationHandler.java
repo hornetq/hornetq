@@ -28,9 +28,9 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
-import org.jboss.aop.joinpoint.InvocationResponse;
-import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.util.PayloadKey;
+import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
+import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.jms.wireformat.ResponseSupport;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.InvocationRequest;
@@ -93,66 +93,59 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public Object invoke(InvocationRequest invocation) throws Throwable
    {      
       if (trace) { log.trace("invoking " + invocation); }
+        
+      RequestSupport request = (RequestSupport)invocation.getParameter();
       
-      MessagingMarshallable mm = (MessagingMarshallable)invocation.getParameter();
-      
-      MethodInvocation i = (MethodInvocation)mm.getLoad();
-            
-      // put the version number into meta data for use in the InjectionInterceptor
-      i.getMetaData().addMetaData(MetaDataConstants.JMS,
-                                  MetaDataConstants.VERSION_NUMBER,
-                                  new Byte(mm.getVersion()),
-                                  PayloadKey.TRANSIENT);
-            
-      String s =
-         (String)i.getMetaData(MetaDataConstants.JMS, MetaDataConstants.REMOTING_SESSION_ID);
-      
-      if (s != null)
+      if (request instanceof ConnectionFactoryCreateConnectionDelegateRequest)
       {
-         Object callbackHandler = null;
+         //Create connection request
+         
+         ConnectionFactoryCreateConnectionDelegateRequest cReq = 
+            (ConnectionFactoryCreateConnectionDelegateRequest)request;
+         
+         String remotingSessionId = cReq.getRemotingSessionID();
+         
+         ServerInvokerCallbackHandler callbackHandler = null;
          synchronized(callbackHandlers)
          {
-            callbackHandler = callbackHandlers.get(s);
+            callbackHandler = (ServerInvokerCallbackHandler)callbackHandlers.get(remotingSessionId);
          }
          if (callbackHandler != null)
          {
-            log.debug("found calllback handler for remoting session " + Util.guidToString(s));
+            log.debug("found calllback handler for remoting session " + Util.guidToString(remotingSessionId));
             
-            i.getMetaData().addMetaData(MetaDataConstants.JMS,
-                                        MetaDataConstants.CALLBACK_HANDLER,
-                                        callbackHandler, PayloadKey.TRANSIENT);
+            cReq.setCallbackHandler(callbackHandler);
          }
          else
          {
-            throw new javax.jms.IllegalStateException("Cannot find callback handler " +
-                                                      "for session id " + s);
+            throw new IllegalStateException("Cannot find callback handler " +
+                                            "for session id " + remotingSessionId);
          }
       }
       
-      InvocationResponse resp = JMSDispatcher.instance.invoke(i);
-      byte version = mm.getVersion();
-      
-      return new MessagingMarshallable(version, resp.getResponse());
+      ResponseSupport response = request.serverInvoke();
+                  
+      return response;
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)
    {                 
-      log.debug("adding callback handler " + callbackHandler);
+      if (log.isTraceEnabled()) { log.trace("adding callback handler " + callbackHandler); }
       
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {
          ServerInvokerCallbackHandler h = (ServerInvokerCallbackHandler)callbackHandler;
-         String id = h.getClientSessionId(); 
+         String sessionId = h.getClientSessionId();
          
          synchronized(callbackHandlers)
          {
-            if (callbackHandlers.containsKey(id))
+            if (callbackHandlers.containsKey(sessionId))
             {
-               String msg = "The remoting client " + id + " already has a callback handler";
+               String msg = "The remoting client " + sessionId + " already has a callback handler";
                log.error(msg);
-               throw new RuntimeException(msg);
+               throw new IllegalStateException(msg);
             }
-            callbackHandlers.put(id, h);
+            callbackHandlers.put(sessionId, h);
          }
       }
       else
@@ -163,8 +156,8 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public void removeListener(InvokerCallbackHandler callbackHandler)
    {
-      log.debug("removing callback handler " + callbackHandler);
-
+      if (log.isTraceEnabled()) { log.trace("removing callback handler " + callbackHandler); }
+      
       synchronized(callbackHandlers)
       {
          for(Iterator i = callbackHandlers.keySet().iterator(); i.hasNext();)

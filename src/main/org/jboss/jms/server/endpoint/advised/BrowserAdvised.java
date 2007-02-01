@@ -22,8 +22,8 @@
 package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.BrowserEndpoint;
 
 /**
@@ -70,19 +70,14 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
       return endpoint.hasNextMessage();
    }
 
-   public Message nextMessage() throws JMSException
+   public JBossMessage nextMessage() throws JMSException
    {
       return endpoint.nextMessage();
    }
 
-   public Message[] nextMessageBlock(int maxMessages) throws JMSException
+   public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
    {
       return endpoint.nextMessageBlock(maxMessages);
-   }
-   
-   public boolean isClosed() throws JMSException
-   {
-      return endpoint.isClosed();
    }
 
    // AdvisedSupport overrides --------------------------------------

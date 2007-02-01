@@ -22,11 +22,11 @@
 package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
-import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * The server-side advised instance corresponding to a Connection. It is bound to the AOP
@@ -99,16 +99,11 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
       endpoint.sendTransaction(request);
    }
 
-   public Xid[] getPreparedTransactions() throws JMSException
+   public MessagingXid[] getPreparedTransactions() throws JMSException
    {
       return endpoint.getPreparedTransactions();
    }
    
-   public boolean isClosed() throws JMSException
-   {
-      return endpoint.isClosed();
-   }
-
    // Public --------------------------------------------------------
 
    public Object getEndpoint()

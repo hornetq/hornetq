@@ -48,7 +48,7 @@ import javax.jms.JMSException;
  * $Id$
  */
 public class ClientClusteredConnectionFactoryDelegate
-   implements Serializable, Initializable, ConnectionFactoryDelegate
+   implements Serializable, ConnectionFactoryDelegate
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -112,16 +112,6 @@ public class ClientClusteredConnectionFactoryDelegate
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   // Initializable implemenation ------------------------------------------------------------------
-
-   public void init()
-   {
-      for (int i = 0; i < delegates.length; i++)
-      {
-         delegates[i].init();
-      }
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public ClientConnectionFactoryDelegate[] getDelegates()
@@ -156,8 +146,6 @@ public class ClientClusteredConnectionFactoryDelegate
    {
       this.delegates = delegates;
       this.failoverMap = failoverMap;
-
-      init();
 
       loadBalancingPolicy.updateView(delegates);
    }

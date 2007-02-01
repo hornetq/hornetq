@@ -83,14 +83,14 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean connectionConsumer,
-                                                  Long failoverChannelID) throws JMSException
+                                                  long failoverChannelID) throws JMSException
    {
       return endpoint.createConsumerDelegate(destination, selector, noLocal, subscriptionName,
                                              connectionConsumer, failoverChannelID);
    }
    
    public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
-                                                Long failoverChannelID) throws JMSException                                                 
+                                                long failoverChannelID) throws JMSException                                                 
    {
       return endpoint.createBrowserDelegate(queue, messageSelector, failoverChannelID);
    }
@@ -143,11 +143,6 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    public void recoverDeliveries(List ackInfos) throws JMSException
    {
       endpoint.recoverDeliveries(ackInfos);
-   }
-
-   public boolean isClosed() throws JMSException
-   {
-      return endpoint.isClosed();
    }
 
    // AdvisedSupport overrides --------------------------------------

@@ -422,7 +422,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/*Test.class"/>
-               <exclude name="**/messaging/core/ha/**/*Test.class"/>
+               <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/*LeakTest.class"/>
@@ -477,6 +477,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/jms/**/*Test.class"/>
+               <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/*LeakTest.class"/>
@@ -519,6 +520,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/jms/ReferenceableTest.class"/>
+               <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
                <exclude name="**/*LeakTest.class"/>
@@ -633,6 +635,8 @@
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/*Test.class"/>
                <include name="**/thirdparty/**/*Test.class"/>
+               <exclude name="**/messaging/graveyard/**/*Test.class"/>
+               <exclude name="**/jms/WireFormatTest.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/server/**"/>
                <exclude name="**/jms/persistence/**"/>
@@ -1188,6 +1192,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/jms/**/*Test.class"/>
+               <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="org/jboss/test/messaging/jms/ManifestTest.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
@@ -1258,6 +1263,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
                <include name="**/messaging/**/*Test.class"/>
+               <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/messaging/jms/**"/>
             </fileset>
          </batchtest>

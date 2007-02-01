@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint;
+package org.jboss.jms.wireformat;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,23 +27,19 @@ import java.io.DataOutputStream;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.messaging.core.message.MessageFactory;
-import org.jboss.messaging.util.Streamable;
 
 /**
  * 
  * A ClientDelivery
- * Encapsulates a delivery of a messages to a client consumer
- * 
- * There is no need to specify the server id since the client side CallbackManager is
- * unique to the remoting connection
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
  */
-public class ClientDelivery implements Streamable
+public class ClientDelivery extends CallbackSupport
 {
    // Constants -----------------------------------------------------
    
@@ -63,16 +59,20 @@ public class ClientDelivery implements Streamable
 
    public ClientDelivery(MessageProxy msg, int consumerId)
    {
+      super (PacketSupport.CLIENT_DELIVERY);
+      
       this.msg = msg;
       
       this.consumerId = consumerId;
    }
-  
+         
    // Streamable implementation
    // ---------------------------------------------------------------
    
    public void write(DataOutputStream out) throws Exception
    {
+      super.write(out);
+      
       out.writeInt(consumerId);
       
       out.writeByte(msg.getMessage().getType());
@@ -82,10 +82,14 @@ public class ClientDelivery implements Streamable
       out.writeLong(msg.getDeliveryId());
 
       msg.getMessage().write(out);          
+      
+      out.flush();
    }
 
    public void read(DataInputStream in) throws Exception
    {
+      super.read(in);
+      
       consumerId = in.readInt();
       
       byte type = in.readByte();

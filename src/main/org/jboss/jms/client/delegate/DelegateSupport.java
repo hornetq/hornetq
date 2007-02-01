@@ -21,18 +21,18 @@
   */
 package org.jboss.jms.client.delegate;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 
-import org.jboss.aop.Advised;
-import org.jboss.aop.Dispatcher;
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.aop.metadata.SimpleMetaData;
-import org.jboss.aop.util.PayloadKey;
+import javax.jms.JMSException;
+
 import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.server.remoting.MessagingMarshallable;
+import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.jms.wireformat.ResponseSupport;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Streamable;
 import org.jboss.remoting.Client;
 
 /**
@@ -54,16 +54,14 @@ import org.jboss.remoting.Client;
  *
  * $Id$
  */
-public abstract class DelegateSupport implements Interceptor, Serializable, Initializable
+public abstract class DelegateSupport implements Streamable, Serializable
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final long serialVersionUID = 8005108339439737469L;
-
+      
    private static final Logger log = Logger.getLogger(DelegateSupport.class);
 
    private static boolean trace = log.isTraceEnabled();
-
+   
    // Attributes -----------------------------------------------------------------------------------
 
    // This is set on the server.
@@ -74,6 +72,10 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
    // extra HashMap lookup that would entail. This can be significant since the state could be
    // queried for many aspects in an a single invocation.
    protected transient HierarchicalState state;
+   
+   protected transient byte version;
+   
+   protected transient Client client;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -97,55 +99,17 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
       // Neede a meaninful name to change the aop stack programatically (HA uses that)
       return this.getClass().getName();
    }
-
-   /**
-    * DelegateSupport also acts as an interceptor - the last interceptor in the chain which invokes
-    * on the server.
-    */
-   public Object invoke(Invocation invocation) throws Throwable
+   
+   // Streamable implementation --------------------------------------------------------------------
+   
+   public void read(DataInputStream in) throws Exception
    {
-      String methodName = ((MethodInvocation)invocation).getMethod().getName();
-
-      invocation.getMetaData().addMetaData(Dispatcher.DISPATCHER,
-                                           Dispatcher.OID,
-                                           new Integer(id),
-                                           PayloadKey.AS_IS);
-
-      Client client = getClient();
-      byte version = getState().getVersionToUse().getProviderIncrementingVersion();
-      MessagingMarshallable request = new MessagingMarshallable(version, invocation);
-
-      // select invocations ought to be sent "one way" for increased performance
-      
-      //TODO polymorphism: shouldn't this be ClientSessionDelegate::invoke rather than the super class?? 
-      if ("changeRate".equals(methodName))
-      {
-         if (trace) { log.trace(this + " invoking " + methodName + "(..) asynchronously on server"); }
-
-         client.invokeOneway(request);
-
-         if (trace) { log.trace(this + " asynchronously invoked " + methodName + "(..) on server, no response expected"); }
-
-         return null;
-      }
-      else
-      {
-         if (trace) { log.trace(this + " invoking " + methodName + "(..) synchronously on server"); }
-
-         Object o = client.invoke(request, null);
-
-         if (trace) { log.trace(this + " got server response for " + methodName + "(..): " + o); }
-
-         MessagingMarshallable response = (MessagingMarshallable)o;
-         return response.getLoad();
-      }
+      id = in.readInt();
    }
 
-   // Initializable implemenation ------------------------------------------------------------------
-
-   public void init()
+   public void write(DataOutputStream out) throws Exception
    {
-      ((Advised)this)._getInstanceAdvisor().appendInterceptor(this);
+      out.writeInt(id);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -154,17 +118,19 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
    {
       return state;
    }
-
+   
    public void setState(HierarchicalState state)
    {
       this.state = state;
+      
+      this.version = state.getVersionToUse().getProviderIncrementingVersion();
    }
 
    public int getID()
    {
       return id;
    }
-
+   
    /**
     * During HA events, delegates corresponding to new enpoints on the new server are created and
     * the state of those delegates has to be transfered to the "failed" delegates. For example, a
@@ -178,18 +144,62 @@ public abstract class DelegateSupport implements Interceptor, Serializable, Init
 
    // Package protected ----------------------------------------------------------------------------
 
-   // Protected ------------------------------------------------------------------------------------
-
-   protected SimpleMetaData getMetaData()
+   // Protected ------------------------------------------------------------------------------------     
+   
+   protected Object doInvoke(Client client, RequestSupport req) throws JMSException
    {
-      return ((Advised)this)._getInstanceAdvisor().getMetaData();
+      return doInvoke(client, req, false);
    }
-
-   protected abstract Client getClient() throws Exception;
-
+   
+   protected Object doInvokeOneway(Client client, RequestSupport req) throws JMSException
+   {
+      return doInvoke(client, req, true);
+   }
 
    // Private --------------------------------------------------------------------------------------
 
+   private Object doInvoke(Client client, RequestSupport req, boolean oneWay) throws JMSException
+   {
+      try
+      {
+         Object resp = null;
+         
+         if (oneWay)
+         {
+            client.invokeOneway(req);
+         }
+         else
+         {
+            resp = client.invoke(req);
+         }
+           
+         Object res = null;
+         
+         if (resp instanceof ResponseSupport)
+         {
+            res = ((ResponseSupport)resp).getResponse();
+         }
+         
+         return res;     
+      }
+      catch (Throwable t)
+      {
+         throw handleThrowable(t);
+      }
+   }
+   
+   public JMSException handleThrowable(Throwable t)
+   {
+      if (t instanceof JMSException)
+      {
+         return (JMSException)t;
+      }
+      else
+      {
+         log.error("Failed", t);
+         return new MessagingJMSException("Failed to invoke", t);
+      }
+   }
+   
    // Inner classes --------------------------------------------------------------------------------
-
 }

@@ -252,7 +252,7 @@ public class JBossSession implements
          tccc.set(getClass().getClassLoader());
 
          ConsumerDelegate cd = delegate.
-            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, null);
+            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, -1);
          
          return new JBossMessageConsumer(cd);
       }
@@ -305,7 +305,7 @@ public class JBossSession implements
          tccc.set(getClass().getClassLoader());
 
          ConsumerDelegate cd =
-            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false, null);
+            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false, -1);
 
          return new JBossMessageConsumer(cd);
       }
@@ -340,7 +340,7 @@ public class JBossSession implements
       }
 
       ConsumerDelegate cd = delegate.
-         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false, null);
+         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false, -1);
 
       return new JBossMessageConsumer(cd);
    }
@@ -377,7 +377,7 @@ public class JBossSession implements
          tccc.set(getClass().getClassLoader());
 
          BrowserDelegate del =
-            delegate.createBrowserDelegate((JBossQueue)queue, messageSelector, null);
+            delegate.createBrowserDelegate((JBossQueue)queue, messageSelector, -1);
          
          return new JBossQueueBrowser(queue, messageSelector, del);
       }

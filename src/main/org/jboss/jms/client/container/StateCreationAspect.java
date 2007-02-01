@@ -93,8 +93,6 @@ public class StateCreationAspect
 
          if(trace) { log.trace(connectionDelegate + " not configured, configuring ..."); }
 
-         connectionDelegate.init();
-
          int serverID = connectionDelegate.getServerID();
          Version versionToUse = connectionDelegate.getVersionToUse();
          JMSRemotingConnection remotingConnection = connectionDelegate.getRemotingConnection();
@@ -132,8 +130,6 @@ public class StateCreationAspect
       ClientSessionDelegate sessionDelegate = (ClientSessionDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)sessionDelegate;
 
-      delegate.init();
-
       ConnectionState connectionState = (ConnectionState)getState(invocation);
 
       MethodInvocation mi = (MethodInvocation)invocation;
@@ -152,8 +148,6 @@ public class StateCreationAspect
    {
       ClientConsumerDelegate consumerDelegate = (ClientConsumerDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)consumerDelegate;
-
-      delegate.init();
 
       SessionState sessionState = (SessionState)getState(invocation);
 
@@ -208,8 +202,6 @@ public class StateCreationAspect
 
       ClientBrowserDelegate browserDelegate = (ClientBrowserDelegate)invocation.invokeNext();
       DelegateSupport delegate = (DelegateSupport)browserDelegate;
-
-      delegate.init();
 
       SessionState sessionState = (SessionState)getState(invocation);
 

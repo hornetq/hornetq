@@ -21,9 +21,13 @@
   */
 package org.jboss.messaging.core.tx;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 
 import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -35,17 +39,17 @@ import javax.transaction.xa.Xid;
  * 
  * @version $Revision 1.1 $
  */
-public class XidImpl implements Xid, Serializable
+public class MessagingXid implements Xid, Serializable, Streamable
 {
    private static final long serialVersionUID = -1893120702576869245L;
 
-   protected byte[] branchQualifier;
+   private byte[] branchQualifier;
    
-   protected int formatId;
+   private int formatId;
    
-   protected byte[] globalTransactionId;
+   private byte[] globalTransactionId;
    
-   protected int hash;
+   private int hash;
 
    public byte[] getBranchQualifier()
    {
@@ -63,26 +67,16 @@ public class XidImpl implements Xid, Serializable
    }
    
    //For serialization
-   public XidImpl()
+   public MessagingXid()
    {      
    }
    
-   public XidImpl(byte[] branchQualifier, int formatId, byte[] globalTransactionId)
+   public MessagingXid(byte[] branchQualifier, int formatId, byte[] globalTransactionId)
    {
       this.branchQualifier = branchQualifier;
       this.formatId = formatId;
-      this.globalTransactionId = globalTransactionId;
-      byte[] hashBytes = new byte[branchQualifier.length + globalTransactionId.length + 4];
-      System.arraycopy(branchQualifier, 0, hashBytes, 0, branchQualifier.length);
-      System.arraycopy(globalTransactionId, 0, hashBytes, branchQualifier.length, globalTransactionId.length);
-      byte[] intBytes = new byte[4];
-      for (int i = 0; i < 4; i++)
-      {
-         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
-      }
-      System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
-      String s = new String(hashBytes);
-      hash = s.hashCode();
+      this.globalTransactionId = globalTransactionId;      
+      calcHash();     
    }
    
    public int hashCode()
@@ -133,6 +127,45 @@ public class XidImpl implements Xid, Serializable
       return getClass().getName() + "(GID: " + new String(getGlobalTransactionId()) +
                                     ", Branch: " + new String(getBranchQualifier()) +
                                     ", Format: " + getFormatId() + ")";
+   }
+
+   public void read(DataInputStream in) throws Exception
+   {
+      int len = in.readInt();      
+      branchQualifier = new byte[len];      
+      in.readFully(branchQualifier);
+      
+      formatId = in.readInt();
+      
+      len = in.readInt();      
+      globalTransactionId = new byte[len];      
+      in.readFully(globalTransactionId);            
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeInt(branchQualifier.length);
+      out.write(branchQualifier);
+      
+      out.writeInt(formatId);
+      
+      out.writeInt(globalTransactionId.length);
+      out.write(globalTransactionId);
+   }
+   
+   private void calcHash()
+   {
+      byte[] hashBytes = new byte[branchQualifier.length + globalTransactionId.length + 4];
+      System.arraycopy(branchQualifier, 0, hashBytes, 0, branchQualifier.length);
+      System.arraycopy(globalTransactionId, 0, hashBytes, branchQualifier.length, globalTransactionId.length);
+      byte[] intBytes = new byte[4];
+      for (int i = 0; i < 4; i++)
+      {
+         intBytes[i] = (byte)((formatId >> (i * 8)) % 0xFF);
+      }
+      System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
+      String s = new String(hashBytes);
+      hash = s.hashCode();
    }
 
 }

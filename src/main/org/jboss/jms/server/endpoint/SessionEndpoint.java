@@ -47,19 +47,19 @@ public interface SessionEndpoint extends Closeable
 {
    /**
     * @param failoverChannelID - the ID of the channel for which there is a failover process in
-    *        progress. Null means regular (non-failover) consumer delegate creation.
+    *        progress. -1 means regular (non-failover) consumer delegate creation.
     */
    ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer,
-                                           Long failoverChannelID) throws JMSException;
+                                           long failoverChannelID) throws JMSException;
 
    /**
     * @param failoverChannelID - the ID of the channel for which there is a failover process in
-    *        progress. Null means regular (non-failover) browser delegate creation.
+    *        progress. -1 means regular (non-failover) browser delegate creation.
     */
    BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
-                                         Long failoverChannelID) throws JMSException;
+                                         long failoverChannelID) throws JMSException;
 
    /**
     * Creates a queue identity given a Queue name. Does NOT create the physical queue. The physical
@@ -79,7 +79,7 @@ public interface SessionEndpoint extends Closeable
     * Acknowledge a list of deliveries
     * @throws JMSException
     */
-   void acknowledgeDeliveries(List deliveryIds) throws JMSException;
+   void acknowledgeDeliveries(List acks) throws JMSException;
    
    /**
     * Acknowledge a delivery
@@ -90,7 +90,7 @@ public interface SessionEndpoint extends Closeable
    /**
     * Cancel a list of deliveries.
     */
-   void cancelDeliveries(List cancelInfos) throws JMSException;
+   void cancelDeliveries(List cancels) throws JMSException;
          
    /**
     * Cancel a delivery

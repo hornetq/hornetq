@@ -21,21 +21,24 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import javax.jms.JMSException;
+
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
-import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
+import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.callback.Callback;
-import java.util.List;
-import java.util.Map;
-import java.util.Iterator;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -99,22 +102,38 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
 
+   public CreateConnectionResult createConnectionDelegate(String username,
+                                                         String password,
+                                                         int failedNodeID)
+                                                        
+      throws JMSException      
+   {
+      //This is never called directly
+      throw new IllegalStateException("createConnectionDelegate should never be called directly");
+   }
+   
    /**
     * @param failedNodeID - zero or positive values mean connection creation attempt is result of
-    *        failover. Negative values are ignored (mean regular connection creation attempt).
+    *        failover. -1 are ignored (mean regular connection creation attempt).
     */
    public CreateConnectionResult createConnectionDelegate(String username,
                                                           String password,
-                                                          int failedNodeID)
+                                                          int failedNodeID,
+                                                          String remotingSessionID, String clientVMID,
+                                                          byte versionToUse,
+                                                          ServerInvokerCallbackHandler callbackHandler)
       throws JMSException      
    {
       try
       {
-         if (failedNodeID < 0)
+         if (failedNodeID == -1)
          {
             // Just a standard createConnection
-            ConnectionDelegate cd =
-               createConnectionDelegateInternal(username, password, failedNodeID);
+            ClientConnectionDelegate cd =
+               createConnectionDelegateInternal(username, password, failedNodeID,
+                                                remotingSessionID, clientVMID,
+                                                versionToUse,
+                                                callbackHandler);
             return new CreateConnectionResult(cd);
          }
          else
@@ -134,8 +153,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
             {
                log.debug(this + " received notification that server-side failover completed, " +
                   "creating connection delegate ...");
-               ConnectionDelegate cd =
-                  createConnectionDelegateInternal(username, password, failedNodeID);
+               ClientConnectionDelegate cd =
+                  createConnectionDelegateInternal(username, password, failedNodeID,
+                                                   remotingSessionID, clientVMID,
+                                                   versionToUse,
+                                                   callbackHandler);
                return new CreateConnectionResult(cd);
             }
          }
@@ -151,9 +173,13 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
     * @param failedNodeID - zero or positive values mean connection creation attempt is result of
     *        failover. Negative values are ignored (mean regular connection creation attempt).
     */
-   private ConnectionDelegate createConnectionDelegateInternal(String username,
-                                                               String password,
-                                                               int failedNodeID)
+   private ClientConnectionDelegate
+      createConnectionDelegateInternal(String username,
+                                       String password,
+                                       int failedNodeID,
+                                       String remotingSessionID, String clientVMID,
+                                       byte versionToUse,
+                                       ServerInvokerCallbackHandler callbackHandler)
       throws Exception
    {
       log.debug("creating a new connection for user " + username);
@@ -178,12 +204,15 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       ServerConnectionEndpoint endpoint =
          new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
-                                      defaultTempQueueDownCacheSize, failedNodeID, this);
+                                      defaultTempQueueDownCacheSize, failedNodeID, this,
+                                      remotingSessionID, clientVMID, versionToUse,
+                                      callbackHandler);
 
       int connectionID = endpoint.getConnectionID();
 
       ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
-      JMSDispatcher.instance.registerTarget(new Integer(connectionID), connAdvised);
+
+      Dispatcher.instance.registerTarget(connectionID, connAdvised);
 
       log.debug("created and registered " + endpoint);
 
@@ -239,8 +268,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       List activeConnections = serverPeer.getConnectionManager().getActiveConnections();
 
-      ConnectionFactoryUpdateMessage message =
-         new ConnectionFactoryUpdateMessage(delegates, failoverMap);
+      ConnectionFactoryUpdate message =
+         new ConnectionFactoryUpdate(delegates, failoverMap);
 
       Callback callback = new Callback(message);
 

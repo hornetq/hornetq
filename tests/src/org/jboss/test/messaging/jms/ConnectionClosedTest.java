@@ -255,7 +255,12 @@ public class ConnectionClosedTest extends MessagingTestCase
    public void testGetMetadataOnClosedConnection() throws Exception
    {
       Connection connection = cf.createConnection();
+      
+      log.info("Closing connection");
+      
       connection.close();
+      
+      log.info("Closed connection");
 
       try
       {

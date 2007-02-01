@@ -63,7 +63,7 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.PreparedTxInfo;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
-import org.jboss.messaging.core.tx.XidImpl;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.JDBCUtil;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
@@ -218,7 +218,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             byte[] branchQual = rs.getBytes(2);
             int formatId = rs.getInt(3);
             byte[] globalTxId = rs.getBytes(4);
-            Xid xid = new XidImpl(branchQual, formatId, globalTxId);
+            Xid xid = new MessagingXid(branchQual, formatId, globalTxId);
             
             // create a tx info object with the result set detailsdetails
             txInfo = new PreparedTxInfo(txId, xid);

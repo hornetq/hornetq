@@ -529,7 +529,7 @@ public class ResourceManager
          try
          {
             Xid[] txs = conn.getPreparedTransactions();
-
+            
             //populate with TxState --MK
             for (int i = 0; i < txs.length;i++)
             {

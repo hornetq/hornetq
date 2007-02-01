@@ -58,9 +58,9 @@ import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.jms.server.remoting.JMSDispatcher;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
@@ -196,7 +196,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                   boolean noLocal,
                                                   String subscriptionName,
                                                   boolean isCC,
-                                                  Long failoverChannelID) throws JMSException
+                                                  long failoverChannelID) throws JMSException
    {
       try
       {
@@ -220,7 +220,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
       
 	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination,
-                                                String selector, Long failoverChannelID)
+                                                String selector, long failoverChannelID)
       throws JMSException
 	{
       try
@@ -715,11 +715,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   public boolean isClosed() throws JMSException
-   {
-      throw new IllegalStateException("isClosed should never be handled on the server side");
-   }
-    
    // Public ---------------------------------------------------------------------------------------
    
    public ServerConnectionEndpoint getConnectionEndpoint()
@@ -883,7 +878,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       sp.removeSession(new Integer(id));
             
-      JMSDispatcher.instance.unregisterTarget(new Integer(id));
+      Dispatcher.instance.unregisterTarget(id);
       
       closed = true;
    }            
@@ -1133,7 +1128,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                                    String selectorString,
                                                                    boolean noLocal,
                                                                    String subscriptionName,
-                                                                   Long oldChannelID)
+                                                                   long oldChannelID)
       throws Exception
    {
       log.debug(this + " creating FAILOVER consumer for failed channel " +
@@ -1150,9 +1145,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       Binding binding = null;
 
-      if (oldChannelID != null)
+      if (oldChannelID != -1)
       {
-         binding = postOffice.getBindingforChannelId(oldChannelID.longValue());
+         binding = postOffice.getBindingforChannelId(oldChannelID);
       }
       else
       {
@@ -1174,7 +1169,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       if (binding == null)
       {
          throw new IllegalStateException("Can't find failed over " +
-            (oldChannelID != null ?
+            (oldChannelID != -1 ?
                "channel " +  oldChannelID : "queue " + jmsDestination.getName()));
       }
 
@@ -1211,7 +1206,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                     binding.getQueue().getName(), this, selectorString, noLocal,
                                     jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
 
-      JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
+      Dispatcher.instance.registerTarget(consumerID, new ConsumerAdvised(ep));
 
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, newChannelID, prefetchSize, maxDeliveryAttempts);
@@ -1527,7 +1522,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   binding.getQueue().getName(), this, selectorString, noLocal,
                   jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
       
-      JMSDispatcher.instance.registerTarget(new Integer(consumerID), new ConsumerAdvised(ep));
+      Dispatcher.instance.registerTarget(consumerID, new ConsumerAdvised(ep));
       
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
@@ -1545,7 +1540,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    private BrowserDelegate createFailoverBrowserDelegateInternal(JBossDestination jmsDestination,
                                                                  String selector,
-                                                                 Long oldChannelID) throws Throwable
+                                                                 long oldChannelID) throws Throwable
    {
       log.debug(this + " creating FAILOVER browser for failed channel " + oldChannelID + " for " +
          jmsDestination + (selector == null ? "" : ", selector '" + selector + "'"));
@@ -1557,9 +1552,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       Binding binding = null;
 
-      if (oldChannelID != null)
+      if (oldChannelID != -1)
       {
-         binding = postOffice.getBindingforChannelId(oldChannelID.longValue());
+         binding = postOffice.getBindingforChannelId(oldChannelID);
       }
       else
       {
@@ -1581,7 +1576,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       if (binding == null)
       {
          throw new IllegalStateException("Can't find failed over " +
-            (oldChannelID != null ?
+            (oldChannelID != -1 ?
                "channel " +  oldChannelID : "queue " + jmsDestination.getName()));
       }
 
@@ -1590,7 +1585,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
 
       ServerBrowserEndpoint ep = new ServerBrowserEndpoint(this, browserID, newChannel, selector);
-      JMSDispatcher.instance.registerTarget(new Integer(browserID), new BrowserAdvised(ep));
+      Dispatcher.instance.registerTarget(browserID, new BrowserAdvised(ep));
 
       // still need to synchronized since close() can come in on a different thread
       synchronized (browsers)
@@ -1640,7 +1635,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          browsers.put(new Integer(browserID), ep);
       }
 
-      JMSDispatcher.instance.registerTarget(new Integer(browserID), new BrowserAdvised(ep));
+      Dispatcher.instance.registerTarget(browserID, new BrowserAdvised(ep));
 
       ClientBrowserDelegate stub =
          new ClientBrowserDelegate(browserID, binding.getQueue().getChannelID());

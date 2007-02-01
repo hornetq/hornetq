@@ -23,11 +23,10 @@ package org.jboss.jms.client.remoting;
 
 import java.util.Map;
 
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.server.endpoint.ClientDelivery;
-import org.jboss.jms.server.endpoint.ConnectionFactoryUpdateMessage;
-import org.jboss.jms.server.remoting.MessagingMarshallable;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.wireformat.ClientDelivery;
+import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
@@ -84,10 +83,9 @@ public class CallbackManager implements InvokerCallbackHandler
    {
       Object parameter = callback.getParameter();
 
-      if (parameter instanceof MessagingMarshallable)
+      if (parameter instanceof ClientDelivery)
       {
-         MessagingMarshallable mm = (MessagingMarshallable)parameter;
-         ClientDelivery dr = (ClientDelivery)mm.getLoad();
+         ClientDelivery dr = (ClientDelivery)parameter;
          MessageProxy msg = dr.getMessage();
 
          MessageCallbackHandler handler =
@@ -100,6 +98,7 @@ public class CallbackManager implements InvokerCallbackHandler
             // safe to ignore the message.
 
             if (trace) { log.trace(this + " callback handler not found, message arrived after consumer is closed"); }
+            
             return;
          }
 
@@ -113,9 +112,9 @@ public class CallbackManager implements InvokerCallbackHandler
             throw new HandleCallbackException(e.getMessage(), e);
          }
       }
-      else if (parameter instanceof ConnectionFactoryUpdateMessage)
+      else if (parameter instanceof ConnectionFactoryUpdate)
       {
-         ConnectionFactoryUpdateMessage viewChange = (ConnectionFactoryUpdateMessage)parameter;
+         ConnectionFactoryUpdate viewChange = (ConnectionFactoryUpdate)parameter;
 
          if (trace) { log.trace(this + " receiving cluster view change " + viewChange); }
 

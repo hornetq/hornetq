@@ -21,9 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
@@ -35,7 +32,6 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
-import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnection;
@@ -43,14 +39,9 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -79,6 +70,7 @@ public class ConnectionTest extends MessagingTestCase
    protected InitialContext initialContext;
 
    protected ConnectionFactory cf;
+   
    protected Destination topic;
 
    // Constructors --------------------------------------------------
@@ -93,21 +85,24 @@ public class ConnectionTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
+      
       ServerManagement.start("all");
-      
-      
+            
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      
       cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      
       ServerManagement.undeployTopic("Topic");
+      
       ServerManagement.deployTopic("Topic");
+      
       topic = (Destination)initialContext.lookup("/topic/Topic");
-
-      log.debug("setup done");
    }
 
    public void tearDown() throws Exception
    {
       ServerManagement.undeployTopic("Topic");
+      
       super.tearDown();
    }
 
@@ -499,50 +494,7 @@ public class ConnectionTest extends MessagingTestCase
 //      {}
 //   }
 
-   /**
-    * Test create connection when there is another Remoting invocation handler registered with the
-    * Connector. I uncovered this bug while trying to run TCK/integration tests. In real life
-    * Messaging has to co-exist with other invocation handlers registered with the Unified invoker's
-    * Connector.
-    */
-   public void testCreateConnectionMultipleRemotingInvocationHandlers() throws Exception
-   {
-      // stop the Messaging server and re-start it after I register an extra remoting invocation
-      // handler with the connector
-
-      ServerManagement.stopServerPeer();
-
-      Set subsystems = ServerManagement.getConnectorSubsystems();
-      assertTrue(subsystems.contains(ServerPeer.REMOTING_JMS_SUBSYSTEM));
-      assertEquals(1, subsystems.size());
-
-      ServerManagement.addServerInvocationHandler("DEFAULT_INVOCATION_HANDLER",
-                                                  new SimpleServerInvocationHandler());
-      subsystems = ServerManagement.getConnectorSubsystems();
-      assertTrue(subsystems.contains(ServerPeer.REMOTING_JMS_SUBSYSTEM));
-      assertTrue(subsystems.contains("DEFAULT_INVOCATION_HANDLER"));
-      assertEquals(2, subsystems.size());
-
-      try
-      {
-         // restart the server peer so it will add its ServerInvocationHandler AFTER
-         // SimpleServerInvocationHandler - this simulates the situation where the same Connector
-         // has more than one ServerInvocationHandler instance
-         ServerManagement.startServerPeer();
-
-         // We need to re-lookup the connection factory after server restart, the new connection
-         // factory points to a different thing
-         cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-
-         Connection connection = cf.createConnection();
-         connection.close();
-      }
-      finally
-      {
-         // remove the test invocation handler
-         ServerManagement.removeServerInvocationHandler("DEFAULT_INVOCATION_HANDLER");
-      }
-   }
+   
 
    // Package protected ---------------------------------------------
 
@@ -563,35 +515,6 @@ public class ConnectionTest extends MessagingTestCase
       }
    }
 
-   private static class SimpleServerInvocationHandler
-      implements ServerInvocationHandler, Serializable
-   {
-      private static final long serialVersionUID = 23847329753297523L;
-
-      public void setMBeanServer(MBeanServer server)
-      {
-      }
-
-      public void setInvoker(ServerInvoker invoker)
-      {
-      }
-
-      public Object invoke(InvocationRequest invocation) throws Throwable
-      {
-         log.error("received invocation " + invocation + ", " + invocation.getParameter());
-         fail("This ServerInvocationHandler is not supposed to handle invocations");
-         return null;
-      }
-
-      public void addListener(InvokerCallbackHandler callbackHandler)
-      {
-         fail("This ServerInvocationHandler is not supposed to add listeners");
-      }
-
-      public void removeListener(InvokerCallbackHandler callbackHandler)
-      {
-         fail("This ServerInvocationHandler is not supposed to remove listeners");
-      }
-   }
+   
 
 }

@@ -46,6 +46,8 @@ public class ClusteringAspect
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ClusteringAspect.class);
+   
+   private boolean trace = log.isTraceEnabled();
 
    public static final int MAX_RECONNECT_HOP_COUNT = 10;
 
@@ -67,6 +69,11 @@ public class ClusteringAspect
    public CreateConnectionResult handleCreateConnectionDelegate(Invocation invocation)
       throws Throwable
    {
+      if (trace)
+      {
+         log.trace(this + " handleCreateConnectionDelegate");
+      }
+      
       // initalize this PER_INSTANCE aspect by getting a hold of its corresponding clustered
       // delegate and maintaining a reference to it
       if (clusteredDelegate == null)

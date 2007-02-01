@@ -20,42 +20,53 @@
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
 
-package org.jboss.jms.server.endpoint;
+package org.jboss.jms.wireformat;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import java.util.Map;
-import java.io.Serializable;
 
 /**
  * This class holds the update cluster view sent by the server to client-side clustered connection
  * factories.
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
+ * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
+ * @version <tt>$Revision: 1998 $</tt>
  *
- * $Id$
+ * $Id: ConnectionFactoryUpdateMessage.java 1998 2007-01-19 20:19:05Z clebert.suconic@jboss.com $
  */
-public class ConnectionFactoryUpdateMessage implements Serializable
+public class ConnectionFactoryUpdate extends CallbackSupport
 {
 
    // Constants ------------------------------------------------------------------------------------
 
-   static final long serialVersionUID = 7978093036163402989L;
-
    // Attributes -----------------------------------------------------------------------------------
 
    private ClientConnectionFactoryDelegate[] delegates;
+   
    private Map failoverMap;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConnectionFactoryUpdateMessage(ClientConnectionFactoryDelegate[] delegates,
-                                         Map failoverMap)
+   public ConnectionFactoryUpdate(ClientConnectionFactoryDelegate[] delegates,
+                                  Map failoverMap)
    {
+      super(PacketSupport.CONNECTIONFACTORY_UPDATE);
+      
       this.delegates = delegates;
+      
       this.failoverMap = failoverMap;
+   }
+   
+   public ConnectionFactoryUpdate()
+   {      
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -79,6 +90,7 @@ public class ConnectionFactoryUpdateMessage implements Serializable
    {
       this.failoverMap = failoverMap;
    }
+   
 
    public String toString()
    {
@@ -96,6 +108,71 @@ public class ConnectionFactoryUpdateMessage implements Serializable
       sb.append("]");
 
       return sb.toString();
+   }   
+   
+   // Streamable implementation
+   // ---------------------------------------------------------------     
+
+   public void read(DataInputStream is) throws Exception
+   {
+      super.read(is);
+      
+      int len = is.readInt();
+      
+      delegates = new ClientConnectionFactoryDelegate[len];
+      
+      for (int i = 0; i < len; i++)
+      {
+         delegates[i] = new ClientConnectionFactoryDelegate();
+         
+         delegates[i].read(is);
+      }
+      
+      len = is.readInt();
+      
+      failoverMap = new HashMap(len);
+      
+      for (int c = 0; c < len; c++)
+      {
+         Integer i = new Integer(is.readInt());
+         
+         Integer j = new Integer(is.readInt());
+         
+         failoverMap.put(i, j);
+      }
+   }
+
+   public void write(DataOutputStream os) throws Exception
+   {
+      super.write(os);
+      
+      int len = delegates.length;
+      
+      os.writeInt(len);
+      
+      for (int i = 0; i < len; i++)
+      {
+         delegates[i].write(os);
+      }
+      
+      os.writeInt(failoverMap.size());
+      
+      Iterator iter = failoverMap.entrySet().iterator();
+      
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+         
+         Integer i = (Integer)entry.getKey();
+         
+         Integer j = (Integer)entry.getValue();
+         
+         os.writeInt(i.intValue());
+         
+         os.writeInt(j.intValue());
+      }            
+      
+      os.flush();
    }
 
    // Package protected ----------------------------------------------------------------------------

@@ -21,13 +21,22 @@
   */
 package org.jboss.jms.client.delegate;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.wireformat.CloseRequest;
+import org.jboss.jms.wireformat.ClosingRequest;
+import org.jboss.jms.wireformat.ConsumerCancelInflightMessagesRequest;
+import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
+import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.remoting.Client;
 
 /**
@@ -43,8 +52,6 @@ import org.jboss.remoting.Client;
 public class ClientConsumerDelegate extends DelegateSupport implements ConsumerDelegate
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final long serialVersionUID = -2578195153435251519L;
 
    // Attributes -----------------------------------------------------------------------------------
    
@@ -89,52 +96,45 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       channelID = newDelegate.getChannelID();
 
    }
-
-   // ConsumerDelegate implementation --------------------------------------------------------------
    
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
+   public void setState(HierarchicalState state)
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-   
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void changeRate(float newRate)
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      super.setState(state);
+      
+      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
+                  getRemotingClient();
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+   // Closeable implementation ---------------------------------------------------------------------
+   
    public void close() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new CloseRequest(id, version);
+      
+      doInvoke(client, req);
    }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+   
    public void closing() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ClosingRequest(id, version);
+      
+      doInvoke(client, req);
    }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean isClosed()
+   
+   // ConsumerDelegate implementation --------------------------------------------------------------
+   
+   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      RequestSupport req = new ConsumerCancelInflightMessagesRequest(id, version, lastDeliveryId);
+      
+      doInvoke(client, req);
+   }
+   
+   public void changeRate(float newRate) throws JMSException
+   {
+      RequestSupport req = new ConsumerChangeRateRequest(id, version, newRate);
+      
+      doInvokeOneway(client, req);
    }
 
    /**
@@ -190,6 +190,30 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
+   
+   // Streamable implementation ----------------------------------------------------------
+
+   public void read(DataInputStream in) throws Exception
+   {
+      super.read(in);
+      
+      bufferSize = in.readInt();
+      
+      maxDeliveries = in.readInt();
+      
+      channelID = in.readLong();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      super.write(out);
+      
+      out.writeInt(bufferSize);
+      
+      out.writeInt(maxDeliveries);
+      
+      out.writeLong(channelID);
+   }
 
    // Public ---------------------------------------------------------------------------------------
 
@@ -214,14 +238,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    }
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected Client getClient()
-   {
-      // Use the Client in the Connection's state
-      return ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();
-   }
-
 
    // Package Private ------------------------------------------------------------------------------
 

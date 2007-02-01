@@ -74,12 +74,6 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.cancelInflightMessages(lastDeliveryId);
    }
 
-   public boolean isClosed() throws JMSException
-   {
-      return endpoint.isClosed();
-   }
-
-  
    // AdvisedSupport overrides --------------------------------------
 
    public Object getEndpoint()

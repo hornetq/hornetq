@@ -21,9 +21,11 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import java.io.Serializable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * 
@@ -35,23 +37,29 @@ import org.jboss.jms.delegate.ConnectionDelegate;
  * $Id$
  *
  */
-public class CreateConnectionResult implements Serializable
+public class CreateConnectionResult implements Streamable
 {
    // Constants -----------------------------------------------------
 
-   private static final long serialVersionUID = 4311863642735135167L;
-
    // Static --------------------------------------------------------
+   
+   private static final int NULL = 0;
+   
+   private static final int NOT_NULL = 1;
 
    // Attributes ----------------------------------------------------
 
-   private ConnectionDelegate delegate;
+   private ClientConnectionDelegate delegate;
 
    private int actualFailoverNodeID;
 
    // Constructors --------------------------------------------------
+   
+   public CreateConnectionResult()
+   {      
+   }
 
-   public CreateConnectionResult(ConnectionDelegate delegate)
+   public CreateConnectionResult(ClientConnectionDelegate delegate)
    {
       this(delegate, Integer.MIN_VALUE);
    }
@@ -61,7 +69,7 @@ public class CreateConnectionResult implements Serializable
       this(null, actualFailoverNodeID);
    }
 
-   private CreateConnectionResult(ConnectionDelegate delegate,
+   private CreateConnectionResult(ClientConnectionDelegate delegate,
                                   int actualFailoverNodeId)
    {
       this.delegate = delegate;
@@ -70,7 +78,7 @@ public class CreateConnectionResult implements Serializable
 
    // Public --------------------------------------------------------
 
-   public ConnectionDelegate getDelegate()
+   public ClientConnectionDelegate getDelegate()
    {
       return delegate;
    }
@@ -83,6 +91,38 @@ public class CreateConnectionResult implements Serializable
    public String toString()
    {
       return "CreateConnectionResult[" + delegate + ", failover node " + actualFailoverNodeID + "]";
+   }
+   
+   // Streamable implementation ------------------------------------
+
+   public void read(DataInputStream in) throws Exception
+   {
+      actualFailoverNodeID = in.readInt();
+      
+      int b = in.readByte();
+      
+      if (b == NOT_NULL)
+      {
+         delegate = new ClientConnectionDelegate();
+         
+         delegate.read(in);
+      }
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeInt(actualFailoverNodeID);
+      
+      if (delegate == null)
+      {
+         out.writeByte(NULL);
+      }
+      else
+      {
+         out.writeByte(NOT_NULL);
+         
+         delegate.write(out);
+      }         
    }
 
    // Package protected ---------------------------------------------
