@@ -298,7 +298,7 @@ public class BridgeTestBase extends MessagingTestCase
          
          MessageConsumer cons = sess.createConsumer(dest);
          
-         Message m = cons.receive(2000);
+         Message m = cons.receive(5000);
          
          assertNull(m);
          
@@ -334,7 +334,7 @@ public class BridgeTestBase extends MessagingTestCase
          
          while (true)
          {
-            TextMessage tm = (TextMessage)cons.receive(2000);
+            TextMessage tm = (TextMessage)cons.receive(5000);
             
             if (tm == null)
             {
@@ -397,7 +397,7 @@ public class BridgeTestBase extends MessagingTestCase
            
          for (int i = 0; i < numMessages; i++)
          {            
-            TextMessage tm = (TextMessage)cons.receive(2000);
+            TextMessage tm = (TextMessage)cons.receive(5000);
             
             assertNotNull(tm);
             
