@@ -26,7 +26,6 @@ import java.io.DataOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Streamable;
 import org.jboss.remoting.Client;
 
@@ -41,8 +40,6 @@ import org.jboss.remoting.Client;
  */
 public abstract class PacketSupport implements Streamable
 {
-   private static final Logger log = Logger.getLogger(PacketSupport.class);
-   
    private static final int NULL = 0;
    
    private static final int NOT_NULL = 1;

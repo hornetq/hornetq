@@ -23,16 +23,19 @@ package org.jboss.jms.client.delegate;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.util.MessagingNetworkFailureException;
 import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.jms.wireformat.ResponseSupport;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Streamable;
+import org.jboss.remoting.CannotConnectException;
 import org.jboss.remoting.Client;
 
 /**
@@ -190,11 +193,17 @@ public abstract class DelegateSupport implements Streamable, Serializable
    
    public JMSException handleThrowable(Throwable t)
    {
+      log.info("******** HANDLING THROWABLE", t);
+      
       if (t instanceof JMSException)
       {
          return (JMSException)t;
       }
-      else
+      else if ((t instanceof CannotConnectException) || (t instanceof IOException))
+      {
+         return new MessagingNetworkFailureException((Exception)t);
+      }
+      else         
       {
          log.error("Failed", t);
          return new MessagingJMSException("Failed to invoke", t);

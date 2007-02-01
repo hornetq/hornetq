@@ -56,7 +56,7 @@ public class FailoverCommandCenter
 
    /**
     * Method called by failure detection components (FailoverValveInterceptors and
-    * ConnectionListeners) when they have reasons to belive that a server failure occured.
+    * ConnectionListeners) when they have reasons to believe that a server failure occured.
     */
    public void failureDetected(Throwable reason, FailureDetector source,
                                JMSRemotingConnection remotingConnection)

@@ -1514,7 +1514,6 @@ public class ServiceContainer
             jca = true;
             remoting = true;
             security = true;
-            multiplexer = true;
          }
          else if ("transaction".equals(tok))
          {

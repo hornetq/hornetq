@@ -95,6 +95,9 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       maxDeliveries = newDelegate.getMaxDeliveries();
       channelID = newDelegate.getChannelID();
 
+      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
+         getRemotingClient();
+      
    }
    
    public void setState(HierarchicalState state)

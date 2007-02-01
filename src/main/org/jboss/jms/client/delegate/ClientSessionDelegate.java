@@ -112,6 +112,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
+      
+      client = ((ConnectionState)state.getParent()).getRemotingConnection().
+         getRemotingClient();
    }
 
    public void setState(HierarchicalState state)

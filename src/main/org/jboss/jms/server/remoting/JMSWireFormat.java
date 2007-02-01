@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.jms.wireformat.ClientDelivery;
+import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.jms.wireformat.PacketSupport;
 import org.jboss.jms.wireformat.PolledCallbacksDelivery;
 import org.jboss.jms.wireformat.RequestSupport;
@@ -197,6 +198,14 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                         ((ClientDelivery)packet).setRemotingSessionID(req.getSessionId());
                         
                         if (trace) { log.trace("Message delivery callback"); }
+                     }
+                     else if (callback.getParameter() instanceof ConnectionFactoryUpdate)
+                     {
+                        packet = (ConnectionFactoryUpdate)callback.getParameter();
+                        
+                        ((ConnectionFactoryUpdate)packet).setRemotingSessionID(req.getSessionId());
+                        
+                        if (trace) { log.trace("Connection factory update callback"); }
                      }
                   }
                }

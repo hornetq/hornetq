@@ -96,12 +96,15 @@ public class ConnectionFactoryUpdate extends CallbackSupport
    {
       StringBuffer sb = new StringBuffer("ConnectionFactoryUpdateMessage[");
 
-      for(int i = 0; i < delegates.length; i++)
+      if (delegates != null)
       {
-         sb.append(delegates[i]);
-         if (i < delegates.length - 1)
+         for(int i = 0; i < delegates.length; i++)
          {
-            sb.append(',');
+            sb.append(delegates[i]);
+            if (i < delegates.length - 1)
+            {
+               sb.append(',');
+            }
          }
       }
 

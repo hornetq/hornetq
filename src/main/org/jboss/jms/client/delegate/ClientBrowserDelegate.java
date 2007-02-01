@@ -82,6 +82,9 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
+      
+      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
+         getRemotingClient();
    }
    
    public void setState(HierarchicalState state)
@@ -89,8 +92,9 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       super.setState(state);
       
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-                  getRemotingClient();
+         getRemotingClient();
    }
+   
    
    // Closeable implementation ---------------------------------------------------------------------
    

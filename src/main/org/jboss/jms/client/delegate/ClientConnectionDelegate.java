@@ -122,6 +122,8 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
       // There is one RM per server, so we need to merge the rms if necessary
       ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
+      
+      client = thisState.getRemotingConnection().getRemotingClient();
 
       // start the connection again on the serverEndpoint if necessary
       if (thisState.isStarted())
@@ -134,7 +136,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       super.setState(state);
       
-      client = ((ConnectionState)state).getRemotingConnection(). getRemotingClient();
+      client = ((ConnectionState)state).getRemotingConnection().getRemotingClient();
    }
 
    // Closeable implementation ---------------------------------------------------------------------

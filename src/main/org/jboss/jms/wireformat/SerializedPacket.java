@@ -21,14 +21,10 @@
  */
 package org.jboss.jms.wireformat;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
-import org.jboss.logging.Logger;
 
 /**
  * For carrying a remoting non JBM invocation across the wire
@@ -45,9 +41,6 @@ import org.jboss.logging.Logger;
  */
 public class SerializedPacket extends PacketSupport
 {
-   private static final Logger log = Logger.getLogger(SerializedPacket.class);
-   
-   
    private Object payload;
    
    public SerializedPacket()

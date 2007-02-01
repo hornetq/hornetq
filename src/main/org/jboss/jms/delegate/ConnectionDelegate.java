@@ -56,6 +56,6 @@ public interface ConnectionDelegate extends ConnectionEndpoint
                                                     int maxMessages) throws JMSException;
 
    void registerFailoverListener(FailoverListener failoverListener);
+   
    boolean unregisterFailoverListener(FailoverListener failoverListener);
-
 }

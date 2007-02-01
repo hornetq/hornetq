@@ -283,7 +283,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
             try
             {
-               connEndpoint.getCallbackHandler().handleCallback(callback);
+               connEndpoint.getCallbackHandler().handleCallbackOneway(callback);
             }
             catch (Exception e)
             {
