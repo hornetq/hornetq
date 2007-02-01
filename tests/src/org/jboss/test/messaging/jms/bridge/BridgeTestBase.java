@@ -257,7 +257,9 @@ public class BridgeTestBase extends MessagingTestCase
       throws Exception
    {
       Connection conn = null;
-      
+     
+      log.trace("Sending " + numMessages + " messages");
+ 
       try
       {
          conn = cf.createConnection();
@@ -274,6 +276,8 @@ public class BridgeTestBase extends MessagingTestCase
             
             prod.send(tm);
          }
+
+         log.trace("Sent messages");
       }
       finally
       {
@@ -288,6 +292,8 @@ public class BridgeTestBase extends MessagingTestCase
    {
       Connection conn = null;
       
+      log.trace("checkNoneReceived");
+
       try
       {
          conn = cf.createConnection();
@@ -301,6 +307,8 @@ public class BridgeTestBase extends MessagingTestCase
          Message m = cons.receive(timeout);
          
          assertNull(m);
+
+         log.trace("Check complete");
          
       }
       finally
@@ -316,6 +324,8 @@ public class BridgeTestBase extends MessagingTestCase
    {
       Connection conn = null;
       
+      log.trace("checkMessagesReceived");
+
       try
       {
          conn = cf.createConnection();
@@ -367,6 +377,8 @@ public class BridgeTestBase extends MessagingTestCase
             //No *guarantee* that any messages will be received
             //but you still might get some depending on how/where the crash occurred                 
          }      
+
+         log.trace("Check complete");
          
       }
       finally
@@ -383,6 +395,8 @@ public class BridgeTestBase extends MessagingTestCase
    {
       Connection conn = null;
       
+      log.trace("checkAllMessageReceievedInOrder");
+
       try
       {
          conn = cf.createConnection();
@@ -403,6 +417,8 @@ public class BridgeTestBase extends MessagingTestCase
             
             assertEquals("message" + (i + start), tm.getText());
          } 
+
+         log.trace("Check complete");
       }
       finally
       {
