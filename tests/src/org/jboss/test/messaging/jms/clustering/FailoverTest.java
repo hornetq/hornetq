@@ -1428,6 +1428,7 @@ public class FailoverTest extends ClusteringTestBase
          // test the client-side failover valve
 
          TextMessage tm = (TextMessage)cons.receive(60000);
+         assertNotNull(tm);
          assertEquals("blip", tm.getText());
       }
       finally
