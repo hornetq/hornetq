@@ -28,9 +28,6 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.remoting.InvocationRequest;
 
 /**
- * 
- * A PacketSupport
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *

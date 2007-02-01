@@ -93,7 +93,6 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.remoting.InvocationRequest;
@@ -101,9 +100,6 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
- * 
- * A WireFormatTest.
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -113,8 +109,6 @@ public class WireFormatTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
       
-   private static final Logger log = Logger.getLogger(WireFormatTest.class);
-
    // Static --------------------------------------------------------
       
    // Attributes ----------------------------------------------------

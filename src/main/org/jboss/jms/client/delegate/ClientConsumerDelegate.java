@@ -37,7 +37,6 @@ import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.ConsumerCancelInflightMessagesRequest;
 import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.remoting.Client;
 
 /**
  * The client-side Consumer delegate class.

@@ -27,7 +27,6 @@ import javax.jms.Message;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.remoting.Client;
 
 /**
  * The client-side Producer delegate class.

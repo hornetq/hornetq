@@ -173,6 +173,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.remotingClientSessionID = remotingSessionID;
       
       this.jmsClientVMID = clientVMID;
+      this.usingVersion = versionToUse; 
       
       this.serverPeer.getConnectionManager().
          registerConnection(jmsClientVMID, remotingClientSessionID, this);

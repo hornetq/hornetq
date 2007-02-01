@@ -1167,7 +1167,6 @@ public class XARecoveryTest extends MessagingTestCase
       }
    }
    
-   
    /* Not really necessary - but it does no harm */
    public void testComplexTransactional() throws Exception
    {
@@ -3325,8 +3324,6 @@ public class XARecoveryTest extends MessagingTestCase
             }
          }    
       }
-
    }
-
 }
 

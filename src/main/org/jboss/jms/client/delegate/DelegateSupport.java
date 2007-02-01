@@ -169,11 +169,19 @@ public abstract class DelegateSupport implements Streamable, Serializable
          
          if (oneWay)
          {
+            if (trace) { log.trace(this + " invoking " + req + " asynchronously on server"); }
+
             client.invokeOneway(req);
+
+            if (trace) { log.trace(this + " asynchronously invoked " + req + " on server, no response expected"); }
          }
          else
          {
+            if (trace) { log.trace(this + " invoking " + req + " synchronously on server"); }
+
             resp = client.invoke(req);
+
+            if (trace) { log.trace(this + " got server response for " + req + ": " + resp); }
          }
            
          Object res = null;

@@ -119,7 +119,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public CreateConnectionResult createConnectionDelegate(String username,
                                                           String password,
                                                           int failedNodeID,
-                                                          String remotingSessionID, String clientVMID,
+                                                          String remotingSessionID,
+                                                          String clientVMID,
                                                           byte versionToUse,
                                                           ServerInvokerCallbackHandler callbackHandler)
       throws JMSException      

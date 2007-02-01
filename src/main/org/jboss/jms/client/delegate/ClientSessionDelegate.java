@@ -63,7 +63,6 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
-import org.jboss.logging.Logger;
 
 /**
  * The client-side Session delegate class.
@@ -81,8 +80,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -8096852898620279131L;
-
-   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
 
    // Attributes -----------------------------------------------------------------------------------
 

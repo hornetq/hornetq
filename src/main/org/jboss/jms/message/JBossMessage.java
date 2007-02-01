@@ -23,7 +23,6 @@ package org.jboss.jms.message;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -45,10 +44,6 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTemporaryQueue;
-import org.jboss.jms.destination.JBossTemporaryTopic;
-import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.util.StreamUtils;

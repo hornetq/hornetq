@@ -41,7 +41,6 @@ import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryGetIDBlockRequest;
 import org.jboss.jms.wireformat.ResponseSupport;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
@@ -64,8 +63,6 @@ public class ClientConnectionFactoryDelegate
 
    private static final long serialVersionUID = 2512460695662741413L;
 
-   private static final Logger log = Logger.getLogger(ClientConnectionFactoryDelegate.class);
-
    // Attributes -----------------------------------------------------------------------------------
 
    //This data is needed in order to create a connection
@@ -77,8 +74,6 @@ public class ClientConnectionFactoryDelegate
    
    private boolean clientPing;
    
-   private transient boolean trace = log.isTraceEnabled();
-
    // Static ---------------------------------------------------------------------------------------
    
    /*
@@ -116,8 +111,7 @@ public class ClientConnectionFactoryDelegate
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
       this.clientPing = clientPing;
-      trace = log.isTraceEnabled();
-   }   
+   }
    
    public ClientConnectionFactoryDelegate()
    {      

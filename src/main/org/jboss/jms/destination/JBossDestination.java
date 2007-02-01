@@ -203,7 +203,8 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
          {
             code = name.hashCode();
          }
-         return code + (isTopic() ? 37 : 71);
+         hash = code + (isTopic() ? 37 : 71);
+         return hash;
       }           
    }
    

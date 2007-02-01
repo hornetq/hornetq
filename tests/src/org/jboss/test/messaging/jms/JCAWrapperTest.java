@@ -28,12 +28,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
-import javax.management.ObjectName;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -159,8 +156,6 @@ public class JCAWrapperTest extends MessagingTestCase
          }
       }
    }
-
-   
 
    // Package protected ---------------------------------------------
    

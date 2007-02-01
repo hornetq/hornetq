@@ -46,11 +46,11 @@ import org.jboss.test.messaging.tools.ServerManagement;
  */
 public class ClusteringTestBase extends MessagingTestCase
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected int nodeCount;
 
@@ -63,18 +63,18 @@ public class ClusteringTestBase extends MessagingTestCase
 
    protected ConnectionFactory cf;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ClusteringTestBase(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
    protected void setUp() throws Exception
    {
@@ -177,7 +177,8 @@ public class ClusteringTestBase extends MessagingTestCase
    }
 
    // lookup for the connection with the right serverID
-   // I'm using this method to find the proper serverId so I won't relay on loadBalancing policies on testcases
+   // I'm using this method to find the proper serverId so I won't relay on loadBalancing policies
+   // on testcases.
    protected Connection getConnection(Connection[] conn, int serverId) throws Exception
    {
       for(int i = 0; i < conn.length; i++)
@@ -222,7 +223,7 @@ public class ClusteringTestBase extends MessagingTestCase
       }
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private void drainQueues() throws Exception
    {
@@ -234,13 +235,9 @@ public class ClusteringTestBase extends MessagingTestCase
          // (round-robin in this case). If we want a connection to a specific node, we should be
          // able to look up something like "/ConnectionFactory0"
          
-         log.info("cf is " + cf);
-
          for(int i = 0; i < nodeCount; i++)
          {
             conn[i] = cf.createConnection();
-            
-            log.info("************ connection is " + conn[i].getClass().getName() + ":" + conn[i]);
          }
 
          // Safety check, making sure we get connections to distinct nodes
@@ -277,6 +274,6 @@ public class ClusteringTestBase extends MessagingTestCase
       }
    }
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

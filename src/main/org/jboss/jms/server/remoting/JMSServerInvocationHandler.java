@@ -30,7 +30,6 @@ import javax.management.MBeanServer;
 
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.jms.wireformat.ResponseSupport;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.InvocationRequest;
@@ -123,14 +122,12 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
          }
       }
       
-      ResponseSupport response = request.serverInvoke();
-                  
-      return response;
+      return request.serverInvoke();
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)
    {                 
-      if (log.isTraceEnabled()) { log.trace("adding callback handler " + callbackHandler); }
+      log.debug("adding callback handler " + callbackHandler);
       
       if (callbackHandler instanceof ServerInvokerCallbackHandler)
       {
@@ -156,7 +153,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
 
    public void removeListener(InvokerCallbackHandler callbackHandler)
    {
-      if (log.isTraceEnabled()) { log.trace("removing callback handler " + callbackHandler); }
+      log.debug("removing callback handler " + callbackHandler);
       
       synchronized(callbackHandlers)
       {

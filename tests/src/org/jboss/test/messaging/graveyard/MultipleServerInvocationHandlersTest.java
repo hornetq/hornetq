@@ -44,10 +44,9 @@ import java.util.Set;
 import java.io.Serializable;
 
 /**
- * 
- * This test was excluded on 31/01/07 since we do not pass a session id in every invocation therefore
- * it's not possible to guarantee the "correct" one is used.
- * This is ok, since our remoting connector is exclusively ours, no one else will use it
+ * This test was excluded on 31/01/07 since we do not pass a remoting session ID in every invocation
+ * therefore it's not possible to guarantee the "correct" one is used. This is ok, since our
+ * remoting connector is exclusively ours, no one else will use it
  * 
  * Tests the situation when there is more than one ServerInvokerHandler registered with the
  * Remoting connector. Goes through a combination of most common use cases.
@@ -59,22 +58,22 @@ import java.io.Serializable;
  */
 public class MultipleServerInvocationHandlersTest extends MessagingTestCase
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    InitialContext ic;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public MultipleServerInvocationHandlersTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void testMessageRoundTrip() throws Exception
    {
@@ -114,9 +113,9 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
       conn.close();
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
    protected void setUp() throws Exception
    {
@@ -158,9 +157,9 @@ public class MultipleServerInvocationHandlersTest extends MessagingTestCase
       super.tearDown();
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
    private static class SimpleServerInvocationHandler
       implements ServerInvocationHandler, Serializable

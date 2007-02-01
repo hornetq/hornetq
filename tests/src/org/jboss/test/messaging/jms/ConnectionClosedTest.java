@@ -456,9 +456,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
       // Browser
 
-
    }
-
 
    // Package protected ---------------------------------------------
 
