@@ -193,8 +193,6 @@ public abstract class DelegateSupport implements Streamable, Serializable
    
    public JMSException handleThrowable(Throwable t)
    {
-      log.info("******** HANDLING THROWABLE", t);
-      
       if (t instanceof JMSException)
       {
          return (JMSException)t;
