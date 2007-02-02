@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
+import javax.jms.InvalidClientIDException;
 
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.CallbackManager;
@@ -96,6 +97,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // the server itself
    private ServerPeer serverPeer;
+
    // access to server's extensions
    private PostOffice postOffice;
    private SecurityManager sm;
@@ -279,11 +281,34 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          {
             throw new IllegalStateException("Connection is closed");
          }
-         if (trace) { log.trace("setClientID:" + clientID); }
+
          if (this.clientID != null)
          {
-            throw new IllegalStateException("Cannot set clientID, already set as:" + this.clientID);
+            throw new IllegalStateException("Cannot set clientID, already set as " + this.clientID);
          }
+
+         // verify the clientID is unique
+
+         // JMS 1.1 Specifications, Section 4.3.2:
+         // "By definition, the client state identified by a client identifier can be ‘in use’ by
+         // only one client at a time. A JMS provider must prevent concurrently executing clients
+         // from using it."
+
+         ConnectionManager cm = serverPeer.getConnectionManager();
+         List conns = cm.getActiveConnections();
+
+         for(Iterator i = conns.iterator(); i.hasNext(); )
+         {
+            ServerConnectionEndpoint sce = (ServerConnectionEndpoint)i.next();
+            if (clientID != null && clientID.equals(sce.getClientID()))
+            {
+               throw new InvalidClientIDException(
+                  "Client ID '" + clientID + "' already used by " + sce);
+            }
+         }
+
+         log.debug(this + "setting client ID to " + clientID);
+
          this.clientID = clientID;
       }
       catch (Throwable t)
