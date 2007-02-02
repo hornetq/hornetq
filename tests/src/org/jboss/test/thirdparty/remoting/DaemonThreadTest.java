@@ -36,6 +36,7 @@ public class DaemonThreadTest extends MessagingTestCase
 
    public void testNothingYet() throws Throwable
    {
+      throw new Exception("Don't forget to implement this test, we need it");
    }
 
    // Package protected ----------------------------------------------------------------------------
