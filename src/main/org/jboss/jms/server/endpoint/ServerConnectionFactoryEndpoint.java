@@ -198,11 +198,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          if (preconfClientID != null)
          {
             clientID = preconfClientID;
-         }
-         
-         serverPeer.checkClientID(clientID);
+         }                  
       }
 
+      serverPeer.checkClientID(clientID);
+      
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
       ServerConnectionEndpoint endpoint =

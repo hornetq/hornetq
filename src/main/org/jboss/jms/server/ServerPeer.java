@@ -1229,16 +1229,19 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       // "By definition, the client state identified by a client identifier can be ‘in use’ by
       // only one client at a time. A JMS provider must prevent concurrently executing clients
       // from using it."
-         
-      List conns = connectionManager.getActiveConnections();
-   
-      for(Iterator i = conns.iterator(); i.hasNext(); )
-      {
-         ServerConnectionEndpoint sce = (ServerConnectionEndpoint)i.next();
-         if (clientID != null && clientID.equals(sce.getClientID()))
+      
+      if (clientID != null)
+      {            
+         List conns = connectionManager.getActiveConnections();
+      
+         for(Iterator i = conns.iterator(); i.hasNext(); )
          {
-            throw new InvalidClientIDException(
-               "Client ID '" + clientID + "' already used by " + sce);
+            ServerConnectionEndpoint sce = (ServerConnectionEndpoint)i.next();
+            if (clientID != null && clientID.equals(sce.getClientID()))
+            {
+               throw new InvalidClientIDException(
+                  "Client ID '" + clientID + "' already used by " + sce);
+            }
          }
       }
    }
