@@ -132,6 +132,7 @@ public class DuplicateClientIDTest extends MessagingTestCase
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
+
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -149,7 +150,6 @@ public class DuplicateClientIDTest extends MessagingTestCase
    {
       super.tearDown();
    }
-
 
    // Private --------------------------------------------------------------------------------------
 
