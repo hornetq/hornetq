@@ -1226,7 +1226,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       // verify the clientID is unique
    
       // JMS 1.1 Specifications, Section 4.3.2:
-      // "By definition, the client state identified by a client identifier can be ‘in use’ by
+      // "By definition, the client state identified by a client identifier can be 'in use' by
       // only one client at a time. A JMS provider must prevent concurrently executing clients
       // from using it."
       
