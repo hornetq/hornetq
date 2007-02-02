@@ -26,8 +26,6 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import javax.naming.InitialContext;
 import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Topic;
 import javax.jms.Connection;
 import javax.jms.InvalidClientIDException;
 
@@ -72,7 +70,7 @@ public class DuplicateClientIDTest extends MessagingTestCase
          {
             c2 = cf.createConnection();
             c2.setClientID("Duplicated");
-            fail ("JBossMessaging is allowing duplicate clients!");
+            fail("JBossMessaging is allowing duplicate clients!");
          }
          catch (InvalidClientIDException e)
          {
@@ -100,7 +98,7 @@ public class DuplicateClientIDTest extends MessagingTestCase
          {
             c2 = cf.createConnection("john", "needle");
             c2.setClientID("Duplicated");
-            fail ("JBossMessaging is allowing duplicate clients!");
+            fail("JBossMessaging is allowing duplicate clients!");
          }
          catch (InvalidClientIDException e)
          {
