@@ -68,7 +68,8 @@ public class PoisonInterceptor implements Interceptor
       String methodName = mi.getMethod().getName();
       Object target = mi.getTargetObject();
 
-      if (target instanceof ConnectionAdvised && "createSessionDelegate".equals(methodName) && type == TYPE_CREATE_SESSION)
+      if (target instanceof ConnectionAdvised && "createSessionDelegate".equals(methodName)
+             && type == TYPE_CREATE_SESSION)
       {
          // Used by the failover tests to kill server in the middle of an invocation.
 
