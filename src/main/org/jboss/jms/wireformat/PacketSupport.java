@@ -118,6 +118,7 @@ public abstract class PacketSupport implements Streamable
    public static final int REQ_BROWSER_NEXTMESSAGE = 501;
    public static final int REQ_BROWSER_HASNEXTMESSAGE = 502;
    public static final int REQ_BROWSER_NEXTMESSAGEBLOCK = 503;
+   public static final int REQ_BROWSER_RESET = 504;
    
    // Closeable
    // ---------
@@ -277,6 +278,10 @@ public abstract class PacketSupport implements Streamable
          case REQ_BROWSER_NEXTMESSAGEBLOCK:
             packet = new BrowserNextMessageBlockRequest();
             break;
+         case REQ_BROWSER_RESET:
+            packet = new BrowserResetRequest();
+            break;
+
             
          // Closeable
             
@@ -403,9 +408,7 @@ public abstract class PacketSupport implements Streamable
       }
       else
       {
-         String s = is.readUTF();
-         
-         return s;
+         return is.readUTF();
       }
    }
 }

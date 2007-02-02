@@ -32,6 +32,7 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -50,15 +51,14 @@ import org.jboss.test.messaging.tools.ServerManagement;
 public class BrowserTest extends MessagingTestCase
 {
 	
-	//	 Constants -----------------------------------------------------
+	//	 Constants -----------------------------------------------------------------------------------
 	
-	// Static --------------------------------------------------------
+	// Static ---------------------------------------------------------------------------------------
 	
-	// Attributes ----------------------------------------------------
+	// Attributes -----------------------------------------------------------------------------------
 	
 	protected InitialContext initialContext;
-	
-	
+
 	protected JBossConnectionFactory cf;
 	protected Queue queue;
 	protected Topic topic;
@@ -66,47 +66,14 @@ public class BrowserTest extends MessagingTestCase
    protected Session session;
    protected MessageProducer producer;
 
-	// Constructors --------------------------------------------------
+	// Constructors ---------------------------------------------------------------------------------
 	
 	public BrowserTest(String name)
 	{
 		super(name);
 	}
 	
-	// TestCase overrides -------------------------------------------
-	
-	public void setUp() throws Exception
-	{
-
-		super.setUp();
-      ServerManagement.start("all");
-      
-            
-		initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-		cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-		      
-      ServerManagement.undeployQueue("Queue");
-      
-		ServerManagement.deployQueue("Queue");
-		queue = (Queue)initialContext.lookup("/queue/Queue");
-      		
-      connection = cf.createConnection();
-      session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      producer = session.createProducer(queue);
-      
-	}
-	
-	public void tearDown() throws Exception
-	{
-      ServerManagement.undeployQueue("Queue");
-      
-      connection.close();
-      	
-		super.tearDown();     
-	}
-	
-	// Public --------------------------------------------------------
-
+	// Public ---------------------------------------------------------------------------------------
 
    public void testCreateBrowserOnNullDestination() throws Exception
    {
@@ -147,9 +114,7 @@ public class BrowserTest extends MessagingTestCase
 
 	public void testBrowse() throws Exception
 	{
-		
-		log.trace("Starting testBrowse()");						
-		
+		log.trace("Starting testBrowse()");
 
 		final int numMessages = 10;
 		
@@ -189,8 +154,8 @@ public class BrowserTest extends MessagingTestCase
          assertNotNull(m);
 		}
       
-      //Need to pause here since delivery is done on a different thread
-      //Message might not be removed from in memory state by this point
+      // Need to pause here since delivery is done on a different thread. Message might not be
+      // removed from in memory state by this point.
       
       Thread.sleep(2000);
 		
@@ -210,9 +175,7 @@ public class BrowserTest extends MessagingTestCase
       
       assertEquals(0, count);
 	}
-	
-	
-	
+
 	public void testBrowseWithSelector() throws Exception
 	{
 
@@ -240,14 +203,80 @@ public class BrowserTest extends MessagingTestCase
 		}
 		assertEquals(70, count);
 	}
+
+   public void testGetEnumeration() throws Exception
+   {
+      // send a message to the queue
+
+      Message m = session.createTextMessage("A");
+      producer.send(m);
+
+      // make sure we can browse it
+
+      QueueBrowser browser = session.createBrowser(queue);
+
+      Enumeration en = browser.getEnumeration();
+
+      assertTrue(en.hasMoreElements());
+
+      TextMessage rm = (TextMessage)en.nextElement();
+
+      assertNotNull(rm);
+      assertEquals("A", rm.getText());
+
+      assertFalse(en.hasMoreElements());
+
+      // create a *new* enumeration, that should reset it
+
+      en = browser.getEnumeration();
+
+      assertTrue(en.hasMoreElements());
+
+      rm = (TextMessage)en.nextElement();
+
+      assertNotNull(rm);
+      assertEquals("A", rm.getText());
+
+      assertFalse(en.hasMoreElements());
+   }
+
+   // Package protected ----------------------------------------------------------------------------
 	
+	// Protected ------------------------------------------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+
+      super.setUp();
+      ServerManagement.start("all");
+
+      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
+      ServerManagement.undeployQueue("Queue");
+
+      ServerManagement.deployQueue("Queue");
+      queue = (Queue)initialContext.lookup("/queue/Queue");
+
+      drainDestination(cf, queue);
+
+      connection = cf.createConnection();
+      session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      producer = session.createProducer(queue);
+
+   }
+
+   protected void tearDown() throws Exception
+   {
+      ServerManagement.undeployQueue("Queue");
+
+      connection.close();
+
+      super.tearDown();
+   }
+
+   // Private --------------------------------------------------------------------------------------
 	
-	// Package protected ---------------------------------------------
-	
-	// Protected -----------------------------------------------------
-	
-	// Private -------------------------------------------------------
-	
-	// Inner classes -------------------------------------------------
+	// Inner classes --------------------------------------------------------------------------------
 }
 

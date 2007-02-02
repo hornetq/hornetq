@@ -41,6 +41,7 @@ import org.jboss.messaging.core.Routable;
  * Concrete implementation of BrowserEndpoint.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -59,30 +60,46 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    private int id;
    private boolean closed;
-   private Iterator iterator;
    private ServerSessionEndpoint session;
+   private Channel destination;
+   private Filter filter;
+   private Iterator iterator;
 
    // Constructors ---------------------------------------------------------------------------------
 
    ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
-                         Channel destination, String messageSelector)
-      throws JMSException
+                         Channel destination, String messageSelector) throws JMSException
    {     
       this.session = session;
-      
       this.id = id;
-      
-		Filter filter = null;
-      
+      this.destination = destination;
+
 		if (messageSelector != null)
 		{	
 			filter = new Selector(messageSelector);		
 		}
-      
-		iterator = destination.browse(filter).iterator();
    }
 
    // BrowserEndpoint implementation ---------------------------------------------------------------
+
+   public void reset() throws JMSException
+   {
+      try
+      {
+         if (closed)
+         {
+            throw new IllegalStateException("Browser is closed");
+         }
+
+         log.debug(this + " is being resetted");
+
+         iterator = createIterator();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " hasNextMessage");
+      }
+   }
 
    public boolean hasNextMessage() throws JMSException
    {
@@ -91,6 +108,11 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          if (closed)
          {
             throw new IllegalStateException("Browser is closed");
+         }
+
+         if (iterator == null)
+         {
+            iterator = createIterator();
          }
 
          boolean has = iterator.hasNext();
@@ -110,6 +132,11 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          if (closed)
          {
             throw new IllegalStateException("Browser is closed");
+         }
+
+         if (iterator == null)
+         {
+            iterator = createIterator();
          }
 
          Routable r = (Routable)iterator.next();
@@ -140,7 +167,12 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          {
             throw new IllegalArgumentException("maxMessages must be >=2 otherwise use nextMessage");
          }
-         
+
+         if (iterator == null)
+         {
+            iterator = createIterator();
+         }
+
          ArrayList messages = new ArrayList(maxMessages);
          int i = 0;
          while (i < maxMessages)
@@ -206,6 +238,11 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+
+   private Iterator createIterator()
+   {
+      return destination.browse(filter).iterator();
+   }
 
    // Inner classes --------------------------------------------------------------------------------
 

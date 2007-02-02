@@ -37,21 +37,19 @@ import org.jboss.jms.delegate.BrowserDelegate;
  */
 public class JBossQueueBrowser implements QueueBrowser, Serializable
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 4245650830082712281L;
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private BrowserDelegate delegate;
    private Queue queue;
    private String messageSelector; 
    
-   private BrowserEnumeration enumeration = new BrowserEnumeration();
-
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    JBossQueueBrowser(Queue queue, String messageSelector, BrowserDelegate delegate)
    {
@@ -60,7 +58,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
       this.messageSelector = messageSelector;
    }
 
-   // QueueBrowser implementation ------------------------------------
+   // QueueBrowser implementation -------------------------------------------------------------------
 
    public void close() throws JMSException
    {
@@ -69,8 +67,9 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
    }
  
    public Enumeration getEnumeration() throws JMSException
-   {               
-      return enumeration;
+   {
+      delegate.reset();
+      return new BrowserEnumeration();
    }
   
    public String getMessageSelector() throws JMSException
@@ -83,7 +82,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
       return queue;
    }
    
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
@@ -95,13 +94,13 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
       return delegate;
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
    private class BrowserEnumeration implements Enumeration
    {            

@@ -38,22 +38,22 @@ import org.jboss.jms.server.endpoint.BrowserEndpoint;
  */
 public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected BrowserEndpoint endpoint;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public BrowserAdvised(BrowserEndpoint endpoint)
    {
       this.endpoint = endpoint;
    }
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // BrowserAdvised implementation ---------------------------------
+   // BrowserAdvised implementation ----------------------------------------------------------------
 
    public void close() throws JMSException
    {
@@ -63,6 +63,11 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
    public void closing() throws JMSException
    {
       endpoint.closing();
+   }
+
+   public void reset() throws JMSException
+   {
+      endpoint.reset();
    }
 
    public boolean hasNextMessage() throws JMSException
@@ -80,25 +85,25 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
       return endpoint.nextMessageBlock(maxMessages);
    }
 
-   // AdvisedSupport overrides --------------------------------------
+   // AdvisedSupport overrides ---------------------------------------------------------------------
    
    public Object getEndpoint()
    {
       return endpoint;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "BrowserAdvised->" + endpoint;
    }
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 }

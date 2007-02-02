@@ -36,6 +36,7 @@ import org.jboss.jms.wireformat.BrowserNextMessageRequest;
 import org.jboss.jms.wireformat.CloseRequest;
 import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.jms.wireformat.BrowserResetRequest;
 
 /**
  * The client-side Browser delegate class.
@@ -64,9 +65,9 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       super(objectID);
       this.channelID = channelID;
    }
-   
+
    public ClientBrowserDelegate()
-   {     
+   {
    }
 
    // DelegateSupport overrides --------------------------------------------------------------------
@@ -82,72 +83,78 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
-      
+
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
          getRemotingClient();
    }
-   
+
    public void setState(HierarchicalState state)
    {
       super.setState(state);
-      
+
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
          getRemotingClient();
    }
-   
-   
+
+
    // Closeable implementation ---------------------------------------------------------------------
-   
+
    public void close() throws JMSException
    {
       RequestSupport req = new CloseRequest(id, version);
-      
+
       doInvoke(client, req);
    }
-   
+
    public void closing() throws JMSException
    {
       RequestSupport req = new ClosingRequest(id, version);
-      
+
       doInvoke(client, req);
    }
 
    // BrowserDelegate implementation ---------------------------------------------------------------
 
+   public void reset() throws JMSException
+   {
+      RequestSupport req = new BrowserResetRequest(id, version);
+      doInvoke(client, req);
+   }
+
    public boolean hasNextMessage() throws JMSException
    {
       RequestSupport req = new BrowserHasNextMessageRequest(id, version);
-      
-      return ((Boolean)doInvoke(client, req)).booleanValue();      
+
+      return ((Boolean)doInvoke(client, req)).booleanValue();
    }
 
    public JBossMessage nextMessage() throws JMSException
    {
       RequestSupport req = new BrowserNextMessageRequest(id, version);
-      
-      return (JBossMessage)doInvoke(client, req);      
+
+      return (JBossMessage)doInvoke(client, req);
    }
 
    public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
    {
       RequestSupport req = new BrowserNextMessageBlockRequest(id, version, maxMessages);
-      
+
       return (JBossMessage[])doInvoke(client, req);
    }
-   
+
    // Streamable implementation ----------------------------------------------------------
-   
+
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-      
+
       channelID = in.readLong();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
-      
+
       out.writeLong(channelID);
    }
 
