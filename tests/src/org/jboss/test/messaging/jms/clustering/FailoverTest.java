@@ -1665,6 +1665,18 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
+   // http://jira.jboss.org/jira/browse/JBMESSAGING-808
+   public void testFailureRightAfterACK() throws Exception
+   {
+      failureOnInvocation(PoisonInterceptor.FAIL_AFTER_ACKNOWLEDGE_DELIVERY);
+   }
+
+   // http://jira.jboss.org/jira/browse/JBMESSAGING-808
+   public void testFailureRightBeforeACK() throws Exception
+   {
+      failureOnInvocation(PoisonInterceptor.FAIL_BEFORE_ACKNOWLEDGE_DELIVERY);
+   }
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -1750,6 +1762,57 @@ public class FailoverTest extends ClusteringTestBase
 
          TextMessage tm = (TextMessage)c1.receive(1000);
          assertEquals("blip", tm.getText());
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   // Used for both testFailureRightAfterACK and  testFailureRightBeforeACK
+   private void failureOnInvocation(int typeOfFailure) throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         // poison the server
+         ServerManagement.poisonTheServer(1, typeOfFailure);
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         conn.start();
+
+         MessageProducer producer = session.createProducer(queue[0]);
+
+         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         MessageConsumer consumer = session.createConsumer(queue[0]);
+
+         producer.send(session.createTextMessage("before-poison"));
+
+         TextMessage tm = (TextMessage)consumer.receive(5000);
+
+         assertNotNull(tm);
+
+         assertEquals("before-poison", tm.getText());
 
       }
       finally

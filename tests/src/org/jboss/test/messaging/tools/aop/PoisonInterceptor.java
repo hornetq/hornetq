@@ -13,7 +13,10 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
+import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
@@ -34,7 +37,10 @@ public class PoisonInterceptor implements Interceptor
    public static final int TYPE_CREATE_SESSION = 0;
    
    public static final int TYPE_2PC_COMMIT = 1;
-   
+
+   public static final int FAIL_AFTER_ACKNOWLEDGE_DELIVERY = 2;
+
+   public static final int FAIL_BEFORE_ACKNOWLEDGE_DELIVERY = 3;
 
    // Static ---------------------------------------------------------------------------------------
    
@@ -60,8 +66,9 @@ public class PoisonInterceptor implements Interceptor
    {
       MethodInvocation mi = (MethodInvocation)invocation;
       String methodName = mi.getMethod().getName();
+      Object target = mi.getTargetObject();
 
-      if ("createSessionDelegate".equals(methodName) && type == TYPE_CREATE_SESSION)
+      if (target instanceof ConnectionAdvised && "createSessionDelegate".equals(methodName) && type == TYPE_CREATE_SESSION)
       {
          // Used by the failover tests to kill server in the middle of an invocation.
 
@@ -69,7 +76,7 @@ public class PoisonInterceptor implements Interceptor
          
          crash(invocation.getTargetObject());
       }
-      else if ("sendTransaction".equals(methodName))
+      else if (target instanceof ConnectionAdvised && "sendTransaction".equals(methodName))
       {
          TransactionRequest request = (TransactionRequest)mi.getArguments()[0];
          
@@ -83,6 +90,20 @@ public class PoisonInterceptor implements Interceptor
             crash(invocation.getTargetObject());            
          }
       }
+      else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName)
+                 && type == FAIL_AFTER_ACKNOWLEDGE_DELIVERY)
+      {
+         System.out.println("########################## Crashing on ack");
+         invocation.invokeNext();
+         // simulating failure right after invocation (before message is transmitted to client)
+         crash(invocation.getTargetObject());
+      }
+      else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName)
+                 && type == FAIL_BEFORE_ACKNOWLEDGE_DELIVERY)
+      {
+         System.out.println("########################## Crashing on ack");
+         crash(invocation.getTargetObject());
+      }
 
       return invocation.invokeNext();
    }
@@ -95,15 +116,33 @@ public class PoisonInterceptor implements Interceptor
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-   
+
+   private ServerPeer getServerPeer(Object obj) throws Exception
+   {
+      if (obj instanceof ConnectionAdvised)
+      {
+         ConnectionAdvised adv = (ConnectionAdvised) obj;
+         ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint )adv.getEndpoint();
+         return endpoint.getServerPeer();
+      }
+      else if (obj instanceof SessionAdvised)
+      {
+         SessionAdvised adv = (SessionAdvised) obj;
+         ServerSessionEndpoint endpoint = (ServerSessionEndpoint)adv.getEndpoint();
+         return endpoint.getConnectionEndpoint().getServerPeer();
+      }
+      else
+      {
+         throw new IllegalStateException("PoisonInterceptor doesn't support " +
+            obj.getClass().getName() +
+            " yet! You will have to implement getServerPeer for this class");
+      }
+   }
+
    private void crash(Object target) throws Exception
    {
-      ConnectionAdvised advised = (ConnectionAdvised)target;
-      
-      ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint)advised.getEndpoint();
-      
-      int serverId = endpoint.getServerPeer().getServerPeerID();
-            
+      int serverId = getServerPeer(target).getServerPeerID();
+
       //First unregister from the RMI registry
       Registry registry = LocateRegistry.getRegistry(RMITestServer.DEFAULT_REGISTRY_PORT);
 

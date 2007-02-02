@@ -10,4 +10,8 @@
       <interceptor-ref name="org.jboss.test.messaging.tools.aop.PoisonInterceptor"/>
    </bind>
 
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->*(..))">
+      <interceptor-ref name="org.jboss.test.messaging.tools.aop.PoisonInterceptor"/>
+   </bind>
+
 </aop>
