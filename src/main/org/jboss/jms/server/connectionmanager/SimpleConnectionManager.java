@@ -113,6 +113,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          if (e != null)
          {
             endpoints.remove(e);
+            activeConnectionEndpoints.remove(e);
          }
 
          log.debug("unregistered connection " + e + " with remoting session ID " +
