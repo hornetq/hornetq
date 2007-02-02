@@ -9,12 +9,14 @@ package org.jboss.test.thirdparty.remoting;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
 import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.transport.PortUtil;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
@@ -189,7 +191,15 @@ public class PureAsynchronousCallTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start(0, "remoting", null, true, false);
+      // start "raw" remoting, don't use JBM configuration
+
+      String addr = ServiceContainer.getCurrentAddress();
+      int port = PortUtil.findFreePort(addr);
+      String serviceLocatorString = "socket://" + addr + ":" + port ;
+      ServiceAttributeOverrides sao = new ServiceAttributeOverrides();
+      sao.put(ServiceContainer.REMOTING_OBJECT_NAME, "LocatorURI", serviceLocatorString);
+
+      ServerManagement.start(0, "remoting", sao, true, false);
 
       String s = (String)ServerManagement.
          getAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "InvokerLocator");

@@ -13,9 +13,11 @@ import javax.management.ObjectName;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.transport.PortUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 
 /**
@@ -76,9 +78,7 @@ public class SocketTransportCausalityTest extends MessagingTestCase
 
             client.connect();
             
-            Sender sender = new Sender(NUM_INVOCATIONS, client, i);
-            
-            threads[i] = sender;
+            threads[i] = new Sender(NUM_INVOCATIONS, client, i);
          }
          
          for (int i = 0; i < NUM_THREADS; i++)
@@ -194,7 +194,19 @@ public class SocketTransportCausalityTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start(0, "remoting", null, true, false);
+      // start "raw" remoting, don't use JBM configuration, with one exception: make sure the
+      // server uses DirectThreadPool
+
+      String addr = ServiceContainer.getCurrentAddress();
+      int port = PortUtil.findFreePort(addr);
+
+      String serviceLocatorString = "socket://" + addr + ":" + port +
+         "/?onewayThreadPool=org.jboss.jms.server.remoting.DirectThreadPool";
+
+      ServiceAttributeOverrides sao = new ServiceAttributeOverrides();
+      sao.put(ServiceContainer.REMOTING_OBJECT_NAME, "LocatorURI", serviceLocatorString);
+
+      ServerManagement.start(0, "remoting", sao, true, false);
 
       String s = (String)ServerManagement.
          getAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "InvokerLocator");

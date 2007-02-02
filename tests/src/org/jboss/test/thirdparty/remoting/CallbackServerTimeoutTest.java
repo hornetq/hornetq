@@ -181,9 +181,6 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
       }
    }
 
-
-
-
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
