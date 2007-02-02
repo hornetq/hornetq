@@ -38,6 +38,9 @@ if [ "$index" != "" ]; then
    JAVA_OPTS="$JAVA_OPTS -Dtest.server.index=$index"
 fi
 
+JAVA_OPTS="$JAVA_OPTS -Dmodule.output=$reldir/../output/logs -Dtest.logfile.suffix=stop-rmi-server"
+
+
 if [ "$USE_EXISTENT_TEST_CLASSPATH_FILE" = "true" ]; then
    CLASSPATH_FILE="$reldir/.test.execution.classpath"
 else
