@@ -93,7 +93,6 @@ public class PoisonInterceptor implements Interceptor
       else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName)
                  && type == FAIL_AFTER_ACKNOWLEDGE_DELIVERY)
       {
-         System.out.println("########################## Crashing on ack");
          invocation.invokeNext();
          // simulating failure right after invocation (before message is transmitted to client)
          crash(invocation.getTargetObject());
@@ -101,7 +100,6 @@ public class PoisonInterceptor implements Interceptor
       else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName)
                  && type == FAIL_BEFORE_ACKNOWLEDGE_DELIVERY)
       {
-         System.out.println("########################## Crashing on ack");
          crash(invocation.getTargetObject());
       }
 
