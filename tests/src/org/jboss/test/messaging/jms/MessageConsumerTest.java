@@ -2678,6 +2678,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
          Message m = durable4.receive(1000);
          assertNull(m);
+         
+         conn3.close();
 
       }
       finally

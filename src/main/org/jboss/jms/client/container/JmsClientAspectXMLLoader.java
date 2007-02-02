@@ -61,37 +61,43 @@ public class JmsClientAspectXMLLoader extends AspectXmlLoader
     */
    public void deployXML(byte[] config) throws Exception
    {
-      InputStream is = null;
       
-      try
-      {
-         is = new ByteArrayInputStream(config);      
-      
-         DocumentBuilderFactory docBuilderFactory = null;
+      //We need to synchronized to prevent a deadlock
+      //See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {         
+         InputStream is = null;
          
-         docBuilderFactory = DocumentBuilderFactory.newInstance();
-         
-         docBuilderFactory.setValidating(false);
-         
-         InputSource source = new InputSource(is);
-         
-         URL url = AspectXmlLoader.class.getResource("/jboss-aop_1_0.dtd");
-         
-         source.setSystemId(url.toString());
-         
-         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-         
-         docBuilder.setEntityResolver(new Resolver());
-         
-         Document doc = docBuilder.parse(source);
-         
-         this.deployXML(doc, null);              
-      }
-      finally
-      {
-         if (is != null)
+         try
          {
-            is.close();
+            is = new ByteArrayInputStream(config);      
+         
+            DocumentBuilderFactory docBuilderFactory = null;
+            
+            docBuilderFactory = DocumentBuilderFactory.newInstance();
+            
+            docBuilderFactory.setValidating(false);
+            
+            InputSource source = new InputSource(is);
+            
+            URL url = AspectXmlLoader.class.getResource("/jboss-aop_1_0.dtd");
+            
+            source.setSystemId(url.toString());
+            
+            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+            
+            docBuilder.setEntityResolver(new Resolver());
+            
+            Document doc = docBuilder.parse(source);
+            
+            this.deployXML(doc, null);              
+         }
+         finally
+         {
+            if (is != null)
+            {
+               is.close();
+            }
          }
       }
    }

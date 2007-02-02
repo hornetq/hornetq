@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
+import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.server.ServerPeer;
@@ -198,6 +199,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          {
             clientID = preconfClientID;
          }
+         
+         serverPeer.checkClientID(clientID);
       }
 
       // create the corresponding "server-side" connection endpoint and register it with the
@@ -211,13 +214,25 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       int connectionID = endpoint.getConnectionID();
 
-      ConnectionAdvised connAdvised = new ConnectionAdvised(endpoint);
-
+      ConnectionAdvised connAdvised;
+      
+      // Need to synchronized to prevent a deadlock
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {       
+         connAdvised = new ConnectionAdvised(endpoint);
+      }
+      
       Dispatcher.instance.registerTarget(connectionID, connAdvised);
 
       log.debug("created and registered " + endpoint);
 
-      return new ClientConnectionDelegate(connectionID, serverPeer.getServerPeerID());
+      // Need to synchronized to prevent a deadlock
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {         
+         return new ClientConnectionDelegate(connectionID, serverPeer.getServerPeerID());
+      }
    }
    
    public IDBlock getIdBlock(int size) throws JMSException

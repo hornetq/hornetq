@@ -38,6 +38,7 @@ import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 
+import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.delegate.BrowserDelegate;
@@ -56,6 +57,7 @@ import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
+import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.util.ExceptionUtil;
@@ -1206,7 +1208,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                     binding.getQueue().getName(), this, selectorString, noLocal,
                                     jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
 
-      Dispatcher.instance.registerTarget(consumerID, new ConsumerAdvised(ep));
+      ConsumerAdvised advised;
+      
+      // Need to synchronized to prevent a deadlock
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {       
+         advised = new ConsumerAdvised(ep);
+      }      
+            
+      Dispatcher.instance.registerTarget(consumerID, advised);
 
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, newChannelID, prefetchSize, maxDeliveryAttempts);
@@ -1522,7 +1533,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   binding.getQueue().getName(), this, selectorString, noLocal,
                   jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
       
-      Dispatcher.instance.registerTarget(consumerID, new ConsumerAdvised(ep));
+      ConsumerAdvised advised;
+      
+      // Need to synchronized to prevent a deadlock
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {       
+         advised = new ConsumerAdvised(ep);
+      }
+      
+      Dispatcher.instance.registerTarget(consumerID, advised);
       
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
@@ -1585,7 +1605,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
       int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
 
       ServerBrowserEndpoint ep = new ServerBrowserEndpoint(this, browserID, newChannel, selector);
-      Dispatcher.instance.registerTarget(browserID, new BrowserAdvised(ep));
+      
+      BrowserAdvised advised;
+      
+      // Need to synchronized to prevent a deadlock
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {       
+         advised = new BrowserAdvised(ep);
+      }
+      
+      Dispatcher.instance.registerTarget(browserID, advised);
 
       // still need to synchronized since close() can come in on a different thread
       synchronized (browsers)
@@ -1635,7 +1665,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
          browsers.put(new Integer(browserID), ep);
       }
 
-      Dispatcher.instance.registerTarget(browserID, new BrowserAdvised(ep));
+      BrowserAdvised advised;
+      
+      // Need to synchronized to prevent a deadlock
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {       
+         advised = new BrowserAdvised(ep);
+      }
+      
+      Dispatcher.instance.registerTarget(browserID, advised);
 
       ClientBrowserDelegate stub =
          new ClientBrowserDelegate(browserID, binding.getQueue().getChannelID());

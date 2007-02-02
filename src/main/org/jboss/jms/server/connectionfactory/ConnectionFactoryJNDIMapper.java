@@ -36,6 +36,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -46,6 +47,7 @@ import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
+import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.wireformat.Dispatcher;
@@ -188,11 +190,19 @@ public class ConnectionFactoryJNDIMapper
 
       // Now bind it in JNDI
       rebindConnectionFactory(initialContext, jndiBindings, delegate);
+      
+      ConnectionFactoryAdvised advised;
+      
+      // Need to synchronized to prevent a deadlock
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+      synchronized (AspectManager.instance())
+      {       
+         advised = new ConnectionFactoryAdvised(endpoint);
+      }
 
       // Registering with the dispatcher should always be the last thing otherwise a client could
       // use a partially initialised object
-      Dispatcher.instance.
-         registerTarget(id, new ConnectionFactoryAdvised(endpoint));
+      Dispatcher.instance.registerTarget(id, advised);
    }
 
    public synchronized void unregisterConnectionFactory(String uniqueName, boolean clustered)

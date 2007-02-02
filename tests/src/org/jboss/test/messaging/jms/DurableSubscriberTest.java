@@ -350,6 +350,8 @@ public class DurableSubscriberTest extends MessagingTestCase
       {
          // OK
       }
+      
+      conn.close();
    }
 
    /**

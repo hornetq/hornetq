@@ -33,6 +33,7 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.InvalidClientIDException;
 
+import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -42,6 +43,7 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.remoting.JMSWireFormat;
@@ -235,7 +237,16 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             sessions.put(new Integer(sessionID), ep);
          }
          
-         SessionAdvised sessionAdvised = new SessionAdvised(ep);
+         SessionAdvised advised;
+         
+         // Need to synchronized to prevent a deadlock
+         // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
+         synchronized (AspectManager.instance())
+         {       
+            advised = new SessionAdvised(ep);
+         }
+         
+         SessionAdvised sessionAdvised = advised;
          
          Integer iSessionID = new Integer(sessionID);
          
@@ -287,25 +298,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Cannot set clientID, already set as " + this.clientID);
          }
 
-         // verify the clientID is unique
-
-         // JMS 1.1 Specifications, Section 4.3.2:
-         // "By definition, the client state identified by a client identifier can be ‘in use’ by
-         // only one client at a time. A JMS provider must prevent concurrently executing clients
-         // from using it."
-
-         ConnectionManager cm = serverPeer.getConnectionManager();
-         List conns = cm.getActiveConnections();
-
-         for(Iterator i = conns.iterator(); i.hasNext(); )
-         {
-            ServerConnectionEndpoint sce = (ServerConnectionEndpoint)i.next();
-            if (clientID != null && clientID.equals(sce.getClientID()))
-            {
-               throw new InvalidClientIDException(
-                  "Client ID '" + clientID + "' already used by " + sce);
-            }
-         }
+         serverPeer.checkClientID(clientID);
 
          log.debug(this + "setting client ID to " + clientID);
 

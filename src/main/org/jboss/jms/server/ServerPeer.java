@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.jms.InvalidClientIDException;
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
@@ -44,6 +45,7 @@ import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.destination.ManagedQueue;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageCounterManager;
@@ -1216,6 +1218,28 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
                startToWait -= System.currentTimeMillis() - start;              
             }
          }        
+      }
+   }
+   
+   public void checkClientID(String clientID) throws Exception
+   {   
+      // verify the clientID is unique
+   
+      // JMS 1.1 Specifications, Section 4.3.2:
+      // "By definition, the client state identified by a client identifier can be ‘in use’ by
+      // only one client at a time. A JMS provider must prevent concurrently executing clients
+      // from using it."
+         
+      List conns = connectionManager.getActiveConnections();
+   
+      for(Iterator i = conns.iterator(); i.hasNext(); )
+      {
+         ServerConnectionEndpoint sce = (ServerConnectionEndpoint)i.next();
+         if (clientID != null && clientID.equals(sce.getClientID()))
+         {
+            throw new InvalidClientIDException(
+               "Client ID '" + clientID + "' already used by " + sce);
+         }
       }
    }
    

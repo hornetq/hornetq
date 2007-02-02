@@ -140,6 +140,7 @@ public class MessagingXAResource implements XAResource
          if (trace) { log.trace("Converting local tx into global tx branch"); }
       }      
 
+      //TODO why do we need this synchronized block?
       synchronized (this)
       {
          switch (flags)
@@ -184,22 +185,26 @@ public class MessagingXAResource implements XAResource
          xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
       }
 
-      unsetCurrentTransactionId(xid);    
-      
-      switch (flags)
-      {
-         case TMSUSPEND :                                    
-            rm.suspendTx(xid);
-            break;
-         case TMFAIL :
-            rm.endTx(xid, false);
-            break;
-         case TMSUCCESS :
-            rm.endTx(xid, true);
-            break;
-         default :
-            throw new MessagingXAException(XAException.XAER_PROTO, "Invalid flags: " + flags);         
-      }      
+      //TODO - why do we need this synchronized block?
+      synchronized (this)
+      {         
+         unsetCurrentTransactionId(xid);    
+         
+         switch (flags)
+         {
+            case TMSUSPEND :                                    
+               rm.suspendTx(xid);
+               break;
+            case TMFAIL :
+               rm.endTx(xid, false);
+               break;
+            case TMSUCCESS :
+               rm.endTx(xid, true);
+               break;
+            default :
+               throw new MessagingXAException(XAException.XAER_PROTO, "Invalid flags: " + flags);         
+         }      
+      }
    }
    
    public int prepare(Xid xid) throws XAException
