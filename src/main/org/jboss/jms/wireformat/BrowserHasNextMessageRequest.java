@@ -26,17 +26,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.jboss.jms.server.endpoint.BrowserEndpoint;
-import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 
 /**
- * 
- * A BrowserHasNextMessageRequest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
- *
  */
 public class BrowserHasNextMessageRequest extends RequestSupport
 {
