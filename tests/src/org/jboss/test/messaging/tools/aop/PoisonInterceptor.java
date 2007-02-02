@@ -94,12 +94,18 @@ public class PoisonInterceptor implements Interceptor
                  && type == FAIL_AFTER_ACKNOWLEDGE_DELIVERY)
       {
          invocation.invokeNext();
+
+         log.info("##### Crashing after acknowledgeDelivery call!!!");
+
          // simulating failure right after invocation (before message is transmitted to client)
          crash(invocation.getTargetObject());
       }
       else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName)
                  && type == FAIL_BEFORE_ACKNOWLEDGE_DELIVERY)
       {
+
+         log.info("##### Crashing before acknowledgeDelivery call!!!");
+
          crash(invocation.getTargetObject());
       }
 
