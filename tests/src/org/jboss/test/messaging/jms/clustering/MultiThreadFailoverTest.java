@@ -196,15 +196,11 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
                   assertEquals("before-poison", text.getText());
 
                   Object obj = consumer.receive(5000);
-                  if (obj != null)
-                  {
-                     log.info("!!!!!! it was not null", new Exception());
-                  }
                   assertNull(obj);
                }
                catch (Throwable e)
                {
-                  fail("Thread consumer failed");
+                  failures.add(e);
                }
             }
          };
