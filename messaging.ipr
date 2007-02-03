@@ -358,7 +358,7 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://C:/work/src/cvs/JBossRemoting-2.2.0.Alpha6/src/main" />
+        <root url="file://C:/work/src/cvs/JBossRemoting-remoting_2_x/src/main" />
       </SOURCES>
     </library>
   </component>
