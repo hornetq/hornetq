@@ -9,6 +9,7 @@ package org.jboss.test.thirdparty.remoting;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
 import org.jboss.logging.Logger;
@@ -18,6 +19,7 @@ import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.HandleCallbackException;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 
 import javax.management.ObjectName;
 
@@ -29,7 +31,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  * http://jira.jboss.org/jira/browse/JBMESSAGING-371. The callback server seems to timeout never
  * to be heard from it again.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@svjboss.org">Ovidiu Feodorov</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -77,7 +79,8 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
 
          client.connect();
 
-         client.addListener(callbackHandler, null, null, true);
+         JMSRemotingConnection.
+            addInvokerCallbackHandler("test", client, null, serverLocator, callbackHandler);
 
          client.invoke(new OnewayCallbackTrigger("blip"));
 
@@ -138,7 +141,8 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
 
          client.connect();
 
-         client.addListener(callbackHandler, null, null, true);
+         JMSRemotingConnection.
+            addInvokerCallbackHandler("test", client, null, serverLocator, callbackHandler);
 
          log.info("added listener");
 
@@ -189,7 +193,13 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start(0, "remoting", null, true, false);
+      // start a "standard" (messaging-enabled) remoting, we need to strip off the
+      // marshaller/unmarshaller, though, since it can only bring trouble to this test ...
+      ServiceAttributeOverrides sao = new ServiceAttributeOverrides();
+      sao.put(ServiceContainer.REMOTING_OBJECT_NAME,
+              ServiceContainer.DO_NOT_USE_MESSAGING_MARSHALLERS, Boolean.TRUE);
+
+      ServerManagement.start(0, "remoting", sao, true, false);
 
       String s = (String)ServerManagement.
          getAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "InvokerLocator");

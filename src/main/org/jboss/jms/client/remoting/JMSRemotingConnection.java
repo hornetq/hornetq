@@ -31,6 +31,7 @@ import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.CallbackPoller;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.socket.MicroSocketClientInvoker;
 import org.jboss.remoting.transport.socket.SocketServerInvoker;
 
@@ -55,6 +56,113 @@ public class JMSRemotingConnection
    private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
 
    // Static ---------------------------------------------------------------------------------------
+
+   /**
+    * Build the configuration we need to use to make sure a callback server works the way we want.
+    *
+    * @param doPushCallbacks - whether the callback should be push or pull. For socket transport
+    *        allow true push callbacks, with callback Connector. For http transport, simulate push
+    *        callbacks.
+    * @param metadata - metadata that should be added to the metadata map being created. Can be
+    *        null.
+    *
+    * @return a Map to be used when adding a listener to a client, thus enabling a callback server.
+    */
+   public static Map createCallbackMetadata(boolean doPushCallbacks, Map metadata,
+                                            InvokerLocator serverLocator)
+   {
+      if (metadata == null)
+      {
+         metadata = new HashMap();
+      }
+
+      // Use our own direct thread pool that basically does nothing.
+      // Note! This needs to be done irrespective of the transport and is used even for INVM
+      //       invocations.
+      metadata.put(ServerInvoker.ONEWAY_THREAD_POOL_CLASS_KEY,
+                   "org.jboss.jms.server.remoting.DirectThreadPool");
+
+      if (doPushCallbacks)
+      {
+         metadata.put(MicroSocketClientInvoker.CLIENT_SOCKET_CLASS_FLAG,
+                      "org.jboss.jms.client.remoting.ClientSocketWrapper");
+         metadata.put(SocketServerInvoker.SERVER_SOCKET_CLASS_FLAG,
+                      "org.jboss.jms.server.remoting.ServerSocketWrapper");
+
+         String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
+         if (bindAddress != null)
+         {
+            metadata.put(Client.CALLBACK_SERVER_HOST, bindAddress);
+         }
+
+         String propertyPort = System.getProperty("jboss.messaging.callback.bind.port");
+         if (propertyPort != null)
+         {
+            metadata.put(Client.CALLBACK_SERVER_PORT, propertyPort);
+         }
+      }
+      else
+      {
+         // "jboss.messaging.callback.pollPeriod" system property, if set, has the
+         // highest priority ...
+         String callbackPollPeriod = System.getProperty("jboss.messaging.callback.pollPeriod");
+
+         if (callbackPollPeriod == null)
+         {
+            // followed by the value configured on the HTTP connector ("callbackPollPeriod") ...
+            callbackPollPeriod = (String)serverLocator.getParameters().get("callbackPollPeriod");
+            if (callbackPollPeriod == null)
+            {
+               // followed by the hardcoded value.
+               callbackPollPeriod = CALLBACK_POLL_PERIOD_DEFAULT;
+            }
+         }
+
+         metadata.put(CallbackPoller.CALLBACK_POLL_PERIOD, callbackPollPeriod);
+
+         String reportPollingStatistics =
+            System.getProperty("jboss.messaging.callback.reportPollingStatistics");
+
+         if (reportPollingStatistics != null)
+         {
+            metadata.put(CallbackPoller.REPORT_STATISTICS, reportPollingStatistics);
+         }
+      }
+
+      return metadata;
+   }
+
+   /**
+    * Configures and add the invokerCallbackHandler the right way (push or pull).
+    *
+    * @param configurer - passed for logging purposes only.
+    * @param initialMetadata - some initial metadata that we might want to pass along when
+    *        registering invoker callback handler.
+    */
+   public static void addInvokerCallbackHandler(Object configurer,
+                                                Client client,
+                                                Map initialMetadata,
+                                                InvokerLocator serverLocator,
+                                                InvokerCallbackHandler invokerCallbackHandler)
+      throws Throwable
+   {
+
+      // For socket transport allow true push callbacks, with callback Connector.
+      // For http transport, simulate push callbacks.
+      boolean doPushCallbacks = "socket".equals(serverLocator.getProtocol());
+      Map metadata = createCallbackMetadata(doPushCallbacks, initialMetadata, serverLocator);
+
+      if (doPushCallbacks)
+      {
+         log.debug(configurer + " is doing push callbacks");
+         client.addListener(invokerCallbackHandler, metadata, null, true);
+      }
+      else
+      {
+         log.debug(configurer + " is simulating push callbacks");
+         client.addListener(invokerCallbackHandler, metadata);
+      }
+   }
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -84,7 +192,7 @@ public class JMSRemotingConnection
 
    public void start() throws Throwable
    {
-      // Enable client pinging. Server leasing is enabled separately on the server side
+      // Enable client pinging. Server leasing is enabled separately on the server side.
 
       Map config = new HashMap();
       
@@ -106,76 +214,15 @@ public class JMSRemotingConnection
 
       client.setMarshaller(new JMSWireFormat());
       client.setUnMarshaller(new JMSWireFormat());
+
+      Map metadata = new HashMap();
+
+      metadata.put(InvokerLocator.DATATYPE, "jms");
+      // Not actually used at present - but it does no harm
+      metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms");
+
+      addInvokerCallbackHandler(this, client, metadata, serverLocator, callbackManager);
       
-      HashMap metadata = new HashMap();
-      
-      // Use our own direct thread pool that basically does nothing.
-      // Note! This needs to be done irrespective of the transport and is used even for INVM
-      //       invocations.
-      metadata.put(ServerInvoker.ONEWAY_THREAD_POOL_CLASS_KEY,
-                   "org.jboss.jms.server.remoting.DirectThreadPool");
-
-      // For socket transport allow true push callbacks, with callback Connector.
-      // For http transport, simulate push callbacks.
-      boolean doPushCallbacks = "socket".equals(serverLocator.getProtocol());
-
-      if (doPushCallbacks)
-      {
-         if (log.isTraceEnabled()) log.trace("doing push callbacks");
-
-         metadata.put(InvokerLocator.DATATYPE, "jms");
-         // Not actually used at present - but it does no harm
-         metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms");
-         metadata.put(MicroSocketClientInvoker.CLIENT_SOCKET_CLASS_FLAG,
-                      "org.jboss.jms.client.remoting.ClientSocketWrapper");
-         metadata.put(SocketServerInvoker.SERVER_SOCKET_CLASS_FLAG,
-                      "org.jboss.jms.server.remoting.ServerSocketWrapper");         
-         
-         String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
-         if (bindAddress != null)
-         {
-            metadata.put(Client.CALLBACK_SERVER_HOST, bindAddress);
-         }
-
-         String propertyPort = System.getProperty("jboss.messaging.callback.bind.port");
-         if (propertyPort != null)
-         {
-            metadata.put(Client.CALLBACK_SERVER_PORT, propertyPort);
-         }
-
-         client.addListener(callbackManager, metadata, null, true);
-      }
-      else
-      {
-         if (log.isTraceEnabled()) log.trace("simulating push callbacks");
-
-         // "jboss.messaging.callback.pollPeriod" system property, if set, has the
-         // highest priority ...
-         String callbackPollPeriod = System.getProperty("jboss.messaging.callback.pollPeriod");
-         if (callbackPollPeriod == null)
-         {
-            // followed by the value configured on the HTTP connector ("callbackPollPeriod") ...
-            callbackPollPeriod = (String)serverLocator.getParameters().get("callbackPollPeriod");
-            if (callbackPollPeriod == null)
-            {
-               // followed by the hardcoded value.
-               callbackPollPeriod = CALLBACK_POLL_PERIOD_DEFAULT;
-            }
-         }
-
-         metadata.put(CallbackPoller.CALLBACK_POLL_PERIOD, callbackPollPeriod);
-
-         String reportPollingStatistics =
-            System.getProperty("jboss.messaging.callback.reportPollingStatistics");
-
-         if (reportPollingStatistics != null)
-         {
-            metadata.put(CallbackPoller.REPORT_STATISTICS, reportPollingStatistics);
-         }
-
-         client.addListener(callbackManager, metadata);
-      }
-
       log.debug(this + " started");
    }
 

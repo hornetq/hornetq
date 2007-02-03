@@ -109,6 +109,8 @@ public class ServiceContainer
 
    private static final String CONFIGURATION_FILE_NAME = "container.xml";
 
+   public static final String DO_NOT_USE_MESSAGING_MARSHALLERS = "DO_NOT_USE_MESSAGING_MARSHALLERS";
+
    // Static ---------------------------------------------------------------------------------------
 
    public static ObjectName SERVICE_CONTROLLER_OBJECT_NAME;
@@ -1265,14 +1267,15 @@ public class ServiceContainer
 
       // some tests may want specific locator URI overrides to simulate special conditions; use
       // that with priority, if available
+      Map overrideMap = null;
 
       if (attrOverrides != null)
       {
-         Map m = attrOverrides.get(REMOTING_OBJECT_NAME);
+         overrideMap = attrOverrides.get(REMOTING_OBJECT_NAME);
 
-         if (m != null)
+         if (overrideMap != null)
          {
-            locatorURI = (String)m.get("LocatorURI");
+            locatorURI = (String)overrideMap.get("LocatorURI");
          }
       }
 
@@ -1291,10 +1294,26 @@ public class ServiceContainer
 
          long clientLeasePeriod = 20000;
 
-         String params = "/?marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-            "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+         String marshallers =
+            "marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+            "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&";
+         String dataType = "dataType=jms&";
+
+         // We use this from thirdparty remoting tests when we don't want to send stuff through
+         // JMSWireFormat, but we want everything else in the connector's configuration to be
+         // identical with what we use in Messaging
+         if (overrideMap != null && overrideMap.get(DO_NOT_USE_MESSAGING_MARSHALLERS) != null)
+         {
+            marshallers = "";
+            dataType = "";
+            serializationType = "java";
+         }
+
+         String params =
+            "/?" +
+            marshallers +
             "serializationtype=" + serializationType + "&" +
-            "dataType=jms&" +
+            dataType +
             "socket.check_connection=false&" +
             "clientLeasePeriod=" + clientLeasePeriod + "&" +
             "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
