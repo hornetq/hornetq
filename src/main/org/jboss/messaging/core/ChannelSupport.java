@@ -496,8 +496,12 @@ public abstract class ChannelSupport implements Channel
                if (!liter.hasNext())
                {
                   // TODO we need to look in paging state too - currently not supported
+
+                  //http://jira.jboss.org/jira/browse/JBMESSAGING-808
+                  log.warn("Cannot find ref in queue! (Might be paged!) " + id);
+                  break;
                   
-                  throw new IllegalStateException("Cannot find ref in queue! (Might be paged!) " + id);
+                  //throw new IllegalStateException("Cannot find ref in queue! (Might be paged!) " + id);
                }
                
                MessageReference ref = (MessageReference)liter.next();

@@ -1114,7 +1114,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (rec == null)
       {
-         throw new IllegalStateException("Cannot find " + ack + " to acknowledge");
+         log.warn("Cannot find " + ack + " to acknowledge, " +
+            "maybe it was already acknowledged before failover!");
+         return;
       }
       
       rec.del.acknowledge(null);    

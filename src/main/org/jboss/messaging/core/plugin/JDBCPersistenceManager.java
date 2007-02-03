@@ -1622,7 +1622,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             if (rows != 1)
             {
-               throw new IllegalStateException("Failed to remove row for: " + ref);
+               // http://jira.jboss.com/jira/browse/JBMESSAGING-808
+               log.warn("Failed to remove row for: " + ref);
+               return;
+               //throw new IllegalStateException("Failed to remove row for: " + ref);
             }
             
             if (trace) { log.trace("Deleted " + rows + " rows"); }
