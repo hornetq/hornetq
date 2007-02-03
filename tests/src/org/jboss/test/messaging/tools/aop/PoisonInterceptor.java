@@ -46,9 +46,13 @@ public class PoisonInterceptor implements Interceptor
 
    public static final int FAIL_BEFORE_SEND = 5;
 
+   public static final int FAIL_SYNCHRONIZED_SEND_RECEIVE = 6;
+
    // Static ---------------------------------------------------------------------------------------
    
    private static int type;
+
+   private static Object sync = new Object();
    
    public static void setType(int type)
    {
@@ -79,7 +83,7 @@ public class PoisonInterceptor implements Interceptor
 
          log.info("##### Crashing on createSessionDelegate!!");
          
-         crash(invocation.getTargetObject());
+         crash(target);
       }
       else if (target instanceof ConnectionAdvised && "sendTransaction".equals(methodName))
       {
@@ -92,7 +96,7 @@ public class PoisonInterceptor implements Interceptor
             
             log.info("##### Crashing on 2PC commit!!");
             
-            crash(invocation.getTargetObject());            
+            crash(target);
          }
       }
       else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName)
@@ -103,7 +107,7 @@ public class PoisonInterceptor implements Interceptor
          log.info("##### Crashing after acknowledgeDelivery call!!!");
 
          // simulating failure right after invocation (before message is transmitted to client)
-         crash(invocation.getTargetObject());
+         crash(target);
       }
       else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName)
                  && type == FAIL_BEFORE_ACKNOWLEDGE_DELIVERY)
@@ -111,7 +115,7 @@ public class PoisonInterceptor implements Interceptor
 
          log.info("##### Crashing before acknowledgeDelivery call!!!");
 
-         crash(invocation.getTargetObject());
+         crash(target);
       }
       else if (target instanceof SessionAdvised && "send".equals(methodName)
                  && type == FAIL_AFTER_SEND)
@@ -120,14 +124,46 @@ public class PoisonInterceptor implements Interceptor
 
          log.info("##### Crashing after send!!!");
 
-         crash(invocation.getTargetObject());
+         // On this case I really want to screw things up! I want the client to receive the message
+         // not only after the send was executed.
+
+         Thread.sleep(5000);
+
+         crash(target);
       }
       else if (target instanceof SessionAdvised && "send".equals(methodName)
                  && type == FAIL_BEFORE_SEND)
       {
-         log.info("##### Crashing before send!!!");
+         log.info("##### Crashing before send!!!", new Exception());
 
-         crash(invocation.getTargetObject());
+         crash(target);
+      }
+      else if (type == FAIL_SYNCHRONIZED_SEND_RECEIVE)
+      {
+         if (target instanceof SessionAdvised && "send".equals(methodName))
+         {
+            invocation.invokeNext();
+            synchronized (sync)
+            {
+               log.info("#### Will wait till an acknowledge comes to fail at the same time",
+                  new Exception());
+               sync.wait();
+            }
+            crash(target);
+         }
+         else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName))
+         {
+            invocation.invokeNext();
+            log.info("#### Notifying sender thread to crash the server, as ack was completed",
+               new Exception());
+            synchronized (sync)
+            {
+               sync.notifyAll();
+            }
+            // lets sleep until the server is killed
+            log.info("Waiting the synchronized send to kill this invocation.");
+            Thread.sleep(60000);
+         }
       }
 
       return invocation.invokeNext();

@@ -33,10 +33,12 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -126,6 +128,108 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       assertEquals("Have a nice day!", consumerThread.message.getText());
 
       conn.close();
+   }
+
+
+   // Crash the Server when you have two clients in receive and send simultaneously
+   public void testFailureOnSendReceiveSynchronized() throws Throwable
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.close();
+
+         conn = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn).getServerID());
+
+         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         // poison the server
+         ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_SYNCHRONIZED_SEND_RECEIVE);
+
+         conn.start();
+
+         final Session sessionProducer  = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         final MessageProducer producer = sessionProducer.createProducer(queue[0]);
+
+         final Session sessionConsumer  = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         final MessageConsumer consumer = sessionConsumer.createConsumer(queue[0]);
+
+         final ArrayList failures = new ArrayList();
+
+         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         
+         Thread t1 = new Thread()
+         {
+            public void run()
+            {
+               try
+               {
+                  producer.send(sessionProducer.createTextMessage("before-poison"));
+               }
+               catch (Throwable e)
+               {
+                  failures.add(e);
+               }
+            }
+         };
+
+         Thread t2 = new Thread()
+         {
+            public void run()
+            {
+               try
+               {
+                  log.info("### Waiting message");
+                  TextMessage text = (TextMessage)consumer.receive();
+                  assertNotNull(text);
+                  assertEquals("before-poison", text.getText());
+
+                  Object obj = consumer.receive(5000);
+                  if (obj != null)
+                  {
+                     log.info("!!!!!! it was not null", new Exception());
+                  }
+                  assertNull(obj);
+               }
+               catch (Throwable e)
+               {
+                  fail("Thread consumer failed");
+               }
+            }
+         };
+
+         t2.start();
+         Thread.sleep(500);
+         t1.start();
+
+         t1.join();
+         t2.join();
+
+         if (!failures.isEmpty())
+         {
+            throw (Throwable)failures.iterator().next();
+         }
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+
    }
 
    /**
@@ -349,7 +453,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
             int counter = 0;
             while (true)
             {
-               Message message = consumer.receive(50000);
+               Message message = consumer.receive(5000);
                if (message == null && shouldStop)
                {
                   break;
