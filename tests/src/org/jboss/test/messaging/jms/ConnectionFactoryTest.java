@@ -23,6 +23,7 @@ package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnection;
@@ -124,7 +125,47 @@ public class ConnectionFactoryTest extends MessagingTestCase
       {
          // OK
       }
-
+      
+      //Now try and deploy another one with the same client id
+      
+      mbeanConfig =
+         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
+         "       name=\"jboss.messaging.destination:service=TestConnectionFactory2\"\n" +
+         "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
+         "       <constructor>\n" +
+         "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +
+         "       </constructor>\n" +
+         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
+         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=socket</depends>\n" +
+         "       <attribute name=\"JNDIBindings\">\n" +
+         "          <bindings>\n" +
+         "            <binding>/TestConnectionFactory2</binding>\n" +
+         "          </bindings>\n" +
+         "       </attribute>\n" +
+         " </mbean>";
+      
+      ObjectName on2 = ServerManagement.deploy(mbeanConfig);
+      ServerManagement.invoke(on2, "create", new Object[0], new String[0]);      
+      ServerManagement.invoke(on2, "start", new Object[0], new String[0]);
+      
+      
+      ServerManagement.invoke(on2, "stop", new Object[0], new String[0]);
+      ServerManagement.invoke(on2, "destroy", new Object[0], new String[0]);
+      ServerManagement.undeploy(on2);
+      
+      cf = (ConnectionFactory)initialContext.lookup("/TestConnectionFactory");
+      Connection c2 = null;
+      try
+      {
+         c2 = cf.createConnection();
+      }
+      catch (JMSException e)
+      {
+         //Ok
+      }
+      
+      if (c2 != null) c2.close();
+      
       c.close();
 
       ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
@@ -146,11 +187,11 @@ public class ConnectionFactoryTest extends MessagingTestCase
       ObjectName c2 = deployConnector(1235, name2);
       ObjectName c3 = deployConnector(1236, name3);
       
-      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", name1, "/TestConnectionFactory1");
-      ObjectName cf2 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory2", name2, "/TestConnectionFactory2");
-      ObjectName cf3 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory3", name3, "/TestConnectionFactory3");
+      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", name1, "/TestConnectionFactory1", "clientid1");
+      ObjectName cf2 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory2", name2, "/TestConnectionFactory2", "clientid2");
+      ObjectName cf3 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory3", name3, "/TestConnectionFactory3", "clientid3");
       //Last one shares the same connector
-      ObjectName cf4 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory4", name3, "/TestConnectionFactory4");
+      ObjectName cf4 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory4", name3, "/TestConnectionFactory4", "clientid4");
       
       
       JBossConnectionFactory f1 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory1");            
@@ -217,8 +258,8 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       // set the client id immediately after the connection is created
 
-      c.setClientID("sofiavergara");
-      assertEquals("sofiavergara", c.getClientID());
+      c.setClientID("sofiavergara2");
+      assertEquals("sofiavergara2", c.getClientID());
 
       c.close();
    }
@@ -286,14 +327,14 @@ public class ConnectionFactoryTest extends MessagingTestCase
       return on;
    }
    
-   private ObjectName deployConnectionFactory(String name, String connectorName, String binding) throws Exception
+   private ObjectName deployConnectionFactory(String name, String connectorName, String binding, String clientID) throws Exception
    {
       String mbeanConfig =
             "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
             "       name=\"" + name + "\"\n" +
             "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
             "       <constructor>\n" +
-            "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +
+            "           <arg type=\"java.lang.String\" value=\"" + clientID + "\"/>\n" +
             "       </constructor>\n" +
             "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
             "       <depends optional-attribute-name=\"Connector\">" + connectorName + "</depends>\n" +
