@@ -92,7 +92,9 @@ public class ClientSocketWrapper extends SocketWrapper
 
    public String toString()
    {
-      return "ClientSocketWrapper[" + getSocket() + "]";
+      Socket socket = getSocket();
+      return "ClientSocketWrapper[" + socket + "." +
+         Integer.toHexString(System.identityHashCode(socket)) + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------

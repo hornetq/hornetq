@@ -95,6 +95,12 @@ public class ServerSocketWrapper extends ClientSocketWrapper
       out.flush();
    }
 
+   public String toString()
+   {
+      Socket socket = getSocket();
+      return "ServerSocketWrapper[" + socket + "." + 
+         Integer.toHexString(System.identityHashCode(socket)) + "]";
+   }
 
    // Package protected ---------------------------------------------
 
