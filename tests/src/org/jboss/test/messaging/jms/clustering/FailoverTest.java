@@ -1677,6 +1677,16 @@ public class FailoverTest extends ClusteringTestBase
       failureOnInvocation(PoisonInterceptor.FAIL_BEFORE_ACKNOWLEDGE_DELIVERY);
    }
 
+   public void testFailureRightBeforeSend() throws Exception
+   {
+      failureOnInvocation(PoisonInterceptor.FAIL_BEFORE_SEND);
+   }
+
+   public void testFailureRightAfterSend() throws Exception
+   {
+      failureOnInvocation(PoisonInterceptor.FAIL_AFTER_SEND);
+   }
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -1813,6 +1823,10 @@ public class FailoverTest extends ClusteringTestBase
          assertNotNull(tm);
 
          assertEquals("before-poison", tm.getText());
+
+         tm = (TextMessage)consumer.receive(1000);
+
+         assertNull(tm);
 
       }
       finally

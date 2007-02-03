@@ -42,6 +42,10 @@ public class PoisonInterceptor implements Interceptor
 
    public static final int FAIL_BEFORE_ACKNOWLEDGE_DELIVERY = 3;
 
+   public static final int FAIL_AFTER_SEND = 4;
+
+   public static final int FAIL_BEFORE_SEND = 5;
+
    // Static ---------------------------------------------------------------------------------------
    
    private static int type;
@@ -106,6 +110,22 @@ public class PoisonInterceptor implements Interceptor
       {
 
          log.info("##### Crashing before acknowledgeDelivery call!!!");
+
+         crash(invocation.getTargetObject());
+      }
+      else if (target instanceof SessionAdvised && "send".equals(methodName)
+                 && type == FAIL_AFTER_SEND)
+      {
+         invocation.invokeNext();
+
+         log.info("##### Crashing after send!!!");
+
+         crash(invocation.getTargetObject());
+      }
+      else if (target instanceof SessionAdvised && "send".equals(methodName)
+                 && type == FAIL_BEFORE_SEND)
+      {
+         log.info("##### Crashing before send!!!");
 
          crash(invocation.getTargetObject());
       }
