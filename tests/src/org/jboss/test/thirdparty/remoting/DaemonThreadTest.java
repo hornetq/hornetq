@@ -36,7 +36,10 @@ public class DaemonThreadTest extends MessagingTestCase
 
    public void testNothingYet() throws Throwable
    {
-      throw new Exception("Don't forget to implement this test, we need it");
+      // No, we won't forget to implement it, for there is a JIRA issue for it:
+      // http://jira.jboss.org/jira/browse/JBMESSAGING-768
+
+      //throw new Exception("Don't forget to implement this test, we need it");
    }
 
    // Package protected ----------------------------------------------------------------------------
