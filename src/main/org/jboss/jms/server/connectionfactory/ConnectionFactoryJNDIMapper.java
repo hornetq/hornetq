@@ -47,7 +47,6 @@ import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.util.JNDIUtil;
 import org.jboss.jms.wireformat.Dispatcher;

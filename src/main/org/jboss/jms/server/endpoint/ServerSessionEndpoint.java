@@ -57,7 +57,6 @@ import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
-import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.util.ExceptionUtil;

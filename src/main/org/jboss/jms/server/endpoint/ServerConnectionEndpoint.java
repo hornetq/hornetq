@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.InvalidClientIDException;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
@@ -43,7 +42,6 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.remoting.JMSWireFormat;
