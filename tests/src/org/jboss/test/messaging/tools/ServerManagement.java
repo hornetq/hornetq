@@ -474,7 +474,7 @@ public class ServerManagement
                {
                   if (verbose)
                   {
-                     log.info("SERVER " + i + " STDOUT: " + line);
+                     System.out.println("SERVER " + i + " STDOUT: " + line);
                   }
                }
             }
@@ -498,7 +498,7 @@ public class ServerManagement
                {
                   if (verbose)
                   {
-                     log.info("SERVER " + i + " STDERR: " + line);
+                     System.out.println("SERVER " + i + " STDERR: " + line);
                   }
                }
             }
