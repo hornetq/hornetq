@@ -497,8 +497,8 @@ public abstract class ChannelSupport implements Channel
                {
                   // TODO we need to look in paging state too - currently not supported
 
-                  //http://jira.jboss.org/jira/browse/JBMESSAGING-808
-                  log.warn("Cannot find ref in queue! (Might be paged!) " + id);
+                  // http://jira.jboss.org/jira/browse/JBMESSAGING-808
+                  log.warn(this + " cannot find reference " + id + " (Might be paged!)");
                   break;
                   
                   //throw new IllegalStateException("Cannot find ref in queue! (Might be paged!) " + id);
