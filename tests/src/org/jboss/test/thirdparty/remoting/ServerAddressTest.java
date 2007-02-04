@@ -7,11 +7,10 @@
 package org.jboss.test.thirdparty.remoting;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.logging.Logger;
 import org.jboss.remoting.transport.socket.ServerAddress;
 
 /**
- * This test makes sure that Remoting correctly implements ServerAddress.equals();
+ * This test makes sure that Remoting implements ServerAddress.equals() correctly.
  *
  * @author <a href="mailto:ovidiu@svjboss.org">Ovidiu Feodorov</a>
  *
@@ -22,8 +21,6 @@ import org.jboss.remoting.transport.socket.ServerAddress;
 public class ServerAddressTest extends MessagingTestCase
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ServerAddressTest.class);
 
    // Static ---------------------------------------------------------------------------------------
 
