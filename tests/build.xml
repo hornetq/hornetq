@@ -598,7 +598,7 @@
          <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
          <jvmarg value="-Xmx512M"/>
          <!--
-         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=antjunit"/>
          -->
          <classpath>
             <path refid="test.execution.classpath"/>
@@ -630,7 +630,7 @@
                  perform clean-up, and this is it: register a JUnitTestSuiteListener as a JUnit
                  batchtest formatter, and it will get notified on a endTestSuite() event.
             -->
-            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
+           <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/*Test.class"/>
@@ -648,6 +648,7 @@
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
+               <exclude name="**/thirdparty/remoting/ServerAddressTest.class"/>
             </fileset>
          </batchtest>
       </junit>
