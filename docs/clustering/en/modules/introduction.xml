@@ -81,13 +81,14 @@
    </section>
 
    <section id="alphafeatures">
-      <title>JBoss Messaging 1.2 Beta 1 features:</title>
+      <title>JBoss Messaging 1.2 Beta 2 features:</title>
 
-      <para> What's in the Beta 1 release?</para>
+      <para> What's in the Beta 2 release?</para>
 
       <para>
-      JBoss Messaging Beta 1 contains a significant percentage of the functionality planned for the
-         GA release.
+      JBoss Messaging Beta 2 contains all features planned for the GA release, with the exception
+         of the "unreliable link scenario" (http://jira.jboss.org/jira/browse/JBMESSAGING-676),
+         whose development is still on-going on a parallel branch.
       </para>
 
       <para>

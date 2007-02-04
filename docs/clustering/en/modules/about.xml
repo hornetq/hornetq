@@ -3,7 +3,7 @@
    <title>JBoss Messaging Clustering Introduction</title>
 
    <para>
-   This guide gives a brief overview of the features available in JBoss Messaging Clustering Beta 1
+   This guide gives a brief overview of the features available in JBoss Messaging Clustering 1.2.0.Beta2
    </para>
 
    <para>
@@ -15,7 +15,7 @@
       This guide is work in progress.
     </para>
 
-    <para>It will expand considerably before the 1.2 GA release.
+    <para>It will expand considerably for the 1.2.0 GA release.
     </para>
 
      <para>

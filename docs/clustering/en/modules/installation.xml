@@ -89,7 +89,7 @@
 
    <programlisting>
       04:48:49,663 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:name=DefaultDS,service=DataSourceBinding' to JNDI name 'java:DefaultDS'
-      04:48:50,257 INFO  [ServerPeer] JBoss Messaging 1.2.0.Beta1 server [0] started
+      04:48:50,257 INFO  [ServerPeer] JBoss Messaging 1.2.0.Beta2 server [0] started
       04:48:50,569 INFO  [STDOUT]
       -------------------------------------------------------
       GMS: address is 127.0.0.1:1473

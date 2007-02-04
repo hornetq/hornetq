@@ -7,16 +7,30 @@
 </head>
 <body>
 <h1><br>
-JBoss Messaging 1.2.0.Beta1 Release Notes</h1>
+JBoss Messaging 1.2.0.Beta2 Release Notes</h1>
 <br>
-December 20 2006<br>
+February 03 2007<br>
 <br>
 <br>
 JBoss
 Messaging is a new JBoss JMS 1.1-compliant JMS provider, aimed to
-replace JBossMQ.&nbsp; The curent release is the first Beta release. It
-includes the majority of the clustering features to be available in
-1.2.0.GA. An brief overview of the clustering
+replace JBossMQ.&nbsp; The curent release is the second Beta release. <br>
+<br>
+1.2.0.Beta2 is functionally complete, with one exception, the
+"unreliable
+link
+scenario" (<a href="http://jira.jboss.org/jira/browse/JBMESSAGING-676">http://jira.jboss.org/jira/browse/JBMESSAGING-676</a>),
+whose
+development is still on-going on a parallel branch. Beta2 includes is
+full
+clustering, with load balancing and
+transparent failover. However, it is still a preview release, not
+all functional, stress and smoke tests pass, so do not attempt to use
+it in production. The messaging team is concentrating to release an
+almost-production-ready 1.2.0.CR1 (all tests will pass, but we will be
+waiting for the community feedback) shortly. <br>
+<br>
+An brief overview of the clustering
 features and installation instructions are available in the "Clustering
 Guide". The guide is bundled with this release and is
 provided in <a href="./docs/clustering/html/index.html">HTML</a>, <a
@@ -32,40 +46,131 @@ distribution is a <span style="font-style: italic;">preview beta</span><span
  style="font-style: italic;"> </span><span style="font-style: italic;">release.
 </span>We strongly advise
 against using it in a production environment.<br>
-</div>
-<h2>Release Notes<br>
-</h2>
-<h2 style="margin-left: 40px;">Bug</h2>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-613">JBMESSAGING-613</a>]
-- DelegateSupport::trace shouldn't be serialized</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-667">JBMESSAGING-667</a>]
-- Clustered ConnectionFactory binding mechanism broken for a
-single-node cluster (and possibly for multi-node cluster)</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-685">JBMESSAGING-685</a>]
-- session.commit on an empty transaction causes NPE</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-686">JBMESSAGING-686</a>]
-- Inconsistence between DelegateSupport and States</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-687">JBMESSAGING-687</a>]
-- Fix clone on HAAspect::performClientSideFailover</li>
-</ul>
-<h2 style="margin-left: 40px;">Task</h2>
-<ul style="margin-left: 40px;">
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-207">JBMESSAGING-207</a>]
-- HTTP invoker configuration and testing</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-516">JBMESSAGING-516</a>]
-- Clustering</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-615">JBMESSAGING-615</a>]
-- Add sufficient tracing for a customer environment</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-631">JBMESSAGING-631</a>]
-- Update the build script to produce an unscoped SAR</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-632">JBMESSAGING-632</a>]
-- Migreate the deployment descriptors and the AS-related artifacts to
-the AS repository</li>
-  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-673">JBMESSAGING-673</a>]
-- Extend test suite framework to restart remote servers</li>
-</ul>
 <br>
+</div>
+<h2>Release Notes</h2>
+<h2 style="margin-left: 40px;">Bugs</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-616">JBMESSAGING-616</a>]
+- Race in creating new counters</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-696">JBMESSAGING-696</a>]
+- Closing a connection that failed over can close the Invoker</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-698">JBMESSAGING-698</a>]
+- HATest::testTopicSubscriber fails </li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-700">JBMESSAGING-700</a>]
+- Delivery count is not updated for transactional sessions on close</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-702">JBMESSAGING-702</a>]
+- Dead Lock condition on MessageCallbackHandler when failover is being
+executed</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-716">JBMESSAGING-716</a>]
+- Same message multiple times in DLQ/Expiry Queue</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-762">JBMESSAGING-762</a>]
+- JBossRemoting throws java.lang.Exception in certain cases</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-765">JBMESSAGING-765</a>]
+- Connection invoker ref counting is broken</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-771">JBMESSAGING-771</a>]
+- One way invocations do not return the connection to the pool</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-773">JBMESSAGING-773</a>]
+- oneway invocations are not correctly detected inside remoting
+ServerThread.processInvocation()</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-774">JBMESSAGING-774</a>]
+- Order is not preserved for messages pushed asynchronously by server
+to clients</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-782">JBMESSAGING-782</a>]
+- The number of times a callback client invoker retries a failed
+invocation should be at least 2</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-788">JBMESSAGING-788</a>]
+- ConcurrentCloseStressTest fails</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-791">JBMESSAGING-791</a>]
+- Duplicates clientIDs are not throwing InvalidClientIDException</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-795">JBMESSAGING-795</a>]
+- Bridge tests fail</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-797">JBMESSAGING-797</a>]
+- Deadlock in aop stack deployment</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-798">JBMESSAGING-798</a>]
+- postoffice.cluster
+RedistributionWithDefaultMessagePullPolicyTest.testConsumeAllPersistentRecoverable()
+fails</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-799">JBMESSAGING-799</a>]
+- org.jboss.test.messaging.jms.DuplicateClientIDTest testDuplicate()
+and testPreconfiguredDuplicateClientID() fail</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-801">JBMESSAGING-801</a>]
+- XAOldJBossTxMgrTest.testMultipleSessionsOneTxRollbackSend() error in
+remoting socket configuration</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-802">JBMESSAGING-802</a>]
+- FailoverTest.testBrowserFailoverSendMessagesPostFailure() fails</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-803">JBMESSAGING-803</a>]
+- QueueBrowser doesn't refresh the content of its Enumeration on the
+second getEnumeration() call</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-808">JBMESSAGING-808</a>]
+- Failover can't happen if a failure happens on the middle of an ack
+invocation.</li>
+</ul>
+<h2 style="margin-left: 40px;">Feature Requests</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-92">JBMESSAGING-92</a>]
+- Integrate and enable multiplex transport</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-122">JBMESSAGING-122</a>]
+- Implement the stats and monitoring MBean operations on destinations</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-127">JBMESSAGING-127</a>]
+- Delayed delivery, redelivery count and pluggable expiration behavior</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-264">JBMESSAGING-264</a>]
+- Message bridge</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-527">JBMESSAGING-527</a>]
+- JBoss Messaging should support JMSXDeliveryCount </li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-611">JBMESSAGING-611</a>]
+- Server Side Failover</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-612">JBMESSAGING-612</a>]
+- Client Side Failover</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-688">JBMESSAGING-688</a>]
+- Provide for message forwarding among nodes for a distributed queue.</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-704">JBMESSAGING-704</a>]
+- Close a dead remoting client from failover</li>
+</ul>
+<h2 style="margin-left: 40px;">Tasks</h2>
+<ul style="margin-left: 40px;">
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-140">JBMESSAGING-140</a>]
+- Move responsibility for management of delivery list from receiver
+into channel</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-178">JBMESSAGING-178</a>]
+- Run TCK continuously in top of JBoss Messaging</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-250">JBMESSAGING-250</a>]
+- Put performance testing framework in it's own subproject</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-257">JBMESSAGING-257</a>]
+- Optimisation for deliveries immediately returned as done</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-327">JBMESSAGING-327</a>]
+- Improve concurrency for acknowledgement</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-355">JBMESSAGING-355</a>]
+- Remove possibility of delivery race conditions</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-560">JBMESSAGING-560</a>]
+- Support all JBossMQ equivalent JMX functionality</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-578">JBMESSAGING-578</a>]
+- Allow messaging to use app server's multiplex JGroups channel</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-628">JBMESSAGING-628</a>]
+- Investigate message priority in presence of prefetching</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-657">JBMESSAGING-657</a>]
+- Sort out flow control</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-684">JBMESSAGING-684</a>]
+- Validate curisecontrol test results after the test environment is
+configured to use MySQL</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-699">JBMESSAGING-699</a>]
+- Ensure remoting implements true asynchronous callbacks</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-706">JBMESSAGING-706</a>]
+- Failover mop-up</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-723">JBMESSAGING-723</a>]
+- Move Multiplexor to ServiceContainer on the Testsuite</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-731">JBMESSAGING-731</a>]
+- Get a new tagged remoting release from the remoting team</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-738">JBMESSAGING-738</a>]
+- Make sure all functional and stress tests pass</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-778">JBMESSAGING-778</a>]
+- Clear testcases</li>
+  <li>[<a href="http://jira.jboss.com/jira/browse/JBMESSAGING-792">JBMESSAGING-792</a>]
+- Modify testing framework to use with priority JGroups stack
+configurations we ship with the release<br>
+    <br>
+  </li>
+</ul>
 <hr style="width: 100%; height: 2px;">
 </body>
 </html>
