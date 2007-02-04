@@ -121,8 +121,16 @@
          <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
       </replaceregexp>
 
+
+      <!-- TODO: creating a server configuration breaks if whe have this enabled. Temporarily
+                 commenting it out, until I figure out why it breaks
+                 http://jira.jboss.org/jira/browse/JBMESSAGING-811
+      -->
+
+
       <!-- Replace local TM with JBossTS -->
-      
+
+      <!--
       <copy file="${thirdparty.jbossts.home}/lib/jbossjta.jar"
             todir="${jboss.home}/server/${messaging.config.name}/lib"/>
       <copy file="${thirdparty.jbossts.home}/lib/jbossjta-integration.jar"
@@ -136,6 +144,7 @@
             todir="${jboss.home}/server/${messaging.config.name}/conf"/>
       <copy file="${output.lib.home}/jboss-messaging-integration.jar"
             todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+      -->
             
       <!-- copy the scoped sar
       <copy todir="${jboss.home}/server/${config.name}/deploy"
