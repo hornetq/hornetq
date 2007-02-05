@@ -500,8 +500,6 @@ public abstract class ChannelSupport implements Channel
                   // http://jira.jboss.org/jira/browse/JBMESSAGING-808
                   log.warn(this + " cannot find reference " + id + " (Might be paged!)");
                   break;
-                  
-                  //throw new IllegalStateException("Cannot find ref in queue! (Might be paged!) " + id);
                }
                
                MessageReference ref = (MessageReference)liter.next();
