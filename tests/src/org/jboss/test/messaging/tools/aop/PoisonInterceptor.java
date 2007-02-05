@@ -145,8 +145,7 @@ public class PoisonInterceptor implements Interceptor
             invocation.invokeNext();
             synchronized (sync)
             {
-               log.info("#### Will wait till an acknowledge comes to fail at the same time",
-                  new Exception());
+               log.info("#### Will wait till an acknowledge comes to fail at the same time");
                sync.wait();
             }
             crash(target);
@@ -154,8 +153,7 @@ public class PoisonInterceptor implements Interceptor
          else if (target instanceof SessionAdvised && "acknowledgeDelivery".equals(methodName))
          {
             invocation.invokeNext();
-            log.info("#### Notifying sender thread to crash the server, as ack was completed",
-               new Exception());
+            log.info("#### Notifying sender thread to crash the server, as ack was completed");
             synchronized (sync)
             {
                sync.notifyAll();

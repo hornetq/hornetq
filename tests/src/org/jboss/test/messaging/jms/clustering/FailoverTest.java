@@ -1787,11 +1787,19 @@ public class FailoverTest extends ClusteringTestBase
    private void failureOnInvocation(int typeOfFailure) throws Exception
    {
       Connection conn = null;
+      Connection conn0 = null;
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
+         conn0 = cf.createConnection();
+
+         assertEquals(0, ((JBossConnection)conn0).getServerID());
+
+         Session session0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer consumer0 = session0.createConsumer(queue[0]);
+
+         conn0.start();
 
          conn = cf.createConnection();
 
@@ -1828,12 +1836,18 @@ public class FailoverTest extends ClusteringTestBase
 
          assertNull(tm);
 
+         assertNull(consumer0.receive(5000));
+
       }
       finally
       {
          if (conn != null)
          {
             conn.close();
+         }
+         if (conn0 != null)
+         {
+            conn0.close();
          }
       }
    }

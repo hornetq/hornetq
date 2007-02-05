@@ -134,33 +134,44 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
    // Crash the Server when you have two clients in receive and send simultaneously
    public void testFailureOnSendReceiveSynchronized() throws Throwable
    {
-      Connection conn = null;
+      Connection conn0 = null;
+      Connection conn1 = null;
+      Connection conn2 = null;
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
+         conn0 = cf.createConnection();
+         conn0.close();
+         conn0 = null;
 
-         conn = cf.createConnection();
+         conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn2 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(2, ((JBossConnection)conn2).getServerID());
 
          // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
          // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
-         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
             getDelegate()).getRemotingConnection();
          rc.removeConnectionListener();
 
          // poison the server
          ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_SYNCHRONIZED_SEND_RECEIVE);
 
-         conn.start();
+         conn1.start();
 
-         final Session sessionProducer  = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionConsumer2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer consumer2 = sessionConsumer2.createConsumer(queue[0]);
+         conn2.start();
+
+         final Session sessionProducer  = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          final MessageProducer producer = sessionProducer.createProducer(queue[0]);
 
-         final Session sessionConsumer  = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         final Session sessionConsumer  = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          final MessageConsumer consumer = sessionConsumer.createConsumer(queue[0]);
 
@@ -212,17 +223,26 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
          t1.join();
          t2.join();
 
+         Object receivedServer2 = consumer2.receive(5000);
+
+         if (receivedServer2 != null)
+         {
+            log.info("### Server2 original message also received ");
+         }
+
          if (!failures.isEmpty())
          {
             throw (Throwable)failures.iterator().next();
          }
 
+         assertNull(receivedServer2);
+
       }
       finally
       {
-         if (conn != null)
+         if (conn1 != null)
          {
-            conn.close();
+            conn1.close();
          }
       }
 
