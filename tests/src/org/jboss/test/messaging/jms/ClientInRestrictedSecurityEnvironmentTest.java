@@ -99,6 +99,11 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
    
    public void testSendReceiveWithSecurityManager() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      
       ServerManagement.undeployQueue("TestQueue");
       
       ServerManagement.deployQueue("TestQueue");
